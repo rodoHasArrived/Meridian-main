@@ -13,7 +13,7 @@ import {
 import { MetricCard } from "@/components/meridian/metric-card";
 import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, rejectPromotion, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -86,6 +86,18 @@ const acceptanceLabel: Record<AcceptanceLevel, string> = {
   ready: "Ready",
   review: "Review",
   atRisk: "At risk"
+};
+
+const readinessStatusValue: Record<string, string> = {
+  Ready: "Ready",
+  ReviewRequired: "Review required",
+  Blocked: "Blocked"
+};
+
+const readinessStatusLevel: Record<string, AcceptanceLevel> = {
+  Ready: "ready",
+  ReviewRequired: "review",
+  Blocked: "atRisk"
 };
 
 // --- Shared confirmation state for all write actions ---
@@ -1315,6 +1327,10 @@ function buildCockpitAcceptance({
   promotionApprovedBy: string;
   promotionApprovalReason: string;
 }): CockpitAcceptanceItem[] {
+  if (operatorReadiness?.acceptanceGates?.length) {
+    return operatorReadiness.acceptanceGates.map(mapAcceptanceGate);
+  }
+
   const readinessSession = operatorReadiness?.activeSession ?? null;
   const sessionCount = Math.max(sessions.length, operatorReadiness?.sessions.length ?? 0);
   const readinessReplay = operatorReadiness?.replay ?? null;
@@ -1472,6 +1488,15 @@ function buildCockpitAcceptance({
           level: "review"
         }
   ];
+}
+
+function mapAcceptanceGate(gate: TradingAcceptanceGate): CockpitAcceptanceItem {
+  return {
+    label: gate.label,
+    value: readinessStatusValue[gate.status] ?? gate.status,
+    detail: gate.detail,
+    level: readinessStatusLevel[gate.status] ?? "review"
+  };
 }
 
 function AcceptanceStatusCard({ items }: { items: CockpitAcceptanceItem[] }) {

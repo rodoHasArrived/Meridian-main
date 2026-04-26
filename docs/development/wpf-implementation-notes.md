@@ -58,6 +58,8 @@ Content Frame
 
 **Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated second-row attention rail before the rest of the badge wall. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
 
+**Research desk briefing hero** — `ResearchWorkspaceShellPage` now keeps the current research cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
+
 **Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
 
 **Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path.
@@ -344,14 +346,15 @@ Shell implementation now shares descriptor-driven infrastructure:
 
 ### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
 
-**Purpose**: Single-page landing for the Research workspace. Shows recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
+**Purpose**: Single-page landing for the Research workspace. Shows the current research-cycle handoff, recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
 
 **Design zones**:
 
 1. **Header** — Active strategy count, cumulative P&L across completed runs, last-run timestamp
-2. **Recent Runs strip** — Horizontal scroll, `StrategyRunSummary` cards (mode badge, status, net P&L, return %)
-3. **Quick Actions** — New Backtest, Open RunMat, Open Charts, Open Run Browser
-4. **Promotion Pipeline** — Candidates for paper promotion (sourced from `StrategyRunPromotionState`)
+2. **Desk briefing hero** — Current cycle focus, blocker, and next handoff projected from workflow + active-run state
+3. **Market Briefing** — Pinned insights, watchlists, change feed, and saved comparisons
+4. **Run Studio + Recent Runs** — Run context, inspector guidance, and the run-history rail
+5. **Promotion Pipeline** — Candidates for paper promotion (sourced from `StrategyRunPromotionState`)
 
 ### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
 

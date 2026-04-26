@@ -26,7 +26,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | Wave | Owner | Status | Target Date | Evidence Link |
 | --- | --- | --- | --- | --- |
 | W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
 | W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
 | W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
 | W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
@@ -49,7 +49,7 @@ Closed platform work:
 - Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
 - `Backtest → Paper → Live` promotion workflow endpoints: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
 - Trading dashboard promotion gate now supports both **approval** and **rejection** decisions with explicit operator rationale fields wired to the promotion API
-- Wave 2 trading-readiness contract wired through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, covering session, replay, control, promotion, DK1 trust-gate packet/sign-off posture, brokerage-sync, work-item, and warning posture
+- Wave 2 trading-readiness contract wired through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, covering session, replay, control, promotion, DK1 trust-gate packet/sign-off posture, brokerage-sync, acceptance-gate/overall-readiness posture, work-item, and warning posture
 - Promotion approvals now use the canonical `PromotionApprovalChecklist`; `Backtest -> Paper` approvals require DK1 trust-packet, run-lineage, portfolio/ledger-continuity, and risk-control review, while `Paper -> Live` additionally requires live-override review
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
@@ -93,12 +93,12 @@ The active gate for Alpaca, Robinhood, and Yahoo stays reproducible through `run
 
 ### Track B / Wave 2: Paper-trading cockpit hardening
 
-Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web workstation.
+Goal: harden the existing execution primitives, brokerage adapters, and wired workstation/API flows into a dependable operator cockpit through the shared readiness contract.
 
 Open work:
 
-- tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in the dashboard
+- tighten the existing live positions, open orders, fills, P&L, and risk panels wired to `/api/execution/*` and the shared workstation readiness lane
+- expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, acceptance-gate status, overall readiness, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in workstation consumers
 - keep the WPF Trading desk briefing hero aligned with shared active-run, workflow-summary, replay/readiness, controls, trust-gate, and brokerage-sync inputs as supporting Wave 2 evidence
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
@@ -112,7 +112,7 @@ Primary anchors:
 
 Exit signal:
 
-A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web workstation, with live positions and fills visible.
+A strategy researched in backtest can be promoted to paper trading through one connected workstation workflow, with positions and fills visible through shared contracts.
 
 ### Track C / Wave 3: Shared run / portfolio / ledger continuity
 
@@ -333,7 +333,7 @@ References:
 The repository can reasonably claim core operator-readiness when all of the following are true:
 
 1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, and checkpoint plus Parquet proof remains closed in repo tests.
-2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest → Paper` is explicit and auditable.
+2. **Wave 2 gates:** the workstation exposes a dependable paper-trading cockpit through the shared readiness contract, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
 

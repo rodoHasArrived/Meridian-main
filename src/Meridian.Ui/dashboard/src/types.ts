@@ -209,9 +209,11 @@ export type OperatorWorkItemKind =
   | "BrokerageSync"
   | "SecurityMasterCoverage"
   | "ReconciliationBreak"
-  | "ReportPackApproval";
+  | "ReportPackApproval"
+  | "ProviderTrustGate";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
+export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
 
 export interface OperatorWorkItem {
   workItemId: string;
@@ -222,6 +224,16 @@ export interface OperatorWorkItem {
   createdAt: string;
   runId: string | null;
   fundAccountId: string | null;
+  auditReference: string | null;
+}
+
+export interface TradingAcceptanceGate {
+  gateId: string;
+  label: string;
+  status: TradingAcceptanceGateStatus;
+  detail: string;
+  sessionId: string | null;
+  runId: string | null;
   auditReference: string | null;
 }
 
@@ -274,6 +286,35 @@ export interface TradingPromotionReadiness {
   approvalStatus: string | null;
   manualOverrideId: string | null;
   approvedBy: string | null;
+  approvalChecklist?: string[] | null;
+}
+
+export interface TradingOperatorSignoffReadiness {
+  status: string;
+  requiredBeforeDk1Exit: boolean;
+  requiredOwners: string[];
+  signedOwners: string[];
+  missingOwners: string[];
+  completedAt: string | null;
+  sourcePath: string | null;
+}
+
+export interface TradingTrustGateReadiness {
+  gateId: string;
+  status: string;
+  readyForOperatorReview: boolean;
+  operatorSignoffRequired: boolean;
+  operatorSignoffStatus: string;
+  generatedAt: string | null;
+  packetPath: string | null;
+  sourceSummary: string | null;
+  requiredSampleCount: number;
+  readySampleCount: number;
+  validatedEvidenceDocumentCount: number;
+  requiredOwners: string[];
+  blockers: string[];
+  detail: string;
+  operatorSignoff: TradingOperatorSignoffReadiness | null;
 }
 
 export interface WorkstationBrokerageSyncStatus {
@@ -296,11 +337,15 @@ export interface WorkstationBrokerageSyncStatus {
 
 export interface TradingOperatorReadiness {
   asOf: string;
+  overallStatus: TradingAcceptanceGateStatus;
+  readyForPaperOperation: boolean;
+  acceptanceGates: TradingAcceptanceGate[];
   activeSession: TradingPaperSessionReadiness | null;
   sessions: TradingPaperSessionReadiness[];
   replay: TradingReplayReadiness | null;
   controls: TradingControlReadiness;
   promotion: TradingPromotionReadiness | null;
+  trustGate: TradingTrustGateReadiness;
   brokerageSync: WorkstationBrokerageSyncStatus | null;
   workItems: OperatorWorkItem[];
   warnings: string[];

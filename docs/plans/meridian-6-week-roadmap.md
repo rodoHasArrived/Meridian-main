@@ -32,9 +32,9 @@ Explicit non-goals in this window:
 
 This plan starts from the current repo state:
 
-- the web and WPF workstation shells are active and already organized around `Research`, `Trading`, `Data Operations`, and `Governance`
+- the WPF workstation shell is the primary operator shell and is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; the retained local API/web surfaces remain supporting consumers of the same workstation contracts
 - the current working tree contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, and the Trading desk briefing hero, so this window should validate workflow value rather than start a second desktop UX track
-- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, and operator-work-item posture, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
+- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and operator work items, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
@@ -79,11 +79,11 @@ This plan starts from the current repo state:
 
 ### Outcome 2: Wave 2 paper trading is dependable, not just visible
 
-- the web workstation cockpit is tightened around positions, orders, fills, replay, sessions, and risk flows already in code
+- the shared workstation cockpit is tightened around positions, orders, fills, replay, sessions, and risk flows already in code
 - the WPF Trading desk briefing hero is validated as a consumer of shared active-run, workflow-summary, and operator-readiness state rather than a separate cockpit model
 - `Backtest -> Paper` remains explicit, auditable, and easier to exercise end to end
 - session persistence and replay behavior have clearer operator acceptance criteria
-- the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit visibility, promotion-review readiness, brokerage-sync posture, and operator work items
+- the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items
 
 ### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
 
@@ -128,7 +128,7 @@ Priorities:
 
 Priorities:
 
-- harden the existing execution and promotion flows in the web workstation
+- harden the existing execution and promotion flows through the shared workstation readiness contract
 - keep replay, session, audit, and risk behavior tied to realistic operator use
 - prefer reliability and workflow continuity over new cockpit surface area
 - define operator-visible acceptance criteria for the paper workflow already in code

@@ -167,12 +167,23 @@ public sealed class TradingOperatorReadinessService
             }
         }
 
+        var acceptanceGates = BuildAcceptanceGates(
+            activeSession,
+            sessions,
+            replay,
+            controls,
+            promotion,
+            trustGate,
+            auditEntries);
+        var overallStatus = ResolveOverallStatus(acceptanceGates);
+
         warnings.AddRange(workItems
             .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
             .Select(static item => item.Detail));
 
         _logger.LogDebug(
-            "Built trading operator readiness with {WorkItemCount} work item(s) and {WarningCount} warning(s).",
+            "Built trading operator readiness with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            overallStatus,
             workItems.Count,
             warnings.Count);
 
@@ -189,7 +200,12 @@ public sealed class TradingOperatorReadinessService
                 .OrderByDescending(static item => item.Tone)
                 .ThenBy(static item => item.CreatedAt)
                 .ToArray(),
-            Warnings: warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            Warnings: warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray())
+        {
+            AcceptanceGates = acceptanceGates,
+            OverallStatus = overallStatus,
+            ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready
+        };
     }
 
     private async Task<StrategyRunDetail?> ResolveLatestRunAsync(CancellationToken ct)
@@ -371,6 +387,211 @@ public sealed class TradingOperatorReadinessService
     private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
         => approvalChecklist is { Count: > 0 } &&
            approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
+
+    private static IReadOnlyList<TradingAcceptanceGateDto> BuildAcceptanceGates(
+        TradingPaperSessionReadinessDto? activeSession,
+        IReadOnlyList<TradingPaperSessionReadinessDto> sessions,
+        TradingReplayReadinessDto? replay,
+        TradingControlReadinessDto controls,
+        TradingPromotionReadinessDto? promotion,
+        TradingTrustGateReadinessDto trustGate,
+        IReadOnlyList<ExecutionAuditEntry> auditEntries)
+        =>
+        [
+            BuildSessionGate(activeSession, sessions),
+            BuildReplayGate(activeSession, replay),
+            BuildAuditControlGate(controls, auditEntries),
+            BuildPromotionGate(promotion),
+            BuildTrustGateAcceptance(trustGate)
+        ];
+
+    private static TradingAcceptanceGateDto BuildSessionGate(
+        TradingPaperSessionReadinessDto? activeSession,
+        IReadOnlyList<TradingPaperSessionReadinessDto> sessions)
+    {
+        if (activeSession is { IsActive: true })
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "session",
+                Label: "Session active",
+                Status: TradingAcceptanceGateStatusDto.Ready,
+                Detail: $"Active paper session {activeSession.SessionId} retains {activeSession.OrderCount} order(s) and {activeSession.PositionCount} position(s).",
+                SessionId: activeSession.SessionId);
+        }
+
+        if (sessions.Count > 0)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "session",
+                Label: "Session restore",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "Restore a retained paper session before treating the cockpit as operator-ready.",
+                SessionId: sessions[0].SessionId);
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "session",
+            Label: "Session active",
+            Status: TradingAcceptanceGateStatusDto.Blocked,
+            Detail: "Create a paper session so orders, fills, and portfolio state have a durable acceptance scope.");
+    }
+
+    private static TradingAcceptanceGateDto BuildReplayGate(
+        TradingPaperSessionReadinessDto? activeSession,
+        TradingReplayReadinessDto? replay)
+    {
+        if (activeSession is not { IsActive: true })
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "replay",
+                Label: "Replay verified",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: "An active paper session is required before replay evidence can satisfy cockpit readiness.",
+                SessionId: activeSession?.SessionId,
+                AuditReference: replay?.VerificationAuditId);
+        }
+
+        if (replay is null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "replay",
+                Label: "Replay verified",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: $"Run replay verification for paper session {activeSession.SessionId}.",
+                SessionId: activeSession.SessionId);
+        }
+
+        if (!replay.IsConsistent)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "replay",
+                Label: "Replay verified",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: replay.MismatchReasons.FirstOrDefault() ?? "Replay verification recorded a mismatch.",
+                SessionId: replay.SessionId,
+                AuditReference: replay.VerificationAuditId);
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "replay",
+            Label: "Replay verified",
+            Status: TradingAcceptanceGateStatusDto.Ready,
+            Detail: $"Compared {replay.ComparedFillCount} fill(s), {replay.ComparedOrderCount} order(s), and {replay.ComparedLedgerEntryCount} ledger entr{(replay.ComparedLedgerEntryCount == 1 ? "y" : "ies")}.",
+            SessionId: replay.SessionId,
+            AuditReference: replay.VerificationAuditId);
+    }
+
+    private static TradingAcceptanceGateDto BuildAuditControlGate(
+        TradingControlReadinessDto controls,
+        IReadOnlyList<ExecutionAuditEntry> auditEntries)
+    {
+        if (controls.CircuitBreakerOpen)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "audit-controls",
+                Label: "Risk state explainable",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: controls.CircuitBreakerReason ?? "Execution is blocked by an open circuit breaker.");
+        }
+
+        if (auditEntries.Count == 0)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "audit-controls",
+                Label: "Risk state explainable",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "Execution actions need visible audit and control evidence before daily operation.");
+        }
+
+        if (controls.ManualOverrideCount > 0)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "audit-controls",
+                Label: "Risk state explainable",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: $"{controls.ManualOverrideCount} manual override(s) require operator review; {auditEntries.Count} audit entr{(auditEntries.Count == 1 ? "y is" : "ies are")} visible.");
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "audit-controls",
+            Label: "Risk state explainable",
+            Status: TradingAcceptanceGateStatusDto.Ready,
+            Detail: $"{auditEntries.Count} execution audit entr{(auditEntries.Count == 1 ? "y is" : "ies are")} visible and no blocking controls are active.");
+    }
+
+    private static TradingAcceptanceGateDto BuildPromotionGate(TradingPromotionReadinessDto? promotion)
+    {
+        if (promotion is null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "promotion",
+                Label: "Promotion trace complete",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "Evaluate and record the paper promotion decision before accepting the cockpit.");
+        }
+
+        if (!promotion.RequiresReview && IsPromotionTraceComplete(promotion))
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "promotion",
+                Label: "Promotion trace complete",
+                Status: TradingAcceptanceGateStatusDto.Ready,
+                Detail: $"{promotion.ApprovalStatus} by {promotion.ApprovedBy}: {promotion.Reason}.",
+                RunId: promotion.SourceRunId ?? promotion.TargetRunId,
+                AuditReference: promotion.AuditReference);
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "promotion",
+            Label: "Promotion trace complete",
+            Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+            Detail: "Promotion evidence must include decision, operator, rationale, checklist, lineage, and audit reference.",
+            RunId: promotion.SourceRunId ?? promotion.TargetRunId,
+            AuditReference: promotion.AuditReference);
+    }
+
+    private static TradingAcceptanceGateDto BuildTrustGateAcceptance(TradingTrustGateReadinessDto trustGate)
+    {
+        var status = ResolveTrustGateAcceptanceStatus(trustGate);
+        return new TradingAcceptanceGateDto(
+            GateId: "dk1-trust",
+            Label: "DK1 trust gate",
+            Status: status,
+            Detail: trustGate.Detail,
+            AuditReference: trustGate.PacketPath);
+    }
+
+    private static TradingAcceptanceGateStatusDto ResolveTrustGateAcceptanceStatus(TradingTrustGateReadinessDto trustGate)
+    {
+        if (string.Equals(trustGate.Status, "packet-unavailable", StringComparison.OrdinalIgnoreCase))
+        {
+            return TradingAcceptanceGateStatusDto.ReviewRequired;
+        }
+
+        if (!trustGate.ReadyForOperatorReview || trustGate.Blockers.Count > 0)
+        {
+            return TradingAcceptanceGateStatusDto.Blocked;
+        }
+
+        if (trustGate.OperatorSignoffRequired && !IsOperatorSignoffComplete(trustGate.OperatorSignoffStatus))
+        {
+            return TradingAcceptanceGateStatusDto.ReviewRequired;
+        }
+
+        return TradingAcceptanceGateStatusDto.Ready;
+    }
+
+    private static TradingAcceptanceGateStatusDto ResolveOverallStatus(IReadOnlyList<TradingAcceptanceGateDto> gates)
+    {
+        if (gates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
+        {
+            return TradingAcceptanceGateStatusDto.Blocked;
+        }
+
+        return gates.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
+            ? TradingAcceptanceGateStatusDto.Ready
+            : TradingAcceptanceGateStatusDto.ReviewRequired;
+    }
 
     private static void AddTrustGateWorkItem(
         ICollection<OperatorWorkItemDto> workItems,

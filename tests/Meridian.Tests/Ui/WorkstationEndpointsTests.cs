@@ -589,6 +589,28 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.OperatorSignoff!.MissingOwners.Should().BeEquivalentTo(
             ["Data Operations", "Provider Reliability", "Trading"]);
         readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readiness.AcceptanceGates.Should().HaveCount(5);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.SessionId == session.SessionId);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == verification!.VerificationAuditId);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "audit-controls" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == decision.AuditReference);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "dk1-trust" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.Detail.Contains("sign-off remains pending", StringComparison.OrdinalIgnoreCase));
         readiness.WorkItems.Should().ContainSingle(item =>
             item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
             item.Tone == OperatorWorkItemToneDto.Warning &&

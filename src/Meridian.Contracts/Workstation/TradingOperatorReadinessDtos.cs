@@ -23,6 +23,14 @@ public enum OperatorWorkItemToneDto
     Critical = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<TradingAcceptanceGateStatusDto>))]
+public enum TradingAcceptanceGateStatusDto
+{
+    Ready = 0,
+    ReviewRequired = 1,
+    Blocked = 2
+}
+
 public sealed record OperatorWorkItemDto(
     string WorkItemId,
     OperatorWorkItemKindDto Kind,
@@ -32,6 +40,15 @@ public sealed record OperatorWorkItemDto(
     DateTimeOffset CreatedAt,
     string? RunId = null,
     Guid? FundAccountId = null,
+    string? AuditReference = null);
+
+public sealed record TradingAcceptanceGateDto(
+    string GateId,
+    string Label,
+    TradingAcceptanceGateStatusDto Status,
+    string Detail,
+    string? SessionId = null,
+    string? RunId = null,
     string? AuditReference = null);
 
 public sealed record TradingPaperSessionReadinessDto(
@@ -118,7 +135,14 @@ public sealed record TradingOperatorReadinessDto(
     TradingTrustGateReadinessDto TrustGate,
     WorkstationBrokerageSyncStatusDto? BrokerageSync,
     IReadOnlyList<OperatorWorkItemDto> WorkItems,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    public TradingAcceptanceGateStatusDto OverallStatus { get; init; } = TradingAcceptanceGateStatusDto.ReviewRequired;
+
+    public bool ReadyForPaperOperation { get; init; }
+
+    public IReadOnlyList<TradingAcceptanceGateDto> AcceptanceGates { get; init; } = [];
+}
 
 public sealed record StrategyRunReviewPacketDto(
     string RunId,

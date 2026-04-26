@@ -54,7 +54,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 - portfolio, fills, attribution, ledger, cash-flow, and reconciliation visibility from the same run-centered model
 - the delivered Security Master baseline as the authoritative instrument-definition layer
 - governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
-- web and WPF surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline and Trading desk briefing hero are present, while workflow-level acceptance remains tied to Waves 2-4
+- a primary WPF operator shell and retained local API/web support surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline and Trading desk briefing hero are present, while workflow-level acceptance remains tied to Waves 2-4
 
 ---
 

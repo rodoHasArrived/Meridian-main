@@ -18,6 +18,7 @@ Recent governance work is also moving older utility pages into shell-native work
 `NotificationCenter` now supports history triage with search, unread-only filtering, and per-item acknowledgement so governance operators can work events as a queue instead of a flat feed.
 `GovernanceWorkspaceShellPage` now adds a selected-lane briefing card above the lane buttons so operators can keep the active queue, blocker, and next action visible before opening `Operations`, `Accounting`, `Reconciliation`, `Reporting`, or `Audit`.
 `DataOperationsWorkspaceShellPage` now opens with a scope-and-handoff briefing card so operators see the active operational focus before dropping into provider, backfill, storage, and export queues.
+`ResearchWorkspaceShellPage` now keeps a desk-briefing hero above the market briefing so operators can see the current cycle focus, the next handoff, and the primary blocker before dropping into run history or promotion candidates.
 
 ## Why WPF?
 
@@ -117,6 +118,7 @@ Examples:
 
 `PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
 `TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
+`ResearchWorkspaceShellPage` now keeps the active research cycle explicit with a desk-briefing hero that upgrades no-op trading-review prompts into actionable run-browser, portfolio, or promotion handoffs based on the selected run state.
 
 ## Development Notes
 

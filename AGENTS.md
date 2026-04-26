@@ -227,7 +227,9 @@ not define those targets. Prefer `make desktop-build`, `make desktop-test`, and
 
 ```powershell
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1
+pwsh ./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
+pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/build-ibapi-smoke.ps1
 ```
 
@@ -235,8 +237,9 @@ This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliabil
 proof. It writes summaries and DK1 parity packets under
 `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
 `run-wave1-provider-validation.ps1` invokes `generate-dk1-pilot-parity-packet.ps1` when present;
-run the packet generator directly only when rebuilding from an existing Wave 1 summary. A
-`ready-for-operator-review` DK1 packet still requires operator sign-off before DK1 exit.
+run the packet generator directly only when rebuilding from an existing Wave 1 summary. Pass
+`-OperatorSignoffPath` after owner review so the packet records machine-readable sign-off status. A
+`ready-for-operator-review` DK1 packet still requires signed owner evidence before DK1 exit.
 `build-ibapi-smoke.ps1` is a compile-only Interactive Brokers adapter smoke build that enables
 `EnableIbApiSmoke=true` on `src/Meridian.Infrastructure/Meridian.Infrastructure.csproj`.
 The Wave 2 cockpit readiness contract reads DK1 packet posture through

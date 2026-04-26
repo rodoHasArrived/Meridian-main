@@ -51,7 +51,7 @@ This sprint closes that gap with four explicit acceptance gates:
 ### Assumptions
 
 - Wave 1 remains the trust boundary for provider confidence and is not reopened here.
-- Wave 2 is still primarily a web cockpit hardening effort even though the same seams should remain reusable by WPF.
+- Wave 2 is a shared workstation cockpit hardening effort: WPF is the primary operator shell, and the retained web/API surfaces should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
 - Later `Paper -> Live` work should only inherit controls from this sprint; it should not claim live readiness by default.
 
 ## Acceptance Gates
@@ -74,7 +74,7 @@ The codebase already has most of the needed primitives, but they are not yet ass
 - Execution audit durability exists and order submissions can be audited, but the cockpit does not yet expose the control state that explains why risk decisions were allowed or blocked.
 - Promotion approvals and rejections write durable JSONL promotion history through `IPromotionRecordStore`, and `PromotionService.GetPromotionHistoryAsync()` reloads history after restart.
 - `docs/operations/live-execution-controls.md` documents manual-override flows, and `src/Meridian.Contracts/Api/UiApiRoutes.cs` now exposes the matching pluralized execution-control manual-override routes.
-- The web cockpit now sends operator, approval/rejection rationale, review notes, and manual override IDs, and its acceptance card treats promotion review as ready only when the latest history record includes decision, operator, rationale, lineage, and audit reference.
+- The cockpit surfaces now send operator, approval/rejection rationale, review notes, and manual override IDs, and their acceptance cards should treat promotion review as ready only when the latest history record includes decision, operator, rationale, lineage, and audit reference.
 
 ### Target Shape
 
@@ -131,10 +131,18 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 - execution-control state, including circuit breaker and manual overrides
 - durable promotion decision state and trace completeness
 - DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet
+- explicit acceptance gates plus an overall readiness status / paper-operation readiness flag
 - optional brokerage sync status when a fund account is supplied
 - operator work items and warnings
 
-`GET /api/workstation/trading` also includes the same readiness payload so the web cockpit can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
+`OverallStatus` is `Ready`, `ReviewRequired`, or `Blocked`; `ReadyForPaperOperation=true` is the
+only green cockpit state. `AcceptanceGates` currently contains `session`, `replay`,
+`audit-controls`, `promotion`, and `dk1-trust` entries so web and desktop clients render the same
+pass/review/blocked decision instead of reconstructing acceptance differently in each surface.
+Pending DK1 operator sign-off, replay mismatch, open circuit breaker, or incomplete promotion trace
+keeps the lane in review or blocked state even when lower-level endpoint data is visible.
+
+`GET /api/workstation/trading` also includes the same readiness payload so workstation consumers can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
 
 #### `PaperSessionReplayVerificationDto`
 

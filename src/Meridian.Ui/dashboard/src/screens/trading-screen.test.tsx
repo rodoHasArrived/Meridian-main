@@ -145,6 +145,115 @@ const data: TradingWorkspaceResponse = {
   brokerage: { provider: "Interactive Brokers", account: "DU1009034", environment: "paper", connection: "Connected", lastHeartbeat: "2s ago", orderIngress: "healthy", fillFeed: "healthy", notes: "Adapter is wired." }
 };
 
+const serverReadinessData: TradingWorkspaceResponse = {
+  ...data,
+  readiness: {
+    asOf: "2026-04-26T16:00:00Z",
+    overallStatus: "Blocked",
+    readyForPaperOperation: false,
+    acceptanceGates: [
+      {
+        gateId: "session",
+        label: "Session active",
+        status: "Ready",
+        detail: "Active paper session sess-1 retains 1 order and 0 positions.",
+        sessionId: "sess-1",
+        runId: null,
+        auditReference: null
+      },
+      {
+        gateId: "replay",
+        label: "Replay verified",
+        status: "Blocked",
+        detail: "Replay mismatch in server gate.",
+        sessionId: "sess-1",
+        runId: null,
+        auditReference: "audit-replay-1"
+      },
+      {
+        gateId: "audit-controls",
+        label: "Risk state explainable",
+        status: "ReviewRequired",
+        detail: "One manual override requires review.",
+        sessionId: null,
+        runId: null,
+        auditReference: null
+      },
+      {
+        gateId: "promotion",
+        label: "Promotion trace complete",
+        status: "ReviewRequired",
+        detail: "Promotion evidence is missing checklist coverage.",
+        sessionId: null,
+        runId: "run-1",
+        auditReference: null
+      },
+      {
+        gateId: "dk1-trust",
+        label: "DK1 trust gate",
+        status: "Ready",
+        detail: "DK1 operator sign-off is complete.",
+        sessionId: null,
+        runId: null,
+        auditReference: "artifacts/provider-validation/dk1-pilot-parity-packet.json"
+      }
+    ],
+    activeSession: {
+      sessionId: "sess-1",
+      strategyId: "strat-1",
+      strategyName: null,
+      isActive: true,
+      initialCash: 100000,
+      createdAt: "2026-01-01T00:00:00Z",
+      closedAt: null,
+      symbolCount: 2,
+      orderCount: 1,
+      positionCount: 0,
+      portfolioValue: 100000
+    },
+    sessions: [],
+    replay: null,
+    controls: {
+      circuitBreakerOpen: false,
+      circuitBreakerReason: null,
+      circuitBreakerChangedBy: null,
+      circuitBreakerChangedAt: null,
+      manualOverrideCount: 1,
+      symbolLimitCount: 1,
+      defaultMaxPositionSize: 5000
+    },
+    promotion: null,
+    trustGate: {
+      gateId: "DK1",
+      status: "ready-for-operator-review",
+      readyForOperatorReview: true,
+      operatorSignoffRequired: true,
+      operatorSignoffStatus: "signed",
+      generatedAt: "2026-04-26T15:55:00Z",
+      packetPath: "artifacts/provider-validation/dk1-pilot-parity-packet.json",
+      sourceSummary: null,
+      requiredSampleCount: 4,
+      readySampleCount: 4,
+      validatedEvidenceDocumentCount: 4,
+      requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
+      blockers: [],
+      detail: "DK1 operator sign-off is complete.",
+      operatorSignoff: {
+        status: "signed",
+        requiredBeforeDk1Exit: true,
+        requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
+        signedOwners: ["Data Operations", "Provider Reliability", "Trading"],
+        missingOwners: [],
+        completedAt: "2026-04-26T16:00:00Z",
+        sourcePath: "artifacts/provider-validation/dk1-operator-signoff.json"
+      }
+    },
+    brokerageSync: null,
+    workItems: [],
+    warnings: []
+  }
+};
+
 describe("TradingScreen", () => {
   it("renders cockpit tables and wiring state", () => {
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
@@ -171,6 +280,17 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Verify required")).toBeInTheDocument();
     expect(screen.getByText(/recent execution audit entry is visible/i)).toBeInTheDocument();
     expect(screen.getByText(/Approved by operator-7: Meets risk constraints\. Audit audit-promo-1\./i)).toBeInTheDocument();
+  });
+
+  it("uses server acceptance gates when the readiness contract provides them", () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={serverReadinessData} /></MemoryRouter>);
+
+    expect(screen.getByText("2/5 ready")).toBeInTheDocument();
+    expect(screen.getByText("Replay verified")).toBeInTheDocument();
+    expect(screen.getByText("Blocked")).toBeInTheDocument();
+    expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
+    expect(screen.getByText("DK1 trust gate")).toBeInTheDocument();
+    expect(screen.getAllByText("Review required")).toHaveLength(2);
   });
 
   it("handles promotion happy path", async () => {

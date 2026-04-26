@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -22,6 +23,27 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 {
+    internal enum ResearchDeskHeroTone : byte
+    {
+        Info,
+        Success,
+        Warning
+    }
+
+    internal readonly record struct ResearchDeskHeroState(
+        string FocusLabel,
+        string Summary,
+        string Detail,
+        string BadgeText,
+        ResearchDeskHeroTone BadgeTone,
+        string HandoffTitle,
+        string HandoffDetail,
+        string PrimaryActionId,
+        string PrimaryActionLabel,
+        string SecondaryActionId,
+        string SecondaryActionLabel,
+        string TargetLabel);
+
     private readonly StrategyRunWorkspaceService _runService;
     private readonly IResearchBriefingWorkspaceService _briefingService;
     private readonly Meridian.Wpf.Services.WatchlistService _watchlistService;
@@ -31,6 +53,8 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private bool _canPromoteActiveRun;
     private bool _canOpenTradingCockpit;
+    private string _heroPrimaryActionId = "Backtest";
+    private string _heroSecondaryActionId = "Watchlist";
 
     public ResearchWorkspaceShellPage(
         NavigationService navigationService,
@@ -133,7 +157,7 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
             UpdateBriefing(briefing);
             UpdateActiveRunContext(activeRun);
-            UpdateWorkflowHandoff(workflow);
+            UpdateWorkflowHandoff(summary, activeRun, workflow);
             ViewModel.CommandGroup = BuildCommandGroup();
             CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
@@ -169,9 +193,8 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
         }
     }
 
-    private void UpdateWorkflowHandoff(WorkspaceWorkflowSummary? workflow)
-    {
-        var effectiveWorkflow = workflow ?? new WorkspaceWorkflowSummary(
+    private static WorkspaceWorkflowSummary CreateFallbackWorkflowSummary()
+        => new(
             WorkspaceId: "research",
             WorkspaceTitle: "Research",
             StatusLabel: "Ready for a new research cycle",
@@ -190,24 +213,34 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
                 IsBlocking: false),
             Evidence: []);
 
-        ResearchWorkflowStatusText.Text = effectiveWorkflow.StatusLabel;
-        ResearchWorkflowDetailText.Text = effectiveWorkflow.StatusDetail;
+    private void UpdateWorkflowHandoff(
+        ResearchWorkspaceSummary summary,
+        ActiveRunContext? activeRun,
+        WorkspaceWorkflowSummary? workflow)
+    {
+        var effectiveWorkflow = workflow ?? CreateFallbackWorkflowSummary();
+        var hero = BuildDeskHeroState(summary, activeRun, effectiveWorkflow);
+
+        ResearchHeroFocusText.Text = hero.FocusLabel;
+        ResearchHeroBadgeText.Text = hero.BadgeText;
+        ApplyHeroTone(ResearchHeroBadgeBorder, ResearchHeroBadgeText, hero.BadgeTone);
+        ResearchWorkflowStatusText.Text = hero.Summary;
+        ResearchWorkflowDetailText.Text = hero.Detail;
+        ResearchHeroActionTitleText.Text = hero.HandoffTitle;
+        ResearchHeroActionDetailText.Text = hero.HandoffDetail;
         ResearchWorkflowBlockerLabelText.Text = effectiveWorkflow.PrimaryBlocker.Label;
         ResearchWorkflowBlockerDetailText.Text = effectiveWorkflow.PrimaryBlocker.Detail;
-        ResearchWorkflowTargetText.Text = $"Target page: {effectiveWorkflow.NextAction.TargetPageTag}";
+        ResearchWorkflowTargetText.Text = hero.TargetLabel;
         ResearchWorkflowEvidenceItems.ItemsSource = effectiveWorkflow.Evidence
             .Select(static evidence => $"{evidence.Label}: {evidence.Value}")
             .ToArray();
-
-        StartBacktestButton.Visibility = string.Equals(effectiveWorkflow.NextAction.TargetPageTag, "Backtest", StringComparison.OrdinalIgnoreCase)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-        ReviewRunButton.Visibility = string.Equals(effectiveWorkflow.NextAction.TargetPageTag, "StrategyRuns", StringComparison.OrdinalIgnoreCase)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-        SendToTradingReviewButton.Visibility = string.Equals(effectiveWorkflow.NextAction.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        ResearchHeroPrimaryActionButton.Content = hero.PrimaryActionLabel;
+        ResearchHeroSecondaryActionButton.Content = hero.SecondaryActionLabel;
+        ResearchHeroSecondaryActionButton.Visibility = string.IsNullOrWhiteSpace(hero.SecondaryActionLabel)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        _heroPrimaryActionId = hero.PrimaryActionId;
+        _heroSecondaryActionId = hero.SecondaryActionId;
     }
 
     private void UpdateActiveRunContext(ActiveRunContext? activeContext)
@@ -241,6 +274,115 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
         RiskPreviewText.Text = $"{activeContext.RiskSummary} Audit and reconciliation drill-ins stay one action away from the same shell.";
         _canPromoteActiveRun = activeContext.CanPromoteToPaper;
         _canOpenTradingCockpit = true;
+    }
+
+    internal static ResearchDeskHeroState BuildDeskHeroState(
+        ResearchWorkspaceSummary summary,
+        ActiveRunContext? activeRun,
+        WorkspaceWorkflowSummary workflow)
+    {
+        if (activeRun is not null && activeRun.CanPromoteToPaper)
+        {
+            return new ResearchDeskHeroState(
+                FocusLabel: "Promotion review",
+                Summary: $"{activeRun.StrategyName} is ready for paper handoff.",
+                Detail: BuildActiveRunHeroDetail(activeRun),
+                BadgeText: "Ready",
+                BadgeTone: ResearchDeskHeroTone.Success,
+                HandoffTitle: "Carry the run into trading review",
+                HandoffDetail: "Open the trading shell with the selected run still attached, then keep portfolio, ledger, and audit evidence visible before approving the next mode.",
+                PrimaryActionId: "TradingShell",
+                PrimaryActionLabel: "Open Trading Review",
+                SecondaryActionId: "PromoteToPaper",
+                SecondaryActionLabel: "Promote to Paper",
+                TargetLabel: "Target page: TradingShell");
+        }
+
+        if (activeRun is not null)
+        {
+            return new ResearchDeskHeroState(
+                FocusLabel: "Selected run",
+                Summary: $"{activeRun.StrategyName} is the active research run.",
+                Detail: BuildActiveRunHeroDetail(activeRun),
+                BadgeText: workflow.PrimaryBlocker.IsBlocking ? "Attention" : "In review",
+                BadgeTone: workflow.PrimaryBlocker.IsBlocking ? ResearchDeskHeroTone.Warning : ResearchDeskHeroTone.Info,
+                HandoffTitle: "Continue run review",
+                HandoffDetail: "Keep run detail, portfolio, and ledger inspectors docked beside the active run before handing it forward.",
+                PrimaryActionId: "RunDetail",
+                PrimaryActionLabel: "Open Run Detail",
+                SecondaryActionId: "RunPortfolio",
+                SecondaryActionLabel: "Open Portfolio",
+                TargetLabel: "Target page: RunDetail");
+        }
+
+        if (summary.PendingReviewCount > 0 || string.Equals(workflow.NextAction.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase))
+        {
+            var queueCountLabel = summary.PendingReviewCount == 1
+                ? "1 run is waiting for trading review."
+                : $"{summary.PendingReviewCount} run(s) are waiting for trading review.";
+
+            return new ResearchDeskHeroState(
+                FocusLabel: "Promotion queue",
+                Summary: summary.PendingReviewCount > 0 ? queueCountLabel : workflow.StatusLabel,
+                Detail: workflow.StatusDetail,
+                BadgeText: "Attention",
+                BadgeTone: ResearchDeskHeroTone.Warning,
+                HandoffTitle: "Stage the next promotion candidate",
+                HandoffDetail: "Open the run browser first, choose the candidate with complete evidence attached, then carry it into the trading shell.",
+                PrimaryActionId: "StrategyRuns",
+                PrimaryActionLabel: "Run Browser",
+                SecondaryActionId: "Watchlist",
+                SecondaryActionLabel: "Open Watchlists",
+                TargetLabel: "Target page: StrategyRuns");
+        }
+
+        if (summary.TotalRuns == 0)
+        {
+            return new ResearchDeskHeroState(
+                FocusLabel: "New cycle",
+                Summary: "Research queue is empty.",
+                Detail: "Start a backtest and stage a watchlist to seed comparisons, alerts, and the promotion pipeline.",
+                BadgeText: "Setup",
+                BadgeTone: ResearchDeskHeroTone.Info,
+                HandoffTitle: "Launch the first run",
+                HandoffDetail: "Use Backtest to record the first scenario, then keep symbols staged in Watchlists for follow-on analysis.",
+                PrimaryActionId: "Backtest",
+                PrimaryActionLabel: "Start Backtest",
+                SecondaryActionId: "Watchlist",
+                SecondaryActionLabel: "Open Watchlists",
+                TargetLabel: "Target page: Backtest");
+        }
+
+        var primaryActionId = ResolveHeroActionId(workflow.NextAction, hasActiveRun: false);
+        var secondaryActionId = primaryActionId == "StrategyRuns" ? "RunMat" : "StrategyRuns";
+
+        return new ResearchDeskHeroState(
+            FocusLabel: "Research cycle",
+            Summary: workflow.StatusLabel,
+            Detail: workflow.StatusDetail,
+            BadgeText: ParseHeroTone(workflow.StatusTone) switch
+            {
+                ResearchDeskHeroTone.Success => "Ready",
+                ResearchDeskHeroTone.Warning => "Attention",
+                _ => "Focus"
+            },
+            BadgeTone: ParseHeroTone(workflow.StatusTone),
+            HandoffTitle: "Keep the next action docked",
+            HandoffDetail: workflow.NextAction.Detail,
+            PrimaryActionId: primaryActionId,
+            PrimaryActionLabel: ResolveHeroActionLabel(primaryActionId, workflow.NextAction.Label),
+            SecondaryActionId: secondaryActionId,
+            SecondaryActionLabel: ResolveHeroActionLabel(secondaryActionId, secondaryActionId),
+            TargetLabel: $"Target page: {ResolveHeroTargetLabel(primaryActionId, workflow.NextAction.TargetPageTag)}");
+    }
+
+    private static string BuildActiveRunHeroDetail(ActiveRunContext activeRun)
+    {
+        var validationDetail = string.IsNullOrWhiteSpace(activeRun.ValidationStatus.Detail)
+            || string.Equals(activeRun.ValidationStatus.Detail, "Status detail unavailable.", StringComparison.Ordinal)
+                ? activeRun.RiskSummary
+                : activeRun.ValidationStatus.Detail;
+        return $"{activeRun.ModeLabel} · {activeRun.StatusLabel} · {activeRun.FundScopeLabel}. {validationDetail}";
     }
 
     private void UpdateBriefing(ResearchBriefingDto briefing)
@@ -387,6 +529,51 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
             case "LeanIntegration":
                 OpenLean_Click(sender, new RoutedEventArgs());
                 break;
+        }
+    }
+
+    private void OnResearchHeroPrimaryActionClick(object sender, RoutedEventArgs e)
+        => ExecuteHeroAction(_heroPrimaryActionId, sender, e);
+
+    private void OnResearchHeroSecondaryActionClick(object sender, RoutedEventArgs e)
+        => ExecuteHeroAction(_heroSecondaryActionId, sender, e);
+
+    private void ExecuteHeroAction(string actionId, object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(actionId))
+        {
+            return;
+        }
+
+        switch (actionId)
+        {
+            case "Backtest":
+                OpenBacktest_Click(sender, e);
+                return;
+            case "RunMat":
+                OpenRunMat_Click(sender, e);
+                return;
+            case "StrategyRuns":
+                OpenStrategyRuns_Click(sender, e);
+                return;
+            case "RunDetail":
+                OpenRunDetailDocked_Click(sender, e);
+                return;
+            case "RunPortfolio":
+                OpenPortfolioInspector_Click(sender, e);
+                return;
+            case "Watchlist":
+                OpenWatchlists_Click(sender, e);
+                return;
+            case "TradingShell":
+                OpenTradingCockpit_Click(sender, e);
+                return;
+            case "PromoteToPaper":
+                PromoteActiveRun_Click(sender, e);
+                return;
+            default:
+                NavigationService.NavigateTo(actionId);
+                return;
         }
     }
 
@@ -600,6 +787,67 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
         return $"{Math.Round(span.TotalDays)}d ago";
     }
+
+    private void ApplyHeroTone(Border border, TextBlock textBlock, ResearchDeskHeroTone tone)
+    {
+        var (backgroundKey, borderKey) = tone switch
+        {
+            ResearchDeskHeroTone.Success => ("ConsoleAccentGreenAlpha10Brush", "SuccessColorBrush"),
+            ResearchDeskHeroTone.Warning => ("ConsoleAccentOrangeAlpha10Brush", "WarningColorBrush"),
+            _ => ("ConsoleAccentBlueAlpha10Brush", "InfoColorBrush")
+        };
+
+        border.Background = GetBrush(backgroundKey);
+        border.BorderBrush = GetBrush(borderKey);
+        textBlock.Foreground = GetBrush(borderKey);
+    }
+
+    private Brush GetBrush(string resourceKey)
+        => TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
+
+    private static ResearchDeskHeroTone ParseHeroTone(string? tone) => tone?.ToLowerInvariant() switch
+    {
+        "success" => ResearchDeskHeroTone.Success,
+        "warning" => ResearchDeskHeroTone.Warning,
+        "danger" => ResearchDeskHeroTone.Warning,
+        _ => ResearchDeskHeroTone.Info
+    };
+
+    private static string ResolveHeroActionId(WorkflowNextAction nextAction, bool hasActiveRun)
+    {
+        if (string.Equals(nextAction.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase))
+        {
+            return hasActiveRun ? "TradingShell" : "StrategyRuns";
+        }
+
+        return nextAction.TargetPageTag;
+    }
+
+    private static string ResolveHeroActionLabel(string actionId, string fallbackLabel) => actionId switch
+    {
+        "Backtest" => "Start Backtest",
+        "RunMat" => "Open RunMat",
+        "StrategyRuns" => "Run Browser",
+        "RunDetail" => "Open Run Detail",
+        "RunPortfolio" => "Open Portfolio",
+        "Watchlist" => "Open Watchlists",
+        "TradingShell" => "Open Trading Review",
+        "PromoteToPaper" => "Promote to Paper",
+        _ => string.IsNullOrWhiteSpace(fallbackLabel) ? "Open" : fallbackLabel
+    };
+
+    private static string ResolveHeroTargetLabel(string actionId, string fallbackTargetPageTag) => actionId switch
+    {
+        "Backtest" => "Backtest",
+        "RunMat" => "RunMat",
+        "StrategyRuns" => "StrategyRuns",
+        "RunDetail" => "RunDetail",
+        "RunPortfolio" => "RunPortfolio",
+        "Watchlist" => "Watchlist",
+        "TradingShell" => "TradingShell",
+        "PromoteToPaper" => "Promotion approval",
+        _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "Research" : fallbackTargetPageTag
+    };
 
     private WorkspaceCommandGroup BuildCommandGroup() =>
         new()

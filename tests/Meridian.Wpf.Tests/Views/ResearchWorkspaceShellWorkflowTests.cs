@@ -87,10 +87,14 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 }).ConfigureAwait(true);
 
                 GetRequired<TextBlock>(page, "BriefingSummaryText").Text.Should().Be(expectedSummary);
-                GetRequired<TextBlock>(page, "ResearchWorkflowStatusText").Text.Should().Be("Candidate for paper review");
-                GetRequired<TextBlock>(page, "ResearchWorkflowBlockerLabelText").Text.Should().Contain("Trading review");
-                GetRequired<Button>(page, "SendToTradingReviewButton").Visibility.Should().Be(Visibility.Visible);
-                GetRequired<Button>(page, "StartBacktestButton").Visibility.Should().Be(Visibility.Collapsed);
+                GetRequired<TextBlock>(page, "ResearchHeroFocusText").Text.Should().Be("Promotion queue");
+                GetRequired<TextBlock>(page, "ResearchHeroBadgeText").Text.Should().Be("Attention");
+                GetRequired<TextBlock>(page, "ResearchWorkflowStatusText").Text.Should().Be("1 run is waiting for trading review.");
+                GetRequired<TextBlock>(page, "ResearchWorkflowBlockerLabelText").Text.Should().NotBeNullOrWhiteSpace();
+                GetRequired<TextBlock>(page, "ResearchWorkflowBlockerDetailText").Text.Should().NotBeNullOrWhiteSpace();
+                GetRequired<Button>(page, "ResearchHeroPrimaryActionButton").Content.Should().Be("Run Browser");
+                GetRequired<Button>(page, "ResearchHeroSecondaryActionButton").Content.Should().Be("Open Watchlists");
+                GetRequired<TextBlock>(page, "ResearchWorkflowTargetText").Text.Should().Be("Target page: StrategyRuns");
                 GetRequired<ItemsControl>(page, "BriefingInsightsList").Items.Count.Should().Be(1);
                 GetRequired<TextBlock>(page, "ActiveRunNameText").Text.Should().Be("No selected run");
 
@@ -107,7 +111,13 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 activeContext.Should().NotBeNull();
                 activeContext!.RunId.Should().Be(runId);
                 activeContext.StrategyName.Should().Be("Reconciliation Strategy");
+                activeContext.CanPromoteToPaper.Should().BeTrue();
 
+                GetRequired<TextBlock>(page, "ResearchHeroFocusText").Text.Should().Be("Promotion review");
+                GetRequired<TextBlock>(page, "ResearchHeroBadgeText").Text.Should().Be("Ready");
+                GetRequired<Button>(page, "ResearchHeroPrimaryActionButton").Content.Should().Be("Open Trading Review");
+                GetRequired<Button>(page, "ResearchHeroSecondaryActionButton").Content.Should().Be("Promote to Paper");
+                GetRequired<TextBlock>(page, "ResearchWorkflowTargetText").Text.Should().Be("Target page: TradingShell");
                 GetRequired<TextBlock>(page, "RunStatusText").Text.Should().Be("Backtest run selected");
                 GetRequired<TextBlock>(page, "PortfolioPreviewText").Text.Should().Contain("2 position(s)");
                 GetRequired<TextBlock>(page, "RiskPreviewText").Text.Should().Contain("Audit and reconciliation drill-ins stay one action away");

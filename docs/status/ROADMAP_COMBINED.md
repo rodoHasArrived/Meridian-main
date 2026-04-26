@@ -23,7 +23,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | Wave | Owner | Status | Target Date | Evidence Link |
 | --- | --- | --- | --- | --- |
 | W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
 | W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
 | W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
 | W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, and the Trading desk briefing hero. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, and the Trading desk briefing hero. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence _(repo-closed, keep synchronized)_
 2. **Wave 2:** paper-trading cockpit hardening
@@ -60,7 +60,7 @@ This document keeps concise framing only; detailed readiness evidence remains in
 
 ### 1. Wave 2: Harden the paper-trading cockpit already in code
 
-The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, DK1 trust-gate packet/sign-off posture, promotion checklist, brokerage-sync, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions. The WPF Trading shell also has a desk briefing hero that projects current focus, readiness tone, and next handoff from the same active-run/workflow/readiness inputs; the next step is proving those contracts through operator scenarios rather than treating the endpoint or hero as completion.
+The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, DK1 trust-gate packet/sign-off posture, promotion checklist, brokerage-sync, acceptance-gate status, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions. The WPF Trading shell also has a desk briefing hero that projects current focus, readiness tone, and next handoff from the same active-run/workflow/readiness inputs; the next step is proving those contracts through operator scenarios rather than treating the endpoint or hero as completion.
 
 ### 2. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 
@@ -113,7 +113,7 @@ The product promise is continuity: one operator can move from data trust to rese
 Meridian can reasonably claim **core operator-readiness** when Wave gates and DK wrappers are both satisfied:
 
 1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, checkpoint reliability plus Parquet L2 flush behavior are closed in repo tests, and `run-wave1-provider-validation.ps1` reproduces the offline gate.
-2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
+2. **Wave 2 gates:** the workstation exposes a dependable paper-trading cockpit through the shared readiness contract, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
 
