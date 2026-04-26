@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **70**
+Total items: **75**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -28,8 +28,13 @@ Total items: **70**
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-arm64/sosdocsunix.txt` | 974 | `NOTE` | ❌ | NOTE: |
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-x64/sosdocsunix.txt` | 2 | `NOTE` | ❌ | NOTE: THIS FILE CONTAINS SOS DOCUMENTATION. THE FORMAT OF THE FILE IS: |
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-x64/sosdocsunix.txt` | 974 | `NOTE` | ❌ | NOTE: |
-| `AGENTS.md` | 85 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
-| `AGENTS.md` | 89 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
+| `AGENTS.md` | 111 | `TODO` | ❌ | TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, |
+| `AGENTS.md` | 115 | `TODO` | ❌ | TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest` |
+| `AGENTS.md` | 119 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
+| `AGENTS.md` | 217 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
+| `AGENTS.md` | 221 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
+| `AGENTS.md` | 225 | `TODO` | ❌ | TODO: `scripts/dev/desktop-dev.ps1` still prints `make build-wpf`, |
+| `AGENTS.md` | 308 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 379 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 388 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
@@ -61,7 +66,7 @@ Total items: **70**
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 514 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
-| `src/Meridian.Ui/dashboard/src/types.ts` | 364 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/types.ts` | 409 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
