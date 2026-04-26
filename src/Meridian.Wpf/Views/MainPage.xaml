@@ -1416,10 +1416,13 @@
                     </Grid>
                 </Border>
 
-                <views:WorkspaceShellContextStripControl Grid.Row="2"
+                <views:WorkspaceShellContextStripControl x:Name="WorkspaceShellContextStrip"
+                                                        Grid.Row="2"
                                                         Margin="24,0,24,16"
-                                                        Visibility="Collapsed"
-                                                        ShellContext="{Binding ShellContext}" />
+                                                        Visibility="{Binding ShellContextVisibility}"
+                                                        ShellContext="{Binding ShellContext}"
+                                                        AutomationProperties.AutomationId="WorkspaceShellContextStrip"
+                                                        AutomationProperties.Name="Workspace Shell Context Strip" />
 
                 <DockPanel Grid.Row="3">
                     <Border DockPanel.Dock="Top" Height="32"

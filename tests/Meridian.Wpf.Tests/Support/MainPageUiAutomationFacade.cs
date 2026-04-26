@@ -121,6 +121,18 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public Button SecondaryWorkflowToggleButton => FindByAutomationId<Button>("SecondaryWorkflowToggleButton");
 
+    public WorkspaceShellContextStripControl WorkspaceShellContextStrip => GetRequired<WorkspaceShellContextStripControl>("WorkspaceShellContextStrip");
+
+    public TextBlock WorkspaceContextTitleText => FindByAutomationId<TextBlock>("WorkspaceContextTitleText");
+
+    public TextBlock WorkspaceContextSubtitleText => FindByAutomationId<TextBlock>("WorkspaceContextSubtitleText");
+
+    public Border WorkspaceContextAttentionBanner => FindByAutomationId<Border>("WorkspaceContextAttentionBanner");
+
+    public TextBlock WorkspaceContextAttentionTitleText => FindByAutomationId<TextBlock>("WorkspaceContextAttentionTitle");
+
+    public TextBlock WorkspaceContextAttentionDetailText => FindByAutomationId<TextBlock>("WorkspaceContextAttentionDetail");
+
     public void ShowCommandPalette()
     {
         UpdateLayout();

@@ -265,8 +265,20 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public WorkspaceShellContext ShellContext
     {
         get => _shellContext;
-        private set => SetProperty(ref _shellContext, value);
+        private set
+        {
+            if (!SetProperty(ref _shellContext, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(ShellContextVisibility));
+        }
     }
+
+    public Visibility ShellContextVisibility => HasShellContextContent(ShellContext)
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public string ShellStatusText => _fixtureModeDetector.IsOfflineMode
         ? "Offline"
@@ -1006,9 +1018,28 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         var refreshRevision = System.Threading.Interlocked.Increment(ref _shellContextRevision);
         var workflowRevision = System.Threading.Interlocked.Increment(ref _workflowSummaryRevision);
-        var shellContext = _workspaceShellContextService is null
-            ? BuildFallbackShellContext()
-            : await _workspaceShellContextService.CreateAsync(BuildShellContextInput(), ct).ConfigureAwait(false);
+        var fallbackShellContext = BuildFallbackShellContext();
+        DispatchToUi(() =>
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ShellContext = fallbackShellContext;
+            }
+        });
+
+        var shellContext = fallbackShellContext;
+        try
+        {
+            if (_workspaceShellContextService is not null)
+            {
+                shellContext = await _workspaceShellContextService.CreateAsync(BuildShellContextInput(), ct).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            shellContext = fallbackShellContext;
+        }
+
         var workflowSummaries = await BuildWorkflowSummariesAsync(ct).ConfigureAwait(false);
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
@@ -1237,6 +1268,18 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         return $"Updated {updatedAt.ToLocalTime():MMM dd HH:mm}";
+    }
+
+    private static bool HasShellContextContent(WorkspaceShellContext? shellContext)
+    {
+        if (shellContext is null)
+        {
+            return false;
+        }
+
+        return !string.IsNullOrWhiteSpace(shellContext.WorkspaceTitle)
+               || !string.IsNullOrWhiteSpace(shellContext.WorkspaceSubtitle)
+               || shellContext.Badges.Count > 0;
     }
 
     private void UpdateCommandPalettePresentation(string query)

@@ -18,7 +18,7 @@ The current planning set is also more mature than the prior April 8 scan. As of 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
 - the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
 - the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script, plus checked-in packet generation that produced a latest `ready-for-operator-review` parity packet with validated evidence-document checks and no packet blockers
-- the feature inventory and implementation anchors show that shell-first WPF consolidation, the Trading desk briefing hero, shared workstation endpoints, the Wave 2 trading-readiness contract, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
+- the feature inventory and implementation anchors show that shell-first WPF consolidation, the Trading desk briefing hero, the Research desk briefing hero, shared workstation endpoints, the Wave 2 trading-readiness contract, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
 
@@ -29,7 +29,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
 - **Category:** workflow completion
-- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, promotion seams, a shared trading-readiness contract, and a WPF Trading desk briefing hero that consumes the same readiness and workflow signals. Current cockpit work now includes DK1 packet/sign-off projection, canonical approval-checklist requirements for `Backtest -> Paper` and `Paper -> Live` promotion review, plus audit-history refresh behavior. The paper workflow still needs accepted operator scenarios around persistence, replay recovery, audit visibility, and work-item handling.
+- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, promotion seams, a shared trading-readiness contract, and a WPF Trading desk briefing hero that consumes the same readiness and workflow signals. Current cockpit work now includes DK1 packet/sign-off projection, canonical approval-checklist requirements for `Backtest -> Paper` and `Paper -> Live` promotion review, audit-history refresh behavior, and local replay-audit metadata for consistency, compared evidence counts, timestamps, and mismatch reason. The paper workflow still needs accepted operator scenarios around persistence, replay recovery, audit visibility, and work-item handling.
 - **User or operator value:** This converts Meridian from "paper trading is present" to "paper trading can be operated confidently."
 - **Dependency it unlocks:** A credible `Backtest -> Paper` story and a safer foundation for any later `Paper -> Live` gate design.
 - **Placement:** Critical path, Wave 2.
@@ -37,7 +37,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 2. Make the shared run / portfolio / ledger model feel like one cross-workspace product
 
 - **Category:** workflow completion
-- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo, but the product experience built on top of them is still uneven across `Research`, `Trading`, `Data Operations`, and `Governance`.
+- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo, and the Research desk briefing hero now routes selected runs into run-detail, portfolio, and paper-promotion review handoffs. The product experience built on top of these seams is still uneven across `Research`, `Trading`, `Data Operations`, and `Governance`.
 - **User or operator value:** A single run-centered model makes attribution, fills, positions, ledger, cash-flow, and reconciliation easier to follow and trust.
 - **Dependency it unlocks:** Cleaner workstation continuity, less duplicated orchestration, and a more stable base for both WPF shell consolidation and governance productization.
 - **Placement:** Critical path, Wave 3.
@@ -61,7 +61,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 5. Validate the delivered WPF shell baseline as workflow support, not a separate program
 
 - **Category:** operator UX
-- **Gap:** The repo now contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, shell-context strips, and `MainPageViewModel`-anchored orchestration with smoke coverage plus focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, shell context-strip behavior, and Trading desk briefing hero states. That baseline should now be judged by whether it improves active Wave 2-4 workflows rather than by additional shell surface area.
+- **Gap:** The repo now contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, shell-context strips, and `MainPageViewModel`-anchored orchestration with smoke coverage plus focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, shell context-strip behavior, Trading desk briefing hero states, and Research desk briefing hero promotion-review handoffs. That baseline should now be judged by whether it improves active Wave 2-4 workflows rather than by additional shell surface area.
 - **User or operator value:** Operators benefit when the desktop shell clarifies high-traffic tasks and preserves trust-state cues instead of becoming a second workstation model.
 - **Dependency it unlocks:** Confident desktop consolidation that reinforces the same run-centered and governance-centered seams already used elsewhere.
 - **Placement:** Supporting track inside Waves 2-4, not an independent roadmap wave.
@@ -110,5 +110,5 @@ That is why Wave 2 cockpit hardening now outranks additional surface expansion, 
 1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, generated parity packet, evidence artifacts, and repo tests treated as the source of truth.
 2. Define the paper-trading cockpit in operator terms: session persistence, replay confidence, audit trail visibility, and promotion review should be the acceptance center, not additional page count.
 3. Use shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work.
-4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths; the Trading desk briefing hero should continue consuming shared readiness and workflow state rather than becoming a separate shell-local model.
+4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths; the Trading desk briefing hero should continue consuming shared readiness and workflow state, and the Research desk briefing hero should continue consuming shared run/portfolio/promotion state rather than becoming a separate shell-local model.
 5. Keep Wave 5, Wave 6, and optional advanced tracks explicitly deferred until the Wave 2-4 operator-readiness path is materially closed on top of the preserved Wave 1 gate.

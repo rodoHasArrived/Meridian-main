@@ -1580,13 +1580,6 @@ public static class WorkstationEndpoints
             ?? sessionId
             ?? replayAudit.CorrelationId
             ?? string.Empty;
-        var mismatchReasons = isConsistent
-            ? Array.Empty<string>()
-            : new[]
-            {
-                replayAudit.Message ?? "Replay verification recorded a mismatch."
-            };
-
         return new TradingReplayReadinessDto(
             SessionId: resolvedSessionId,
             ReplaySource: GetMetadata(replayAudit, "replaySource") ?? "ExecutionAudit",
@@ -1598,7 +1591,24 @@ public static class WorkstationEndpoints
             LastPersistedFillAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedFillAt"),
             LastPersistedOrderUpdateAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedOrderUpdateAt"),
             VerificationAuditId: replayAudit.AuditId,
-            MismatchReasons: mismatchReasons);
+            MismatchReasons: BuildReplayMismatchReasons(isConsistent, replayAudit));
+    }
+
+    private static IReadOnlyList<string> BuildReplayMismatchReasons(
+        bool isConsistent,
+        ExecutionAuditEntry replayAudit)
+    {
+        if (isConsistent)
+        {
+            return [];
+        }
+
+        return
+        [
+            GetMetadata(replayAudit, "primaryMismatchReason")
+                ?? replayAudit.Message
+                ?? "Replay verification recorded a mismatch."
+        ];
     }
 
     private static TradingControlReadinessDto BuildControlReadiness(ExecutionControlSnapshot? snapshot) =>

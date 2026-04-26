@@ -381,6 +381,8 @@ public sealed class PaperSessionPersistenceService
             comparedFillCount,
             comparedOrderCount,
             comparedLedgerEntryCount,
+            lastPersistedFillAt,
+            lastPersistedOrderUpdateAt,
             replayPortfolio,
             ct).ConfigureAwait(false);
 
@@ -407,6 +409,8 @@ public sealed class PaperSessionPersistenceService
         int comparedFillCount,
         int comparedOrderCount,
         int comparedLedgerEntryCount,
+        DateTimeOffset? lastPersistedFillAt,
+        DateTimeOffset? lastPersistedOrderUpdateAt,
         ExecutionPortfolioSnapshotDto replayPortfolio,
         CancellationToken ct)
     {
@@ -420,10 +424,14 @@ public sealed class PaperSessionPersistenceService
             ["sessionId"] = detail.Summary.SessionId,
             ["strategyId"] = detail.Summary.StrategyId,
             ["replaySource"] = _store is null ? "InMemoryFallback" : "DurableFillLog",
+            ["isConsistent"] = (mismatchReasons.Count == 0).ToString(),
             ["comparedFillCount"] = comparedFillCount.ToString(),
             ["comparedOrderCount"] = comparedOrderCount.ToString(),
             ["comparedLedgerEntryCount"] = comparedLedgerEntryCount.ToString(),
-            ["mismatchCount"] = mismatchReasons.Count.ToString()
+            ["lastPersistedFillAt"] = lastPersistedFillAt?.ToString("O") ?? string.Empty,
+            ["lastPersistedOrderUpdateAt"] = lastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
+            ["mismatchCount"] = mismatchReasons.Count.ToString(),
+            ["primaryMismatchReason"] = mismatchReasons.FirstOrDefault() ?? string.Empty
         };
 
         return await _auditTrail.RecordAsync(
@@ -432,7 +440,9 @@ public sealed class PaperSessionPersistenceService
             outcome: mismatchReasons.Count == 0 ? "Completed" : "AttentionRequired",
             actor: "PaperSessionPersistenceService",
             correlationId: detail.Summary.SessionId,
-            message: $"Replay verification completed for {detail.Summary.SessionId} (cash {replayPortfolio.Cash}).",
+            message: mismatchReasons.Count == 0
+                ? $"Replay verification completed for {detail.Summary.SessionId} (cash {replayPortfolio.Cash})."
+                : $"Replay verification mismatch for {detail.Summary.SessionId}: {mismatchReasons[0]}",
             metadata: metadata,
             ct: ct).ConfigureAwait(false);
     }

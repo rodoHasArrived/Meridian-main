@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, and the Trading desk briefing hero. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, the Trading desk briefing hero, and the Research desk briefing hero. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence _(repo-closed, keep synchronized)_
 2. **Wave 2:** paper-trading cockpit hardening
@@ -60,11 +60,11 @@ This document keeps concise framing only; detailed readiness evidence remains in
 
 ### 1. Wave 2: Harden the paper-trading cockpit already in code
 
-The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, DK1 trust-gate packet/sign-off posture, promotion checklist, brokerage-sync, acceptance-gate status, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions. The WPF Trading shell also has a desk briefing hero that projects current focus, readiness tone, and next handoff from the same active-run/workflow/readiness inputs; the next step is proving those contracts through operator scenarios rather than treating the endpoint or hero as completion.
+The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, DK1 trust-gate packet/sign-off posture, promotion checklist, brokerage-sync, acceptance-gate status, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions. The local replay-audit hardening slice also records consistency, compared fill/order/ledger counts, last-persisted timestamps, and primary mismatch reason for readiness reconstruction. The WPF Trading shell has a desk briefing hero that projects current focus, readiness tone, and next handoff from the same active-run/workflow/readiness inputs; the next step is proving those contracts through operator scenarios rather than treating the endpoint or hero as completion.
 
 ### 2. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 
-Research, Trading, and Governance should keep converging on the same run-centered seam.
+Research, Trading, and Governance should keep converging on the same run-centered seam. The Research desk briefing hero now gives that convergence a concrete WPF support surface by routing selected runs into run-detail, portfolio, and paper-promotion review handoffs through shared workstation data.
 
 ### 3. Wave 4: Productize governance and fund-operations on top of the delivered Security Master baseline
 
@@ -86,7 +86,7 @@ Live-readiness should follow proven provider evidence and a dependable paper wor
 
 QuantScript expansion, queue-aware simulation, multi-instance coordination, and Phase 16 performance work deepen Meridian's ceiling after the core workstation product is already trustworthy and coherent.
 
-Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline, including the Trading desk briefing hero, is now present enough to judge it by workflow value, not by additional shell surface area.
+Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline, including the Trading and Research desk briefing heroes, is now present enough to judge it by workflow value, not by additional shell surface area.
 
 Delivery Kernel governance to avoid piecemeal adoption:
 

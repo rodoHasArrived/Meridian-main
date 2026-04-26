@@ -493,6 +493,7 @@ public static class ExecutionEndpoints
                 return Results.NotFound();
             }
 
+            var primaryMismatchReason = verification.MismatchReasons.FirstOrDefault();
             var auditEntry = await RecordOperatorAuditAsync(
                 context,
                 actionId,
@@ -500,7 +501,7 @@ public static class ExecutionEndpoints
                 outcome: verification.IsConsistent ? "Completed" : "AttentionRequired",
                 message: verification.IsConsistent
                     ? $"Replay matched current state for paper session {sessionId}."
-                    : $"Replay mismatch detected for paper session {sessionId}.",
+                    : $"Replay mismatch detected for paper session {sessionId}: {primaryMismatchReason ?? "see mismatch count"}.",
                 metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["sessionId"] = sessionId,
@@ -512,7 +513,8 @@ public static class ExecutionEndpoints
                     ["comparedOrderCount"] = verification.ComparedOrderCount.ToString(),
                     ["comparedLedgerEntryCount"] = verification.ComparedLedgerEntryCount.ToString(),
                     ["lastPersistedFillAt"] = verification.LastPersistedFillAt?.ToString("O") ?? string.Empty,
-                    ["lastPersistedOrderUpdateAt"] = verification.LastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty
+                    ["lastPersistedOrderUpdateAt"] = verification.LastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
+                    ["primaryMismatchReason"] = primaryMismatchReason ?? string.Empty
                 }).ConfigureAwait(false);
 
             return Results.Json(

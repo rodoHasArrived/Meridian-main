@@ -33,7 +33,7 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the WPF workstation shell is the primary operator shell and is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; the retained local API/web surfaces remain supporting consumers of the same workstation contracts
-- the current working tree contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, and the Trading desk briefing hero, so this window should validate workflow value rather than start a second desktop UX track
+- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, the Trading desk briefing hero, and the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, so this window should validate workflow value rather than start a second desktop UX track
 - the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and operator work items, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
@@ -84,12 +84,14 @@ This plan starts from the current repo state:
 - `Backtest -> Paper` remains explicit, auditable, and easier to exercise end to end
 - session persistence and replay behavior have clearer operator acceptance criteria
 - the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items
+- the local replay-audit hardening slice now records replay consistency, compared fill/order/ledger evidence counts, last-persisted timestamps, and primary mismatch reason so readiness reconstruction has durable audit metadata to read from
 
 ### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
 
 - `Research`, `Trading`, and `Governance` rely more consistently on the shared run, portfolio, and ledger model
 - run comparison, fills, attribution, ledger, cash-flow, and reconciliation flows feel more like one system than adjacent slices
 - WPF refinements in scope reinforce the same shared orchestration seams instead of introducing new page-local logic
+- the Research desk briefing hero remains a shared-model consumer for selected runs, portfolio drill-ins, and `Backtest -> Paper` promotion review instead of becoming a separate research-only orchestration path
 - current shell-navigation work is validated as a workflow-first improvement rather than just a visual reshuffle
 
 ### Outcome 4: Wave 4 governance work shows up as product, not just planning
@@ -159,6 +161,7 @@ Priorities:
 - continue MVVM extraction where pages still depend heavily on code-behind orchestration in active areas
 - keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used in the web shell
 - treat the Trading desk briefing hero as Wave 2 support evidence only when it continues to reflect shared readiness, replay, controls, trust-gate, and brokerage-sync posture without duplicating service logic
+- treat the Research desk briefing hero as Wave 3 support evidence only when it keeps selected-run, run-detail, portfolio, and paper-promotion handoffs tied to shared workstation read models
 - validate the current `ShellNavigationCatalog`, workspace-shell, deep-page host, and shell-context-strip baseline against active run-centered workflows before widening it further
 - pull validation and contradiction checks forward whenever workstation or governance surfaces expand
 

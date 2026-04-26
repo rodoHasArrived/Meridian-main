@@ -293,9 +293,24 @@ public sealed class TradingOperatorReadinessService
             LastPersistedFillAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedFillAt"),
             LastPersistedOrderUpdateAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedOrderUpdateAt"),
             VerificationAuditId: replayAudit.AuditId,
-            MismatchReasons: isConsistent
-                ? Array.Empty<string>()
-                : [replayAudit.Message ?? "Replay verification recorded a mismatch."]);
+            MismatchReasons: BuildReplayMismatchReasons(isConsistent, replayAudit));
+    }
+
+    private static IReadOnlyList<string> BuildReplayMismatchReasons(
+        bool isConsistent,
+        ExecutionAuditEntry replayAudit)
+    {
+        if (isConsistent)
+        {
+            return [];
+        }
+
+        return
+        [
+            GetMetadata(replayAudit, "primaryMismatchReason")
+                ?? replayAudit.Message
+                ?? "Replay verification recorded a mismatch."
+        ];
     }
 
     private TradingControlReadinessDto BuildControls(ExecutionOperatorControlService? controlService)

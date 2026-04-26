@@ -59,6 +59,7 @@ The execution, paper-session, promotion, risk, and brokerage seams are already i
 
 - harden positions, orders, fills, sessions, replay, risk, and promotion flows already exposed through `/api/execution/*` and `/api/promotion/*`
 - keep `/api/workstation/trading/readiness` as the shared acceptance contract for paper-session state, replay consistency, execution controls, promotion checklist state, brokerage-sync posture, and operator work items
+- use the local replay-audit metadata slice for durable readiness reconstruction of replay consistency, compared evidence counts, timestamps, and primary mismatch reason
 - keep the Trading desk briefing hero aligned to the shared active-run, workflow-summary, and operator-readiness lane instead of treating it as a separate readiness source
 - keep `Backtest -> Paper` explicit, auditable, and reconstructable after restart
 - preserve operator rationale and blocking reasons for approvals and rejections
@@ -70,13 +71,13 @@ The execution, paper-session, promotion, risk, and brokerage seams are already i
 
 ### 3. Wave 3 Shared Run / Portfolio / Ledger Continuity
 
-The shared run, portfolio, ledger, cash-flow, and reconciliation services exist. The product work is to make them the default cross-workspace system of record.
+The shared run, portfolio, ledger, cash-flow, and reconciliation services exist. The product work is to make them the default cross-workspace system of record. The WPF Research shell now has a desk briefing hero that routes selected runs into run-detail, portfolio, and paper-promotion review handoffs from shared workstation data, so this is support evidence for Wave 3 rather than a separate research roadmap.
 
 **Delivery scope:**
 
 - deepen run history across backtest and paper workflows
 - connect fills, attribution, positions, ledger, cash-flow, and reconciliation through one run-centered model
-- keep WPF shell context, related-workflow routing, and API summaries aligned to the same shared seams
+- keep WPF shell context, related-workflow routing, Research run/promotion handoffs, and API summaries aligned to the same shared seams
 - keep fallback/fixture payloads clearly separate from readiness claims
 
 **Exit gate:** Research, Trading, and Governance drill-ins use the same run-continuity seam and show explicit lineage, warning, and handoff context.
@@ -100,7 +101,7 @@ Security Master is now a delivered baseline, not a future standalone wave. Wave 
 
 ### 5. WPF Workflow-First Validation
 
-The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, the Trading desk briefing hero, and shell/navigation smoke coverage.
+The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, the Trading desk briefing hero, the Research desk briefing hero, and shell/navigation smoke coverage.
 
 This is a supporting track inside Waves 2-4, not a separate roadmap wave.
 

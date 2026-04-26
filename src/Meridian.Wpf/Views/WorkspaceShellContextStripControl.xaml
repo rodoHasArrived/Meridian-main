@@ -25,11 +25,13 @@
                     <TextBlock Text="{Binding ElementName=Root, Path=ShellContext.WorkspaceTitle}"
                                Style="{StaticResource CardHeaderStyle}"
                                FontSize="18"
+                               AutomationProperties.AutomationId="WorkspaceContextTitleText"
                                AutomationProperties.Name="Workspace Context Title" />
                     <TextBlock Text="{Binding ElementName=Root, Path=ShellContext.WorkspaceSubtitle}"
                                Margin="0,6,0,0"
                                Style="{StaticResource CardDescriptionStyle}"
                                TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="WorkspaceContextSubtitleText"
                                AutomationProperties.Name="Workspace Context Subtitle" />
                 </StackPanel>
 

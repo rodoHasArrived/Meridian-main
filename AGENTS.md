@@ -180,6 +180,7 @@ pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
@@ -198,6 +199,8 @@ Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 `run-desktop.ps1` when driving an already-open shell against live local services.
 `robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
 fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
+Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
+for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
 
 ```bash
 make desktop-build

@@ -320,6 +320,37 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_ShellContextStrip_ShouldSurfaceCurrentPageAndAttentionState()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            await WaitForConditionAsync(() =>
+                facade.ViewModel.ShellContextVisibility == Visibility.Visible &&
+                !string.IsNullOrWhiteSpace(facade.WorkspaceContextTitleText.Text)).ConfigureAwait(true);
+
+            facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Visible);
+            facade.WorkspaceContextTitleText.Text.Should().Be("Research Home");
+            facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
+            facade.WorkspaceContextAttentionBanner.Visibility.Should().Be(Visibility.Visible);
+            facade.WorkspaceContextAttentionTitleText.Text.Should().NotBeNullOrWhiteSpace();
+            var attentionDetail = facade.WorkspaceContextAttentionDetailText.Text;
+            attentionDetail.Should().NotBeNullOrWhiteSpace();
+            (attentionDetail.Contains("Environment", StringComparison.Ordinal)
+                || attentionDetail.Contains("Operating Context", StringComparison.Ordinal)).Should().BeTrue();
+
+            facade.OpenCommandPalettePage("SecurityMaster");
+
+            await WaitForConditionAsync(() =>
+                string.Equals(facade.WorkspaceContextTitleText.Text, "Security Master", StringComparison.Ordinal)).ConfigureAwait(true);
+
+            facade.WorkspaceContextTitleText.Text.Should().Be("Security Master");
+            facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
+        });
+    }
+
+    [Fact]
     public void MainPage_GovernanceDeepLink_ShouldAnnounceWorkbenchTarget()
     {
         WpfTestThread.Run(async () =>

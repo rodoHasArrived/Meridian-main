@@ -45,6 +45,10 @@ Top Header Bar (74 px)
 ├── Left: Back button, breadcrumb page title + description
 └── Right: Connection status badge, Refresh, Notifications
 
+Shell Summary Rail
+├── Workflow summary strip
+└── Shared context strip with page title, subtitle, badges, and attention rail
+
 Content Frame
 ├── Fixture Mode Banner (orange, conditional on non-live mode)
 └── WPF Frame → page navigation
@@ -57,6 +61,8 @@ Content Frame
 **Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target) plus a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data Operations before the landing page suggests Research, Trading, or Governance shells.
 
 **Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated second-row attention rail before the rest of the badge wall. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
+
+**Main shell context strip** — `MainPage` now renders the shared context strip between the workflow summary rail and the split-pane host. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
 
 **Research desk briefing hero** — `ResearchWorkspaceShellPage` now keeps the current research cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
 

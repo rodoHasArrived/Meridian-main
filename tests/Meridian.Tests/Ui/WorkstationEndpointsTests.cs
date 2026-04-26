@@ -571,6 +571,8 @@ public sealed class WorkstationEndpointsTests
         readiness.Replay!.IsConsistent.Should().BeTrue();
         readiness.Replay.ComparedFillCount.Should().Be(1);
         readiness.Replay.ComparedOrderCount.Should().Be(1);
+        readiness.Replay.LastPersistedFillAt.Should().NotBeNull();
+        readiness.Replay.LastPersistedOrderUpdateAt.Should().NotBeNull();
         readiness.Replay.VerificationAuditId.Should().Be(verification!.VerificationAuditId);
         readiness.Controls.CircuitBreakerOpen.Should().BeFalse();
         readiness.Controls.ManualOverrideCount.Should().Be(0);

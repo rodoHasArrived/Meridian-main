@@ -29,7 +29,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, a primary WPF workstation shell, retained local API/web support surfaces, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
-The current working tree reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, shell smoke tests, the Trading desk briefing hero, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, workspace shell context-strip behavior, and Trading hero state selection. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
+The current repository reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, shell smoke tests, the Trading desk briefing hero, the Research desk briefing hero, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, workspace shell context-strip behavior, Trading hero state selection, and Research run/promotion handoffs. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
@@ -39,12 +39,12 @@ The current working tree reinforces that direction rather than changing it. The 
 | Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
-| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, promotion seam, canonical promotion approval checklist, DK1 trust-gate projection, acceptance gates, and the shared trading-readiness contract are in code |
+| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, replay-audit metadata, promotion seam, canonical promotion approval checklist, DK1 trust-gate projection, acceptance gates, and the shared trading-readiness contract are in code |
 | Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; broader runtime proof remains open |
 | Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |
 | Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
-| WPF workstation shell + retained local API/web support surfaces | Partial | The primary WPF shell exposes meaningful workspace flows and projects Trading desk briefing handoffs from shared readiness inputs; retained local API/web surfaces support the same contracts while workflow hardening and deeper workflow-first consolidation remain |
+| WPF workstation shell + retained local API/web support surfaces | Partial | The primary WPF shell exposes meaningful workspace flows and projects Trading and Research desk briefing handoffs from shared readiness/run inputs; retained local API/web surfaces support the same contracts while workflow hardening and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
 | Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by committed artifacts, and deferred providers stay outside the active closure target |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
@@ -79,6 +79,7 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 
 - the shared workstation cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
 - `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, DK1 trust-gate packet/sign-off posture, promotion approval checklist state, brokerage sync posture, acceptance-gate/overall-readiness posture, and operator work items
+- local replay-audit hardening now records replay consistency, compared fill/order/ledger counts, last-persisted timestamps, and primary mismatch reason into execution-audit metadata so readiness can reconstruct replay evidence after restart or service-layer verification
 - the WPF Trading desk briefing hero consumes active-run, workflow-summary, replay/readiness, controls, DK1 trust-gate, and brokerage-sync signals to route operators toward context selection, audit trail, portfolio, blotter, risk rail, or alerts, but this is shell evidence rather than a completed Wave 2 gate
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
@@ -99,7 +100,7 @@ Operator-readiness language for Wave 2 should stay “in progress” until the f
 
 - the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
 - portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
-- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration
+- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration; the Research desk briefing hero is useful Wave 3 support evidence only while it stays tied to shared run, portfolio, and promotion-review data
 
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 

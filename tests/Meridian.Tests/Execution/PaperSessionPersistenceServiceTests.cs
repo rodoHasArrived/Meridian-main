@@ -762,12 +762,21 @@ public sealed class PaperSessionReplayTests : IDisposable
         auditEntries.Should().Contain(entry =>
             entry.AuditId == verification.VerificationAuditId &&
             entry.Action == "VerifyReplay");
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Metadata.Should().NotBeNull();
+        auditEntry.Metadata!["isConsistent"].Should().Be(bool.TrueString);
+        auditEntry.Metadata["lastPersistedFillAt"].Should().NotBeNullOrWhiteSpace();
+        auditEntry.Metadata["lastPersistedOrderUpdateAt"].Should().NotBeNullOrWhiteSpace();
+        auditEntry.Metadata["primaryMismatchReason"].Should().BeEmpty();
     }
 
     [Fact]
     public async Task VerifyReplayAsync_WhenPersistedOrderHistoryDiffers_ReturnsMismatchWithCounts()
     {
-        var service = Build(new ReplayMismatchStore());
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "mismatch-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(new ReplayMismatchStore(), auditTrail);
         var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-mismatch", null, 100_000m, ["AAPL"]));
 
         var verification = await service.VerifyReplayAsync(summary.SessionId);
@@ -778,6 +787,14 @@ public sealed class PaperSessionReplayTests : IDisposable
         verification.LastPersistedOrderUpdateAt.Should().NotBeNull();
         verification.MismatchReasons.Should().Contain(reason =>
             reason.Contains("Persisted order history count", StringComparison.OrdinalIgnoreCase));
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Outcome.Should().Be("AttentionRequired");
+        auditEntry.Message.Should().Contain("Persisted order history count");
+        auditEntry.Metadata.Should().NotBeNull();
+        auditEntry.Metadata!["isConsistent"].Should().Be(bool.FalseString);
+        auditEntry.Metadata["primaryMismatchReason"].Should().Contain("Persisted order history count");
     }
 
     [Fact]
