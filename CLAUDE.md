@@ -572,7 +572,17 @@ Meridian-main
 │       │   ├── 2026-04-20
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-25
+│       │   ├── 2026-04-25
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   ├── codex-dk1-packet-validation-final
+│       │   │   ├── dk1-pilot-parity-packet.json
+│       │   │   ├── dk1-pilot-parity-packet.md
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── codex-suggetion-dk1-sample-contract
+│       │       ├── dk1-pilot-parity-packet.json
+│       │       ├── dk1-pilot-parity-packet.md
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -4942,6 +4952,7 @@ Meridian-main
 │   │   ├── desktop-workflows.json
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   ├── generate-desktop-user-manual.ps1
+│   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
@@ -6296,7 +6307,8 @@ Meridian-main
 │   │   │   ├── StrategyRunRepositoryQuery.cs
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
-│   │   │   └── BacktestToLivePromoter.cs
+│   │   │   ├── BacktestToLivePromoter.cs
+│   │   │   └── PromotionApprovalChecklist.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   └── PromotionRecordJsonContext.cs
@@ -6534,6 +6546,7 @@ Meridian-main
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
@@ -7671,11 +7684,14 @@ Meridian-main
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
+│   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
@@ -7684,6 +7700,7 @@ Meridian-main
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   ├── Views
 │   │   │   ├── DashboardPageSmokeTests.cs
@@ -7692,6 +7709,7 @@ Meridian-main
 │   │   │   ├── DesktopWorkflowScriptTests.cs
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs
+│   │   │   ├── GovernanceWorkspaceShellPageTests.cs
 │   │   │   ├── GovernanceWorkspaceShellSmokeTests.cs
 │   │   │   ├── MainPageSmokeTests.cs
 │   │   │   ├── MainPageUiWorkflowTests.cs
@@ -7699,6 +7717,7 @@ Meridian-main
 │   │   │   ├── PageLifecycleCleanupTests.cs
 │   │   │   ├── PlotRenderBehaviorTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
+│   │   │   ├── ResearchWorkspaceShellPageTests.cs
 │   │   │   ├── ResearchWorkspaceShellSmokeTests.cs
 │   │   │   ├── ResearchWorkspaceShellWorkflowTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
@@ -7707,13 +7726,17 @@ Meridian-main
 │   │   │   ├── SystemHealthPageSmokeTests.cs
 │   │   │   ├── TradingWorkspaceShellPageTests.cs
 │   │   │   ├── WorkspaceDeepPageChromeTests.cs
+│   │   │   ├── WorkspaceQueueToneStylesTests.cs
+│   │   │   ├── WorkspaceShellContextStripControlTests.cs
 │   │   │   ├── WorkspaceShellPageSmokeTests.cs
 │   │   │   └── WorkstationPageSmokeTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   └── TestAssemblyConfiguration.cs
 │   ├── scripts
-│   │   └── setup-verification.sh
+│   │   ├── setup-verification.sh
+│   │   ├── test_check_contract_compatibility_gate.py
+│   │   └── test_generate_dk1_pilot_parity_packet.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md

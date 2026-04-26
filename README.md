@@ -702,7 +702,17 @@ Use these documents together when planning or implementing new work:
 │       │   ├── 2026-04-20
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-25
+│       │   ├── 2026-04-25
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   ├── codex-dk1-packet-validation-final
+│       │   │   ├── dk1-pilot-parity-packet.json
+│       │   │   ├── dk1-pilot-parity-packet.md
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── codex-suggetion-dk1-sample-contract
+│       │       ├── dk1-pilot-parity-packet.json
+│       │       ├── dk1-pilot-parity-packet.md
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -5078,6 +5088,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── fixtures
 │   │   │   └── robinhood-options-smoke.seed.json
 │   │   ├── generate-desktop-user-manual.ps1
+│   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
@@ -6430,7 +6441,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunRepositoryQuery.cs
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
-│   │   │   └── BacktestToLivePromoter.cs
+│   │   │   ├── BacktestToLivePromoter.cs
+│   │   │   └── PromotionApprovalChecklist.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   └── PromotionRecordJsonContext.cs
@@ -6677,6 +6689,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
@@ -7807,11 +7820,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
+│   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
@@ -7820,6 +7836,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   └── Views
 │   │       ├── DashboardPageSmokeTests.cs
@@ -7828,6 +7845,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── DesktopWorkflowScriptTests.cs
 │   │       ├── FullNavigationSweepTests.cs
 │   │       ├── FundProfileSelectionPageSmokeTests.cs
+│   │       ├── GovernanceWorkspaceShellPageTests.cs
 │   │       ├── GovernanceWorkspaceShellSmokeTests.cs
 │   │       ├── MainPageSmokeTests.cs
 │   │       ├── MainPageUiWorkflowTests.cs
@@ -7835,6 +7853,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── PageLifecycleCleanupTests.cs
 │   │       ├── PlotRenderBehaviorTests.cs
 │   │       ├── QuantScriptPageTests.cs
+│   │       ├── ResearchWorkspaceShellPageTests.cs
 │   │       ├── ResearchWorkspaceShellSmokeTests.cs
 │   │       ├── ResearchWorkspaceShellWorkflowTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
@@ -7843,15 +7862,19 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SystemHealthPageSmokeTests.cs
 │   │       ├── TradingWorkspaceShellPageTests.cs
 │   │       ├── WorkspaceDeepPageChromeTests.cs
+│   │       ├── WorkspaceQueueToneStylesTests.cs
+│   │       ├── WorkspaceShellContextStripControlTests.cs
 │   │       ├── WorkspaceShellPageSmokeTests.cs
 │   │       └── WorkstationPageSmokeTests.cs
 │   ├── coverlet.runsettings
 │   ├── scripts
-│   │   └── setup-verification.sh
+│   │   ├── setup-verification.sh
+│   │   ├── test_check_contract_compatibility_gate.py
+│   │   └── test_generate_dk1_pilot_parity_packet.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-627 directories, 7085 files
+629 directories, 7106 files
 ```
 <!-- readme-tree end -->
