@@ -37,7 +37,7 @@ Total items: **78**
 | `AGENTS.md` | 240 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
 | `AGENTS.md` | 246 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
 | `AGENTS.md` | 251 | `TODO` | ❌ | TODO: `.github/workflows/refresh-screenshots.yml` still starts the retained web screenshot lane |
-| `AGENTS.md` | 346 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
+| `AGENTS.md` | 349 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 379 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 388 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
