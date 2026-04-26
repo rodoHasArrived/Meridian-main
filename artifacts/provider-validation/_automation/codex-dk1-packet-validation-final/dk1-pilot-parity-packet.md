@@ -8,7 +8,7 @@
 ## Pilot Sample Review
 
 | Sample ID | Provider | Required step | Step status | Review status | Missing requirements | Evidence anchors |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | DK1-ALPACA-QUOTE-GOLDEN | Alpaca | Alpaca core provider confidence | passed | ready | none | tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json<br>AlpacaQuotePipelineGoldenTests |
 | DK1-ALPACA-PARSER-EDGE-CASES | Alpaca | Alpaca core provider confidence | passed | ready | none | AlpacaMessageParsingTests<br>AlpacaQuoteRoutingTests<br>AlpacaCredentialAndReconnectTests |
 | DK1-ROBINHOOD-SUPPORTED-SURFACE | Robinhood | Robinhood supported surface | passed | ready | none | RobinhoodMarketDataClientTests<br>RobinhoodBrokerageGatewayTests<br>artifacts/provider-validation/robinhood/2026-04-09/manifest.json |
@@ -17,7 +17,7 @@
 ## Evidence Documents
 
 | Document | Gate | Status | Missing requirements | Path |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | DK1 pilot parity runbook | parity | validated | none | `docs/status/dk1-pilot-parity-runbook.md` |
 | DK1 trust rationale mapping | explainability | validated | none | `docs/status/dk1-trust-rationale-mapping.md` |
 | DK1 baseline trust thresholds | calibration | validated | none | `docs/status/dk1-baseline-trust-thresholds.md` |

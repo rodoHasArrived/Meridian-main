@@ -56,7 +56,7 @@ before it can be routed. Adapters must not fall back from `*OnOpen`/`*OnClose` t
 Current provider behavior:
 
 | Gateway | `*OnOpen`/`*OnClose` behavior |
-|---|---|
+| --- | --- |
 | Alpaca | Not advertised; rejected because the adapter does not preserve the qualifier. |
 | Interactive Brokers | Not advertised; rejected until Meridian maps native IB open/close order semantics end to end. |
 | Robinhood | Not advertised; rejected because the unofficial API mapping only preserves base order types. |

@@ -15,7 +15,7 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 **Quick reference for types proposed in this roadmap:**
 
 | New concept | Required name form |
-|---|---|
+| --- | --- |
 | Corporate Action identifier | `CorpActId = CorpActId of Guid` |
 | Corporate Action domain event DU | `CorpActEvent` (not `CorporateActionEvent`) |
 | Bond term-sheet record | `BondDef` (not `BondTerms` for top-level; sub-records like `CouponTerms` remain as-is) |
@@ -37,7 +37,7 @@ Security Master is no longer a future roadmap wave. In the canonical roadmap it 
 **Delivered mechanics snapshot (as of 2026-04-16):**
 
 | # | Idea | Status |
-|---|------|--------|
+| --- | ------ | -------- |
 | 1 | Corporate Action Events | ✅ Delivered |
 | 2 | Bond Term Richness | ✅ Delivered |
 | 3 | Trading Parameters | ✅ Delivered |
@@ -105,7 +105,7 @@ The following capabilities were implemented as foundational work for this wave a
 `SecurityTermModules.fs` now models fixed-income terms as a rich, composable module record rather than a single monolithic discriminated union case. The following term modules are fully implemented:
 
 | Module | F# Type | Key Fields |
-|--------|---------|-----------|
+| -------- | --------- | ----------- |
 | Maturity | `MaturityTerms` | `EffectiveDate`, `IssueDate`, `MaturityDate` (all `DateOnly option`) |
 | Coupon | `CouponTerms` | `CouponType`, `CouponRate`, `PaymentFrequency`, `DayCount` |
 | Discount | `DiscountTerms` | `DiscountRate`, `YieldRate` |
@@ -143,7 +143,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ### Acceptance Criteria — Status
 
 | Criterion | Status |
-|---|---|
+| --- | --- |
 | `PaperTradingGateway` rejects a sub-lot order for an instrument with `LotSize > 1` | ✅ Done |
 | `BacktestEngine` rounds fill prices to the instrument's tick size | ✅ Done |
 | Parameters are queryable by `GET /api/security-master/{id}/trading-parameters` | ✅ Done |
@@ -166,7 +166,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ### Acceptance Criteria — Status
 
 | Criterion | Status |
-|---|---|
+| --- | --- |
 | Polygon provider ingests a full exchange listing without manual CSV export. | ✅ Done |
 | `GET /api/security-master/ingest/status` returns in-progress and last-completed ingest summary. | ✅ Done |
 
@@ -187,7 +187,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ### Acceptance Criteria — Status
 
 | Criterion | Status |
-|---|---|
+| --- | --- |
 | Two providers with differing `DisplayName` for the same FIGI trigger an automatic `SecurityMasterConflict` record during ingest. | ✅ Done |
 | Unresolved conflict count is surfaced in the Security Master workstation operator surface. | ✅ Done |
 
@@ -211,7 +211,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ## Sequencing
 
 | Order | Idea | Status | Notes |
-|-------|------|--------|-------|
+| ------- | ------ | -------- | ------- |
 | 1 | Bond Term Richness | ✅ Done | Data model foundation; enables fixed-income workflows downstream |
 | 2 | WPF Security Master Browser | ✅ Done | UI surface on top of completed backend capabilities |
 | 3 | Trading Parameters | ✅ Done | All six fields exposed; PaperTradingGateway validates lot size and snaps to tick grid |

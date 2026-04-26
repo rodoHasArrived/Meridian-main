@@ -6,6 +6,7 @@
 **Status:** Active focused blueprint for the next Research implementation slice; request-level batch sweeps and WPF Batch Backtest ViewModel coverage are now present, while real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open
 
 > Companion to:
+>
 > - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
 > - [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md)
 
@@ -396,7 +397,7 @@ public interface IResearchSweepWorkflowService
 ### Primary files to modify
 
 | Path | Change | Why |
-|------|--------|-----|
+| ------ | -------- | ----- |
 | `src/Meridian.Wpf/ViewModels/BacktestViewModel.cs` | Replace hard-coded strategy path, bind preflight, switch to orchestrator-backed run lifecycle | Main Research launcher seam |
 | `src/Meridian.Wpf/Views/BacktestPage.xaml` | Add strategy picker, dynamic parameter region, preflight card, stage console | Main operator surface |
 | `src/Meridian.Wpf/Services/BacktestService.cs` | Refactor into orchestrator-backed adapter | Remove local-engine-only workflow |
@@ -417,7 +418,7 @@ public interface IResearchSweepWorkflowService
 ### New files to add
 
 | Path | Purpose |
-|------|---------|
+| ------ | --------- |
 | `src/Meridian.Contracts/Workstation/ResearchBacktestModels.cs` | Shared research contracts |
 | `src/Meridian.Application/Backtesting/IBacktestStrategyCatalogService.cs` | Strategy metadata seam |
 | `src/Meridian.Application/Backtesting/BacktestStrategyCatalogService.cs` | Strategy catalog implementation |
@@ -429,7 +430,7 @@ public interface IResearchSweepWorkflowService
 ### Secondary cleanup files
 
 | Path | Cleanup |
-|------|---------|
+| ------ | --------- |
 | `src/Meridian.Wpf/Services/BacktestDataAvailabilityService.cs` | convert to adapter or remove after migration |
 | `src/Meridian.Wpf/Models/WorkspaceRegistry.cs` | align page ownership so Research owns backtest surfaces consistently |
 | `src/Meridian.Wpf/Models/ShellNavigationCatalog.cs` | add Parameter Lab wording and related links if needed |
