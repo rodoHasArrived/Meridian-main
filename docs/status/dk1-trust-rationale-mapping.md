@@ -49,3 +49,4 @@ Alerts missing any field are treated as **explainability failures** for DK1 gate
 
 - `GET /api/workstation/data-operations` provider rows expose `trustScore`, `signalSource`, `reasonCode`, `recommendedAction`, and `gateImpact` for provider metrics loaded from `_status/providers.json`.
 - The WPF Data Operations provider queue includes the DK1 signal source, reason code, and recommended action in its visible provider-health detail when provider routing is degraded or disconnected.
+- `GET /api/workstation/trading/readiness` now projects the generated DK1 packet's pilot samples, evidence-document rows, trust-rationale contract, and baseline-threshold contract into `TrustGate`. The trading readiness gate blocks legacy or incomplete packets that do not expose validated explainability and calibration contracts, even if the packet status says `ready-for-operator-review`.

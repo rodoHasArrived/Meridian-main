@@ -201,6 +201,12 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.Context.CriticalValue.Should().Be("No urgent blockers");
         presentation.QueueScopeBadgeText.Should().Be("US Equities · Production");
         presentation.QueueSummaryText.Should().Contain("2 resumable backfill job(s)").And.Contain("3 remaining symbol(s)");
+        presentation.HeroState.FocusText.Should().Be("Historical coverage");
+        presentation.HeroState.BadgeText.Should().Be("Attention");
+        presentation.HeroState.HandoffTitleText.Should().Be("Resume staged backfills before the next operator handoff");
+        presentation.HeroState.PrimaryActionId.Should().Be("Backfill");
+        presentation.HeroState.SecondaryActionId.Should().Be("Schedules");
+        presentation.HeroState.TargetText.Should().Be("Target: Backfill");
 
         presentation.SummaryProvidersText.Should().Be("2/2 ready");
         presentation.SummaryBackfillText.Should().Be("3 pending");
@@ -250,6 +256,12 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.Context.ReviewStateValue.Should().Be("Awaiting queue");
         presentation.Context.CriticalValue.Should().Be("No urgent blockers");
         presentation.QueueScopeBadgeText.Should().Be("Provider and storage health");
+        presentation.HeroState.FocusText.Should().Be("Provider routing");
+        presentation.HeroState.BadgeText.Should().Be("Degraded");
+        presentation.HeroState.HandoffTitleText.Should().Be("Refresh provider telemetry before routing new queue work");
+        presentation.HeroState.PrimaryActionId.Should().Be("Retry");
+        presentation.HeroState.SecondaryActionId.Should().Be("Diagnostics");
+        presentation.HeroState.TargetText.Should().Be("Target: Refresh current shell");
 
         presentation.SummaryProvidersText.Should().Be("No providers");
         presentation.SummaryBackfillText.Should().Be("No active backfill");
@@ -309,6 +321,12 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         providerQueue.Detail.Should().Contain("Signal source: Provider quote/trade stream health telemetry");
         providerQueue.Detail.Should().Contain("Reason code: PROVIDER_STREAM_DEGRADED");
         providerQueue.Detail.Should().Contain("Recommended action: Verify provider connectivity");
+        presentation.HeroState.FocusText.Should().Be("Provider routing");
+        presentation.HeroState.BadgeText.Should().Be("Review");
+        presentation.HeroState.HandoffTitleText.Should().Be("Stabilize provider health before the next historical or export handoff");
+        presentation.HeroState.PrimaryActionId.Should().Be("ProviderHealth");
+        presentation.HeroState.SecondaryActionId.Should().Be("Provider");
+        presentation.HeroState.TargetText.Should().Be("Target: Provider Health");
     }
 
     [Fact]

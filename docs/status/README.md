@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-25
+**Last Reviewed:** 2026-04-26
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
@@ -18,6 +18,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 
 | Document | Description |
 | --- | --- |
+| [PROGRAM_STATE.md](PROGRAM_STATE.md) | Canonical wave status labels, owners, target dates, and evidence links reused by status docs |
 | [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) | Short stakeholder-facing snapshot that combines roadmap, opportunities, and target-state direction |
 | [ROADMAP.md](ROADMAP.md) | Primary wave-structured delivery roadmap |
 | [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md) | Prioritized repo-grounded opportunities that sit alongside the roadmap |

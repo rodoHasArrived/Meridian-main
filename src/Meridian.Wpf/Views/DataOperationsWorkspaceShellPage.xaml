@@ -236,20 +236,69 @@
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
                         BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Workspace Focus"
-                                   FontSize="11"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                        <TextBlock Margin="0,8,0,0"
-                                   FontSize="14"
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Next Handoff"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <Border x:Name="OperationsHeroBadgeBorder"
+                                    DockPanel.Dock="Right"
+                                    Style="{StaticResource NeutralBadgeStyle}">
+                                <TextBlock x:Name="OperationsHeroBadgeText"
+                                           FontSize="10"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           Text="Loading"
+                                           AutomationProperties.AutomationId="OperationsHeroBadgeText" />
+                            </Border>
+                        </DockPanel>
+                        <TextBlock x:Name="OperationsHeroFocusText"
+                                   Margin="0,10,0,0"
+                                   FontSize="16"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                   Text="Keep the routing chain aligned before the next handoff." />
-                        <TextBlock Margin="0,6,0,0"
+                                   Text="Operational posture"
+                                   AutomationProperties.AutomationId="OperationsHeroFocusText" />
+                        <TextBlock x:Name="OperationsHeroActionSummaryText"
+                                   Margin="0,6,0,0"
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    TextWrapping="Wrap"
-                                   Text="Use the queue workbench below to clear provider issues, review resumable backfills, and confirm storage or export posture before delivery." />
+                                   Text="Refreshing provider, backfill, storage, and export posture."
+                                   AutomationProperties.AutomationId="OperationsHeroActionSummaryText" />
+                        <TextBlock x:Name="OperationsHeroHandoffTitleText"
+                                   Margin="0,12,0,0"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Text="Telemetry refresh in progress"
+                                   AutomationProperties.AutomationId="OperationsHeroHandoffTitleText" />
+                        <TextBlock x:Name="OperationsHeroHandoffDetailText"
+                                   Margin="0,6,0,0"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Text="The Data Operations shell is collecting current readiness signals."
+                                   AutomationProperties.AutomationId="OperationsHeroHandoffDetailText" />
+                        <WrapPanel Margin="0,12,0,0">
+                            <Button x:Name="OperationsHeroPrimaryActionButton"
+                                    Click="OnOperationsHeroPrimaryActionClick"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,8"
+                                    Visibility="Collapsed"
+                                    AutomationProperties.AutomationId="OperationsHeroPrimaryActionButton" />
+                            <Button x:Name="OperationsHeroSecondaryActionButton"
+                                    Click="OnOperationsHeroSecondaryActionClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8"
+                                    Visibility="Collapsed"
+                                    AutomationProperties.AutomationId="OperationsHeroSecondaryActionButton" />
+                        </WrapPanel>
+                        <TextBlock x:Name="OperationsHeroTargetText"
+                                   Margin="0,10,0,0"
+                                   FontSize="10"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Text="Target: Current shell"
+                                   AutomationProperties.AutomationId="OperationsHeroTargetText" />
                     </StackPanel>
                 </Border>
             </Grid>

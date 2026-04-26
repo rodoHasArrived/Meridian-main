@@ -37,13 +37,26 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\DataOperationsWorkspaceShellPage.xaml"));
         var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\DataOperationsWorkspaceShellPage.xaml.cs"));
 
-        xaml.Should().Contain("Workspace Focus");
+        xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
         xaml.Should().Contain("OperationsHeroSummaryText");
+        xaml.Should().Contain("OperationsHeroFocusText");
+        xaml.Should().Contain("OperationsHeroActionSummaryText");
+        xaml.Should().Contain("OperationsHeroHandoffTitleText");
+        xaml.Should().Contain("OperationsHeroPrimaryActionButton");
+        xaml.Should().Contain("OperationsHeroSecondaryActionButton");
+        xaml.Should().Contain("OperationsHeroTargetText");
         xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
 
         code.Should().Contain("OperationsHeroScopeText.Text = presentation.Context.PrimaryScopeValue;");
         code.Should().Contain("OperationsHeroSummaryText.Text = presentation.QueueSummaryText;");
+        code.Should().Contain("OperationsHeroFocusText.Text = heroState.FocusText;");
+        code.Should().Contain("OperationsHeroActionSummaryText.Text = heroState.SummaryText;");
+        code.Should().Contain("ApplyHeroState(DataOperationsHeroState.Loading());");
+        code.Should().Contain("ApplyHeroState(presentation.HeroState);");
+        code.Should().Contain("ApplyHeroState(DataOperationsHeroState.Error());");
+        code.Should().Contain("private void OnOperationsHeroPrimaryActionClick");
+        code.Should().Contain("private void OnOperationsHeroSecondaryActionClick");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

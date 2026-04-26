@@ -125,23 +125,29 @@ public sealed class Dk1TrustGateReadinessService
         var sourceSummary = GetString(root, "sourceSummary");
         var sampleReview = TryGetProperty(root, "sampleReview");
         var evidenceDocuments = TryGetProperty(root, "evidenceDocuments");
+        var trustRationaleContract = ReadContract(
+            "trust-rationale",
+            TryGetProperty(root, "trustRationaleContract"));
+        var baselineThresholdContract = ReadContract(
+            "baseline-threshold",
+            TryGetProperty(root, "baselineThresholdContract"));
         var operatorSignoff = TryGetProperty(root, "operatorSignoff");
-        var blockers = ReadStringArray(TryGetProperty(root, "blockers"));
+        var blockers = ReadStringArray(TryGetProperty(root, "blockers"))
+            .Concat(BuildContractBlockers(trustRationaleContract, baselineThresholdContract))
+            .ToArray();
         var requiredOwners = ReadStringArray(operatorSignoff, "requiredOwners");
         if (requiredOwners.Count == 0)
         {
             requiredOwners = DefaultRequiredOwners;
         }
 
+        var sampleReviews = ReadSampleReviews(TryGetProperty(sampleReview, "samples"));
+        var evidenceDocumentReviews = ReadEvidenceDocuments(evidenceDocuments);
         var requiredSampleCount = GetInt32(sampleReview, "requiredCount");
-        var readySampleCount = CountObjectsWithStringProperty(
-            TryGetProperty(sampleReview, "samples"),
-            "status",
-            "ready");
-        var validatedEvidenceDocumentCount = CountObjectsWithStringProperty(
-            evidenceDocuments,
-            "status",
-            "validated");
+        var readySampleCount = sampleReviews.Count(static sample =>
+            string.Equals(sample.Status, "ready", StringComparison.OrdinalIgnoreCase));
+        var validatedEvidenceDocumentCount = evidenceDocumentReviews.Count(static document =>
+            string.Equals(document.Status, "validated", StringComparison.OrdinalIgnoreCase));
         var operatorSignoffStatus = GetString(operatorSignoff, "status") ?? "unknown";
         var operatorSignoffRequired = GetBoolean(operatorSignoff, "requiredBeforeDk1Exit") ?? true;
         var signedOwners = ReadStringArray(operatorSignoff, "signedOwners");
@@ -187,8 +193,16 @@ public sealed class Dk1TrustGateReadinessService
                 requiredOwners,
                 signedOwners,
                 missingOwners,
-                blockers),
-            OperatorSignoff: operatorSignoffReadiness);
+                blockers,
+                trustRationaleContract,
+                baselineThresholdContract),
+            OperatorSignoff: operatorSignoffReadiness)
+        {
+            SampleReviews = sampleReviews,
+            EvidenceDocuments = evidenceDocumentReviews,
+            TrustRationaleContract = trustRationaleContract,
+            BaselineThresholdContract = baselineThresholdContract
+        };
     }
 
     private string? ResolveAutomationRoot()
@@ -262,41 +276,93 @@ public sealed class Dk1TrustGateReadinessService
         IReadOnlyList<string> requiredOwners,
         IReadOnlyList<string> signedOwners,
         IReadOnlyList<string> missingOwners,
-        IReadOnlyList<string> blockers)
+        IReadOnlyList<string> blockers,
+        TradingTrustGateContractReadinessDto? trustRationaleContract,
+        TradingTrustGateContractReadinessDto? baselineThresholdContract)
     {
+        string detail;
         if (blockers.Count > 0)
         {
-            return blockers[0];
+            detail = blockers[0];
         }
-
-        if (readyForReview && operatorSignoffRequired && !IsOperatorSignoffComplete(operatorSignoffStatus))
+        else if (readyForReview && operatorSignoffRequired && !IsOperatorSignoffComplete(operatorSignoffStatus))
         {
             if (signedOwners.Count > 0 && missingOwners.Count > 0)
             {
-                return $"DK1 packet is ready for operator review; sign-off is partial with {string.Join(", ", missingOwners)} still missing.";
+                detail = $"DK1 packet is ready for operator review; sign-off is partial with {string.Join(", ", missingOwners)} still missing.";
             }
-
-            if (missingOwners.Count > 0)
+            else if (missingOwners.Count > 0)
             {
-                return $"DK1 packet is ready for operator review; {string.Join(", ", missingOwners)} sign-off remains {operatorSignoffStatus}.";
+                detail = $"DK1 packet is ready for operator review; {string.Join(", ", missingOwners)} sign-off remains {operatorSignoffStatus}.";
             }
-
-            return $"DK1 packet is ready for operator review; {string.Join(", ", requiredOwners)} sign-off remains {operatorSignoffStatus}.";
+            else
+            {
+                detail = $"DK1 packet is ready for operator review; {string.Join(", ", requiredOwners)} sign-off remains {operatorSignoffStatus}.";
+            }
         }
-
-        if (readyForReview && operatorSignoffRequired && IsOperatorSignoffComplete(operatorSignoffStatus))
+        else if (readyForReview && operatorSignoffRequired && IsOperatorSignoffComplete(operatorSignoffStatus))
         {
-            return signedOwners.Count > 0
+            detail = signedOwners.Count > 0
                 ? $"DK1 packet is ready for operator review; operator sign-off is complete for {string.Join(", ", signedOwners)}."
                 : "DK1 packet is ready for operator review; operator sign-off is complete.";
         }
-
-        if (readyForReview)
+        else if (readyForReview)
         {
-            return "DK1 packet is ready for operator review with no packet blockers.";
+            detail = "DK1 packet is ready for operator review with no packet blockers.";
+        }
+        else
+        {
+            detail = $"DK1 packet status is {status}.";
         }
 
-        return $"DK1 packet status is {status}.";
+        return AppendContractSummary(detail, trustRationaleContract, baselineThresholdContract);
+    }
+
+    private static string AppendContractSummary(
+        string detail,
+        TradingTrustGateContractReadinessDto? trustRationaleContract,
+        TradingTrustGateContractReadinessDto? baselineThresholdContract)
+    {
+        var summary = BuildContractSummary(trustRationaleContract, baselineThresholdContract);
+        return string.IsNullOrWhiteSpace(summary)
+            ? detail
+            : $"{detail} {summary}";
+    }
+
+    private static string BuildContractSummary(
+        TradingTrustGateContractReadinessDto? trustRationaleContract,
+        TradingTrustGateContractReadinessDto? baselineThresholdContract)
+    {
+        var parts = new[]
+        {
+            BuildContractSummaryPart("explainability", trustRationaleContract),
+            BuildContractSummaryPart("calibration", baselineThresholdContract)
+        }.Where(static part => !string.IsNullOrWhiteSpace(part));
+
+        var summary = string.Join("; ", parts);
+        return string.IsNullOrWhiteSpace(summary)
+            ? string.Empty
+            : $"Contract review: {summary}.";
+    }
+
+    private static string BuildContractSummaryPart(
+        string label,
+        TradingTrustGateContractReadinessDto? contract)
+    {
+        if (contract is null)
+        {
+            return $"{label} unavailable";
+        }
+
+        if (string.Equals(contract.Status, "validated", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{label} validated";
+        }
+
+        var missing = contract.MissingRequirements.Count > 0
+            ? $" missing {string.Join(", ", contract.MissingRequirements)}"
+            : string.Empty;
+        return $"{label} {contract.Status}{missing}";
     }
 
     private static bool IsOperatorSignoffComplete(string status) =>
@@ -304,6 +370,99 @@ public sealed class Dk1TrustGateReadinessService
         string.Equals(status, "approved", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(status, "complete", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase);
+
+    private static IReadOnlyList<string> BuildContractBlockers(
+        TradingTrustGateContractReadinessDto? trustRationaleContract,
+        TradingTrustGateContractReadinessDto? baselineThresholdContract)
+    {
+        var blockers = new List<string>();
+        AddContractBlocker(blockers, "explainability", trustRationaleContract);
+        AddContractBlocker(blockers, "calibration", baselineThresholdContract);
+        return blockers;
+    }
+
+    private static void AddContractBlocker(
+        ICollection<string> blockers,
+        string label,
+        TradingTrustGateContractReadinessDto? contract)
+    {
+        if (contract is null)
+        {
+            blockers.Add($"DK1 {label} contract is missing from the parity packet.");
+            return;
+        }
+
+        if (string.Equals(contract.Status, "validated", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var missing = contract.MissingRequirements.Count > 0
+            ? $": missing {string.Join(", ", contract.MissingRequirements)}"
+            : ".";
+        blockers.Add($"DK1 {label} contract is {contract.Status}{missing}");
+    }
+
+    private static IReadOnlyList<TradingTrustGateSampleReviewDto> ReadSampleReviews(JsonElement? element)
+    {
+        if (element is not { ValueKind: JsonValueKind.Array } value)
+        {
+            return [];
+        }
+
+        return value
+            .EnumerateArray()
+            .Where(static item => item.ValueKind == JsonValueKind.Object)
+            .Select(static item => new TradingTrustGateSampleReviewDto(
+                SampleId: GetString(item, "id") ?? string.Empty,
+                Provider: GetString(item, "provider") ?? string.Empty,
+                RequiredStep: GetString(item, "requiredStep") ?? string.Empty,
+                StepStatus: GetString(item, "stepStatus") ?? string.Empty,
+                Status: GetString(item, "status") ?? "unknown",
+                Observed: GetBoolean(item, "observed") ?? false,
+                MissingRequirements: ReadStringArray(item, "missingRequirements"),
+                EvidenceAnchors: ReadStringArray(item, "evidenceAnchors"),
+                AcceptanceCheck: GetString(item, "acceptanceCheck") ?? string.Empty))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<TradingTrustGateEvidenceDocumentDto> ReadEvidenceDocuments(JsonElement? element)
+    {
+        if (element is not { ValueKind: JsonValueKind.Array } value)
+        {
+            return [];
+        }
+
+        return value
+            .EnumerateArray()
+            .Where(static item => item.ValueKind == JsonValueKind.Object)
+            .Select(static item => new TradingTrustGateEvidenceDocumentDto(
+                Name: GetString(item, "name") ?? string.Empty,
+                Gate: GetString(item, "gate") ?? string.Empty,
+                Path: GetString(item, "path") ?? string.Empty,
+                Exists: GetBoolean(item, "exists") ?? false,
+                Status: GetString(item, "status") ?? "unknown",
+                MissingRequirements: ReadStringArray(item, "missingRequirements")))
+            .ToArray();
+    }
+
+    private static TradingTrustGateContractReadinessDto? ReadContract(string contractId, JsonElement? element)
+    {
+        if (element is not { ValueKind: JsonValueKind.Object } value)
+        {
+            return null;
+        }
+
+        return new TradingTrustGateContractReadinessDto(
+            ContractId: contractId,
+            DocumentPath: GetString(value, "documentPath") ?? string.Empty,
+            Status: GetString(value, "status") ?? "unknown",
+            RequiredPayloadFields: ReadStringArray(value, "requiredPayloadFields"),
+            RequiredReasonCodes: ReadStringArray(value, "requiredReasonCodes"),
+            RequiredMetrics: ReadStringArray(value, "requiredMetrics"),
+            FpFnReviewRequired: GetBoolean(value, "fpFnReviewRequired"),
+            MissingRequirements: ReadStringArray(value, "missingRequirements"));
+    }
 
     private static JsonElement? TryGetProperty(JsonElement? element, string propertyName)
     {

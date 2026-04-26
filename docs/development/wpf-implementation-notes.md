@@ -72,6 +72,8 @@ Content Frame
 
 **Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path.
 
+**Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, so operators can move straight into the next queue action without scanning the full workbench first.
+
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Security Master conflict operator lane** — the workstation conflict queue now groups open mismatches by security, scores severity and auto-resolve confidence from the selected field mismatch, and turns fund-review, reconciliation, cash-flow, and report-pack jumps on only when the active conflict actually affects those downstream workflows.
@@ -384,15 +386,16 @@ Replay and collection-session review stay on their owning Data Operations and Go
 **Data composition**:
 
 1. `DataOperationsWorkspaceShellPage.xaml.cs` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
-2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, queue cards, summary values, recent operations, and quick-action wiring.
+2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, a next-handoff hero card, queue cards, summary values, recent operations, and quick-action wiring.
 3. Primary actions route directly to `ProviderHealth`, `Backfill`, and `DataExport`; secondary actions keep `Providers`, `Storage`, `CollectionSessions`, `Schedules`, and `PackageManager` in the same shell flow.
 
 **Design zones**:
 
 1. **Context strip** — Scope, freshness, backfill review state, and critical blockers derived from live operational state instead of static labels.
-2. **Queue boards** — Provider health, backfill queue/session state, storage posture, and export job visibility.
-3. **Recent operations rail** — Latest session, resumable backfill, export run, or alert-linked notification with a deep link back into the owning page.
-4. **Support surfaces** — Fast open buttons for Providers, Backfill, Symbols, Storage, Collection Sessions, Data Export, Schedules, and Package Manager.
+2. **Next-handoff card** — One priority CTA selected from provider, storage, backfill, export, or active-session posture, with a target label and optional secondary action.
+3. **Queue boards** — Provider health, backfill queue/session state, storage posture, and export job visibility.
+4. **Recent operations rail** — Latest session, resumable backfill, export run, or alert-linked notification with a deep link back into the owning page.
+5. **Support surfaces** — Fast open buttons for Providers, Backfill, Symbols, Storage, Collection Sessions, Data Export, Schedules, and Package Manager.
 
 ---
 

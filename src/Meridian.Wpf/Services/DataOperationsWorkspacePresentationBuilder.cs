@@ -185,6 +185,37 @@ public static class DataOperationsWorkspacePresentationBuilder
                             ? $"Latest operational signal: {latestNotification.Title}. Keep providers, sessions, storage, and export delivery aligned to {data.ScopeLabel}."
                             : $"Provider readiness, historical coverage, storage posture, and export delivery stay visible together for {data.ScopeLabel}.";
 
+        var providerQueueItems = new[]
+        {
+            BuildProviderItem(data, providerCount, healthyProviderCount, providersTone)
+        };
+        var backfillQueueItems = new[]
+        {
+            BuildBackfillItem(data, latestExecution, resumableCount, activeResumables, pendingSymbols, enabledSchedules),
+            BuildSessionItem(latestSession)
+        };
+        var storageQueueItems = new[]
+        {
+            BuildStorageItem(data.StorageStats, data.StorageHealth, storageIssueCount, criticalStorageIssueCount),
+            BuildExportItem(latestExportJob, exportRunningCount, exportQueuedCount, exportFailedCount, data.ExportJobs.Count)
+        };
+        var heroState = BuildHeroState(
+            data,
+            providerQueueState,
+            backfillQueueState,
+            storageQueueState,
+            providerQueueItems,
+            backfillQueueItems,
+            storageQueueItems,
+            providerCount,
+            healthyProviderCount,
+            resumableCount,
+            pendingSymbols,
+            enabledSchedules,
+            criticalStorageIssueCount,
+            exportRunningCount,
+            exportFailedCount);
+
         return new DataOperationsWorkspacePresentation
         {
             Context = new WorkspaceShellContextInput
@@ -204,19 +235,12 @@ public static class DataOperationsWorkspacePresentationBuilder
                 AdditionalBadges = BuildAdditionalBadges(latestSession, latestExportJob, enabledSchedules, exportRunningCount, exportFailedCount)
             },
             CommandGroup = BuildCommandGroup(),
+            HeroState = heroState,
             QueueScopeBadgeText = data.UnreadAlerts > 0 ? $"{data.ScopeLabel} · {data.UnreadAlerts} alert-linked" : data.ScopeLabel,
             QueueSummaryText = queueSummary,
-            ProviderQueueItems = [BuildProviderItem(data, providerCount, healthyProviderCount, providersTone)],
-            BackfillQueueItems =
-            [
-                BuildBackfillItem(data, latestExecution, resumableCount, activeResumables, pendingSymbols, enabledSchedules),
-                BuildSessionItem(latestSession)
-            ],
-            StorageQueueItems =
-            [
-                BuildStorageItem(data.StorageStats, data.StorageHealth, storageIssueCount, criticalStorageIssueCount),
-                BuildExportItem(latestExportJob, exportRunningCount, exportQueuedCount, exportFailedCount, data.ExportJobs.Count)
-            ],
+            ProviderQueueItems = providerQueueItems,
+            BackfillQueueItems = backfillQueueItems,
+            StorageQueueItems = storageQueueItems,
             OperationsSummaryTitleText = "Data Operations",
             OperationsSummaryDetailText = operationsDetail,
             SummaryProvidersText = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : ProvidersUnavailableSummary,
@@ -231,6 +255,247 @@ public static class DataOperationsWorkspacePresentationBuilder
             StorageQueueState = storageQueueState
         };
     }
+
+    private static DataOperationsHeroState BuildHeroState(
+        DataOperationsWorkspaceData data,
+        WorkspaceQueueRegionState providerQueueState,
+        WorkspaceQueueRegionState backfillQueueState,
+        WorkspaceQueueRegionState storageQueueState,
+        IReadOnlyList<WorkspaceQueueItem> providerQueueItems,
+        IReadOnlyList<WorkspaceQueueItem> backfillQueueItems,
+        IReadOnlyList<WorkspaceQueueItem> storageQueueItems,
+        int providerCount,
+        int healthyProviderCount,
+        int resumableCount,
+        int pendingSymbols,
+        int enabledSchedules,
+        int criticalStorageIssueCount,
+        int exportRunningCount,
+        int exportFailedCount)
+    {
+        var providerItem = providerQueueItems.FirstOrDefault() ?? new WorkspaceQueueItem();
+        var backfillItem = backfillQueueItems.FirstOrDefault() ?? new WorkspaceQueueItem();
+        var sessionItem = backfillQueueItems.Skip(1).FirstOrDefault() ?? new WorkspaceQueueItem();
+        var storageItem = storageQueueItems.FirstOrDefault() ?? new WorkspaceQueueItem();
+        var exportItem = storageQueueItems.Skip(1).FirstOrDefault() ?? new WorkspaceQueueItem();
+
+        if (providerQueueState.HasError)
+        {
+            return CreateHeroState(
+                focusText: "Provider routing",
+                summaryText: providerQueueState.Title,
+                badgeText: "Degraded",
+                badgeTone: WorkspaceTone.Danger,
+                handoffTitleText: "Refresh provider telemetry before routing new queue work",
+                handoffDetailText: providerQueueState.Description,
+                primaryActionId: providerQueueState.PrimaryActionId,
+                primaryActionLabel: providerQueueState.PrimaryActionLabel,
+                secondaryActionId: providerQueueState.SecondaryActionId,
+                secondaryActionLabel: providerQueueState.SecondaryActionLabel);
+        }
+
+        if (providerQueueState.IsEmpty)
+        {
+            return CreateHeroState(
+                focusText: "Provider onboarding",
+                summaryText: providerQueueState.Title,
+                badgeText: "Action required",
+                badgeTone: WorkspaceTone.Warning,
+                handoffTitleText: "Configure providers before staging backfills or exports",
+                handoffDetailText: providerQueueState.Description,
+                primaryActionId: providerQueueState.PrimaryActionId,
+                primaryActionLabel: providerQueueState.PrimaryActionLabel,
+                secondaryActionId: providerQueueState.SecondaryActionId,
+                secondaryActionLabel: providerQueueState.SecondaryActionLabel);
+        }
+
+        if (providerCount > 0 && (healthyProviderCount < providerCount || data.ProviderStatus?.IsConnected != true))
+        {
+            return CreateHeroState(
+                focusText: "Provider routing",
+                summaryText: $"{healthyProviderCount}/{providerCount} providers are ready",
+                badgeText: "Review",
+                badgeTone: WorkspaceTone.Warning,
+                handoffTitleText: "Stabilize provider health before the next historical or export handoff",
+                handoffDetailText: providerItem.Detail,
+                primaryActionId: providerItem.PrimaryActionId,
+                primaryActionLabel: providerItem.PrimaryActionLabel,
+                secondaryActionId: providerItem.SecondaryActionId,
+                secondaryActionLabel: providerItem.SecondaryActionLabel);
+        }
+
+        if (criticalStorageIssueCount > 0 || storageQueueState.HasError)
+        {
+            var summaryText = criticalStorageIssueCount > 0
+                ? $"{criticalStorageIssueCount} critical storage issue(s) need review"
+                : storageQueueState.Title;
+            var detailText = criticalStorageIssueCount > 0
+                ? storageItem.Detail
+                : storageQueueState.Description;
+            var primaryActionId = criticalStorageIssueCount > 0 ? storageItem.PrimaryActionId : storageQueueState.PrimaryActionId;
+            var primaryActionLabel = criticalStorageIssueCount > 0 ? storageItem.PrimaryActionLabel : storageQueueState.PrimaryActionLabel;
+            var secondaryActionId = criticalStorageIssueCount > 0 ? storageItem.SecondaryActionId : storageQueueState.SecondaryActionId;
+            var secondaryActionLabel = criticalStorageIssueCount > 0 ? storageItem.SecondaryActionLabel : storageQueueState.SecondaryActionLabel;
+
+            return CreateHeroState(
+                focusText: "Storage posture",
+                summaryText: summaryText,
+                badgeText: criticalStorageIssueCount > 0 ? "Blocked" : "Degraded",
+                badgeTone: criticalStorageIssueCount > 0 ? WorkspaceTone.Danger : WorkspaceTone.Warning,
+                handoffTitleText: "Resolve storage blockers before the next package handoff",
+                handoffDetailText: detailText,
+                primaryActionId: primaryActionId,
+                primaryActionLabel: primaryActionLabel,
+                secondaryActionId: secondaryActionId,
+                secondaryActionLabel: secondaryActionLabel);
+        }
+
+        if (backfillQueueState.HasError)
+        {
+            return CreateHeroState(
+                focusText: "Backfill recovery",
+                summaryText: backfillQueueState.Title,
+                badgeText: "Review",
+                badgeTone: WorkspaceTone.Warning,
+                handoffTitleText: "Investigate failed backfill telemetry before routing more coverage",
+                handoffDetailText: backfillQueueState.Description,
+                primaryActionId: backfillQueueState.PrimaryActionId,
+                primaryActionLabel: backfillQueueState.PrimaryActionLabel,
+                secondaryActionId: backfillQueueState.SecondaryActionId,
+                secondaryActionLabel: backfillQueueState.SecondaryActionLabel);
+        }
+
+        if (resumableCount > 0)
+        {
+            return CreateHeroState(
+                focusText: "Historical coverage",
+                summaryText: $"{resumableCount} resumable job(s) are waiting across {pendingSymbols} symbol(s)",
+                badgeText: "Attention",
+                badgeTone: WorkspaceTone.Warning,
+                handoffTitleText: "Resume staged backfills before the next operator handoff",
+                handoffDetailText: backfillItem.Detail,
+                primaryActionId: backfillItem.PrimaryActionId,
+                primaryActionLabel: backfillItem.PrimaryActionLabel,
+                secondaryActionId: backfillItem.SecondaryActionId,
+                secondaryActionLabel: backfillItem.SecondaryActionLabel);
+        }
+
+        if (exportFailedCount > 0)
+        {
+            return CreateHeroState(
+                focusText: "Export delivery",
+                summaryText: $"{exportFailedCount} export job(s) failed",
+                badgeText: "Review",
+                badgeTone: WorkspaceTone.Warning,
+                handoffTitleText: "Resolve failed delivery before the next package handoff",
+                handoffDetailText: exportItem.Detail,
+                primaryActionId: exportItem.PrimaryActionId,
+                primaryActionLabel: exportItem.PrimaryActionLabel,
+                secondaryActionId: exportItem.SecondaryActionId,
+                secondaryActionLabel: exportItem.SecondaryActionLabel);
+        }
+
+        if (exportRunningCount > 0)
+        {
+            return CreateHeroState(
+                focusText: "Export delivery",
+                summaryText: $"{exportRunningCount} export job(s) are active",
+                badgeText: "Active",
+                badgeTone: WorkspaceTone.Info,
+                handoffTitleText: "Monitor active delivery without leaving the shell",
+                handoffDetailText: exportItem.Detail,
+                primaryActionId: exportItem.PrimaryActionId,
+                primaryActionLabel: exportItem.PrimaryActionLabel,
+                secondaryActionId: exportItem.SecondaryActionId,
+                secondaryActionLabel: exportItem.SecondaryActionLabel);
+        }
+
+        if (enabledSchedules > 0)
+        {
+            return CreateHeroState(
+                focusText: "Recurring coverage",
+                summaryText: $"{enabledSchedules} schedule(s) are enabled",
+                badgeText: "Scheduled",
+                badgeTone: WorkspaceTone.Info,
+                handoffTitleText: "Confirm scheduled coverage is aligned with current provider posture",
+                handoffDetailText: backfillItem.Detail,
+                primaryActionId: "Schedules",
+                primaryActionLabel: "Schedules",
+                secondaryActionId: backfillItem.PrimaryActionId,
+                secondaryActionLabel: backfillItem.PrimaryActionLabel);
+        }
+
+        if (data.ActiveSession is not null)
+        {
+            return CreateHeroState(
+                focusText: "Collection lane",
+                summaryText: "Collection session is active",
+                badgeText: "Active",
+                badgeTone: WorkspaceTone.Info,
+                handoffTitleText: "Keep session, storage, and export review aligned",
+                handoffDetailText: sessionItem.Detail,
+                primaryActionId: sessionItem.PrimaryActionId,
+                primaryActionLabel: sessionItem.PrimaryActionLabel,
+                secondaryActionId: sessionItem.SecondaryActionId,
+                secondaryActionLabel: sessionItem.SecondaryActionLabel);
+        }
+
+        return CreateHeroState(
+            focusText: "Operational posture",
+            summaryText: "Provider, storage, and export posture are aligned",
+            badgeText: "Ready",
+            badgeTone: WorkspaceTone.Success,
+            handoffTitleText: "Open the shell area that matches the next handoff",
+            handoffDetailText: data.ScopeSummary,
+            primaryActionId: exportItem.PrimaryActionId,
+            primaryActionLabel: exportItem.PrimaryActionLabel,
+            secondaryActionId: providerItem.PrimaryActionId,
+            secondaryActionLabel: providerItem.PrimaryActionLabel);
+    }
+
+    private static DataOperationsHeroState CreateHeroState(
+        string focusText,
+        string summaryText,
+        string badgeText,
+        string badgeTone,
+        string handoffTitleText,
+        string handoffDetailText,
+        string primaryActionId,
+        string primaryActionLabel,
+        string secondaryActionId,
+        string secondaryActionLabel)
+    {
+        return new DataOperationsHeroState
+        {
+            FocusText = focusText,
+            SummaryText = summaryText,
+            BadgeText = badgeText,
+            BadgeTone = badgeTone,
+            HandoffTitleText = handoffTitleText,
+            HandoffDetailText = handoffDetailText,
+            PrimaryActionId = primaryActionId,
+            PrimaryActionLabel = primaryActionLabel,
+            SecondaryActionId = secondaryActionId,
+            SecondaryActionLabel = secondaryActionLabel,
+            TargetText = $"Target: {ResolveHeroTarget(primaryActionId)}"
+        };
+    }
+
+    private static string ResolveHeroTarget(string actionId) => actionId switch
+    {
+        "Retry" => "Refresh current shell",
+        "SwitchContext" => "Context selector",
+        "ProviderHealth" => "Provider Health",
+        "Provider" => "Providers",
+        "Backfill" => "Backfill",
+        "Storage" => "Storage",
+        "CollectionSessions" => "Collection Sessions",
+        "DataExport" => "Data Export",
+        "Schedules" => "Schedules",
+        "PackageManager" => "Package Manager",
+        "Diagnostics" => "Diagnostics",
+        _ => string.IsNullOrWhiteSpace(actionId) ? "Current shell" : actionId
+    };
 
     private static WorkspaceCommandGroup BuildCommandGroup() => new()
     {
@@ -534,6 +799,7 @@ public sealed class DataOperationsWorkspacePresentation
 {
     public WorkspaceShellContextInput Context { get; init; } = new();
     public WorkspaceCommandGroup CommandGroup { get; init; } = new();
+    public DataOperationsHeroState HeroState { get; init; } = DataOperationsHeroState.Loading();
     public string QueueScopeBadgeText { get; init; } = string.Empty;
     public string QueueSummaryText { get; init; } = string.Empty;
     public IReadOnlyList<WorkspaceQueueItem> ProviderQueueItems { get; init; } = Array.Empty<WorkspaceQueueItem>();
@@ -551,4 +817,38 @@ public sealed class DataOperationsWorkspacePresentation
     public WorkspaceQueueRegionState ProviderQueueState { get; init; } = WorkspaceQueueRegionState.None;
     public WorkspaceQueueRegionState BackfillQueueState { get; init; } = WorkspaceQueueRegionState.None;
     public WorkspaceQueueRegionState StorageQueueState { get; init; } = WorkspaceQueueRegionState.None;
+}
+
+public sealed class DataOperationsHeroState
+{
+    public string FocusText { get; init; } = "Operational posture";
+    public string SummaryText { get; init; } = "Refreshing provider, backfill, storage, and export posture.";
+    public string BadgeText { get; init; } = "Loading";
+    public string BadgeTone { get; init; } = WorkspaceTone.Info;
+    public string HandoffTitleText { get; init; } = "Telemetry refresh in progress";
+    public string HandoffDetailText { get; init; } = "The Data Operations shell is collecting current readiness signals.";
+    public string PrimaryActionId { get; init; } = string.Empty;
+    public string PrimaryActionLabel { get; init; } = string.Empty;
+    public string SecondaryActionId { get; init; } = string.Empty;
+    public string SecondaryActionLabel { get; init; } = string.Empty;
+    public string TargetText { get; init; } = "Target: Current shell";
+
+    public static DataOperationsHeroState Loading() =>
+        new();
+
+    public static DataOperationsHeroState Error() =>
+        new()
+        {
+            FocusText = "Operational posture",
+            SummaryText = "Telemetry refresh failed for the current Data Operations scope.",
+            BadgeText = "Degraded",
+            BadgeTone = WorkspaceTone.Warning,
+            HandoffTitleText = "Retry the shell refresh, then inspect diagnostics if the shell stays degraded",
+            HandoffDetailText = "Provider, backfill, storage, or export telemetry could not be refreshed from the local workstation services.",
+            PrimaryActionId = "Retry",
+            PrimaryActionLabel = "Retry",
+            SecondaryActionId = "Diagnostics",
+            SecondaryActionLabel = "Diagnostics",
+            TargetText = "Target: Refresh current shell"
+        };
 }

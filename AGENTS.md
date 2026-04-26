@@ -12,6 +12,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
+- `docs/status/FEATURE_INVENTORY.md` for current feature inventory and retained local web/API scope.
 - `docs/plans/paper-trading-cockpit-reliability-sprint.md` for the Wave 2 readiness contract.
 - `README.md` for top-level onboarding and planning links.
 
@@ -19,6 +20,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 - Meridian is a .NET 9 fund-management and trading-platform codebase.
 - `src/Meridian.Wpf/` is the primary operator shell. Prefer desktop-first workflow guidance.
+- Treat `src/Meridian.Ui/` as a retained local diagnostics/API support surface, not the primary operator shell.
 - Keep top-level operator navigation to `Research`, `Trading`, `Data Operations`, and `Governance`.
 - Use the narrowest validation command that covers the files changed.
 
@@ -187,6 +189,7 @@ pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1
+pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0
 pwsh -File ./scripts/dev/robinhood-options-smoke.ps1
 pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall
 ```
@@ -202,6 +205,8 @@ Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 `run-desktop.ps1` when driving an already-open shell against live local services.
 `robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
 fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
+Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release WPF build, such as
+the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
 for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
 
@@ -234,6 +239,11 @@ TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but 
 `make/*.mk` files do not define that target. Use
 `pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
 builds unless the Make target is restored.
+
+TODO: `.github/workflows/refresh-screenshots.yml` still starts the retained web screenshot lane
+with `--ui`, but `CliModeResolver` rejects `--ui` as removed. Verify whether that lane should use
+`--mode desktop` or another retained-local-API fixture before documenting `--ui` as a standard
+workflow.
 
 ## Paper Trading Readiness
 

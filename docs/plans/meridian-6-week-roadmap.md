@@ -159,7 +159,7 @@ Priorities:
 
 - prioritize high-traffic WPF pages and shell surfaces that directly support active cockpit, shared-model, or governance work
 - continue MVVM extraction where pages still depend heavily on code-behind orchestration in active areas
-- keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used in the web shell
+- keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used by the WPF shell and retained desktop-local API contracts
 - treat the Trading desk briefing hero as Wave 2 support evidence only when it continues to reflect shared readiness, replay, controls, trust-gate, and brokerage-sync posture without duplicating service logic
 - treat the Research desk briefing hero as Wave 3 support evidence only when it keeps selected-run, run-detail, portfolio, and paper-promotion handoffs tied to shared workstation read models
 - validate the current `ShellNavigationCatalog`, workspace-shell, deep-page host, and shell-context-strip baseline against active run-centered workflows before widening it further

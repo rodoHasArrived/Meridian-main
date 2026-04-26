@@ -131,6 +131,7 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 - execution-control state, including circuit breaker and manual overrides
 - durable promotion decision state and trace completeness
 - DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet
+- DK1 pilot sample rows, evidence-document rows, trust-rationale contract status, and baseline-threshold contract status so explainability/calibration review is visible from the same cockpit contract
 - explicit acceptance gates plus an overall readiness status / paper-operation readiness flag
 - optional brokerage sync status when a fund account is supplied
 - operator work items and warnings
@@ -141,6 +142,8 @@ only green cockpit state. `AcceptanceGates` currently contains `session`, `repla
 pass/review/blocked decision instead of reconstructing acceptance differently in each surface.
 Pending DK1 operator sign-off, replay mismatch, open circuit breaker, or incomplete promotion trace
 keeps the lane in review or blocked state even when lower-level endpoint data is visible.
+Legacy DK1 packets that omit the validated explainability or calibration contract are treated as
+blocked trust-gate evidence rather than silently inheriting `ready-for-operator-review`.
 
 `GET /api/workstation/trading` also includes the same readiness payload so workstation consumers can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
 

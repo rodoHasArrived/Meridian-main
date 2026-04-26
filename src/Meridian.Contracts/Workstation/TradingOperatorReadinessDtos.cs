@@ -108,6 +108,35 @@ public sealed record TradingOperatorSignoffReadinessDto(
     DateTimeOffset? CompletedAt,
     string? SourcePath);
 
+public sealed record TradingTrustGateSampleReviewDto(
+    string SampleId,
+    string Provider,
+    string RequiredStep,
+    string StepStatus,
+    string Status,
+    bool Observed,
+    IReadOnlyList<string> MissingRequirements,
+    IReadOnlyList<string> EvidenceAnchors,
+    string AcceptanceCheck);
+
+public sealed record TradingTrustGateEvidenceDocumentDto(
+    string Name,
+    string Gate,
+    string Path,
+    bool Exists,
+    string Status,
+    IReadOnlyList<string> MissingRequirements);
+
+public sealed record TradingTrustGateContractReadinessDto(
+    string ContractId,
+    string DocumentPath,
+    string Status,
+    IReadOnlyList<string> RequiredPayloadFields,
+    IReadOnlyList<string> RequiredReasonCodes,
+    IReadOnlyList<string> RequiredMetrics,
+    bool? FpFnReviewRequired,
+    IReadOnlyList<string> MissingRequirements);
+
 public sealed record TradingTrustGateReadinessDto(
     string GateId,
     string Status,
@@ -123,7 +152,16 @@ public sealed record TradingTrustGateReadinessDto(
     IReadOnlyList<string> RequiredOwners,
     IReadOnlyList<string> Blockers,
     string Detail,
-    TradingOperatorSignoffReadinessDto? OperatorSignoff = null);
+    TradingOperatorSignoffReadinessDto? OperatorSignoff = null)
+{
+    public IReadOnlyList<TradingTrustGateSampleReviewDto> SampleReviews { get; init; } = [];
+
+    public IReadOnlyList<TradingTrustGateEvidenceDocumentDto> EvidenceDocuments { get; init; } = [];
+
+    public TradingTrustGateContractReadinessDto? TrustRationaleContract { get; init; }
+
+    public TradingTrustGateContractReadinessDto? BaselineThresholdContract { get; init; }
+}
 
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,

@@ -76,6 +76,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
     private async Task RefreshAsync()
     {
         SetQueueLoadingStates();
+        ApplyHeroState(DataOperationsHeroState.Loading());
 
         try
         {
@@ -89,6 +90,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         {
             Meridian.Wpf.Services.LoggingService.Instance.LogError("[DataOperationsWorkspaceShell] Refresh failed", ex);
             SetQueueErrorStates();
+            ApplyHeroState(DataOperationsHeroState.Error());
         }
     }
 
@@ -157,6 +159,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
     {
         OperationsHeroScopeText.Text = presentation.Context.PrimaryScopeValue;
         OperationsHeroSummaryText.Text = presentation.QueueSummaryText;
+        ApplyHeroState(presentation.HeroState);
         QueueScopeBadgeText.Text = presentation.QueueScopeBadgeText;
         QueueSummaryText.Text = presentation.QueueSummaryText;
         ProviderQueueList.ItemsSource = presentation.ProviderQueueItems;
@@ -175,6 +178,30 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         SummaryStorageText.Text = NormalizeSummaryText(presentation.SummaryStorageText, DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary);
         SummaryStorageText.Foreground = ResolveToneBrush(presentation.SummaryStorageTone);
         RecentOperationsList.ItemsSource = presentation.RecentOperations;
+    }
+
+    private void ApplyHeroState(DataOperationsHeroState heroState)
+    {
+        OperationsHeroBadgeText.Text = heroState.BadgeText;
+        OperationsHeroBadgeText.Foreground = ResolveToneBrush(heroState.BadgeTone);
+        OperationsHeroBadgeBorder.BorderBrush = ResolveToneBrush(heroState.BadgeTone);
+        OperationsHeroBadgeBorder.Background = ResolveToneBackgroundBrush(heroState.BadgeTone);
+        OperationsHeroFocusText.Text = heroState.FocusText;
+        OperationsHeroActionSummaryText.Text = heroState.SummaryText;
+        OperationsHeroHandoffTitleText.Text = heroState.HandoffTitleText;
+        OperationsHeroHandoffDetailText.Text = heroState.HandoffDetailText;
+        OperationsHeroTargetText.Text = heroState.TargetText;
+        ApplyHeroActionButton(OperationsHeroPrimaryActionButton, heroState.PrimaryActionLabel, heroState.PrimaryActionId);
+        ApplyHeroActionButton(OperationsHeroSecondaryActionButton, heroState.SecondaryActionLabel, heroState.SecondaryActionId);
+    }
+
+    private static void ApplyHeroActionButton(Button button, string label, string actionId)
+    {
+        button.Tag = actionId;
+        button.Content = label;
+        button.Visibility = string.IsNullOrWhiteSpace(label) || string.IsNullOrWhiteSpace(actionId)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
     }
 
     private static string NormalizeSummaryText(string? value, string fallback)
@@ -218,6 +245,20 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         };
 
         return TryFindResource(resourceKey) as Brush ?? Brushes.White;
+    }
+
+    private Brush ResolveToneBackgroundBrush(string tone)
+    {
+        var resourceKey = tone switch
+        {
+            WorkspaceTone.Success => "ConsoleAccentGreenAlpha10Brush",
+            WorkspaceTone.Warning => "ConsoleAccentOrangeAlpha10Brush",
+            WorkspaceTone.Danger => "ConsoleAccentRedAlpha10Brush",
+            WorkspaceTone.Info => "ConsoleAccentBlueAlpha10Brush",
+            _ => "ConsoleBackgroundMediumBrush"
+        };
+
+        return TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
     }
 
 
@@ -265,6 +306,8 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
     private void OnQueuePrimaryActionClick(object sender, RoutedEventArgs e) { if (sender is Button { Tag: string actionId }) ExecuteAction(actionId, navigate: false); }
     private void OnQueueSecondaryActionClick(object sender, RoutedEventArgs e) { if (sender is Button { Tag: string actionId }) ExecuteAction(actionId, navigate: false); }
     private void OnRecentActionClick(object sender, RoutedEventArgs e) { if (sender is Button { Tag: string actionId }) ExecuteAction(actionId, navigate: false); }
+    private void OnOperationsHeroPrimaryActionClick(object sender, RoutedEventArgs e) { if (sender is Button { Tag: string actionId }) ExecuteAction(actionId, navigate: false); }
+    private void OnOperationsHeroSecondaryActionClick(object sender, RoutedEventArgs e) { if (sender is Button { Tag: string actionId }) ExecuteAction(actionId, navigate: false); }
 
     private void ExecuteAction(string actionId, bool navigate)
     {

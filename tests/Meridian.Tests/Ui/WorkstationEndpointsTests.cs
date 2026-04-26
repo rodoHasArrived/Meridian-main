@@ -586,6 +586,21 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.RequiredSampleCount.Should().Be(4);
         readiness.TrustGate.ReadySampleCount.Should().Be(4);
         readiness.TrustGate.ValidatedEvidenceDocumentCount.Should().Be(4);
+        readiness.TrustGate.SampleReviews.Should().ContainSingle(sample =>
+            sample.SampleId == "DK1-ALPACA-QUOTE-GOLDEN" &&
+            sample.Provider == "Alpaca" &&
+            sample.AcceptanceCheck.Contains("golden", StringComparison.OrdinalIgnoreCase));
+        readiness.TrustGate.EvidenceDocuments.Should().ContainSingle(document =>
+            document.Gate == "explainability" &&
+            document.Status == "validated" &&
+            document.Path == "docs/status/dk1-trust-rationale-mapping.md");
+        readiness.TrustGate.TrustRationaleContract.Should().NotBeNull();
+        readiness.TrustGate.TrustRationaleContract!.Status.Should().Be("validated");
+        readiness.TrustGate.TrustRationaleContract.RequiredReasonCodes.Should().Contain("PROVIDER_STREAM_DEGRADED");
+        readiness.TrustGate.BaselineThresholdContract.Should().NotBeNull();
+        readiness.TrustGate.BaselineThresholdContract!.Status.Should().Be("validated");
+        readiness.TrustGate.BaselineThresholdContract.FpFnReviewRequired.Should().BeTrue();
+        readiness.TrustGate.Detail.Should().Contain("explainability validated").And.Contain("calibration validated");
         readiness.TrustGate.OperatorSignoffStatus.Should().Be("pending");
         readiness.TrustGate.OperatorSignoff.Should().NotBeNull();
         readiness.TrustGate.OperatorSignoff!.MissingOwners.Should().BeEquivalentTo(
@@ -689,6 +704,34 @@ public sealed class WorkstationEndpointsTests
         readiness.OperatorSignoff.MissingOwners.Should().BeEmpty();
         readiness.OperatorSignoff.CompletedAt.Should().Be(new DateTimeOffset(2026, 4, 26, 16, 2, 0, TimeSpan.Zero));
         readiness.Detail.Should().Contain("operator sign-off is complete");
+        readiness.Detail.Should().Contain("explainability validated").And.Contain("calibration validated");
+        readiness.Blockers.Should().BeEmpty();
+        readiness.TrustRationaleContract.Should().NotBeNull();
+        readiness.TrustRationaleContract!.Status.Should().Be("validated");
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WithLegacyPacketWithoutContracts_ShouldBlockReview()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-legacy-packet",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(automationRoot, includeContractReview: false);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.ReadyForOperatorReview.Should().BeTrue();
+        readiness.Blockers.Should().Contain("DK1 explainability contract is missing from the parity packet.");
+        readiness.Blockers.Should().Contain("DK1 calibration contract is missing from the parity packet.");
+        readiness.Detail.Should().Contain("explainability contract is missing");
+        readiness.TrustRationaleContract.Should().BeNull();
+        readiness.BaselineThresholdContract.Should().BeNull();
     }
 
     [Fact]
@@ -1822,7 +1865,10 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<WorkstationWorkflowSummaryService>();
     }
 
-    private static void WriteReadyDk1Packet(string automationRoot, string? operatorSignoffJson = null)
+    private static void WriteReadyDk1Packet(
+        string automationRoot,
+        string? operatorSignoffJson = null,
+        bool includeContractReview = true)
     {
         var packetDirectory = Path.Combine(automationRoot, "unit-ready");
         Directory.CreateDirectory(packetDirectory);
@@ -1843,22 +1889,111 @@ public sealed class WorkstationEndpointsTests
               "sampleReview": {
                 "requiredCount": 4,
                 "samples": [
-                  { "id": "DK1-ALPACA-QUOTE-GOLDEN", "status": "ready" },
-                  { "id": "DK1-ALPACA-PARSER-EDGE-CASES", "status": "ready" },
-                  { "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE", "status": "ready" },
-                  { "id": "DK1-YAHOO-HISTORICAL-FALLBACK", "status": "ready" }
+                  {
+                    "id": "DK1-ALPACA-QUOTE-GOLDEN",
+                    "provider": "Alpaca",
+                    "requiredStep": "Alpaca core provider confidence",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json",
+                      "AlpacaQuotePipelineGoldenTests"
+                    ],
+                    "acceptanceCheck": "Golden quote pipeline fixture matched the committed output."
+                  },
+                  {
+                    "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+                    "provider": "Alpaca",
+                    "requiredStep": "Alpaca core provider confidence",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "AlpacaMessageParsingTests",
+                      "AlpacaQuoteRoutingTests",
+                      "AlpacaCredentialAndReconnectTests"
+                    ],
+                    "acceptanceCheck": "Parser edge cases preserved routing and reconnect behavior."
+                  },
+                  {
+                    "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+                    "provider": "Robinhood",
+                    "requiredStep": "Robinhood supported surface",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "RobinhoodMarketDataClientTests",
+                      "RobinhoodBrokerageGatewayTests",
+                      "artifacts/provider-validation/robinhood/2026-04-09/manifest.json"
+                    ],
+                    "acceptanceCheck": "Bounded runtime packet and offline provider surface remain aligned."
+                  },
+                  {
+                    "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+                    "provider": "Yahoo",
+                    "requiredStep": "Yahoo historical-only core provider",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "YahooFinanceHistoricalDataProviderTests",
+                      "YahooFinanceIntradayContractTests"
+                    ],
+                    "acceptanceCheck": "Historical fallback fixtures remain stable without implying live readiness."
+                  }
                 ]
               },
               "evidenceDocuments": [
-                { "name": "DK1 pilot parity runbook", "status": "validated" },
-                { "name": "DK1 trust rationale mapping", "status": "validated" },
-                { "name": "DK1 baseline trust thresholds", "status": "validated" },
-                { "name": "Provider validation matrix", "status": "validated" }
+                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "Provider validation matrix", "gate": "parity", "path": "docs/status/provider-validation-matrix.md", "exists": true, "status": "validated", "missingRequirements": [] }
               ],
+              __CONTRACT_REVIEW__
               "operatorSignoff": __OPERATOR_SIGNOFF__,
               "blockers": []
             }
-            """.Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
+            """
+            .Replace("__CONTRACT_REVIEW__", includeContractReview
+                ? """
+                  "trustRationaleContract": {
+                    "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+                    "requiredPayloadFields": [ "signalSource", "reasonCode", "recommendedAction" ],
+                    "requiredReasonCodes": [
+                      "HEALTHY_BASELINE",
+                      "PROVIDER_STREAM_DEGRADED",
+                      "RECONNECT_INSTABILITY",
+                      "ERROR_RATE_SPIKE",
+                      "LATENCY_REGRESSION",
+                      "PARITY_DRIFT_DETECTED",
+                      "DATA_COMPLETENESS_GAP",
+                      "CALIBRATION_STALE"
+                    ],
+                    "status": "validated",
+                    "missingRequirements": []
+                  },
+                  "baselineThresholdContract": {
+                    "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+                    "requiredMetrics": [
+                      "Composite trust score",
+                      "Connection stability score",
+                      "Error-rate score",
+                      "Latency score",
+                      "Reconnect score"
+                    ],
+                    "fpFnReviewRequired": true,
+                    "status": "validated",
+                    "missingRequirements": []
+                  },
+                """
+                : string.Empty)
+            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(

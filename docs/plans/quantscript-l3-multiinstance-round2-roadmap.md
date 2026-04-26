@@ -1,7 +1,7 @@
 # QuantScript, L3 Inference & Multi-Instance: Round 2 Feature Roadmap (Ideas #19–#30)
 
-**Version:** 1.0
-**Last Updated:** 2026-04-08
+**Version:** 1.1
+**Last Updated:** 2026-04-26
 **Audience:** Quantitative researchers, core contributors, platform engineers, institutional operators
 **Related Plans:**
 - QuantScript v1 blueprint: [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
@@ -15,7 +15,13 @@ L3 inference enrichment (Track H), and multi-instance cluster management (Track 
 viability-assessed, dependency-ordered implementation roadmap. Each feature is evaluated against
 Meridian's existing code, and all source file references are pinned to production paths.
 
-These tracks now sit in the optional or post-core part of the canonical roadmap. They should not outrank the Wave 1-6 path to core operator-readiness unless a specific pilot or research program explicitly pulls them forward.
+These tracks now sit in the optional or post-core part of the canonical roadmap. They should not
+outrank the Wave 1-6 path to core operator-readiness unless a specific pilot or research program
+explicitly pulls them forward. Current repo state has also moved the QuantScript v1 foundation out
+of "planned" status: `IScriptRunner`, `ScriptRunner`, `QuantScriptGlobals`, `PortfolioBuilder`,
+the WPF QuantScript page/view model, ScottPlot charting, and focused QuantScript tests exist. Treat
+the Track G rows below as follow-on product ideas on top of that delivered baseline, while Track H
+and Track I remain optional future work.
 
 **Effort key:** S = days | M = 1–2 weeks | L = 1+ month
 
@@ -58,7 +64,7 @@ Charts, and Metrics).
 reflects over `ScriptState.Variables`:
 
 ```csharp
-// Pseudocode — src/Meridian.QuantScript/Execution/ScriptRunner.cs
+// Pseudocode — src/Meridian.QuantScript/Compilation/ScriptRunner.cs
 foreach (var v in scriptState.Variables)
 {
     var preview = SmartPreview.Summarize(v.Name, v.Type, v.Value);
@@ -99,8 +105,8 @@ rendered via `WatchTradeGridViewModel`.
 
 | Dependency | Status | Location |
 |---|---|---|
-| QuantScript v1 `IScriptRunner` | Planned | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
-| QuantScript v1 cell execution model (idea #1 from Round 1) | Planned | `docs/plans/quant-script-environment-blueprint.md` |
+| QuantScript v1 `IScriptRunner` | Implemented baseline | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
+| QuantScript v1 cell execution model (idea #1 from Round 1) | Implemented baseline | `src/Meridian.QuantScript/Compilation/ScriptRunner.cs`; `docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -270,7 +276,7 @@ services.AddTransient<HistoryEntryViewModel>();
 
 | Dependency | Status | Location |
 |---|---|---|
-| QuantScript v1 `IScriptRunner` | Planned | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
+| QuantScript v1 `IScriptRunner` | Implemented baseline | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
 | `StorageCatalogService` / `ICatalogPathResolver` | Implemented | `src/Meridian.Storage/Services/StorageCatalogService.cs` |
 
 #### Tradeoffs
@@ -428,7 +434,7 @@ services.AddScoped<SecurityGlobal>();
 
 | Dependency | Status | Location |
 |---|---|---|
-| QuantScript v1 `QuantScriptGlobals` | Planned | `src/Meridian.QuantScript/Api/QuantScriptGlobals.cs` |
+| QuantScript v1 `QuantScriptGlobals` | Implemented baseline | `src/Meridian.QuantScript/Compilation/QuantScriptGlobals.cs` |
 | `ISecurityMasterQueryService` | Implemented | `src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs` |
 | Security Master projection cache | Implemented | `src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs` |
 
@@ -610,9 +616,9 @@ services.AddSingleton<HtmlReportWriter>();
 
 | Dependency | Status | Location |
 |---|---|---|
-| QuantScript v1 `QuantScriptGlobals` | Planned | `src/Meridian.QuantScript/Api/QuantScriptGlobals.cs` |
+| QuantScript v1 `QuantScriptGlobals` | Implemented baseline | `src/Meridian.QuantScript/Compilation/QuantScriptGlobals.cs` |
 | `AnalysisExportService` (Parquet/Excel) | Implemented | `src/Meridian.Storage/Export/AnalysisExportService.cs` |
-| ScottPlot (chart rendering) | Planned via blueprint | `docs/plans/quant-script-environment-blueprint.md` |
+| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -765,7 +771,7 @@ services.AddSingleton<ReplViewModel>();
 
 | Dependency | Status | Location |
 |---|---|---|
-| `IScriptRunner.ContinueWithAsync` | Planned | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
+| `IScriptRunner.ContinueWithAsync` | Implemented baseline | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
 | `CircularBuffer<T>` | Implemented | `src/Meridian.Ui.Services/Collections/CircularBuffer.cs` |
 
 #### Tradeoffs
@@ -1167,7 +1173,7 @@ services.AddSingleton<TcaHtmlReportWriter>();
 |---|---|---|
 | L3 fill tape (`fill-tape.jsonl`) | Planned | `docs/plans/l3-inference-implementation-plan.md` |
 | `BacktestMetricsEngine` | Planned | `src/Meridian.Backtesting/Metrics/` |
-| ScottPlot (chart rendering) | Planned via blueprint | `docs/plans/quant-script-environment-blueprint.md` |
+| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -2140,10 +2146,10 @@ Three pieces of work unblock multiple features and should be completed early:
 |---|---|---|
 | **Feature #30** (Split-Brain Detection) | Features #28, #29 | Fill in recovery logic in existing `SplitBrainDetector.cs` skeleton |
 | **`VenueMicMapper.IanaTimezone`** field | Features #24, #29 | Add `ianaTimezone` to `config/venue-mapping.json`; expose on `VenueMicMapper` |
-| **QuantScript v1 `ScriptRunner` + `QuantScriptGlobals`** | Features #19, #20, #21, #22, #23 | Complete the QuantScript v1 foundation per `docs/plans/quant-script-environment-blueprint.md` |
+| **QuantScript v1 `ScriptRunner` + `QuantScriptGlobals`** | Features #19, #20, #21, #22, #23 | Implemented baseline; use it as the Track G foundation |
 
 Completing these three items first maximizes parallelism: Track G features can proceed
-independently of Track H and Track I once the QuantScript v1 foundation is in place.
+independently of Track H and Track I on top of the implemented QuantScript v1 foundation.
 
 ### Suggested Sequencing
 
@@ -2151,7 +2157,7 @@ independently of Track H and Track I once the QuantScript v1 foundation is in pl
 
 | Item | Notes |
 |---|---|
-| QuantScript v1 ScriptRunner + QuantScriptGlobals | Required for all Track G features |
+| QuantScript v1 ScriptRunner + QuantScriptGlobals | Implemented baseline required for all Track G features |
 | Feature #30 — Split-Brain Detection & Recovery | Required before #28 and #29 |
 | `VenueMicMapper.IanaTimezone` field | Required before #24 and #29; 1-day config change |
 
@@ -2159,7 +2165,7 @@ independently of Track H and Track I once the QuantScript v1 foundation is in pl
 
 | Feature | Rationale |
 |---|---|
-| #23 Script Expression REPL | S-effort; immediate UX win once QuantScript v1 ships |
+| #23 Script Expression REPL | S-effort; immediate UX win on top of the shipped QuantScript v1 baseline |
 | #21 Security Master in QuantScript | S-effort; already-implemented backend; thin wiring |
 | #25 TCA Report | M-effort; highest-leverage idea in the batch; no new dependencies |
 | #20 Script Run History & Diffing | M-effort; high retention value for academic users |
@@ -2228,10 +2234,10 @@ paths that will be created when implementing the corresponding feature.
 | `src/Meridian.L3.Inference/DarkPool/HiddenLiquidityModel.cs` | #27 |
 | `src/Meridian.L3.Inference/Simulation/DayEndQueueState.cs` | #26 |
 | `src/Meridian.QuantScript/Adapters/SecurityEconomicDefinitionAdapter.cs` | #21 |
-| `src/Meridian.QuantScript/Api/QuantScriptGlobals.cs` | #19, #20, #21, #22, #23 |
+| `src/Meridian.QuantScript/Compilation/QuantScriptGlobals.cs` | #19, #20, #21, #22, #23 |
 | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` | #19, #20, #23 |
 | `src/Meridian.QuantScript/Debug/SmartPreview.cs` | #19 |
-| `src/Meridian.QuantScript/Execution/ScriptRunner.cs` | #19, #20 |
+| `src/Meridian.QuantScript/Compilation/ScriptRunner.cs` | #19, #20 |
 | `src/Meridian.QuantScript/Export/PdfChartWriter.cs` | #22 |
 | `src/Meridian.QuantScript/History/ScriptDiffEngine.cs` | #20 |
 | `src/Meridian.QuantScript/ViewModels/VariableWatchViewModel.cs` | #19 |
