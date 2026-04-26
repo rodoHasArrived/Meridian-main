@@ -41,7 +41,18 @@ public sealed record OperatorWorkItemDto(
     DateTimeOffset CreatedAt,
     string? RunId = null,
     Guid? FundAccountId = null,
-    string? AuditReference = null);
+    string? AuditReference = null,
+    string? Workspace = null,
+    string? TargetRoute = null,
+    string? TargetPageTag = null);
+
+public sealed record OperatorInboxDto(
+    DateTimeOffset AsOf,
+    IReadOnlyList<OperatorWorkItemDto> Items,
+    int CriticalCount,
+    int WarningCount,
+    int ReviewCount,
+    string Summary);
 
 public sealed record TradingAcceptanceGateDto(
     string GateId,

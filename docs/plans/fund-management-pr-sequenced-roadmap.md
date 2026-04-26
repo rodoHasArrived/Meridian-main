@@ -259,7 +259,7 @@ Broaden reconciliation from narrow event matching to fund-ops break logic.
 
 Add application-layer reconciliation runs, exception queues, and governance orchestration.
 
-**Current delivered slice (2026-04-25):** run-scoped reconciliation plus a file-backed break queue now exist with review, resolve/dismiss, and audit-history routes. Remaining PR-14 scope is richer matching, calibration, and external statement/custodian coverage.
+**Current delivered slice (2026-04-26):** run-scoped reconciliation plus a file-backed break queue now exist with review, resolve/dismiss, and audit-history routes, and open/in-review breaks now project into `/api/workstation/operator/inbox` with stable IDs, audit references, severity tone, and `GovernanceShell` navigation targets. Remaining PR-14 scope is richer matching, calibration, external statement/custodian coverage, and durable queue acceptance beyond the initial shared projection.
 
 **Primary anchors**
 
@@ -277,6 +277,8 @@ Expose breaks, exceptions, and review workflows in WPF and API surfaces.
 
 - `src/Meridian.Wpf/`
 - `src/Meridian.Ui.Shared/Endpoints/`
+
+**Current delivered slice (2026-04-26):** the WPF Fund Ledger reconciliation workbench now has reset-filters recovery for hidden queue rows and runs, and the main shell queue button can route the primary operator-inbox work item to its owning workspace. Remaining PR-15 scope is a fuller Governance review page path, richer remediation playbooks, and acceptance coverage for queue-to-resolution workflows.
 
 ### PR-16: NAV and Attribution Services
 

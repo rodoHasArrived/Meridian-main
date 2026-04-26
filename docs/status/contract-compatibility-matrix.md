@@ -72,6 +72,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-04-26: Expanded the compatibility gate to detect scoped record constructor parameter and enum-member removals, with focused Python regression coverage. No runtime contract break introduced.
 - 2026-04-26: Added `UiApiRoutes.cs` route constants to the compatibility scope and gate heuristics so shared route removals or string changes require migration notes. No runtime contract break introduced.
 - 2026-04-26: Added additive trading-readiness control evidence fields (`TradingControlEvidenceDto`, `TradingControlReadinessDto.RecentEvidence`, explainability counts, and warnings) plus `OperatorWorkItemKindDto.ExecutionControl`. Older clients can ignore the new payload fields; enum-aware clients should treat the new work-item kind as an execution-risk blocker.
+- 2026-04-26: Added additive operator-inbox route `GET /api/workstation/operator/inbox`, `OperatorInboxDto`, and optional navigation fields on `OperatorWorkItemDto` so desktop/web consumers can open shared readiness and reconciliation work items from one queue. Older clients can continue reading readiness `WorkItems` without consuming the new route or optional fields.
 
 ## Pull Request Author Checklist
 

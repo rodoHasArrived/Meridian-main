@@ -141,8 +141,15 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 
 Operator work items emitted by the shared readiness service use stable, scoped `WorkItemId`
 values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`,
-`dk1-operator-signoff-pending`, and `execution-evidence-incomplete`. This lets the WPF shell, retained web cockpit, and future
-operator inbox refresh the same blocker without creating a new random item on every poll.
+`dk1-operator-signoff-pending`, and `execution-evidence-incomplete`. This lets the WPF shell, retained web cockpit, and initial operator-inbox endpoint refresh the same blocker without creating a new random item on every poll.
+`GET /api/workstation/operator/inbox` now aggregates those readiness work items with open or
+in-review reconciliation breaks, adds workspace/page/route navigation hints, and is now consumed by
+the WPF main shell queue action so the first actionable item can route operators into the owning
+workspace. Broader end-to-end queue acceptance remains a cockpit-hardening task rather than a
+completed workflow.
+If reconciliation break queue storage cannot seed or load, the endpoint keeps the trading-readiness
+items available and adds a stable `reconciliation-break-queue-unavailable` warning routed to
+`GovernanceShell` instead of failing the whole operator inbox.
 
 `OverallStatus` is `Ready`, `ReviewRequired`, or `Blocked`; `ReadyForPaperOperation=true` is the
 only green cockpit state. `AcceptanceGates` currently contains `session`, `replay`,
@@ -336,4 +343,5 @@ npm --prefix src/Meridian.Ui/dashboard test -- trading-screen api.trading
 - Answered 2026-04-26: replay readiness records compared fill, order, and ledger counts, and cockpit hardening should block on unexplained divergence rather than portfolio-only replay confidence.
 - Answered 2026-04-26: durable promotion records live in the strategies layer through `IPromotionRecordStore` / `JsonlPromotionRecordStore`; execution audit remains supporting evidence rather than the promotion-history store.
 - Answered 2026-04-26: `Backtest -> Paper` approvals require operator and rationale context now, while `Paper -> Live` additionally requires live-override review.
+- Answered 2026-04-26: expose shared operator work items through `GET /api/workstation/operator/inbox`, seeded from trading readiness plus reconciliation break-queue state, instead of making each client build its own blocker queue.
 - Answered 2026-04-25: use `GET /api/workstation/trading/readiness` as the single cockpit readiness endpoint, while keeping the existing focused session, replay, controls, audit, and promotion routes for drill-in and write actions.

@@ -173,6 +173,63 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         private set => SetProperty(ref _statusText, value);
     }
 
+    public bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(SearchText) ||
+        !string.Equals(SelectedModeFilter, "All", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsEmptyStateVisible => Runs.Count == 0;
+
+    public bool HasFilterRecoveryAction =>
+        _allRuns.Count > 0 &&
+        Runs.Count == 0 &&
+        HasActiveFilters;
+
+    public string RunScopeText
+    {
+        get
+        {
+            if (_allRuns.Count == 0)
+                return "No recorded runs";
+
+            if (Runs.Count == _allRuns.Count)
+                return FormatRunCount(_allRuns.Count, "recorded");
+
+            return $"{Runs.Count} visible of {FormatRunCount(_allRuns.Count, "recorded")}";
+        }
+    }
+
+    public string EmptyStateTitle
+    {
+        get
+        {
+            if (_allRuns.Count == 0)
+                return "No strategy runs recorded yet";
+
+            if (HasActiveFilters)
+                return "No strategy runs match the current filters";
+
+            return "No strategy runs to display";
+        }
+    }
+
+    public string EmptyStateDetail
+    {
+        get
+        {
+            if (_allRuns.Count == 0)
+            {
+                return !string.IsNullOrWhiteSpace(_navigationContext?.StrategyId)
+                    ? $"Complete a backtest or paper session for {_navigationContext.StrategyId} to populate this browser."
+                    : "Complete a backtest or paper session to populate this browser.";
+            }
+
+            if (HasActiveFilters)
+                return $"Reset filters to show {FormatRunCount(_allRuns.Count, "recorded")}.";
+
+            return "Refresh the browser after recording runs.";
+        }
+    }
+
     public bool CanOpenSelectedRun => SelectedRun is not null;
 
     /// <summary><c>true</c> when two distinct runs are selected and ready to compare.</summary>
@@ -187,6 +244,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     public IRelayCommand OpenLedgerCommand { get; }
     public IAsyncRelayCommand CompareRunsCommand { get; }
     public IRelayCommand ClearComparisonCommand { get; }
+    public IRelayCommand ClearRunFiltersCommand { get; }
 
     internal StrategyRunBrowserViewModel(
         StrategyRunWorkspaceService runService,
@@ -203,6 +261,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => CanOpenSelectedRun);
         CompareRunsCommand = new AsyncRelayCommand(ExecuteCompareAsync, () => CanCompareRuns);
         ClearComparisonCommand = new RelayCommand(ClearComparison);
+        ClearRunFiltersCommand = new RelayCommand(ClearRunFilters, () => HasActiveFilters);
     }
 
     public async Task InitializeAsync(CancellationToken ct = default)
@@ -267,6 +326,8 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
                 => $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded for {_navigationContext!.StrategyId}.",
             _ => $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded."
         };
+
+        RaiseRunPresentationChanged();
     }
 
     private async Task ApplyNavigationContextAsync(CancellationToken ct)
@@ -326,6 +387,12 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             : StatusText;
     }
 
+    private void ClearRunFilters()
+    {
+        SearchText = string.Empty;
+        SelectedModeFilter = "All";
+    }
+
     private void OpenDetail()
     {
         if (SelectedRun is not null)
@@ -357,4 +424,18 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         OpenLedgerCommand.NotifyCanExecuteChanged();
         (CompareRunsCommand as AsyncRelayCommand)?.NotifyCanExecuteChanged();
     }
+
+    private void RaiseRunPresentationChanged()
+    {
+        RaisePropertyChanged(nameof(HasActiveFilters));
+        RaisePropertyChanged(nameof(IsEmptyStateVisible));
+        RaisePropertyChanged(nameof(HasFilterRecoveryAction));
+        RaisePropertyChanged(nameof(RunScopeText));
+        RaisePropertyChanged(nameof(EmptyStateTitle));
+        RaisePropertyChanged(nameof(EmptyStateDetail));
+        ClearRunFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private static string FormatRunCount(int count, string qualifier) =>
+        $"{count} {qualifier} run{(count == 1 ? string.Empty : "s")}";
 }

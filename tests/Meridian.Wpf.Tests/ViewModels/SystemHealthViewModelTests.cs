@@ -121,6 +121,30 @@ public sealed class SystemHealthViewModelTests
     }
 
     [Fact]
+    public void BuildProviderEmptyState_DistinguishesPendingScanFromEmptySnapshot()
+    {
+        var pending = SystemHealthViewModel.BuildProviderEmptyState(hasProviderSnapshot: false);
+        var emptySnapshot = SystemHealthViewModel.BuildProviderEmptyState(hasProviderSnapshot: true);
+
+        pending.Title.Should().Be("Provider scan pending");
+        pending.Detail.Should().Contain("Refresh health data");
+        emptySnapshot.Title.Should().Be("No providers reported");
+        emptySnapshot.Detail.Should().Contain("Connect or enable a provider");
+    }
+
+    [Fact]
+    public void BuildEventEmptyState_DistinguishesPendingScanFromEmptySnapshot()
+    {
+        var pending = SystemHealthViewModel.BuildEventEmptyState(hasEventSnapshot: false);
+        var emptySnapshot = SystemHealthViewModel.BuildEventEmptyState(hasEventSnapshot: true);
+
+        pending.Title.Should().Be("Event scan pending");
+        pending.Detail.Should().Contain("Refresh health data");
+        emptySnapshot.Title.Should().Be("No recent events retained");
+        emptySnapshot.Detail.Should().Contain("Continue monitoring");
+    }
+
+    [Fact]
     public void SystemHealthPageSource_ShouldExposeTriageBriefing()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SystemHealthPage.xaml"));
@@ -132,5 +156,15 @@ public sealed class SystemHealthViewModelTests
         xaml.Should().Contain("SystemTriageTargetText");
         xaml.Should().Contain("SystemHealthTriageBriefingCard");
         xaml.Should().Contain("SystemHealthTriageHandoffPanel");
+        xaml.Should().Contain("SystemHealthProviderEmptyStatePanel");
+        xaml.Should().Contain("SystemHealthProviderEmptyStateTitle");
+        xaml.Should().Contain("SystemHealthProviderEmptyStateDetail");
+        xaml.Should().Contain("SystemHealthEventEmptyStatePanel");
+        xaml.Should().Contain("SystemHealthEventEmptyStateTitle");
+        xaml.Should().Contain("SystemHealthEventEmptyStateDetail");
+        xaml.Should().Contain("{Binding ProviderEmptyStateTitle}");
+        xaml.Should().Contain("{Binding ProviderEmptyStateDetail}");
+        xaml.Should().Contain("{Binding EventEmptyStateTitle}");
+        xaml.Should().Contain("{Binding EventEmptyStateDetail}");
     }
 }

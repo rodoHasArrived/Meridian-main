@@ -95,6 +95,14 @@ public static class WorkstationEndpoints
         .WithName("GetWorkstationTradingReadiness")
         .Produces<TradingOperatorReadinessDto>(200);
 
+        group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
+        {
+            var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
+            return Results.Json(inbox, jsonOptions);
+        })
+        .WithName("GetWorkstationOperatorInbox")
+        .Produces<OperatorInboxDto>(200);
+
         group.MapGet("/data-operations", async (HttpContext context) =>
         {
             return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
@@ -1469,6 +1477,207 @@ public static class WorkstationEndpoints
         }
 
         return readinessService.GetAsync(fundAccountId, context.RequestAborted);
+    }
+
+    private static async Task<OperatorInboxDto> BuildOperatorInboxAsync(Guid? fundAccountId, HttpContext context)
+    {
+        var asOf = DateTimeOffset.UtcNow;
+        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
+        var workItems = readiness.WorkItems
+            .Select(AttachOperatorNavigation)
+            .ToList();
+
+        await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+
+        var items = workItems
+            .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group
+                .OrderByDescending(static item => item.Tone)
+                .ThenByDescending(static item => item.CreatedAt)
+                .First())
+            .OrderByDescending(static item => item.Tone)
+            .ThenByDescending(static item => item.CreatedAt)
+            .ThenBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var criticalCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
+        var warningCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
+        var reviewCount = criticalCount + warningCount;
+
+        return new OperatorInboxDto(
+            AsOf: asOf,
+            Items: items,
+            CriticalCount: criticalCount,
+            WarningCount: warningCount,
+            ReviewCount: reviewCount,
+            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
+    }
+
+    private static async Task AddReconciliationBreakWorkItemsAsync(
+        HttpContext context,
+        List<OperatorWorkItemDto> workItems,
+        DateTimeOffset asOf)
+    {
+        try
+        {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var reconciliationBreaks = await GetBreakQueueItemsAsync(
+                context.RequestServices,
+                status: null,
+                context.RequestAborted).ConfigureAwait(false);
+            workItems.AddRange(reconciliationBreaks
+                .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
+                .Select(MapReconciliationBreakWorkItem));
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            workItems.Add(BuildReconciliationBreakQueueUnavailableWorkItem(asOf));
+        }
+    }
+
+    private static OperatorWorkItemDto BuildReconciliationBreakQueueUnavailableWorkItem(DateTimeOffset asOf)
+        => new(
+            WorkItemId: "reconciliation-break-queue-unavailable",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Reconciliation queue unavailable",
+            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting governance queue coverage.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: asOf,
+            Workspace: "Governance",
+            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+            TargetPageTag: "GovernanceShell");
+
+    private static OperatorWorkItemDto AttachOperatorNavigation(OperatorWorkItemDto item)
+    {
+        var navigation = ResolveOperatorNavigation(item.Kind, item.FundAccountId);
+        return item with
+        {
+            Workspace = item.Workspace ?? navigation.Workspace,
+            TargetRoute = item.TargetRoute ?? navigation.TargetRoute,
+            TargetPageTag = item.TargetPageTag ?? navigation.TargetPageTag
+        };
+    }
+
+    private static OperatorWorkItemDto MapReconciliationBreakWorkItem(ReconciliationBreakQueueItem item)
+    {
+        var tone = item.Severity switch
+        {
+            ReconciliationBreakSeverity.Critical => OperatorWorkItemToneDto.Critical,
+            ReconciliationBreakSeverity.High or ReconciliationBreakSeverity.Medium => OperatorWorkItemToneDto.Warning,
+            _ => OperatorWorkItemToneDto.Info
+        };
+        var assignment = string.IsNullOrWhiteSpace(item.AssignedTo)
+            ? "unassigned"
+            : $"assigned to {item.AssignedTo}";
+        var status = item.Status == ReconciliationBreakQueueStatus.InReview
+            ? "in review"
+            : "open";
+
+        return new OperatorWorkItemDto(
+            WorkItemId: BuildOperatorInboxScopedId("reconciliation-break", item.BreakId),
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: item.Status == ReconciliationBreakQueueStatus.InReview
+                ? "Reconciliation break in review"
+                : "Reconciliation break requires review",
+            Detail: $"{item.StrategyName}: {item.Reason} The break is {status} and {assignment}.",
+            Tone: tone,
+            CreatedAt: item.DetectedAt,
+            RunId: item.RunId,
+            AuditReference: item.BreakId,
+            Workspace: "Governance",
+            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+            TargetPageTag: "GovernanceShell");
+    }
+
+    private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveOperatorNavigation(
+        OperatorWorkItemKindDto kind,
+        Guid? fundAccountId)
+        => kind switch
+        {
+            OperatorWorkItemKindDto.SecurityMasterCoverage => (
+                "Governance",
+                UiApiRoutes.WorkstationSecurityMasterSearch,
+                "GovernanceShell"),
+            OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
+                "Governance",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "GovernanceShell"),
+            OperatorWorkItemKindDto.BrokerageSync => (
+                "Trading",
+                fundAccountId.HasValue
+                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
+                "TradingShell"),
+            _ => (
+                "Trading",
+                UiApiRoutes.WorkstationTradingReadiness,
+                "TradingShell")
+        };
+
+    private static string BuildOperatorInboxSummary(
+        IReadOnlyCollection<OperatorWorkItemDto> items,
+        int criticalCount,
+        int warningCount)
+    {
+        if (items.Count == 0)
+        {
+            return "No operator work items are open.";
+        }
+
+        if (criticalCount > 0)
+        {
+            return $"{criticalCount} critical and {warningCount} warning work item(s) need review.";
+        }
+
+        if (warningCount > 0)
+        {
+            return $"{warningCount} warning work item(s) need review.";
+        }
+
+        return $"{items.Count} informational work item(s) are available.";
+    }
+
+    private static string BuildOperatorInboxScopedId(string prefix, string scope)
+    {
+        var normalizedPrefix = NormalizeOperatorInboxToken(prefix);
+        var normalizedScope = NormalizeOperatorInboxToken(scope);
+        return string.IsNullOrEmpty(normalizedScope)
+            ? normalizedPrefix
+            : $"{normalizedPrefix}-{normalizedScope}";
+    }
+
+    private static string NormalizeOperatorInboxToken(string value)
+    {
+        Span<char> buffer = stackalloc char[value.Length];
+        var length = 0;
+        var previousWasSeparator = false;
+
+        foreach (var character in value.Trim())
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                buffer[length++] = char.ToLowerInvariant(character);
+                previousWasSeparator = false;
+                continue;
+            }
+
+            if (!previousWasSeparator && length > 0)
+            {
+                buffer[length++] = '-';
+                previousWasSeparator = true;
+            }
+        }
+
+        if (length > 0 && buffer[length - 1] == '-')
+        {
+            length--;
+        }
+
+        return new string(buffer[..length]);
     }
 
     private static string BuildTradingBrokerageNotes(

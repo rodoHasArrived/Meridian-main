@@ -254,9 +254,26 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel Visibility="{Binding HasNoProviders, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,12,0,0">
-                        <TextBlock Text="No providers connected" FontSize="13"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
+                    <StackPanel Visibility="{Binding HasNoProviders, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,12,0,0"
+                                MaxWidth="520"
+                                HorizontalAlignment="Center"
+                                AutomationProperties.AutomationId="SystemHealthProviderEmptyStatePanel"
+                                AutomationProperties.Name="{Binding ProviderEmptyStateTitle}">
+                        <TextBlock Text="&#xE774;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="28"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="{Binding ProviderEmptyStateTitle}"
+                                   Style="{StaticResource EmptyStateTitleStyle}"
+                                   Margin="0,0,0,6"
+                                   AutomationProperties.AutomationId="SystemHealthProviderEmptyStateTitle" />
+                        <TextBlock Text="{Binding ProviderEmptyStateDetail}"
+                                   Style="{StaticResource EmptyStateDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SystemHealthProviderEmptyStateDetail" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -339,9 +356,26 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel Visibility="{Binding HasNoEvents, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,12,0,0">
-                        <TextBlock Text="No recent events" FontSize="13"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
+                    <StackPanel Visibility="{Binding HasNoEvents, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,12,0,0"
+                                MaxWidth="520"
+                                HorizontalAlignment="Center"
+                                AutomationProperties.AutomationId="SystemHealthEventEmptyStatePanel"
+                                AutomationProperties.Name="{Binding EventEmptyStateTitle}">
+                        <TextBlock Text="&#xE7BA;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="28"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="{Binding EventEmptyStateTitle}"
+                                   Style="{StaticResource EmptyStateTitleStyle}"
+                                   Margin="0,0,0,6"
+                                   AutomationProperties.AutomationId="SystemHealthEventEmptyStateTitle" />
+                        <TextBlock Text="{Binding EventEmptyStateDetail}"
+                                   Style="{StaticResource EmptyStateDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SystemHealthEventEmptyStateDetail" />
                     </StackPanel>
                 </StackPanel>
             </Border>

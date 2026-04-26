@@ -58,12 +58,19 @@
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="Search" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource FormTextBoxStyle}" />
+                             Style="{StaticResource FormTextBoxStyle}"
+                             AutomationProperties.AutomationId="StrategyRunsSearchBox" />
+                    <TextBlock Text="{Binding RunScopeText}"
+                               FontSize="11"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Margin="0,6,0,0"
+                               AutomationProperties.AutomationId="StrategyRunsScopeText" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Mode" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
                     <ComboBox ItemsSource="{Binding ModeFilters}"
-                              SelectedItem="{Binding SelectedModeFilter, Mode=TwoWay}" />
+                              SelectedItem="{Binding SelectedModeFilter, Mode=TwoWay}"
+                              AutomationProperties.AutomationId="StrategyRunsModeFilter" />
                 </StackPanel>
                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
                     <Button Content="Portfolio"
@@ -73,6 +80,12 @@
                     <Button Content="Ledger"
                             Command="{Binding OpenLedgerCommand}"
                             Style="{StaticResource GhostButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button Content="Reset Filters"
+                            Command="{Binding ClearRunFiltersCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Visibility="{Binding HasActiveFilters, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="StrategyRunsResetFiltersButton"
                             Margin="0,0,8,0" />
                     <Button Content="Compare"
                             Command="{Binding CompareRunsCommand}"
@@ -107,7 +120,8 @@
                               CanUserSortColumns="True"
                               HeadersVisibility="Column"
                               Background="{StaticResource ConsoleBackgroundLightBrush}"
-                              BorderThickness="0">
+                              BorderThickness="0"
+                              AutomationProperties.AutomationId="StrategyRunsGrid">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:g}}" Width="140" />
                             <DataGridTextColumn Header="Strategy" Binding="{Binding StrategyName}" Width="180" />
@@ -119,6 +133,37 @@
                             <DataGridTextColumn Header="Run Id" Binding="{Binding RunId}" Width="*" />
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <StackPanel Grid.Row="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                MaxWidth="460"
+                                Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="StrategyRunsEmptyStatePanel"
+                                AutomationProperties.Name="{Binding EmptyStateTitle}">
+                        <TextBlock Text="&#xE8B0;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="40"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,14" />
+                        <TextBlock Text="{Binding EmptyStateTitle}"
+                                   Style="{StaticResource EmptyStateTitleStyle}"
+                                   Margin="0,0,0,8"
+                                   AutomationProperties.AutomationId="StrategyRunsEmptyStateTitle" />
+                        <TextBlock Text="{Binding EmptyStateDetail}"
+                                   Style="{StaticResource EmptyStateDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="StrategyRunsEmptyStateDetail" />
+                        <Button Content="Reset Filters"
+                                Command="{Binding ClearRunFiltersCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Visibility="{Binding HasFilterRecoveryAction, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,16,0,0"
+                                HorizontalAlignment="Center"
+                                AutomationProperties.AutomationId="StrategyRunsEmptyStateResetFiltersButton" />
+                    </StackPanel>
+
                     <!-- Comparison run picker -->
                     <Border Grid.Row="1" Margin="0,12,0,0" Padding="10,8"
                             Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"

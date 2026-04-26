@@ -20,7 +20,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 | Project | Role |
 | --- | --- |
 | `Meridian.Wpf` | Views, code-behind, WPF-specific services |
-| `Meridian.Wpf.Tests` | 104 unit tests for WPF-specific services and shell projections |
+| `Meridian.Wpf.Tests` | 106 unit tests for WPF-specific services and shell projections |
 | `Meridian.Ui.Services` | Shared service layer (CommandPaletteService, WorkspaceService, NavigationServiceBase, etc.) |
 | `Meridian.Ui.Tests` | 171 tests for shared UI services |
 | `Meridian.Ui.Shared` | Endpoint helpers, DTO extensions, HTML template generator |
@@ -64,11 +64,17 @@ Content Frame
 
 **Main shell context strip** — `MainPage` now renders the shared context strip between the workflow summary rail and the split-pane host. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
 
+**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, colors the shell queue action from the inbox tone, and routes the first actionable work item to its target page tag. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
+
 **Page header visibility refinement** — `MainPage` now keeps the current page title visible in the primary shell header instead of leaving the bound title/subtitle collapsed. Standard density shows both title and subtitle, while compact density keeps the title visible and collapses the subtitle so the context switcher and next-action strip stay above the fold.
 
 **Research desk briefing hero** — `ResearchWorkspaceShellPage` now keeps the current research cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
 
+**Strategy run browser filter recovery** — `StrategyRunsPage` now shows visible-vs-recorded run scope beside search and overlays a dynamic empty state when no rows are visible. `StrategyRunBrowserViewModel` distinguishes a truly empty run library from search or mode filters that hide retained rows, and its `ClearRunFiltersCommand` restores the in-memory run list without another run-store read.
+
 **Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
+
+**Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 
 **Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path.
 
@@ -76,15 +82,19 @@ Content Frame
 
 **Provider Health posture briefing** — `ProviderHealthPage` now places a compact briefing card ahead of the streaming and backfill provider grids. `ProviderHealthViewModel` projects stale snapshots, offline streaming sessions, mixed provider states, blocked backfill coverage, and ready posture from already-loaded provider counts so the page exposes one next handoff, a target surface, and automation IDs without adding another polling path.
 
-**System Health triage briefing** — `SystemHealthPage` now places a compact system triage card between the hero and resource metrics. `SystemHealthViewModel` projects provider posture, storage pressure, corrupted/orphaned storage evidence, and retained event severity into one next handoff with provider, storage, and event chips, reusing the page's existing health snapshots without adding a backend call.
+**System Health triage briefing** — `SystemHealthPage` now places a compact system triage card between the hero and resource metrics. `SystemHealthViewModel` projects provider posture, storage pressure, corrupted/orphaned storage evidence, and retained event severity into one next handoff with provider, storage, and event chips, reusing the page's existing health snapshots without adding a backend call. Provider and recent-event empty states now distinguish a pending first scan from a completed empty snapshot, so support operators do not read "no providers" or "no events" as confirmed before the page has loaded that section.
 
 **Notification Center history recovery** — `NotificationCenterPage` now exposes a `Reset Filters` action when search, unread-only, or severity filters hide retained notification history. `NotificationCenterViewModel` resets the history filters against the already-loaded notification window, owns the `All` severity toggle, and keeps the severity checkboxes two-way bound so the visible filter controls match the recovered history scope without a new service read or code-behind synchronization.
 
 **Activity Log triage strip** — `ActivityLogPage` now keeps retained error count, warning count, visible entry count, latest entry time, and active filter scope above the virtualized list. `ActivityLogViewModel` projects this from the retained in-memory log window and owns the level, category, and search filter bindings; when filters hide retained entries, the empty state exposes a bound `Reset Filters` action that restores the in-memory activity window without another backend request or code-behind synchronization.
 
+**Messaging Hub delivery posture** — `MessagingHubPage` now promotes message-flow state into a compact delivery posture panel with recent-activity scope text and an automation-addressable empty state. `MessagingHubViewModel` derives waiting, subscriber-ready, flowing, and failure-review copy from the page's existing session counters and subscription counts, keeps only the latest 50 activity rows, and exposes a bound `ClearActivityCommand` so the Clear button disables itself when there is no retained activity to clear.
+
 **Watchlist posture card** — `WatchlistPage` now summarizes saved watchlists, pinned lists, symbol coverage, current search scope, and the next operator action above the grid. `WatchlistViewModel` projects this from already-loaded local watchlist display models, so search misses and unpinned libraries get actionable copy without another service call; the search-miss empty state also exposes a bound `Clear Search` recovery action that resets the in-memory filter.
 
 **Data Quality symbol search recovery** — `DataQualityPage` now distinguishes an empty monitored-symbol library from a symbol-filter search miss. The `Quality by Symbol` panel shows the active filter scope, search-miss copy, and a `Clear Filter` recovery action backed by `DataQualityViewModel` in-memory filtering, so operators can recover without refreshing or leaving the page.
+
+**Data Browser filter recovery** — `DataBrowserPage` now refreshes its retained market-data window as search, data-type, venue, and date filters change. Filter misses render a bound empty-state panel with `Reset Filters`, backed by `DataBrowserViewModel.ResetFiltersCommand`, so operators can recover hidden rows without leaving the page or issuing another backend request.
 
 **Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
@@ -282,7 +292,7 @@ Shared workstation routes now include:
 
 | ViewModel | Key properties | Commands |
 | --- | --- | --- |
-| `StrategyRunBrowserViewModel` | `Runs`, `SearchText`, `SelectedModeFilter` | `RefreshCommand`, `OpenDetailCommand`, `OpenPortfolioCommand`, `OpenLedgerCommand` |
+| `StrategyRunBrowserViewModel` | `Runs`, `SearchText`, `SelectedModeFilter`, `RunScopeText`, `EmptyStateTitle`, `EmptyStateDetail` | `RefreshCommand`, `OpenDetailCommand`, `OpenPortfolioCommand`, `OpenLedgerCommand`, `ClearRunFiltersCommand` |
 | `StrategyRunDetailViewModel` | Execution summary, mode, timing, P&L, parameters | Cross-nav to Browser / Portfolio / Ledger |
 | `StrategyRunPortfolioViewModel` | `TotalEquity`, `Cash`, exposure, `Positions` | Security Master resolve count |
 | `StrategyRunLedgerViewModel` | `TrialBalance`, `Journal`, account balances | Security resolve count |
@@ -438,7 +448,7 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 
 | Test project | Count | Covers |
 | --- | --- | --- |
-| `Meridian.Wpf.Tests` | 104 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data Operations shell projection, etc. |
+| `Meridian.Wpf.Tests` | 106 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data Operations shell projection, operator inbox action, etc. |
 | `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
 
 Run with:

@@ -77,11 +77,6 @@ public partial class DataBrowserPage : Page
         _viewModel.RefreshResults();
     }
 
-    private void ResetFilters_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ResetFilters();
-    }
-
     private void PreviousPage_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.GoToPreviousPage();

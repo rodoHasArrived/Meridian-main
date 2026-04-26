@@ -8,7 +8,7 @@
 
     <Page.Resources>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
         <!-- Column header template with ↕ sort indicator -->
         <DataTemplate x:Key="SortableHeaderTemplate">
@@ -66,7 +66,8 @@
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left" />
-                        <TextBox Text="{Binding SymbolFilter, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox x:Name="DataBrowserSearchBox"
+                                 Text="{Binding SymbolFilter, UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
@@ -74,7 +75,9 @@
                                  FontSize="13"
                                  Padding="22,0,0,0"
                                  VerticalAlignment="Center"
-                                 VerticalContentAlignment="Center" />
+                                 VerticalContentAlignment="Center"
+                                 AutomationProperties.AutomationId="DataBrowserSearchBox"
+                                 AutomationProperties.Name="Search data browser symbols" />
                         <TextBlock Text="Search datasets, strategies, or metrics..."
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
@@ -100,14 +103,17 @@
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0" />
-                        <ComboBox ItemsSource="{Binding DataTypes}"
+                        <ComboBox x:Name="DataBrowserDataTypeCombo"
+                                  ItemsSource="{Binding DataTypes}"
                                   SelectedItem="{Binding SelectedDataType}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
                                   FontSize="13"
                                   MinWidth="140"
-                                  VerticalAlignment="Center" />
+                                  VerticalAlignment="Center"
+                                  AutomationProperties.AutomationId="DataBrowserDataTypeCombo"
+                                  AutomationProperties.Name="Data browser data type filter" />
                     </StackPanel>
                 </Border>
 
@@ -158,14 +164,17 @@
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0" />
-                        <ComboBox ItemsSource="{Binding Venues}"
+                        <ComboBox x:Name="DataBrowserVenueCombo"
+                                  ItemsSource="{Binding Venues}"
                                   SelectedItem="{Binding SelectedVenue}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
                                   FontSize="13"
                                   MinWidth="110"
-                                  VerticalAlignment="Center" />
+                                  VerticalAlignment="Center"
+                                  AutomationProperties.AutomationId="DataBrowserVenueCombo"
+                                  AutomationProperties.Name="Data browser venue filter" />
                     </StackPanel>
                 </Border>
 
@@ -278,9 +287,12 @@
                                       SelectedItem="{Binding PageSize}" />
                         </StackPanel>
                         <StackPanel Grid.Column="3" VerticalAlignment="Bottom" Margin="16,0,0,0">
-                            <Button Content="Reset"
+                            <Button x:Name="DataBrowserAdvancedResetFiltersButton"
+                                    Content="Reset"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    Click="ResetFilters_Click" />
+                                    Command="{Binding ResetFiltersCommand}"
+                                    AutomationProperties.AutomationId="DataBrowserAdvancedResetFiltersButton"
+                                    AutomationProperties.Name="Reset data browser filters" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -370,7 +382,9 @@
                                   RowBackground="Transparent"
                                   AlternatingRowBackground="{StaticResource ConsoleBackgroundLightBrush}"
                                   BorderThickness="0"
-                                  SelectionChanged="ResultsGrid_SelectionChanged">
+                                  SelectionChanged="ResultsGrid_SelectionChanged"
+                                  Visibility="{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  AutomationProperties.AutomationId="DataBrowserResultsGrid">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
                                     <Setter Property="Background" Value="Transparent" />
@@ -569,6 +583,61 @@
                                 </DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>
+
+                        <!-- Filter recovery / empty state -->
+                        <Border x:Name="DataBrowserEmptyStatePanel"
+                                Background="{DynamicResource ConsoleBackgroundLightBrush}"
+                                BorderBrush="{DynamicResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="28,24"
+                                Margin="0,12,0,12"
+                                Visibility="{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
+                                AutomationProperties.AutomationId="DataBrowserEmptyStatePanel">
+                            <StackPanel HorizontalAlignment="Center"
+                                        MaxWidth="520">
+                                <TextBlock Text="&#xE721;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,10" />
+                                <TextBlock Text="{Binding EmptyStateTitle}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
+                                           TextAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           AutomationProperties.AutomationId="DataBrowserEmptyStateTitle" />
+                                <TextBlock Text="{Binding EmptyStateDetail}"
+                                           FontSize="13"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,6,0,0"
+                                           AutomationProperties.AutomationId="DataBrowserEmptyStateDetail" />
+                                <Button x:Name="DataBrowserResetFiltersButton"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding ResetFiltersCommand}"
+                                        Padding="14,6"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,16,0,0"
+                                        Visibility="{Binding HasFilterRecoveryAction, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        AutomationProperties.AutomationId="DataBrowserResetFiltersButton"
+                                        AutomationProperties.Name="Reset data browser filters">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE72C;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="13"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0" />
+                                        <TextBlock Text="Reset Filters"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
 
                         <!-- Row Detail Panel -->
                         <Border x:Name="DetailPanel" Visibility="Collapsed"

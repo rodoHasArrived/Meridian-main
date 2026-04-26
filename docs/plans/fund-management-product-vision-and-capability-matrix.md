@@ -75,11 +75,11 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Provider Health posture, System Health triage, Notification Center filter recovery, and Activity Log triage are present; workflow acceptance remains active Wave 2-4 work |
-| Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger flow exists |
+| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, and StrategyRuns filter recovery are present; workflow acceptance remains active Wave 2-4 work |
+| Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger flow exists; StrategyRuns now shows visible-versus-recorded run scope and recovers filters that hide retained runs |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
-| Order, execution, and trade management | Front office / Middle office | In progress | Phase 2 | Paper-session, replay, risk/control audit explainability, promotion, DK1 trust-gate, and readiness contracts are in code; dependable daily-use acceptance remains Wave 2 work |
+| Order, execution, and trade management | Front office / Middle office | In progress | Phase 2 | Paper-session, replay, risk/control audit explainability, promotion, DK1 trust-gate, trading-readiness, and initial operator-inbox contracts are in code; dependable daily-use acceptance and WPF queue consumption remain Wave 2 work |
 | Account and entity management | Middle office / Back office | In progress | Phase 2 | Fund-structure graph, assignment, account, entity, sleeve, vehicle, and environment-design seams exist; richer operator review flows remain open |
 | Security Master productization | Middle office / Cross-cutting platform | Implemented baseline | Phase 2 | Security Master is the delivered authoritative instrument seam across WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance |
 | Position and portfolio oversight | Middle office | In progress | Phase 2 | Shared read models exist; broader operator tooling pending |
@@ -111,7 +111,7 @@ Objective: turn the current workspace taxonomy into a real front-office operatin
 Primary outcomes:
 
 - durable `Research`, `Trading`, `Data Operations`, and `Governance` shells
-- shared run browser/detail/portfolio/ledger flows
+- shared run browser/detail/portfolio/ledger flows, including filter recovery for already-loaded run-browser rows
 - backtest, paper, and later live history converge toward one mental model
 
 ### Phase 2: Front Office and Control Plane
@@ -173,7 +173,7 @@ The current repository already supports parts of the target vision:
 
 - ingestion, replay, storage, diagnostics, and export are in place
 - shared run, portfolio, and ledger read services already exist
-- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows, Trading/Research/Data Operations briefing surfaces, Provider Health posture, System Health triage, Notification Center filter recovery, and Activity Log triage
+- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows, Trading/Research/Data Operations briefing surfaces, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, and StrategyRuns filter recovery
 - Security Master has contracts, services, storage, migrations, F# domain anchors, WPF drill-ins, conflict handling, corporate actions, trading parameters, and shared coverage/provenance propagation
 - fund-structure, account/entity, ledger-group, cash-flow, and governed report-pack seams are in code, with focused tests around fund structure, report-pack schema/version behavior, and Fund Operations projections
 - reconciliation now includes a file-backed break queue with review, resolve/dismiss, and audit-history routes, while broader external-account/custodian matching and calibrated casework remain open
@@ -217,12 +217,12 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 1. Keep DK1 provider-trust parity, explainability, calibration, and operator sign-off visible in the trading readiness lane.
 2. Prove paper-session create, restore, replay, audit/control, and promotion-review continuity through repo-backed operator scenarios.
-3. Keep WPF Trading, Research, Data Operations, Provider Health, System Health triage, Notification Center filter recovery, and Activity Log triage surfaces as consumers of shared readiness/run/provider/diagnostics/history/log contracts, not separate acceptance models.
+3. Keep WPF Trading, Research, Data Operations, Provider Health, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, and StrategyRuns recovery surfaces as consumers of shared readiness/run/provider/diagnostics/history/log/symbol-state contracts, not separate acceptance models.
 
 **Exit criteria**
 
 - `Backtest -> Paper` can be exercised as one auditable operator path.
-- Replay, DK1 trust posture, promotion checklist state, and operator work items are visible from the shared readiness contract.
+- Replay, DK1 trust posture, promotion checklist state, and operator work items are visible from the shared readiness contract and initial operator-inbox endpoint, with WPF shell queue-button routing for the primary work item.
 - The WPF shell supports the workflow without introducing shell-local readiness semantics.
 
 ### Wave B: deepen shared run / portfolio / ledger continuity

@@ -288,6 +288,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
         services.AddSingleton<WpfServices.IWorkstationSecurityMasterApiClient, WpfServices.WorkstationSecurityMasterApiClient>();
         services.AddSingleton<WpfServices.IWorkstationResearchBriefingApiClient, WpfServices.WorkstationResearchBriefingApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
         services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
 

@@ -1,6 +1,6 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.2
+**Version:** 1.7.3
 **Date:** 2026-04-26
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
@@ -210,7 +210,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | OpenAPI / Swagger | `/swagger` | ✅ |
 | API authentication | `X-Api-Key` header only (no query-string auth) | ✅ |
 | Rate limiting | 120 req/min per key, sliding window | ✅ |
-| **Total route constants** | **402** | **0 stubs remaining** |
+| **Total route constants** | **401** | **0 stubs remaining** |
 
 ### OpenAPI annotations
 
@@ -259,9 +259,10 @@ not the primary operator shell; WPF owns current workstation delivery.
 - `DataOperationsWorkspaceShellPage` now includes a data-operations desk briefing hero backed by `DataOperationsWorkspacePresentationBuilder`; it projects provider health, resumable backfills, storage health, collection sessions, export jobs, operational blockers, and next-handoff actions from shared service data.
 - `WatchlistPage` now includes watchlist posture guidance for saved list count, pinned list coverage, symbol coverage, visible search scope, and empty-state handoffs before an operator loads or imports symbol sets.
 - `ProviderHealthPage` now includes a provider-posture briefing that condenses stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage into one next handoff before the operator scans individual provider cards.
-- `SystemHealthPage` now includes a system triage briefing that condenses provider health, storage posture, disk pressure, and retained event severity into one next handoff before the operator scans diagnostics panels.
+- `SystemHealthPage` now includes a system triage briefing that condenses provider health, storage posture, disk pressure, and retained event severity into one next handoff before the operator scans diagnostics panels; provider and recent-event empty states distinguish pending scans from confirmed empty snapshots.
 - `NotificationCenterPage` now supports history recovery when search, unread-only, or severity filters hide retained notifications; `NotificationCenterViewModel` resets those filters against the already-loaded history window.
 - `ActivityLogPage` now includes a triage strip that summarizes visible entries, retained error and warning counts, latest entry posture, and active filters before the operator scans retained log rows.
+- `StrategyRunsPage` now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded run scope beside search, and exposes a reset-filters recovery action against the already-loaded run browser rows.
 - Fixture/offline workflow mode is explicitly separated from operational readiness: the shell presents deterministic fixture state as neutral demo data, while Data Operations carries environment-mode context when provider telemetry is absent.
 - Legacy deep pages now route through `WorkspaceDeepPageHostPage` in both standalone and docked presentations, so direct navigation and workspace docks share the same workspace title, reachability metadata, related-workflow chrome, and trust-state posture without removing the underlying page functionality.
 - Legacy deep pages can now suppress duplicate inner hero/title chrome through `WorkspaceShellChromeState` plus embedded-shell styles (`EmbeddedShellHeroCardStyle`, `EmbeddedShellHeaderGridStyle`, and `EmbeddedShellHeaderStackPanelStyle`), tightening density when pages are already hosted inside the shared workstation shell.
@@ -269,6 +270,8 @@ not the primary operator shell; WPF owns current workstation delivery.
 - `PositionBlotterPage`, `SecurityMasterPage`, and `ServiceManagerPage` now go beyond top-band cleanup and render as workflow-native workbenches with persistent inspector rails for selection state, filters/runtime posture, and operator actions while preserving their existing commands and service integrations.
 - The WPF landing page now starts from the four operator workspaces, and the main shell exposes a density toggle so operators can switch between standard and compact workstation framing without leaving the shell.
 - `NotificationCenterPage` now behaves more like an operator inbox baseline, with search, unread-only filtering, severity filters, per-item read state, and richer empty/history states.
+- The WPF main shell now consumes `/api/workstation/operator/inbox` through `WorkstationOperatorInboxApiClient`, shows a queue button with review counts and severity tone, and routes the primary work item to its target page; this is initial shell consumption, while end-to-end queue workflow acceptance remains open.
+- `MessagingHubPage` now projects message-flow posture, subscriber readiness, retained activity scope, and clear-activity command state through `MessagingHubViewModel` instead of code-behind handlers.
 - `PositionBlotterPage` now includes a selected-position review rail with long/short/gross/net quantity, eligibility counts, and preview rows for batch-action review.
 - `BatchBacktestPage` and `BatchBacktestViewModel` now run real request-level parameter sweeps through `IBatchBacktestService` with validation, progress, cancellation, result metrics, and focused ViewModel tests; strategy selection and persisted sweep grouping remain open Research work.
 - Dock-hosted workspace pages are wrapped in `Frame` containers so WPF page content can be embedded safely inside the workstation docking surface.
@@ -481,16 +484,16 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 | Test Project | Test Files | Methods | Focus |
 | --- | --- | --- | --- |
-| `Meridian.Tests` | 329 | ~4,169 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
+| `Meridian.Tests` | 329 | ~4,172 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
 | `Meridian.FSharp.Tests` | 12 | ~233 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
 | `Meridian.Ui.Tests` | 55 | ~975 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
-| `Meridian.Wpf.Tests` | 83 | ~638 | WPF desktop services (navigation, config, status, connection, ViewModels) |
+| `Meridian.Wpf.Tests` | 84 | ~656 | WPF desktop services (navigation, config, status, connection, ViewModels) |
 | `Meridian.Backtesting.Tests` | 19 | ~243 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 5 | ~29 | Direct lending services, workflows, PostgreSQL integration |
 | `Meridian.FundStructure.Tests` | 3 | ~24 | Governance shared-data access and in-memory fund-structure services |
 | `Meridian.McpServer.Tests` | 3 | ~15 | MCP server tools (backfill, storage) |
 | `Meridian.QuantScript.Tests` | 8 | ~93 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
-| **Total** | **517** | **~6,419** | |
+| **Total** | **518** | **~6,440** | |
 
 ### Key test infrastructure
 
@@ -551,9 +554,9 @@ This section inventories the workflow-centric product model that now sits above 
 | Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects ingest-time identifier conflicts automatically; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve`; workstation conflict queue and operator resolution path are live |
 | Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, results/detail/inspector workbench, ingest polling, conflict queue, corporate action timeline, trading params, import/backfill posture, and governance drill-ins |
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
-| WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
+| WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; StrategyRuns now has visible-versus-recorded run scope and filter-aware empty-state recovery, while broader paper/live history continuity remains open |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the WPF desk briefing hero, and a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/DK1 trust-gate/brokerage/work-item posture with stable work-item IDs; cockpit hardening, broader broker validation, and stronger acceptance criteria remain |
+| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the WPF desk briefing hero, a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/DK1 trust-gate/brokerage/work-item posture with stable work-item IDs, an initial `/api/workstation/operator/inbox` aggregation contract for readiness work items plus open reconciliation breaks, and WPF shell queue-button consumption of the primary work item; cockpit hardening, broader broker validation, end-to-end queue workflow handling, and stronger acceptance criteria remain |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Endpoint layer and dashboard flows exist, and promotion approvals now carry an explicit approval checklist for DK1 trust packet, lineage, portfolio/ledger continuity, and risk-control review; safety-gated lifecycle hardening, broader operator acceptance, and full live-readiness remain open |
 
 ### Additional governance and platform tracks

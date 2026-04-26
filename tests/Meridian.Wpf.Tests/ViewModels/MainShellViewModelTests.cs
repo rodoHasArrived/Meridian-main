@@ -17,7 +17,8 @@ public sealed class MainShellViewModelTests
     private static MainPageViewModel CreateMainPageViewModel(
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null,
-        SettingsConfigurationService? settingsConfigurationService = null)
+        SettingsConfigurationService? settingsConfigurationService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxClient = null)
     {
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
@@ -34,6 +35,7 @@ public sealed class MainShellViewModelTests
             fixtureModeDetector,
             fundContextService,
             operatingContextService,
+            operatorInboxApiClient: operatorInboxClient,
             settingsConfigurationService: settingsConfigurationService);
     }
 
@@ -575,6 +577,65 @@ public sealed class MainShellViewModelTests
         });
     }
 
+    [Fact]
+    public void OperatorInboxPresentation_LoadsQueueAndNavigatesToPrimaryWorkItem()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "paper-replay-stale-session-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification is stale",
+                        Detail: "Session changed after the latest replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 0,
+                ReviewCount: 1,
+                Summary: "1 critical work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxButtonText.Should().Be("Queue (1)");
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Danger);
+            vm.OperatorInboxSummary.Should().Contain("critical");
+            vm.OperatorInboxPrimaryLabel.Should().Be("Replay verification is stale");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentPageTag.Should().Be("TradingShell");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_WhenClientFails_DegradesToNotificationCenter()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inboxClient = new FakeOperatorInboxApiClient(new InvalidOperationException("backend unavailable"));
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() =>
+                vm.OperatorInboxSummary.Contains("awaiting backend", StringComparison.OrdinalIgnoreCase));
+
+            vm.OperatorInboxReviewCount.Should().Be(0);
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Neutral);
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentPageTag.Should().Be("NotificationCenter");
+        });
+    }
+
     private static async Task<FundContextService> CreateFundContextAsync()
     {
         var storagePath = Path.Combine(
@@ -620,6 +681,32 @@ public sealed class MainShellViewModelTests
             }
 
             await Task.Delay(25);
+        }
+    }
+
+    private sealed class FakeOperatorInboxApiClient : IWorkstationOperatorInboxApiClient
+    {
+        private readonly OperatorInboxDto? _inbox;
+        private readonly Exception? _exception;
+
+        public FakeOperatorInboxApiClient(OperatorInboxDto inbox)
+        {
+            _inbox = inbox;
+        }
+
+        public FakeOperatorInboxApiClient(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        public Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default)
+        {
+            if (_exception is not null)
+            {
+                throw _exception;
+            }
+
+            return Task.FromResult(_inbox);
         }
     }
 }

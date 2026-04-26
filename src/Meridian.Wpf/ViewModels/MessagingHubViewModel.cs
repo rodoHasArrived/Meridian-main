@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.Input;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -12,6 +13,8 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class MessagingHubViewModel : BindableBase, IDisposable
 {
+    private const int MaxActivityItems = 50;
+
     private readonly WpfServices.MessagingService _messagingService;
     private readonly DispatcherTimer _refreshTimer;
     private readonly DateTime _pageLoadedAt = DateTime.UtcNow;
@@ -19,6 +22,7 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
     private IDisposable? _messageSubscription;
     private int _totalMessages;
     private int _failedMessages;
+    private int _subscriberCount;
 
     // ── Cached brushes ──────────────────────────────────────────────────────
     private readonly Brush _infoBrush;
@@ -51,6 +55,25 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
     private bool _noActivityVisible = true;
     public bool NoActivityVisible { get => _noActivityVisible; private set => SetProperty(ref _noActivityVisible, value); }
 
+    private string _messagingPostureTitle = "Waiting for message traffic";
+    public string MessagingPostureTitle { get => _messagingPostureTitle; private set => SetProperty(ref _messagingPostureTitle, value); }
+
+    private string _messagingPostureDetail = "No messages or subscribers have been observed in this session.";
+    public string MessagingPostureDetail { get => _messagingPostureDetail; private set => SetProperty(ref _messagingPostureDetail, value); }
+
+    private string _recentActivityScopeText = "No activity in this session";
+    public string RecentActivityScopeText { get => _recentActivityScopeText; private set => SetProperty(ref _recentActivityScopeText, value); }
+
+    private string _activityEmptyStateTitle = "No recent messaging activity";
+    public string ActivityEmptyStateTitle { get => _activityEmptyStateTitle; private set => SetProperty(ref _activityEmptyStateTitle, value); }
+
+    private string _activityEmptyStateDetail = "Publish a workflow or inter-page message; this panel keeps the latest 50 deliveries.";
+    public string ActivityEmptyStateDetail { get => _activityEmptyStateDetail; private set => SetProperty(ref _activityEmptyStateDetail, value); }
+
+    public bool CanClearActivity => ActivityItems.Count > 0;
+
+    public IRelayCommand ClearActivityCommand { get; }
+
     public MessagingHubViewModel(
         WpfServices.MessagingService messagingService,
         Brush infoBrush,
@@ -62,6 +85,8 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         _successBrush = successBrush;
         _errorBrush = errorBrush;
         _connectionBadgeBackground = errorBrush;
+
+        ClearActivityCommand = new RelayCommand(ClearActivity, () => CanClearActivity);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _refreshTimer.Tick += (_, _) => RefreshStatistics();
@@ -117,11 +142,10 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
             TimeText = "Just now"
         });
 
-        while (ActivityItems.Count > 50)
+        while (ActivityItems.Count > MaxActivityItems)
             ActivityItems.RemoveAt(ActivityItems.Count - 1);
 
         RefreshStatistics();
-        UpdateActivityVisibility();
     }
 
     private void LoadMessageTypes()
@@ -181,10 +205,14 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         foreach (var type in knownTypes)
             totalSubscribers += _messagingService.GetSubscriptionCount(type);
 
+        _subscriberCount = totalSubscribers;
         SubscribersText = totalSubscribers.ToString("N0");
 
         var elapsed = (DateTime.UtcNow - _pageLoadedAt).TotalSeconds;
         MessageRateText = elapsed > 0 ? $"{_totalMessages / elapsed:F1}/s" : "0/s";
+
+        UpdateMessagingPosture();
+        UpdateActivityVisibility();
     }
 
     private void UpdateConnectionStatus(bool isConnected)
@@ -193,8 +221,63 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         ConnectionBadgeBackground = isConnected ? _successBrush : _errorBrush;
     }
 
-    private void UpdateActivityVisibility() =>
+    private void UpdateMessagingPosture()
+    {
+        if (_failedMessages > 0)
+        {
+            MessagingPostureTitle = "Delivery failures need review";
+            MessagingPostureDetail = $"{FormatMessageCount(_failedMessages)} failed in this page session. Review the latest failed activity before clearing the trace.";
+            return;
+        }
+
+        if (_totalMessages > 0)
+        {
+            MessagingPostureTitle = "Messaging is flowing";
+            MessagingPostureDetail = $"{FormatMessageCount(_totalMessages)} observed with {FormatSubscriberCount(_subscriberCount)} registered across workstation channels.";
+            return;
+        }
+
+        if (_subscriberCount > 0)
+        {
+            MessagingPostureTitle = "Subscribers are listening";
+            MessagingPostureDetail = $"{FormatSubscriberCount(_subscriberCount)} registered. Recent activity will populate when workflows publish messages.";
+            return;
+        }
+
+        MessagingPostureTitle = "Waiting for message traffic";
+        MessagingPostureDetail = "No messages or subscribers have been observed in this session.";
+    }
+
+    private void UpdateActivityVisibility()
+    {
         NoActivityVisible = ActivityItems.Count == 0;
+        RecentActivityScopeText = BuildRecentActivityScopeText();
+        ActivityEmptyStateTitle = NoActivityVisible
+            ? "No recent messaging activity"
+            : "Recent messaging activity";
+        ActivityEmptyStateDetail = _subscriberCount > 0
+            ? $"{FormatSubscriberCount(_subscriberCount)} ready; recent deliveries will appear here."
+            : "Publish a workflow or inter-page message; this panel keeps the latest 50 deliveries.";
+        OnPropertyChanged(nameof(CanClearActivity));
+        ClearActivityCommand.NotifyCanExecuteChanged();
+    }
+
+    private string BuildRecentActivityScopeText()
+    {
+        if (ActivityItems.Count == 0)
+            return "No activity in this session";
+
+        if (ActivityItems.Count == _totalMessages)
+            return $"{ActivityItems.Count:N0} retained activity row{(ActivityItems.Count == 1 ? string.Empty : "s")}";
+
+        return $"{ActivityItems.Count:N0} retained of {_totalMessages:N0} messages";
+    }
+
+    private static string FormatMessageCount(int count) =>
+        $"{count:N0} message{(count == 1 ? string.Empty : "s")}";
+
+    private static string FormatSubscriberCount(int count) =>
+        $"{count:N0} subscriber{(count == 1 ? string.Empty : "s")}";
 
     public void Dispose() => Stop();
 

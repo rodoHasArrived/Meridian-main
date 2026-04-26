@@ -86,6 +86,55 @@
                 </Border>
             </Grid>
 
+            <!-- Delivery posture -->
+            <Border Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,24"
+                    AutomationProperties.AutomationId="MessagingHubPostureCard"
+                    AutomationProperties.Name="{Binding MessagingPostureTitle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="360" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="&#xE7B0;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding MessagingPostureTitle}"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       AutomationProperties.AutomationId="MessagingHubPostureTitle" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding MessagingPostureDetail}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="MessagingHubPostureDetail" />
+                    </StackPanel>
+                    <Border Grid.Column="1"
+                            Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12,9"
+                            Margin="20,0,0,0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="MessagingHubActivityScopeChip">
+                        <StackPanel>
+                            <TextBlock Text="{Binding RecentActivityScopeText}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="Recent activity"
+                                       FontSize="10"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
             <!-- Message Types -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
@@ -137,16 +186,25 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="16" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <TextBlock Text="Recent Activity" Style="{StaticResource CardHeaderStyle}" />
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="16" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBlock Text="Recent Activity" Style="{StaticResource CardHeaderStyle}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding RecentActivityScopeText}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       AutomationProperties.AutomationId="MessagingHubRecentActivityScopeText" />
                         </StackPanel>
-                        <Button Grid.Column="1" x:Name="ClearActivityButton" Click="ClearActivity_Click"
-                                Style="{StaticResource GhostButtonStyle}" Content="Clear" />
+                        <Button Grid.Column="1" x:Name="ClearActivityButton"
+                                Command="{Binding ClearActivityCommand}"
+                                Style="{StaticResource GhostButtonStyle}" Content="Clear"
+                                AutomationProperties.AutomationId="MessagingHubClearActivityButton" />
                     </Grid>
                     <ListView ItemsSource="{Binding ActivityItems}" SelectionMode="Single" MaxHeight="300"
-                              Background="Transparent" BorderThickness="0">
+                              Background="Transparent" BorderThickness="0"
+                              AutomationProperties.AutomationId="MessagingHubRecentActivityList">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -179,9 +237,20 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel Visibility="{Binding NoActivityVisible, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,12,0,0">
-                        <TextBlock Text="No recent messaging activity" FontSize="13"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
+                    <StackPanel Visibility="{Binding NoActivityVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,12,0,0"
+                                AutomationProperties.AutomationId="MessagingHubActivityEmptyStatePanel"
+                                AutomationProperties.Name="{Binding ActivityEmptyStateTitle}">
+                        <TextBlock Text="{Binding ActivityEmptyStateTitle}" FontSize="13"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   AutomationProperties.AutomationId="MessagingHubActivityEmptyStateTitle" />
+                        <TextBlock Text="{Binding ActivityEmptyStateDetail}" FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Margin="0,6,0,0"
+                                   AutomationProperties.AutomationId="MessagingHubActivityEmptyStateDetail" />
                     </StackPanel>
                 </StackPanel>
             </Border>

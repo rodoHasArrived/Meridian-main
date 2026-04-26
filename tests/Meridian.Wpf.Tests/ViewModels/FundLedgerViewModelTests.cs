@@ -348,6 +348,134 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void ResetReconciliationFiltersCommand_RestoresLoadedBreakQueueRows()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-fund-ops"));
+
+                var portfolioReadService = new PortfolioReadService();
+                var ledgerReadService = new LedgerReadService();
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient(
+                [
+                    BuildBreakQueueItem("run-fund-ops")
+                ],
+                [
+                    BuildStrategyDetail("run-fund-ops")
+                ]);
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService,
+                    new ReconciliationProjectionService(),
+                    reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    fundAccountService,
+                    fundAccountReadService,
+                    workspaceService,
+                    strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    fakeApiClient);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                await viewModel.LoadAsync();
+                await WaitForConditionAsync(() =>
+                    viewModel.ReconciliationBreakQueueItems.Count == 1);
+
+                viewModel.HasActiveReconciliationFilters.Should().BeFalse();
+                viewModel.ResetReconciliationFiltersCommand.CanExecute(null).Should().BeFalse();
+
+                viewModel.SelectedReconciliationScopeFilterIndex = 2;
+                viewModel.ReconciliationSearchText = "does-not-exist";
+
+                viewModel.ReconciliationBreakQueueItems.Should().BeEmpty();
+                viewModel.ReconciliationBreakQueueEmptyStateText.Should().Contain("Reset filters");
+                viewModel.HasActiveReconciliationFilters.Should().BeTrue();
+                viewModel.ResetReconciliationFiltersCommand.CanExecute(null).Should().BeTrue();
+
+                viewModel.ResetReconciliationFiltersCommand.Execute(null);
+
+                viewModel.ReconciliationSearchText.Should().BeEmpty();
+                viewModel.SelectedReconciliationScopeFilterIndex.Should().Be(0);
+                viewModel.IsOpenBreakQueueFilterSelected.Should().BeTrue();
+                viewModel.HasActiveReconciliationFilters.Should().BeFalse();
+                viewModel.ResetReconciliationFiltersCommand.CanExecute(null).Should().BeFalse();
+                viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
+                    item.RunId == "run-fund-ops" &&
+                    item.Status == ReconciliationBreakQueueStatus.Open);
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("filters reset");
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void FundLedgerPage_ReconciliationToolbar_BindsResetFiltersRecoveryAction()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml"));
+
+        xaml.Should().Contain("ReconciliationResetFiltersButton");
+        xaml.Should().Contain("Command=\"{Binding ResetReconciliationFiltersCommand}\"");
+        xaml.Should().Contain("ReconciliationRefreshQueueButton");
+    }
+
+    [Fact]
     public void LoadAsync_ReportPackContext_LoadsPreviewAndSelectsReportPackTab()
     {
         WpfTestThread.Run(async () =>

@@ -109,6 +109,18 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     private Brush _systemTriageAccentBrush = Brushes.CornflowerBlue;
     public Brush SystemTriageAccentBrush { get => _systemTriageAccentBrush; private set => SetProperty(ref _systemTriageAccentBrush, value); }
 
+    private string _providerEmptyStateTitle = "Provider scan pending";
+    public string ProviderEmptyStateTitle { get => _providerEmptyStateTitle; private set => SetProperty(ref _providerEmptyStateTitle, value); }
+
+    private string _providerEmptyStateDetail = "Refresh health data to populate provider posture before relying on live diagnostics.";
+    public string ProviderEmptyStateDetail { get => _providerEmptyStateDetail; private set => SetProperty(ref _providerEmptyStateDetail, value); }
+
+    private string _eventEmptyStateTitle = "Event scan pending";
+    public string EventEmptyStateTitle { get => _eventEmptyStateTitle; private set => SetProperty(ref _eventEmptyStateTitle, value); }
+
+    private string _eventEmptyStateDetail = "Refresh health data to confirm whether retained support events are available.";
+    public string EventEmptyStateDetail { get => _eventEmptyStateDetail; private set => SetProperty(ref _eventEmptyStateDetail, value); }
+
     // ── Provider section ──────────────────────────────────────────────────────────────
     private bool _hasProviders;
     public bool HasProviders { get => _hasProviders; private set => SetProperty(ref _hasProviders, value); }
@@ -460,7 +472,38 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             SystemHealthTriageTone.Ready => SuccessBrush,
             _ => InfoBrush
         };
+
+        UpdateEmptyStateCopy();
     }
+
+    private void UpdateEmptyStateCopy()
+    {
+        var providerEmptyState = BuildProviderEmptyState(_hasProviderSnapshot);
+        ProviderEmptyStateTitle = providerEmptyState.Title;
+        ProviderEmptyStateDetail = providerEmptyState.Detail;
+
+        var eventEmptyState = BuildEventEmptyState(_hasEventSnapshot);
+        EventEmptyStateTitle = eventEmptyState.Title;
+        EventEmptyStateDetail = eventEmptyState.Detail;
+    }
+
+    public static SystemHealthEmptyState BuildProviderEmptyState(bool hasProviderSnapshot) =>
+        hasProviderSnapshot
+            ? new(
+                "No providers reported",
+                "Connect or enable a provider, then refresh health data before relying on live diagnostics.")
+            : new(
+                "Provider scan pending",
+                "Refresh health data to populate provider posture before relying on live diagnostics.");
+
+    public static SystemHealthEmptyState BuildEventEmptyState(bool hasEventSnapshot) =>
+        hasEventSnapshot
+            ? new(
+                "No recent events retained",
+                "The latest health window has no retained support events. Continue monitoring or generate diagnostics if symptoms persist.")
+            : new(
+                "Event scan pending",
+                "Refresh health data to confirm whether retained support events are available.");
 
     public static SystemHealthTriageState BuildSystemTriage(
         int providerCount,
@@ -673,3 +716,7 @@ public sealed record SystemHealthTriageState(
     string ProviderSummaryText,
     string StorageSummaryText,
     string EventSummaryText);
+
+public sealed record SystemHealthEmptyState(
+    string Title,
+    string Detail);

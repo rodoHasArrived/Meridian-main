@@ -25,6 +25,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService? _workspaceShellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly IWorkstationOperatorInboxApiClient? _operatorInboxApiClient;
     private readonly SettingsConfigurationService _settingsConfigurationService;
     private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
     private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
@@ -69,6 +70,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private WorkspaceWorkflowSummary? _primaryWorkflowSummary;
     private bool _areSecondaryWorkflowSummariesExpanded;
     private WorkspaceShellContext _shellContext = new();
+    private OperatorInboxDto? _operatorInbox;
+    private string _operatorInboxError = "Operator queue has not refreshed yet.";
     private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
     private int _shellContextRevision;
     private int _workflowSummaryRevision;
@@ -80,6 +83,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         WorkstationOperatingContextService? operatingContextService = null,
         WorkspaceShellContextService? workspaceShellContextService = null,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
         SettingsConfigurationService? settingsConfigurationService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -88,6 +92,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _operatingContextService = operatingContextService;
         _workspaceShellContextService = workspaceShellContextService;
         _workflowSummaryService = workflowSummaryService;
+        _operatorInboxApiClient = operatorInboxApiClient;
         _settingsConfigurationService = settingsConfigurationService ?? SettingsConfigurationService.Instance;
         _shellDensityMode = _settingsConfigurationService.GetShellDensityMode();
 
@@ -109,6 +114,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         HideCommandPaletteCommand = new RelayCommand(HideCommandPalette);
         OpenSelectedCommandPalettePageCommand = new RelayCommand(OpenSelectedCommandPalettePage, CanOpenSelectedCommandPalettePage);
         ClearCommandPaletteQueryCommand = new RelayCommand(ClearCommandPaletteQuery);
+        OpenOperatorInboxCommand = new RelayCommand(OpenOperatorInbox);
         OpenNotificationsCommand = new RelayCommand(() => NavigateToPage("NotificationCenter"));
         OpenHelpCommand = new RelayCommand(() => NavigateToPage("Help"));
         ToggleTickerStripCommand = new RelayCommand(ToggleTickerStrip);
@@ -178,6 +184,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public IRelayCommand OpenSelectedCommandPalettePageCommand { get; }
 
     public IRelayCommand ClearCommandPaletteQueryCommand { get; }
+
+    public IRelayCommand OpenOperatorInboxCommand { get; }
 
     public IRelayCommand OpenNotificationsCommand { get; }
 
@@ -299,6 +307,61 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     };
 
     public string ShellLastRefreshText => FormatShellLastRefresh(_shellLastUpdatedAt);
+
+    public string OperatorInboxButtonText
+    {
+        get
+        {
+            if (_operatorInbox is null)
+            {
+                return "Queue";
+            }
+
+            if (_operatorInbox.ReviewCount > 0)
+            {
+                return $"Queue ({_operatorInbox.ReviewCount})";
+            }
+
+            return _operatorInbox.Items.Count > 0
+                ? $"Queue ({_operatorInbox.Items.Count})"
+                : "Queue";
+        }
+    }
+
+    public string OperatorInboxSummary => _operatorInbox?.Summary ?? _operatorInboxError;
+
+    public string OperatorInboxPrimaryLabel => GetPrimaryOperatorWorkItem(_operatorInbox)?.Label
+        ?? "No open operator work items";
+
+    public string OperatorInboxTargetText => GetPrimaryOperatorWorkItem(_operatorInbox)?.TargetPageTag
+        ?? "NotificationCenter";
+
+    public int OperatorInboxReviewCount => _operatorInbox?.ReviewCount ?? 0;
+
+    public string OperatorInboxTone
+    {
+        get
+        {
+            if (_operatorInbox is null)
+            {
+                return WorkspaceTone.Neutral;
+            }
+
+            if (_operatorInbox.CriticalCount > 0)
+            {
+                return WorkspaceTone.Danger;
+            }
+
+            if (_operatorInbox.WarningCount > 0)
+            {
+                return WorkspaceTone.Warning;
+            }
+
+            return _operatorInbox.Items.Count > 0
+                ? WorkspaceTone.Info
+                : WorkspaceTone.Success;
+        }
+    }
 
     public string CurrentWorkspace
     {
@@ -723,6 +786,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         CurrentPageTag = pageTag;
     }
 
+    private void OpenOperatorInbox()
+    {
+        var workItem = GetPrimaryOperatorWorkItem(_operatorInbox);
+        NavigateToPage(string.IsNullOrWhiteSpace(workItem?.TargetPageTag)
+            ? "NotificationCenter"
+            : workItem.TargetPageTag);
+    }
+
     private void ShowCommandPalette()
     {
         CommandPaletteVisibility = Visibility.Visible;
@@ -1064,6 +1135,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         var workflowSummaries = await BuildWorkflowSummariesAsync(ct).ConfigureAwait(false);
+        var (operatorInbox, operatorInboxError) = await BuildOperatorInboxAsync(ct).ConfigureAwait(false);
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is null || dispatcher.CheckAccess())
@@ -1077,6 +1149,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 ReplaceCollection(_workflowSummaries, workflowSummaries);
                 UpdateWorkflowPresentation();
+                ApplyOperatorInbox(operatorInbox, operatorInboxError);
             }
 
             return;
@@ -1093,8 +1166,49 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 ReplaceCollection(_workflowSummaries, workflowSummaries);
                 UpdateWorkflowPresentation();
+                ApplyOperatorInbox(operatorInbox, operatorInboxError);
             }
         });
+    }
+
+    private async Task<(OperatorInboxDto? Inbox, string? Error)> BuildOperatorInboxAsync(CancellationToken ct)
+    {
+        if (_operatorInboxApiClient is null)
+        {
+            return (null, "Operator queue is unavailable in this shell.");
+        }
+
+        try
+        {
+            return (await _operatorInboxApiClient.GetInboxAsync(ct: ct).ConfigureAwait(false), null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            return (null, "Operator queue is awaiting backend readiness.");
+        }
+    }
+
+    private void ApplyOperatorInbox(OperatorInboxDto? inbox, string? error)
+    {
+        _operatorInbox = inbox;
+        _operatorInboxError = string.IsNullOrWhiteSpace(error)
+            ? "Operator queue has not refreshed yet."
+            : error;
+        RaiseOperatorInboxPropertiesChanged();
+    }
+
+    private void RaiseOperatorInboxPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(OperatorInboxButtonText));
+        RaisePropertyChanged(nameof(OperatorInboxSummary));
+        RaisePropertyChanged(nameof(OperatorInboxPrimaryLabel));
+        RaisePropertyChanged(nameof(OperatorInboxTargetText));
+        RaisePropertyChanged(nameof(OperatorInboxReviewCount));
+        RaisePropertyChanged(nameof(OperatorInboxTone));
     }
 
     private async Task<IReadOnlyCollection<WorkspaceWorkflowSummary>> BuildWorkflowSummariesAsync(CancellationToken ct)
@@ -1292,6 +1406,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         return $"Updated {updatedAt.ToLocalTime():MMM dd HH:mm}";
     }
+
+    private static OperatorWorkItemDto? GetPrimaryOperatorWorkItem(OperatorInboxDto? inbox)
+        => inbox?.Items
+            .Where(static item => !string.IsNullOrWhiteSpace(item.TargetPageTag))
+            .OrderByDescending(static item => item.Tone)
+            .ThenByDescending(static item => item.CreatedAt)
+            .FirstOrDefault()
+        ?? inbox?.Items.FirstOrDefault();
 
     private static bool HasShellContextContent(WorkspaceShellContext? shellContext)
     {

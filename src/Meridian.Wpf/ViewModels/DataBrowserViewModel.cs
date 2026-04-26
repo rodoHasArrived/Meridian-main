@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -24,6 +25,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     private string _sortField = "TimestampDesc";
     private string _filteredCountText = "0 records";
     private bool _allRowsSelected;
+    private bool _suppressFilterRefresh;
 
     public DataBrowserViewModel()
     {
@@ -31,6 +33,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         DataTypes = new ObservableCollection<string> { "All", "Trades", "Quotes", "Depth" };
         Venues = new ObservableCollection<string> { "All", "NYSE", "NASDAQ", "ARCA", "SMART" };
         PageSizes = new ObservableCollection<int> { 25, 50, 100, 250 };
+        ResetFiltersCommand = new RelayCommand(ResetFilters, () => HasActiveFilters);
     }
 
     public ObservableCollection<string> DataTypes { get; }
@@ -53,12 +56,14 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         private set => SetProperty(ref _filteredCountText, value);
     }
 
-    /// <summary>Number of active non-default filters (DataType, Venue, date range).</summary>
+    /// <summary>Number of active non-default filters (search, DataType, Venue, date range).</summary>
     public int ActiveFilterCount
     {
         get
         {
             var count = 0;
+            if (!string.IsNullOrWhiteSpace(SymbolFilter))
+                count++;
             if (!string.Equals(SelectedDataType, "All", StringComparison.OrdinalIgnoreCase))
                 count++;
             if (!string.Equals(SelectedVenue, "All", StringComparison.OrdinalIgnoreCase))
@@ -70,6 +75,22 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             return count;
         }
     }
+
+    public bool HasRows => _pagedRecords.Count > 0;
+
+    public bool HasActiveFilters => ActiveFilterCount > 0;
+
+    public bool HasFilterRecoveryAction => !HasRows && _allRecords.Count > 0 && HasActiveFilters;
+
+    public string EmptyStateTitle => HasFilterRecoveryAction
+        ? "No records match the current filters"
+        : "No market data loaded";
+
+    public string EmptyStateDetail => HasFilterRecoveryAction
+        ? "Reset filters to return to the retained market-data window."
+        : "Run a backfill or import a package to populate the browser.";
+
+    public IRelayCommand ResetFiltersCommand { get; }
 
     /// <summary>Select/deselect all visible rows.</summary>
     public bool AllRowsSelected
@@ -90,7 +111,13 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     public string SymbolFilter
     {
         get => _symbolFilter;
-        set => SetProperty(ref _symbolFilter, value);
+        set
+        {
+            if (SetProperty(ref _symbolFilter, value ?? string.Empty))
+            {
+                RefreshAfterFilterChange();
+            }
+        }
     }
 
     public string SelectedDataType
@@ -99,7 +126,9 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         set
         {
             if (SetProperty(ref _selectedDataType, value))
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+            {
+                RefreshAfterFilterChange();
+            }
         }
     }
 
@@ -109,7 +138,9 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         set
         {
             if (SetProperty(ref _selectedVenue, value))
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+            {
+                RefreshAfterFilterChange();
+            }
         }
     }
 
@@ -120,8 +151,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _fromDate, value))
             {
-                UpdateValidationSummary();
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+                RefreshAfterFilterChange();
             }
         }
     }
@@ -133,8 +163,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _toDate, value))
             {
-                UpdateValidationSummary();
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+                RefreshAfterFilterChange();
             }
         }
     }
@@ -239,6 +268,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         RaisePropertyChanged(nameof(CanGoPrevious));
         RaisePropertyChanged(nameof(CanGoNext));
         UpdateValidationSummary();
+        RaiseFilterStateChanged();
     }
 
     public void GoToPreviousPage()
@@ -265,12 +295,21 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
 
     public void ResetFilters()
     {
-        SymbolFilter = string.Empty;
-        SelectedDataType = "All";
-        SelectedVenue = "All";
-        FromDate = null;
-        ToDate = null;
-        _currentPage = 1;
+        _suppressFilterRefresh = true;
+        try
+        {
+            SymbolFilter = string.Empty;
+            SelectedDataType = "All";
+            SelectedVenue = "All";
+            FromDate = null;
+            ToDate = null;
+            _currentPage = 1;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+        }
+
         RefreshResults();
     }
 
@@ -298,6 +337,30 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     private void UpdateValidationSummary()
     {
         ValidationSummary = this[nameof(FromDate)];
+    }
+
+    private void RefreshAfterFilterChange()
+    {
+        _currentPage = 1;
+
+        if (_suppressFilterRefresh)
+        {
+            RaiseFilterStateChanged();
+            return;
+        }
+
+        RefreshResults();
+    }
+
+    private void RaiseFilterStateChanged()
+    {
+        RaisePropertyChanged(nameof(ActiveFilterCount));
+        RaisePropertyChanged(nameof(HasRows));
+        RaisePropertyChanged(nameof(HasActiveFilters));
+        RaisePropertyChanged(nameof(HasFilterRecoveryAction));
+        RaisePropertyChanged(nameof(EmptyStateTitle));
+        RaisePropertyChanged(nameof(EmptyStateDetail));
+        ResetFiltersCommand.NotifyCanExecuteChanged();
     }
 
     private static List<DataBrowserRecord> BuildSampleData()

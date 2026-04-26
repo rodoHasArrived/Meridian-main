@@ -173,10 +173,12 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_OperatorInbox" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PaperSessionReplayTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj --logger "console;verbosity=normal"
+python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
 python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 ```
 
@@ -190,6 +192,8 @@ python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.W
 
 Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
 DTOs, execution-control evidence, acceptance gates, or operator work-item projection.
+Use `MapWorkstationEndpoints_OperatorInbox` for changes to the operator inbox endpoint, navigation
+hints, readiness work-item aggregation, or reconciliation break queue projection.
 
 ## Desktop Workflows
 
@@ -202,6 +206,9 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~MessagingHubViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~StrategyRunBrowserViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundLedgerViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ProviderHealthViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SystemHealthViewModelTests|FullyQualifiedName~SystemHealthPageSmokeTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ActivityLogViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
@@ -236,6 +243,13 @@ Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release W
 the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
 for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
+Use `MainShellViewModelTests` and `MessagingHubViewModelTests` when changing shell operator-inbox
+actions, queue routing, Messaging Hub delivery posture, activity retention, empty states, or clear
+activity binding.
+Use `StrategyRunBrowserViewModelTests` when changing run-browser filters, filter recovery, empty
+states, comparison state, or `StrategyRunsPage` binding coverage.
+Use `FundLedgerViewModelTests` when changing Fund Ledger reconciliation filters, break-queue
+recovery, selected break actions, account drill-ins, or `FundLedgerPage` binding coverage.
 Use `ProviderHealthViewModelTests`, `SystemHealthViewModelTests` plus `SystemHealthPageSmokeTests`,
 `ActivityLogViewModelTests`, `NotificationCenterViewModelTests`, and `WatchlistViewModelTests`
 for provider-posture, system-health triage, support-triage, notification-history recovery, and
@@ -286,12 +300,15 @@ evidence:
 
 ```powershell
 Invoke-RestMethod http://localhost:8080/api/workstation/trading/readiness
+Invoke-RestMethod http://localhost:8080/api/workstation/operator/inbox
 Invoke-RestMethod http://localhost:8080/api/workstation/trading
 Invoke-RestMethod http://localhost:8080/api/execution/sessions/<session-id>/replay
 ```
 
 The readiness endpoint is `GET /api/workstation/trading/readiness`. The broader workstation
-trading payload (`GET /api/workstation/trading`) embeds the same readiness data. The replay route,
+trading payload (`GET /api/workstation/trading`) embeds the same readiness data. The operator inbox
+endpoint (`GET /api/workstation/operator/inbox`) aggregates readiness work items and open or
+in-review reconciliation breaks with navigation hints. The replay route,
 `GET /api/execution/sessions/{sessionId}/replay`, verifies a paper session replay and writes
 durable execution-audit evidence used to reconstruct replay readiness after restart.
 Replay readiness is stale if the active paper session's fill, order, or ledger-entry counts diverge
@@ -392,6 +409,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
 dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
+python3 build/scripts/ai-repo-updater.py known-errors
 python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
 python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md
 python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary

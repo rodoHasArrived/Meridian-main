@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Research, Desktop, Backtesting, API, and Architecture contributors
-**Last Updated:** 2026-04-25
-**Status:** Active focused blueprint for the next Research implementation slice; request-level batch sweeps and WPF Batch Backtest ViewModel coverage are now present, while real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open
+**Last Updated:** 2026-04-26
+**Status:** Active focused blueprint for the next Research implementation slice; request-level batch sweeps, WPF Batch Backtest ViewModel coverage, and StrategyRuns filter-aware run-scope recovery are now present, while real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open
 
 > Companion to:
 >
@@ -16,7 +16,7 @@
 
 This blueprint defines the next implementation slice for Meridian's Research workspace.
 
-The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-25, the Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, and ViewModel tests are present. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, and the shared run model.
+The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-26, the Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, and ViewModel tests are present. The StrategyRuns browser also now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded scope, and can reset filters against already-loaded rows. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, and deeper stage-aware shared orchestration.
 
 The slice delivers three user-facing outcomes:
 

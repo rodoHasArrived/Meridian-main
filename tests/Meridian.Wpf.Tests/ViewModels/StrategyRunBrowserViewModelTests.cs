@@ -66,6 +66,10 @@ public sealed class StrategyRunBrowserViewModelTests
 
         vm.Runs.Should().BeEmpty();
         vm.StatusText.Should().Contain("No recorded strategy runs");
+        vm.IsEmptyStateVisible.Should().BeTrue();
+        vm.HasFilterRecoveryAction.Should().BeFalse();
+        vm.EmptyStateTitle.Should().Be("No strategy runs recorded yet");
+        vm.RunScopeText.Should().Be("No recorded runs");
     }
 
     [Fact]
@@ -150,6 +154,42 @@ public sealed class StrategyRunBrowserViewModelTests
 
         vm.Runs.Should().BeEmpty();
         vm.StatusText.Should().Contain("No strategy runs match");
+        vm.IsEmptyStateVisible.Should().BeTrue();
+        vm.HasFilterRecoveryAction.Should().BeTrue();
+        vm.EmptyStateTitle.Should().Be("No strategy runs match the current filters");
+        vm.EmptyStateDetail.Should().Contain("Reset filters");
+        vm.RunScopeText.Should().Be("0 visible of 1 recorded run");
+    }
+
+    [Fact]
+    public async Task ClearRunFiltersCommand_RestoresRecordedRunsWhenFiltersHideRows()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Momentum Strategy", RunType.Backtest));
+        await store.RecordRunAsync(MakeEntry("Mean Reversion", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.SearchText = "no-match";
+
+        vm.Runs.Should().BeEmpty();
+        vm.HasActiveFilters.Should().BeTrue();
+        vm.HasFilterRecoveryAction.Should().BeTrue();
+        vm.ClearRunFiltersCommand.CanExecute(null).Should().BeTrue();
+        vm.RunScopeText.Should().Be("0 visible of 2 recorded runs");
+
+        vm.ClearRunFiltersCommand.Execute(null);
+
+        vm.SearchText.Should().BeEmpty();
+        vm.SelectedModeFilter.Should().Be("All");
+        vm.Runs.Should().HaveCount(2);
+        vm.IsEmptyStateVisible.Should().BeFalse();
+        vm.HasActiveFilters.Should().BeFalse();
+        vm.HasFilterRecoveryAction.Should().BeFalse();
+        vm.ClearRunFiltersCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -333,6 +373,23 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.ComparisonRows.Should().BeEmpty();
     }
 
+    [Fact]
+    public void StrategyRunsPageSource_BindsFilterRecoveryEmptyState()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\StrategyRunsPage.xaml"));
+
+        xaml.Should().Contain("StrategyRunsSearchBox");
+        xaml.Should().Contain("StrategyRunsModeFilter");
+        xaml.Should().Contain("StrategyRunsScopeText");
+        xaml.Should().Contain("{Binding RunScopeText}");
+        xaml.Should().Contain("StrategyRunsEmptyStatePanel");
+        xaml.Should().Contain("{Binding EmptyStateTitle}");
+        xaml.Should().Contain("{Binding EmptyStateDetail}");
+        xaml.Should().Contain("StrategyRunsEmptyStateResetFiltersButton");
+        xaml.Should().Contain("{Binding ClearRunFiltersCommand}");
+        xaml.Should().Contain("{Binding HasFilterRecoveryAction");
+    }
+
     private static StrategyRunSummary MakeSummary(
         string runId,
         string strategyName,
@@ -356,4 +413,21 @@ public sealed class StrategyRunBrowserViewModelTests
             FinalEquity: null,
             FillCount: 0,
             LastUpdatedAt: startedAt.AddHours(1));
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
 }

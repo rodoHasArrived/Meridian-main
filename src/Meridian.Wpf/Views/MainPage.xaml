@@ -1264,6 +1264,46 @@
                                     </StackPanel>
                                 </Button>
 
+                                <Button x:Name="OperatorInboxButton"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        ToolTip="{Binding OperatorInboxSummary}"
+                                        Command="{Binding OpenOperatorInboxCommand}"
+                                        Margin="0,0,8,0"
+                                        AutomationProperties.AutomationId="OperatorInboxButton"
+                                        AutomationProperties.Name="Operator Queue">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE7F4;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding OperatorInboxTone}" Value="Danger">
+                                                            <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding OperatorInboxTone}" Value="Warning">
+                                                            <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding OperatorInboxTone}" Value="Info">
+                                                            <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding OperatorInboxTone}" Value="Success">
+                                                            <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock x:Name="OperatorInboxButtonLabelText"
+                                                   Text="{Binding OperatorInboxButtonText}"
+                                                   Margin="8,0,0,0"
+                                                   VerticalAlignment="Center"
+                                                   AutomationProperties.AutomationId="OperatorInboxButtonLabelText" />
+                                    </StackPanel>
+                                </Button>
+
                                 <Button Style="{StaticResource GhostButtonStyle}"
                                         ToolTip="Notifications"
                                         Margin="0,0,8,0"

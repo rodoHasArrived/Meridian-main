@@ -466,6 +466,7 @@ public static class UiApiRoutes
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
+    public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";

@@ -8,6 +8,7 @@ using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
@@ -796,6 +797,145 @@ public sealed class WorkstationEndpointsTests
         readiness.WorkItems.Should().ContainSingle(item =>
             item.WorkItemId == "promotion-decision-missing" &&
             item.Label == "Promotion decision required");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldProjectTradingReadinessWorkItemsWithNavigation()
+    {
+        await using var app = await CreateAppAsync();
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.CriticalCount.Should().BeGreaterThanOrEqualTo(1);
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
+        inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == "paper-session-missing" &&
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Workspace == "Trading" &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+        inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == "promotion-decision-missing" &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-break-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.RunId == runId &&
+            item.Workspace == "Governance");
+        var breakItem = inbox.Items.First(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.RunId == runId &&
+            item.Workspace == "Governance");
+        breakItem.WorkItemId.Should().StartWith("reconciliation-break-");
+        breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
+        breakItem.TargetPageTag.Should().Be("GovernanceShell");
+        breakItem.Detail.Should().Contain("The break is open");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeInReviewReconciliationBreaks()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-review-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+        var review = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating the mismatch."));
+        review.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+            "/api/workstation/operator/inbox",
+            ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        var breakItem = inbox!.Items.First(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.AuditReference == breakId);
+        breakItem.Label.Should().Be("Reconciliation break in review");
+        breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
+        breakItem.TargetPageTag.Should().Be("GovernanceShell");
+        breakItem.Detail.Should().Contain("The break is in review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WhenBreakQueueUnavailable_ShouldReturnTradingReadinessWithWarning()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(
+                new ThrowingReconciliationBreakQueueRepository());
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item =>
+            item.WorkItemId == "paper-session-missing" &&
+            item.TargetPageTag == "TradingShell");
+        inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == "reconciliation-break-queue-unavailable" &&
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.Workspace == "Governance" &&
+            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
+            item.TargetPageTag == "GovernanceShell");
+        inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -2015,6 +2155,41 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
+    }
+
+    private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
+    {
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<ReconciliationBreakQueueItem?> GetByIdAsync(string breakId, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<bool> CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<bool> DeleteAsync(string breakId, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(
+            ReviewReconciliationBreakRequest request,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(
+            ResolveReconciliationBreakRequest request,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(
+            string breakId,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
     }
 
     private static void WriteReadyDk1Packet(
