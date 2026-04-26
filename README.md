@@ -7802,6 +7802,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ResearchBriefingWorkspaceServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
 │   │   │   ├── StorageServiceTests.cs
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
@@ -7823,6 +7824,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WpfTestThread.cs
 │   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
+│   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
@@ -7840,6 +7842,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   └── Views
@@ -7880,6 +7884,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-629 directories, 7111 files
+629 directories, 7115 files
 ```
 <!-- readme-tree end -->
