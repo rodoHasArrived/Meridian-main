@@ -33,7 +33,7 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the WPF workstation shell is the primary operator shell and is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; the retained local API/web surfaces remain supporting consumers of the same workstation contracts
-- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, the Trading desk briefing hero, and the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, so this window should validate workflow value rather than start a second desktop UX track
+- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, the Trading desk briefing hero, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, and the Data Operations desk briefing hero's provider / backfill / storage / session / export handoffs, so this window should validate workflow value rather than start a second desktop UX track
 - the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and operator work items, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
@@ -76,6 +76,7 @@ This plan starts from the current repo state:
 - the DK1 pilot replay/sample-set contract is emitted by `scripts/dev/run-wave1-provider-validation.ps1`, packaged by `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, and reviewed through the DK1 pilot parity runbook
 - backfill checkpoints, gap detection, and Parquet L2 flush behavior remain on the passing command matrix instead of drifting back into assumed reliability
 - the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, and generated validation summaries
+- the Data Operations desk briefing hero remains a consumer of shared provider, backfill, storage, session, and export state instead of becoming a separate operational-readiness model
 
 ### Outcome 2: Wave 2 paper trading is dependable, not just visible
 
@@ -162,6 +163,7 @@ Priorities:
 - keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used by the WPF shell and retained desktop-local API contracts
 - treat the Trading desk briefing hero as Wave 2 support evidence only when it continues to reflect shared readiness, replay, controls, trust-gate, and brokerage-sync posture without duplicating service logic
 - treat the Research desk briefing hero as Wave 3 support evidence only when it keeps selected-run, run-detail, portfolio, and paper-promotion handoffs tied to shared workstation read models
+- treat the Data Operations desk briefing hero as Wave 1/DK1 support evidence only when it keeps provider, backfill, storage, session, and export handoffs tied to shared operational services
 - validate the current `ShellNavigationCatalog`, workspace-shell, deep-page host, and shell-context-strip baseline against active run-centered workflows before widening it further
 - pull validation and contradiction checks forward whenever workstation or governance surfaces expand
 

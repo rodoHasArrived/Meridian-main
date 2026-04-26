@@ -207,6 +207,9 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.HeroState.PrimaryActionId.Should().Be("Backfill");
         presentation.HeroState.SecondaryActionId.Should().Be("Schedules");
         presentation.HeroState.TargetText.Should().Be("Target: Backfill");
+        presentation.HeroMetrics.Select(metric => metric.Label).Should().ContainInOrder("Providers", "Backfill", "Storage");
+        presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("2/2 ready", "3 pending", "61% used");
+        presentation.HeroMetrics.Select(metric => metric.Tone).Should().ContainInOrder("Success", "Warning", "Info");
 
         presentation.SummaryProvidersText.Should().Be("2/2 ready");
         presentation.SummaryBackfillText.Should().Be("3 pending");
@@ -262,6 +265,8 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.HeroState.PrimaryActionId.Should().Be("Retry");
         presentation.HeroState.SecondaryActionId.Should().Be("Diagnostics");
         presentation.HeroState.TargetText.Should().Be("Target: Refresh current shell");
+        presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("No providers", "No active backfill", "No data");
+        presentation.HeroMetrics.Select(metric => metric.Tone).Should().ContainInOrder("Warning", "Neutral", "Neutral");
 
         presentation.SummaryProvidersText.Should().Be("No providers");
         presentation.SummaryBackfillText.Should().Be("No active backfill");

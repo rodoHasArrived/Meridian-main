@@ -7,7 +7,9 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/HELP.md` for verified operator and developer CLI workflows.
 - `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
+- `docs/development/build-observability.md` for build diagnostics, metrics, fingerprints, and debug bundles.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
+- `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
@@ -95,8 +97,10 @@ dotnet run --project src/Meridian/Meridian.csproj -- --query "last SPY"
 dotnet run --project src/Meridian/Meridian.csproj -- --query "count SPY" --from 2026-01-01 --to 2026-01-31
 dotnet run --project src/Meridian/Meridian.csproj -- --catalog symbols
 dotnet run --project src/Meridian/Meridian.csproj -- --catalog search "AAPL trades 2025"
+dotnet run --project src/Meridian/Meridian.csproj -- --catalog coverage
 dotnet run --project src/Meridian/Meridian.csproj -- --catalog timeline --symbol AAPL
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-01-01 --backfill-to 2025-12-31
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL --backfill-from 2025-01-01 --backfill-to 2025-01-31 --backfill-granularity 15Min
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-provider polygon --backfill-symbols SPY
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backfill-symbols QQQ
 dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name market-data-archive
@@ -122,6 +126,10 @@ operator setup before adding short-form examples here.
 TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently
 maps `--package-format` to zip, tar.gz/tgz, or 7z. Verify the intended CSV export workflow before
 adding that as a standard package command.
+
+TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but
+`JsonlReplayer` currently treats the value as a directory root while help text describes a JSONL
+file path. Verify the intended replay path semantics before adding a standard CLI replay example.
 
 ## MCP Workflows
 
@@ -294,7 +302,17 @@ make verify-setup
 make diagnose-build
 make collect-debug
 make collect-debug-minimal
+make build-profile
 make build-binlog
+make build-graph
+make fingerprint
+make env-capture NAME=local
+make env-diff ENV1=local ENV2=ci
+make impact FILE=src/Meridian/Meridian.csproj
+make bisect GOOD=<good-ref> BAD=<bad-ref>
+make metrics
+make history
+make analyze-errors
 make validate-data
 make ai-arch-check
 make ai-verify
@@ -320,6 +338,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
 dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
+python3 build/scripts/docs/run-docs-automation.py --profile quick --dry-run
+python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md
 python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
 ```
 

@@ -17,7 +17,7 @@ The repo now also includes persisted built-in workspace categories for `Research
 Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
 `NotificationCenter` now supports history triage with search, unread-only filtering, and per-item acknowledgement so governance operators can work events as a queue instead of a flat feed.
 `GovernanceWorkspaceShellPage` now adds a selected-lane briefing card above the lane buttons so operators can keep the active queue, blocker, and next action visible before opening `Operations`, `Accounting`, `Reconciliation`, `Reporting`, or `Audit`.
-`DataOperationsWorkspaceShellPage` now opens with a scope-and-handoff briefing card so operators see the active operational focus before dropping into provider, backfill, storage, and export queues.
+`DataOperationsWorkspaceShellPage` now opens with a scope-and-handoff briefing card plus compact provider, backfill, and storage health chips so operators see the active focus and readiness posture before dropping into the queue wall.
 `ResearchWorkspaceShellPage` now keeps a desk-briefing hero above the market briefing so operators can see the current cycle focus, the next handoff, and the primary blocker before dropping into run history or promotion candidates.
 
 ## Why WPF?

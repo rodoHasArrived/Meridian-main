@@ -77,6 +77,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
     {
         SetQueueLoadingStates();
         ApplyHeroState(DataOperationsHeroState.Loading());
+        ApplyHeroMetrics(DataOperationsHeroMetric.LoadingMetrics());
 
         try
         {
@@ -91,6 +92,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
             Meridian.Wpf.Services.LoggingService.Instance.LogError("[DataOperationsWorkspaceShell] Refresh failed", ex);
             SetQueueErrorStates();
             ApplyHeroState(DataOperationsHeroState.Error());
+            ApplyHeroMetrics(DataOperationsHeroMetric.ErrorMetrics());
         }
     }
 
@@ -160,6 +162,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         OperationsHeroScopeText.Text = presentation.Context.PrimaryScopeValue;
         OperationsHeroSummaryText.Text = presentation.QueueSummaryText;
         ApplyHeroState(presentation.HeroState);
+        ApplyHeroMetrics(presentation.HeroMetrics);
         QueueScopeBadgeText.Text = presentation.QueueScopeBadgeText;
         QueueSummaryText.Text = presentation.QueueSummaryText;
         ProviderQueueList.ItemsSource = presentation.ProviderQueueItems;
@@ -193,6 +196,11 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         OperationsHeroTargetText.Text = heroState.TargetText;
         ApplyHeroActionButton(OperationsHeroPrimaryActionButton, heroState.PrimaryActionLabel, heroState.PrimaryActionId);
         ApplyHeroActionButton(OperationsHeroSecondaryActionButton, heroState.SecondaryActionLabel, heroState.SecondaryActionId);
+    }
+
+    private void ApplyHeroMetrics(IReadOnlyList<DataOperationsHeroMetric> metrics)
+    {
+        OperationsHeroMetricsList.ItemsSource = metrics;
     }
 
     private static void ApplyHeroActionButton(Button button, string label, string actionId)

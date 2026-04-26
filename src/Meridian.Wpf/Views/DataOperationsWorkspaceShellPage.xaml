@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:services="clr-namespace:Meridian.Wpf.Services"
       xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
@@ -155,6 +156,28 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+
+        <DataTemplate x:Key="HeroMetricTemplate" DataType="{x:Type services:DataOperationsHeroMetric}">
+            <Border Style="{StaticResource WorkspaceToneBadgeStyle}"
+                    MinWidth="112"
+                    Margin="0,0,8,8"
+                    Padding="10,8"
+                    ToolTip="{Binding Detail}"
+                    AutomationProperties.Name="{Binding AutomationName}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Label}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                    <TextBlock Text="{Binding Value}"
+                               Margin="0,4,0,0"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid Margin="20">
@@ -265,6 +288,16 @@
                                    TextWrapping="Wrap"
                                    Text="Refreshing provider, backfill, storage, and export posture."
                                    AutomationProperties.AutomationId="OperationsHeroActionSummaryText" />
+                        <ItemsControl x:Name="OperationsHeroMetricsList"
+                                      Margin="0,12,0,0"
+                                      ItemTemplate="{StaticResource HeroMetricTemplate}"
+                                      AutomationProperties.AutomationId="OperationsHeroMetricsList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
                         <TextBlock x:Name="OperationsHeroHandoffTitleText"
                                    Margin="0,12,0,0"
                                    FontSize="14"

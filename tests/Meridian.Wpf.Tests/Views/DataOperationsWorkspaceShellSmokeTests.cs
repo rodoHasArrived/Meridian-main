@@ -42,6 +42,8 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroSummaryText");
         xaml.Should().Contain("OperationsHeroFocusText");
         xaml.Should().Contain("OperationsHeroActionSummaryText");
+        xaml.Should().Contain("OperationsHeroMetricsList");
+        xaml.Should().Contain("HeroMetricTemplate");
         xaml.Should().Contain("OperationsHeroHandoffTitleText");
         xaml.Should().Contain("OperationsHeroPrimaryActionButton");
         xaml.Should().Contain("OperationsHeroSecondaryActionButton");
@@ -52,9 +54,13 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         code.Should().Contain("OperationsHeroSummaryText.Text = presentation.QueueSummaryText;");
         code.Should().Contain("OperationsHeroFocusText.Text = heroState.FocusText;");
         code.Should().Contain("OperationsHeroActionSummaryText.Text = heroState.SummaryText;");
+        code.Should().Contain("ApplyHeroMetrics(presentation.HeroMetrics);");
+        code.Should().Contain("OperationsHeroMetricsList.ItemsSource = metrics;");
         code.Should().Contain("ApplyHeroState(DataOperationsHeroState.Loading());");
+        code.Should().Contain("ApplyHeroMetrics(DataOperationsHeroMetric.LoadingMetrics());");
         code.Should().Contain("ApplyHeroState(presentation.HeroState);");
         code.Should().Contain("ApplyHeroState(DataOperationsHeroState.Error());");
+        code.Should().Contain("ApplyHeroMetrics(DataOperationsHeroMetric.ErrorMetrics());");
         code.Should().Contain("private void OnOperationsHeroPrimaryActionClick");
         code.Should().Contain("private void OnOperationsHeroSecondaryActionClick");
     }

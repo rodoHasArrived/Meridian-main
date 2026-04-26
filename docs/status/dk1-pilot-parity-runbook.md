@@ -16,6 +16,7 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
 
 - Provider validation matrix (authoritative provider evidence table): [`provider-validation-matrix.md`](./provider-validation-matrix.md)
 - Wave 1 validation command script (must be executed for every parity run): [`scripts/dev/run-wave1-provider-validation.ps1`](../../scripts/dev/run-wave1-provider-validation.ps1)
+- Operator sign-off preflight helper: [`scripts/dev/prepare-dk1-operator-signoff.ps1`](../../scripts/dev/prepare-dk1-operator-signoff.ps1)
 - Generated automation outputs (must be attached for the run date):
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
@@ -68,7 +69,11 @@ when all test steps pass.
    - Confirm pilot-sample rows are `ready`, not merely present. The packet generator now checks each sample's provider, automation step, sample universe/window, required evidence anchors, and acceptance check.
    - Confirm evidence-document rows are `validated`, not merely present. The packet generator now checks required DK1 sample IDs, explainability payload fields/reason codes, baseline threshold metrics, and FP/FN review markers inside the linked docs.
 5. **Attach operator sign-off when approved**
-   - Create an operator sign-off JSON file after Data Operations, Provider Reliability, and Trading have reviewed the packet.
+   - Create the operator sign-off JSON template after Data Operations, Provider Reliability, and Trading have reviewed the packet:
+     `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
+   - Fill each required approval row with `signedBy`, `signedAtUtc`, an approved/signed `decision`, and `rationale`.
+   - Validate the completed sign-off before regenerating the packet:
+     `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -Validate`.
    - Regenerate the packet with `./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
    - Alternatively pass the same sign-off file through the full validation wrapper: `./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
    - Confirm `operatorSignoff.status` is `signed`, `signedOwners` contains all three required owners, and `missingOwners` is empty before claiming DK1 exit.

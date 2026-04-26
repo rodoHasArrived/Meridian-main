@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
 **Last Updated:** 2026-04-26
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline including Research, Trading, and Data Operations hero surfaces
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, the Trading desk briefing hero, and the Research desk briefing hero. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, the Trading desk briefing hero, the Research desk briefing hero, and the Data Operations desk briefing hero. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence _(repo-closed, keep synchronized)_
 2. **Wave 2:** paper-trading cockpit hardening
@@ -44,7 +44,7 @@ Meridian already has strong platform foundations, meaningful workstation flows i
 6. **Wave 6:** live integration readiness
 7. **Optional advanced research / scale tracks**
 
-Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-26, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract and a generated `dk1-pilot-parity-packet.*` artifact; the latest packet is `ready-for-operator-review` with validated evidence-document checks and no packet blockers. The trading readiness lane now projects that packet and pending sign-off state as operator-visible readiness, but DK1 still needs operator sign-off plus workflow-facing explainability/calibration review, and shared interop readiness remains **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation/governance is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
+Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-26, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract and a generated `dk1-pilot-parity-packet.*` artifact; the latest packet is `ready-for-operator-review` with validated evidence-document checks and no packet blockers. The trading readiness lane now projects that packet, pending sign-off state, sample-review evidence, evidence-document posture, and trust-rationale/baseline-threshold contract checks as operator-visible readiness, but DK1 still needs operator sign-off plus workflow-facing explainability/calibration review, and shared interop readiness remains **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation/governance is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
 
 ---
 
@@ -74,6 +74,8 @@ Security Master is already the delivered baseline; the opportunity is turning th
 
 Wave 1 is now repo-closed, but it remains the trust boundary that every downstream readiness claim depends on. DK1 now turns that boundary into a pilot parity packet with an emitted `pilotReplaySampleSet`, generated parity-packet artifacts, trust rationale mapping, threshold calibration, and pending operator sign-off.
 
+The Data Operations workspace now has a concrete WPF support surface for this work: its desk briefing hero projects provider health, resumable backfills, storage health, collection sessions, export jobs, operational blockers, and next-handoff actions through `DataOperationsWorkspacePresentationBuilder`. Treat that as support evidence for the Wave 1/DK1 operating lane, not as proof that provider trust or export readiness is closed by UI coverage alone.
+
 ### 5. Wave 5: Unify Backtest Studio after the core operator-readiness path is stable
 
 Native and Lean backtesting should become one operator-facing workflow once the shared model is stable enough to support it cleanly.
@@ -86,7 +88,7 @@ Live-readiness should follow proven provider evidence and a dependable paper wor
 
 QuantScript expansion, queue-aware simulation, multi-instance coordination, and Phase 16 performance work deepen Meridian's ceiling after the core workstation product is already trustworthy and coherent.
 
-Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline, including the Trading and Research desk briefing heroes, is now present enough to judge it by workflow value, not by additional shell surface area.
+Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline, including the Trading, Research, and Data Operations desk briefing heroes, is now present enough to judge it by workflow value, not by additional shell surface area.
 
 Delivery Kernel governance to avoid piecemeal adoption:
 

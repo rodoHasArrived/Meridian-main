@@ -69,6 +69,16 @@ public static class DataOperationsWorkspacePresentationBuilder
                 : data.StorageStats is not null
                     ? ($"{data.StorageStats.UsedPercentage:F0}% used", WorkspaceTone.Info)
                     : (StorageUnavailableSummary, WorkspaceTone.Neutral);
+        var heroMetrics = BuildHeroMetrics(
+            providerCount,
+            healthyProviderCount,
+            providersTone,
+            backfillText,
+            backfillTone,
+            storageText,
+            storageTone,
+            resumableCount,
+            criticalStorageIssueCount);
         var freshnessValue = data.ActiveSession is not null
             ? $"{data.ActiveSession.Name} active · {(data.ActiveSession.Provider ?? "No provider")}"
             : data.ProviderStatus?.IsConnected == true && !string.IsNullOrWhiteSpace(data.ProviderStatus.ActiveProvider)
@@ -236,6 +246,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             },
             CommandGroup = BuildCommandGroup(),
             HeroState = heroState,
+            HeroMetrics = heroMetrics,
             QueueScopeBadgeText = data.UnreadAlerts > 0 ? $"{data.ScopeLabel} · {data.UnreadAlerts} alert-linked" : data.ScopeLabel,
             QueueSummaryText = queueSummary,
             ProviderQueueItems = providerQueueItems,
@@ -496,6 +507,66 @@ public static class DataOperationsWorkspacePresentationBuilder
         "Diagnostics" => "Diagnostics",
         _ => string.IsNullOrWhiteSpace(actionId) ? "Current shell" : actionId
     };
+
+    private static IReadOnlyList<DataOperationsHeroMetric> BuildHeroMetrics(
+        int providerCount,
+        int healthyProviderCount,
+        string providersTone,
+        string backfillText,
+        string backfillTone,
+        string storageText,
+        string storageTone,
+        int resumableCount,
+        int criticalStorageIssueCount)
+    {
+        var providerValue = providerCount > 0
+            ? $"{healthyProviderCount}/{providerCount} ready"
+            : ProvidersUnavailableSummary;
+        var providerDetail = providerCount == 0
+            ? "Provider telemetry needs configuration or refresh before the next queue handoff."
+            : healthyProviderCount >= providerCount
+                ? "Provider routing is ready for collection and backfill work."
+                : "Provider routing needs review before new collection or backfill work.";
+        var backfillDetail = resumableCount > 0
+            ? "Resume staged historical coverage before the next operator handoff."
+            : backfillTone == WorkspaceTone.Warning
+                ? "Review failed or incomplete backfill telemetry before staging more coverage."
+                : backfillTone == WorkspaceTone.Info
+                    ? "Historical coverage has a schedule or recent run to anchor the next handoff."
+                    : "No historical coverage job is currently active.";
+        var storageDetail = criticalStorageIssueCount > 0
+            ? "Resolve storage blockers before packaging, export, or replay handoff."
+            : storageTone == WorkspaceTone.Warning
+                ? "Storage health needs review before the next package or export handoff."
+                : storageTone == WorkspaceTone.Info
+                    ? "Storage capacity telemetry is available for the current scope."
+                    : "Storage telemetry is unavailable or no data has been stored for this scope.";
+
+        return
+        [
+            new DataOperationsHeroMetric
+            {
+                Label = "Providers",
+                Value = providerValue,
+                Detail = providerDetail,
+                Tone = providersTone
+            },
+            new DataOperationsHeroMetric
+            {
+                Label = "Backfill",
+                Value = backfillText,
+                Detail = backfillDetail,
+                Tone = backfillTone
+            },
+            new DataOperationsHeroMetric
+            {
+                Label = "Storage",
+                Value = storageText,
+                Detail = storageDetail,
+                Tone = storageTone
+            }
+        ];
+    }
 
     private static WorkspaceCommandGroup BuildCommandGroup() => new()
     {
@@ -800,6 +871,7 @@ public sealed class DataOperationsWorkspacePresentation
     public WorkspaceShellContextInput Context { get; init; } = new();
     public WorkspaceCommandGroup CommandGroup { get; init; } = new();
     public DataOperationsHeroState HeroState { get; init; } = DataOperationsHeroState.Loading();
+    public IReadOnlyList<DataOperationsHeroMetric> HeroMetrics { get; init; } = DataOperationsHeroMetric.LoadingMetrics();
     public string QueueScopeBadgeText { get; init; } = string.Empty;
     public string QueueSummaryText { get; init; } = string.Empty;
     public IReadOnlyList<WorkspaceQueueItem> ProviderQueueItems { get; init; } = Array.Empty<WorkspaceQueueItem>();
@@ -851,4 +923,63 @@ public sealed class DataOperationsHeroState
             SecondaryActionLabel = "Diagnostics",
             TargetText = "Target: Refresh current shell"
         };
+}
+
+public sealed class DataOperationsHeroMetric
+{
+    public string Label { get; init; } = string.Empty;
+    public string Value { get; init; } = string.Empty;
+    public string Detail { get; init; } = string.Empty;
+    public string Tone { get; init; } = WorkspaceTone.Neutral;
+    public string AutomationName => $"{Label}: {Value}";
+
+    public static IReadOnlyList<DataOperationsHeroMetric> LoadingMetrics() =>
+    [
+        new()
+        {
+            Label = "Providers",
+            Value = "Refreshing",
+            Detail = "Refreshing provider catalog and connectivity telemetry.",
+            Tone = WorkspaceTone.Info
+        },
+        new()
+        {
+            Label = "Backfill",
+            Value = "Refreshing",
+            Detail = "Refreshing backfill checkpoint and execution telemetry.",
+            Tone = WorkspaceTone.Info
+        },
+        new()
+        {
+            Label = "Storage",
+            Value = "Refreshing",
+            Detail = "Refreshing storage health, capacity, and export telemetry.",
+            Tone = WorkspaceTone.Info
+        }
+    ];
+
+    public static IReadOnlyList<DataOperationsHeroMetric> ErrorMetrics() =>
+    [
+        new()
+        {
+            Label = "Providers",
+            Value = "Review",
+            Detail = "Provider telemetry could not be refreshed.",
+            Tone = WorkspaceTone.Warning
+        },
+        new()
+        {
+            Label = "Backfill",
+            Value = "Review",
+            Detail = "Backfill telemetry could not be refreshed.",
+            Tone = WorkspaceTone.Warning
+        },
+        new()
+        {
+            Label = "Storage",
+            Value = "Review",
+            Detail = "Storage or export telemetry could not be refreshed.",
+            Tone = WorkspaceTone.Warning
+        }
+    ];
 }
