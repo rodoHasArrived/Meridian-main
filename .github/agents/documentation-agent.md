@@ -7666,6 +7666,7 @@ Meridian-main
 │   │   │   ├── ResearchBriefingWorkspaceServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
 │   │   │   ├── StorageServiceTests.cs
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
@@ -7686,6 +7687,7 @@ Meridian-main
 │   │   │   ├── StrategyRunWorkspaceTestData.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
@@ -7703,6 +7705,8 @@ Meridian-main
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   ├── Views
