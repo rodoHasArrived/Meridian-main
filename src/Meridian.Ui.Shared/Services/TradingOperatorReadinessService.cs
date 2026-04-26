@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Promotions;
@@ -51,7 +52,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemKindDto.PaperReplay,
                 "No active paper session",
                 "Start or restore a paper session before treating the cockpit as operator-ready.",
-                OperatorWorkItemToneDto.Critical);
+                OperatorWorkItemToneDto.Critical,
+                workItemId: "paper-session-missing");
         }
         else if (replay is null)
         {
@@ -61,7 +63,8 @@ public sealed class TradingOperatorReadinessService
                 "Paper replay verification required",
                 $"Run replay verification for paper session {activeSession.SessionId}.",
                 OperatorWorkItemToneDto.Warning,
-                activeSession.SessionId);
+                activeSession.SessionId,
+                workItemId: BuildWorkItemId("paper-replay-missing", activeSession.SessionId));
         }
         else if (!replay.IsConsistent)
         {
@@ -72,7 +75,8 @@ public sealed class TradingOperatorReadinessService
                 replay.MismatchReasons.FirstOrDefault() ?? $"Replay verification for {replay.SessionId} did not match persisted state.",
                 OperatorWorkItemToneDto.Critical,
                 replay.SessionId,
-                auditReference: replay.VerificationAuditId);
+                auditReference: replay.VerificationAuditId,
+                workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId));
         }
 
         if (auditEntries.Count == 0)
@@ -82,7 +86,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemKindDto.PaperReplay,
                 "No audit evidence",
                 "No execution audit entries are visible for the paper acceptance lane.",
-                OperatorWorkItemToneDto.Warning);
+                OperatorWorkItemToneDto.Warning,
+                workItemId: "execution-audit-empty");
         }
 
         var controls = BuildControls(Resolve<ExecutionOperatorControlService>());
@@ -93,7 +98,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemKindDto.PromotionReview,
                 "Execution circuit breaker open",
                 controls.CircuitBreakerReason ?? "Execution is blocked by an operator control.",
-                OperatorWorkItemToneDto.Critical);
+                OperatorWorkItemToneDto.Critical,
+                workItemId: "execution-circuit-breaker-open");
         }
 
         if (controls.ManualOverrideCount > 0)
@@ -103,7 +109,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemKindDto.PromotionReview,
                 "Manual overrides require review",
                 $"{controls.ManualOverrideCount} execution manual override(s) must be reviewed before promotion acceptance.",
-                OperatorWorkItemToneDto.Warning);
+                OperatorWorkItemToneDto.Warning,
+                workItemId: "execution-manual-overrides-open");
         }
 
         var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
@@ -118,7 +125,8 @@ public sealed class TradingOperatorReadinessService
                 "Promotion decision required",
                 "Evaluate and record the paper promotion decision before accepting the cockpit.",
                 OperatorWorkItemToneDto.Warning,
-                latestRun?.Summary.RunId);
+                latestRun?.Summary.RunId,
+                workItemId: BuildWorkItemId("promotion-decision-missing", latestRun?.Summary.RunId));
         }
         else if (promotion.RequiresReview || !IsPromotionTraceComplete(promotion))
         {
@@ -129,7 +137,8 @@ public sealed class TradingOperatorReadinessService
                 "Promotion evidence must include decision, operator, rationale, lineage, and audit reference.",
                 OperatorWorkItemToneDto.Warning,
                 promotion.SourceRunId ?? promotion.TargetRunId,
-                auditReference: promotion.AuditReference);
+                auditReference: promotion.AuditReference,
+                workItemId: BuildWorkItemId("promotion-trace-incomplete", promotion.SourceRunId ?? promotion.TargetRunId));
         }
 
         AddTrustGateWorkItem(workItems, trustGate);
@@ -147,7 +156,8 @@ public sealed class TradingOperatorReadinessService
                 brokerageStatus.Health is WorkstationBrokerageSyncHealth.Failed
                     ? OperatorWorkItemToneDto.Critical
                     : OperatorWorkItemToneDto.Warning,
-                fundAccountId: brokerageStatus.FundAccountId);
+                fundAccountId: brokerageStatus.FundAccountId,
+                workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")));
         }
 
         if (latestRun is not null)
@@ -163,7 +173,8 @@ public sealed class TradingOperatorReadinessService
                     "Security Master coverage gap",
                     $"{missingSecurityCount} run security reference(s) are missing coverage.",
                     OperatorWorkItemToneDto.Warning,
-                    latestRun.Summary.RunId);
+                    latestRun.Summary.RunId,
+                    workItemId: BuildWorkItemId("security-master-coverage-gap", latestRun.Summary.RunId));
             }
         }
 
@@ -619,7 +630,8 @@ public sealed class TradingOperatorReadinessService
                 OperatorWorkItemKindDto.ProviderTrustGate,
                 "DK1 trust packet unavailable",
                 trustGate.Detail,
-                OperatorWorkItemToneDto.Warning);
+                OperatorWorkItemToneDto.Warning,
+                workItemId: "dk1-trust-packet-unavailable");
             return;
         }
 
@@ -631,7 +643,8 @@ public sealed class TradingOperatorReadinessService
                 "DK1 trust packet blocked",
                 trustGate.Detail,
                 OperatorWorkItemToneDto.Critical,
-                auditReference: trustGate.PacketPath);
+                auditReference: trustGate.PacketPath,
+                workItemId: "dk1-trust-packet-blocked");
             return;
         }
 
@@ -643,7 +656,8 @@ public sealed class TradingOperatorReadinessService
                 "DK1 operator sign-off pending",
                 trustGate.Detail,
                 OperatorWorkItemToneDto.Warning,
-                auditReference: trustGate.PacketPath);
+                auditReference: trustGate.PacketPath,
+                workItemId: "dk1-operator-signoff-pending");
         }
     }
 
@@ -695,10 +709,11 @@ public sealed class TradingOperatorReadinessService
         OperatorWorkItemToneDto tone,
         string? runId = null,
         Guid? fundAccountId = null,
-        string? auditReference = null)
+        string? auditReference = null,
+        string? workItemId = null)
     {
         workItems.Add(new OperatorWorkItemDto(
-            WorkItemId: $"operator-{Guid.NewGuid():N}",
+            WorkItemId: workItemId ?? BuildWorkItemId(kind.ToString(), label),
             Kind: kind,
             Label: label,
             Detail: detail,
@@ -707,6 +722,49 @@ public sealed class TradingOperatorReadinessService
             RunId: runId,
             FundAccountId: fundAccountId,
             AuditReference: auditReference));
+    }
+
+    private static string BuildWorkItemId(string prefix, string? scope = null)
+    {
+        var normalizedPrefix = NormalizeWorkItemToken(prefix);
+        var normalizedScope = NormalizeWorkItemToken(scope);
+        return string.IsNullOrEmpty(normalizedScope)
+            ? normalizedPrefix
+            : $"{normalizedPrefix}-{normalizedScope}";
+    }
+
+    private static string NormalizeWorkItemToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(value.Length);
+        var previousWasSeparator = false;
+
+        foreach (var character in value.Trim())
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                builder.Append(char.ToLowerInvariant(character));
+                previousWasSeparator = false;
+                continue;
+            }
+
+            if (!previousWasSeparator && builder.Length > 0)
+            {
+                builder.Append('-');
+                previousWasSeparator = true;
+            }
+        }
+
+        if (builder.Length > 0 && builder[^1] == '-')
+        {
+            builder.Length--;
+        }
+
+        return builder.ToString();
     }
 
     private T? Resolve<T>() where T : class

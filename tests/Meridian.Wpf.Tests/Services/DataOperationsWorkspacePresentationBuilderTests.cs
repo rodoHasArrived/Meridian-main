@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Session;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using ExportFormatModel = Meridian.Ui.Services.ExportFormat;
 using ExportJobModel = Meridian.Ui.Services.ExportJob;

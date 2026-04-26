@@ -273,6 +273,8 @@ durable execution-audit evidence used to reconstruct replay readiness after rest
 
 ```powershell
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1
+pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
+pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -Validate
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
@@ -284,7 +286,8 @@ proof. It writes summaries and DK1 parity packets under
 `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
 `run-wave1-provider-validation.ps1` invokes `generate-dk1-pilot-parity-packet.ps1` when present;
 run the packet generator directly only when rebuilding from an existing Wave 1 summary. Pass
-`-OperatorSignoffPath` after owner review so the packet records machine-readable sign-off status. A
+the `prepare-dk1-operator-signoff.ps1` output through `-OperatorSignoffPath` after owner review so
+the packet records machine-readable sign-off status. A
 `ready-for-operator-review` DK1 packet still requires signed owner evidence before DK1 exit.
 `build-ibapi-smoke.ps1` is a compile-only Interactive Brokers adapter smoke build that enables
 `EnableIbApiSmoke=true` on `src/Meridian.Infrastructure/Meridian.Infrastructure.csproj`.

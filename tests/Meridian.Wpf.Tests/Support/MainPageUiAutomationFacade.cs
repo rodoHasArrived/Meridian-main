@@ -33,6 +33,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         _runMatRootDirectory = Path.Combine(Path.GetTempPath(), "mainpage-ui-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_runMatRootDirectory);
         WorkspaceService.SetSettingsFilePathOverrideForTests(Path.Combine(_runMatRootDirectory, "workspace-data.json"));
+        SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(Path.Combine(_runMatRootDirectory, "desktop-shell-preferences.json"));
+        SettingsConfigurationService.Instance.SetShellDensityMode(ShellDensityMode.Standard);
 
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
@@ -304,6 +306,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         NavigationService.Instance.ResetForTests();
         WorkspaceService.Instance.ResetForTests();
         WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+        SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
 
         try
         {

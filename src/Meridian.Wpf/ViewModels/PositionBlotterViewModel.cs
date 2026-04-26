@@ -113,7 +113,13 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     public int RowCount
     {
         get => _rowCount;
-        private set => SetProperty(ref _rowCount, value);
+        private set
+        {
+            if (SetProperty(ref _rowCount, value))
+            {
+                RaisePropertyChanged(nameof(HasRows));
+            }
+        }
     }
 
     private int _groupCount;
@@ -227,6 +233,35 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _snapshotSourceText, value);
     }
 
+    private bool _hasActiveFilters;
+    public bool HasActiveFilters
+    {
+        get => _hasActiveFilters;
+        private set
+        {
+            if (SetProperty(ref _hasActiveFilters, value))
+            {
+                ClearFiltersCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    private string _emptyStateTitle = "No positions loaded yet.";
+    public string EmptyStateTitle
+    {
+        get => _emptyStateTitle;
+        private set => SetProperty(ref _emptyStateTitle, value);
+    }
+
+    private string _emptyStateDetail = "Start a paper or live run, import positions, or refresh the blotter to load execution rows.";
+    public string EmptyStateDetail
+    {
+        get => _emptyStateDetail;
+        private set => SetProperty(ref _emptyStateDetail, value);
+    }
+
+    public bool HasRows => RowCount > 0;
+
     public bool HasSelectedPositions => SelectedPositionCount > 0;
 
     public bool HasSelectedPositionPreviews => SelectedPositionPreviews.Count > 0;
@@ -258,6 +293,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand UpsizeCommand { get; }
     public IAsyncRelayCommand TerminateCommand { get; }
     public IRelayCommand RemoveFilterChipCommand { get; }
+    public IRelayCommand ClearFiltersCommand { get; }
     public IRelayCommand<BlotterGroup> ToggleGroupCommand { get; }
 
     // ── Constructor ───────────────────────────────────────────────────────────
@@ -273,6 +309,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         UpsizeCommand = new AsyncRelayCommand(ExecuteUpsizeAsync, HasUpsizeableEntries);
         TerminateCommand = new AsyncRelayCommand(ExecuteTerminateAsync, HasClosableEntries);
         RemoveFilterChipCommand = new RelayCommand<BlotterFilterChip>(RemoveFilterChip);
+        ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
         ToggleGroupCommand = new RelayCommand<BlotterGroup>(g =>
         {
             if (g is not null)
@@ -494,6 +531,22 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         ApplyFilters();
     }
 
+    private void ClearFilters()
+    {
+        if (!HasActiveFilters)
+        {
+            return;
+        }
+
+        ActiveFilterChips.Clear();
+        _selectedPreset = "All";
+        RaisePropertyChanged(nameof(SelectedPreset));
+        _filterSearchText = string.Empty;
+        RaisePropertyChanged(nameof(FilterSearchText));
+
+        ApplyFilters();
+    }
+
     // ── Upsize / Terminate ────────────────────────────────────────────────────
 
     private async Task ExecuteUpsizeAsync()
@@ -559,6 +612,29 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             0 => "No positions match the current filters. Clear or relax the filter set to restore the blotter.",
             _ => $"{RowCount} row{(RowCount == 1 ? string.Empty : "s")} across {GroupCount} group{(GroupCount == 1 ? string.Empty : "s")} displayed from {_lastSnapshotSource}."
         };
+
+        if (RowCount > 0)
+        {
+            EmptyStateTitle = "Positions loaded.";
+            EmptyStateDetail = StatusText;
+        }
+        else if (_allEntries.Count == 0)
+        {
+            EmptyStateTitle = "No positions loaded yet.";
+            EmptyStateDetail = string.Equals(_lastSnapshotStatus, "No positions loaded.", StringComparison.Ordinal)
+                ? "Start a paper or live run, import positions, or refresh the blotter to load execution rows."
+                : _lastSnapshotStatus;
+        }
+        else if (HasActiveFilters)
+        {
+            EmptyStateTitle = "No positions match current filters.";
+            EmptyStateDetail = "Reset the preset, filter chips, and search text to restore the hidden blotter rows.";
+        }
+        else
+        {
+            EmptyStateTitle = "No displayed positions.";
+            EmptyStateDetail = _lastSnapshotStatus;
+        }
     }
 
     private void UpdateFilterSummary()
@@ -578,6 +654,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         {
             parts.Add($"Search \"{FilterSearchText.Trim()}\"");
         }
+
+        HasActiveFilters = parts.Count > 0;
 
         FilterSummaryText = parts.Count == 0
             ? "All positions in current blotter scope."

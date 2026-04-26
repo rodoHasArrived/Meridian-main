@@ -3,7 +3,7 @@
 **Generated:** 2026-03-25
 **Refreshed:** 2026-04-26
 **Format:** Now / Next / Later compatibility view
-**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, cockpit readiness projection, Data Operations hero evidence, and active workstation/governance plans as of 2026-04-26
+**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, cockpit readiness projection, Data Operations hero evidence, canonical workspace launch/deep-link routing, demo-data fixture semantics, and active workstation/governance plans as of 2026-04-26
 **Status:** Refreshed compatibility view. `ROADMAP.md` and `PROGRAM_STATE.md` remain the canonical wave and status sources.
 
 This document preserves the older Now / Next / Later shape for quick reading, but it no longer defines a separate roadmap. The active roadmap is the Wave 1-6 model in [`ROADMAP.md`](ROADMAP.md), with status labels and target dates sourced from [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
@@ -102,13 +102,14 @@ Security Master is now a delivered baseline, not a future standalone wave. Wave 
 
 ### 5. WPF Workflow-First Validation
 
-The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, the Trading desk briefing hero, the Research desk briefing hero, the Data Operations desk briefing hero, and shell/navigation smoke coverage.
+The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, shell-context strips, the Trading desk briefing hero, the Research desk briefing hero, the Data Operations desk briefing hero, neutral demo-data fixture cues, and shell/navigation smoke coverage.
 
 This is a supporting track inside Waves 2-4, not a separate roadmap wave.
 
 **Delivery scope:**
 
 - validate the delivered shell/navigation baseline against high-traffic Wave 2-4 workflows
+- keep scripted workflow launch, screenshot confirmation, and fixture/demo mode aligned to `ResearchShell`, `TradingShell`, `DataOperationsShell`, and `GovernanceShell`
 - keep page-body harmonization focused on cockpit, shared-model, and governance value
 - continue MVVM extraction where it removes active workflow friction
 - avoid widening the shell into a parallel workstation model

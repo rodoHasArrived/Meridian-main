@@ -239,6 +239,7 @@ public sealed class MainPageUiWorkflowTests
             }
             finally
             {
+                SettingsConfigurationService.Instance.SetShellDensityMode(ShellDensityMode.Standard);
                 SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
                 if (File.Exists(preferencesPath))
                 {

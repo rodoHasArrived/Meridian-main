@@ -72,6 +72,8 @@ Content Frame
 
 **Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path.
 
+**Position Blotter empty-state reset** — `PositionBlotterPage` now replaces a blank grid with a focused empty-state card when no rows are displayed. Filter/search misses explain that hidden rows can be restored with `Reset Filters`, while truly empty snapshots keep reset disabled and leave `Refresh` as the recovery action.
+
 **Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.

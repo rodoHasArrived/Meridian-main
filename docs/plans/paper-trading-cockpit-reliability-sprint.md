@@ -136,6 +136,11 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 - optional brokerage sync status when a fund account is supplied
 - operator work items and warnings
 
+Operator work items emitted by the shared readiness service use stable, scoped `WorkItemId`
+values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`, and
+`dk1-operator-signoff-pending`. This lets the WPF shell, retained web cockpit, and future
+operator inbox refresh the same blocker without creating a new random item on every poll.
+
 `OverallStatus` is `Ready`, `ReviewRequired`, or `Blocked`; `ReadyForPaperOperation=true` is the
 only green cockpit state. `AcceptanceGates` currently contains `session`, `replay`,
 `audit-controls`, `promotion`, and `dk1-trust` entries so web and desktop clients render the same

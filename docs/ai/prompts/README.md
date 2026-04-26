@@ -44,6 +44,7 @@ Full usage instructions are in [`.github/prompts/README.md`](https://github.com/
 | `optimize-performance.prompt.yml` | Identify and fix performance bottlenecks |
 | `configure-deployment.prompt.yml` | Configure deployment (Docker, K8s, systemd) |
 | `wpf-debug-improve.prompt.yml` | Debug and improve WPF desktop UI |
+| `wpf-design-system-screen-impact.prompt.yml` | Identify and update the WPF screens needed for a design-system target page |
 | `simulate-user-panel.prompt.yml` | Generic manifest-driven user-panel review |
 | `simulate-user-panel-design-partner.prompt.yml` | Product-shaping critique for early ideas and surfaces |
 | `simulate-user-panel-release-gate.prompt.yml` | Near-ship release gate for workflows and screens |

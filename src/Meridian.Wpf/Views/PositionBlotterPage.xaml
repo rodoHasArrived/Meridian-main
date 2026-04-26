@@ -294,6 +294,16 @@
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer.Style>
+                            <Style TargetType="ScrollViewer">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRows}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ScrollViewer.Style>
                         <ItemsControl ItemsSource="{Binding Groups}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type models:BlotterGroup}">
@@ -412,6 +422,66 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+
+                    <Border x:Name="PositionBlotterEmptyState"
+                            Grid.Row="1"
+                            AutomationProperties.AutomationId="PositionBlotterEmptyState"
+                            AutomationProperties.Name="Position Blotter Empty State">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource WorkspaceEmptyStateCardStyle}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRows}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    MaxWidth="520">
+                            <Border Width="64"
+                                    Height="64"
+                                    CornerRadius="20"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                    BorderThickness="1"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="&#xE721;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="28"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="{Binding EmptyStateTitle}"
+                                       Margin="0,18,0,0"
+                                       FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding EmptyStateDetail}"
+                                       Margin="0,12,0,0"
+                                       FontSize="13"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center" />
+                            <WrapPanel HorizontalAlignment="Center" Margin="0,20,0,0">
+                                <Button Content="Reset Filters"
+                                        Command="{Binding ClearFiltersCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="PositionBlotterResetFiltersButton"
+                                        ToolTip="Clear preset, chip, and search filters"
+                                        Margin="0,0,10,0" />
+                                <Button Content="Refresh"
+                                        Command="{Binding RefreshCommand}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        AutomationProperties.AutomationId="PositionBlotterEmptyStateRefreshButton" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 

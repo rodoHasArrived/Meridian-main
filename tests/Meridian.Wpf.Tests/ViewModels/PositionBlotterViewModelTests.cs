@@ -106,11 +106,57 @@ public sealed class PositionBlotterViewModelTests
     }
 
     [Fact]
+    public void EmptyState_FilterSearchWithNoMatches_OffersResetAndRestoresRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateLoadedViewModel(
+                CreateEntry("AAPL", "AAPL equity long", "T-1", 100m, 12.34m),
+                CreateEntry("TSLA", "TSLA short hedge", "T-2", -25m, -5.50m));
+
+            vm.FilterSearchText = "missing-symbol";
+
+            vm.RowCount.Should().Be(0);
+            vm.HasRows.Should().BeFalse();
+            vm.HasActiveFilters.Should().BeTrue();
+            vm.EmptyStateTitle.Should().Be("No positions match current filters.");
+            vm.EmptyStateDetail.Should().Contain("Reset");
+            vm.ClearFiltersCommand.CanExecute(null).Should().BeTrue();
+
+            vm.ClearFiltersCommand.Execute(null);
+
+            vm.RowCount.Should().Be(2);
+            vm.HasRows.Should().BeTrue();
+            vm.HasActiveFilters.Should().BeFalse();
+            vm.SelectedPreset.Should().Be("All");
+            vm.FilterSearchText.Should().BeEmpty();
+        });
+    }
+
+    [Fact]
+    public void EmptyState_NoLoadedPositions_KeepsResetDisabled()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateLoadedViewModel();
+
+            vm.RowCount.Should().Be(0);
+            vm.HasRows.Should().BeFalse();
+            vm.HasActiveFilters.Should().BeFalse();
+            vm.EmptyStateTitle.Should().Be("No positions loaded yet.");
+            vm.EmptyStateDetail.Should().Contain("Start a paper or live run");
+            vm.ClearFiltersCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
     public void PositionBlotterPageSource_ShouldExposeSelectionReviewRailAndWrappingFilters()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\PositionBlotterPage.xaml"));
 
         xaml.Should().Contain("PositionBlotterSelectionReviewRail");
+        xaml.Should().Contain("PositionBlotterEmptyState");
+        xaml.Should().Contain("PositionBlotterResetFiltersButton");
         xaml.Should().Contain("Selected Position Review");
         xaml.Should().Contain("SelectedPositionPreviewList");
         xaml.Should().Contain("<WrapPanel />");

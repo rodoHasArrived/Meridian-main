@@ -1,7 +1,7 @@
 # Meridian - Opportunity Scan
 
 **Last Updated:** 2026-04-26
-**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline
+**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline including canonical `ResearchShell` launch routing and demo-data fixture semantics
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
@@ -18,7 +18,7 @@ The current planning set is also more mature than the prior April 8 scan. As of 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
 - the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
 - the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script, plus checked-in packet generation that produced a latest `ready-for-operator-review` parity packet with validated evidence-document checks and no packet blockers
-- the feature inventory and implementation anchors show that shell-first WPF consolidation, the Trading desk briefing hero, the Research desk briefing hero, shared workstation endpoints, the Wave 2 trading-readiness contract, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
+- the feature inventory and implementation anchors show that shell-first WPF consolidation, the Trading desk briefing hero, the Research desk briefing hero, shared workstation endpoints, canonical `ResearchShell` launch/deep-link handling, fixture/demo-mode cues, the Wave 2 trading-readiness contract, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
 
@@ -61,7 +61,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 5. Validate the delivered WPF shell baseline as workflow support, not a separate program
 
 - **Category:** operator UX
-- **Gap:** The repo now contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, shell-context strips, and `MainPageViewModel`-anchored orchestration with smoke coverage plus focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, shell context-strip behavior, Trading desk briefing hero states, and Research desk briefing hero promotion-review handoffs. That baseline should now be judged by whether it improves active Wave 2-4 workflows rather than by additional shell surface area.
+- **Gap:** The repo now contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, shell-context strips, canonical `ResearchShell` launch/deep-link handling, neutral demo-data fixture cues, and `MainPageViewModel`-anchored orchestration with smoke coverage plus focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, shell context-strip behavior, Trading desk briefing hero states, Data Operations demo/provider posture, and Research desk briefing hero promotion-review handoffs. That baseline should now be judged by whether it improves active Wave 2-4 workflows rather than by additional shell surface area.
 - **User or operator value:** Operators benefit when the desktop shell clarifies high-traffic tasks and preserves trust-state cues instead of becoming a second workstation model.
 - **Dependency it unlocks:** Confident desktop consolidation that reinforces the same run-centered and governance-centered seams already used elsewhere.
 - **Placement:** Supporting track inside Waves 2-4, not an independent roadmap wave.

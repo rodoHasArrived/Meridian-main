@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
 **Last Updated:** 2026-04-26
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline including Research, Trading, and Data Operations hero surfaces
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline including Research, Trading, and Data Operations hero surfaces, canonical `ResearchShell` launch routing, and neutral demo-data fixture semantics
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, the Trading desk briefing hero, the Research desk briefing hero, and the Data Operations desk briefing hero. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in the primary WPF shell plus retained local API/web support surfaces, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, explicit acceptance-gate/overall-readiness projection, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages, shell context strips, the Trading desk briefing hero, the Research desk briefing hero, the Data Operations desk briefing hero, canonical `ResearchShell` page/deep-link routing, and fixture mode presented as neutral demo data. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence _(repo-closed, keep synchronized)_
 2. **Wave 2:** paper-trading cockpit hardening
@@ -88,7 +88,7 @@ Live-readiness should follow proven provider evidence and a dependable paper wor
 
 QuantScript expansion, queue-aware simulation, multi-instance coordination, and Phase 16 performance work deepen Meridian's ceiling after the core workstation product is already trustworthy and coherent.
 
-Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline, including the Trading, Research, and Data Operations desk briefing heroes, is now present enough to judge it by workflow value, not by additional shell surface area.
+Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, launch/deep-link automation, fixture/demo-mode cues, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline, including the Trading, Research, and Data Operations desk briefing heroes, is now present enough to judge it by workflow value, not by additional shell surface area.
 
 Delivery Kernel governance to avoid piecemeal adoption:
 

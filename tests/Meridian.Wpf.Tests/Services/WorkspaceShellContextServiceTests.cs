@@ -13,7 +13,7 @@ public sealed class WorkspaceShellContextServiceTests
     [Fact]
     public async Task CreateAsync_WhenFundSelected_ComposesFundAndEnvironmentBadges()
     {
-        var detector = FixtureModeDetector.Instance;
+        var detector = CreateDetector();
         detector.SetFixtureMode(false);
         detector.UpdateBackendReachability(true);
         NotificationService.Instance.ClearHistory();
@@ -52,7 +52,7 @@ public sealed class WorkspaceShellContextServiceTests
     [Fact]
     public async Task CreateAsync_WhenFixtureModeAndUnreadAlerts_SurfaceDemoEnvironmentAndWarningAlerts()
     {
-        var detector = FixtureModeDetector.Instance;
+        var detector = CreateDetector();
         detector.SetFixtureMode(true);
         detector.UpdateBackendReachability(true);
         NotificationService.Instance.ClearHistory();
@@ -92,7 +92,7 @@ public sealed class WorkspaceShellContextServiceTests
     [Fact]
     public async Task CreateAsync_WhenOperatingContextSelected_AddsScopeAndCurrencyBadges()
     {
-        var detector = FixtureModeDetector.Instance;
+        var detector = CreateDetector();
         detector.SetFixtureMode(false);
         detector.UpdateBackendReachability(true);
         NotificationService.Instance.ClearHistory();
@@ -147,6 +147,9 @@ public sealed class WorkspaceShellContextServiceTests
         await service.SelectFundProfileAsync("alpha-credit");
         return service;
     }
+
+    private static FixtureModeDetector CreateDetector()
+        => (FixtureModeDetector)Activator.CreateInstance(typeof(FixtureModeDetector), nonPublic: true)!;
 
     private static async Task<WorkstationOperatingContextService> CreateOperatingContextServiceAsync(FundContextService fundContext)
     {
