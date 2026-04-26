@@ -157,6 +157,199 @@ public sealed class TradingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void BuildDeskHeroState_WithUnexplainedControlEvidence_PrioritizesAuditTrail()
+    {
+        var readiness = new TradingOperatorReadinessDto(
+            AsOf: new DateTimeOffset(2026, 4, 26, 18, 0, 0, TimeSpan.Zero),
+            ActiveSession: null,
+            Sessions: [],
+            Replay: null,
+            Controls: new TradingControlReadinessDto(
+                CircuitBreakerOpen: false,
+                CircuitBreakerReason: null,
+                CircuitBreakerChangedBy: null,
+                CircuitBreakerChangedAt: null,
+                ManualOverrideCount: 0,
+                SymbolLimitCount: 0,
+                DefaultMaxPositionSize: null)
+            {
+                UnexplainedEvidenceCount = 1,
+                ExplainabilityWarnings =
+                [
+                    "OrderRejected audit audit-risk-missing-context is missing actor, scope, reason."
+                ],
+                RecentEvidence =
+                [
+                    new TradingControlEvidenceDto(
+                        AuditId: "audit-risk-missing-context",
+                        Category: "Order",
+                        Action: "OrderRejected",
+                        Outcome: "Rejected",
+                        OccurredAt: new DateTimeOffset(2026, 4, 26, 18, 0, 0, TimeSpan.Zero),
+                        Actor: null,
+                        Scope: "unscoped",
+                        Reason: "No rationale was recorded.",
+                        IsExplained: false,
+                        MissingFields: ["actor", "scope", "reason"])
+                ]
+            },
+            Promotion: null,
+            TrustGate: new TradingTrustGateReadinessDto(
+                GateId: "dk1",
+                Status: "pending",
+                ReadyForOperatorReview: false,
+                OperatorSignoffRequired: true,
+                OperatorSignoffStatus: "waiting",
+                GeneratedAt: null,
+                PacketPath: null,
+                SourceSummary: null,
+                RequiredSampleCount: 0,
+                ReadySampleCount: 0,
+                ValidatedEvidenceDocumentCount: 0,
+                RequiredOwners: [],
+                Blockers: [],
+                Detail: "Trust gate evidence is pending."),
+            BrokerageSync: null,
+            WorkItems: [],
+            Warnings: []);
+
+        var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
+            activeRun: null,
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Wave 2 Paper Desk");
+
+        hero.FocusLabel.Should().Be("Controls");
+        hero.Summary.Should().Contain("missing actor, scope, reason");
+        hero.HandoffTitle.Should().Be("Complete risk evidence");
+        hero.PrimaryActionId.Should().Be("FundAuditTrail");
+        hero.SecondaryActionId.Should().Be("RunRisk");
+        hero.TargetLabel.Should().Be("Target page: FundAuditTrail");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithTrustGateAwaitingSignoff_DoesNotShowReady()
+    {
+        var readiness = new TradingOperatorReadinessDto(
+            AsOf: new DateTimeOffset(2026, 4, 26, 19, 0, 0, TimeSpan.Zero),
+            ActiveSession: new TradingPaperSessionReadinessDto(
+                SessionId: "paper-desk-41",
+                StrategyId: "strategy-41",
+                StrategyName: "Delta Carry",
+                IsActive: true,
+                InitialCash: 500_000m,
+                CreatedAt: new DateTimeOffset(2026, 4, 26, 15, 0, 0, TimeSpan.Zero),
+                ClosedAt: null,
+                SymbolCount: 5,
+                OrderCount: 9,
+                PositionCount: 2,
+                PortfolioValue: 502_000m),
+            Sessions: [],
+            Replay: new TradingReplayReadinessDto(
+                SessionId: "paper-desk-41",
+                ReplaySource: "local",
+                IsConsistent: true,
+                ComparedFillCount: 8,
+                ComparedOrderCount: 9,
+                ComparedLedgerEntryCount: 6,
+                VerifiedAt: new DateTimeOffset(2026, 4, 26, 18, 45, 0, TimeSpan.Zero),
+                LastPersistedFillAt: null,
+                LastPersistedOrderUpdateAt: null,
+                VerificationAuditId: "audit-41",
+                MismatchReasons: []),
+            Controls: new TradingControlReadinessDto(
+                CircuitBreakerOpen: false,
+                CircuitBreakerReason: null,
+                CircuitBreakerChangedBy: null,
+                CircuitBreakerChangedAt: null,
+                ManualOverrideCount: 0,
+                SymbolLimitCount: 2,
+                DefaultMaxPositionSize: 125_000m),
+            Promotion: new TradingPromotionReadinessDto(
+                State: "Approved",
+                Reason: "Backtest to paper review passed.",
+                RequiresReview: false,
+                SourceRunId: "backtest-41",
+                TargetRunId: "paper-41",
+                SuggestedNextMode: "Paper",
+                AuditReference: "audit-promotion-41",
+                ApprovalStatus: "approved",
+                ManualOverrideId: null,
+                ApprovedBy: "operator"),
+            TrustGate: new TradingTrustGateReadinessDto(
+                GateId: "dk1",
+                Status: "ready-for-operator-review",
+                ReadyForOperatorReview: true,
+                OperatorSignoffRequired: true,
+                OperatorSignoffStatus: "ready-for-review",
+                GeneratedAt: new DateTimeOffset(2026, 4, 26, 18, 50, 0, TimeSpan.Zero),
+                PacketPath: "artifacts/provider-validation/_automation/2026-04-26/dk1.json",
+                SourceSummary: "Trust gate packet generated",
+                RequiredSampleCount: 4,
+                ReadySampleCount: 4,
+                ValidatedEvidenceDocumentCount: 5,
+                RequiredOwners: ["data-ops", "trading"],
+                Blockers: [],
+                Detail: "DK1 packet is ready for review, but operator sign-off is still pending."),
+            BrokerageSync: null,
+            WorkItems: [],
+            Warnings: [])
+        {
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto(
+                    GateId: "dk1-trust",
+                    Label: "DK1 trust gate",
+                    Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                    Detail: "DK1 packet is ready for review, but operator sign-off is still pending.",
+                    AuditReference: "artifacts/provider-validation/_automation/2026-04-26/dk1.json")
+            ],
+            OverallStatus = TradingAcceptanceGateStatusDto.ReviewRequired,
+            ReadyForPaperOperation = false
+        };
+
+        var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
+            activeRun: new ActiveRunContext
+            {
+                RunId = "paper-41",
+                StrategyName = "Delta Carry",
+                ModeLabel = "Paper",
+                StatusLabel = "Running",
+                ValidationStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Replay verified",
+                    Detail = "Desk posture is healthy.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                },
+                AuditStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Audit ready",
+                    Detail = "Audit trail is healthy.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                },
+                PromotionStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Approved",
+                    Detail = "Promotion handoff completed.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                }
+            },
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Delta Paper Desk");
+
+        hero.FocusLabel.Should().Be("Operator review");
+        hero.BadgeText.Should().Be("Attention");
+        hero.BadgeTone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        hero.Summary.Should().Contain("operator sign-off is still pending");
+        hero.HandoffTitle.Should().Be("Complete dk1 trust gate");
+        hero.PrimaryActionId.Should().Be("FundAuditTrail");
+        hero.TargetLabel.Should().Be("Target page: FundAuditTrail");
+    }
+
+    [Fact]
     public void BuildDeskHeroState_WithReadyLiveRun_UsesBlotterAndRiskRail()
     {
         var readiness = new TradingOperatorReadinessDto(
@@ -210,7 +403,7 @@ public sealed class TradingWorkspaceShellPageTests
                 Status: "ready",
                 ReadyForOperatorReview: true,
                 OperatorSignoffRequired: true,
-                OperatorSignoffStatus: "ready-for-review",
+                OperatorSignoffStatus: "signed",
                 GeneratedAt: new DateTimeOffset(2026, 4, 25, 16, 50, 0, TimeSpan.Zero),
                 PacketPath: "artifacts/provider-validation/_automation/2026-04-25/dk1.json",
                 SourceSummary: "Trust gate ready",
@@ -237,7 +430,43 @@ public sealed class TradingWorkspaceShellPageTests
                 SecurityMissingCount: 0,
                 Warnings: []),
             WorkItems: [],
-            Warnings: []);
+            Warnings: [])
+        {
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto(
+                    GateId: "session",
+                    Label: "Session active",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Session is active."),
+                new TradingAcceptanceGateDto(
+                    GateId: "replay",
+                    Label: "Replay verified",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Replay is consistent.",
+                    SessionId: "live-review-31",
+                    AuditReference: "audit-31"),
+                new TradingAcceptanceGateDto(
+                    GateId: "audit-controls",
+                    Label: "Risk state explainable",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Control evidence is explainable."),
+                new TradingAcceptanceGateDto(
+                    GateId: "promotion",
+                    Label: "Promotion trace complete",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Promotion trace is complete.",
+                    RunId: "paper-31",
+                    AuditReference: "audit-31"),
+                new TradingAcceptanceGateDto(
+                    GateId: "dk1-trust",
+                    Label: "DK1 trust gate",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Trust gate is signed.")
+            ],
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            ReadyForPaperOperation = true
+        };
 
         var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
             activeRun: new ActiveRunContext

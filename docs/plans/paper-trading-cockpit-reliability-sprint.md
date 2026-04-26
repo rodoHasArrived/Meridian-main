@@ -75,6 +75,7 @@ The codebase already has most of the needed primitives, but they are not yet ass
 - Promotion approvals and rejections write durable JSONL promotion history through `IPromotionRecordStore`, and `PromotionService.GetPromotionHistoryAsync()` reloads history after restart.
 - `docs/operations/live-execution-controls.md` documents manual-override flows, and `src/Meridian.Contracts/Api/UiApiRoutes.cs` now exposes the matching pluralized execution-control manual-override routes.
 - The cockpit surfaces now send operator, approval/rejection rationale, review notes, and manual override IDs, and their acceptance cards should treat promotion review as ready only when the latest history record includes decision, operator, rationale, lineage, and audit reference.
+- `WorkstationEndpoints` now routes both `/api/workstation/trading/readiness` and the embedded `/api/workstation/trading` readiness payload through `TradingOperatorReadinessService`; minimal endpoint hosts that omit the DI registration construct the same service from the request service provider instead of using an endpoint-local fallback builder.
 
 ### Target Shape
 
@@ -133,22 +134,29 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 - DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet
 - DK1 pilot sample rows, evidence-document rows, trust-rationale contract status, and baseline-threshold contract status so explainability/calibration review is visible from the same cockpit contract
 - explicit acceptance gates plus an overall readiness status / paper-operation readiness flag
+- recent risk/control audit evidence with actor, scope, rationale, and missing-field warnings
 - optional brokerage sync status when a fund account is supplied
 - operator work items and warnings
 
 Operator work items emitted by the shared readiness service use stable, scoped `WorkItemId`
-values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`, and
-`dk1-operator-signoff-pending`. This lets the WPF shell, retained web cockpit, and future
+values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`,
+`dk1-operator-signoff-pending`, and `execution-evidence-incomplete`. This lets the WPF shell, retained web cockpit, and future
 operator inbox refresh the same blocker without creating a new random item on every poll.
 
 `OverallStatus` is `Ready`, `ReviewRequired`, or `Blocked`; `ReadyForPaperOperation=true` is the
 only green cockpit state. `AcceptanceGates` currently contains `session`, `replay`,
 `audit-controls`, `promotion`, and `dk1-trust` entries so web and desktop clients render the same
 pass/review/blocked decision instead of reconstructing acceptance differently in each surface.
+The WPF Trading desk briefing hero must use that shared overall readiness result, not only
+`TrustGate.ReadyForOperatorReview`, so a DK1 packet that still needs operator sign-off cannot make
+the shell look ready.
 Pending DK1 operator sign-off, replay mismatch, open circuit breaker, or incomplete promotion trace
 keeps the lane in review or blocked state even when lower-level endpoint data is visible.
 Legacy DK1 packets that omit the validated explainability or calibration contract are treated as
 blocked trust-gate evidence rather than silently inheriting `ready-for-operator-review`.
+Material order/control audit rows that omit actor, scope, or rationale now keep the
+`audit-controls` gate in review and surface an `ExecutionControl` work item so the cockpit can
+explain why a decision was allowed, rejected, or manually overridden.
 
 `GET /api/workstation/trading` also includes the same readiness payload so workstation consumers can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
 
@@ -199,6 +207,14 @@ The execution-control routes documented by operations guidance are implemented i
 
 These map directly to `ExecutionOperatorControlService.CreateManualOverrideAsync()` and
 `ClearManualOverrideAsync()`.
+
+#### `TradingControlReadinessDto`
+
+The shared trading readiness payload now includes a compact `RecentEvidence` list for material
+control and order outcomes. Each evidence row carries the audit id, category/action/outcome,
+actor, scope, rationale, and any missing fields. The WPF trading shell uses the same evidence to
+populate the workflow status card, risk rail, and desk-briefing hero when control explainability is
+incomplete.
 
 #### Frontend promotion request
 

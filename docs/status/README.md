@@ -93,7 +93,7 @@ When authoring or editing these doc categories, include the required section hea
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
 - **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
-- **Workstation state:** WPF is the primary operator shell and retained local API/web surfaces support the same workspace contracts, but cockpit hardening and shared-model continuity still remain
+- **Workstation state:** WPF is the primary operator shell with current workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation evidence, and retained local API/web surfaces support the same workspace contracts, but cockpit hardening and shared-model continuity still remain
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans

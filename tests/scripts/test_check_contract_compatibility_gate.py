@@ -15,6 +15,30 @@ SPEC.loader.exec_module(gate)
 
 
 class ContractCompatibilityGateTests(unittest.TestCase):
+    def test_is_tracked_includes_shared_ui_route_constants(self) -> None:
+        self.assertTrue(gate.is_tracked("src/Meridian.Contracts/Api/UiApiRoutes.cs"))
+
+
+    def test_patch_has_breaking_removal_detects_route_constant_removal(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Api/UiApiRoutes.cs b/src/Meridian.Contracts/Api/UiApiRoutes.cs
+@@ -433 +433,0 @@ public static class UiApiRoutes
+-    public const string ExecutionSessionReplay = "/api/execution/sessions/{sessionId}/replay";
+"""
+
+        self.assertTrue(gate.patch_has_breaking_removal(patch))
+
+
+    def test_patch_has_breaking_removal_detects_route_alias_removal(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Api/UiApiRoutes.cs b/src/Meridian.Contracts/Api/UiApiRoutes.cs
+@@ -430 +430,0 @@ public static class UiApiRoutes
+-    public static readonly string ExecutionManualOverrideClear = ExecutionControlsManualOverrideClear;
+"""
+
+        self.assertTrue(gate.patch_has_breaking_removal(patch))
+
+
     def test_patch_has_breaking_removal_detects_record_constructor_parameter_removal(self) -> None:
         patch = """
 diff --git a/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs b/src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs

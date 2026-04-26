@@ -11,7 +11,8 @@ public enum OperatorWorkItemKindDto
     SecurityMasterCoverage = 3,
     ReconciliationBreak = 4,
     ReportPackApproval = 5,
-    ProviderTrustGate = 6
+    ProviderTrustGate = 6,
+    ExecutionControl = 7
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperatorWorkItemToneDto>))]
@@ -77,6 +78,22 @@ public sealed record TradingReplayReadinessDto(
     string? VerificationAuditId,
     IReadOnlyList<string> MismatchReasons);
 
+public sealed record TradingControlEvidenceDto(
+    string AuditId,
+    string Category,
+    string Action,
+    string Outcome,
+    DateTimeOffset OccurredAt,
+    string? Actor,
+    string Scope,
+    string Reason,
+    bool IsExplained,
+    IReadOnlyList<string> MissingFields,
+    string? RunId = null,
+    string? Symbol = null,
+    string? OrderId = null,
+    string? CorrelationId = null);
+
 public sealed record TradingControlReadinessDto(
     bool CircuitBreakerOpen,
     string? CircuitBreakerReason,
@@ -84,7 +101,16 @@ public sealed record TradingControlReadinessDto(
     DateTimeOffset? CircuitBreakerChangedAt,
     int ManualOverrideCount,
     int SymbolLimitCount,
-    decimal? DefaultMaxPositionSize);
+    decimal? DefaultMaxPositionSize)
+{
+    public IReadOnlyList<TradingControlEvidenceDto> RecentEvidence { get; init; } = [];
+
+    public int ExplainableEvidenceCount { get; init; }
+
+    public int UnexplainedEvidenceCount { get; init; }
+
+    public IReadOnlyList<string> ExplainabilityWarnings { get; init; } = [];
+}
 
 public sealed record TradingPromotionReadinessDto(
     string State,

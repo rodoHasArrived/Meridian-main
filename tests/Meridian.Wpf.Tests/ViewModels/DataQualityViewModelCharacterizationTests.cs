@@ -74,6 +74,49 @@ public sealed class DataQualityViewModelCharacterizationTests
         result.Should().BeNull();
     }
 
+    [Fact]
+    public void ApplySymbolFilter_WhenSearchMiss_HasClearRecoveryState()
+    {
+        using var viewModel = CreateSubject();
+        viewModel.SymbolQuality.Add(new SymbolQualityModel { Symbol = "AAPL" });
+        viewModel.SymbolQuality.Add(new SymbolQualityModel { Symbol = "MSFT" });
+
+        viewModel.ApplySymbolFilter("QQQ");
+
+        viewModel.FilteredSymbols.Should().BeEmpty();
+        viewModel.HasNoSymbols.Should().BeTrue();
+        viewModel.HasActiveSymbolFilter.Should().BeTrue();
+        viewModel.SymbolFilterScopeText.Should().Be("Filtering monitored symbols by \"QQQ\".");
+        viewModel.SymbolEmptyStateTitle.Should().Be("No monitored symbols match \"QQQ\".");
+        viewModel.SymbolEmptyStateDetail.Should().Be("Clear the filter to return to the monitored-symbol quality list.");
+
+        viewModel.ClearSymbolFilter();
+
+        viewModel.FilteredSymbols.Select(symbol => symbol.Symbol).Should().Equal("AAPL", "MSFT");
+        viewModel.HasNoSymbols.Should().BeFalse();
+        viewModel.HasActiveSymbolFilter.Should().BeFalse();
+        viewModel.SymbolFilterScopeText.Should().Be("Showing all monitored symbols.");
+    }
+
+    [Fact]
+    public void ApplySymbolFilter_WhenLibraryIsEmpty_KeepsSetupEmptyState()
+    {
+        using var viewModel = CreateSubject();
+
+        viewModel.ApplySymbolFilter("SPY");
+
+        viewModel.FilteredSymbols.Should().BeEmpty();
+        viewModel.HasNoSymbols.Should().BeTrue();
+        viewModel.HasActiveSymbolFilter.Should().BeTrue();
+        viewModel.SymbolEmptyStateTitle.Should().Be("No symbols are currently being monitored.");
+        viewModel.SymbolEmptyStateDetail.Should().Be("Clear the filter or add symbols from the workspace before running quality checks.");
+
+        viewModel.ClearSymbolFilter();
+
+        viewModel.HasActiveSymbolFilter.Should().BeFalse();
+        viewModel.SymbolEmptyStateDetail.Should().Be("Add symbols from the workspace before running quality checks.");
+    }
+
     private static DataQualityViewModel CreateSubject() =>
         new(StatusService.Instance, LoggingService.Instance, NotificationService.Instance);
 

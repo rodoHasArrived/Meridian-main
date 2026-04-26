@@ -74,6 +74,14 @@ Content Frame
 
 **Position Blotter empty-state reset** — `PositionBlotterPage` now replaces a blank grid with a focused empty-state card when no rows are displayed. Filter/search misses explain that hidden rows can be restored with `Reset Filters`, while truly empty snapshots keep reset disabled and leave `Refresh` as the recovery action.
 
+**Provider Health posture briefing** — `ProviderHealthPage` now places a compact briefing card ahead of the streaming and backfill provider grids. `ProviderHealthViewModel` projects stale snapshots, offline streaming sessions, mixed provider states, blocked backfill coverage, and ready posture from already-loaded provider counts so the page exposes one next handoff, a target surface, and automation IDs without adding another polling path.
+
+**Activity Log triage strip** — `ActivityLogPage` now keeps retained error count, warning count, visible entry count, latest entry time, and active filter scope above the virtualized list. `ActivityLogViewModel` projects this from the retained in-memory log window, so support operators can decide whether to export, clear, or widen filters without another backend request.
+
+**Watchlist posture card** — `WatchlistPage` now summarizes saved watchlists, pinned lists, symbol coverage, current search scope, and the next operator action above the grid. `WatchlistViewModel` projects this from already-loaded local watchlist display models, so search misses and unpinned libraries get actionable copy without another service call; the search-miss empty state also exposes a bound `Clear Search` recovery action that resets the in-memory filter.
+
+**Data Quality symbol search recovery** — `DataQualityPage` now distinguishes an empty monitored-symbol library from a symbol-filter search miss. The `Quality by Symbol` panel shows the active filter scope, search-miss copy, and a `Clear Filter` recovery action backed by `DataQualityViewModel` in-memory filtering, so operators can recover without refreshing or leaving the page.
+
 **Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.

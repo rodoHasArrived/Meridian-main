@@ -81,6 +81,21 @@ public partial class DataQualityPage : Page
     private void SymbolFilter_TextChanged(object sender, TextChangedEventArgs e)
         => _viewModel.ApplySymbolFilter(SymbolFilterBox.Text?.Trim() ?? string.Empty);
 
+    private void ClearSymbolFilter_Click(object sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(SymbolFilterBox.Text))
+        {
+            SymbolFilterBox.Text = string.Empty;
+        }
+        else
+        {
+            _viewModel.ClearSymbolFilter();
+        }
+
+        SymbolQualityList.SelectedItem = null;
+        _viewModel.HideSymbolDrilldown();
+    }
+
     private void SymbolQuality_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (SymbolQualityList.SelectedItem is SymbolQualityModel selected)

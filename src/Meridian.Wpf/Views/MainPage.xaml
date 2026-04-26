@@ -263,7 +263,12 @@
     <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
         <TextBlock x:Name="ShellAutomationStateText"
                    Text="{Binding CurrentPageTag}"
-                   Visibility="Collapsed"
+                   Width="1"
+                   Height="1"
+                   Opacity="0"
+                   IsHitTestVisible="False"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
                    AutomationProperties.AutomationId="ShellAutomationState"
                    AutomationProperties.Name="{Binding CurrentPageTag}" />
 

@@ -550,6 +550,12 @@ public sealed class WorkstationEndpointsTests
         await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-wave2", "AAPL", 10m, 190m));
         var verification = await persistence.VerifyReplayAsync(session.SessionId);
 
+        var controls = app.Services.GetRequiredService<ExecutionOperatorControlService>();
+        await controls.SetDefaultPositionLimitAsync(
+            100_000m,
+            "risk.lead",
+            "Daily paper desk limit accepted for Wave 2.");
+
         var decision = await app.Services.GetRequiredService<PromotionService>().ApproveAsync(new PromotionApprovalRequest(
             RunId: "run-wave2-backtest",
             ApprovedBy: "ops.lead",
@@ -581,6 +587,15 @@ public sealed class WorkstationEndpointsTests
         readiness.Promotion.ApprovedBy.Should().Be("ops.lead");
         readiness.Promotion.AuditReference.Should().Be(decision.AuditReference);
         readiness.Promotion.ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
+        readiness.Controls.DefaultMaxPositionSize.Should().Be(100_000m);
+        readiness.Controls.ExplainableEvidenceCount.Should().Be(1);
+        readiness.Controls.UnexplainedEvidenceCount.Should().Be(0);
+        readiness.Controls.RecentEvidence.Should().ContainSingle(evidence =>
+            evidence.Action == "DefaultPositionLimitUpdated" &&
+            evidence.Actor == "risk.lead" &&
+            evidence.Scope == "default-position-limit" &&
+            evidence.Reason.Contains("Daily paper desk limit", StringComparison.OrdinalIgnoreCase) &&
+            evidence.IsExplained);
         readiness.TrustGate.Status.Should().Be("ready-for-operator-review");
         readiness.TrustGate.ReadyForOperatorReview.Should().BeTrue();
         readiness.TrustGate.RequiredSampleCount.Should().Be(4);
@@ -644,6 +659,80 @@ public sealed class WorkstationEndpointsTests
             .GetString()
             .Should()
             .Be(session.SessionId);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldFlagUnexplainedRiskControlAuditEvidence()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-risk", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+        });
+
+        await app.Services.GetRequiredService<ExecutionAuditTrailService>().RecordAsync(new ExecutionAuditEntry(
+            AuditId: "audit-risk-missing-context",
+            Category: "Order",
+            Action: "OrderRejected",
+            Outcome: "Rejected",
+            OccurredAt: new DateTimeOffset(2026, 4, 26, 18, 0, 0, TimeSpan.Zero)));
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.Controls.UnexplainedEvidenceCount.Should().Be(1);
+        readiness.Controls.ExplainableEvidenceCount.Should().Be(0);
+        var evidence = readiness.Controls.RecentEvidence.Should().ContainSingle().Which;
+        evidence.AuditId.Should().Be("audit-risk-missing-context");
+        evidence.IsExplained.Should().BeFalse();
+        evidence.MissingFields.Should().BeEquivalentTo(["actor", "scope", "reason"]);
+        readiness.Controls.ExplainabilityWarnings.Should().ContainSingle(warning =>
+            warning.Contains("OrderRejected", StringComparison.OrdinalIgnoreCase) &&
+            warning.Contains("actor, scope, reason", StringComparison.OrdinalIgnoreCase));
+
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "audit-controls" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.AuditReference == "audit-risk-missing-context");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "execution-evidence-incomplete" &&
+            item.Kind == OperatorWorkItemKindDto.ExecutionControl &&
+            item.AuditReference == "audit-risk-missing-context" &&
+            item.Detail.Contains("actor, scope, reason", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadinessWithoutRegisteredReadinessService_ShouldUseSharedReadinessBuilder()
+    {
+        await using var app = await CreateAppAsync();
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readiness.AcceptanceGates
+            .Select(static gate => gate.GateId)
+            .Should()
+            .Equal("session", "replay", "audit-controls", "promotion", "dk1-trust");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "paper-session-missing" &&
+            item.Label == "No active paper session" &&
+            item.Tone == OperatorWorkItemToneDto.Critical);
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "promotion-decision-missing" &&
+            item.Label == "Promotion decision required");
     }
 
     [Fact]

@@ -114,6 +114,14 @@ public partial class App : System.Windows.Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        _launchArgs = e.Args;
+        var launchRequest = DesktopLaunchArguments.Parse(e.Args);
+        if (launchRequest.HasActions && WpfServices.SingleInstanceService.TrySendArgsToPrimary(e.Args, timeoutMs: 5000))
+        {
+            Shutdown();
+            return;
+        }
+
         // Register the AppUserModelID before any window is shown so that the
         // Windows shell (taskbar, JumpList, toast activations) maps all
         // notifications back to this process identity.
@@ -125,7 +133,6 @@ public partial class App : System.Windows.Application
 
         // Enforce single instance: if another Meridian window is already running,
         // forward the launch args to it via named pipe and exit cleanly.
-        _launchArgs = e.Args;
         if (!WpfServices.SingleInstanceService.Instance.TryAcquire())
         {
             WpfServices.SingleInstanceService.SendArgsToPrimary(e.Args);
@@ -161,11 +168,12 @@ public partial class App : System.Windows.Application
         mainWindow.Show();
         mainWindow.ForceStartupWindowRecovery();
 
+        // Begin listening for args forwarded from secondary instances as soon as
+        // the main window exists so automation deep links do not race startup work.
+        WpfServices.SingleInstanceService.Instance.StartListening();
+
         // Register taskbar jump list tasks.
         WpfServices.JumpListService.Instance.Register();
-
-        // Begin listening for args forwarded from secondary instances (jump list re-launch).
-        WpfServices.SingleInstanceService.Instance.StartListening();
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();

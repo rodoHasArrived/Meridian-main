@@ -210,7 +210,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | OpenAPI / Swagger | `/swagger` | ✅ |
 | API authentication | `X-Api-Key` header only (no query-string auth) | ✅ |
 | Rate limiting | 120 req/min per key, sliding window | ✅ |
-| **Total route constants** | **300** | **0 stubs remaining** |
+| **Total route constants** | **402** | **0 stubs remaining** |
 
 ### OpenAPI annotations
 
@@ -251,12 +251,15 @@ not the primary operator shell; WPF owns current workstation delivery.
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
 - Main workstation shell is metadata-driven through `ShellNavigationCatalog`, with workspace home pages, primary/secondary/overflow navigation tiers, recent pages, command-palette search keywords, and related-workflow links.
 - Workspace home pages now act as shell-first operator launchpads (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) instead of a long page-directory entry model.
-- Desktop launch and workflow automation now normalize page/deep-link startup actions through `DesktopLaunchArguments`, so shortcuts and screenshot/manual workflows target the same canonical workspace tags operators use.
+- Desktop launch and workflow automation now normalize page/deep-link startup actions through `DesktopLaunchArguments`, forward secondary launch arguments to the primary instance through the single-instance named pipe, keep `ShellAutomationState` available as a hidden-but-present page marker, and split isolated restore/build arguments so shortcuts and screenshot/manual workflows target the same canonical workspace tags operators use without target-framework asset drift.
 - Command palette (`Ctrl+K`), keyboard shortcuts, workspace-tile switching, and governance/fund-ops aliases keep low-frequency pages reachable without promoting them to top-level roots.
 - Workspace shell context strips now standardize scope, environment, freshness, review-state, alert, and currency cues across the four workstation shells.
 - `TradingWorkspaceShellPage` now includes a desk briefing hero that projects current desk focus, readiness tone, next handoff, and primary/secondary actions from active-run, workflow-summary, and shared operator-readiness inputs.
 - `ResearchWorkspaceShellPage` now includes a research desk briefing hero that projects market briefing, selected-run posture, run-detail and portfolio drill-ins, and paper-promotion review handoffs from shared workstation run data.
 - `DataOperationsWorkspaceShellPage` now includes a data-operations desk briefing hero backed by `DataOperationsWorkspacePresentationBuilder`; it projects provider health, resumable backfills, storage health, collection sessions, export jobs, operational blockers, and next-handoff actions from shared service data.
+- `WatchlistPage` now includes watchlist posture guidance for saved list count, pinned list coverage, symbol coverage, visible search scope, and empty-state handoffs before an operator loads or imports symbol sets.
+- `ProviderHealthPage` now includes a provider-posture briefing that condenses stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage into one next handoff before the operator scans individual provider cards.
+- `ActivityLogPage` now includes a triage strip that summarizes visible entries, retained error and warning counts, latest entry posture, and active filters before the operator scans retained log rows.
 - Fixture/offline workflow mode is explicitly separated from operational readiness: the shell presents deterministic fixture state as neutral demo data, while Data Operations carries environment-mode context when provider telemetry is absent.
 - Legacy deep pages now route through `WorkspaceDeepPageHostPage` in both standalone and docked presentations, so direct navigation and workspace docks share the same workspace title, reachability metadata, related-workflow chrome, and trust-state posture without removing the underlying page functionality.
 - Legacy deep pages can now suppress duplicate inner hero/title chrome through `WorkspaceShellChromeState` plus embedded-shell styles (`EmbeddedShellHeroCardStyle`, `EmbeddedShellHeaderGridStyle`, and `EmbeddedShellHeaderStackPanelStyle`), tightening density when pages are already hosted inside the shared workstation shell.
@@ -270,7 +273,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 - Theme switching, notification center, info bar
 - Offline indicator (single notification + warning on backend unreachable)
 - Session state persistence (active workspace, last page, window bounds)
-- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
+- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, Provider Health posture-state tests, Activity Log triage-state tests, Watchlist posture-state tests, local single-instance mutex and launch-argument forwarding coverage, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
 
 ### Pages with live service connections (Implemented)
 
@@ -280,12 +283,12 @@ not the primary operator shell; WPF owns current workstation delivery.
 | BackfillPage | BackfillService, BackfillApiService | Trigger/schedule backfills |
 | DataSourcesPage | ConfigService, ProviderManagementService | Provider configuration |
 | ProviderPage | ProviderManagementService | Provider detail + credentials |
-| ProviderHealthPage | ProviderHealthService | Per-provider health metrics |
+| ProviderHealthPage | ProviderHealthService | Per-provider health metrics with posture briefing |
 | SettingsPage | ConfigService, ThemeService | App settings |
 | SymbolsPage | SymbolManagementService | Symbol list management |
 | SymbolStoragePage | StorageServiceBase | Per-symbol storage view |
 | SymbolMappingPage | SymbolMappingService | Cross-provider symbol mapping |
-| DataQualityPage | DataQualityServiceBase | Quality metrics dashboard |
+| DataQualityPage | DataQualityServiceBase | Quality metrics dashboard with symbol-filter scope and empty-state guidance |
 | DataSamplingPage | DataSamplingService | Data sampling configuration |
 | DataCalendarPage | DataCalendarService | Calendar heat-map of collected dates |
 | DataBrowserPage | ArchiveBrowserService | Browse stored data files |
@@ -296,7 +299,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 | LiveDataViewerPage | LiveDataService | Real-time tick viewer |
 | OrderBookPage | OrderBookVisualizationService | L2 order book display |
 | CollectionSessionPage | CollectionSessionService | Active session summary |
-| ActivityLogPage | ApiClientService | Live event log |
+| ActivityLogPage | ApiClientService | Live event log with triage posture |
 | DiagnosticsPage | NavigationService, NotificationService | System diagnostics |
 | SetupWizardPage | SetupWizardService | First-run onboarding |
 | PackageManagerPage | PortablePackagerService | Create/import packages |
@@ -476,16 +479,16 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 | Test Project | Test Files | Methods | Focus |
 | --- | --- | --- | --- |
-| `Meridian.Tests` | 266 | ~3,595 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
-| `Meridian.FSharp.Tests` | 10 | ~174 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
-| `Meridian.Ui.Tests` | 55 | ~948 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
-| `Meridian.Wpf.Tests` | 35 | ~391 | WPF desktop services (navigation, config, status, connection, ViewModels) |
-| `Meridian.Backtesting.Tests` | 14 | ~146 | Backtest engine, fill models, portfolio simulation, XIRR |
-| `Meridian.DirectLending.Tests` | 7 | ~29 | Direct lending services, workflows, PostgreSQL integration |
-| `Meridian.FundStructure.Tests` | 2 | ~19 | Governance shared-data access and in-memory fund-structure services |
-| `Meridian.McpServer.Tests` | 3 | ~11 | MCP server tools (backfill, storage) |
-| `Meridian.QuantScript.Tests` | 10 | ~76 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
-| **Total** | **402** | **~5,389** | |
+| `Meridian.Tests` | 329 | ~4,169 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
+| `Meridian.FSharp.Tests` | 12 | ~233 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
+| `Meridian.Ui.Tests` | 55 | ~975 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
+| `Meridian.Wpf.Tests` | 83 | ~638 | WPF desktop services (navigation, config, status, connection, ViewModels) |
+| `Meridian.Backtesting.Tests` | 19 | ~243 | Backtest engine, fill models, portfolio simulation, XIRR |
+| `Meridian.DirectLending.Tests` | 5 | ~29 | Direct lending services, workflows, PostgreSQL integration |
+| `Meridian.FundStructure.Tests` | 3 | ~24 | Governance shared-data access and in-memory fund-structure services |
+| `Meridian.McpServer.Tests` | 3 | ~15 | MCP server tools (backfill, storage) |
+| `Meridian.QuantScript.Tests` | 8 | ~93 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
+| **Total** | **517** | **~6,419** | |
 
 ### Key test infrastructure
 
@@ -529,7 +532,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Surface | Status | Notes |
 | --------- | -------- | ------- |
 | Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the Research shell now has a desk briefing hero for selected-run, run-detail, portfolio, and `Backtest -> Paper` promotion-review handoffs, while deeper research workflow acceptance and Backtest Studio unification remain open |
-| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`, and the desk briefing hero projects context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight handoffs from shared readiness inputs; the shared trading-readiness endpoint gives the cockpit one acceptance contract, while cockpit-grade execution UX remains pending |
+| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`, and the desk briefing hero projects context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight handoffs from shared readiness inputs; the shared trading-readiness endpoint gives the cockpit one acceptance contract with recent risk/control audit evidence and missing-field explainability warnings, while cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently, and the Data Operations shell now has a desk briefing hero for provider, backfill, storage, session, export, blocker, and next-handoff posture; deeper workflow acceptance and cross-workspace handoff proof remain open |
 | Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, and Security Master/reconciliation drill-ins are live; broader governance-first product flows remain incomplete |
 | Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view`, `/api/fund-structure/report-pack-preview`, and `/api/fund-structure/report-packs` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, reporting previews, and local-first governed report-pack artifacts for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and broader board/investor/compliance packaging remain open. Guardrail: Security Master is the sole instrument source, and governance DTOs with instrument terms must carry Security Master identity/provenance references. Trial-balance and reconciliation symbol metadata now reuse canonical `WorkstationSecurityReference` records (same layer already used by run portfolio/ledger surfaces) rather than a separate classification-only projection. |

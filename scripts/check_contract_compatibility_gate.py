@@ -16,6 +16,7 @@ TRACKED_PREFIXES = (
     "src/Meridian.Ledger/",
 )
 TRACKED_EXACT = {
+    "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
 }
 
@@ -23,6 +24,7 @@ BREAKING_REMOVAL_PATTERNS = (
     re.compile(r"^-\s*public\s+(?:sealed\s+|static\s+|partial\s+|readonly\s+|abstract\s+)*"
                r"(?:record|class|interface|enum|struct|delegate)\b"),
     re.compile(r"^-\s*public\s+[^=;]+\("),
+    re.compile(r"^-\s*public\s+(?:const|static\s+readonly)\s+string\s+[A-Za-z_]\w*\s*="),
     re.compile(r"^-\s*public\s+(?:required\s+|static\s+|virtual\s+|override\s+|sealed\s+|readonly\s+)*"
                r"[A-Za-z_][\w<>,?\[\]\s.]*\s+[A-Za-z_]\w*\s*\{\s*(?:get|init|set)\b"),
     re.compile(r"^-\s*group\.Map(?:Get|Post|Put|Delete|Patch)\("),

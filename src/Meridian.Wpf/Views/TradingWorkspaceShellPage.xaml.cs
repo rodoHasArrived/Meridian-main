@@ -316,7 +316,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             return;
         }
 
-        var isOperatorReady = readiness.Warnings.Count == 0
+        var isOperatorReady = IsOperatorReady(readiness)
+            && readiness.Warnings.Count == 0
             && readiness.WorkItems.All(static item => item.Tone is not OperatorWorkItemToneDto.Warning and not OperatorWorkItemToneDto.Critical);
         TradingStatusSummaryText.Text = readiness.ActiveSession is null
             ? "No active paper session is ready for operator acceptance."
@@ -344,11 +345,13 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             AuditStatusDetailText,
             new TradingWorkspaceStatusItem
             {
-                Label = readiness.Controls.CircuitBreakerOpen ? "Controls blocked" : "Controls ready",
-                Detail = readiness.Controls.CircuitBreakerOpen
-                    ? readiness.Controls.CircuitBreakerReason ?? "Execution is blocked by an operator control."
-                    : $"{readiness.Controls.SymbolLimitCount} symbol limit(s), {readiness.Controls.ManualOverrideCount} manual override(s).",
-                Tone = readiness.Controls.CircuitBreakerOpen ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Success
+                Label = readiness.Controls.CircuitBreakerOpen
+                    ? "Controls blocked"
+                    : readiness.Controls.UnexplainedEvidenceCount > 0 ? "Evidence incomplete" : "Controls ready",
+                Detail = BuildControlReadinessDetail(readiness.Controls),
+                Tone = readiness.Controls.CircuitBreakerOpen || readiness.Controls.UnexplainedEvidenceCount > 0
+                    ? TradingWorkspaceStatusTone.Warning
+                    : TradingWorkspaceStatusTone.Success
             });
 
         ApplyStatusItem(
@@ -371,6 +374,10 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         if (readiness.Warnings.Count > 0)
         {
             RiskRailText.Text = readiness.Warnings[0];
+        }
+        else if (readiness.Controls.RecentEvidence.Count > 0)
+        {
+            RiskRailText.Text = $"Latest risk/control evidence: {BuildControlEvidenceSummary(readiness.Controls.RecentEvidence[0])}";
         }
         else
         {
@@ -580,6 +587,24 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                     TargetLabel: "Target page: RunRisk");
             }
 
+            if (readiness.Controls.UnexplainedEvidenceCount > 0)
+            {
+                return new TradingDeskHeroState(
+                    FocusLabel: "Controls",
+                    Summary: readiness.Controls.ExplainabilityWarnings.FirstOrDefault()
+                        ?? "Risk/control audit evidence is missing actor, scope, or rationale.",
+                    Detail: $"{readiness.Controls.UnexplainedEvidenceCount} evidence item(s) need review before {scopeDisplayName} can be treated as explainable.",
+                    BadgeText: "Attention",
+                    BadgeTone: TradingWorkspaceStatusTone.Warning,
+                    HandoffTitle: "Complete risk evidence",
+                    HandoffDetail: "Open the audit trail first, then confirm the risk rail matches the recorded actor, scope, and rationale.",
+                    PrimaryActionId: "FundAuditTrail",
+                    PrimaryActionLabel: "Audit Trail",
+                    SecondaryActionId: "RunRisk",
+                    SecondaryActionLabel: "Open Risk Rail",
+                    TargetLabel: "Target page: FundAuditTrail");
+            }
+
             if (readiness.Replay is { IsConsistent: false } replay)
             {
                 return new TradingDeskHeroState(
@@ -615,6 +640,11 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                     SecondaryActionLabel: "Audit Trail",
                     TargetLabel: "Target page: NotificationCenter");
             }
+
+            if (!IsOperatorReady(readiness))
+            {
+                return BuildReadinessReviewDeskHeroState(readiness, scopeDisplayName);
+            }
         }
 
         if (activeRun is null)
@@ -636,11 +666,11 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         }
 
         var isLiveMode = IsLiveMode(activeRun);
-        var hasReadyTrustGate = readiness?.TrustGate.ReadyForOperatorReview == true;
-        var badgeTone = hasReadyTrustGate
+        var hasOperatorReadyLane = readiness is not null && IsOperatorReady(readiness);
+        var badgeTone = hasOperatorReadyLane
             ? TradingWorkspaceStatusTone.Success
             : ResolveCardTone(activeRun.PromotionStatus, activeRun.AuditStatus, activeRun.ValidationStatus);
-        var detail = hasReadyTrustGate
+        var detail = hasOperatorReadyLane
             ? BuildReadyDeskHeroDetail(readiness!, activeRun.ValidationStatus.Detail)
             : activeRun.ValidationStatus.Detail;
         var secondaryActionId = activeRun.AuditStatus.Tone == TradingWorkspaceStatusTone.Warning
@@ -664,6 +694,48 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             TargetLabel: $"Target page: {(isLiveMode ? "PositionBlotter" : "RunPortfolio")}");
     }
 
+    private static TradingDeskHeroState BuildReadinessReviewDeskHeroState(
+        TradingOperatorReadinessDto readiness,
+        string scopeDisplayName)
+    {
+        var reviewGate = readiness.AcceptanceGates.FirstOrDefault(static gate =>
+            gate.Status != TradingAcceptanceGateStatusDto.Ready);
+        var summary = reviewGate?.Detail
+            ?? readiness.Warnings.FirstOrDefault()
+            ?? "Shared trading readiness is still under operator review.";
+        var gateLabel = reviewGate?.Label ?? "Operator readiness";
+        var primaryActionId = ResolveReadinessReviewActionId(reviewGate?.GateId);
+        var secondaryActionId = primaryActionId == "FundAuditTrail"
+            ? "NotificationCenter"
+            : "FundAuditTrail";
+
+        return new TradingDeskHeroState(
+            FocusLabel: readiness.OverallStatus == TradingAcceptanceGateStatusDto.Blocked
+                ? "Readiness blocked"
+                : "Operator review",
+            Summary: summary,
+            Detail: $"{gateLabel} must be accepted before {scopeDisplayName} can be shown as ready.",
+            BadgeText: "Attention",
+            BadgeTone: TradingWorkspaceStatusTone.Warning,
+            HandoffTitle: $"Complete {gateLabel.ToLowerInvariant()}",
+            HandoffDetail: "Use the shared readiness lane first, then return to the desk once the acceptance gate is green.",
+            PrimaryActionId: primaryActionId,
+            PrimaryActionLabel: ResolveHeroActionLabel(primaryActionId, "Open Review"),
+            SecondaryActionId: secondaryActionId,
+            SecondaryActionLabel: ResolveHeroActionLabel(secondaryActionId, "Audit Trail"),
+            TargetLabel: $"Target page: {ResolveHeroTargetLabel(primaryActionId, primaryActionId)}");
+    }
+
+    private static string ResolveReadinessReviewActionId(string? gateId) => gateId switch
+    {
+        "session" => "StrategyRuns",
+        "promotion" => "StrategyRuns",
+        "audit-controls" => "RunRisk",
+        "replay" => "FundAuditTrail",
+        "dk1-trust" => "FundAuditTrail",
+        _ => "NotificationCenter"
+    };
+
     internal static TradingDeskHeroState BuildDegradedDeskHeroState() =>
         new(
             FocusLabel: "Desk briefing degraded",
@@ -681,11 +753,15 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private static string BuildReadyDeskHeroDetail(TradingOperatorReadinessDto readiness, string fallbackDetail)
     {
+        var controlEvidence = readiness.Controls.RecentEvidence.Count > 0
+            ? $" Latest risk/control evidence: {BuildControlEvidenceSummary(readiness.Controls.RecentEvidence[0])}"
+            : string.Empty;
+
         if (readiness.BrokerageSync is null)
         {
             return string.IsNullOrWhiteSpace(readiness.TrustGate.Detail)
-                ? fallbackDetail
-                : $"{readiness.TrustGate.Detail} Brokerage sync evidence is unavailable; verify the desk state before relying on local posture alone.";
+                ? $"{fallbackDetail}{controlEvidence}"
+                : $"{readiness.TrustGate.Detail} Brokerage sync evidence is unavailable; verify the desk state before relying on local posture alone.{controlEvidence}";
         }
 
         var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
@@ -694,7 +770,33 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         var trustDetail = string.IsNullOrWhiteSpace(readiness.TrustGate.Detail)
             ? fallbackDetail
             : readiness.TrustGate.Detail;
-        return $"{trustDetail} Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf} with {readiness.BrokerageSync.PositionCount} position(s) and {readiness.BrokerageSync.OpenOrderCount} open order(s).";
+        return $"{trustDetail} Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf} with {readiness.BrokerageSync.PositionCount} position(s) and {readiness.BrokerageSync.OpenOrderCount} open order(s).{controlEvidence}";
+    }
+
+    private static string BuildControlReadinessDetail(TradingControlReadinessDto controls)
+    {
+        if (controls.CircuitBreakerOpen)
+        {
+            return controls.CircuitBreakerReason ?? "Execution is blocked by an operator control.";
+        }
+
+        if (controls.ExplainabilityWarnings.Count > 0)
+        {
+            return controls.ExplainabilityWarnings[0];
+        }
+
+        if (controls.RecentEvidence.Count > 0)
+        {
+            return BuildControlEvidenceSummary(controls.RecentEvidence[0]);
+        }
+
+        return $"{controls.SymbolLimitCount} symbol limit(s), {controls.ManualOverrideCount} manual override(s).";
+    }
+
+    private static string BuildControlEvidenceSummary(TradingControlEvidenceDto evidence)
+    {
+        var actor = string.IsNullOrWhiteSpace(evidence.Actor) ? "unknown actor" : evidence.Actor;
+        return $"{evidence.Action} by {actor} on {evidence.Scope}: {evidence.Reason}";
     }
 
     private static string ResolveWorkflowHeroActionId(WorkflowNextAction nextAction, bool hasActiveRun)
@@ -739,6 +841,10 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private static bool IsLiveMode(ActiveRunContext activeRun)
         => activeRun.ModeLabel.Contains("live", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsOperatorReady(TradingOperatorReadinessDto readiness) =>
+        readiness.ReadyForPaperOperation &&
+        readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready;
 
     private static string GetToneBadgeText(TradingWorkspaceStatusTone tone) => tone switch
     {

@@ -36,6 +36,8 @@ public sealed class MainPageUiWorkflowTests
             facade.ViewModel.CurrentPageTag.Should().Be("RunMat");
             facade.ShellAutomationStateText.Text.Should().Be("RunMat");
             AutomationProperties.GetName(facade.ShellAutomationStateText).Should().Be("RunMat");
+            facade.ShellAutomationStateText.Visibility.Should().Be(Visibility.Visible);
+            facade.ShellAutomationStateText.Opacity.Should().Be(0);
             facade.PageTitleText.Text.Should().Be("Run scripts");
             AutomationProperties.GetName(facade.PageTitleText).Should().Be("Run scripts");
             facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);

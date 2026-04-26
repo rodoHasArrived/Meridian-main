@@ -38,7 +38,7 @@ This document therefore adds:
 3. concrete dependencies
 4. wave and workstream exit criteria
 
-**Current-state refresh (2026-04-26):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the former dashboard landing is standardized around `ResearchShell`, desktop launch/deep-link parsing now routes into canonical workspace tags, fixture mode is presented as neutral demo data, the Trading shell now includes a desk briefing hero driven by active-run, workflow-summary, and shared operator-readiness state, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, that DK1 state is now projected into the trading readiness lane, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, and shared projection paths.
+**Current-state refresh (2026-04-26):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the former dashboard landing is standardized around `ResearchShell`, desktop launch/deep-link parsing now routes into canonical workspace tags, fixture mode is presented as neutral demo data, workflow automation now confirms page state through a hidden-but-present shell marker, isolated restore/build behavior avoids target-framework asset drift, local single-instance mutex and launch-argument forwarding behavior have focused coverage, the Trading shell now includes a desk briefing hero driven by active-run, workflow-summary, and shared operator-readiness state, Data Operations now has a desk briefing hero for provider/backfill/storage/session/export handoffs, Provider Health now includes a provider-posture briefing for stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage, Activity Log now includes triage posture for visible entries, retained errors/warnings, latest activity, and active filters, Watchlist now includes symbol-set posture for saved lists, pinned lists, search scope, and symbol coverage, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, that DK1 state and risk/control audit explainability are now projected into the trading readiness lane, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, and shared projection paths.
 
 It should be read with:
 
@@ -110,7 +110,7 @@ It should be read with:
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
 6. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
-7. Desktop workflow automation must use canonical workspace tags and confirmed page-readiness markers so screenshot/manual evidence does not drift from the shell routes operators actually use.
+7. Desktop workflow automation must use canonical workspace tags, confirmed page-readiness markers, deterministic restore/build inputs, and local single-instance behavior so screenshot/manual evidence does not drift from the shell routes operators actually use.
 
 ---
 
@@ -239,7 +239,7 @@ Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel
 - **Deliverables:**
   - consistent fund, entity, sleeve, vehicle, and account context propagation
   - shell deep-link and related-workflow routing that preserves operating scope
-  - desktop launch/deep-link argument handling and automation page-tag confirmation tied to canonical workspace routes
+  - desktop launch/deep-link argument handling, single-instance argument forwarding, automation page-tag confirmation, and local activity triage tied to canonical workspace routes
   - shell-status badges tied to the selected operating context
 - **Exit criteria:**
   - operators can change scope without losing the active run or account handoff context

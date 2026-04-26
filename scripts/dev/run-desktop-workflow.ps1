@@ -231,6 +231,50 @@ function Wait-ForShellPage {
     throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
 }
 
+function Wait-ForStableShellPage {
+    param(
+        [System.Diagnostics.Process]$Process,
+        [int]$TimeoutSec = 30,
+        [int]$StableMs = 1200
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    $lastSignature = $null
+    $stableSince = $null
+    $lastState = $null
+    $lastWindow = $null
+
+    while ((Get-Date) -lt $deadline) {
+        if ($null -ne $Process -and $Process.HasExited) {
+            throw "Meridian desktop exited before shell readiness could be confirmed."
+        }
+
+        Activate-MeridianWindow | Out-Null
+        $lastWindow = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
+        $lastState = Get-ShellAutomationState -Window $lastWindow
+
+        if ($lastState.Ready -and -not [string]::IsNullOrWhiteSpace($lastState.PageTag)) {
+            $signature = "$($lastState.PageTag)|$($lastState.PageTitle)"
+            if ($signature -ne $lastSignature) {
+                $lastSignature = $signature
+                $stableSince = Get-Date
+            }
+            elseif ($null -ne $stableSince -and ((Get-Date) - $stableSince).TotalMilliseconds -ge $StableMs) {
+                return [pscustomobject]@{
+                    Window = $lastWindow
+                    State = $lastState
+                }
+            }
+        }
+
+        Start-Sleep -Milliseconds 250
+    }
+
+    $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
+    $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
+    throw "Shell page tag did not stabilize before workflow navigation. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+}
+
 function Save-WindowCapture {
     param(
         [Parameter(Mandatory = $true)]
@@ -272,6 +316,11 @@ function Invoke-ForwardedLaunch {
         [string]$WorkingDirectory
     )
 
+    if (Send-ForwardedLaunchArgs -Arguments $Arguments -TimeoutMs 10000) {
+        Write-Info "Forwarded desktop args through single-instance pipe: $($Arguments -join ' ')"
+        return
+    }
+
     $process = Start-Process -FilePath $ExePath -ArgumentList $Arguments -WorkingDirectory $WorkingDirectory -PassThru -WindowStyle Hidden
     $null = $process.WaitForExit(10000)
 
@@ -283,6 +332,47 @@ function Invoke-ForwardedLaunch {
     if ($process.ExitCode -ne 0) {
         Write-Warn "Secondary desktop launcher returned exit code $($process.ExitCode) for args: $($Arguments -join ' ')"
     }
+}
+
+function Send-ForwardedLaunchArgs {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+
+        [int]$TimeoutMs = 10000
+    )
+
+    if ($Arguments.Count -eq 0) {
+        return $true
+    }
+
+    $deadline = (Get-Date).AddMilliseconds($TimeoutMs)
+    $payload = [string]::Join("`n", $Arguments)
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $pipe = [System.IO.Pipes.NamedPipeClientStream]::new(
+                '.',
+                'Meridian.Desktop.SingleInstance.Pipe',
+                [System.IO.Pipes.PipeDirection]::Out,
+                [System.IO.Pipes.PipeOptions]::None)
+            try {
+                $pipe.Connect(500)
+                $pipe.Write($bytes, 0, $bytes.Length)
+                $pipe.Flush()
+                return $true
+            }
+            finally {
+                $pipe.Dispose()
+            }
+        }
+        catch {
+            Start-Sleep -Milliseconds 250
+        }
+    }
+
+    return $false
 }
 
 function Send-WindowKeys {
@@ -391,6 +481,13 @@ try {
     }
 
     if (-not $SkipBuild) {
+        $desktopRestoreArgs = @(
+            Get-MeridianBuildArguments `
+                -IsolationKey $buildIsolationKey `
+                -AdditionalProperties @("Configuration=$resolvedConfiguration") `
+                -EnableFullWpfBuild
+        )
+
         $desktopBuildArgs = @(
             Get-MeridianBuildArguments `
                 -IsolationKey $buildIsolationKey `
@@ -400,7 +497,7 @@ try {
         )
 
         Write-Info "Restoring $resolvedProjectPath ..."
-        & dotnet restore $resolvedProjectPath --verbosity minimal @desktopBuildArgs
+        & dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet restore failed for '$resolvedProjectPath'."
         }
@@ -454,7 +551,11 @@ try {
         Write-Ok 'Meridian window detected.'
     }
 
-    Start-Sleep -Milliseconds ($settleMs + 700)
+    $startupReadiness = Wait-ForStableShellPage -Process $ownedProcess -TimeoutSec ([Math]::Max(30, $LaunchTimeoutSec)) -StableMs 1200
+    $window = $startupReadiness.Window
+    $manifest.run.initialPageTag = $startupReadiness.State.PageTag
+    $manifest.run.initialPageTitle = $startupReadiness.State.PageTitle
+    Write-Ok "Shell ready on $($startupReadiness.State.PageTag) ($($startupReadiness.State.PageTitle))."
 
     $stepIndex = 0
     foreach ($step in $workflowDefinition.steps) {

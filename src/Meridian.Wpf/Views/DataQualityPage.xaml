@@ -369,12 +369,20 @@
                             </StackPanel>
 
                             <TextBox x:Name="SymbolFilterBox" Grid.Column="1" Width="200"
+                                     AutomationProperties.AutomationId="DataQualitySymbolFilterBox"
                                      TextChanged="SymbolFilter_TextChanged"
                                      Background="{DynamicResource ConsoleBackgroundMediumBrush}"
                                      Foreground="{DynamicResource ConsoleTextBrush}"
                                      BorderThickness="1" Padding="8,4"
                                      ToolTip="Filter symbols" />
                         </Grid>
+
+                        <TextBlock x:Name="SymbolFilterScopeText"
+                                   Text="{Binding SymbolFilterScopeText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   Margin="0,-6,0,12"
+                                   AutomationProperties.AutomationId="DataQualitySymbolFilterScopeText" />
 
                         <ListView x:Name="SymbolQualityList" MaxHeight="350" SelectionMode="Single"
                                   ItemsSource="{Binding FilteredSymbols}"
@@ -403,9 +411,29 @@
                             </ListView.View>
                         </ListView>
 
-                        <TextBlock x:Name="NoSymbolsText" Text="No symbols are currently being monitored."
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   Visibility="{Binding HasNoSymbols, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,8,0,0"/>
+                        <StackPanel x:Name="NoSymbolsPanel"
+                                    Visibility="{Binding HasNoSymbols, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Margin="0,12,0,0"
+                                    AutomationProperties.AutomationId="DataQualitySymbolEmptyState">
+                            <TextBlock x:Name="NoSymbolsText"
+                                       Text="{Binding SymbolEmptyStateTitle}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       FontWeight="SemiBold" />
+                            <TextBlock x:Name="NoSymbolsDetailText"
+                                       Text="{Binding SymbolEmptyStateDetail}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                            <Button x:Name="ClearSymbolFilterButton"
+                                    Content="Clear Filter"
+                                    Click="ClearSymbolFilter_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    HorizontalAlignment="Left"
+                                    Padding="12,4"
+                                    Margin="0,10,0,0"
+                                    Visibility="{Binding HasActiveSymbolFilter, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    AutomationProperties.AutomationId="DataQualityClearSymbolFilterButton" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

@@ -9,11 +9,13 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
 - `docs/development/build-observability.md` for build diagnostics, metrics, fingerprints, and debug bundles.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
+- `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
+- `docs/status/contract-compatibility-matrix.md` for shared contract compatibility gates.
 - `docs/status/FEATURE_INVENTORY.md` for current feature inventory and retained local web/API scope.
 - `docs/plans/paper-trading-cockpit-reliability-sprint.md` for the Wave 2 readiness contract.
 - `README.md` for top-level onboarding and planning links.
@@ -161,7 +163,10 @@ make clean
 make benchmark
 make bench-quick
 make bench-filter FILTER=*Collector*
+make publish
+make publish-linux
 make publish-windows
+make publish-macos
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
@@ -182,6 +187,9 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.Wpf.csproj --configuration Release --full-wpf-build --isolation-key desktop-smoke
 ```
 
+Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
+DTOs, execution-control evidence, acceptance gates, or operator work-item projection.
+
 ## Desktop Workflows
 
 ```powershell
@@ -193,6 +201,10 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ProviderHealthViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ActivityLogViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~WatchlistViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SingleInstanceServiceTests|FullyQualifiedName~DesktopWorkflowScriptTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
@@ -210,13 +222,20 @@ Named workflow automation is defined in `scripts/dev/desktop-workflows.json`; it
 fixture mode and writes run artifacts under `artifacts/desktop-workflows/`.
 
 Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
-`run-desktop.ps1` when driving an already-open shell against live local services.
+`run-desktop.ps1` when driving an already-open shell against live local services; the runner
+forwards page/deep-link args through the single-instance pipe and waits on `ShellAutomationState`.
+During desktop workflow runs, restore lets shared projects use their declared target frameworks
+while the build step pins the WPF shell to `net9.0-windows10.0.19041.0`.
 `robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
 fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
 Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release WPF build, such as
 the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
 for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
+Use `ProviderHealthViewModelTests`, `ActivityLogViewModelTests`, and `WatchlistViewModelTests` for
+provider-posture, support-triage, and watchlist-posture surface changes. Use
+`SingleInstanceServiceTests` plus `DesktopWorkflowScriptTests` when changing launch/deep-link
+forwarding, shell automation markers, or isolated desktop workflow restore/build behavior.
 
 ```bash
 make desktop-build
@@ -268,6 +287,9 @@ The readiness endpoint is `GET /api/workstation/trading/readiness`. The broader 
 trading payload (`GET /api/workstation/trading`) embeds the same readiness data. The replay route,
 `GET /api/execution/sessions/{sessionId}/replay`, verifies a paper session replay and writes
 durable execution-audit evidence used to reconstruct replay readiness after restart.
+Treat additive trading readiness DTO or enum changes as shared contract changes; the current
+payload includes execution-control evidence explainability, acceptance gates, and operator work
+items alongside session, replay, promotion, DK1 trust-gate, and brokerage-sync posture.
 
 ## Provider Validation
 
@@ -301,6 +323,7 @@ provider matrix, DK1 runbook, and kernel readiness dashboard before claiming coc
 make doctor
 make doctor-ci
 make doctor-quick
+make diagnose
 make verify-setup
 make diagnose-build
 make collect-debug
@@ -317,7 +340,15 @@ make metrics
 make history
 make analyze-errors
 make validate-data
+make ai-audit
+make ai-audit-code
+make ai-audit-docs
+make ai-audit-tests
+make ai-audit-ai-docs
+make ai-report
 make ai-arch-check
+make ai-arch-check-summary
+make ai-arch-check-json
 make ai-verify
 make ai-maintenance-light
 make ai-maintenance-full
@@ -328,10 +359,20 @@ make ai-docs-archive
 make verify-adrs
 make verify-contracts
 make verify-tooling-metadata
+python3 scripts/check_contract_compatibility_gate.py --base origin/main --head HEAD
+python3 -m unittest tests/scripts/test_check_contract_compatibility_gate.py
 make docs-all
 make skill-list
 make skill-resources SKILL=meridian-code-review
+make skill-scripts SKILL=meridian-code-review
+make skill-chains SKILL=meridian-code-review
+make skill-resource SKILL=meridian-code-review RESOURCE=project-stats
 make skill-run SKILL=meridian-code-review SCRIPT=validate-skill
+make skill-chain SKILL=meridian-code-review SCRIPTS="validate-skill run-eval"
+make skill-run-chain SKILL=meridian-code-review CHAIN=full-check
+make skill-validate
+make skill-run-eval RUNS=3
+make skill-benchmark WORKSPACE=<dir>
 make skill-discover
 make health
 make status
@@ -346,9 +387,16 @@ python3 build/scripts/docs/run-docs-automation.py --profile core --summary-outpu
 python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
 ```
 
+Run `scripts/check_contract_compatibility_gate.py` when changing scoped contracts, including
+`src/Meridian.Contracts/Api/UiApiRoutes.cs`; shared route removals or value changes require
+migration notes in `docs/status/contract-compatibility-matrix.md`.
+
 TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet
 implemented and only delegates to `buildctl doctor`. Do not advertise it as a fix workflow until
 that changes.
+
+TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive`
+and inspect the preview before using it in automated cleanup.
 
 Do not add package versions directly to project files. Central package management lives in
 `Directory.Packages.props`.

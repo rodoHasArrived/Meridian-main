@@ -1,10 +1,11 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-04-25
+Last reviewed: 2026-04-26
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
 
+- `src/Meridian.Contracts/Api/UiApiRoutes.cs`
 - `src/Meridian.Contracts/Workstation/`
 - `src/Meridian.Strategies/Services/`
 - `src/Meridian.Ledger/`
@@ -14,6 +15,7 @@ This matrix defines compatibility commitments for:
 
 | Surface | Current contract baseline | Version signal | Owner |
 | --- | ---: | --- | --- |
+| `Meridian.Contracts.Api.UiApiRoutes` route constants | `v1` | route string + parameter-name compatibility | API + UI shared maintainers |
 | `Meridian.Contracts.Workstation` DTOs | `v1` | additive DTO evolution + release notes | Application + UI shared maintainers |
 | `Meridian.Strategies.Services` service contracts | `v1` | interface/member compatibility + migration notes | Strategies maintainers |
 | `Meridian.Ledger` domain contracts | `v1` | public type/member compatibility + migration notes | Ledger maintainers |
@@ -53,7 +55,7 @@ This matrix defines compatibility commitments for:
 Any pull request touching scoped surfaces must pass:
 
 1. **Standard PR gates:** existing build/test/format gates in `.github/workflows/pr-checks.yml`.
-2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals plus scoped record constructor parameter and enum-member removals.
+2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals, shared `UiApiRoutes` constant removals or value changes, plus scoped record constructor parameter and enum-member removals.
 3. **Contract regression tests (required when contract code changes):**
    - targeted workstation contract serialization/deserialization tests,
    - strategy service interface compatibility tests,
@@ -68,6 +70,8 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-04-21: Established initial compatibility matrix and CI policy gate for workstation contracts/services/ledger/endpoints. No runtime break introduced in this change.
 - 2026-04-25: Wired the contract compatibility gate into `.github/workflows/pr-checks.yml` so pull requests and releases both enforce the matrix. No runtime contract break introduced.
 - 2026-04-26: Expanded the compatibility gate to detect scoped record constructor parameter and enum-member removals, with focused Python regression coverage. No runtime contract break introduced.
+- 2026-04-26: Added `UiApiRoutes.cs` route constants to the compatibility scope and gate heuristics so shared route removals or string changes require migration notes. No runtime contract break introduced.
+- 2026-04-26: Added additive trading-readiness control evidence fields (`TradingControlEvidenceDto`, `TradingControlReadinessDto.RecentEvidence`, explainability counts, and warnings) plus `OperatorWorkItemKindDto.ExecutionControl`. Older clients can ignore the new payload fields; enum-aware clients should treat the new work-item kind as an execution-risk blocker.
 
 ## Pull Request Author Checklist
 

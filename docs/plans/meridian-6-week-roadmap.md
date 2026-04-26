@@ -33,9 +33,9 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the WPF workstation shell is the primary operator shell and is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; the retained local API/web surfaces remain supporting consumers of the same workstation contracts
-- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, the Trading desk briefing hero, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, and the Data Operations desk briefing hero's provider / backfill / storage / session / export / environment-mode handoffs, so this window should validate workflow value rather than start a second desktop UX track
-- fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores/builds with matching WPF arguments before confirming page tags, so test evidence should distinguish demo-state validation from operational readiness
-- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and operator work items, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
+- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, Activity Log triage, Watchlist posture, workspace queue tone styles, the workspace shell context strip, the Trading desk briefing hero, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the Data Operations desk briefing hero's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
+- fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores shared project assets without pinning the WPF target framework before building the desktop shell with the pinned WPF framework and confirming page tags, so test evidence should distinguish demo-state validation from operational readiness
+- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, controls, recent risk/control audit evidence, missing-field explainability warnings, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and operator work items, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
@@ -57,7 +57,7 @@ This plan starts from the current repo state:
 ### Delivery guardrails in this window
 
 - keep WPF workflow-first consolidation and MVVM extraction limited to work that directly supports active Wave 2-4 flows
-- keep desktop launch/deep-link routing, screenshot workflows, and fixture/demo-mode cues aligned to the four workspace shell routes so automation verifies the same surfaces operators use
+- keep desktop launch/deep-link routing, screenshot workflows, single-instance forwarding, UI-automation page-state markers, and fixture/demo-mode cues aligned to the four workspace shell routes so automation verifies the same surfaces operators use
 - keep validation and documentation synchronized with executable evidence, not summary language; the DK1 `pilotReplaySampleSet` is now part of that evidence contract
 - keep shared DTOs, read models, workflow services, and export seams as the integration boundary across active work
 - treat current shell workflow validation as open until the delivered shell/navigation baseline is clearly wired into run-centered workflows
@@ -78,7 +78,7 @@ This plan starts from the current repo state:
 - the DK1 pilot replay/sample-set contract is emitted by `scripts/dev/run-wave1-provider-validation.ps1`, packaged by `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, and reviewed through the DK1 pilot parity runbook
 - backfill checkpoints, gap detection, and Parquet L2 flush behavior remain on the passing command matrix instead of drifting back into assumed reliability
 - the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, and generated validation summaries
-- the Data Operations desk briefing hero remains a consumer of shared provider, backfill, storage, session, and export state instead of becoming a separate operational-readiness model
+- the Data Operations desk briefing hero and Provider Health posture briefing remain consumers of shared provider, backfill, storage, session, and export state instead of becoming separate operational-readiness models
 
 ### Outcome 2: Wave 2 paper trading is dependable, not just visible
 
@@ -86,7 +86,7 @@ This plan starts from the current repo state:
 - the WPF Trading desk briefing hero is validated as a consumer of shared active-run, workflow-summary, and operator-readiness state rather than a separate cockpit model
 - `Backtest -> Paper` remains explicit, auditable, and easier to exercise end to end
 - session persistence and replay behavior have clearer operator acceptance criteria
-- the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items
+- the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, risk/control explainability warnings, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items
 - the local replay-audit hardening slice now records replay consistency, compared fill/order/ledger evidence counts, last-persisted timestamps, and primary mismatch reason so readiness reconstruction has durable audit metadata to read from
 
 ### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
@@ -96,7 +96,7 @@ This plan starts from the current repo state:
 - WPF refinements in scope reinforce the same shared orchestration seams instead of introducing new page-local logic
 - the Research desk briefing hero remains a shared-model consumer for selected runs, portfolio drill-ins, and `Backtest -> Paper` promotion review instead of becoming a separate research-only orchestration path
 - current shell-navigation work is validated as a workflow-first improvement rather than just a visual reshuffle
-- desktop launch/deep-link and screenshot workflow evidence uses the same canonical workspace tags operators use (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`)
+- desktop launch/deep-link and screenshot workflow evidence uses the same canonical workspace tags operators use (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) and confirms page state through the hidden-but-present `ShellAutomationState` marker
 
 ### Outcome 4: Wave 4 governance work shows up as product, not just planning
 
@@ -136,6 +136,7 @@ Priorities:
 
 - harden the existing execution and promotion flows through the shared workstation readiness contract
 - keep replay, session, audit, and risk behavior tied to realistic operator use
+- keep recent risk/control audit evidence explainable with actor, scope, rationale, and operator-visible missing-field warnings
 - prefer reliability and workflow continuity over new cockpit surface area
 - define operator-visible acceptance criteria for the paper workflow already in code
 - keep the cockpit readiness contract aligned with DK1 acceptance language so unresolved trust-gate sign-off, session, replay, audit, promotion-review, brokerage-sync, or operator-work-item gaps are visible during daily operation
@@ -166,8 +167,9 @@ Priorities:
 - keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used by the WPF shell and retained desktop-local API contracts
 - treat the Trading desk briefing hero as Wave 2 support evidence only when it continues to reflect shared readiness, replay, controls, trust-gate, and brokerage-sync posture without duplicating service logic
 - treat the Research desk briefing hero as Wave 3 support evidence only when it keeps selected-run, run-detail, portfolio, and paper-promotion handoffs tied to shared workstation read models
-- treat the Data Operations desk briefing hero as Wave 1/DK1 support evidence only when it keeps provider, backfill, storage, session, and export handoffs tied to shared operational services
+- treat the Data Operations desk briefing hero and Provider Health posture briefing as Wave 1/DK1 support evidence only when they keep provider, backfill, storage, session, and export handoffs tied to shared operational services
 - validate the current `ShellNavigationCatalog`, workspace-shell, deep-page host, and shell-context-strip baseline against active run-centered workflows before widening it further
+- keep isolated desktop workflow restore/build behavior deterministic so shared library assets and WPF target-framework builds do not drift during screenshot/manual evidence capture
 - keep fixture/demo-mode state explicit in desktop workflow evidence so demo payloads help reproduce UI states without satisfying readiness exit criteria
 - pull validation and contradiction checks forward whenever workstation or governance surfaces expand
 

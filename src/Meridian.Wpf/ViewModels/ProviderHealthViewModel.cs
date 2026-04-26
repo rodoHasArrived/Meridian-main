@@ -21,6 +21,15 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageActionBarProvider
 {
+    private static readonly Brush ReadyPostureBrush = CreateFrozenBrush(63, 185, 80);
+    private static readonly Brush WarningPostureBrush = CreateFrozenBrush(255, 193, 7);
+    private static readonly Brush CriticalPostureBrush = CreateFrozenBrush(244, 67, 54);
+    private static readonly Brush NeutralPostureBrush = CreateFrozenBrush(139, 148, 158);
+    private static readonly Brush ReadyPostureBackgroundBrush = CreateFrozenBrush(63, 185, 80, 31);
+    private static readonly Brush WarningPostureBackgroundBrush = CreateFrozenBrush(255, 193, 7, 31);
+    private static readonly Brush CriticalPostureBackgroundBrush = CreateFrozenBrush(244, 67, 54, 31);
+    private static readonly Brush NeutralPostureBackgroundBrush = CreateFrozenBrush(139, 148, 158, 31);
+
     private readonly WpfServices.StatusService _statusService;
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.LoggingService _loggingService;
@@ -60,6 +69,30 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
     private bool _hasNoHistory = true;
     public bool HasNoHistory { get => _hasNoHistory; private set => SetProperty(ref _hasNoHistory, value); }
+
+    private string _providerPostureTitle = "Provider posture loading";
+    public string ProviderPostureTitle { get => _providerPostureTitle; private set => SetProperty(ref _providerPostureTitle, value); }
+
+    private string _providerPostureDetail = "Refresh provider health to compute the active streaming and backfill posture.";
+    public string ProviderPostureDetail { get => _providerPostureDetail; private set => SetProperty(ref _providerPostureDetail, value); }
+
+    private string _providerPostureActionText = "Refresh provider data";
+    public string ProviderPostureActionText { get => _providerPostureActionText; private set => SetProperty(ref _providerPostureActionText, value); }
+
+    private string _providerPostureTargetText = "Provider health";
+    public string ProviderPostureTargetText { get => _providerPostureTargetText; private set => SetProperty(ref _providerPostureTargetText, value); }
+
+    private string _providerPostureEvidenceText = "Awaiting provider snapshot";
+    public string ProviderPostureEvidenceText { get => _providerPostureEvidenceText; private set => SetProperty(ref _providerPostureEvidenceText, value); }
+
+    private string _providerPostureIcon = "\uE946";
+    public string ProviderPostureIcon { get => _providerPostureIcon; private set => SetProperty(ref _providerPostureIcon, value); }
+
+    private Brush _providerPostureAccentBrush = NeutralPostureBrush;
+    public Brush ProviderPostureAccentBrush { get => _providerPostureAccentBrush; private set => SetProperty(ref _providerPostureAccentBrush, value); }
+
+    private Brush _providerPostureBackgroundBrush = NeutralPostureBackgroundBrush;
+    public Brush ProviderPostureBackgroundBrush { get => _providerPostureBackgroundBrush; private set => SetProperty(ref _providerPostureBackgroundBrush, value); }
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Provider Health";
@@ -398,6 +431,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         var indicator = FormatHelpers.FormatStaleIndicator(secondsSince, staleThresholdSeconds: 45);
         LastUpdateText = $"Last updated: {indicator.DisplayText}";
         IsLastUpdateStale = indicator.IsStale;
+        UpdateProviderPosture();
     }
 
     private void UpdateSummaryStats()
@@ -410,6 +444,32 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         AvgLatency = _connectionService.State == ConnectionState.Connected
             ? $"{_connectionService.LastLatencyMs:F0}"
             : "--";
+        UpdateProviderPosture();
+    }
+
+    private void UpdateProviderPosture()
+    {
+        var connected = StreamingProviders.Count(p => p.IsConnected);
+        var disconnected = StreamingProviders.Count(p => !p.IsConnected);
+        var availableBackfill = BackfillProviders.Count(p =>
+            string.Equals(p.StatusText, "Available", StringComparison.OrdinalIgnoreCase));
+
+        var posture = BuildProviderPosture(
+            connected,
+            disconnected,
+            StreamingProviders.Count,
+            BackfillProviders.Count,
+            availableBackfill,
+            IsLastUpdateStale);
+
+        ProviderPostureTitle = posture.Title;
+        ProviderPostureDetail = posture.Detail;
+        ProviderPostureActionText = posture.ActionText;
+        ProviderPostureTargetText = posture.TargetText;
+        ProviderPostureEvidenceText = posture.EvidenceText;
+        ProviderPostureIcon = posture.Icon;
+        ProviderPostureAccentBrush = GetPostureAccentBrush(posture.Tone);
+        ProviderPostureBackgroundBrush = GetPostureBackgroundBrush(posture.Tone);
     }
 
     private void AddConnectionEvent(string message, string provider, EventType eventType)
@@ -461,6 +521,105 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         return timestamp.ToString("MMM d HH:mm");
     }
 
+    internal static ProviderHealthPostureState BuildProviderPosture(
+        int connectedStreamingProviders,
+        int disconnectedStreamingProviders,
+        int streamingProviders,
+        int backfillProviders,
+        int availableBackfillProviders,
+        bool isLastUpdateStale)
+    {
+        connectedStreamingProviders = Math.Max(0, connectedStreamingProviders);
+        disconnectedStreamingProviders = Math.Max(0, disconnectedStreamingProviders);
+        streamingProviders = Math.Max(0, streamingProviders);
+        backfillProviders = Math.Max(0, backfillProviders);
+        availableBackfillProviders = Math.Max(0, availableBackfillProviders);
+
+        var evidence = $"{connectedStreamingProviders}/{streamingProviders} streaming connected; " +
+            $"{availableBackfillProviders}/{backfillProviders} backfill available";
+
+        if (streamingProviders == 0 && backfillProviders == 0)
+        {
+            return new ProviderHealthPostureState(
+                "No providers discovered",
+                "Provider discovery returned no streaming or backfill entries. Open provider setup before routing live data or backfills.",
+                "Open provider setup",
+                "Provider catalog",
+                evidence,
+                "\uE946",
+                ProviderHealthPostureTone.Neutral);
+        }
+
+        if (isLastUpdateStale)
+        {
+            return new ProviderHealthPostureState(
+                "Provider snapshot is stale",
+                "The provider health snapshot has aged past the workstation freshness window. Refresh before acting on feed posture.",
+                "Refresh provider posture",
+                "Provider health snapshot",
+                evidence,
+                "\uE72C",
+                ProviderHealthPostureTone.Warning);
+        }
+
+        if (streamingProviders > 0 && connectedStreamingProviders == 0)
+        {
+            return new ProviderHealthPostureState(
+                "Provider session offline",
+                "No streaming provider is connected. Reconnect the primary session before relying on live monitoring or paper-trading handoffs.",
+                "Reconnect primary provider",
+                "Streaming session",
+                evidence,
+                "\uE71B",
+                ProviderHealthPostureTone.Critical);
+        }
+
+        if (disconnectedStreamingProviders > 0)
+        {
+            return new ProviderHealthPostureState(
+                "Mixed provider posture",
+                $"{connectedStreamingProviders} streaming provider(s) are connected while {disconnectedStreamingProviders} need review. Keep live handoffs in watch mode until the inactive feed is explained.",
+                "Review disconnected providers",
+                "Streaming provider grid",
+                evidence,
+                "\uE7BA",
+                ProviderHealthPostureTone.Warning);
+        }
+
+        if (connectedStreamingProviders > 0 && backfillProviders > 0 && availableBackfillProviders == 0)
+        {
+            return new ProviderHealthPostureState(
+                "Streaming ready; backfill blocked",
+                "The live feed is connected, but no backfill provider is available. Historical repair and replay preparation need provider setup.",
+                "Configure backfill provider",
+                "Backfill provider grid",
+                evidence,
+                "\uE8B7",
+                ProviderHealthPostureTone.Warning);
+        }
+
+        if (connectedStreamingProviders > 0)
+        {
+            return new ProviderHealthPostureState(
+                "Provider posture ready",
+                "Streaming and backfill surfaces have usable coverage. Continue monitoring reconnect badges and connection history for drift.",
+                "Monitor connection history",
+                "Connection history",
+                evidence,
+                "\uE73E",
+                ProviderHealthPostureTone.Ready);
+        }
+
+        return new ProviderHealthPostureState(
+            "Configure provider access",
+            "Provider entries are present but none are ready for operator workflows. Finish credentials and connectivity before starting data operations.",
+            "Configure provider access",
+            "Provider credentials",
+            evidence,
+            "\uE946",
+            ProviderHealthPostureTone.Neutral);
+    }
+
     public void Dispose()
     {
         if (_isDisposed)
@@ -471,6 +630,31 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         _isDisposed = true;
         Stop();
         _sparklineTimer?.Dispose();
+    }
+
+    private static Brush GetPostureAccentBrush(ProviderHealthPostureTone tone) =>
+        tone switch
+        {
+            ProviderHealthPostureTone.Ready => ReadyPostureBrush,
+            ProviderHealthPostureTone.Warning => WarningPostureBrush,
+            ProviderHealthPostureTone.Critical => CriticalPostureBrush,
+            _ => NeutralPostureBrush
+        };
+
+    private static Brush GetPostureBackgroundBrush(ProviderHealthPostureTone tone) =>
+        tone switch
+        {
+            ProviderHealthPostureTone.Ready => ReadyPostureBackgroundBrush,
+            ProviderHealthPostureTone.Warning => WarningPostureBackgroundBrush,
+            ProviderHealthPostureTone.Critical => CriticalPostureBackgroundBrush,
+            _ => NeutralPostureBackgroundBrush
+        };
+
+    private static SolidColorBrush CreateFrozenBrush(byte red, byte green, byte blue, byte alpha = 255)
+    {
+        var brush = new SolidColorBrush(Color.FromArgb(alpha, red, green, blue));
+        brush.Freeze();
+        return brush;
     }
 
     private void StartSparklineTimer()
@@ -547,3 +731,20 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         }
     }
 }
+
+internal enum ProviderHealthPostureTone
+{
+    Ready,
+    Warning,
+    Critical,
+    Neutral
+}
+
+internal sealed record ProviderHealthPostureState(
+    string Title,
+    string Detail,
+    string ActionText,
+    string TargetText,
+    string EvidenceText,
+    string Icon,
+    ProviderHealthPostureTone Tone);

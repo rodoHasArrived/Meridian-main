@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -127,11 +128,135 @@
             </Grid>
         </Border>
 
-        <!-- Log Entries -->
-        <Border Grid.Row="2" Margin="24,0,24,24" Style="{StaticResource CardStyle}">
+        <!-- Activity Triage -->
+        <Border Grid.Row="2"
+                Background="{StaticResource PremiumPanelBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                Margin="24,0,24,16"
+                Padding="18,14"
+                CornerRadius="12"
+                AutomationProperties.AutomationId="ActivityLogTriageStrip">
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="320"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="&#xE946;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="15"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding ActivityPostureTitle}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding ActivityPostureDetail}"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding ActiveFilterSummary}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <WrapPanel Grid.Column="1"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           ItemWidth="128"
+                           ItemHeight="64">
+                    <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding VisibleLogCountText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Current view"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleAccentRedAlpha10Brush}"
+                            BorderBrush="{StaticResource ErrorColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ErrorLogCountText}"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Retained"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                            BorderBrush="{StaticResource WarningColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding WarningLogCountText}"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Retained"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding LatestLogTimeText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Latest entry"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- Log Entries -->
+        <Border Grid.Row="3" Margin="24,0,24,24" Style="{StaticResource CardStyle}">
+            <Grid>
+                <TextBlock Text="{Binding LatestLogSummary}"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           FontSize="11"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="4,0,4,10"
+                           VerticalAlignment="Top"
+                           Panel.ZIndex="1"/>
                 <ListBox x:Name="LogList" Background="Transparent" BorderThickness="0"
                          ItemsSource="{Binding FilteredLogs}"
+                         Margin="0,24,0,0"
                          VirtualizingPanel.IsVirtualizing="True"
                          VirtualizingPanel.VirtualizationMode="Recycling"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">

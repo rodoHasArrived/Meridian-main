@@ -52,7 +52,7 @@ make desktop-screenshots
 
 That keeps navigation aligned with Meridian's own startup and deep-link handling instead of relying on brittle screen coordinates.
 
-Restore and build now share the same configuration, target framework, WPF build flags, and isolation key before the runner uses `build --no-restore`. This keeps isolated desktop workflows from restoring dependency assets for one target and building another.
+Restore and build now share the same configuration, WPF build flags, and isolation key before the runner uses `build --no-restore`. The restore step lets each project restore its declared target framework so shared `net9.0` libraries get matching assets, while the build step pins the desktop shell to `net9.0-windows10.0.19041.0`.
 
 Before any screenshot is saved, the runner now:
 

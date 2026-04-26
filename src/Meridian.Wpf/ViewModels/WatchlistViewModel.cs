@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,17 @@ using Meridian.Wpf.Views;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
+
+public readonly record struct WatchlistPosture(
+    string Title,
+    string Detail,
+    string ActionText,
+    string TotalWatchlistsText,
+    string PinnedWatchlistsText,
+    string SymbolCoverageText,
+    string VisibleScopeText,
+    string EmptyStateTitle,
+    string EmptyStateDescription);
 
 /// <summary>
 /// ViewModel for the Watchlist page.
@@ -29,8 +41,18 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     private CancellationTokenSource? _loadCts;
 
     private string _searchText = string.Empty;
+    private bool _hasActiveSearch;
     private Visibility _emptyStateVisibility = Visibility.Collapsed;
     private Visibility _listVisibility = Visibility.Collapsed;
+    private string _postureTitle = "Loading watchlists";
+    private string _postureDetail = "Saved watchlists will appear after local state loads.";
+    private string _postureActionText = "Next: Review saved lists";
+    private string _totalWatchlistsText = "0 watchlists";
+    private string _pinnedWatchlistsText = "0 pinned";
+    private string _symbolCoverageText = "0 symbols";
+    private string _visibleScopeText = "0 visible";
+    private string _emptyStateTitle = "No watchlists yet";
+    private string _emptyStateDescription = "Create or import a watchlist to stage symbols for monitoring and workspace loading.";
 
     public WatchlistViewModel(
         WpfServices.WatchlistService watchlistService,
@@ -47,6 +69,7 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
 
         CreateWatchlistCommand = new AsyncRelayCommand(CreateWatchlistAsync);
         ImportWatchlistCommand = new AsyncRelayCommand(ImportWatchlistAsync);
+        ClearSearchCommand = new RelayCommand(ClearSearch, CanClearSearch);
         LoadWatchlistCommand = new AsyncRelayCommand<string>(LoadWatchlistAsync);
         EditWatchlistCommand = new AsyncRelayCommand<string>(EditWatchlistAsync);
         PinWatchlistCommand = new AsyncRelayCommand<string>(PinWatchlistAsync);
@@ -66,9 +89,20 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         get => _searchText;
         set
         {
-            if (SetProperty(ref _searchText, value))
+            var normalizedValue = value ?? string.Empty;
+            if (SetProperty(ref _searchText, normalizedValue))
+            {
+                HasActiveSearch = !string.IsNullOrWhiteSpace(normalizedValue);
+                ClearSearchCommand.NotifyCanExecuteChanged();
                 ApplyFilter();
+            }
         }
+    }
+
+    public bool HasActiveSearch
+    {
+        get => _hasActiveSearch;
+        private set => SetProperty(ref _hasActiveSearch, value);
     }
 
     public Visibility EmptyStateVisibility
@@ -83,10 +117,65 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _listVisibility, value);
     }
 
+    public string PostureTitle
+    {
+        get => _postureTitle;
+        private set => SetProperty(ref _postureTitle, value);
+    }
+
+    public string PostureDetail
+    {
+        get => _postureDetail;
+        private set => SetProperty(ref _postureDetail, value);
+    }
+
+    public string PostureActionText
+    {
+        get => _postureActionText;
+        private set => SetProperty(ref _postureActionText, value);
+    }
+
+    public string TotalWatchlistsText
+    {
+        get => _totalWatchlistsText;
+        private set => SetProperty(ref _totalWatchlistsText, value);
+    }
+
+    public string PinnedWatchlistsText
+    {
+        get => _pinnedWatchlistsText;
+        private set => SetProperty(ref _pinnedWatchlistsText, value);
+    }
+
+    public string SymbolCoverageText
+    {
+        get => _symbolCoverageText;
+        private set => SetProperty(ref _symbolCoverageText, value);
+    }
+
+    public string VisibleScopeText
+    {
+        get => _visibleScopeText;
+        private set => SetProperty(ref _visibleScopeText, value);
+    }
+
+    public string EmptyStateTitle
+    {
+        get => _emptyStateTitle;
+        private set => SetProperty(ref _emptyStateTitle, value);
+    }
+
+    public string EmptyStateDescription
+    {
+        get => _emptyStateDescription;
+        private set => SetProperty(ref _emptyStateDescription, value);
+    }
+
     // ── Commands ──────────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand CreateWatchlistCommand { get; }
     public IAsyncRelayCommand ImportWatchlistCommand { get; }
+    public IRelayCommand ClearSearchCommand { get; }
     public IAsyncRelayCommand<string> LoadWatchlistCommand { get; }
     public IAsyncRelayCommand<string> EditWatchlistCommand { get; }
     public IAsyncRelayCommand<string> PinWatchlistCommand { get; }
@@ -146,6 +235,7 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
                     Id = wl.Id,
                     Name = wl.Name,
                     SymbolCount = $"{wl.Symbols.Count} symbols",
+                    SymbolTotal = wl.Symbols.Count,
                     Color = wl.Color,
                     ColorValue = ParseColor(wl.Color),
                     IsPinned = wl.IsPinned,
@@ -189,6 +279,117 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         var hasItems = FilteredWatchlists.Count > 0;
         EmptyStateVisibility = hasItems ? Visibility.Collapsed : Visibility.Visible;
         ListVisibility = hasItems ? Visibility.Visible : Visibility.Collapsed;
+        ApplyPosture(BuildWatchlistPosture(_allWatchlists, FilteredWatchlists, SearchText));
+    }
+
+    public static WatchlistPosture BuildWatchlistPosture(
+        IReadOnlyCollection<WatchlistDisplayModel> allWatchlists,
+        IReadOnlyCollection<WatchlistDisplayModel> visibleWatchlists,
+        string? searchText)
+    {
+        var search = (searchText ?? string.Empty).Trim();
+        var hasSearch = search.Length > 0;
+        var totalCount = allWatchlists.Count;
+        var visibleCount = visibleWatchlists.Count;
+        var pinnedCount = allWatchlists.Count(watchlist => watchlist.IsPinned);
+        var symbolCount = allWatchlists.Sum(watchlist => Math.Max(0, watchlist.SymbolTotal));
+
+        var totalText = FormatCount(totalCount, "watchlist", "watchlists");
+        var pinnedText = $"{pinnedCount} pinned";
+        var symbolText = FormatCount(symbolCount, "symbol", "symbols");
+        var visibleText = hasSearch
+            ? $"{FormatCount(visibleCount, "visible result", "visible results")} for \"{Shorten(search, 24)}\""
+            : FormatCount(visibleCount, "visible watchlist", "visible watchlists");
+
+        if (totalCount == 0)
+        {
+            return new WatchlistPosture(
+                "Start a watchlist library",
+                "Create or import one symbol set before monitoring, backfills, or trading review.",
+                "Next: Create watchlist",
+                totalText,
+                pinnedText,
+                symbolText,
+                visibleText,
+                "No watchlists yet",
+                "Create or import a watchlist to stage symbols for monitoring and workspace loading.");
+        }
+
+        if (visibleCount == 0 && hasSearch)
+        {
+            return new WatchlistPosture(
+                "Search has no matches",
+                $"No saved watchlist contains \"{Shorten(search, 32)}\" in its name or preview symbols.",
+                "Next: Clear search or import",
+                totalText,
+                pinnedText,
+                symbolText,
+                visibleText,
+                "No watchlists match the current search",
+                "Clear the search term or import a list if this symbol set is missing.");
+        }
+
+        if (pinnedCount == 0)
+        {
+            return new WatchlistPosture(
+                "Pin a core watchlist",
+                $"Saved lists cover {symbolText}, but none are pinned for quick desk loading.",
+                "Next: Pin one watchlist",
+                totalText,
+                pinnedText,
+                symbolText,
+                visibleText,
+                "No watchlists visible",
+                "Clear search to return to the saved watchlist library.");
+        }
+
+        if (hasSearch)
+        {
+            return new WatchlistPosture(
+                "Filtered watchlist view",
+                $"Matching scope: {visibleText}; saved library: {totalText}.",
+                "Next: Load matching list",
+                totalText,
+                pinnedText,
+                symbolText,
+                visibleText,
+                "No watchlists match the current search",
+                "Clear the search term or import a list if this symbol set is missing.");
+        }
+
+        return new WatchlistPosture(
+            "Watchlist library ready",
+            $"{totalText} cover {symbolText}, with {pinnedText} available for quick workspace loading.",
+            "Next: Load a watchlist",
+            totalText,
+            pinnedText,
+            symbolText,
+            visibleText,
+            "No watchlists visible",
+            "Clear search to return to the saved watchlist library.");
+    }
+
+    private void ApplyPosture(WatchlistPosture posture)
+    {
+        PostureTitle = posture.Title;
+        PostureDetail = posture.Detail;
+        PostureActionText = posture.ActionText;
+        TotalWatchlistsText = posture.TotalWatchlistsText;
+        PinnedWatchlistsText = posture.PinnedWatchlistsText;
+        SymbolCoverageText = posture.SymbolCoverageText;
+        VisibleScopeText = posture.VisibleScopeText;
+        EmptyStateTitle = posture.EmptyStateTitle;
+        EmptyStateDescription = posture.EmptyStateDescription;
+    }
+
+    private bool CanClearSearch() => HasActiveSearch;
+
+    private void ClearSearch()
+    {
+        if (!HasActiveSearch)
+            return;
+
+        SearchText = string.Empty;
     }
 
     private async Task CreateWatchlistAsync(CancellationToken ct = default)
@@ -467,5 +668,16 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         if (diff.TotalDays < 7)
             return $"{(int)diff.TotalDays}d ago";
         return date.ToString("MMM d, yyyy");
+    }
+
+    private static string FormatCount(int value, string singular, string plural) =>
+        $"{value} {(value == 1 ? singular : plural)}";
+
+    private static string Shorten(string value, int maxLength)
+    {
+        if (value.Length <= maxLength)
+            return value;
+
+        return value[..Math.Max(0, maxLength - 1)] + "…";
     }
 }

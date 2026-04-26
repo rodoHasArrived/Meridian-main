@@ -90,12 +90,12 @@ public sealed class TradingOperatorReadinessService
                 workItemId: "execution-audit-empty");
         }
 
-        var controls = BuildControls(Resolve<ExecutionOperatorControlService>());
+        var controls = BuildControls(Resolve<ExecutionOperatorControlService>(), auditEntries);
         if (controls.CircuitBreakerOpen)
         {
             AddWorkItem(
                 workItems,
-                OperatorWorkItemKindDto.PromotionReview,
+                OperatorWorkItemKindDto.ExecutionControl,
                 "Execution circuit breaker open",
                 controls.CircuitBreakerReason ?? "Execution is blocked by an operator control.",
                 OperatorWorkItemToneDto.Critical,
@@ -106,11 +106,26 @@ public sealed class TradingOperatorReadinessService
         {
             AddWorkItem(
                 workItems,
-                OperatorWorkItemKindDto.PromotionReview,
+                OperatorWorkItemKindDto.ExecutionControl,
                 "Manual overrides require review",
                 $"{controls.ManualOverrideCount} execution manual override(s) must be reviewed before promotion acceptance.",
                 OperatorWorkItemToneDto.Warning,
                 workItemId: "execution-manual-overrides-open");
+        }
+
+        if (controls.UnexplainedEvidenceCount > 0)
+        {
+            var firstUnexplained = controls.RecentEvidence.FirstOrDefault(static evidence => !evidence.IsExplained);
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ExecutionControl,
+                "Risk evidence incomplete",
+                controls.ExplainabilityWarnings.FirstOrDefault()
+                    ?? "Risk/control audit evidence is missing actor, scope, or rationale.",
+                OperatorWorkItemToneDto.Warning,
+                firstUnexplained?.RunId,
+                auditReference: firstUnexplained?.AuditId,
+                workItemId: "execution-evidence-incomplete");
         }
 
         var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
@@ -324,8 +339,18 @@ public sealed class TradingOperatorReadinessService
         ];
     }
 
-    private TradingControlReadinessDto BuildControls(ExecutionOperatorControlService? controlService)
+    private TradingControlReadinessDto BuildControls(
+        ExecutionOperatorControlService? controlService,
+        IReadOnlyList<ExecutionAuditEntry> auditEntries)
     {
+        var evidence = BuildControlEvidence(auditEntries);
+        var unexplained = evidence.Where(static item => !item.IsExplained).ToArray();
+        var explainabilityWarnings = unexplained
+            .Take(3)
+            .Select(static item =>
+                $"{item.Action} audit {item.AuditId} is missing {string.Join(", ", item.MissingFields)}.")
+            .ToArray();
+
         if (controlService is null)
         {
             return new TradingControlReadinessDto(
@@ -335,7 +360,13 @@ public sealed class TradingOperatorReadinessService
                 CircuitBreakerChangedAt: null,
                 ManualOverrideCount: 0,
                 SymbolLimitCount: 0,
-                DefaultMaxPositionSize: null);
+                DefaultMaxPositionSize: null)
+            {
+                RecentEvidence = evidence,
+                ExplainableEvidenceCount = evidence.Count - unexplained.Length,
+                UnexplainedEvidenceCount = unexplained.Length,
+                ExplainabilityWarnings = explainabilityWarnings
+            };
         }
 
         var snapshot = controlService.GetSnapshot();
@@ -346,7 +377,142 @@ public sealed class TradingOperatorReadinessService
             CircuitBreakerChangedAt: snapshot.CircuitBreaker.ChangedAt,
             ManualOverrideCount: snapshot.ManualOverrides.Count,
             SymbolLimitCount: snapshot.SymbolPositionLimits.Count,
-            DefaultMaxPositionSize: snapshot.DefaultMaxPositionSize);
+            DefaultMaxPositionSize: snapshot.DefaultMaxPositionSize)
+        {
+            RecentEvidence = evidence,
+            ExplainableEvidenceCount = evidence.Count - unexplained.Length,
+            UnexplainedEvidenceCount = unexplained.Length,
+            ExplainabilityWarnings = explainabilityWarnings
+        };
+    }
+
+    private static IReadOnlyList<TradingControlEvidenceDto> BuildControlEvidence(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries)
+        => auditEntries
+            .Where(IsControlEvidence)
+            .OrderByDescending(static entry => entry.OccurredAt)
+            .Take(10)
+            .Select(MapControlEvidence)
+            .ToArray();
+
+    private static bool IsControlEvidence(ExecutionAuditEntry entry)
+    {
+        if (string.Equals(entry.Category, "Control", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (!string.Equals(entry.Category, "Order", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return string.Equals(entry.Action, "OrderRejected", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(entry.Action, "GatewayConnectFailed", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static TradingControlEvidenceDto MapControlEvidence(ExecutionAuditEntry entry)
+    {
+        var actor = string.IsNullOrWhiteSpace(entry.Actor) ? null : entry.Actor.Trim();
+        var scope = ResolveEvidenceScope(entry);
+        var reason = ResolveEvidenceReason(entry);
+        var missingFields = new List<string>(capacity: 3);
+
+        if (string.IsNullOrWhiteSpace(actor))
+        {
+            missingFields.Add("actor");
+        }
+
+        if (string.IsNullOrWhiteSpace(scope))
+        {
+            missingFields.Add("scope");
+        }
+
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            missingFields.Add("reason");
+        }
+
+        return new TradingControlEvidenceDto(
+            AuditId: entry.AuditId,
+            Category: entry.Category,
+            Action: entry.Action,
+            Outcome: entry.Outcome,
+            OccurredAt: entry.OccurredAt,
+            Actor: actor,
+            Scope: string.IsNullOrWhiteSpace(scope) ? "unscoped" : scope,
+            Reason: string.IsNullOrWhiteSpace(reason) ? "No rationale was recorded." : reason,
+            IsExplained: missingFields.Count == 0,
+            MissingFields: missingFields,
+            RunId: entry.RunId,
+            Symbol: entry.Symbol,
+            OrderId: entry.OrderId,
+            CorrelationId: entry.CorrelationId);
+    }
+
+    private static string? ResolveEvidenceScope(ExecutionAuditEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.RunId) && !string.IsNullOrWhiteSpace(entry.Symbol))
+        {
+            return $"run:{entry.RunId}/symbol:{entry.Symbol}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.RunId))
+        {
+            return $"run:{entry.RunId}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.Symbol))
+        {
+            return $"symbol:{entry.Symbol}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.OrderId))
+        {
+            return $"order:{entry.OrderId}";
+        }
+
+        var overrideId = GetMetadata(entry, "overrideId");
+        if (!string.IsNullOrWhiteSpace(overrideId))
+        {
+            return $"override:{overrideId}";
+        }
+
+        if (entry.Action.Contains("CircuitBreaker", StringComparison.OrdinalIgnoreCase))
+        {
+            return "global-circuit-breaker";
+        }
+
+        if (entry.Action.Contains("DefaultPositionLimit", StringComparison.OrdinalIgnoreCase))
+        {
+            return "default-position-limit";
+        }
+
+        if (entry.Action.Contains("SymbolPositionLimit", StringComparison.OrdinalIgnoreCase))
+        {
+            return "symbol-position-limit";
+        }
+
+        return string.IsNullOrWhiteSpace(entry.CorrelationId) ? null : $"correlation:{entry.CorrelationId}";
+    }
+
+    private static string? ResolveEvidenceReason(ExecutionAuditEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.Message))
+        {
+            return entry.Message.Trim();
+        }
+
+        if (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Order submitted with outcome {entry.Outcome}.";
+        }
+
+        var kind = GetMetadata(entry, "kind");
+        return string.IsNullOrWhiteSpace(kind)
+            ? null
+            : $"{entry.Action} for {kind}.";
     }
 
     private static TradingPromotionReadinessDto? BuildPromotion(
@@ -527,6 +693,18 @@ public sealed class TradingOperatorReadinessService
                 Label: "Risk state explainable",
                 Status: TradingAcceptanceGateStatusDto.ReviewRequired,
                 Detail: "Execution actions need visible audit and control evidence before daily operation.");
+        }
+
+        if (controls.UnexplainedEvidenceCount > 0)
+        {
+            var firstUnexplained = controls.RecentEvidence.FirstOrDefault(static evidence => !evidence.IsExplained);
+            return new TradingAcceptanceGateDto(
+                GateId: "audit-controls",
+                Label: "Risk state explainable",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: $"{controls.UnexplainedEvidenceCount} risk/control audit entr{(controls.UnexplainedEvidenceCount == 1 ? "y is" : "ies are")} missing actor, scope, or rationale.",
+                RunId: firstUnexplained?.RunId,
+                AuditReference: firstUnexplained?.AuditId);
         }
 
         if (controls.ManualOverrideCount > 0)
