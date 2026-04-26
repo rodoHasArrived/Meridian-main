@@ -64,6 +64,8 @@ Content Frame
 
 **Main shell context strip** — `MainPage` now renders the shared context strip between the workflow summary rail and the split-pane host. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
 
+**Page header visibility refinement** — `MainPage` now keeps the current page title visible in the primary shell header instead of leaving the bound title/subtitle collapsed. Standard density shows both title and subtitle, while compact density keeps the title visible and collapses the subtitle so the context switcher and next-action strip stay above the fold.
+
 **Research desk briefing hero** — `ResearchWorkspaceShellPage` now keeps the current research cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
 
 **Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.

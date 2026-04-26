@@ -123,6 +123,7 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+            await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
         }
 
         _logger.LogInformation(
@@ -152,10 +153,9 @@ public sealed class PaperSessionPersistenceService
             var ledger = session.Portfolio?.Ledger;
             if (ledger is not null && ledger.JournalEntryCount > 0)
             {
-                var dtos = SerializeLedgerJournal(ledger, sessionId);
                 try
                 {
-                    await _store.SaveLedgerJournalAsync(sessionId, dtos, ct).ConfigureAwait(false);
+                    await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
                     _logger.LogInformation(
                         "Persisted {Count} ledger entries for paper session {SessionId}",
                         ledger.JournalEntryCount, sessionId);
@@ -270,6 +270,11 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
+
+            if (_sessions.TryGetValue(sessionId, out var persistedSession))
+            {
+                await PersistSessionLedgerAsync(persistedSession, ct).ConfigureAwait(false);
+            }
         }
     }
 
@@ -360,6 +365,10 @@ public sealed class PaperSessionPersistenceService
         var comparedLedgerEntryCount = _store is null
             ? 0
             : persistedLedgerEntries.Count;
+        var persistedLedgerLineCount = persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
+        var currentLedger = GetLedger(sessionId);
+        var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
+        var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
         var lastPersistedFillAt = persistedFills.Count > 0
             ? persistedFills.Max(fill => fill.Timestamp)
             : (DateTimeOffset?)null;
@@ -373,6 +382,7 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             CompareOrderHistory(detail.OrderHistory, persistedOrders, mismatchReasons);
+            CompareLedgerJournal(currentLedger, persistedLedgerEntries, mismatchReasons);
         }
 
         var verificationAudit = await RecordVerificationAuditAsync(
@@ -381,6 +391,9 @@ public sealed class PaperSessionPersistenceService
             comparedFillCount,
             comparedOrderCount,
             comparedLedgerEntryCount,
+            currentLedgerEntryCount,
+            currentLedgerLineCount,
+            persistedLedgerLineCount,
             lastPersistedFillAt,
             lastPersistedOrderUpdateAt,
             replayPortfolio,
@@ -409,6 +422,9 @@ public sealed class PaperSessionPersistenceService
         int comparedFillCount,
         int comparedOrderCount,
         int comparedLedgerEntryCount,
+        int currentLedgerEntryCount,
+        int currentLedgerLineCount,
+        int persistedLedgerLineCount,
         DateTimeOffset? lastPersistedFillAt,
         DateTimeOffset? lastPersistedOrderUpdateAt,
         ExecutionPortfolioSnapshotDto replayPortfolio,
@@ -428,6 +444,9 @@ public sealed class PaperSessionPersistenceService
             ["comparedFillCount"] = comparedFillCount.ToString(),
             ["comparedOrderCount"] = comparedOrderCount.ToString(),
             ["comparedLedgerEntryCount"] = comparedLedgerEntryCount.ToString(),
+            ["currentLedgerEntryCount"] = currentLedgerEntryCount.ToString(),
+            ["currentLedgerLineCount"] = currentLedgerLineCount.ToString(),
+            ["persistedLedgerLineCount"] = persistedLedgerLineCount.ToString(),
             ["lastPersistedFillAt"] = lastPersistedFillAt?.ToString("O") ?? string.Empty,
             ["lastPersistedOrderUpdateAt"] = lastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
             ["mismatchCount"] = mismatchReasons.Count.ToString(),
@@ -485,6 +504,23 @@ public sealed class PaperSessionPersistenceService
         }
 
         return dtos;
+    }
+
+    private async Task PersistSessionLedgerAsync(PaperSession session, CancellationToken ct)
+    {
+        if (_store is null)
+        {
+            return;
+        }
+
+        var ledger = session.Portfolio?.Ledger;
+        if (ledger is null || ledger.JournalEntryCount == 0)
+        {
+            return;
+        }
+
+        var dtos = SerializeLedgerJournal(ledger, session.SessionId);
+        await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
     }
 
     private static Meridian.Ledger.Ledger? ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)
@@ -682,6 +718,92 @@ public sealed class PaperSessionPersistenceService
             }
         }
     }
+
+    private static void CompareLedgerJournal(
+        IReadOnlyLedger? currentLedger,
+        IReadOnlyList<PersistedJournalEntryDto> persistedLedgerEntries,
+        List<string> mismatchReasons)
+    {
+        if (currentLedger is null)
+        {
+            if (persistedLedgerEntries.Count > 0)
+            {
+                mismatchReasons.Add(
+                    $"Current session ledger is unavailable while {persistedLedgerEntries.Count} persisted journal entr{(persistedLedgerEntries.Count == 1 ? "y exists" : "ies exist")}.");
+            }
+
+            return;
+        }
+
+        if (currentLedger.JournalEntryCount != persistedLedgerEntries.Count)
+        {
+            mismatchReasons.Add(
+                $"Persisted ledger journal count differs: current={currentLedger.JournalEntryCount}, persisted={persistedLedgerEntries.Count}.");
+        }
+
+        var persistedLineCount = persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
+        if (currentLedger.TotalLedgerEntryCount != persistedLineCount)
+        {
+            mismatchReasons.Add(
+                $"Persisted ledger line count differs: current={currentLedger.TotalLedgerEntryCount}, persisted={persistedLineCount}.");
+        }
+
+        CompareTrialBalance(currentLedger.TrialBalance(), BuildPersistedTrialBalance(persistedLedgerEntries), mismatchReasons);
+    }
+
+    private static IReadOnlyDictionary<LedgerAccount, decimal> BuildPersistedTrialBalance(
+        IReadOnlyList<PersistedJournalEntryDto> persistedLedgerEntries)
+    {
+        var balances = new Dictionary<LedgerAccount, decimal>();
+        foreach (var line in persistedLedgerEntries.SelectMany(static entry => entry.Lines))
+        {
+            var accountType = Enum.TryParse<LedgerAccountType>(line.Account.AccountType, out var parsedAccountType)
+                ? parsedAccountType
+                : LedgerAccountType.Asset;
+            var account = new LedgerAccount(
+                line.Account.Name,
+                accountType,
+                line.Account.Symbol,
+                line.Account.FinancialAccountId);
+            balances.TryGetValue(account, out var balance);
+            balances[account] = balance + CalculateNormalBalanceDelta(accountType, line.Debit, line.Credit);
+        }
+
+        return balances;
+    }
+
+    private static void CompareTrialBalance(
+        IReadOnlyDictionary<LedgerAccount, decimal> current,
+        IReadOnlyDictionary<LedgerAccount, decimal> persisted,
+        List<string> mismatchReasons)
+    {
+        foreach (var account in current.Keys.Except(persisted.Keys))
+        {
+            mismatchReasons.Add($"Persisted ledger trial balance is missing account {account}.");
+        }
+
+        foreach (var account in persisted.Keys.Except(current.Keys))
+        {
+            mismatchReasons.Add($"Persisted ledger trial balance contains unexpected account {account}.");
+        }
+
+        foreach (var account in current.Keys.Intersect(persisted.Keys))
+        {
+            if (current[account] != persisted[account])
+            {
+                mismatchReasons.Add(
+                    $"Ledger balance for {account} differs: current={current[account]:G29}, persisted={persisted[account]:G29}.");
+            }
+        }
+    }
+
+    private static decimal CalculateNormalBalanceDelta(
+        LedgerAccountType accountType,
+        decimal debit,
+        decimal credit)
+        => accountType is LedgerAccountType.Asset or LedgerAccountType.Expense
+            ? debit - credit
+            : credit - debit;
 
     private sealed class PaperSession
     {

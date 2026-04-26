@@ -36,6 +36,9 @@ public sealed class MainPageUiWorkflowTests
             facade.ViewModel.CurrentPageTag.Should().Be("RunMat");
             facade.ShellAutomationStateText.Text.Should().Be("RunMat");
             facade.PageTitleText.Text.Should().Be("Run scripts");
+            facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);
+            facade.PageSubtitleText.Visibility.Should().Be(Visibility.Visible);
+            facade.PageSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
             facade.CommandPaletteOverlay.Visibility.Should().Be(Visibility.Collapsed);
             AutomationProperties.GetAutomationId(facade.CommandPaletteTextBox).Should().Be("CommandPaletteInput");
         });
@@ -210,12 +213,17 @@ public sealed class MainPageUiWorkflowTests
                 using var facade = new MainPageUiAutomationFacade();
 
                 AutomationProperties.GetAutomationId(facade.ShellDensityToggleButton).Should().Be("ShellDensityToggleButton");
+                facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);
+                facade.PageSubtitleText.Visibility.Should().Be(Visibility.Visible);
+                facade.PageSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
                 facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Standard");
                 ToolTipService.GetToolTip(facade.ShellDensityToggleButton).Should().Be("Switch to compact shell density");
 
                 facade.Click(facade.ShellDensityToggleButton);
 
                 facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);
+                facade.PageSubtitleText.Visibility.Should().Be(Visibility.Collapsed);
                 facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Compact");
                 ToolTipService.GetToolTip(facade.ShellDensityToggleButton).Should().Be("Switch to standard shell density");
                 SettingsConfigurationService.Instance.GetShellDensityMode().Should().Be(ShellDensityMode.Compact);
@@ -223,6 +231,8 @@ public sealed class MainPageUiWorkflowTests
                 facade.Click(facade.ShellDensityToggleButton);
 
                 facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);
+                facade.PageSubtitleText.Visibility.Should().Be(Visibility.Visible);
                 facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Standard");
             }
             finally

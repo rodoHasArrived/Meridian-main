@@ -157,6 +157,7 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PaperSessionReplayTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj --logger "console;verbosity=normal"
@@ -225,6 +226,22 @@ TODO: `scripts/dev/desktop-dev.ps1` still prints `make build-wpf`,
 `make test-desktop-services`, and `make uwp-xaml-diagnose`, but the current `make/*.mk` files do
 not define those targets. Prefer `make desktop-build`, `make desktop-test`, and
 `pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
+
+## Paper Trading Readiness
+
+Use these probes against a running local host when checking Wave 2 cockpit readiness or replay
+evidence:
+
+```powershell
+Invoke-RestMethod http://localhost:8080/api/workstation/trading/readiness
+Invoke-RestMethod http://localhost:8080/api/workstation/trading
+Invoke-RestMethod http://localhost:8080/api/execution/sessions/<session-id>/replay
+```
+
+The readiness endpoint is `GET /api/workstation/trading/readiness`. The broader workstation
+trading payload (`GET /api/workstation/trading`) embeds the same readiness data. The replay route,
+`GET /api/execution/sessions/{sessionId}/replay`, verifies a paper session replay and writes
+durable execution-audit evidence used to reconstruct replay readiness after restart.
 
 ## Provider Validation
 

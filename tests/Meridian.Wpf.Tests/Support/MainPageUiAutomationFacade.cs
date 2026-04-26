@@ -109,6 +109,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public TextBlock PageTitleText => GetRequired<TextBlock>("PageTitleTextBlock");
 
+    public TextBlock PageSubtitleText => GetRequired<TextBlock>("PageSubtitleText");
+
     public Frame ContentFrame => GetRequired<Frame>("ContentFrame");
 
     public Page? InnermostContentPage => NavigationHostInspector.ResolveInnermostPage(ContentFrame.Content);

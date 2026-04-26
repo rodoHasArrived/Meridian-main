@@ -1079,18 +1079,30 @@
                             <TextBlock x:Name="PageTitleTextBlock"
                                        Text="{Binding CurrentPageTitle}"
                                        Margin="0,6,0,0"
-                                       Visibility="Collapsed"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="20"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
                                        AutomationProperties.AutomationId="PageTitleText"
                                        AutomationProperties.Name="Current Page Title" />
                             <TextBlock x:Name="PageSubtitleText"
                                        Margin="0,8,0,0"
                                        Text="{Binding CurrentPageSubtitle}"
-                                       Visibility="Collapsed"
-                                       Style="{StaticResource CardDescriptionStyle}" />
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="PageSubtitleText"
+                                       AutomationProperties.Name="Current Page Subtitle">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource CardDescriptionStyle}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCompactShellDensity}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <Border x:Name="ContextSelectionHint"
                                     Margin="0,12,0,0"
                                     Padding="12,10"
