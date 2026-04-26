@@ -416,6 +416,7 @@ Meridian-main
 │   │   ├── workflow-results-code-quality.prompt.yml
 │   │   ├── workflow-results-test-matrix.prompt.yml
 │   │   ├── wpf-debug-improve.prompt.yml
+│   │   ├── wpf-design-system-screen-impact.prompt.yml
 │   │   └── write-unit-tests.prompt.yml
 │   ├── workflows
 │   │   ├── benchmark.yml
@@ -6736,6 +6737,7 @@ Meridian-main
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
 │       │   ├── DataOperationsWorkspacePresentationBuilder.cs
+│       │   ├── DesktopLaunchArguments.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -7605,6 +7607,7 @@ Meridian-main
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
