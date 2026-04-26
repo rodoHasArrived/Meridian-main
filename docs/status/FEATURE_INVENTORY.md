@@ -225,7 +225,10 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 
 ---
 
-## 9. Web Dashboard
+## 9. Retained Local Web/API Surface
+
+This surface remains useful for local diagnostics, API-backed workflows, and support tooling. It is
+not the primary operator shell; WPF owns current workstation delivery.
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
@@ -459,7 +462,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 ### Remaining execution work
 
-- Wire brokerage gateways into the web dashboard paper-trading cockpit
+- Wire brokerage gateways into the shared workstation paper-trading cockpit and primary WPF operator lane
 - Validate brokerage adapters against live vendor APIs
 - Complete cockpit-visible `Backtest → Paper → Live` workflow hardening and audit UX
 - Complete paper-trading session persistence and replay operator flows

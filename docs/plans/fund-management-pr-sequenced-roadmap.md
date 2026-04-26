@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
 > **Retirement note (2026-04-09):** Browser workstation references in this roadmap, including any WPF/web alignment language carried over from earlier planning, are historical only. Current implementation should stay desktop-first and use the retained desktop-local API seams where needed.
@@ -16,7 +16,7 @@ This document translates the fund-management module backlog into PR-sized execut
 - suggested ownership boundaries
 - low-conflict file/module groupings
 
-The goal is to let multiple contributors work concurrently without repeatedly colliding in the same projects and files. This roadmap now assumes the delivered Security Master baseline, the existing shared run/read-model seams, and the current web cockpit foundation are already in place; the slices below should extend those baselines rather than recreate them.
+The goal is to let multiple contributors work concurrently without repeatedly colliding in the same projects and files. This roadmap now assumes the delivered Security Master baseline, the existing shared run/read-model seams, and the current shared workstation/API foundation are already in place; the slices below should extend those baselines rather than recreate them.
 
 ## How to Use This Document
 
@@ -122,7 +122,7 @@ Replace placeholder workstation bootstrap payloads with real shared data.
 **Deliverables**
 
 - real bootstrap DTOs
-- aligned WPF/web workstation startup payloads
+- aligned WPF and retained workstation API startup payloads
 - governance-ready summary hooks
 
 ### PR-04: Research Workflow Unification

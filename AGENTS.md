@@ -8,6 +8,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/HELP.md` for verified operator and developer CLI workflows.
 - `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
+- `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
@@ -187,6 +188,7 @@ pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFix
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1
 pwsh -File ./scripts/dev/robinhood-options-smoke.ps1
+pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall
 ```
 
 The desktop launcher builds the local host and WPF shell when needed, starts the host on
@@ -222,10 +224,16 @@ TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-w
 `make desktop-manual`, and `make desktop-screenshots`, but the current `make/desktop.mk` does not
 define those targets. Use the PowerShell scripts directly unless the Make targets are added.
 
-TODO: `scripts/dev/desktop-dev.ps1` still prints `make build-wpf`,
-`make test-desktop-services`, and `make uwp-xaml-diagnose`, but the current `make/*.mk` files do
-not define those targets. Prefer `make desktop-build`, `make desktop-test`, and
-`pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
+TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`,
+`make build-wpf`, and `make test-desktop-services`, and `scripts/dev/desktop-dev.ps1` still prints
+`make build-wpf`, `make test-desktop-services`, and `make uwp-xaml-diagnose`; the current
+`make/*.mk` files do not define those targets. Prefer `pwsh ./scripts/dev/desktop-dev.ps1`,
+`make desktop-build`, `make desktop-test`, and `pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
+
+TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current
+`make/*.mk` files do not define that target. Use
+`pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
+builds unless the Make target is restored.
 
 ## Paper Trading Readiness
 

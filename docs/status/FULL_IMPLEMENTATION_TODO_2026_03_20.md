@@ -110,7 +110,9 @@ Primary anchors:
 - `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs`
 - `src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs`
 - `src/Meridian.Execution/`
-- `src/Meridian.Ui/dashboard/`
+- `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs`
+- `src/Meridian.Wpf/Views/TradingWorkspaceShellPage.xaml`
+- retained `src/Meridian.Ui/dashboard/` support tests when those surfaces are touched
 
 Exit signal:
 
@@ -125,7 +127,7 @@ Open work:
 - extend run history beyond backtest-first into paper and live-adjacent results
 - deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger and reconciliation continuity in the web dashboard
+- surface ledger and reconciliation continuity in the primary WPF shell and retained workstation APIs
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:
@@ -302,7 +304,7 @@ References:
 
 ### Wave 2
 
-- Track B: Paper trading cockpit web UI and promotion workflow
+- Track B: Shared workstation paper-trading cockpit and promotion workflow
 
 ### Wave 3
 

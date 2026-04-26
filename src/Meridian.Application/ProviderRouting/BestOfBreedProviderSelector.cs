@@ -56,7 +56,7 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
             var latencyScore = ComputeLatencyScore(candidate, metricsByProvider);
             var dataQualityScore = ComputeDataQualityScore(candidate, qualityScores);
             var coverageScore = ComputeCoverageScore(candidate.ScopeRank);
-            var policyGateScore = string.IsNullOrWhiteSpace(candidate.PolicyGate) ? 1d : 0d;
+            var policyGateScore = IsPolicyGated(candidate) ? 0d : 1d;
             var composite =
                 (healthScore * HealthWeight) +
                 (latencyScore * LatencyWeight) +
@@ -106,7 +106,7 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
 
     private static bool IsSelectable(ProviderRouteDecision decision)
     {
-        if (!string.IsNullOrWhiteSpace(decision.PolicyGate))
+        if (IsPolicyGated(decision))
             return false;
 
         if (decision.SafetyMode is ProviderSafetyMode.NoAutomaticFailover or ProviderSafetyMode.SameInstitutionOnly && !decision.IsHealthy)
@@ -114,6 +114,10 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
 
         return decision.SafetyMode != ProviderSafetyMode.ManualApprovalRequired;
     }
+
+    private static bool IsPolicyGated(ProviderRouteDecision decision)
+        => !string.IsNullOrWhiteSpace(decision.PolicyGate) ||
+           decision.SafetyMode == ProviderSafetyMode.ManualApprovalRequired;
 
     private async Task<Dictionary<string, double>> LoadQualityScoresAsync(ProviderRouteContext context, CancellationToken ct)
     {

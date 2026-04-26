@@ -1,6 +1,6 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 
 ## Summary
 
@@ -300,7 +300,7 @@ Suggested path:
 6. The service normalizes those payloads into Meridian-owned snapshot records keyed by fund account id.
 7. Reconciliation and workstation read services consume the normalized snapshots and compute divergence or freshness summaries.
 8. `FundAccountEndpoints` and `WorkstationEndpoints` expose sync status, imported state, and break summaries.
-9. WPF and web workstation views render sync freshness, divergence, and drill-ins without exposing adapter-specific shapes directly.
+9. WPF and retained workstation API/local consumers render sync freshness, divergence, and drill-ins without exposing adapter-specific shapes directly.
 
 ## Edge Cases and Risks
 

@@ -73,11 +73,8 @@ jobs:
         env:
           MDC_AUTH_MODE: optional
         run: |
-          dotnet run \
-            --project src/Meridian/Meridian.csproj \
-            --no-build \
-            -c Release \
-            -- --ui --http-port ${{ env.UI_PORT }} > /tmp/dashboard.log 2>&1 &
+          dotnet src/Meridian/bin/Release/net9.0/Meridian.dll \
+            --ui --http-port ${{ env.UI_PORT }} > /tmp/dashboard.log 2>&1 &
           echo "MERIDIAN_PID=$!" >> "$GITHUB_ENV"
 
       # Install Node.js and Playwright while the server warms up in the background.

@@ -445,10 +445,10 @@ jobs:
 
       - name: Markdown lint (changed files only)
         if: steps.changed_markdown.outputs.any_changed == 'true' && github.event_name != 'workflow_dispatch'
+        env:
+          CHANGED_MARKDOWN_FILES: ${{ steps.changed_markdown.outputs.all_changed_files }}
         run: |
-          mapfile -t changed_files << 'EOF'
-          ${{ steps.changed_markdown.outputs.all_changed_files }}
-          EOF
+          mapfile -t changed_files < <(printf '%b\n' "$CHANGED_MARKDOWN_FILES" | sed '/^[[:space:]]*$/d')
 
           if [ "${#changed_files[@]}" -eq 0 ]; then
             echo "No markdown files changed."
@@ -488,12 +488,12 @@ jobs:
 
       - name: Run documentation rules engine (modified markdown files)
         if: steps.changed_markdown.outputs.any_changed == 'true' && github.event_name != 'workflow_dispatch'
+        env:
+          CHANGED_MARKDOWN_FILES: ${{ steps.changed_markdown.outputs.all_changed_files }}
         run: |
           set -euo pipefail
           if [ -f "build/scripts/docs/rules-engine.py" ] && [ -f "build/rules/doc-rules.yaml" ]; then
-            mapfile -t changed_files << 'EOF'
-            ${{ steps.changed_markdown.outputs.all_changed_files }}
-            EOF
+            mapfile -t changed_files < <(printf '%b\n' "$CHANGED_MARKDOWN_FILES" | sed '/^[[:space:]]*$/d')
             : > /tmp/changed-markdown-files.txt
             for file in "${changed_files[@]}"; do
               [[ -n "$file" ]] && printf '%s\n' "$file" >> /tmp/changed-markdown-files.txt

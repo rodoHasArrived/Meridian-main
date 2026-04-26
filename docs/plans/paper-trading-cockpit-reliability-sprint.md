@@ -34,7 +34,7 @@ This sprint closes that gap with four explicit acceptance gates:
 
 ### In Scope
 
-- harden the existing web trading cockpit around paper-session create, restore, verify, close, and promotion review
+- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with WPF as the primary operator lane and retained web/API surfaces as supporting consumers
 - make replay verification an operator-facing readiness signal instead of a hidden service capability
 - tighten order, control, and risk audit correlation so decisions can be explained from the cockpit
 - make `Backtest -> Paper` traceability durable and make `Paper -> Live` readiness explicit without widening live-readiness claims
