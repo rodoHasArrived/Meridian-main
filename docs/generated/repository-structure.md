@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-26 07:27:25 UTC. Do not edit manually.
+> Auto-generated on 2026-04-26 08:39:43 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -305,6 +305,7 @@ Meridian-main
 │   │   ├── workflow-results-code-quality.prompt.yml
 │   │   ├── workflow-results-test-matrix.prompt.yml
 │   │   ├── wpf-debug-improve.prompt.yml
+│   │   ├── wpf-design-system-screen-impact.prompt.yml
 │   │   └── write-unit-tests.prompt.yml
 │   ├── workflows
 │   │   ├── benchmark.yml
@@ -6625,6 +6626,7 @@ Meridian-main
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
 │       │   ├── DataOperationsWorkspacePresentationBuilder.cs
+│       │   ├── DesktopLaunchArguments.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -7494,6 +7496,7 @@ Meridian-main
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj

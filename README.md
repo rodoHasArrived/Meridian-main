@@ -450,6 +450,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── workflow-results-code-quality.prompt.yml
 │   │   ├── workflow-results-test-matrix.prompt.yml
 │   │   ├── wpf-debug-improve.prompt.yml
+│   │   ├── wpf-design-system-screen-impact.prompt.yml
 │   │   └── write-unit-tests.prompt.yml
 │   ├── pull_request_template_desktop.md
 │   ├── spellcheck-config.yml
@@ -6839,6 +6840,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
 │       │   ├── DataOperationsWorkspacePresentationBuilder.cs
+│       │   ├── DesktopLaunchArguments.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -7704,6 +7706,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │       ├── TradingOperatorReadinessServiceTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -7877,6 +7880,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-629 directories, 7108 files
+629 directories, 7111 files
 ```
 <!-- readme-tree end -->
