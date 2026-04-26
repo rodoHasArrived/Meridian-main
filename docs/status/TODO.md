@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **77**
+Total items: **78**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -28,15 +28,16 @@ Total items: **77**
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-arm64/sosdocsunix.txt` | 974 | `NOTE` | ❌ | NOTE: |
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-x64/sosdocsunix.txt` | 2 | `NOTE` | ❌ | NOTE: THIS FILE CONTAINS SOS DOCUMENTATION. THE FORMAT OF THE FILE IS: |
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-x64/sosdocsunix.txt` | 974 | `NOTE` | ❌ | NOTE: |
-| `AGENTS.md` | 114 | `TODO` | ❌ | TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, |
-| `AGENTS.md` | 118 | `TODO` | ❌ | TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest` |
-| `AGENTS.md` | 122 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
-| `AGENTS.md` | 224 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
-| `AGENTS.md` | 228 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
-| `AGENTS.md` | 232 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
-| `AGENTS.md` | 238 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
-| `AGENTS.md` | 243 | `TODO` | ❌ | TODO: `.github/workflows/refresh-screenshots.yml` still starts the retained web screenshot lane |
-| `AGENTS.md` | 326 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
+| `AGENTS.md` | 118 | `TODO` | ❌ | TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, |
+| `AGENTS.md` | 122 | `TODO` | ❌ | TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest` |
+| `AGENTS.md` | 126 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
+| `AGENTS.md` | 130 | `TODO` | ❌ | TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but |
+| `AGENTS.md` | 232 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
+| `AGENTS.md` | 236 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
+| `AGENTS.md` | 240 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
+| `AGENTS.md` | 246 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
+| `AGENTS.md` | 251 | `TODO` | ❌ | TODO: `.github/workflows/refresh-screenshots.yml` still starts the retained web screenshot lane |
+| `AGENTS.md` | 346 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 379 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 388 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |

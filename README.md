@@ -5090,6 +5090,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
@@ -7870,11 +7871,12 @@ Use these documents together when planning or implementing new work:
 │   ├── scripts
 │   │   ├── setup-verification.sh
 │   │   ├── test_check_contract_compatibility_gate.py
-│   │   └── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   └── test_prepare_dk1_operator_signoff.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-629 directories, 7106 files
+629 directories, 7108 files
 ```
 <!-- readme-tree end -->

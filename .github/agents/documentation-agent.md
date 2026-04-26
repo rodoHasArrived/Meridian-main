@@ -4953,6 +4953,7 @@ Meridian-main
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
@@ -7735,7 +7736,8 @@ Meridian-main
 │   ├── scripts
 │   │   ├── setup-verification.sh
 │   │   ├── test_check_contract_compatibility_gate.py
-│   │   └── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   └── test_prepare_dk1_operator_signoff.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md
