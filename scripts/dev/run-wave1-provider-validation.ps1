@@ -1,7 +1,8 @@
 param(
     [string]$Configuration = "Release",
     [string]$DateStamp = (Get-Date).ToString("yyyy-MM-dd"),
-    [string]$OutputRoot = "artifacts/provider-validation/_automation"
+    [string]$OutputRoot = "artifacts/provider-validation/_automation",
+    [string]$OperatorSignoffPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -375,11 +376,19 @@ $md -join [Environment]::NewLine | Set-Content -Path $mdPath
 
 $packetScript = Join-Path $PSScriptRoot "generate-dk1-pilot-parity-packet.ps1"
 if (Test-Path -LiteralPath $packetScript) {
+    $packetArgs = @{
+        SummaryJsonPath = $jsonPath
+    }
+    if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath)) {
+        $packetArgs.OperatorSignoffPath = $OperatorSignoffPath
+    }
+
     if ($summary.result -ne "passed") {
-        & $packetScript -SummaryJsonPath $jsonPath -AllowFailedSummary
+        $packetArgs.AllowFailedSummary = $true
+        & $packetScript @packetArgs
     }
     else {
-        & $packetScript -SummaryJsonPath $jsonPath
+        & $packetScript @packetArgs
     }
 }
 

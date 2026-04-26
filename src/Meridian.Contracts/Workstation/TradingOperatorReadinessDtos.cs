@@ -82,6 +82,15 @@ public sealed record TradingPromotionReadinessDto(
     string? ApprovedBy,
     IReadOnlyList<string>? ApprovalChecklist = null);
 
+public sealed record TradingOperatorSignoffReadinessDto(
+    string Status,
+    bool RequiredBeforeDk1Exit,
+    IReadOnlyList<string> RequiredOwners,
+    IReadOnlyList<string> SignedOwners,
+    IReadOnlyList<string> MissingOwners,
+    DateTimeOffset? CompletedAt,
+    string? SourcePath);
+
 public sealed record TradingTrustGateReadinessDto(
     string GateId,
     string Status,
@@ -96,7 +105,8 @@ public sealed record TradingTrustGateReadinessDto(
     int ValidatedEvidenceDocumentCount,
     IReadOnlyList<string> RequiredOwners,
     IReadOnlyList<string> Blockers,
-    string Detail);
+    string Detail,
+    TradingOperatorSignoffReadinessDto? OperatorSignoff = null);
 
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,

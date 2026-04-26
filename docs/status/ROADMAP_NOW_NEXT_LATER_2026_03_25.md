@@ -53,12 +53,13 @@ Wave 1 is no longer an open broad provider push. The active gate is closed aroun
 
 ### 2. Wave 2 Paper-Trading Cockpit Hardening
 
-The execution, paper-session, promotion, risk, and brokerage seams are already in code. The current gap is operator dependability: restart safety, replay confidence, audit visibility, and promotion review clarity.
+The execution, paper-session, promotion, risk, and brokerage seams are already in code. The WPF Trading shell also has a desk briefing hero that routes context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states from shared readiness inputs. The current gap is still operator dependability: restart safety, replay confidence, audit visibility, and promotion review clarity.
 
 **Delivery scope:**
 
 - harden positions, orders, fills, sessions, replay, risk, and promotion flows already exposed through `/api/execution/*` and `/api/promotion/*`
 - keep `/api/workstation/trading/readiness` as the shared acceptance contract for paper-session state, replay consistency, execution controls, promotion checklist state, brokerage-sync posture, and operator work items
+- keep the Trading desk briefing hero aligned to the shared active-run, workflow-summary, and operator-readiness lane instead of treating it as a separate readiness source
 - keep `Backtest -> Paper` explicit, auditable, and reconstructable after restart
 - preserve operator rationale and blocking reasons for approvals and rejections
 - tie cockpit readiness to DK1 trust evidence instead of page count
@@ -99,7 +100,7 @@ Security Master is now a delivered baseline, not a future standalone wave. Wave 
 
 ### 5. WPF Workflow-First Validation
 
-The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, and shell/navigation smoke coverage.
+The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, the Trading desk briefing hero, and shell/navigation smoke coverage.
 
 This is a supporting track inside Waves 2-4, not a separate roadmap wave.
 

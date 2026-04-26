@@ -14,6 +14,7 @@ The repo already contains the main seams needed for an operator lane:
 - `src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs` and `src/Meridian.Strategies/Services/PromotionService.cs` expose evaluation, approval, and promotion history seams.
 - `src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs` projects the latest generated DK1 parity packet into the cockpit readiness lane.
 - `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` already surfaces sessions, replay, audit, and promotion controls in one cockpit.
+- `src/Meridian.Wpf/Views/TradingWorkspaceShellPage.xaml` now projects a Trading desk briefing hero from the same active-run, workflow-summary, and shared operator-readiness inputs.
 
 The gap is not basic visibility. The gap is dependable operator proof:
 
@@ -44,6 +45,7 @@ This sprint closes that gap with four explicit acceptance gates:
 - new broker adapters or wider live-broker certification
 - new research, portfolio, ledger, or governance feature families beyond what Wave 2 needs to prove the operator lane
 - WPF shell redesign beyond consuming already-hardened shared seams
+- WPF-only readiness semantics that diverge from `/api/workstation/trading/readiness` or the shared active-run/workflow services
 - Wave 3 continuity work except where it is required for paper-cockpit traceability
 
 ### Assumptions
@@ -83,7 +85,7 @@ Wave 2 should converge on one operator lane with four visible checkpoints:
 3. `Risk state explainable`
 4. `Promotion review trace complete`
 
-The cockpit should remain the orchestration surface, but it should read from shared services rather than duplicate logic:
+The cockpit should remain the orchestration surface, and WPF shell elements such as the Trading desk briefing hero should be treated as consumers of the same lane rather than separate acceptance surfaces. They should read from shared services rather than duplicate logic:
 
 - session continuity from `PaperSessionPersistenceService`
 - order and control evidence from `ExecutionAuditTrailService` and `ExecutionOperatorControlService`

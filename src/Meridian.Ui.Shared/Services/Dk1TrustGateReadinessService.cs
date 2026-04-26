@@ -78,7 +78,15 @@ public sealed class Dk1TrustGateReadinessService
             ValidatedEvidenceDocumentCount: 0,
             RequiredOwners: DefaultRequiredOwners,
             Blockers: ["No DK1 pilot parity packet is available to the workstation."],
-            Detail: detail);
+            Detail: detail,
+            OperatorSignoff: new TradingOperatorSignoffReadinessDto(
+                Status: "unknown",
+                RequiredBeforeDk1Exit: true,
+                RequiredOwners: DefaultRequiredOwners,
+                SignedOwners: [],
+                MissingOwners: DefaultRequiredOwners,
+                CompletedAt: null,
+                SourcePath: null));
 
     private async Task<TradingTrustGateReadinessDto> BuildCurrentAsync(CancellationToken ct)
     {
@@ -136,7 +144,26 @@ public sealed class Dk1TrustGateReadinessService
             "validated");
         var operatorSignoffStatus = GetString(operatorSignoff, "status") ?? "unknown";
         var operatorSignoffRequired = GetBoolean(operatorSignoff, "requiredBeforeDk1Exit") ?? true;
+        var signedOwners = ReadStringArray(operatorSignoff, "signedOwners");
+        var missingOwners = ReadStringArray(operatorSignoff, "missingOwners");
+        if (missingOwners.Count == 0 && operatorSignoffRequired && !IsOperatorSignoffComplete(operatorSignoffStatus))
+        {
+            missingOwners = requiredOwners
+                .Where(owner => !signedOwners.Contains(owner, StringComparer.OrdinalIgnoreCase))
+                .ToArray();
+        }
+
+        var operatorSignoffCompletedAt = TryParseDateTimeOffset(GetString(operatorSignoff, "completedAtUtc"));
+        var operatorSignoffSourcePath = GetString(operatorSignoff, "sourcePath");
         var readyForReview = string.Equals(status, "ready-for-operator-review", StringComparison.OrdinalIgnoreCase);
+        var operatorSignoffReadiness = new TradingOperatorSignoffReadinessDto(
+            Status: operatorSignoffStatus,
+            RequiredBeforeDk1Exit: operatorSignoffRequired,
+            RequiredOwners: requiredOwners,
+            SignedOwners: signedOwners,
+            MissingOwners: missingOwners,
+            CompletedAt: operatorSignoffCompletedAt,
+            SourcePath: operatorSignoffSourcePath);
 
         return new TradingTrustGateReadinessDto(
             GateId: "DK1",
@@ -152,7 +179,16 @@ public sealed class Dk1TrustGateReadinessService
             ValidatedEvidenceDocumentCount: validatedEvidenceDocumentCount,
             RequiredOwners: requiredOwners,
             Blockers: blockers,
-            Detail: BuildDetail(status, readyForReview, operatorSignoffRequired, operatorSignoffStatus, requiredOwners, blockers));
+            Detail: BuildDetail(
+                status,
+                readyForReview,
+                operatorSignoffRequired,
+                operatorSignoffStatus,
+                requiredOwners,
+                signedOwners,
+                missingOwners,
+                blockers),
+            OperatorSignoff: operatorSignoffReadiness);
     }
 
     private string? ResolveAutomationRoot()
@@ -224,6 +260,8 @@ public sealed class Dk1TrustGateReadinessService
         bool operatorSignoffRequired,
         string operatorSignoffStatus,
         IReadOnlyList<string> requiredOwners,
+        IReadOnlyList<string> signedOwners,
+        IReadOnlyList<string> missingOwners,
         IReadOnlyList<string> blockers)
     {
         if (blockers.Count > 0)
@@ -233,7 +271,24 @@ public sealed class Dk1TrustGateReadinessService
 
         if (readyForReview && operatorSignoffRequired && !IsOperatorSignoffComplete(operatorSignoffStatus))
         {
+            if (signedOwners.Count > 0 && missingOwners.Count > 0)
+            {
+                return $"DK1 packet is ready for operator review; sign-off is partial with {string.Join(", ", missingOwners)} still missing.";
+            }
+
+            if (missingOwners.Count > 0)
+            {
+                return $"DK1 packet is ready for operator review; {string.Join(", ", missingOwners)} sign-off remains {operatorSignoffStatus}.";
+            }
+
             return $"DK1 packet is ready for operator review; {string.Join(", ", requiredOwners)} sign-off remains {operatorSignoffStatus}.";
+        }
+
+        if (readyForReview && operatorSignoffRequired && IsOperatorSignoffComplete(operatorSignoffStatus))
+        {
+            return signedOwners.Count > 0
+                ? $"DK1 packet is ready for operator review; operator sign-off is complete for {string.Join(", ", signedOwners)}."
+                : "DK1 packet is ready for operator review; operator sign-off is complete.";
         }
 
         if (readyForReview)

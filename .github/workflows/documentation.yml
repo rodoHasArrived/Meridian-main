@@ -158,10 +158,11 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: fetch_issue
         uses: actions/github-script@v8
+        env:
+          ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
         with:
-          issue_number: ${{ github.event.inputs.issue_number }}
           script: |
-            const issue_number = Number(core.getInput('issue_number'));
+            const issue_number = Number(process.env.ISSUE_NUMBER);
             if (!issue_number) {
               core.setFailed('workflow_dispatch requires a numeric issue_number input for intake.');
               return;

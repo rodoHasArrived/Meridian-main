@@ -94,6 +94,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --catalog symbols
 dotnet run --project src/Meridian/Meridian.csproj -- --catalog search "AAPL trades 2025"
 dotnet run --project src/Meridian/Meridian.csproj -- --catalog timeline --symbol AAPL
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-01-01 --backfill-to 2025-12-31
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-provider polygon --backfill-symbols SPY
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backfill-symbols QQQ
 dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name market-data-archive
 dotnet run --project src/Meridian/Meridian.csproj -- --package --package-symbols AAPL,MSFT --package-from 2025-01-01
@@ -114,6 +115,10 @@ operator examples. Verify the intended ETL workflow before adding those as stand
 TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
 and `--calibrate-provider-degradation`, but their prerequisites are specialized. Verify current
 operator setup before adding short-form examples here.
+
+TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently
+maps `--package-format` to zip, tar.gz/tgz, or 7z. Verify the intended CSV export workflow before
+adding that as a standard package command.
 
 ## MCP Workflows
 
@@ -153,6 +158,8 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integ
 dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj --logger "console;verbosity=normal"
+dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj --logger "console;verbosity=normal"
 ```
 
 For concurrent automation, use an isolation key so builds write under `artifacts/bin/<key>/`
@@ -160,6 +167,7 @@ and `artifacts/obj/<key>/` instead of shared project output folders:
 
 ```bash
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key automation-run
+python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.Wpf.csproj --configuration Release --full-wpf-build --isolation-key desktop-smoke
 ```
 
 ## Desktop Workflows
@@ -171,6 +179,7 @@ pwsh ./scripts/dev/run-desktop.ps1 -NoBuild
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1

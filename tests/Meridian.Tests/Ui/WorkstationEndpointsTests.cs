@@ -585,6 +585,10 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.ReadySampleCount.Should().Be(4);
         readiness.TrustGate.ValidatedEvidenceDocumentCount.Should().Be(4);
         readiness.TrustGate.OperatorSignoffStatus.Should().Be("pending");
+        readiness.TrustGate.OperatorSignoff.Should().NotBeNull();
+        readiness.TrustGate.OperatorSignoff!.MissingOwners.Should().BeEquivalentTo(
+            ["Data Operations", "Provider Reliability", "Trading"]);
+        readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
         readiness.WorkItems.Should().ContainSingle(item =>
             item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
@@ -601,6 +605,66 @@ public sealed class WorkstationEndpointsTests
             .GetString()
             .Should()
             .Be(session.SessionId);
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WithSignedOperatorPacket_ShouldExposeOwnerEvidence()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-signed-packet",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(
+            automationRoot,
+            """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "signed",
+              "requiredBeforeDk1Exit": true,
+              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "missingOwners": [],
+              "completedAtUtc": "2026-04-26T16:02:00Z",
+              "sourcePath": "artifacts/provider-validation/_automation/unit-ready/dk1-operator-signoff.json",
+              "approvals": [
+                {
+                  "owner": "Data Operations",
+                  "signedBy": "data.ops",
+                  "signedAtUtc": "2026-04-26T15:58:00Z",
+                  "decision": "approved",
+                  "rationale": "Provider packet reviewed."
+                },
+                {
+                  "owner": "Provider Reliability",
+                  "signedBy": "provider.reliability",
+                  "signedAtUtc": "2026-04-26T16:00:00Z",
+                  "decision": "approved",
+                  "rationale": "Threshold and evidence checks accepted."
+                },
+                {
+                  "owner": "Trading",
+                  "signedBy": "trading.owner",
+                  "signedAtUtc": "2026-04-26T16:02:00Z",
+                  "decision": "approved",
+                  "rationale": "Cockpit readiness gate accepted."
+                }
+              ]
+            }
+            """);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.OperatorSignoffStatus.Should().Be("signed");
+        readiness.OperatorSignoff.Should().NotBeNull();
+        readiness.OperatorSignoff!.SignedOwners.Should().BeEquivalentTo(
+            ["Data Operations", "Provider Reliability", "Trading"]);
+        readiness.OperatorSignoff.MissingOwners.Should().BeEmpty();
+        readiness.OperatorSignoff.CompletedAt.Should().Be(new DateTimeOffset(2026, 4, 26, 16, 2, 0, TimeSpan.Zero));
+        readiness.Detail.Should().Contain("operator sign-off is complete");
     }
 
     [Fact]
@@ -1734,10 +1798,17 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<WorkstationWorkflowSummaryService>();
     }
 
-    private static void WriteReadyDk1Packet(string automationRoot)
+    private static void WriteReadyDk1Packet(string automationRoot, string? operatorSignoffJson = null)
     {
         var packetDirectory = Path.Combine(automationRoot, "unit-ready");
         Directory.CreateDirectory(packetDirectory);
+        operatorSignoffJson ??= """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "pending",
+              "requiredBeforeDk1Exit": true
+            }
+            """;
         File.WriteAllText(
             Path.Combine(packetDirectory, "dk1-pilot-parity-packet.json"),
             """
@@ -1760,14 +1831,10 @@ public sealed class WorkstationEndpointsTests
                 { "name": "DK1 baseline trust thresholds", "status": "validated" },
                 { "name": "Provider validation matrix", "status": "validated" }
               ],
-              "operatorSignoff": {
-                "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
-                "status": "pending",
-                "requiredBeforeDk1Exit": true
-              },
+              "operatorSignoff": __OPERATOR_SIGNOFF__,
               "blockers": []
             }
-            """);
+            """.Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(

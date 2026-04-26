@@ -35,6 +35,12 @@ The script writes:
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.md`
 
+When operator owners approve DK1 exit, pass the signed review packet through
+`-OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
+The regenerated DK1 packet records `operatorSignoff.status`, `signedOwners`, `missingOwners`,
+approval timestamps, and owner rationales so the cockpit readiness lane can distinguish pending,
+partial, and signed operator review.
+
 Each generated summary now restates the active provider rows, the DK1 pilot replay/sample set,
 the cross-cutting checkpoint and Parquet closures, and the deferred-provider inventory so the
 automation output matches the authoritative Wave 1 posture described in this matrix.

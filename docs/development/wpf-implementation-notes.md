@@ -98,6 +98,7 @@ Each workspace persists:
 - **8 action commands** — Start/Stop collector, Run backfill, Refresh, Add symbol, Toggle theme, Save, Search
 - **Fuzzy search** — exact → prefix → contains → character-sequence fuzzy, top-15 results
 - **Recency tracking** — LRU 10, shown when palette opens empty
+- **In-input result traversal** — when the shell palette is open, `Up` and `Down` move the selected result without leaving the search box; `Enter` opens the selection and `Esc` closes the overlay
 - **Workspace labels** in descriptions: `Research workspace — Dashboard`, `Trading workspace — LiveData`, etc.
 
 ---

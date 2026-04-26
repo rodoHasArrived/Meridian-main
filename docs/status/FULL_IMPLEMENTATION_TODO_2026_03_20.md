@@ -62,7 +62,7 @@ Closed platform work:
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- current working-tree WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, and the workspace shell context strip; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- current working-tree WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, the workspace shell context strip, and Trading desk briefing hero state selection; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
 - DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus generated parity-packet artifacts; the latest packet is `ready-for-operator-review`, and operator sign-off must stay synchronized across the validation script, provider matrix, runbook, and readiness dashboard
 - coordination services and lease/ownership primitives for future multi-instance work
@@ -99,6 +99,7 @@ Open work:
 
 - tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
 - expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in the dashboard
+- keep the WPF Trading desk briefing hero aligned with shared active-run, workflow-summary, replay/readiness, controls, trust-gate, and brokerage-sync inputs as supporting Wave 2 evidence
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 

@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Ui.Services.Services;
@@ -41,6 +42,31 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_CommandPaletteArrowKeys_ShouldMoveSelectionWithinSearchResults()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.ShowCommandPalette();
+            facade.CommandPaletteResults.Items.Count.Should().BeGreaterThan(2);
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("ResearchShell");
+            facade.CommandPaletteTextBox.Text.Should().BeEmpty();
+            facade.TryHandleCommandPaletteDirectionalKey(Key.Down).Should().BeTrue();
+
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("Backtest");
+            facade.CommandPaletteResults.SelectedItem.Should().BeSameAs(facade.ViewModel.SelectedCommandPalettePage);
+            facade.CommandPaletteTextBox.Text.Should().BeEmpty();
+            facade.TryHandleCommandPaletteDirectionalKey(Key.Up).Should().BeTrue();
+
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("ResearchShell");
+            facade.CommandPaletteResults.SelectedItem.Should().BeSameAs(facade.ViewModel.SelectedCommandPalettePage);
+            facade.CommandPaletteTextBox.Text.Should().BeEmpty();
+            facade.CommandPaletteSummaryText.Text.Should().Contain("pages across all workspaces");
+        });
+    }
+
+    [Fact]
     public void MainPage_CommandPaletteEmptyState_ShouldExposeHelpfulRecoveryAction()
     {
         WpfTestThread.Run(() =>
@@ -60,6 +86,25 @@ public sealed class MainPageUiWorkflowTests
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.CommandPaletteEmptyState.Visibility.Should().Be(Visibility.Collapsed);
             facade.CommandPaletteResults.Items.Count.Should().BeGreaterThan(0);
+        });
+    }
+
+    [Fact]
+    public void MainPage_CommandPaletteArrowKeys_ShouldNoOpWhenQueryHasNoMatches()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.ShowCommandPalette();
+            facade.SetText(facade.CommandPaletteTextBox, "zzzz-unmatched-query");
+
+            facade.CommandPaletteResults.Items.Count.Should().Be(0);
+            facade.ViewModel.SelectedCommandPalettePage.Should().BeNull();
+
+            facade.TryHandleCommandPaletteDirectionalKey(Key.Down).Should().BeFalse();
+            facade.CommandPaletteEmptyState.Visibility.Should().Be(Visibility.Visible);
+            facade.ViewModel.SelectedCommandPalettePage.Should().BeNull();
         });
     }
 

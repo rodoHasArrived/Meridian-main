@@ -129,7 +129,6 @@ jobs:
       - name: Run tests
         id: run-tests
         if: inputs.run-tests
-        id: test
         shell: bash
         env:
           MSYS_NO_PATHCONV: 1
@@ -200,7 +199,7 @@ jobs:
             echo "|------|--------|"
             echo "| Build | $(outcome_label '${{ steps.build.outcome }}') |"
             if [[ "${{ inputs.run-tests }}" == "true" ]]; then
-              echo "| Tests | $(outcome_label '${{ steps.test.outcome }}') |"
+              echo "| Tests | $(outcome_label '${{ steps.run-tests.outcome }}') |"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

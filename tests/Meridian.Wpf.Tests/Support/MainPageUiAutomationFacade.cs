@@ -5,6 +5,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Ui.Services.Services;
@@ -181,6 +182,16 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         ViewModel.NavigateToPageCommand.Execute(pageTag);
         ViewModel.HideCommandPaletteCommand.Execute(null);
         UpdateLayout();
+    }
+
+    public bool TryHandleCommandPaletteDirectionalKey(Key key)
+    {
+        var method = typeof(MainPage).GetMethod("TryHandleCommandPaletteDirectionalKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        method.Should().NotBeNull();
+
+        var handled = method!.Invoke(Page, [key]).Should().BeOfType<bool>().Subject;
+        UpdateLayout();
+        return handled;
     }
 
     public void OpenWorkspaceHome(string pageTag)

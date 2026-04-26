@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
 **Last Updated:** 2026-04-26
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence, cockpit readiness projection, and current WPF shell baseline
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence, cockpit readiness projection, current WPF shell baseline, and Trading desk briefing hero
 
 ---
 
@@ -54,7 +54,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 - portfolio, fills, attribution, ledger, cash-flow, and reconciliation visibility from the same run-centered model
 - the delivered Security Master baseline as the authoritative instrument-definition layer
 - governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
-- web and WPF surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline is present, while workflow-level acceptance remains tied to Waves 2-4
+- web and WPF surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline and Trading desk briefing hero are present, while workflow-level acceptance remains tied to Waves 2-4
 
 ---
 

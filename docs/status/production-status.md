@@ -29,7 +29,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
-The current working tree reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, shell smoke tests, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, and workspace shell context-strip behavior. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
+The current working tree reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, shell smoke tests, the Trading desk briefing hero, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, workspace shell context-strip behavior, and Trading hero state selection. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
@@ -44,7 +44,7 @@ The current working tree reinforces that direction rather than changing it. The 
 | Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |
 | Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
-| Web and WPF workstation shells | Partial | Both surfaces expose meaningful workspace flows; workflow hardening and deeper workflow-first consolidation remain |
+| Web and WPF workstation shells | Partial | Both surfaces expose meaningful workspace flows; the WPF Trading shell now projects desk briefing handoffs from shared readiness inputs, while workflow hardening and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
 | Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by committed artifacts, and deferred providers stay outside the active closure target |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
@@ -79,6 +79,7 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 
 - the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
 - `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, DK1 trust-gate packet/sign-off posture, promotion approval checklist state, brokerage sync posture, and operator work items
+- the WPF Trading desk briefing hero consumes active-run, workflow-summary, replay/readiness, controls, DK1 trust-gate, and brokerage-sync signals to route operators toward context selection, audit trail, portfolio, blotter, risk rail, or alerts, but this is shell evidence rather than a completed Wave 2 gate
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
 

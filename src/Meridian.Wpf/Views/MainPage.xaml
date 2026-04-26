@@ -295,6 +295,7 @@
                              BorderThickness="1"
                              AutomationProperties.AutomationId="CommandPaletteInput"
                              AutomationProperties.Name="Command Palette Input"
+                             PreviewKeyDown="CommandPaletteTextBox_PreviewKeyDown"
                              Text="{Binding CommandPaletteQuery, UpdateSourceTrigger=PropertyChanged}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Escape" Command="{Binding HideCommandPaletteCommand}" />
@@ -384,7 +385,7 @@
                                        AutomationProperties.AutomationId="CommandPaletteEmptyDescriptionText" />
                         </StackPanel>
                     </Border>
-                    <TextBlock Text="Ctrl+K to open - Esc to close - Enter to open selection"
+                    <TextBlock Text="Ctrl+K to open - Up/Down to move - Enter to open selection - Esc to close"
                                FontSize="11"
                                Opacity="0.7"
                                Foreground="{StaticResource NavSectionLabelBrush}"

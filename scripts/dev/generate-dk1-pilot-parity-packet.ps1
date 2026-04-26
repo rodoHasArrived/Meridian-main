@@ -2,6 +2,7 @@ param(
     [string]$DateStamp = (Get-Date).ToString("yyyy-MM-dd"),
     [string]$OutputRoot = "artifacts/provider-validation/_automation",
     [string]$SummaryJsonPath = "",
+    [string]$OperatorSignoffPath = "",
     [switch]$AllowFailedSummary
 )
 
@@ -128,6 +129,8 @@ $requiredDocs = @(
     }
 )
 
+$requiredOperatorOwners = @("Data Operations", "Provider Reliability", "Trading")
+
 $script:SummarySteps = if ($summary.PSObject.Properties.Name -contains "steps") { @($summary.steps) } else { @() }
 
 function ConvertTo-RelativePath {
@@ -163,6 +166,148 @@ function Get-ObjectPropertyValue {
     }
 
     return $Object.PSObject.Properties[$Name].Value
+}
+
+function Test-ApprovedDecision {
+    param([string]$Decision)
+
+    if ([string]::IsNullOrWhiteSpace($Decision)) {
+        return $false
+    }
+
+    return @("approved", "signed", "complete", "completed") -contains $Decision.Trim().ToLowerInvariant()
+}
+
+function Get-OperatorSignoffPacket {
+    param(
+        [string]$Path,
+        [Parameter(Mandatory)][string[]]$RequiredOwners
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return [ordered]@{
+            requiredOwners = $RequiredOwners
+            status = "pending"
+            requiredBeforeDk1Exit = $true
+            signedOwners = @()
+            missingOwners = $RequiredOwners
+            completedAtUtc = $null
+            sourcePath = $null
+            approvals = @()
+        }
+    }
+
+    $resolvedPath = [System.IO.Path]::GetFullPath($Path)
+    if (-not (Test-Path -LiteralPath $resolvedPath)) {
+        throw "Operator sign-off file was not found: $resolvedPath"
+    }
+
+    $payload = Get-Content -Raw -LiteralPath $resolvedPath | ConvertFrom-Json
+    $approvalItems = @()
+    if ($null -ne $payload -and $payload.PSObject.Properties.Name -contains "approvals") {
+        $approvalItems = @($payload.approvals)
+    }
+    elseif ($null -ne $payload -and $payload.PSObject.Properties.Name -contains "signoffs") {
+        $approvalItems = @($payload.signoffs)
+    }
+    elseif ($null -ne $payload -and $payload.PSObject.Properties.Name -contains "owners") {
+        $approvalItems = @($payload.owners)
+    }
+
+    $approvalRows = New-Object System.Collections.Generic.List[object]
+    $validSignedOwners = New-Object System.Collections.Generic.List[string]
+    $validSignedAtValues = New-Object System.Collections.Generic.List[datetimeoffset]
+
+    foreach ($approval in $approvalItems) {
+        $owner = [string](Get-ObjectPropertyValue -Object $approval -Name "owner")
+        $signedBy = [string](Get-ObjectPropertyValue -Object $approval -Name "signedBy")
+        $signedAtRaw = [string](Get-ObjectPropertyValue -Object $approval -Name "signedAtUtc")
+        if ([string]::IsNullOrWhiteSpace($signedAtRaw)) {
+            $signedAtRaw = [string](Get-ObjectPropertyValue -Object $approval -Name "signedAt")
+        }
+
+        $decision = [string](Get-ObjectPropertyValue -Object $approval -Name "decision")
+        if ([string]::IsNullOrWhiteSpace($decision)) {
+            $decision = [string](Get-ObjectPropertyValue -Object $approval -Name "status")
+        }
+
+        $rationale = [string](Get-ObjectPropertyValue -Object $approval -Name "rationale")
+        if ([string]::IsNullOrWhiteSpace($rationale)) {
+            $rationale = [string](Get-ObjectPropertyValue -Object $approval -Name "reason")
+        }
+
+        $missingRequirements = New-Object System.Collections.Generic.List[string]
+        if ([string]::IsNullOrWhiteSpace($owner)) {
+            $missingRequirements.Add("owner")
+        }
+        if ([string]::IsNullOrWhiteSpace($signedBy)) {
+            $missingRequirements.Add("signedBy")
+        }
+        if (-not (Test-ApprovedDecision -Decision $decision)) {
+            $missingRequirements.Add("approvedDecision")
+        }
+        if ([string]::IsNullOrWhiteSpace($rationale)) {
+            $missingRequirements.Add("rationale")
+        }
+
+        $signedAtValue = [DateTimeOffset]::MinValue
+        $hasSignedAt = [DateTimeOffset]::TryParse($signedAtRaw, [ref]$signedAtValue)
+        if (-not $hasSignedAt) {
+            $missingRequirements.Add("signedAtUtc")
+        }
+
+        $status = if ($missingRequirements.Count -eq 0) { "valid" } else { "invalid" }
+        if ($status -eq "valid") {
+            foreach ($requiredOwner in $RequiredOwners) {
+                if ([string]::Equals($requiredOwner, $owner, [System.StringComparison]::OrdinalIgnoreCase) -and
+                    -not $validSignedOwners.Contains($requiredOwner)) {
+                    $validSignedOwners.Add($requiredOwner)
+                    $validSignedAtValues.Add($signedAtValue)
+                }
+            }
+        }
+
+        $approvalRows.Add([ordered]@{
+            owner = $owner
+            signedBy = $signedBy
+            signedAtUtc = if ($hasSignedAt) { $signedAtValue.ToUniversalTime().ToString("O") } else { $null }
+            decision = $decision
+            rationale = $rationale
+            status = $status
+            missingRequirements = $missingRequirements.ToArray()
+        })
+    }
+
+    $missingOwners = @(
+        $RequiredOwners |
+            Where-Object { $validSignedOwners -notcontains $_ }
+    )
+    $completedAtUtc = if ($validSignedAtValues.Count -gt 0) {
+        @($validSignedAtValues | Sort-Object -Descending | Select-Object -First 1)[0].ToUniversalTime().ToString("O")
+    }
+    else {
+        $null
+    }
+    $status = if ($missingOwners.Count -eq 0 -and $RequiredOwners.Count -gt 0) {
+        "signed"
+    }
+    elseif ($validSignedOwners.Count -gt 0) {
+        "partial"
+    }
+    else {
+        "pending"
+    }
+
+    return [ordered]@{
+        requiredOwners = $RequiredOwners
+        status = $status
+        requiredBeforeDk1Exit = $true
+        signedOwners = $validSignedOwners.ToArray()
+        missingOwners = $missingOwners
+        completedAtUtc = $completedAtUtc
+        sourcePath = ConvertTo-RelativePath -Path $resolvedPath
+        approvals = $approvalRows.ToArray()
+    }
 }
 
 function Get-SampleMissingRequirements {
@@ -365,6 +510,7 @@ foreach ($doc in $incompleteDocs) {
 }
 
 $packetStatus = if ($blockers.Count -eq 0) { "ready-for-operator-review" } else { "blocked" }
+$operatorSignoff = Get-OperatorSignoffPacket -Path $OperatorSignoffPath -RequiredOwners $requiredOperatorOwners
 
 $packet = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
@@ -410,11 +556,7 @@ $packet = [ordered]@{
         missingRequirements = $thresholdContractMissingRequirements
     }
     evidenceDocuments = @($docReviews)
-    operatorSignoff = [ordered]@{
-        requiredOwners = @("Data Operations", "Provider Reliability", "Trading")
-        status = "pending"
-        requiredBeforeDk1Exit = $true
-    }
+    operatorSignoff = $operatorSignoff
     blockers = @($blockers)
 }
 
@@ -478,7 +620,41 @@ $md += @(
     "## Operator Sign-off",
     "",
     "- Required owners: $($packet.operatorSignoff.requiredOwners -join ', ')",
-    "- Status: $($packet.operatorSignoff.status)",
+    "- Status: $($packet.operatorSignoff.status)"
+)
+
+$operatorSignoffSource = [string]$packet.operatorSignoff.sourcePath
+if (-not [string]::IsNullOrWhiteSpace($operatorSignoffSource)) {
+    $md += "- Source: ``$operatorSignoffSource``"
+}
+
+$operatorSignoffCompletedAt = [string]$packet.operatorSignoff.completedAtUtc
+if (-not [string]::IsNullOrWhiteSpace($operatorSignoffCompletedAt)) {
+    $md += "- Completed at: $operatorSignoffCompletedAt"
+}
+
+$signedOwners = @($packet.operatorSignoff.signedOwners)
+$missingOwners = @($packet.operatorSignoff.missingOwners)
+$md += "- Signed owners: $(if ($signedOwners.Count -eq 0) { 'none' } else { $signedOwners -join ', ' })"
+$md += "- Missing owners: $(if ($missingOwners.Count -eq 0) { 'none' } else { $missingOwners -join ', ' })"
+
+$approvals = @($packet.operatorSignoff.approvals)
+if ($approvals.Count -gt 0) {
+    $md += @(
+        "",
+        "| Owner | Signed by | Decision | Signed at (UTC) | Status | Missing requirements |",
+        "|---|---|---|---|---|---|"
+    )
+
+    foreach ($approval in $approvals) {
+        $missingRequirements = @($approval.missingRequirements)
+        $missingText = if ($missingRequirements.Count -eq 0) { "none" } else { $missingRequirements -join "<br>" }
+        $signedAtText = if ([string]::IsNullOrWhiteSpace([string]$approval.signedAtUtc)) { "missing" } else { [string]$approval.signedAtUtc }
+        $md += "| $($approval.owner) | $($approval.signedBy) | $($approval.decision) | $signedAtText | $($approval.status) | $missingText |"
+    }
+}
+
+$md += @(
     "",
     "## Blockers",
     ""

@@ -1,6 +1,6 @@
 # DK1 Pilot Parity Runbook (Alpaca, Robinhood, Yahoo)
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Owners:** Data Operations + Provider Reliability  
 **Scope:** Evidence-backed parity execution for DK1 pilot provider set (Alpaca, Robinhood, Yahoo)
 
@@ -67,8 +67,49 @@ when all test steps pass.
    - Confirm `dk1-pilot-parity-packet.json` reports `ready-for-operator-review`; if it reports `blocked`, clear the listed blockers before sign-off.
    - Confirm pilot-sample rows are `ready`, not merely present. The packet generator now checks each sample's provider, automation step, sample universe/window, required evidence anchors, and acceptance check.
    - Confirm evidence-document rows are `validated`, not merely present. The packet generator now checks required DK1 sample IDs, explainability payload fields/reason codes, baseline threshold metrics, and FP/FN review markers inside the linked docs.
-5. **Publish parity packet**
+5. **Attach operator sign-off when approved**
+   - Create an operator sign-off JSON file after Data Operations, Provider Reliability, and Trading have reviewed the packet.
+   - Regenerate the packet with `./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
+   - Alternatively pass the same sign-off file through the full validation wrapper: `./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
+   - Confirm `operatorSignoff.status` is `signed`, `signedOwners` contains all three required owners, and `missingOwners` is empty before claiming DK1 exit.
+6. **Publish parity packet**
    - Add links to output artifacts in the weekly DK1 review note and in the dashboard row.
+
+### Operator sign-off file shape
+
+Use this JSON shape for `-OperatorSignoffPath`:
+
+```json
+{
+  "approvals": [
+    {
+      "owner": "Data Operations",
+      "signedBy": "data.ops.owner",
+      "signedAtUtc": "2026-04-26T15:58:00Z",
+      "decision": "approved",
+      "rationale": "Provider packet and pilot samples reviewed."
+    },
+    {
+      "owner": "Provider Reliability",
+      "signedBy": "provider.reliability.owner",
+      "signedAtUtc": "2026-04-26T16:00:00Z",
+      "decision": "approved",
+      "rationale": "Threshold and evidence checks accepted."
+    },
+    {
+      "owner": "Trading",
+      "signedBy": "trading.owner",
+      "signedAtUtc": "2026-04-26T16:02:00Z",
+      "decision": "approved",
+      "rationale": "Cockpit readiness gate accepted."
+    }
+  ]
+}
+```
+
+Each approval must include `owner`, `signedBy`, `signedAtUtc`, an approved/signed `decision`, and
+`rationale`. The packet generator records partial sign-off as `operatorSignoff.status=partial` and
+lists the remaining owners in `operatorSignoff.missingOwners`.
 
 ---
 
@@ -84,6 +125,7 @@ when all test steps pass.
 - Generated DK1 packet sample rows are `ready` with no missing sample-contract requirements.
 - Generated DK1 packet evidence-document rows are `validated` with no missing content requirements.
 - No unresolved parity drift between dashboard claim and matrix evidence rows.
+- For DK1 exit, `operatorSignoff.status` is `signed` and `operatorSignoff.missingOwners` is empty.
 
 ### Fail
 
@@ -94,6 +136,7 @@ when all test steps pass.
 - Required pilot sample exists but is reported as `incomplete` by the packet generator.
 - Missing or changed `pilotReplaySampleSet` entries without dashboard and matrix review.
 - Matrix row evidence stale or contradictory to dashboard status.
+- DK1 exit is claimed while `operatorSignoff.status` is `pending` or `partial`.
 
 ---
 
@@ -106,5 +149,7 @@ when all test steps pass.
 - [ ] `dk1-pilot-parity-packet.md` linked.
 - [ ] `pilotReplaySampleSet` reviewed against the four DK1 samples.
 - [ ] Packet blockers reviewed and cleared, or explicitly carried into the DK1 weekly review.
+- [ ] Operator sign-off JSON attached when DK1 exit is requested.
+- [ ] `operatorSignoff.status=signed` and `operatorSignoff.missingOwners=[]` verified before DK1 exit.
 - [ ] Robinhood manual runtime packet linked (if applicable).
 - [ ] Dashboard DK1 parity status updated with evidence references.
