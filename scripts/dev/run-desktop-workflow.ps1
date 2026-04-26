@@ -391,18 +391,22 @@ try {
     }
 
     if (-not $SkipBuild) {
-        Write-Info "Restoring $resolvedProjectPath ..."
-        & dotnet restore $resolvedProjectPath --verbosity minimal @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $resolvedFramework -EnableFullWpfBuild
+        $desktopBuildArgs = @(
+            Get-MeridianBuildArguments `
+                -IsolationKey $buildIsolationKey `
+                -TargetFramework $resolvedFramework `
+                -AdditionalProperties @("Configuration=$resolvedConfiguration") `
+                -EnableFullWpfBuild
         )
+
+        Write-Info "Restoring $resolvedProjectPath ..."
+        & dotnet restore $resolvedProjectPath --verbosity minimal @desktopBuildArgs
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet restore failed for '$resolvedProjectPath'."
         }
 
         Write-Info "Building $resolvedProjectPath ($resolvedConfiguration, $resolvedFramework) ..."
-        & dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $resolvedFramework -EnableFullWpfBuild
-        )
+        & dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet build failed for '$resolvedProjectPath'."
         }

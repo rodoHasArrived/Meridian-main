@@ -319,7 +319,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     public IRelayCommand QuickAddSymbolCommand { get; }
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
-    public string PageTitle => "Portfolio Operations";
+    public string PageTitle => "Research Operations";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -1025,9 +1025,9 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         // Refresh Status command
         var refreshCommand = RefreshStatusCommand;
         commands.Add(new CommandEntry(
-            "Refresh Portfolio Operations",
+            "Refresh Research Operations",
             "Refresh holdings, data-quality, and service status",
-            "Portfolio Operations",
+            "Research Operations",
             refreshCommand,
             "F5"));
 
@@ -1038,7 +1038,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
             commands.Add(new CommandEntry(
                 "Start Data Collection",
                 "Start provider collection for holdings and quality checks",
-                "Portfolio Operations",
+                "Research Operations",
                 startCommand));
         }
         else
@@ -1047,7 +1047,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
             commands.Add(new CommandEntry(
                 "Stop Data Collection",
                 "Stop provider collection",
-                "Portfolio Operations",
+                "Research Operations",
                 stopCommand));
         }
 
@@ -1057,7 +1057,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Provider Health",
             "Open provider coverage and health checks",
-            "Portfolio Operations",
+            "Research Operations",
             healthCommand));
 
         // View Data Quality command
@@ -1066,7 +1066,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Data Quality",
             "Open data-quality worklist",
-            "Portfolio Operations",
+            "Research Operations",
             qualityCommand));
 
         // View Activity Log command
@@ -1074,7 +1074,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Activity Log",
             "View recent activity and events",
-            "Portfolio Operations",
+            "Research Operations",
             logCommand));
 
         // Run Backfill command
@@ -1082,7 +1082,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "Run Backfill",
             "Queue backfill for missing holdings data",
-            "Portfolio Operations",
+            "Research Operations",
             backfillCommand));
 
         return commands.AsReadOnly();

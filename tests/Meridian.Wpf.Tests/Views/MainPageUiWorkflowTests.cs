@@ -35,7 +35,9 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ViewModel.CurrentPageTag.Should().Be("RunMat");
             facade.ShellAutomationStateText.Text.Should().Be("RunMat");
+            AutomationProperties.GetName(facade.ShellAutomationStateText).Should().Be("RunMat");
             facade.PageTitleText.Text.Should().Be("Run scripts");
+            AutomationProperties.GetName(facade.PageTitleText).Should().Be("Run scripts");
             facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);
             facade.PageSubtitleText.Visibility.Should().Be(Visibility.Visible);
             facade.PageSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
@@ -178,7 +180,7 @@ public sealed class MainPageUiWorkflowTests
             facade.SetFixtureMode(true);
 
             FixtureModeDetector.Instance.IsFixtureMode.Should().BeTrue();
-            FixtureModeDetector.Instance.ModeLabel.Should().Contain("FIXTURE MODE");
+            FixtureModeDetector.Instance.ModeLabel.Should().Contain("Demo data mode");
             AutomationProperties.GetAutomationId(facade.FixtureModeDismissButton).Should().Be("FixtureModeDismissButton");
 
             facade.Click(facade.FixtureModeDismissButton);
@@ -234,6 +236,44 @@ public sealed class MainPageUiWorkflowTests
                 facade.PageTitleText.Visibility.Should().Be(Visibility.Visible);
                 facade.PageSubtitleText.Visibility.Should().Be(Visibility.Visible);
                 facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Standard");
+            }
+            finally
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+                if (File.Exists(preferencesPath))
+                {
+                    File.Delete(preferencesPath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void MainPage_CompactDensity_ShouldCollapseRepeatedContextOnWorkflowPages()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var preferencesPath = Path.Combine(
+                Path.GetTempPath(),
+                "mainpage-compact-context-test-" + Guid.NewGuid().ToString("N"),
+                "desktop-shell-preferences.json");
+
+            try
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+                SettingsConfigurationService.Instance.SetShellDensityMode(ShellDensityMode.Standard);
+
+                using var facade = new MainPageUiAutomationFacade();
+
+                await WaitForConditionAsync(() => facade.ViewModel.ShellContextVisibility == Visibility.Visible).ConfigureAwait(true);
+
+                facade.OpenCommandPalettePage("Backtest");
+                facade.Click(facade.ShellDensityToggleButton);
+
+                facade.ViewModel.IsWorkflowPageActive.Should().BeTrue();
+                facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
+                facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
             }
             finally
             {
@@ -341,7 +381,7 @@ public sealed class MainPageUiWorkflowTests
                 !string.IsNullOrWhiteSpace(facade.WorkspaceContextTitleText.Text)).ConfigureAwait(true);
 
             facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Visible);
-            facade.WorkspaceContextTitleText.Text.Should().Be("Research Home");
+            facade.WorkspaceContextTitleText.Text.Should().Be("Research Workspace");
             facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
             facade.WorkspaceContextAttentionBanner.Visibility.Should().Be(Visibility.Visible);
             facade.WorkspaceContextAttentionTitleText.Text.Should().NotBeNullOrWhiteSpace();

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using AvalonDock;
 using AvalonDock.Layout;
 using AvalonDock.Layout.Serialization;
@@ -247,7 +248,8 @@ public partial class MeridianDockingManager : UserControl
         var frame = new Frame
         {
             NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden,
-            Focusable = false
+            Focusable = false,
+            Background = Brushes.Transparent
         };
 
         frame.Navigate(page);

@@ -569,14 +569,14 @@ public sealed class WorkspaceService
                 Id = "research",
                 Name = "Research",
                 Description = "Backtests, experiments, charts, strategy runs, and result analysis.",
-                PreferredPageTag = "Dashboard",
+                PreferredPageTag = "ResearchShell",
                 Category = WorkspaceCategory.Research,
                 IsBuiltIn = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 Pages = new List<WorkspacePage>
                 {
-                    new WorkspacePage { PageTag = "Dashboard", Title = "Portfolio Operations", IsDefault = true },
+                    new WorkspacePage { PageTag = "ResearchShell", Title = "Research Workspace", IsDefault = true },
                     new WorkspacePage { PageTag = "Backtest", Title = "Backtest" },
                     new WorkspacePage { PageTag = "BatchBacktest", Title = "Batch Backtest" },
                     new WorkspacePage { PageTag = "QuantScript", Title = "QuantScript" },
@@ -589,7 +589,7 @@ public sealed class WorkspaceService
                     new WorkspacePage { PageTag = "AdvancedAnalytics", Title = "Advanced Analytics" },
                     new WorkspacePage { PageTag = "RunMat", Title = "RunMat Lab" },
                     new WorkspacePage { PageTag = "Watchlist", Title = "Watchlist" },
-                    new WorkspacePage { PageTag = "ResearchShell", Title = "Research Workspace" }
+                    new WorkspacePage { PageTag = "Dashboard", Title = "Research Operations" }
                 }
             },
             new WorkspaceTemplate

@@ -265,7 +265,7 @@
                    Text="{Binding CurrentPageTag}"
                    Visibility="Collapsed"
                    AutomationProperties.AutomationId="ShellAutomationState"
-                   AutomationProperties.Name="Shell Automation State" />
+                   AutomationProperties.Name="{Binding CurrentPageTag}" />
 
         <Grid x:Name="CommandPaletteOverlay"
               Visibility="{Binding CommandPaletteVisibility}"
@@ -569,7 +569,7 @@
                                                     <TextBlock Text="Review / Alerts"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Admin / Support"
+                                                    <TextBlock Text="Support"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
                                                 </StackPanel>
@@ -623,7 +623,7 @@
                                                     <TextBlock Text="Review / Alerts"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Admin / Support"
+                                                    <TextBlock Text="Support"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
                                                 </StackPanel>
@@ -677,7 +677,7 @@
                                                     <TextBlock Text="Review / Alerts"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Admin / Support"
+                                                    <TextBlock Text="Support"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
                                                 </StackPanel>
@@ -731,7 +731,7 @@
                                                     <TextBlock Text="Review / Alerts"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Admin / Support"
+                                                    <TextBlock Text="Support"
                                                                Margin="0,2,0,0"
                                                                Style="{StaticResource SidebarShellSectionLabelStyle}" />
                                                 </StackPanel>
@@ -835,7 +835,7 @@
 
                             <StackPanel Visibility="{Binding HasRelatedWorkflows, Converter={StaticResource BoolToVisibility}}">
                                 <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
-                                <TextBlock Text="Admin / Support"
+                                <TextBlock Text="Support"
                                            Style="{StaticResource SidebarShellSectionLabelStyle}"
                                            Margin="16,0,0,6" />
                                 <ListBox x:Name="RelatedWorkflowNavList"
@@ -848,7 +848,7 @@
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
                                          SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="RelatedWorkflowNavList"
-                                         AutomationProperties.Name="Admin and Support Navigation" />
+                                         AutomationProperties.Name="Support Navigation" />
                             </StackPanel>
 
                             <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
@@ -995,34 +995,32 @@
                         Margin="0"
                         Padding="16,10"
                         CornerRadius="0"
+                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{StaticResource InfoColorBrush}"
+                        BorderThickness="0,0,0,1"
                         Visibility="{Binding FixtureModeBannerVisibility}"
                         AutomationProperties.AutomationId="FixtureModeBanner"
-                        AutomationProperties.Name="Fixture Mode Banner"
+                        AutomationProperties.Name="Demo Data Banner"
                         Panel.ZIndex="10">
-                    <Border.Background>
-                        <LinearGradientBrush x:Name="FixtureModeBannerBrush" StartPoint="0,0" EndPoint="1,0">
-                            <GradientStop Color="{StaticResource ModeFixtureColor}" Offset="0" />
-                            <GradientStop Color="#C98A2B" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="&#x26A0;"
+                            <TextBlock Text="&#xE946;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
                                        FontSize="14"
-                                       Foreground="#1A1A2E"
+                                       Foreground="{StaticResource InfoColorBrush}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0" />
                             <TextBlock x:Name="FixtureModeLabel"
                                        Text="{Binding FixtureModeBannerText}"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="#1A1A2E"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                        AutomationProperties.AutomationId="FixtureModeLabel"
-                                       AutomationProperties.Name="Fixture Mode Label"
+                                       AutomationProperties.Name="Demo Data Label"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                         <Button x:Name="FixtureModeDismissButton"
@@ -1032,11 +1030,11 @@
                                 VerticalAlignment="Center"
                                 Command="{Binding DismissFixtureModeBannerCommand}"
                                 AutomationProperties.AutomationId="FixtureModeDismissButton"
-                                AutomationProperties.Name="Dismiss Fixture Mode Banner"
+                                AutomationProperties.Name="Dismiss Demo Data Banner"
                                 ToolTip="Dismiss banner">
                             <TextBlock Text="&#x2715;"
                                        FontSize="12"
-                                       Foreground="#1A1A2E" />
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                         </Button>
                     </Grid>
                 </Border>
@@ -1076,7 +1074,7 @@
                                            VerticalAlignment="Center"
                                            Style="{StaticResource ShellSectionLabelStyle}" />
                             </StackPanel>
-                            <TextBlock x:Name="PageTitleTextBlock"
+                           <TextBlock x:Name="PageTitleTextBlock"
                                        Text="{Binding CurrentPageTitle}"
                                        Margin="0,6,0,0"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
@@ -1085,7 +1083,7 @@
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                        TextWrapping="Wrap"
                                        AutomationProperties.AutomationId="PageTitleText"
-                                       AutomationProperties.Name="Current Page Title" />
+                                       AutomationProperties.Name="{Binding CurrentPageTitle}" />
                             <TextBlock x:Name="PageSubtitleText"
                                        Margin="0,8,0,0"
                                        Text="{Binding CurrentPageSubtitle}"
@@ -1351,11 +1349,21 @@
                                         </WrapPanel>
 
                                         <Border Margin="0,6,0,0"
-                                                Padding="10,8"
-                                                CornerRadius="10"
-                                                Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                                BorderThickness="1">
+                                                Padding="10,8">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="10" />
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding DataContext.IsCompactShellDensity, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                             <StackPanel>
                                                 <TextBlock Text="Current Blocker"
                                                            Style="{StaticResource ShellSectionLabelStyle}" />
@@ -1405,10 +1413,24 @@
                                         <Button Content="{Binding DataContext.SecondaryWorkflowToggleText, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 Command="{Binding DataContext.ToggleSecondaryWorkflowSummariesCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 Margin="0,12,0,0"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                Visibility="{Binding DataContext.HasSecondaryWorkflowSummaries, RelativeSource={RelativeSource AncestorType=Page}, Converter={StaticResource BoolToVisibility}}"
                                                 AutomationProperties.AutomationId="SecondaryWorkflowToggleButton"
-                                                AutomationProperties.Name="Secondary Workflow Toggle Button" />
+                                                AutomationProperties.Name="Secondary Workflow Toggle Button">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding DataContext.HasSecondaryWorkflowSummaries, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                     Value="False">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding DataContext.IsCompactShellDensity, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
 

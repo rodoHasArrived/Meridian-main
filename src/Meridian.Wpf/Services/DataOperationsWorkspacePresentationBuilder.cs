@@ -23,6 +23,7 @@ public static class DataOperationsWorkspacePresentationBuilder
     {
         ArgumentNullException.ThrowIfNull(data);
 
+        var isFixtureMode = data.EnvironmentMode == FixtureModeKind.Fixture;
         var providerCount = GetProviderCount(data);
         var healthyProviderCount = GetHealthyProviderCount(data, providerCount);
         var resumableCount = data.ResumableJobs.Count;
@@ -44,7 +45,9 @@ public static class DataOperationsWorkspacePresentationBuilder
         var exportQueuedCount = data.ExportJobs.Count(job => job.Status is ExportJobStatus.Pending or ExportJobStatus.Queued);
         var exportFailedCount = data.ExportJobs.Count(job => job.Status == ExportJobStatus.Failed);
 
-        var providersTone = providerCount == 0
+        var providersTone = providerCount == 0 && isFixtureMode
+            ? WorkspaceTone.Info
+            : providerCount == 0
             ? WorkspaceTone.Warning
             : healthyProviderCount >= providerCount && data.ProviderStatus?.IsConnected == true
                 ? WorkspaceTone.Success
@@ -78,7 +81,8 @@ public static class DataOperationsWorkspacePresentationBuilder
             storageText,
             storageTone,
             resumableCount,
-            criticalStorageIssueCount);
+            criticalStorageIssueCount,
+            isFixtureMode);
         var freshnessValue = data.ActiveSession is not null
             ? $"{data.ActiveSession.Name} active · {(data.ActiveSession.Provider ?? "No provider")}"
             : data.ProviderStatus?.IsConnected == true && !string.IsNullOrWhiteSpace(data.ProviderStatus.ActiveProvider)
@@ -91,7 +95,7 @@ public static class DataOperationsWorkspacePresentationBuilder
                             : $"{DisplayExportJobName(latestExportJob)} {latestExportJob.Status.ToString().ToLowerInvariant()}"
                         : latestSession is not null
                             ? $"{latestSession.Name} {latestSession.Status.ToLowerInvariant()}"
-                            : "Awaiting live telemetry";
+                            : isFixtureMode ? "Demo data active" : "Awaiting live telemetry";
         var reviewStateValue = resumableCount > 0
             ? $"{resumableCount} resumable job(s)"
             : latestExecution is not null && IsFailedExecution(latestExecution)
@@ -128,16 +132,16 @@ public static class DataOperationsWorkspacePresentationBuilder
                         : data.ScopeSummary;
         var providerQueueState = BuildQueueRegionState(
             isLoading: false,
-            hasError: providerCount == 0 && data.ProviderStatus is null && (data.BackfillHealth?.Providers?.Count ?? 0) == 0,
+            hasError: !isFixtureMode && providerCount == 0 && data.ProviderStatus is null && (data.BackfillHealth?.Providers?.Count ?? 0) == 0,
             isEmpty: providerCount == 0,
             loadingTitle: "Loading provider queue",
             loadingDescription: "Gathering provider catalog and health telemetry.",
-            emptyTitle: "No providers configured",
-            emptyDescription: "Configure at least one provider before routing collection and backfill queues.",
-            emptyPrimaryLabel: "Switch Context",
-            emptyPrimaryAction: "SwitchContext",
-            emptySecondaryLabel: "Provider Health",
-            emptySecondaryAction: "ProviderHealth",
+            emptyTitle: isFixtureMode ? "Demo provider telemetry" : "No providers configured",
+            emptyDescription: isFixtureMode ? "Demo data mode is showing sample Data Operations workflow data without live provider connections." : "Configure at least one provider before routing collection and backfill queues.",
+            emptyPrimaryLabel: isFixtureMode ? "Provider Health" : "Switch Context",
+            emptyPrimaryAction: isFixtureMode ? "ProviderHealth" : "SwitchContext",
+            emptySecondaryLabel: isFixtureMode ? "Switch Context" : "Provider Health",
+            emptySecondaryAction: isFixtureMode ? "SwitchContext" : "ProviderHealth",
             errorTitle: "Provider queue degraded",
             errorDescription: "Provider catalog or status telemetry is unavailable.",
             errorPrimaryLabel: "Retry",
@@ -219,6 +223,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             storageQueueItems,
             providerCount,
             healthyProviderCount,
+            isFixtureMode,
             resumableCount,
             pendingSymbols,
             enabledSchedules,
@@ -254,7 +259,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             StorageQueueItems = storageQueueItems,
             OperationsSummaryTitleText = "Data Operations",
             OperationsSummaryDetailText = operationsDetail,
-            SummaryProvidersText = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : ProvidersUnavailableSummary,
+            SummaryProvidersText = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : isFixtureMode ? "Demo data" : ProvidersUnavailableSummary,
             SummaryProvidersTone = providersTone,
             SummaryBackfillText = backfillText,
             SummaryBackfillTone = backfillTone,
@@ -277,6 +282,7 @@ public static class DataOperationsWorkspacePresentationBuilder
         IReadOnlyList<WorkspaceQueueItem> storageQueueItems,
         int providerCount,
         int healthyProviderCount,
+        bool isFixtureMode,
         int resumableCount,
         int pendingSymbols,
         int enabledSchedules,
@@ -289,6 +295,21 @@ public static class DataOperationsWorkspacePresentationBuilder
         var sessionItem = backfillQueueItems.Skip(1).FirstOrDefault() ?? new WorkspaceQueueItem();
         var storageItem = storageQueueItems.FirstOrDefault() ?? new WorkspaceQueueItem();
         var exportItem = storageQueueItems.Skip(1).FirstOrDefault() ?? new WorkspaceQueueItem();
+
+        if (isFixtureMode && providerCount == 0)
+        {
+            return CreateHeroState(
+                focusText: "Demo data",
+                summaryText: providerQueueState.Title,
+                badgeText: "Demo",
+                badgeTone: WorkspaceTone.Info,
+                handoffTitleText: "Review the Data Operations flow with sample telemetry",
+                handoffDetailText: providerQueueState.Description,
+                primaryActionId: providerQueueState.PrimaryActionId,
+                primaryActionLabel: providerQueueState.PrimaryActionLabel,
+                secondaryActionId: providerQueueState.SecondaryActionId,
+                secondaryActionLabel: providerQueueState.SecondaryActionLabel);
+        }
 
         if (providerQueueState.HasError)
         {
@@ -517,13 +538,16 @@ public static class DataOperationsWorkspacePresentationBuilder
         string storageText,
         string storageTone,
         int resumableCount,
-        int criticalStorageIssueCount)
+        int criticalStorageIssueCount,
+        bool isFixtureMode)
     {
         var providerValue = providerCount > 0
             ? $"{healthyProviderCount}/{providerCount} ready"
-            : ProvidersUnavailableSummary;
+            : isFixtureMode ? "Demo data" : ProvidersUnavailableSummary;
         var providerDetail = providerCount == 0
-            ? "Provider telemetry needs configuration or refresh before the next queue handoff."
+            ? isFixtureMode
+                ? "Sample provider posture is active for offline review. Live counts appear after a configured context connects."
+                : "Provider telemetry needs configuration or refresh before the next queue handoff."
             : healthyProviderCount >= providerCount
                 ? "Provider routing is ready for collection and backfill work."
                 : "Provider routing needs review before new collection or backfill work.";
@@ -628,6 +652,22 @@ public static class DataOperationsWorkspacePresentationBuilder
 
     private static WorkspaceQueueItem BuildProviderItem(DataOperationsWorkspaceData data, int providerCount, int healthyProviderCount, string tone)
     {
+        if (providerCount == 0 && data.EnvironmentMode == FixtureModeKind.Fixture)
+        {
+            return new WorkspaceQueueItem
+            {
+                Title = "Provider health",
+                Detail = "Demo data mode is using sample provider and queue telemetry. Live provider counts will appear after a configured context connects.",
+                StatusLabel = "Demo data",
+                CountLabel = "Fixture sample",
+                Tone = WorkspaceTone.Info,
+                PrimaryActionId = "ProviderHealth",
+                PrimaryActionLabel = "Provider Health",
+                SecondaryActionId = "Provider",
+                SecondaryActionLabel = "Providers"
+            };
+        }
+
         var degradedProviders = (data.BackfillHealth?.Providers ?? []).Where(entry => !entry.Value.IsAvailable).Select(entry => entry.Key).OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToArray();
         var statusLabel = providerCount == 0 && data.ProviderStatus is null && (data.BackfillHealth?.Providers?.Count ?? 0) == 0 ? "Unavailable" : providerCount == 0 ? "Unconfigured" : healthyProviderCount >= providerCount && data.ProviderStatus?.IsConnected == true ? "Healthy" : healthyProviderCount > 0 || data.ProviderStatus?.IsConnected == true ? "Degraded" : "Offline";
         var countLabel = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : (data.BackfillHealth?.Providers?.Count ?? 0) > 0 ? $"{healthyProviderCount}/{data.BackfillHealth!.Providers!.Count} healthy" : "No telemetry";
@@ -847,6 +887,7 @@ public static class DataOperationsWorkspacePresentationBuilder
 
 public sealed class DataOperationsWorkspaceData
 {
+    public FixtureModeKind EnvironmentMode { get; init; } = FixtureModeKind.Live;
     public string ScopeLabel { get; init; } = "Provider and storage posture";
     public string ScopeSummary { get; init; } = "Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
     public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.Now;

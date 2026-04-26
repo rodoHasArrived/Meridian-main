@@ -360,8 +360,8 @@ public partial class WorkspaceDeepPageHostPage : Page
 
     private static string ToVisibilityLabel(ShellNavigationVisibilityTier tier) => tier switch
     {
-        ShellNavigationVisibilityTier.Primary => "Primary route",
-        ShellNavigationVisibilityTier.Secondary => "Secondary route",
-        _ => "Overflow route"
+        ShellNavigationVisibilityTier.Primary => "Core workflow",
+        ShellNavigationVisibilityTier.Secondary => "Specialized workflow",
+        _ => "Support workflow"
     };
 }

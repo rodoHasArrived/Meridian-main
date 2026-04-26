@@ -35,7 +35,7 @@ public static partial class ShellNavigationCatalog
         Page<KeyboardShortcutsPage>("KeyboardShortcuts", "Keyboard Shortcuts", "Review accelerator keys and workstation shortcuts.", "governance", "Support", "\uE765", 240, ShellNavigationVisibilityTier.Overflow, ["shortcuts", "keyboard"], ["Help", "Settings"]),
         Page<HelpPage>("Help", "Help and Support", "Access support resources and workstation guidance.", "governance", "Support", "\uE897", 250, ShellNavigationVisibilityTier.Overflow, ["help", "support"], ["KeyboardShortcuts", "Settings"]),
         Page<SetupWizardPage>("SetupWizard", "Setup Wizard", "Complete initial workstation setup and guided configuration.", "governance", "Support", "\uE8B0", 260, ShellNavigationVisibilityTier.Overflow, ["setup", "wizard"], ["Settings", "CredentialManagement"], hideFromDefaultPalette: true),
-        Page<WorkspacePage>("Workspaces", "Workspaces", "Legacy workspace catalog and saved-layout surface.", "governance", "Legacy", "\uE8A9", 270, ShellNavigationVisibilityTier.Overflow, ["workspaces", "layouts"], ["GovernanceShell"], hideFromDefaultPalette: true),
+        Page<WorkspacePage>("Workspaces", "Workspace layouts", "Workspace layout catalog and saved-layout surface.", "governance", "Workspace layouts", "\uE8A9", 270, ShellNavigationVisibilityTier.Overflow, ["workspaces", "layouts"], ["GovernanceShell"], hideFromDefaultPalette: true),
         Page<WelcomePage>("Welcome", "Welcome", "Onboarding entry point and first-run guidance.", "governance", "Support", "\uE80F", 280, ShellNavigationVisibilityTier.Overflow, ["welcome", "onboarding"], ["SetupWizard", "Help"], hideFromDefaultPalette: true)
     ];
 }

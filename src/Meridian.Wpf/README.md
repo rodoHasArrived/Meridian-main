@@ -6,7 +6,7 @@ This is the WPF (.NET 9) desktop application for Meridian. It is the primary des
 
 The current WPF application already spans research, trading-adjacent, data-operations, and governance-adjacent workflows:
 
-- **Research workflows** - portfolio operations dashboard, backtests, charts, replay, run comparison, RunMat, and Lean integration
+- **Research workflows** - Research workspace, backtests, charts, replay, run comparison, RunMat, and Lean integration
 - **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
 - **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
 - **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
@@ -111,7 +111,7 @@ The application still contains many page-level screens, but the active desktop d
 Examples:
 
 - `Welcome`: workspace launcher plus Data Operations collection quick start
-- `Research`: `Dashboard` portfolio operations overview, `Backtest`, `BatchBacktest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
+- `Research`: `ResearchShell` workspace overview, `Backtest`, `BatchBacktest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
 - `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `PositionBlotter`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
 - `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
 - `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`

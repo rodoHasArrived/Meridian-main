@@ -9,7 +9,7 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 - `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
 - `scripts/dev/desktop-workflows.json` is the catalog of named workflows and per-step notes.
 
-The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states.
+The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states. In the desktop shell this is presented as neutral demo data, not as an operational warning.
 
 ## Quick Commands
 
@@ -52,11 +52,13 @@ make desktop-screenshots
 
 That keeps navigation aligned with Meridian's own startup and deep-link handling instead of relying on brittle screen coordinates.
 
+Restore and build now share the same configuration, target framework, WPF build flags, and isolation key before the runner uses `build --no-restore`. This keeps isolated desktop workflows from restoring dependency assets for one target and building another.
+
 Before any screenshot is saved, the runner now:
 
 1. brings Meridian back to the foreground,
 2. re-queries the live shell window,
-3. checks `ShellAutomationState` / `PageTitleText` markers,
+3. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
 4. fails the step if the requested page was not actually confirmed.
 
 Each run writes:
@@ -109,10 +111,10 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
   "includeInManual": true,
   "steps": [
     {
-      "title": "Dashboard",
-      "pageTag": "Dashboard",
-      "captureName": "01-dashboard",
-      "notes": "Explain why this page matters."
+      "title": "Research Workspace",
+      "pageTag": "ResearchShell",
+      "captureName": "01-research-workspace",
+      "notes": "Explain why this workspace matters."
     }
   ]
 }
@@ -121,7 +123,7 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
 Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
-- `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`
+- `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use `ResearchShell`, `TradingShell`, `DataOperationsShell`, or `GovernanceShell`
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot

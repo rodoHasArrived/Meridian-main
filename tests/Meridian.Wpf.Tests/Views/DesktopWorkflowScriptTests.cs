@@ -13,6 +13,18 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("function Wait-ForShellPage");
         script.Should().Contain("Requested page '$ExpectedPageTag' was not confirmed before capture.");
         script.Should().Contain("$pageReadiness = Wait-ForShellPage");
+        script.Should().Contain("$stepResult.observedPageTag = $pageReadiness.State.PageTag");
+    }
+
+    [Fact]
+    public void RunDesktopWorkflowScript_ShouldRestoreAndBuildWithMatchingIsolationArguments()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain("$desktopBuildArgs = @(");
+        script.Should().Contain("-AdditionalProperties @(\"Configuration=$resolvedConfiguration\")");
+        script.Should().Contain("& dotnet restore $resolvedProjectPath --verbosity minimal @desktopBuildArgs");
+        script.Should().Contain("& dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs");
     }
 
     [Fact]

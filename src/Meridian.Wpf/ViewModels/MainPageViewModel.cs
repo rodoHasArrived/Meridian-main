@@ -249,6 +249,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(ShellDensityButtonText));
             RaisePropertyChanged(nameof(ShellDensityToggleTooltip));
             RaisePropertyChanged(nameof(WorkflowSummaryDescriptionText));
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
         }
     }
 
@@ -277,20 +280,23 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public Visibility ShellContextVisibility => HasShellContextContent(ShellContext)
+        && !(IsCompactShellDensity && IsWorkflowPageActive)
         ? Visibility.Visible
         : Visibility.Collapsed;
 
-    public string ShellStatusText => _fixtureModeDetector.IsOfflineMode
-        ? "Offline"
-        : _fixtureModeDetector.IsFixtureMode
-            ? "Fixture"
-            : "Live";
+    public string ShellStatusText => _fixtureModeDetector.ModeKind switch
+    {
+        FixtureModeKind.Offline => "Offline",
+        FixtureModeKind.Fixture => "Demo data",
+        _ => "Live"
+    };
 
-    public string ShellStatusTone => _fixtureModeDetector.IsOfflineMode
-        ? WorkspaceTone.Danger
-        : _fixtureModeDetector.IsFixtureMode
-            ? WorkspaceTone.Warning
-            : WorkspaceTone.Success;
+    public string ShellStatusTone => _fixtureModeDetector.ModeKind switch
+    {
+        FixtureModeKind.Offline => WorkspaceTone.Warning,
+        FixtureModeKind.Fixture => WorkspaceTone.Info,
+        _ => WorkspaceTone.Success
+    };
 
     public string ShellLastRefreshText => FormatShellLastRefresh(_shellLastUpdatedAt);
 
@@ -360,6 +366,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ? "Current workspace action first. Other workspace actions stay one click away."
         : "Current workspace action first, with blockers and target pages kept visible.";
 
+    public bool IsWorkspaceHomePageActive
+        => string.Equals(CurrentPageTag, GetWorkspaceHomePageTag(CurrentWorkspace), StringComparison.OrdinalIgnoreCase);
+
+    public bool IsWorkflowPageActive => !IsWorkspaceHomePageActive;
+
     public bool IsResearchWorkspaceActive => string.Equals(_currentWorkspace, "research", StringComparison.OrdinalIgnoreCase);
 
     public bool IsTradingWorkspaceActive => string.Equals(_currentWorkspace, "trading", StringComparison.OrdinalIgnoreCase);
@@ -386,6 +397,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             }
 
             UpdateCurrentPageContent(normalized);
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
             if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
             {
                 SelectWorkspace(inferredWorkspace);
@@ -672,6 +686,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(RecentPagesHintText));
             RaisePropertyChanged(nameof(RecentPagesSummaryText));
             RaisePropertyChanged(nameof(CurrentWorkspaceHomePageTag));
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
             RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
             RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
             RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
@@ -791,6 +808,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
             return;
         }
 
@@ -816,6 +836,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var normalized = NormalizePageTag(pageTag);
         _currentPageTag = normalized;
         UpdateCurrentPageContent(normalized);
+        RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+        RaisePropertyChanged(nameof(IsWorkflowPageActive));
+        RaisePropertyChanged(nameof(ShellContextVisibility));
 
         if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
         {
@@ -1431,8 +1454,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         => visibilityTier switch
         {
             ShellNavigationVisibilityTier.Primary => string.Empty,
-            ShellNavigationVisibilityTier.Secondary => "Advanced",
-            ShellNavigationVisibilityTier.Overflow => "Admin",
+            ShellNavigationVisibilityTier.Secondary => "Specialized",
+            ShellNavigationVisibilityTier.Overflow => "Support",
             _ => string.Empty
         };
 

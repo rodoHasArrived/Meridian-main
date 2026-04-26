@@ -16,10 +16,10 @@
       "purpose": "screenshots",
       "steps": [
         {
-          "title": "Dashboard",
-          "pageTag": "Dashboard",
-          "captureName": "wpf-dashboard",
-          "notes": "Validate that the shell loads cleanly and the main dashboard remains screenshot ready."
+          "title": "Research Workspace",
+          "pageTag": "ResearchShell",
+          "captureName": "wpf-research-workspace",
+          "notes": "Validate that the shell loads cleanly and the Research workspace remains screenshot ready."
         },
         {
           "title": "Providers",
@@ -108,10 +108,10 @@
       "purpose": "debug",
       "steps": [
         {
-          "title": "Dashboard",
-          "pageTag": "Dashboard",
-          "captureName": "01-dashboard",
-          "notes": "Confirm that the shell rendered, the fixture banner is visible, and the status bar started updating."
+          "title": "Research Workspace",
+          "pageTag": "ResearchShell",
+          "captureName": "01-research-workspace",
+          "notes": "Confirm that the shell rendered, the demo data banner is visible, and the status bar started updating."
         },
         {
           "title": "Provider Health",
@@ -154,16 +154,16 @@
       "includeInManual": true,
       "steps": [
         {
-          "title": "Dashboard",
-          "pageTag": "Dashboard",
-          "captureName": "01-dashboard",
-          "notes": "Start on the dashboard to review the shell status bar, fixture banner, and the first-launch landing experience."
+          "title": "Research Workspace",
+          "pageTag": "ResearchShell",
+          "captureName": "01-research-workspace",
+          "notes": "Start on the Research workspace to review the shell status bar, demo data banner, and the first-launch landing experience."
         },
         {
-          "title": "Workspaces",
+          "title": "Workspace Layouts",
           "pageTag": "Workspaces",
-          "captureName": "02-workspaces",
-          "notes": "Use the Workspaces page as the jump-off point for the major trading workstation surfaces."
+          "captureName": "02-workspace-layouts",
+          "notes": "Use Workspace layouts to inspect saved layouts and workstation surface organization."
         },
         {
           "title": "Research Workspace",

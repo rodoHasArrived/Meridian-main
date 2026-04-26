@@ -143,6 +143,49 @@ public sealed class WorkspaceShellContextStripControlTests
         });
     }
 
+    [Fact]
+    public void Control_ShouldNotTreatDemoEnvironmentAsAttention()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var control = new WorkspaceShellContextStripControl
+            {
+                Width = 960,
+                ShellContext = new WorkspaceShellContext
+                {
+                    WorkspaceTitle = "Data Operations",
+                    WorkspaceSubtitle = "Shell",
+                    Badges =
+                    [
+                        new WorkspaceShellBadge
+                        {
+                            Label = "Environment",
+                            Value = "Demo data",
+                            Tone = WorkspaceTone.Info
+                        }
+                    ]
+                }
+            };
+
+            var window = CreateHostWindow(control);
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                control.UpdateLayout();
+
+                var banner = control.FindName("AttentionBanner").Should().BeOfType<Border>().Subject;
+                banner.Visibility.Should().Be(Visibility.Collapsed);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window CreateHostWindow(FrameworkElement content)
     {
         return new Window

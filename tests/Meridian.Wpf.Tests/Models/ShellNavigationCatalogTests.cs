@@ -123,6 +123,18 @@ public sealed class ShellNavigationCatalogTests
         relatedPages.Should().Contain("FundPortfolio");
     }
 
+    [Fact]
+    public void OperatorRoutes_ShouldUseFourWorkspaceLandingLabels()
+    {
+        ShellNavigationCatalog.GetPage("ResearchShell")!.Title.Should().Be("Research Workspace");
+        ShellNavigationCatalog.GetPage("TradingShell")!.Title.Should().Be("Trading Workspace");
+        ShellNavigationCatalog.GetPage("DataOperationsShell")!.Title.Should().Be("Data Operations Workspace");
+        ShellNavigationCatalog.GetPage("GovernanceShell")!.Title.Should().Be("Governance Workspace");
+
+        ShellNavigationCatalog.GetPage("Workspaces")!.SectionLabel.Should().Be("Workspace layouts");
+        ShellNavigationCatalog.GetPage("Dashboard")!.Title.Should().Be("Research operations");
+    }
+
     private static IEnumerable<WorkspacePaneDefinition> EnumeratePanes(WorkspaceShellDefinition shell)
         => shell.DefaultPanes
             .Concat(shell.ContextlessPanes)

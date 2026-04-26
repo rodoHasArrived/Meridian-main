@@ -50,7 +50,7 @@ public sealed class WorkspaceShellContextServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenFixtureModeAndUnreadAlerts_SurfaceWarningBadges()
+    public async Task CreateAsync_WhenFixtureModeAndUnreadAlerts_SurfaceDemoEnvironmentAndWarningAlerts()
     {
         var detector = FixtureModeDetector.Instance;
         detector.SetFixtureMode(true);
@@ -81,7 +81,7 @@ public sealed class WorkspaceShellContextServiceTests
             ReviewStateTone = WorkspaceTone.Warning
         });
 
-        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Fixture" && b.Tone == WorkspaceTone.Warning);
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Demo data" && b.Tone == WorkspaceTone.Info);
         context.Badges.Should().ContainSingle(b => b.Label == "Freshness" && b.Tone == WorkspaceTone.Warning);
         context.Badges.Should().ContainSingle(b => b.Label == "Alerts" && b.Value.Contains("1 unread") && b.Tone == WorkspaceTone.Warning);
 

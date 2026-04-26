@@ -181,12 +181,12 @@ public sealed class WorkspaceShellContextService
 
     private string ResolveEnvironmentValue(WorkspaceStatusSnapshot? status)
     {
-        if (_fixtureModeDetector.IsFixtureMode)
+        if (_fixtureModeDetector.ModeKind == FixtureModeKind.Fixture)
         {
-            return "Fixture";
+            return "Demo data";
         }
 
-        if (_fixtureModeDetector.IsOfflineMode)
+        if (_fixtureModeDetector.ModeKind == FixtureModeKind.Offline)
         {
             return "Offline";
         }
@@ -201,14 +201,14 @@ public sealed class WorkspaceShellContextService
 
     private string ResolveEnvironmentTone(WorkspaceStatusSnapshot? status)
     {
-        if (_fixtureModeDetector.IsOfflineMode)
-        {
-            return WorkspaceTone.Danger;
-        }
-
-        if (_fixtureModeDetector.IsFixtureMode)
+        if (_fixtureModeDetector.ModeKind == FixtureModeKind.Offline)
         {
             return WorkspaceTone.Warning;
+        }
+
+        if (_fixtureModeDetector.ModeKind == FixtureModeKind.Fixture)
+        {
+            return WorkspaceTone.Info;
         }
 
         return status?.IsConnected == true

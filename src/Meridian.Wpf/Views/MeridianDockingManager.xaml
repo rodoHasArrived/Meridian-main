@@ -11,13 +11,14 @@
              DragOver="OnDragOver"
              Drop="OnDrop">
 
-    <Grid>
+    <Grid Background="{DynamicResource ConsoleBackgroundDarkBrush}">
         <!-- ── AvalonDock DockingManager ─────────────────────────────────── -->
         <avalondock:DockingManager x:Name="DockManager"
                                    AllowMixedOrientation="True"
                                    BorderBrush="{DynamicResource CommandBarBorderBrush}"
                                    BorderThickness="1"
-                                   Background="{DynamicResource ConsoleBackgroundDarkBrush}">
+                                   Background="Transparent"
+                                   Foreground="{DynamicResource ConsoleTextPrimaryBrush}">
 
             <avalondock:LayoutRoot>
                 <avalondock:LayoutPanel Orientation="Horizontal">

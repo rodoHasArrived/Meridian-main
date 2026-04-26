@@ -279,10 +279,10 @@ public partial class SetupWizardPage : Page
             return;
         }
 
-        ValidationStatusText.Text = "Configuration saved and backend verified. Opening Portfolio Operations...";
+        ValidationStatusText.Text = "Configuration saved and backend verified. Opening Research Workspace...";
         _notificationService.NotifySuccess("Setup Wizard", "Setup complete. Welcome!");
 
-        _navigationService.NavigateTo("Dashboard");
+        _navigationService.NavigateTo("ResearchShell");
     }
 
     private bool TryGetWizardInputs(out string provider, out string storageLocation)

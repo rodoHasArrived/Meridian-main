@@ -136,11 +136,6 @@ public partial class App : System.Windows.Application
         // Detect fixture mode from --fixture arg or MDC_FIXTURE_MODE env var
         _isFixtureMode = DetectFixtureMode(e.Args);
 
-        // Parse any deep-link navigation tag from launch args (e.g. --navigate Backfill).
-        // Toast balloon-tip clicks raise BalloonTipClicked in-process, but external
-        // activations (future WinRT toasts, shortcuts) can pass this argument.
-        var deepLinkTag = ParseDeepLinkTag(e.Args);
-
         // Configure the host with dependency injection
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
@@ -166,47 +161,16 @@ public partial class App : System.Windows.Application
         mainWindow.Show();
         mainWindow.ForceStartupWindowRecovery();
 
-        // Register taskbar jump list tasks (Start Data Collection, Open Portfolio Operations, etc.).
+        // Register taskbar jump list tasks.
         WpfServices.JumpListService.Instance.Register();
 
         // Begin listening for args forwarded from secondary instances (jump list re-launch).
         WpfServices.SingleInstanceService.Instance.StartListening();
 
-        // If a deep-link page was requested, navigate immediately after the window opens.
-        if (!string.IsNullOrEmpty(deepLinkTag))
-            WpfServices.NavigationService.Instance.NavigateTo(deepLinkTag);
-
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
-    }
-
-    /// <summary>
-    /// Parses a deep-link navigation tag from command-line args.
-    /// Supports <c>--navigate &lt;PageTag&gt;</c> (e.g. <c>--navigate Backfill</c>)
-    /// and <c>--page=&lt;PageTag&gt;</c> (e.g. <c>--page=Dashboard</c>, used by jump list tasks).
-    /// </summary>
-    private static string? ParseDeepLinkTag(string[] args)
-    {
-        for (var i = 0; i < args.Length - 1; i++)
-        {
-            if (string.Equals(args[i], "--navigate", StringComparison.OrdinalIgnoreCase))
-                return args[i + 1];
-        }
-
-        // Also support --page=PageTag format used by taskbar jump list tasks.
-        foreach (var arg in args)
-        {
-            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
-            {
-                var tag = arg["--page=".Length..];
-                if (!string.IsNullOrWhiteSpace(tag))
-                    return tag;
-            }
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -607,17 +571,14 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
 
-            // Handle --start-collector launch arg now that connection monitoring is active.
-            if (Array.Exists(_launchArgs, a => string.Equals(a, "--start-collector", StringComparison.OrdinalIgnoreCase)))
-                await StartCollectorFromLaunchArgAsync();
-
-            // Notify if running in fixture mode
+            // Notify if running in fixture/demo mode
             if (_isFixtureMode)
             {
-                WpfServices.LoggingService.Instance.LogWarning("Running in FIXTURE MODE — using offline mock data");
-                await WpfServices.NotificationService.Instance.NotifyWarningAsync(
-                    "Fixture Mode Active",
-                    "Application is using mock data for offline development");
+                WpfServices.LoggingService.Instance.LogInfo("Running in demo data mode using offline sample data");
+                await WpfServices.NotificationService.Instance.NotifyAsync(
+                    "Demo Data Active",
+                    "Application is using sample data for offline review",
+                    NotificationType.Info);
             }
 
             // Log successful startup
@@ -673,32 +634,6 @@ public partial class App : System.Windows.Application
         catch (Exception)
         {
             // Continue - app should still work without background services
-        }
-    }
-
-    /// <summary>
-    /// Starts the data collector as requested by the <c>--start-collector</c> launch arg.
-    /// Runs after all services are initialised so connection monitoring is active.
-    /// </summary>
-    private static async Task StartCollectorFromLaunchArgAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            var provider = WpfServices.ConnectionService.Instance.CurrentProvider ?? "default";
-            var success = await WpfServices.ConnectionService.Instance.ConnectAsync(provider, ct);
-
-            WpfServices.NotificationService.Instance.ShowNotification(
-                success ? "Collector Started" : "Start Failed",
-                success
-                    ? "Data collection started via taskbar jump list."
-                    : "Failed to start collector — check provider settings.",
-                success
-                    ? NotificationType.Success
-                    : NotificationType.Error,
-                success ? 5000 : 0);
-        }
-        catch (Exception)
-        {
         }
     }
 

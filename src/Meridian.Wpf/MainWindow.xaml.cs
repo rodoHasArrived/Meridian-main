@@ -142,6 +142,9 @@ public partial class MainWindow : Window
         GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
         GlobalHotkeyService.Instance.Initialize(hwnd);
 
+        var launchArgs = App.GetLaunchArgs();
+        var launchRequest = DesktopLaunchArguments.Parse(launchArgs);
+
         await _workspaceService.LoadWorkspacesAsync();
         await _fundContextService.LoadAsync();
         await _operatingContextService.LoadAsync();
@@ -150,6 +153,17 @@ public partial class MainWindow : Window
         if (_operatingContextService.CurrentContext is not null)
         {
             await EnterOperatingContextAsync(_operatingContextService.CurrentContext);
+            if (launchRequest.HasActions)
+            {
+                await HandleLaunchArgsAsync(launchArgs);
+            }
+
+            return;
+        }
+
+        if (launchRequest.HasActions)
+        {
+            await HandleLaunchArgsAsync(launchArgs);
             return;
         }
 
@@ -301,7 +315,17 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnLaunchArgsReceived(object? sender, string[] args) => _viewModel.HandleLaunchArgs(args);
+    private async void OnLaunchArgsReceived(object? sender, string[] args)
+    {
+        try
+        {
+            await HandleLaunchArgsAsync(args);
+        }
+        catch (Exception ex)
+        {
+            Meridian.Wpf.Services.LoggingService.Instance.LogError("[MainWindow] Failed to handle forwarded launch args", ex);
+        }
+    }
 
     private void OnNotificationReceived(object? sender, NotificationEventArgs e)
     {
@@ -642,6 +666,30 @@ public partial class MainWindow : Window
     private async Task EnterOperatingContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
     {
         await _workspaceService.SetLastSelectedOperatingContextKeyAsync(context.ContextKey, ct);
+        await EnsureMainPageShellReadyAsync(ct);
+        await RestoreWorkspaceSessionForContextAsync(context, ct);
+        EnsureShellVisibleOnStartup();
+    }
+
+    private async Task HandleLaunchArgsAsync(string[] args, CancellationToken ct = default)
+    {
+        var request = DesktopLaunchArguments.Parse(args);
+        if (!request.HasActions)
+        {
+            return;
+        }
+
+        if (request.HasPageNavigation)
+        {
+            await EnsureMainPageShellReadyAsync(ct);
+        }
+
+        _viewModel.HandleLaunchArgs(args);
+        EnsureShellVisibleOnStartup();
+    }
+
+    private async Task EnsureMainPageShellReadyAsync(CancellationToken ct = default)
+    {
         if (RootFrame.Content is not MainPage)
         {
             RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
@@ -655,8 +703,6 @@ public partial class MainWindow : Window
         }
 
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded, ct);
-        await RestoreWorkspaceSessionForContextAsync(context, ct);
-        EnsureShellVisibleOnStartup();
     }
 
     private async Task ShowContextSelectionAsync(bool saveCurrentSession, CancellationToken ct = default)
@@ -1063,4 +1109,3 @@ public partial class MainWindow : Window
     }
 
 }
-

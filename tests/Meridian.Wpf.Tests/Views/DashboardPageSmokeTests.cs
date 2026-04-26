@@ -25,7 +25,7 @@ public sealed class DashboardPageSmokeTests
             page.Should().NotBeNull();
 
             var viewModel = page!.DataContext.Should().BeOfType<DashboardViewModel>().Subject;
-            viewModel.PageTitle.Should().Be("Portfolio Operations");
+            viewModel.PageTitle.Should().Be("Research Operations");
             viewModel.OperationsMetrics.Should().HaveCount(8);
             viewModel.OperationsMetrics.Select(metric => metric.Label).Should().Contain(
                 ["Holdings in Scope", "Quality Exceptions", "Stale Valuations"]);
@@ -36,7 +36,7 @@ public sealed class DashboardPageSmokeTests
             viewModel.HoldingsSnapshotItems.Select(item => item.DataStatus).Should().Contain(
                 ["Current", "Needs review", "Stale price", "Data gap"]);
             viewModel.PortfolioDataServiceStatuses.Should().Contain(s => s.ServiceName == "Ledger export" && s.State == "ready");
-            viewModel.GetContextualCommands().Select(command => command.Category).Should().OnlyContain(category => category == "Portfolio Operations");
+            viewModel.GetContextualCommands().Select(command => command.Category).Should().OnlyContain(category => category == "Research Operations");
         });
     }
 }

@@ -19,7 +19,7 @@
 
     <Window.InputBindings>
         <!-- Navigation shortcuts -->
-        <KeyBinding Key="D" Modifiers="Control" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" />
+        <KeyBinding Key="D" Modifiers="Control" Command="{Binding NavigateCommand}" CommandParameter="ResearchShell" />
         <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding StartCollectorCommand}" />
         <KeyBinding Key="Q" Modifiers="Control+Shift" Command="{Binding StopCollectorCommand}" />
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />

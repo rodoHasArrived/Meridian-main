@@ -833,19 +833,19 @@
                         </StackPanel>
                     </Border>
                 </Grid>
+
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,24,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Workspace Panels"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="4,0,0,6" />
+                        <views:MeridianDockingManager x:Name="ResearchDockManager"
+                                                      Height="360"
+                                                      PaneDropRequested="OnPaneDropRequested"
+                                                      AutomationProperties.Name="Research Dock Manager" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
-
-        <Border Grid.Row="1" Margin="12,0,12,12">
-            <StackPanel>
-                <TextBlock Text="Workspace Panels"
-                           Style="{StaticResource CardHeaderStyle}"
-                           Margin="4,0,0,6" />
-                <views:MeridianDockingManager x:Name="ResearchDockManager"
-                                              Height="360"
-                                              PaneDropRequested="OnPaneDropRequested"
-                                              AutomationProperties.Name="Research Dock Manager" />
-            </StackPanel>
-        </Border>
     </Grid>
 </views:ResearchWorkspaceShellPageBase>

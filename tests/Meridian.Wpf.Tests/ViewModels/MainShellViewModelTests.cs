@@ -70,7 +70,7 @@ public sealed class MainShellViewModelTests
             vm.ActivateShell();
 
             vm.CurrentPageTag.Should().Be("ResearchShell");
-            vm.CurrentPageTitle.Should().Be("Research Home");
+            vm.CurrentPageTitle.Should().Be("Research Workspace");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -169,7 +169,7 @@ public sealed class MainShellViewModelTests
             vm.SelectWorkspaceCommand.Execute("governance");
 
             vm.SecondaryNavigationItems.Should().OnlyContain(item => item.VisibilityLabel != "Secondary");
-            vm.OverflowNavigationItems.Should().OnlyContain(item => item.VisibilityLabel == "Admin");
+            vm.OverflowNavigationItems.Should().OnlyContain(item => item.VisibilityLabel == "Support");
         });
     }
 
@@ -276,9 +276,32 @@ public sealed class MainShellViewModelTests
             detector.SetFixtureMode(true);
 
             vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
-            vm.FixtureModeBannerText.Should().Contain("FIXTURE MODE");
+            vm.FixtureModeBannerText.Should().Contain("Demo data mode");
+            vm.ShellStatusText.Should().Be("Demo data");
+            vm.ShellStatusTone.Should().Be(WorkspaceTone.Info);
 
             detector.SetFixtureMode(false);
+        });
+    }
+
+    [Fact]
+    public void LaunchArgs_ShouldNormalizeAliasesAndSequentialForwardedNavigation()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel();
+
+            vm.HandleLaunchArgs(["--page=RunBrowser"]);
+
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("StrategyRuns");
+
+            vm.HandleLaunchArgs(["--navigate", "Backtest"]);
+
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("Backtest");
+
+            vm.HandleLaunchArgs(["--page", "DataOperationsShell"]);
+
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataOperationsShell");
         });
     }
 

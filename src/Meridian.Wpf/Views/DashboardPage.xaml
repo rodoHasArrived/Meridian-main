@@ -9,7 +9,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Portfolio Operations Dashboard">
+      AutomationProperties.Name="Research Operations Dashboard">
 
     <Page.Resources>
         <Style x:Key="DashboardMetricItemBorderStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
@@ -50,7 +50,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Portfolio Operations" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Research Operations" Style="{StaticResource PageTitleStyle}" />
                             <TextBlock Text="Holdings oversight, valuation readiness, and data-quality controls."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="0,6,0,0" />

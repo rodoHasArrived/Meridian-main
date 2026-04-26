@@ -293,6 +293,35 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
     }
 
     [Fact]
+    public void Build_WithFixtureModeAndNoTelemetry_UsesDemoCopyAndInfoTone()
+    {
+        var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData
+        {
+            EnvironmentMode = FixtureModeKind.Fixture,
+            ScopeLabel = "Demo review",
+            ScopeSummary = "Review Data Operations with sample telemetry.",
+            RetrievedAt = new DateTimeOffset(2026, 04, 16, 14, 30, 00, TimeSpan.Zero)
+        });
+
+        presentation.Context.FreshnessValue.Should().Be("Demo data active");
+        presentation.HeroState.FocusText.Should().Be("Demo data");
+        presentation.HeroState.BadgeText.Should().Be("Demo");
+        presentation.HeroState.BadgeTone.Should().Be(WorkspaceTone.Info);
+        presentation.HeroState.HandoffTitleText.Should().Be("Review the Data Operations flow with sample telemetry");
+        presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("Demo data", "No active backfill", "No data");
+        presentation.HeroMetrics[0].Tone.Should().Be(WorkspaceTone.Info);
+        presentation.SummaryProvidersText.Should().Be("Demo data");
+        presentation.SummaryProvidersTone.Should().Be(WorkspaceTone.Info);
+
+        presentation.ProviderQueueState.HasError.Should().BeFalse();
+        presentation.ProviderQueueState.IsEmpty.Should().BeTrue();
+        presentation.ProviderQueueState.Title.Should().Be("Demo provider telemetry");
+        presentation.ProviderQueueItems[0].StatusLabel.Should().Be("Demo data");
+        presentation.ProviderQueueItems[0].CountLabel.Should().Be("Fixture sample");
+        presentation.ProviderQueueItems[0].Tone.Should().Be(WorkspaceTone.Info);
+    }
+
+    [Fact]
     public void Build_WithDisconnectedProvider_ShouldSurfaceDk1TrustRationaleInProviderQueue()
     {
         var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData

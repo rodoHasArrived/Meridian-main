@@ -101,6 +101,24 @@ public sealed class FixtureModeDetectorTests : IDisposable
         eventRaised.Should().BeTrue("ModeChanged should be raised so the banner refreshes");
     }
 
+    [Fact]
+    public void ModeKindAndLabel_ShouldDistinguishDemoDataFromOffline()
+    {
+        _detector.SetFixtureMode(true);
+        _detector.UpdateBackendReachability(true);
+
+        _detector.ModeKind.Should().Be(FixtureModeKind.Fixture);
+        _detector.ModeLabel.Should().Contain("Demo data mode");
+        _detector.BannerColor.Should().Be("#2563EB");
+
+        _detector.SetFixtureMode(false);
+        _detector.UpdateBackendReachability(false);
+
+        _detector.ModeKind.Should().Be(FixtureModeKind.Offline);
+        _detector.ModeLabel.Should().Contain("Offline");
+        _detector.BannerColor.Should().Be("#F44336");
+    }
+
     // ── Cleanup ──────────────────────────────────────────────────────────────
 
     public void Dispose()
@@ -108,5 +126,6 @@ public sealed class FixtureModeDetectorTests : IDisposable
         // Reset shared singleton state so we don't affect other test classes.
         FixtureDataService.Instance.SetScenario(FixtureScenario.Connected);
         _detector.SetFixtureMode(false);
+        _detector.UpdateBackendReachability(true);
     }
 }

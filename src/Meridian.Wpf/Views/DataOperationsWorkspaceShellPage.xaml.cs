@@ -137,6 +137,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
 
         return new DataOperationsWorkspaceData
         {
+            EnvironmentMode = FixtureModeDetector.Instance.ModeKind,
             ScopeLabel = scopeLabel,
             ScopeSummary = scopeSummary,
             RetrievedAt = DateTimeOffset.Now,

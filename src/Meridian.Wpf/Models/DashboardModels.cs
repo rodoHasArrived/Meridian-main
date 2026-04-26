@@ -38,7 +38,7 @@ public sealed class SymbolFreshnessItem
     public Brush StatusBrush { get; set; } = Brushes.Transparent;
 }
 
-/// <summary>Operational KPI item for the portfolio operations dashboard.</summary>
+/// <summary>Operational KPI item for the research operations dashboard.</summary>
 public sealed class DashboardOperationsMetricItem
 {
     public string Label { get; set; } = string.Empty;
@@ -47,7 +47,7 @@ public sealed class DashboardOperationsMetricItem
     public Brush AccentBrush { get; set; } = Brushes.Transparent;
 }
 
-/// <summary>Data-quality category summary for the portfolio operations dashboard.</summary>
+/// <summary>Data-quality category summary for the research operations dashboard.</summary>
 public sealed class DashboardDataQualityCategoryItem
 {
     public string Category { get; set; } = string.Empty;
@@ -57,7 +57,7 @@ public sealed class DashboardDataQualityCategoryItem
     public Brush StatusBrush { get; set; } = Brushes.Transparent;
 }
 
-/// <summary>Upcoming maturity row for the portfolio operations dashboard.</summary>
+/// <summary>Upcoming maturity row for the research operations dashboard.</summary>
 public sealed class DashboardUpcomingMaturityItem
 {
     public string Issuer { get; set; } = string.Empty;
@@ -67,7 +67,7 @@ public sealed class DashboardUpcomingMaturityItem
     public Brush StatusBrush { get; set; } = Brushes.Transparent;
 }
 
-/// <summary>Holdings snapshot row for the portfolio operations dashboard.</summary>
+/// <summary>Holdings snapshot row for the research operations dashboard.</summary>
 public sealed class DashboardHoldingSnapshotItem
 {
     public string Cusip { get; set; } = string.Empty;
