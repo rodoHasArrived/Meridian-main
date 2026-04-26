@@ -316,7 +316,7 @@ if (-not (Test-Path 'config/appsettings.json')) {
 if (-not $SkipBuild) {
   Write-Host "Restoring $ProjectPath ..."
   dotnet restore $resolvedProjectPath --verbosity minimal @(
-    Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+    Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
   )
 
   Write-Host "Building $ProjectPath ($Configuration) ..."
