@@ -10,7 +10,7 @@ The current WPF application already spans research, trading-adjacent, data-opera
 - **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
 - **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
 - **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
-- **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context, and the governance shell keeps the currently selected lane plus its next handoff visible above the queue wall
+- **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context, the governance shell keeps the currently selected lane plus its next handoff visible above the queue wall, and the trading shell now keeps a desk-briefing hero above the workbench so context, replay/controls posture, and the next desk action stay explicit
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
@@ -116,6 +116,7 @@ Examples:
 - `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
 
 `PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
+`TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
 
 ## Development Notes
 

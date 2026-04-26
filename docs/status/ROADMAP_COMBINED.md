@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-25
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, and current WPF shell baseline
+**Last Updated:** 2026-04-26
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages and shell context strips. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, DK1 trust-gate packet projection, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages and shell context strips. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence _(repo-closed, keep synchronized)_
 2. **Wave 2:** paper-trading cockpit hardening
@@ -44,7 +44,7 @@ Meridian already has strong platform foundations, meaningful workstation flows i
 6. **Wave 6:** live integration readiness
 7. **Optional advanced research / scale tracks**
 
-Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-25, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract and a generated `dk1-pilot-parity-packet.*` artifact; the latest packet is `ready-for-operator-review` with validated evidence-document checks and no packet blockers. DK1 still needs operator sign-off plus workflow-facing explainability/calibration review, and shared interop readiness remains **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation/governance is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
+Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-26, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract and a generated `dk1-pilot-parity-packet.*` artifact; the latest packet is `ready-for-operator-review` with validated evidence-document checks and no packet blockers. The trading readiness lane now projects that packet and pending sign-off state as operator-visible readiness, but DK1 still needs operator sign-off plus workflow-facing explainability/calibration review, and shared interop readiness remains **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation/governance is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
 
 ---
 
@@ -60,7 +60,7 @@ This document keeps concise framing only; detailed readiness evidence remains in
 
 ### 1. Wave 2: Harden the paper-trading cockpit already in code
 
-The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, promotion checklist, brokerage-sync, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions; the next step is proving that contract through operator scenarios rather than treating the endpoint as completion.
+The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, DK1 trust-gate packet/sign-off posture, promotion checklist, brokerage-sync, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions; the next step is proving that contract through operator scenarios rather than treating the endpoint as completion.
 
 ### 2. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 

@@ -60,6 +60,8 @@ Content Frame
 
 **Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
 
+**Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path.
+
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Security Master conflict operator lane** — the workstation conflict queue now groups open mismatches by security, scores severity and auto-resolve confidence from the selected field mismatch, and turns fund-review, reconciliation, cash-flow, and report-pack jumps on only when the active conflict actually affects those downstream workflows.
@@ -356,10 +358,10 @@ Shell implementation now shares descriptor-driven infrastructure:
 
 **Design zones**:
 
-1. **Header** — Active fund context, active run, and a promotion/status card that projects promotion readiness, audit linkage, and validation posture from `StrategyRunWorkspaceService`
-2. **KPI strip** — Active paper/live run counts and total equity under management
-3. **Desk panels** — Strategy/watchlist posture, market-core/accounting access, and risk/alerts/audit quick actions
-4. **Workbench rail** — Active positions plus capital and risk inspector cards for the current trading posture
+1. **Header** — Active fund context and active run summary
+2. **Desk briefing hero** — Current desk focus, readiness tone, and one next handoff projected from workflow + operator-readiness state
+3. **Workbench rail** — Active positions plus capital and risk inspector cards for the current trading posture
+4. **KPI strip and support lanes** — Active paper/live run counts, total equity, and supporting market-core / audit quick actions
 
 Replay and collection-session review stay on their owning Data Operations and Governance pages until the trading shell has a proven need for another deep-review lane.
 

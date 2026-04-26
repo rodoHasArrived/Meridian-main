@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -39,7 +39,7 @@ The current working tree reinforces that direction rather than changing it. The 
 | Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
-| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, promotion seam, canonical promotion approval checklist, and the shared trading-readiness contract are in code |
+| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, promotion seam, canonical promotion approval checklist, DK1 trust-gate projection, and the shared trading-readiness contract are in code |
 | Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; broader runtime proof remains open |
 | Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |
@@ -78,7 +78,7 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 ### Wave 2: Paper-trading cockpit hardening
 
 - the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
-- `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, promotion approval checklist state, brokerage sync posture, and operator work items
+- `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, DK1 trust-gate packet/sign-off posture, promotion approval checklist state, brokerage sync posture, and operator work items
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
 

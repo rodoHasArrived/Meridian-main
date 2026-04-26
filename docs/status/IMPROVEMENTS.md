@@ -1,6 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
@@ -1478,7 +1478,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-04-14
+**Last Updated:** 2026-04-26
 **Maintainer:** Project Team
 **Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
 **Next Review:** Weekly engineering sync (or immediately after any status change)

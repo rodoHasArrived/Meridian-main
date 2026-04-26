@@ -1,6 +1,6 @@
 # Provider Validation Matrix
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence or committed runtime artifacts. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.

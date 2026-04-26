@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-04-25
+**Last Reviewed:** 2026-04-26
 
 ## Summary
 
@@ -12,6 +12,7 @@ The repo already contains the main seams needed for an operator lane:
 - `src/Meridian.Execution/Services/ExecutionAuditTrailService.cs` provides durable execution audit storage backed by WAL.
 - `src/Meridian.Execution/OrderManagementSystem.cs` audits order submission, rejection, and gateway-connect behavior.
 - `src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs` and `src/Meridian.Strategies/Services/PromotionService.cs` expose evaluation, approval, and promotion history seams.
+- `src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs` projects the latest generated DK1 parity packet into the cockpit readiness lane.
 - `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` already surfaces sessions, replay, audit, and promotion controls in one cockpit.
 
 The gap is not basic visibility. The gap is dependable operator proof:

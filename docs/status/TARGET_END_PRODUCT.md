@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-25
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence, and current WPF shell baseline
+**Last Updated:** 2026-04-26
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence, cockpit readiness projection, and current WPF shell baseline
 
 ---
 
@@ -9,7 +9,7 @@
 
 Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
 
-Data Operations establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, and parity-packet evidence. Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
+Data Operations establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, and operator-visible sign-off posture. Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
 

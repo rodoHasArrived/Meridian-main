@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
 
 ---
@@ -38,7 +38,7 @@ This document therefore adds:
 3. concrete dependencies
 4. wave and workstream exit criteria
 
-**Current-state refresh (2026-04-25):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, and shared projection paths.
+**Current-state refresh (2026-04-26):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, that DK1 state is now projected into the trading readiness lane, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, and shared projection paths.
 
 It should be read with:
 

@@ -1,4 +1,5 @@
 using System.IO;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Views;
@@ -29,6 +30,255 @@ public sealed class TradingWorkspaceShellPageTests
         target.PageTag.Should().Be("AccountPortfolio");
         target.Action.Should().Be(PaneDropAction.Replace);
         target.RunId.Should().BeNull();
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithoutOperatingContext_UsesSwitchContextAction()
+    {
+        var workflow = new WorkspaceWorkflowSummary(
+            WorkspaceId: "trading",
+            WorkspaceTitle: "Trading",
+            StatusLabel: "Context required",
+            StatusDetail: "Trading posture cannot be trusted until an operating context is selected.",
+            StatusTone: "Warning",
+            NextAction: new WorkflowNextAction(
+                Label: "Choose Context",
+                Detail: "Select the active operating context before opening the cockpit review.",
+                TargetPageTag: "TradingShell",
+                Tone: "Primary"),
+            PrimaryBlocker: new WorkflowBlockerSummary(
+                Code: "choose-context",
+                Label: "No operating context selected",
+                Detail: "Paper review, live posture, and governance-linked trading actions scope to the active operating context.",
+                Tone: "Warning",
+                IsBlocking: true),
+            Evidence: []);
+
+        var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
+            activeRun: null,
+            workflow,
+            readiness: null,
+            hasOperatingContext: false,
+            operatingContextDisplayName: null);
+
+        hero.FocusLabel.Should().Be("Context handoff");
+        hero.Summary.Should().Contain("waiting for an operating context");
+        hero.BadgeText.Should().Be("Context required");
+        hero.PrimaryActionId.Should().Be("SwitchContext");
+        hero.PrimaryActionLabel.Should().Be("Switch Context");
+        hero.SecondaryActionId.Should().Be("StrategyRuns");
+        hero.SecondaryActionLabel.Should().Be("Run Browser");
+        hero.TargetLabel.Should().Be("Target page: Context selector");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithReplayMismatch_PrioritizesAuditTrail()
+    {
+        var readiness = new TradingOperatorReadinessDto(
+            AsOf: new DateTimeOffset(2026, 4, 25, 16, 0, 0, TimeSpan.Zero),
+            ActiveSession: new TradingPaperSessionReadinessDto(
+                SessionId: "paper-desk-17",
+                StrategyId: "strategy-17",
+                StrategyName: "Atlas Intraday",
+                IsActive: true,
+                InitialCash: 250_000m,
+                CreatedAt: new DateTimeOffset(2026, 4, 25, 13, 0, 0, TimeSpan.Zero),
+                ClosedAt: null,
+                SymbolCount: 6,
+                OrderCount: 18,
+                PositionCount: 3,
+                PortfolioValue: 255_000m),
+            Sessions: [],
+            Replay: new TradingReplayReadinessDto(
+                SessionId: "paper-desk-17",
+                ReplaySource: "local",
+                IsConsistent: false,
+                ComparedFillCount: 14,
+                ComparedOrderCount: 11,
+                ComparedLedgerEntryCount: 9,
+                VerifiedAt: new DateTimeOffset(2026, 4, 25, 15, 45, 0, TimeSpan.Zero),
+                LastPersistedFillAt: null,
+                LastPersistedOrderUpdateAt: null,
+                VerificationAuditId: "audit-17",
+                MismatchReasons: ["Fill sequence mismatch detected for paper replay."]),
+            Controls: new TradingControlReadinessDto(
+                CircuitBreakerOpen: false,
+                CircuitBreakerReason: null,
+                CircuitBreakerChangedBy: null,
+                CircuitBreakerChangedAt: null,
+                ManualOverrideCount: 0,
+                SymbolLimitCount: 1,
+                DefaultMaxPositionSize: 50_000m),
+            Promotion: null,
+            TrustGate: new TradingTrustGateReadinessDto(
+                GateId: "dk1",
+                Status: "pending",
+                ReadyForOperatorReview: false,
+                OperatorSignoffRequired: true,
+                OperatorSignoffStatus: "waiting",
+                GeneratedAt: null,
+                PacketPath: null,
+                SourceSummary: null,
+                RequiredSampleCount: 3,
+                ReadySampleCount: 1,
+                ValidatedEvidenceDocumentCount: 1,
+                RequiredOwners: [],
+                Blockers: ["Replay mismatch"],
+                Detail: "Replay verification must be resolved before operator review."),
+            BrokerageSync: null,
+            WorkItems: [],
+            Warnings: []);
+
+        var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
+            activeRun: new ActiveRunContext
+            {
+                RunId = "paper-run-17",
+                StrategyName = "Atlas Intraday",
+                ModeLabel = "Paper",
+                ValidationStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Replay mismatch",
+                    Detail = "Replay evidence is inconsistent.",
+                    Tone = TradingWorkspaceStatusTone.Warning
+                }
+            },
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Atlas Paper Desk");
+
+        hero.FocusLabel.Should().Be("Replay");
+        hero.Summary.Should().Be("Fill sequence mismatch detected for paper replay.");
+        hero.HandoffTitle.Should().Contain("Verify replay evidence");
+        hero.PrimaryActionId.Should().Be("FundAuditTrail");
+        hero.PrimaryActionLabel.Should().Be("Audit Trail");
+        hero.SecondaryActionId.Should().Be("NotificationCenter");
+        hero.TargetLabel.Should().Be("Target page: FundAuditTrail");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithReadyLiveRun_UsesBlotterAndRiskRail()
+    {
+        var readiness = new TradingOperatorReadinessDto(
+            AsOf: new DateTimeOffset(2026, 4, 25, 17, 0, 0, TimeSpan.Zero),
+            ActiveSession: new TradingPaperSessionReadinessDto(
+                SessionId: "live-review-31",
+                StrategyId: "strategy-31",
+                StrategyName: "Gamma Rotation",
+                IsActive: true,
+                InitialCash: 1_000_000m,
+                CreatedAt: new DateTimeOffset(2026, 4, 25, 14, 0, 0, TimeSpan.Zero),
+                ClosedAt: null,
+                SymbolCount: 8,
+                OrderCount: 22,
+                PositionCount: 4,
+                PortfolioValue: 1_045_000m),
+            Sessions: [],
+            Replay: new TradingReplayReadinessDto(
+                SessionId: "live-review-31",
+                ReplaySource: "local",
+                IsConsistent: true,
+                ComparedFillCount: 18,
+                ComparedOrderCount: 12,
+                ComparedLedgerEntryCount: 10,
+                VerifiedAt: new DateTimeOffset(2026, 4, 25, 16, 45, 0, TimeSpan.Zero),
+                LastPersistedFillAt: null,
+                LastPersistedOrderUpdateAt: null,
+                VerificationAuditId: "audit-31",
+                MismatchReasons: []),
+            Controls: new TradingControlReadinessDto(
+                CircuitBreakerOpen: false,
+                CircuitBreakerReason: null,
+                CircuitBreakerChangedBy: null,
+                CircuitBreakerChangedAt: null,
+                ManualOverrideCount: 0,
+                SymbolLimitCount: 2,
+                DefaultMaxPositionSize: 150_000m),
+            Promotion: new TradingPromotionReadinessDto(
+                State: "Live managed",
+                Reason: "Desk is actively managed.",
+                RequiresReview: false,
+                SourceRunId: "paper-31",
+                TargetRunId: "live-31",
+                SuggestedNextMode: "Live",
+                AuditReference: "audit-31",
+                ApprovalStatus: "approved",
+                ManualOverrideId: null,
+                ApprovedBy: "operator"),
+            TrustGate: new TradingTrustGateReadinessDto(
+                GateId: "dk1",
+                Status: "ready",
+                ReadyForOperatorReview: true,
+                OperatorSignoffRequired: true,
+                OperatorSignoffStatus: "ready-for-review",
+                GeneratedAt: new DateTimeOffset(2026, 4, 25, 16, 50, 0, TimeSpan.Zero),
+                PacketPath: "artifacts/provider-validation/_automation/2026-04-25/dk1.json",
+                SourceSummary: "Trust gate ready",
+                RequiredSampleCount: 3,
+                ReadySampleCount: 3,
+                ValidatedEvidenceDocumentCount: 4,
+                RequiredOwners: ["ops"],
+                Blockers: [],
+                Detail: "Trust gate evidence is ready for operator review."),
+            BrokerageSync: new WorkstationBrokerageSyncStatusDto(
+                FundAccountId: Guid.NewGuid(),
+                ProviderId: "alpaca",
+                ExternalAccountId: "acct-31",
+                Health: WorkstationBrokerageSyncHealth.Healthy,
+                IsLinked: true,
+                IsStale: false,
+                LastAttemptedSyncAt: new DateTimeOffset(2026, 4, 25, 16, 55, 0, TimeSpan.Zero),
+                LastSuccessfulSyncAt: new DateTimeOffset(2026, 4, 25, 16, 54, 0, TimeSpan.Zero),
+                LastError: null,
+                PositionCount: 4,
+                OpenOrderCount: 1,
+                FillCount: 18,
+                CashTransactionCount: 2,
+                SecurityMissingCount: 0,
+                Warnings: []),
+            WorkItems: [],
+            Warnings: []);
+
+        var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
+            activeRun: new ActiveRunContext
+            {
+                RunId = "live-31",
+                StrategyName = "Gamma Rotation",
+                ModeLabel = "Live",
+                StatusLabel = "Running",
+                ValidationStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Replay verified",
+                    Detail = "Desk posture is healthy.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                },
+                AuditStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Audit ready",
+                    Detail = "Audit trail is healthy.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                },
+                PromotionStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Live managed",
+                    Detail = "Promotion handoff completed.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                }
+            },
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Gamma Live Desk");
+
+        hero.FocusLabel.Should().Be("Live oversight");
+        hero.Summary.Should().Contain("active live handoff");
+        hero.Detail.Should().Contain("Brokerage sync healthy");
+        hero.BadgeText.Should().Be("Ready");
+        hero.PrimaryActionId.Should().Be("PositionBlotter");
+        hero.PrimaryActionLabel.Should().Be("Open Blotter");
+        hero.SecondaryActionId.Should().Be("RunRisk");
+        hero.SecondaryActionLabel.Should().Be("Open Risk Rail");
+        hero.TargetLabel.Should().Be("Target page: PositionBlotter");
     }
 
     [Fact]
@@ -92,6 +342,25 @@ public sealed class TradingWorkspaceShellPageTests
         code.Should().Contain("DK1 trust gate");
         code.Should().Contain("Paper session, controls, brokerage sync, and Security Master coverage");
         code.Should().Contain("Brokerage sync evidence is unavailable.");
+    }
+
+    [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldExposeDeskBriefingHero()
+    {
+        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+
+        xaml.Should().Contain("Desk Briefing");
+        xaml.Should().Contain("TradingHeroPrimaryActionButton");
+        xaml.Should().Contain("TradingHeroSecondaryActionButton");
+        xaml.Should().Contain("TradingHeroTargetText");
+        xaml.IndexOf("Desk Briefing", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Active Positions", StringComparison.Ordinal));
+
+        code.Should().Contain("internal static TradingDeskHeroState BuildDeskHeroState(");
+        code.Should().Contain("internal static TradingDeskHeroState BuildDegradedDeskHeroState()");
+        code.Should().Contain("ApplyDeskHeroState(");
+        code.Should().Contain("OnTradingHeroPrimaryActionClick");
+        code.Should().Contain("ExecuteHeroAction");
     }
 
     [Fact]

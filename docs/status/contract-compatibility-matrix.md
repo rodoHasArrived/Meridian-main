@@ -13,7 +13,7 @@ This matrix defines compatibility commitments for:
 ## Versioning Baseline
 
 | Surface | Current contract baseline | Version signal | Owner |
-|---|---:|---|---|
+| --- | ---: | --- | --- |
 | `Meridian.Contracts.Workstation` DTOs | `v1` | additive DTO evolution + release notes | Application + UI shared maintainers |
 | `Meridian.Strategies.Services` service contracts | `v1` | interface/member compatibility + migration notes | Strategies maintainers |
 | `Meridian.Ledger` domain contracts | `v1` | public type/member compatibility + migration notes | Ledger maintainers |
@@ -24,10 +24,12 @@ This matrix defines compatibility commitments for:
 ### Backward compatibility (required by default)
 
 1. **Do not remove or rename public DTO/service/ledger members** in a minor release.
-2. **Do not remove workstation routes or change route parameter names** without a deprecation period.
-3. **Additive-only payload changes** (new nullable/optional fields) are allowed in `v1`.
-4. **Enum additions** are allowed only when callers can safely ignore unknown values.
-5. **Service interface additions** must be additive and must not break existing implementations in the same release wave.
+2. **Do not remove positional record constructor parameters** from scoped DTOs without a deprecation period, even when the generated property remains source-compatible for some callers.
+3. **Do not remove enum members** from scoped DTOs or shared contracts without a deprecation period and migration notes.
+4. **Do not remove workstation routes or change route parameter names** without a deprecation period.
+5. **Additive-only payload changes** (new nullable/optional fields) are allowed in `v1`.
+6. **Enum additions** are allowed only when callers can safely ignore unknown values.
+7. **Service interface additions** must be additive and must not break existing implementations in the same release wave.
 
 ### Forward compatibility (required for clients lagging one release)
 
@@ -38,7 +40,7 @@ This matrix defines compatibility commitments for:
 ## Deprecation and Migration Policy
 
 | Change type | Minimum deprecation window | Required mitigation |
-|---|---|---|
+| --- | --- | --- |
 | DTO/contract field rename or removal | 2 minor releases (or 60 days, whichever is longer) | Keep old field as alias/compat shim; document migration notes |
 | Service interface signature change | 2 minor releases | Introduce parallel method or adapter; mark old path obsolete |
 | Ledger public API removal/rename | 2 minor releases | Keep compatibility wrapper/extension and migration examples |
@@ -51,7 +53,7 @@ This matrix defines compatibility commitments for:
 Any pull request touching scoped surfaces must pass:
 
 1. **Standard PR gates:** existing build/test/format gates in `.github/workflows/pr-checks.yml`.
-2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow.
+2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals plus scoped record constructor parameter and enum-member removals.
 3. **Contract regression tests (required when contract code changes):**
    - targeted workstation contract serialization/deserialization tests,
    - strategy service interface compatibility tests,
@@ -65,6 +67,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 
 - 2026-04-21: Established initial compatibility matrix and CI policy gate for workstation contracts/services/ledger/endpoints. No runtime break introduced in this change.
 - 2026-04-25: Wired the contract compatibility gate into `.github/workflows/pr-checks.yml` so pull requests and releases both enforce the matrix. No runtime contract break introduced.
+- 2026-04-26: Expanded the compatibility gate to detect scoped record constructor parameter and enum-member removals, with focused Python regression coverage. No runtime contract break introduced.
 
 ## Pull Request Author Checklist
 

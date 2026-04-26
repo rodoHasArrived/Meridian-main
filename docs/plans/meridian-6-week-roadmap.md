@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-04-26
 **Horizon:** Next 6 weeks
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -34,7 +34,7 @@ This plan starts from the current repo state:
 
 - the web and WPF workstation shells are active and already organized around `Research`, `Trading`, `Data Operations`, and `Governance`
 - the current working tree contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, and the workspace shell context strip, so this window should validate workflow value rather than start a second desktop UX track
-- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate, brokerage-sync, and operator-work-item posture, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
+- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, and operator-work-item posture, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces

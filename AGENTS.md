@@ -10,6 +10,8 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
+- `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
+- `docs/plans/paper-trading-cockpit-reliability-sprint.md` for the Wave 2 readiness contract.
 - `README.md` for top-level onboarding and planning links.
 
 ## Current Direction
@@ -36,9 +38,12 @@ make install
 make install-native
 make install-docker
 make docker
+make docker-build
 make docker-up
 make docker-logs
+make docker-restart
 make docker-down
+make docker-clean
 make docker-monitoring
 ```
 
@@ -77,7 +82,9 @@ dotnet run --project src/Meridian/Meridian.csproj -- --symbols
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-monitored
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-archived
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add AAPL,MSFT
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add ES --depth-levels 20
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add SPY --no-depth
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-remove TSLA
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-import symbols.csv
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-export symbols.txt
 dotnet run --project src/Meridian/Meridian.csproj -- --symbol-status AAPL
@@ -128,6 +135,7 @@ make test-unit
 make test-fsharp
 make test-integration
 make test-all
+make test-coverage
 make install-hooks
 make pre-pr
 make pre-pr-full
@@ -143,6 +151,8 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
 ```
 
 For concurrent automation, use an isolation key so builds write under `artifacts/bin/<key>/`
@@ -160,6 +170,7 @@ pwsh ./scripts/dev/run-desktop.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -NoBuild
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
@@ -219,6 +230,9 @@ run the packet generator directly only when rebuilding from an existing Wave 1 s
 `ready-for-operator-review` DK1 packet still requires operator sign-off before DK1 exit.
 `build-ibapi-smoke.ps1` is a compile-only Interactive Brokers adapter smoke build that enables
 `EnableIbApiSmoke=true` on `src/Meridian.Infrastructure/Meridian.Infrastructure.csproj`.
+The Wave 2 cockpit readiness contract reads DK1 packet posture through
+`GET /api/workstation/trading/readiness`; keep packet sign-off status synchronized with the
+provider matrix, DK1 runbook, and kernel readiness dashboard before claiming cockpit readiness.
 
 ## Diagnostics And Docs
 

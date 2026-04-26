@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-04-25
-**Status:** Active blueprint — WPF shell/navigation baseline is implemented; workflow validation and cockpit/shared-model/governance hardening remain in progress
+**Last Updated:** 2026-04-26
+**Status:** Active blueprint — WPF shell/navigation baseline is implemented; DK1 trust-gate state now projects into the trading readiness lane; workflow validation and cockpit/shared-model/governance hardening remain in progress
 
 ---
 
@@ -88,6 +88,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Explore data, validate coverage, run experiments, compare results.
 
 **Consolidates / fronts:**
+
 - BacktestPage
 - LeanIntegrationPage (backtest functions)
 - ChartingPage
@@ -97,6 +98,7 @@ The target UX is organized around four top-level workspaces.
 - AnalysisExport pages when used as research output
 
 **Primary tasks:**
+
 - choose dataset
 - validate coverage / data quality
 - run backtests
@@ -109,6 +111,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Operate strategies in paper mode now, live mode later, with clear risk and audit controls.
 
 **Consolidates / fronts:**
+
 - LiveDataViewerPage
 - OrderBookPage
 - future Orders / Positions / Portfolio / Strategy Runs pages
@@ -116,6 +119,7 @@ The target UX is organized around four top-level workspaces.
 - execution audit panels
 
 **Primary tasks:**
+
 - monitor active strategies
 - review orders and fills
 - inspect positions, exposure, and P&L
@@ -127,6 +131,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Manage providers, symbols, backfills, storage, and export operations.
 
 **Consolidates / fronts:**
+
 - BackfillPage
 - SymbolsPage
 - SymbolMappingPage
@@ -142,6 +147,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Risk, ledger, diagnostics, audit trail, notifications, and settings.
 
 **Consolidates / fronts:**
+
 - portfolio ledger views
 - diagnostics
 - notifications
@@ -219,6 +225,7 @@ These services should sit above raw engine/service primitives and below UI view 
 ## 6.1 Research workspace
 
 **Default layout**
+
 - Left: strategy, engine, dataset, parameters
 - Center: equity curve / charts / progress
 - Right: metrics, fills, attribution, ledger drill-ins
@@ -227,12 +234,14 @@ These services should sit above raw engine/service primitives and below UI view 
 ## 6.2 Trading cockpit
 
 **Default layout**
+
 - Left: active strategies + watchlists
 - Center: market view, positions, and action panels
 - Right: order blotter, fills, risk, alerts
 - Optional lower panel: ledger / audit event stream
 
 **Required operator controls**
+
 - pause strategy
 - stop strategy
 - cancel all open orders
@@ -242,6 +251,7 @@ These services should sit above raw engine/service primitives and below UI view 
 ## 6.3 Portfolio & Ledger workspace
 
 **Primary tabs**
+
 - Overview
 - Positions
 - Exposure
@@ -268,6 +278,7 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Align repository docs around the new target state before implementation work begins.
 
 **Deliverables**
+
 - this blueprint
 - roadmap updates
 - feature inventory updates
@@ -279,15 +290,17 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Make new functionality discoverable without requiring core engine rewrites.
 
-**Current status (2026-04-25):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, and shell/navigation smoke tests are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
+**Current status (2026-04-26):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, and shell/navigation smoke tests are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
 
 **Work**
+
 - Register all existing trading/backtesting pages consistently in WPF navigation.
 - Add command palette entries for backtest, trading, and portfolio-ledger workflows.
 - Consolidate top-level navigation into `Research`, `Trading`, `Data Operations`, `Governance`.
 - Add cross-links between backtest, Lean, live viewer, and portfolio import flows.
 
 **Exit criteria**
+
 - Every major trading workflow is reachable from primary navigation and command palette.
 - No major capability exists only as an orphan page.
 
@@ -295,15 +308,17 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Unify backtest, paper, and live-facing state around common models.
 
-**Current status (2026-04-25):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
+**Current status (2026-04-26):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
 
 **Work**
+
 - Introduce shared run DTOs/read models.
 - Create a run browser and run-detail view model contract.
 - Normalize metrics, fills, cash flows, and portfolio summaries across engines.
 - Expose a comparison-friendly results schema.
 
 **Exit criteria**
+
 - A user can compare multiple runs across engines from one surface.
 
 ## Phase 3 — Backtest Studio unification
@@ -311,12 +326,14 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Merge native and Lean backtesting into one cohesive experience.
 
 **Work**
+
 - Replace one-off backtest launcher patterns with a common Backtest Studio shell.
 - Support engine selection (`Meridian Native` / `Lean`).
 - Add parameter editing, benchmark selection, coverage preflight, and saved scenarios.
 - Add compare-runs and open-ledger affordances.
 
 **Exit criteria**
+
 - Backtesting feels like one product capability with multiple engines, not separate tools.
 
 ## Phase 4 — Portfolio & Ledger first-class UX
@@ -324,26 +341,30 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Surface accounting and portfolio state as operator-visible product features.
 
 **Work**
+
 - Build portfolio overview and ledger drill-down views.
 - Add trial balance, journal explorer, account summaries, and financing analysis.
 - Add “why did equity change?” and “reconcile P&L” views backed by ledger read models.
 
 **Exit criteria**
+
 - Operators can inspect and audit a run without leaving the product or reading raw storage.
 
 ## Phase 5 — Paper-trading cockpit and execution hardening
 
 **Goal:** Turn paper trading into a reliable pre-live environment.
 
-**Current status (2026-04-25):** Partial. Paper/execution primitives, cockpit surfaces, and position/order/fill/replay/session paths are present. Promotion rejection outcome severity and audit-history refresh are being hardened, but dependable daily operation is still a Wave 2 / DK1 acceptance problem.
+**Current status (2026-04-26):** Partial. Paper/execution primitives, cockpit surfaces, DK1 trust-gate readiness projection, and position/order/fill/replay/session paths are present. Promotion rejection outcome severity and audit-history refresh are being hardened, but dependable daily operation is still a Wave 2 / DK1 acceptance problem.
 
 **Work**
+
 - Add positions, orders, fills, exposure, and risk panels.
 - Replace scaffold-only market fills with feed-aware simulated pricing.
 - Surface risk validator outcomes and strategy controls in real time.
 - Add auditability around order lifecycle state transitions.
 
 **Exit criteria**
+
 - Paper trading is usable as a daily validation surface before live promotion.
 
 ## Phase 6 — Promotion workflow and live-readiness guardrails
@@ -351,12 +372,14 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Formalize the controlled path from research to live.
 
 **Work**
+
 - Add promotion workflow: Backtest → Paper → Live
 - Capture approvals / checks / preflight validations
 - Add environment badges, explicit mode separation, and irreversible-action confirmations
 - Keep live routing opt-in and behind explicit safety controls
 
 **Exit criteria**
+
 - Promotion is visible, auditable, and safety-gated.
 
 ---
@@ -390,7 +413,7 @@ The following documentation should remain aligned with this blueprint during imp
 ## 9. Risks and Mitigations
 
 | Risk | Why it matters | Mitigation |
-|------|----------------|------------|
+| --- | --- | --- |
 | UX migration outruns backend contracts | UI becomes another layer of adapters and one-off transforms | Introduce shared run/portfolio/ledger read models first |
 | Backtest and Lean remain parallel systems | Users continue to see duplicate concepts | Force common run browser and result schema |
 | Paper trading feels misleading | Simulated execution may look more realistic than it is | Keep mode badging explicit; document fill assumptions; add staged realism improvements |
@@ -404,16 +427,19 @@ The following documentation should remain aligned with this blueprint during imp
 The migration should be considered successful when the following are true:
 
 ### Product / UX
+
 - Users can navigate the platform through four workspaces rather than dozens of loosely-related pages.
 - Backtest, paper, and live capabilities share a recognizable run model.
 - Portfolio and ledger views are first-class navigation destinations.
 
 ### Engineering
+
 - WPF page logic relies on workflow view models and orchestration services rather than page-local business logic.
 - Backtest result schemas are comparable across native and Lean engines.
 - Trading state can be queried through stable read models.
 
 ### Operational
+
 - Paper mode and live mode are visually and operationally distinct.
 - Promotion checks are auditable.
 - Strategy runs, fills, P&L, and ledger movements can be reconciled from the product UI.

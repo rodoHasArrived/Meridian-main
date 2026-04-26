@@ -27,6 +27,19 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         TradingWorkspaceStatusItem PromotionStatus,
         TradingWorkspaceStatusItem AuditStatus,
         TradingWorkspaceStatusItem ValidationStatus);
+    internal readonly record struct TradingDeskHeroState(
+        string FocusLabel,
+        string Summary,
+        string Detail,
+        string BadgeText,
+        TradingWorkspaceStatusTone BadgeTone,
+        string HandoffTitle,
+        string HandoffDetail,
+        string PrimaryActionId,
+        string PrimaryActionLabel,
+        string SecondaryActionId,
+        string SecondaryActionLabel,
+        string TargetLabel);
 
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
@@ -36,6 +49,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private readonly TradingOperatorReadinessService? _operatorReadinessService;
     private WorkflowNextAction? _currentWorkflowAction;
+    private string _heroPrimaryActionId = "SwitchContext";
+    private string _heroSecondaryActionId = "StrategyRuns";
 
     public TradingWorkspaceShellPage(
         NavigationService navigationService,
@@ -174,6 +189,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             UpdateStatusCard(summary);
             ApplyWorkflowGuidance(workflow);
             ApplyOperatorReadiness(readiness);
+            UpdateDeskHero(summary.ActiveRunContext, workflow, readiness);
             ViewModel.CommandGroup = BuildCommandGroup();
             CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
@@ -182,6 +198,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
             ApplyStatusCardPresentation(BuildDegradedStatusCardPresentation());
             ApplyWorkflowGuidance(null);
+            ApplyDeskHeroState(BuildDegradedDeskHeroState());
             RiskRailText.Text = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.";
             DeskActionStatusText.Text = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.";
         }
@@ -374,6 +391,34 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         DeskActionStatusText.Text = $"Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf}; {readiness.BrokerageSync.PositionCount} position(s), {readiness.BrokerageSync.OpenOrderCount} open order(s).";
     }
 
+    private void UpdateDeskHero(ActiveRunContext? activeRun, WorkspaceWorkflowSummary? workflow, TradingOperatorReadinessDto? readiness)
+        => ApplyDeskHeroState(
+            BuildDeskHeroState(
+                activeRun,
+                workflow,
+                readiness,
+                hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
+                operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName ?? _fundContextService.CurrentFundProfile?.DisplayName));
+
+    private void ApplyDeskHeroState(TradingDeskHeroState hero)
+    {
+        TradingHeroFocusText.Text = hero.FocusLabel;
+        TradingHeroSummaryText.Text = hero.Summary;
+        TradingHeroDetailText.Text = hero.Detail;
+        TradingHeroBadgeText.Text = hero.BadgeText;
+        ApplyTone(TradingHeroBadgeBorder, TradingHeroBadgeText, hero.BadgeTone);
+        TradingHeroHandoffTitleText.Text = hero.HandoffTitle;
+        TradingHeroHandoffDetailText.Text = hero.HandoffDetail;
+        TradingHeroTargetText.Text = hero.TargetLabel;
+        TradingHeroPrimaryActionButton.Content = hero.PrimaryActionLabel;
+        TradingHeroSecondaryActionButton.Content = hero.SecondaryActionLabel;
+        TradingHeroSecondaryActionButton.Visibility = string.IsNullOrWhiteSpace(hero.SecondaryActionLabel)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        _heroPrimaryActionId = hero.PrimaryActionId;
+        _heroSecondaryActionId = hero.SecondaryActionId;
+    }
+
     private void UpdateActiveRun(ActiveRunContext? activeRun, TradingWorkspaceSummary? summary = null)
     {
         if (activeRun is null)
@@ -461,6 +506,246 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 Detail = "Trading posture and broker validation details may be stale until the shell can refresh again.",
                 Tone = TradingWorkspaceStatusTone.Warning
             });
+
+    internal static TradingDeskHeroState BuildDeskHeroState(
+        ActiveRunContext? activeRun,
+        WorkspaceWorkflowSummary? workflow,
+        TradingOperatorReadinessDto? readiness,
+        bool hasOperatingContext,
+        string? operatingContextDisplayName)
+    {
+        var scopeDisplayName = string.IsNullOrWhiteSpace(operatingContextDisplayName)
+            ? "the current trading scope"
+            : operatingContextDisplayName;
+        var effectiveWorkflow = workflow ?? new WorkspaceWorkflowSummary(
+            WorkspaceId: "trading",
+            WorkspaceTitle: "Trading",
+            StatusLabel: hasOperatingContext ? "Fallback trading guidance" : "Context required",
+            StatusDetail: hasOperatingContext
+                ? "Open the cockpit or review recorded runs from the trading workspace."
+                : "Choose the active context before relying on trading posture.",
+            StatusTone: hasOperatingContext ? "Info" : "Warning",
+            NextAction: new WorkflowNextAction(
+                Label: hasOperatingContext ? "Open Strategy Runs" : "Choose Context",
+                Detail: hasOperatingContext
+                    ? "Review recorded runs and select the desk handoff that should stay active."
+                    : "Select the active operating context before opening trading reviews.",
+                TargetPageTag: hasOperatingContext ? "StrategyRuns" : "TradingShell",
+                Tone: "Primary"),
+            PrimaryBlocker: new WorkflowBlockerSummary(
+                Code: hasOperatingContext ? "fallback" : "choose-context",
+                Label: hasOperatingContext ? "Workflow summary unavailable" : "No operating context selected",
+                Detail: hasOperatingContext
+                    ? "Fallback guidance keeps one stable desk action visible while shared workflow data refreshes."
+                    : "Paper review, live posture, and governance-linked trading actions scope to the active operating context.",
+                Tone: hasOperatingContext ? "Info" : "Warning",
+                IsBlocking: !hasOperatingContext),
+            Evidence: []);
+
+        if (!hasOperatingContext)
+        {
+            return new TradingDeskHeroState(
+                FocusLabel: "Context handoff",
+                Summary: "Trading review is waiting for an operating context.",
+                Detail: effectiveWorkflow.PrimaryBlocker.Detail,
+                BadgeText: effectiveWorkflow.StatusLabel,
+                BadgeTone: ParseTone(effectiveWorkflow.StatusTone),
+                HandoffTitle: "Choose context before desk review",
+                HandoffDetail: effectiveWorkflow.NextAction.Detail,
+                PrimaryActionId: "SwitchContext",
+                PrimaryActionLabel: "Switch Context",
+                SecondaryActionId: "StrategyRuns",
+                SecondaryActionLabel: "Run Browser",
+                TargetLabel: "Target page: Context selector");
+        }
+
+        if (readiness is not null)
+        {
+            if (readiness.Controls.CircuitBreakerOpen)
+            {
+                return new TradingDeskHeroState(
+                    FocusLabel: "Controls",
+                    Summary: string.IsNullOrWhiteSpace(readiness.Controls.CircuitBreakerReason)
+                        ? "Trading controls are blocking new desk actions."
+                        : readiness.Controls.CircuitBreakerReason,
+                    Detail: $"{readiness.Controls.ManualOverrideCount} manual override(s) and {readiness.Controls.SymbolLimitCount} symbol limit(s) remain visible for {scopeDisplayName}.",
+                    BadgeText: "Attention",
+                    BadgeTone: TradingWorkspaceStatusTone.Warning,
+                    HandoffTitle: "Review controls before next order flow",
+                    HandoffDetail: "Keep the risk rail and audit trail visible until the circuit breaker and override posture are understood.",
+                    PrimaryActionId: "RunRisk",
+                    PrimaryActionLabel: "Open Risk Rail",
+                    SecondaryActionId: "FundAuditTrail",
+                    SecondaryActionLabel: "Audit Trail",
+                    TargetLabel: "Target page: RunRisk");
+            }
+
+            if (readiness.Replay is { IsConsistent: false } replay)
+            {
+                return new TradingDeskHeroState(
+                    FocusLabel: "Replay",
+                    Summary: replay.MismatchReasons.FirstOrDefault() ?? "Paper replay verification recorded a mismatch.",
+                    Detail: $"{replay.ComparedOrderCount} order(s), {replay.ComparedFillCount} fill(s), and {replay.ComparedLedgerEntryCount} ledger entry(s) were compared before the mismatch was recorded.",
+                    BadgeText: "Attention",
+                    BadgeTone: TradingWorkspaceStatusTone.Warning,
+                    HandoffTitle: "Verify replay evidence before promotion or live handling",
+                    HandoffDetail: "Use the audit trail first, then clear supporting alerts before treating the desk as operator-ready.",
+                    PrimaryActionId: "FundAuditTrail",
+                    PrimaryActionLabel: "Audit Trail",
+                    SecondaryActionId: "NotificationCenter",
+                    SecondaryActionLabel: "Open Alerts",
+                    TargetLabel: "Target page: FundAuditTrail");
+            }
+
+            if (readiness.Warnings.Count > 0)
+            {
+                return new TradingDeskHeroState(
+                    FocusLabel: "Operator attention",
+                    Summary: readiness.Warnings[0],
+                    Detail: readiness.ActiveSession is null
+                        ? "Shared readiness evidence is still reporting warnings for this desk scope."
+                        : $"Paper session {readiness.ActiveSession.SessionId} still needs operator review before the desk can be treated as ready.",
+                    BadgeText: "Attention",
+                    BadgeTone: TradingWorkspaceStatusTone.Warning,
+                    HandoffTitle: "Clear readiness warnings",
+                    HandoffDetail: "Open alerts first, then confirm audit evidence and controls before moving deeper into the desk.",
+                    PrimaryActionId: "NotificationCenter",
+                    PrimaryActionLabel: "Open Alerts",
+                    SecondaryActionId: "FundAuditTrail",
+                    SecondaryActionLabel: "Audit Trail",
+                    TargetLabel: "Target page: NotificationCenter");
+            }
+        }
+
+        if (activeRun is null)
+        {
+            var primaryActionId = ResolveWorkflowHeroActionId(effectiveWorkflow.NextAction, hasActiveRun: false);
+            return new TradingDeskHeroState(
+                FocusLabel: "Promotion handoff",
+                Summary: $"{scopeDisplayName} is ready for a trading run selection.",
+                Detail: effectiveWorkflow.StatusDetail,
+                BadgeText: effectiveWorkflow.StatusLabel,
+                BadgeTone: ParseTone(effectiveWorkflow.StatusTone),
+                HandoffTitle: effectiveWorkflow.NextAction.Label,
+                HandoffDetail: effectiveWorkflow.NextAction.Detail,
+                PrimaryActionId: primaryActionId,
+                PrimaryActionLabel: ResolveHeroActionLabel(primaryActionId, effectiveWorkflow.NextAction.Label),
+                SecondaryActionId: "LiveData",
+                SecondaryActionLabel: "Open Live Data",
+                TargetLabel: $"Target page: {ResolveHeroTargetLabel(primaryActionId, effectiveWorkflow.NextAction.TargetPageTag)}");
+        }
+
+        var isLiveMode = IsLiveMode(activeRun);
+        var hasReadyTrustGate = readiness?.TrustGate.ReadyForOperatorReview == true;
+        var badgeTone = hasReadyTrustGate
+            ? TradingWorkspaceStatusTone.Success
+            : ResolveCardTone(activeRun.PromotionStatus, activeRun.AuditStatus, activeRun.ValidationStatus);
+        var detail = hasReadyTrustGate
+            ? BuildReadyDeskHeroDetail(readiness!, activeRun.ValidationStatus.Detail)
+            : activeRun.ValidationStatus.Detail;
+        var secondaryActionId = activeRun.AuditStatus.Tone == TradingWorkspaceStatusTone.Warning
+            ? "FundAuditTrail"
+            : "RunRisk";
+
+        return new TradingDeskHeroState(
+            FocusLabel: isLiveMode ? "Live oversight" : "Paper review",
+            Summary: $"{activeRun.StrategyName} is the active {(isLiveMode ? "live" : "paper")} handoff for {scopeDisplayName}.",
+            Detail: detail,
+            BadgeText: GetToneBadgeText(badgeTone),
+            BadgeTone: badgeTone,
+            HandoffTitle: isLiveMode ? "Open active desk" : "Open review desk",
+            HandoffDetail: isLiveMode
+                ? "Use the blotter first, then keep the risk rail docked beside live positions and alerts."
+                : "Review portfolio, blotter, and risk posture together before moving the run forward.",
+            PrimaryActionId: isLiveMode ? "PositionBlotter" : "RunPortfolio",
+            PrimaryActionLabel: isLiveMode ? "Open Blotter" : "Open Portfolio",
+            SecondaryActionId: secondaryActionId,
+            SecondaryActionLabel: secondaryActionId == "FundAuditTrail" ? "Audit Trail" : "Open Risk Rail",
+            TargetLabel: $"Target page: {(isLiveMode ? "PositionBlotter" : "RunPortfolio")}");
+    }
+
+    internal static TradingDeskHeroState BuildDegradedDeskHeroState() =>
+        new(
+            FocusLabel: "Desk briefing degraded",
+            Summary: "Trading cockpit refresh is degraded.",
+            Detail: "Shared workflow, readiness, and active-run posture may be stale until the shell refresh succeeds.",
+            BadgeText: "Attention",
+            BadgeTone: TradingWorkspaceStatusTone.Warning,
+            HandoffTitle: "Reopen a stable trading surface",
+            HandoffDetail: "Use the run browser, blotter, or risk rail to verify state until the cockpit refresh recovers.",
+            PrimaryActionId: "StrategyRuns",
+            PrimaryActionLabel: "Run Browser",
+            SecondaryActionId: "RunRisk",
+            SecondaryActionLabel: "Open Risk Rail",
+            TargetLabel: "Target page: StrategyRuns");
+
+    private static string BuildReadyDeskHeroDetail(TradingOperatorReadinessDto readiness, string fallbackDetail)
+    {
+        if (readiness.BrokerageSync is null)
+        {
+            return string.IsNullOrWhiteSpace(readiness.TrustGate.Detail)
+                ? fallbackDetail
+                : $"{readiness.TrustGate.Detail} Brokerage sync evidence is unavailable; verify the desk state before relying on local posture alone.";
+        }
+
+        var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
+            ? successfulSync.ToLocalTime().ToString("MMM dd HH:mm")
+            : "never";
+        var trustDetail = string.IsNullOrWhiteSpace(readiness.TrustGate.Detail)
+            ? fallbackDetail
+            : readiness.TrustGate.Detail;
+        return $"{trustDetail} Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf} with {readiness.BrokerageSync.PositionCount} position(s) and {readiness.BrokerageSync.OpenOrderCount} open order(s).";
+    }
+
+    private static string ResolveWorkflowHeroActionId(WorkflowNextAction nextAction, bool hasActiveRun)
+    {
+        if (string.Equals(nextAction.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase))
+        {
+            return hasActiveRun ? "PositionBlotter" : "StrategyRuns";
+        }
+
+        return nextAction.TargetPageTag;
+    }
+
+    private static string ResolveHeroActionLabel(string actionId, string fallbackLabel) => actionId switch
+    {
+        "SwitchContext" => "Switch Context",
+        "StrategyRuns" => "Run Browser",
+        "LiveData" => "Open Live Data",
+        "PositionBlotter" => "Open Blotter",
+        "RunPortfolio" => "Open Portfolio",
+        "RunRisk" => "Open Risk Rail",
+        "FundAuditTrail" => "Audit Trail",
+        "NotificationCenter" => "Open Alerts",
+        "FundReconciliation" => "Review Breaks",
+        "FundTrialBalance" => "Open Accounting",
+        _ => string.IsNullOrWhiteSpace(fallbackLabel) ? "Open" : fallbackLabel
+    };
+
+    private static string ResolveHeroTargetLabel(string actionId, string fallbackTargetPageTag) => actionId switch
+    {
+        "SwitchContext" => "Context selector",
+        "StrategyRuns" => "StrategyRuns",
+        "LiveData" => "LiveData",
+        "PositionBlotter" => "PositionBlotter",
+        "RunPortfolio" => "RunPortfolio",
+        "RunRisk" => "RunRisk",
+        "FundAuditTrail" => "FundAuditTrail",
+        "NotificationCenter" => "NotificationCenter",
+        "FundReconciliation" => "FundReconciliation",
+        "FundTrialBalance" => "FundTrialBalance",
+        _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "TradingShell" : fallbackTargetPageTag
+    };
+
+    private static bool IsLiveMode(ActiveRunContext activeRun)
+        => activeRun.ModeLabel.Contains("live", StringComparison.OrdinalIgnoreCase);
+
+    private static string GetToneBadgeText(TradingWorkspaceStatusTone tone) => tone switch
+    {
+        TradingWorkspaceStatusTone.Success => "Ready",
+        TradingWorkspaceStatusTone.Warning => "Attention",
+        _ => "Info"
+    };
 
     private static TradingWorkspaceStatusTone ResolveCardTone(params TradingWorkspaceStatusItem[] items)
     {
@@ -615,6 +900,57 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private void OpenAlerts_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "NotificationCenter", PaneDropAction.SplitBelow);
+
+    private void OnTradingHeroPrimaryActionClick(object sender, RoutedEventArgs e)
+        => ExecuteHeroAction(_heroPrimaryActionId, sender, e);
+
+    private void OnTradingHeroSecondaryActionClick(object sender, RoutedEventArgs e)
+        => ExecuteHeroAction(_heroSecondaryActionId, sender, e);
+
+    private void ExecuteHeroAction(string actionId, object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(actionId))
+        {
+            return;
+        }
+
+        switch (actionId)
+        {
+            case "SwitchContext":
+                RequestContextSelection(_fundContextService, _operatingContextService);
+                return;
+            case "StrategyRuns":
+                NavigationService.NavigateTo("StrategyRuns");
+                return;
+            case "LiveData":
+                OpenLiveData_Click(sender, e);
+                return;
+            case "PositionBlotter":
+                OpenBlotter_Click(sender, e);
+                return;
+            case "RunPortfolio":
+                OpenPortfolio_Click(sender, e);
+                return;
+            case "RunRisk":
+                OpenRiskRail_Click(sender, e);
+                return;
+            case "FundAuditTrail":
+                OpenAuditTrail_Click(sender, e);
+                return;
+            case "NotificationCenter":
+                OpenAlerts_Click(sender, e);
+                return;
+            case "FundReconciliation":
+                OpenReconciliationReview_Click(sender, e);
+                return;
+            case "FundTrialBalance":
+                OpenAccountingConsequences_Click(sender, e);
+                return;
+            default:
+                NavigationService.NavigateTo(actionId);
+                return;
+        }
+    }
 
     private void OpenWorkflowNextAction_Click(object sender, RoutedEventArgs e)
     {

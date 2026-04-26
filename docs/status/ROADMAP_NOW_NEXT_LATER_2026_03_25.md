@@ -1,9 +1,9 @@
 # Meridian - Now / Next / Later Roadmap
 
 **Generated:** 2026-03-25
-**Refreshed:** 2026-04-25
+**Refreshed:** 2026-04-26
 **Format:** Now / Next / Later compatibility view
-**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, and active workstation/governance plans as of 2026-04-25
+**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, cockpit readiness projection, and active workstation/governance plans as of 2026-04-26
 **Status:** Refreshed compatibility view. `ROADMAP.md` and `PROGRAM_STATE.md` remain the canonical wave and status sources.
 
 This document preserves the older Now / Next / Later shape for quick reading, but it no longer defines a separate roadmap. The active roadmap is the Wave 1-6 model in [`ROADMAP.md`](ROADMAP.md), with status labels and target dates sourced from [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
@@ -45,7 +45,7 @@ Wave 1 is no longer an open broad provider push. The active gate is closed aroun
 - keep Robinhood explicitly bounded by committed runtime broker-session artifacts
 - keep Polygon, Interactive Brokers, NYSE, and StockSharp outside the active Wave 1 closure claim unless the matrix is intentionally widened
 - keep checkpoint reliability and Parquet L2 flush behavior tied to passing repo tests
-- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `provider-validation-matrix.md`, generated validation summaries, generated `ready-for-operator-review` parity packets, and the DK1 pilot parity runbook synchronized around the emitted `pilotReplaySampleSet`
+- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `provider-validation-matrix.md`, generated validation summaries, generated `ready-for-operator-review` parity packets, the DK1 pilot parity runbook, and the cockpit readiness projection synchronized around the emitted `pilotReplaySampleSet`
 
 **Exit gate:** The matrix, roadmap, validation script output, DK1 runbook, generated parity packet, dashboard, and operator sign-off all describe the same active provider set and pilot replay/sample contract.
 

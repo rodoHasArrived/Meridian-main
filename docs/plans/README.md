@@ -1,6 +1,6 @@
 # Plans
 
-**Last Reviewed:** 2026-04-25
+**Last Reviewed:** 2026-04-26
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
 
@@ -9,7 +9,7 @@ This directory contains active blueprints, roadmaps, sprint backlogs, and target
 These are the plan documents that directly support the current path to the core operator-ready baseline.
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current six-week execution slice for Waves 1-4 |
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner-lane, dependency, and exit-criteria addendum for the active Waves 2-4 path |
 | [provider-reliability-data-confidence-wave-1-blueprint.md](provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 provider-confidence and checkpoint-evidence blueprint |
@@ -28,7 +28,7 @@ These are the plan documents that directly support the current path to the core 
 These docs matter, but they normally follow the Wave 1-4 operator-readiness path unless explicitly pulled forward.
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Wave 5 blueprint for unifying native and Lean backtesting into one product |
 | [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | PR-sized Wave 5 execution path for Backtest Studio unification |
 | [portfolio-level-backtesting-composer-blueprint.md](portfolio-level-backtesting-composer-blueprint.md) | Portfolio-level composition, capital contention, and risk analytics blueprint |
@@ -42,7 +42,7 @@ These docs matter, but they normally follow the Wave 1-4 operator-readiness path
 These plans can deepen Meridian's research and performance story, but they are not part of the default core operator-readiness gate.
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md) | High-level QuantScript blueprint and product-placement reference |
 | [quant-script-page-implementation-guide.md](quant-script-page-implementation-guide.md) | Page-level implementation guidance for the QuantScript surface |
 | [backtesting-quantscript-improvement-plan-2026-04.md](backtesting-quantscript-improvement-plan-2026-04.md) | Integrated improvement plan for backtesting trust/velocity and QuantScript workflow continuity |
@@ -58,7 +58,7 @@ Active UFL target-state references include direct lending, equity, options, futu
 ## Technical Refactors And Platform Work
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [readability-refactor-roadmap.md](readability-refactor-roadmap.md) | Readability refactor execution plan |
 | [readability-refactor-baseline.md](readability-refactor-baseline.md) | Baseline measurements before readability work |
 | [readability-refactor-technical-design-pack.md](readability-refactor-technical-design-pack.md) | Technical design pack for readability refactoring |
@@ -68,7 +68,7 @@ Active UFL target-state references include direct lending, equity, options, futu
 ## Other Plans
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint |
 | [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct lending implementation roadmap |
 

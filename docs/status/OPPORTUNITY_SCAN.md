@@ -1,7 +1,7 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-04-25
-**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, and current WPF shell baseline
+**Last Updated:** 2026-04-26
+**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, cockpit readiness projection, and current WPF shell baseline
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
@@ -13,12 +13,12 @@ Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVEN
 
 Meridian's best opportunities are no longer broad platform-build items. The repo already shows a strong ingestion, storage, replay, export, execution, workstation, and Security Master baseline, plus concrete shared run, portfolio, ledger, and promotion seams. The highest-value opportunities now are the ones that remove trust ambiguity, harden operator workflows already in code, and keep the desktop shell consolidation tied to the same shared workflow model instead of drifting into a parallel UX program.
 
-The current planning set is also more mature than the prior April 8 scan. As of 2026-04-25:
+The current planning set is also more mature than the prior April 8 scan. As of 2026-04-26:
 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
 - the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
 - the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script, plus checked-in packet generation that produced a latest `ready-for-operator-review` parity packet with validated evidence-document checks and no packet blockers
-- the feature inventory and implementation anchors show that shell-first WPF consolidation, shared workstation endpoints, the Wave 2 trading-readiness contract, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
+- the feature inventory and implementation anchors show that shell-first WPF consolidation, shared workstation endpoints, the Wave 2 trading-readiness contract, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
 
@@ -29,7 +29,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
 - **Category:** workflow completion
-- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, promotion seams, and a shared trading-readiness contract. Current cockpit work now includes canonical approval-checklist requirements for `Backtest -> Paper` and `Paper -> Live` promotion review plus audit-history refresh behavior. The paper workflow still needs accepted operator scenarios around persistence, replay recovery, audit visibility, and work-item handling.
+- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, promotion seams, and a shared trading-readiness contract. Current cockpit work now includes DK1 packet/sign-off projection, canonical approval-checklist requirements for `Backtest -> Paper` and `Paper -> Live` promotion review, plus audit-history refresh behavior. The paper workflow still needs accepted operator scenarios around persistence, replay recovery, audit visibility, and work-item handling.
 - **User or operator value:** This converts Meridian from "paper trading is present" to "paper trading can be operated confidently."
 - **Dependency it unlocks:** A credible `Backtest -> Paper` story and a safer foundation for any later `Paper -> Live` gate design.
 - **Placement:** Critical path, Wave 2.
