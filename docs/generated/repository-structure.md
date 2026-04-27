@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-27 06:45:31 UTC. Do not edit manually.
+> Auto-generated on 2026-04-27 23:38:42 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4727,9 +4727,6 @@ Meridian-main
 │   ├── HELP.md
 │   ├── README.md
 │   └── toc.yml
-├── issues
-│   ├── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
-│   └── phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk
@@ -4797,6 +4794,7 @@ Meridian-main
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
 │   │   ├── SharedBuild.ps1
+│   │   ├── validate-operator-inbox-route.ps1
 │   │   └── validate-position-blotter-route.ps1
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
@@ -7513,7 +7511,8 @@ Meridian-main
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkspaceServiceTests.cs
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
-│   │   │   └── WorkstationOperatingContextServiceTests.cs
+│   │   │   ├── WorkstationOperatingContextServiceTests.cs
+│   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -7537,12 +7536,14 @@ Meridian-main
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── OrderBookViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
+│   │   │   ├── StorageViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
