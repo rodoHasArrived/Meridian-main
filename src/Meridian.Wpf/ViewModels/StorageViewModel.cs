@@ -42,6 +42,12 @@ public sealed class StorageViewModel : BindableBase
     private string _storageEstimateText = string.Empty;
     public string StorageEstimateText { get => _storageEstimateText; private set => SetProperty(ref _storageEstimateText, value); }
 
+    private string _previewScopeText = "Preview pending";
+    public string PreviewScopeText { get => _previewScopeText; private set => SetProperty(ref _previewScopeText, value); }
+
+    private string _previewActionText = "Open the page to generate a sample SPY, AAPL, and MSFT layout.";
+    public string PreviewActionText { get => _previewActionText; private set => SetProperty(ref _previewActionText, value); }
+
     public StorageViewModel(
         StorageAnalyticsService analyticsService,
         SettingsConfigurationService settingsConfigService)
@@ -87,9 +93,7 @@ public sealed class StorageViewModel : BindableBase
     /// </summary>
     public void RefreshPreview(string dataDirectory, string naming, string compression)
     {
-        var rootPath = dataDirectory?.TrimStart('.', '/') ?? "data";
-        if (string.IsNullOrWhiteSpace(rootPath))
-            rootPath = "data";
+        var rootPath = NormalizePreviewRoot(dataDirectory);
 
         var symbols = new List<string> { "SPY", "AAPL", "MSFT" };
 
@@ -99,6 +103,32 @@ public sealed class StorageViewModel : BindableBase
         var estimate = _settingsConfigService.EstimateDailyStorageSize(
             symbols.Count, trades: true, quotes: true, depth: false);
         StorageEstimateText =
-            $"Estimated daily size: ~{estimate} for {symbols.Count} symbols (trades + quotes, compressed)";
+            $"Estimated daily size: ~{estimate} for {symbols.Count} symbols (trades + quotes sample)";
+        PreviewScopeText = $"{FormatNamingConvention(naming)} layout - {FormatCompression(compression)} - {rootPath}/";
+        PreviewActionText = "Use this preview to verify the archive path before running backfill, export, or packaging jobs.";
     }
+
+    public static string NormalizePreviewRoot(string? dataDirectory)
+    {
+        var rootPath = dataDirectory?.Trim().TrimStart('.', '/', '\\') ?? string.Empty;
+        return string.IsNullOrWhiteSpace(rootPath) ? "data" : rootPath;
+    }
+
+    private static string FormatNamingConvention(string? naming) =>
+        naming?.ToLowerInvariant() switch
+        {
+            "bydate" => "By date",
+            "bytype" => "By type",
+            "flat" => "Flat",
+            _ => "By symbol",
+        };
+
+    private static string FormatCompression(string? compression) =>
+        compression?.ToLowerInvariant() switch
+        {
+            "none" => "No compression",
+            "lz4" => "LZ4",
+            "zstd" => "ZSTD",
+            _ => "Gzip",
+        };
 }

@@ -146,10 +146,11 @@ values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`,
 in-review reconciliation breaks, adds workspace/page/route navigation hints, and is now consumed by
 the WPF main shell queue action. The shell resolves known target routes before target page tags, so
 reconciliation work items open `FundReconciliation`, Security Master coverage opens
-`SecurityMaster`, and trading-readiness items stay in `TradingShell`. When the active WPF operating
-context is an account, the shell passes that account as `fundAccountId` so brokerage-sync and
-account-scoped readiness blockers remain visible in the same queue. Broader end-to-end queue
-acceptance remains a cockpit-hardening task rather than a completed workflow.
+`SecurityMaster`, brokerage-sync blockers open `AccountPortfolio`, and broad trading-readiness
+items stay in `TradingShell`. When the active WPF operating context is an account, the shell passes
+that account as `fundAccountId` so brokerage-sync and account-scoped readiness blockers remain
+visible in the same queue. Broader end-to-end queue acceptance remains a cockpit-hardening task
+rather than a completed workflow.
 The Trading WPF shell also passes the active account context into its readiness request, so the
 cockpit status card and shell queue use the same account-scoped brokerage-sync posture.
 The retained web cockpit also renders the readiness contract's operator work items and warnings
@@ -167,6 +168,12 @@ pass/review/blocked decision instead of reconstructing acceptance differently in
 The WPF Trading desk briefing hero must use that shared overall readiness result, not only
 `TrustGate.ReadyForOperatorReview`, so a DK1 packet that still needs operator sign-off cannot make
 the shell look ready.
+The Trading desk briefing hero also treats warning or critical `WorkItems` from the shared
+readiness payload as first-class blockers before it can show a ready active-run state; it does not
+depend only on the mirrored warning strings. When those work items include route metadata, the hero
+resolves known shared routes such as reconciliation, Security Master, and brokerage-sync targets to
+concrete workbenches such as `FundReconciliation`, `SecurityMaster`, and `AccountPortfolio` before
+falling back to broad workspace shell tags.
 A future DK1 packet without valid operator sign-off, replay mismatch, open circuit breaker, or incomplete promotion trace keeps the lane in review or blocked state even when lower-level endpoint data is visible.
 Legacy DK1 packets that omit the validated explainability or calibration contract are treated as
 blocked trust-gate evidence rather than silently inheriting `ready-for-operator-review`.

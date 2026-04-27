@@ -912,6 +912,59 @@
                                     </Border>
                                 </UniformGrid>
 
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.05*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="1.45*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Calibration Posture" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding ReconciliationCalibrationStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding ReconciliationCalibrationSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                            <UniformGrid Columns="3" Margin="0,12,0,0">
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Profiles" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding ReconciliationCalibrationProfilesText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Pending Sign-Off" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding ReconciliationCalibrationPendingSignoffText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Missing Metadata" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding ReconciliationCalibrationMissingMetadataText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                        <DataGrid Grid.Column="2"
+                                                  ItemsSource="{Binding ReconciliationCalibrationProfiles}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  HeadersVisibility="Column"
+                                                  BorderThickness="0"
+                                                  Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                  MinHeight="128"
+                                                  MaxHeight="168"
+                                                  TabIndex="7">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Profile" Binding="{Binding ToleranceProfileId}" Width="*" />
+                                                <DataGridTextColumn Header="Route" Binding="{Binding ExceptionRoute}" Width="*" />
+                                                <DataGridTextColumn Header="Severity" Binding="{Binding HighestSeverityLabel}" Width="95" />
+                                                <DataGridTextColumn Header="Active" Binding="{Binding ActiveBreakCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                <DataGridTextColumn Header="Pending" Binding="{Binding PendingSignoffCount}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </Border>
+
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

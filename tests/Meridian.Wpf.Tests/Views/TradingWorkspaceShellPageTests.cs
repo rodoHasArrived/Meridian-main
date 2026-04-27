@@ -1,4 +1,5 @@
 using System.IO;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -634,6 +635,176 @@ public sealed class TradingWorkspaceShellPageTests
         hero.SecondaryActionId.Should().Be("RunRisk");
         hero.SecondaryActionLabel.Should().Be("Open Risk Rail");
         hero.TargetLabel.Should().Be("Target page: PositionBlotter");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithCriticalWorkItem_DoesNotShowReadyRun()
+    {
+        var readiness = new TradingOperatorReadinessDto(
+            AsOf: new DateTimeOffset(2026, 4, 27, 17, 0, 0, TimeSpan.Zero),
+            ActiveSession: new TradingPaperSessionReadinessDto(
+                SessionId: "paper-desk-52",
+                StrategyId: "strategy-52",
+                StrategyName: "Brokerage Sync Desk",
+                IsActive: true,
+                InitialCash: 1_000_000m,
+                CreatedAt: new DateTimeOffset(2026, 4, 27, 14, 0, 0, TimeSpan.Zero),
+                ClosedAt: null,
+                SymbolCount: 7,
+                OrderCount: 10,
+                PositionCount: 3,
+                PortfolioValue: 1_008_000m),
+            Sessions: [],
+            Replay: new TradingReplayReadinessDto(
+                SessionId: "paper-desk-52",
+                ReplaySource: "local",
+                IsConsistent: true,
+                ComparedFillCount: 8,
+                ComparedOrderCount: 10,
+                ComparedLedgerEntryCount: 6,
+                VerifiedAt: new DateTimeOffset(2026, 4, 27, 16, 45, 0, TimeSpan.Zero),
+                LastPersistedFillAt: null,
+                LastPersistedOrderUpdateAt: null,
+                VerificationAuditId: "audit-52",
+                MismatchReasons: []),
+            Controls: new TradingControlReadinessDto(
+                CircuitBreakerOpen: false,
+                CircuitBreakerReason: null,
+                CircuitBreakerChangedBy: null,
+                CircuitBreakerChangedAt: null,
+                ManualOverrideCount: 0,
+                SymbolLimitCount: 2,
+                DefaultMaxPositionSize: 150_000m),
+            Promotion: new TradingPromotionReadinessDto(
+                State: "Approved",
+                Reason: "Paper promotion evidence is complete.",
+                RequiresReview: false,
+                SourceRunId: "backtest-52",
+                TargetRunId: "paper-52",
+                SuggestedNextMode: "Paper",
+                AuditReference: "audit-promotion-52",
+                ApprovalStatus: "approved",
+                ManualOverrideId: null,
+                ApprovedBy: "operator"),
+            TrustGate: new TradingTrustGateReadinessDto(
+                GateId: "dk1",
+                Status: "ready",
+                ReadyForOperatorReview: true,
+                OperatorSignoffRequired: true,
+                OperatorSignoffStatus: "signed",
+                GeneratedAt: new DateTimeOffset(2026, 4, 27, 16, 50, 0, TimeSpan.Zero),
+                PacketPath: "artifacts/provider-validation/_automation/2026-04-27/dk1.json",
+                SourceSummary: "Trust gate ready",
+                RequiredSampleCount: 4,
+                ReadySampleCount: 4,
+                ValidatedEvidenceDocumentCount: 5,
+                RequiredOwners: ["ops"],
+                Blockers: [],
+                Detail: "Trust gate evidence is signed."),
+            BrokerageSync: null,
+            WorkItems:
+            [
+                new OperatorWorkItemDto(
+                    WorkItemId: "brokerage-sync-attention-52",
+                    Kind: OperatorWorkItemKindDto.BrokerageSync,
+                    Label: "Brokerage sync attention",
+                    Detail: "Brokerage sync failed for the active account.",
+                    Tone: OperatorWorkItemToneDto.Critical,
+                    CreatedAt: new DateTimeOffset(2026, 4, 27, 16, 55, 0, TimeSpan.Zero),
+                    TargetPageTag: "TradingShell")
+            ],
+            Warnings: [])
+        {
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto(
+                    GateId: "session",
+                    Label: "Session active",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Session is active."),
+                new TradingAcceptanceGateDto(
+                    GateId: "replay",
+                    Label: "Replay verified",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Replay is consistent."),
+                new TradingAcceptanceGateDto(
+                    GateId: "audit-controls",
+                    Label: "Risk state explainable",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Controls are explainable."),
+                new TradingAcceptanceGateDto(
+                    GateId: "promotion",
+                    Label: "Promotion trace complete",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Promotion trace is complete."),
+                new TradingAcceptanceGateDto(
+                    GateId: "dk1-trust",
+                    Label: "DK1 trust gate",
+                    Status: TradingAcceptanceGateStatusDto.Ready,
+                    Detail: "Trust gate is signed.")
+            ],
+            OverallStatus = TradingAcceptanceGateStatusDto.Ready,
+            ReadyForPaperOperation = true
+        };
+
+        var hero = TradingWorkspaceShellPage.BuildDeskHeroState(
+            activeRun: new ActiveRunContext
+            {
+                RunId = "paper-52",
+                StrategyName = "Brokerage Sync Desk",
+                ModeLabel = "Paper",
+                StatusLabel = "Running",
+                ValidationStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Replay verified",
+                    Detail = "Desk posture is healthy.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                },
+                AuditStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Audit ready",
+                    Detail = "Audit trail is healthy.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                },
+                PromotionStatus = new TradingWorkspaceStatusItem
+                {
+                    Label = "Approved",
+                    Detail = "Promotion handoff completed.",
+                    Tone = TradingWorkspaceStatusTone.Success
+                }
+            },
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Brokerage Paper Desk");
+
+        hero.FocusLabel.Should().Be("Readiness blocked");
+        hero.Summary.Should().Be("Brokerage sync failed for the active account.");
+        hero.BadgeText.Should().Be("Attention");
+        hero.BadgeTone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        hero.HandoffTitle.Should().Be("Brokerage sync attention");
+        hero.PrimaryActionId.Should().Be("AccountPortfolio");
+        hero.PrimaryActionLabel.Should().Be("Open Portfolio");
+        hero.SecondaryActionId.Should().Be("FundAuditTrail");
+        hero.TargetLabel.Should().Be("Target page: AccountPortfolio");
+    }
+
+    [Fact]
+    public void ResolveOperatorWorkItemActionId_WithRouteBackedGovernanceShell_OpensConcreteWorkbench()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "reconciliation-break-route-52",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Reconciliation break requires review",
+            Detail: "Cash mismatch is open and assigned to governance review.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 30, 0, TimeSpan.Zero),
+            TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}/break-123/review",
+            TargetPageTag: "GovernanceShell");
+
+        var actionId = TradingWorkspaceShellPage.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("FundReconciliation");
     }
 
     [Fact]

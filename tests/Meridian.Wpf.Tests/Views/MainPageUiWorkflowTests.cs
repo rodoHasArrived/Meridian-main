@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using System.Windows;
 using System.Windows.Automation;
@@ -401,6 +402,67 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_OperatorInboxQueueButton_ShouldOpenBrokerageSyncWorkbenchFromRoute()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var accountId = Guid.Parse("9f8f8f71-d9c8-4e2f-aef8-1393506296ef");
+            var operatorInboxClient = new RecordingOperatorInboxApiClient(
+                new OperatorInboxDto(
+                    AsOf: new DateTimeOffset(2026, 4, 27, 19, 0, 0, TimeSpan.Zero),
+                    Items:
+                    [
+                        new OperatorWorkItemDto(
+                            WorkItemId: "brokerage-sync-attention-9f8f8f71",
+                            Kind: OperatorWorkItemKindDto.BrokerageSync,
+                            Label: "Brokerage sync attention",
+                            Detail: "Brokerage sync failed for the active account.",
+                            Tone: OperatorWorkItemToneDto.Critical,
+                            CreatedAt: new DateTimeOffset(2026, 4, 27, 18, 59, 0, TimeSpan.Zero),
+                            FundAccountId: accountId,
+                            Workspace: "Trading",
+                            TargetRoute: UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", accountId.ToString("D"), StringComparison.Ordinal),
+                            TargetPageTag: "TradingShell")
+                    ],
+                    CriticalCount: 1,
+                    WarningCount: 0,
+                    ReviewCount: 1,
+                    Summary: "1 critical brokerage sync item needs review."));
+
+            using var facade = new MainPageUiAutomationFacade(operatorInboxApiClient: operatorInboxClient);
+            await WaitForConditionAsync(() => operatorInboxClient.RequestCount > 0).ConfigureAwait(true);
+
+            facade.ViewModel.SelectedOperatingContext = new WorkstationOperatingContext
+            {
+                ScopeKind = OperatingContextScopeKind.Account,
+                ScopeId = accountId.ToString("D"),
+                AccountId = accountId.ToString("D"),
+                DisplayName = "Prime brokerage account",
+                BaseCurrency = "USD",
+                DefaultWorkspaceId = "trading",
+                DefaultLandingPageTag = "TradingShell"
+            };
+
+            var previousRequestCount = operatorInboxClient.RequestCount;
+            facade.ViewModel.RefreshPageCommand.Execute(null);
+            await WaitForConditionAsync(() =>
+                operatorInboxClient.RequestCount > previousRequestCount &&
+                operatorInboxClient.LastFundAccountId == accountId).ConfigureAwait(true);
+            await WaitForConditionAsync(() =>
+                facade.ViewModel.OperatorInboxReviewCount == 1 &&
+                facade.ViewModel.OperatorInboxTargetText == "AccountPortfolio").ConfigureAwait(true);
+
+            facade.ViewModel.OperatorInboxButtonText.Should().Be("Queue (1)");
+            facade.OperatorInboxButtonLabelText.Text.Should().Be("Queue (1)");
+
+            facade.Click(facade.OperatorInboxButton);
+
+            facade.ViewModel.CurrentPageTag.Should().Be("AccountPortfolio");
+            facade.ShellAutomationStateText.Text.Should().Be("AccountPortfolio");
+        });
+    }
+
+    [Fact]
     public void MainPage_GovernanceDeepLink_ShouldAnnounceWorkbenchTarget()
     {
         WpfTestThread.Run(async () =>
@@ -449,5 +511,26 @@ public sealed class MainPageUiWorkflowTests
         }
 
         predicate().Should().BeTrue("expected condition to become true within the timeout window");
+    }
+
+    private sealed class RecordingOperatorInboxApiClient : IWorkstationOperatorInboxApiClient
+    {
+        private readonly OperatorInboxDto _inbox;
+
+        public RecordingOperatorInboxApiClient(OperatorInboxDto inbox)
+        {
+            _inbox = inbox;
+        }
+
+        public int RequestCount { get; private set; }
+
+        public Guid? LastFundAccountId { get; private set; }
+
+        public Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default)
+        {
+            RequestCount++;
+            LastFundAccountId = fundAccountId;
+            return Task.FromResult<OperatorInboxDto?>(_inbox);
+        }
     }
 }

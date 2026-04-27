@@ -1517,8 +1517,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         var kindTarget = workItem.Kind switch
         {
+            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
+            OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
+            OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
+            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
             _ => null
         };
         if (!string.IsNullOrWhiteSpace(kindTarget))
@@ -1549,10 +1554,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return "SecurityMaster";
         }
 
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
+            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
+        {
+            return "AccountPortfolio";
+        }
+
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness) ||
             RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions) ||
-            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls) ||
-            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls))
         {
             return "TradingShell";
         }

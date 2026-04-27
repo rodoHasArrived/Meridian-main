@@ -75,6 +75,18 @@ public sealed class TradingHoursViewModel : BindableBase
     private string _holidaysHeaderText = "US Market Holidays";
     public string HolidaysHeaderText { get => _holidaysHeaderText; private set => SetProperty(ref _holidaysHeaderText, value); }
 
+    private bool _hasHolidays;
+    public bool HasHolidays { get => _hasHolidays; private set => SetProperty(ref _hasHolidays, value); }
+
+    private bool _isHolidayEmptyStateVisible = true;
+    public bool IsHolidayEmptyStateVisible { get => _isHolidayEmptyStateVisible; private set => SetProperty(ref _isHolidayEmptyStateVisible, value); }
+
+    private string _holidayEmptyStateTitle = "Loading holiday calendar";
+    public string HolidayEmptyStateTitle { get => _holidayEmptyStateTitle; private set => SetProperty(ref _holidayEmptyStateTitle, value); }
+
+    private string _holidayEmptyStateDetail = "Waiting for the workstation calendar to return this year's market closures.";
+    public string HolidayEmptyStateDetail { get => _holidayEmptyStateDetail; private set => SetProperty(ref _holidayEmptyStateDetail, value); }
+
     public ObservableCollection<HolidayDisplayItem> Holidays { get; } = new();
 
     public TradingHoursViewModel(ApiClientService apiClient)
@@ -94,6 +106,32 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         UpdateStatusBanner(state, reason, nextSession);
         UpdateSessionRows(state);
+    }
+
+    internal void ApplyHolidayCalendarForTests(IEnumerable<HolidayDisplayItem> holidays, int? year = null)
+    {
+        var calendarYear = year ?? DateTime.UtcNow.Year;
+        HolidaysHeaderText = $"US Market Holidays ({calendarYear})";
+        Holidays.Clear();
+
+        foreach (var holiday in holidays)
+        {
+            Holidays.Add(holiday);
+        }
+
+        UpdateHolidayPresentation(
+            "No US market holidays loaded",
+            $"The calendar endpoint returned no usable {calendarYear} closure rows. Confirm exchange-holiday coverage before scheduling around market closures.");
+    }
+
+    internal void ApplyHolidayCalendarUnavailableForTests(int? year = null)
+    {
+        var calendarYear = year ?? DateTime.UtcNow.Year;
+        HolidaysHeaderText = $"US Market Holidays ({calendarYear})";
+        Holidays.Clear();
+        UpdateHolidayPresentation(
+            "Holiday calendar unavailable",
+            $"The workstation calendar did not return {calendarYear} market closures. Use the session status above before relying on holiday gates.");
     }
 
     // ── Data loading ──────────────────────────────────────────────────────────────────
@@ -204,6 +242,9 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         var year = DateTime.UtcNow.Year;
         HolidaysHeaderText = $"US Market Holidays ({year})";
+        UpdateHolidayPresentation(
+            "Loading holiday calendar",
+            "Waiting for the workstation calendar to return this year's market closures.");
 
         try
         {
@@ -223,6 +264,9 @@ public sealed class TradingHoursViewModel : BindableBase
                         });
                     }
                 }
+                UpdateHolidayPresentation(
+                    "No US market holidays loaded",
+                    $"The calendar endpoint returned no usable {year} closure rows. Confirm exchange-holiday coverage before scheduling around market closures.");
                 return;
             }
         }
@@ -232,6 +276,9 @@ public sealed class TradingHoursViewModel : BindableBase
         }
 
         Holidays.Clear();
+        UpdateHolidayPresentation(
+            "Holiday calendar unavailable",
+            $"The workstation calendar did not return {year} market closures. Use the session status above before relying on holiday gates.");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────────────
@@ -284,6 +331,15 @@ public sealed class TradingHoursViewModel : BindableBase
                     : $"{nextSessionText}. Review overnight research, queued backfills, and staged orders before the open.",
                 "Regular session: 9:30 AM - 4:00 PM ET")
         };
+    }
+
+    private void UpdateHolidayPresentation(string emptyTitle, string emptyDetail)
+    {
+        var hasHolidays = Holidays.Count > 0;
+        HasHolidays = hasHolidays;
+        IsHolidayEmptyStateVisible = !hasHolidays;
+        HolidayEmptyStateTitle = emptyTitle;
+        HolidayEmptyStateDetail = emptyDetail;
     }
 
     private static Brush GetResource(string key, Brush fallback) =>

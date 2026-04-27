@@ -481,6 +481,7 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterIdentity = "/api/workstation/security-master/securities/{securityId:guid}/identity";
     public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
+    public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
     public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";

@@ -271,6 +271,35 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 ? "No recent balance snapshots are loaded for the selected account."
                 : $"Latest snapshot {BalanceHistory[0].AsOfDate:MMM dd yyyy} from {BalanceHistory[0].Source} with cash {BalanceHistory[0].CashBalance:C0}.";
 
+    public string BalanceEvidenceStatusText
+        => SelectedAccount is null
+            ? "No account selected"
+            : BalanceHistory.Count == 0
+                ? "Snapshot required"
+                : "Evidence loaded";
+
+    public string BalanceEvidenceDetailText
+    {
+        get
+        {
+            if (SelectedAccount is null)
+                return "Choose an account before reviewing balance evidence and settlement posture.";
+
+            if (BalanceHistory.Count == 0)
+                return $"No balance snapshots are loaded for {SelectedAccount.DisplayName}; record or ingest a snapshot before reconciliation sign-off.";
+
+            var latest = BalanceHistory[0];
+            return $"{BalanceHistory.Count} snapshot(s) retained for {SelectedAccount.DisplayName}; latest {latest.AsOfDate:MMM dd yyyy} {latest.Currency} from {latest.Source} with pending settlement {FormatOptionalCurrency(latest.PendingSettlement)}.";
+        }
+    }
+
+    public string BalanceEvidenceActionText
+        => SelectedAccount is null
+            ? "Select Account"
+            : BalanceHistory.Count == 0
+                ? "Record Snapshot"
+                : "Review Snapshot";
+
     private AccountReconciliationRunDto? _lastReconciliationRun;
     public AccountReconciliationRunDto? LastReconciliationRun
     {
@@ -408,7 +437,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         {
             var history = await _service.GetBalanceHistoryAsync(SelectedAccount.AccountId);
             ReplaceCollection(BalanceHistory, history);
-            RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+            RaiseBalanceEvidenceProperties();
         }
         catch (Exception ex)
         {
@@ -463,7 +492,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             RoutePreviews.Clear();
             BalanceHistory.Clear();
             ProviderRoutingStatus = "Select an account to inspect provider routing.";
-            RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+            RaiseBalanceEvidenceProperties();
             RaiseAccountBriefingProperties();
             return;
         }
@@ -613,7 +642,15 @@ public sealed partial class FundAccountsViewModel : BindableBase
         RaisePropertyChanged(nameof(SelectedAccountSecurityMasterText));
         RaisePropertyChanged(nameof(SelectedAccountHistoricalPriceText));
         RaisePropertyChanged(nameof(SelectedAccountBackfillText));
+        RaiseBalanceEvidenceProperties();
+    }
+
+    private void RaiseBalanceEvidenceProperties()
+    {
         RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+        RaisePropertyChanged(nameof(BalanceEvidenceStatusText));
+        RaisePropertyChanged(nameof(BalanceEvidenceDetailText));
+        RaisePropertyChanged(nameof(BalanceEvidenceActionText));
     }
 
     private void RaiseAccountBriefingProperties()
@@ -648,6 +685,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
         return gaps.Count == 0 ? "no shared-data gap detected" : string.Join(", ", gaps);
     }
+
+    private static string FormatOptionalCurrency(decimal? value)
+        => value.HasValue ? value.Value.ToString("C0") : "not reported";
 
     private static string BuildSelectedAccountScopeText(AccountSummaryDto account)
     {

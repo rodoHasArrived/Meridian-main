@@ -164,6 +164,17 @@ public enum ReconciliationBreakQueueStatus : byte
 }
 
 /// <summary>
+/// Aggregate readiness state for reconciliation tolerance calibration and governance sign-off.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCalibrationStatusDto>))]
+public enum ReconciliationCalibrationStatusDto : byte
+{
+    Ready = 0,
+    ReviewRequired = 1,
+    Blocked = 2
+}
+
+/// <summary>
 /// Work item shown in the reconciliation break queue.
 /// </summary>
 public sealed record ReconciliationBreakQueueItem(
@@ -188,6 +199,42 @@ public sealed record ReconciliationBreakQueueItem(
     decimal? ToleranceBand = null,
     string? RequiredSignoffRole = null,
     string? SignoffStatus = null);
+
+/// <summary>
+/// Per-profile rollup for reconciliation tolerance calibration and exception routing.
+/// </summary>
+public sealed record ReconciliationCalibrationProfileSummaryDto(
+    string ToleranceProfileId,
+    string ExceptionRoute,
+    ReconciliationBreakSeverity HighestSeverity,
+    decimal? MaxToleranceBand,
+    int TotalBreakCount,
+    int OpenBreakCount,
+    int InReviewBreakCount,
+    int ResolvedBreakCount,
+    int DismissedBreakCount,
+    int PendingSignoffCount,
+    int SignedOffCount,
+    DateTimeOffset LastUpdatedAt);
+
+/// <summary>
+/// Operator-facing calibration summary for the reconciliation break queue.
+/// </summary>
+public sealed record ReconciliationCalibrationSummaryDto(
+    DateTimeOffset AsOf,
+    ReconciliationCalibrationStatusDto Status,
+    string Summary,
+    int TotalBreakCount,
+    int ActiveBreakCount,
+    int OpenBreakCount,
+    int InReviewBreakCount,
+    int ResolvedBreakCount,
+    int DismissedBreakCount,
+    int CriticalOpenBreakCount,
+    int PendingSignoffCount,
+    int SignedOffCount,
+    int MissingCalibrationMetadataCount,
+    IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles);
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

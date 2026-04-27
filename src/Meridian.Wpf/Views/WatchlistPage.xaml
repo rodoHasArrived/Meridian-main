@@ -238,8 +238,25 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16"
-                                                       Foreground="White"/>
-                                            <TextBlock Text="{Binding SymbolCount}" Foreground="{StaticResource TopBarTextBrush}" FontSize="12"/>
+                                                       Foreground="White" TextTrimming="CharacterEllipsis"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="{Binding SymbolCount}" Foreground="{StaticResource TopBarTextBrush}" FontSize="12"
+                                                           VerticalAlignment="Center"/>
+                                                <Border Visibility="{Binding PinnedBadgeVisibility}"
+                                                        AutomationProperties.Name="Pinned watchlist"
+                                                        AutomationProperties.AutomationId="WatchlistPinnedBadge"
+                                                        Background="#33FFFFFF"
+                                                        BorderBrush="#66FFFFFF"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Padding="6,1"
+                                                        Margin="8,0,0,0">
+                                                    <TextBlock Text="Pinned"
+                                                               Foreground="White"
+                                                               FontSize="10"
+                                                               FontWeight="SemiBold"/>
+                                                </Border>
+                                            </StackPanel>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                                             <Button Content="&#xE718;" FontFamily="{StaticResource SymbolThemeFontFamily}"

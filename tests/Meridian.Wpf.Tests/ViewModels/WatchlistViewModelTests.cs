@@ -1,3 +1,4 @@
+using System.Windows;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -63,6 +64,36 @@ public sealed class WatchlistViewModelTests
     }
 
     [Fact]
+    public void SortWatchlistsForDeskDisplay_PutsPinnedListsFirstWithoutChangingManualOrderWithinGroups()
+    {
+        var watchlists = new[]
+        {
+            BuildServiceWatchlist("Unpinned Alpha", sortOrder: 0, isPinned: false),
+            BuildServiceWatchlist("Pinned Later", sortOrder: 3, isPinned: true),
+            BuildServiceWatchlist("Pinned Earlier", sortOrder: 1, isPinned: true),
+            BuildServiceWatchlist("Unpinned Later", sortOrder: 2, isPinned: false)
+        };
+
+        var sorted = WatchlistViewModel.SortWatchlistsForDeskDisplay(watchlists);
+
+        sorted.Select(watchlist => watchlist.Name).Should().ContainInOrder(
+            "Pinned Earlier",
+            "Pinned Later",
+            "Unpinned Alpha",
+            "Unpinned Later");
+    }
+
+    [Fact]
+    public void WatchlistDisplayModel_ExposesPinnedBadgeVisibility()
+    {
+        new WatchlistDisplayModel { IsPinned = true }
+            .PinnedBadgeVisibility.Should().Be(Visibility.Visible);
+
+        new WatchlistDisplayModel { IsPinned = false }
+            .PinnedBadgeVisibility.Should().Be(Visibility.Collapsed);
+    }
+
+    [Fact]
     public void ClearSearchCommand_ClearsActiveSearchAndDisablesRecoveryAction()
     {
         using var viewModel = new WatchlistViewModel(
@@ -101,6 +132,8 @@ public sealed class WatchlistViewModelTests
         xaml.Should().Contain("{Binding EmptyStateDescription}");
         xaml.Should().Contain("WatchlistClearSearchButton");
         xaml.Should().Contain("{Binding ClearSearchCommand}");
+        xaml.Should().Contain("WatchlistPinnedBadge");
+        xaml.Should().Contain("{Binding PinnedBadgeVisibility}");
     }
 
     private static WatchlistDisplayModel BuildWatchlist(string name, int symbolTotal, bool isPinned) =>
@@ -111,6 +144,18 @@ public sealed class WatchlistViewModelTests
             SymbolTotal = symbolTotal,
             SymbolCount = $"{symbolTotal} symbols",
             IsPinned = isPinned
+        };
+
+    private static WpfServices.Watchlist BuildServiceWatchlist(string name, int sortOrder, bool isPinned) =>
+        new()
+        {
+            Id = name.ToLowerInvariant().Replace(' ', '-'),
+            Name = name,
+            Symbols = new List<string> { "SPY" },
+            SortOrder = sortOrder,
+            IsPinned = isPinned,
+            CreatedAt = DateTimeOffset.UtcNow,
+            ModifiedAt = DateTimeOffset.UtcNow
         };
 
     private static string GetRepositoryFilePath(string relativePath)

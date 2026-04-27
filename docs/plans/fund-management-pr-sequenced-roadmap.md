@@ -171,7 +171,7 @@ Extend the delivered Security Master seam into the governance and fund-operation
 
 Introduce first-class account, entity, fund, sleeve, and vehicle structures.
 
-**Current delivered slice (2026-04-27):** fund-account and fund-structure seams now feed a WPF Fund Accounts operator brief for fund context, empty account queues, missing or blocked provider-route evidence, shared-data access gaps, and ready-for-reconciliation posture. Remaining PR-07 scope is richer account/entity review workflow, external-account acceptance, and durable casework rather than basic account visibility.
+**Current delivered slice (2026-04-27):** fund-account and fund-structure seams now feed a WPF Fund Accounts operator brief for fund context, empty account queues, missing or blocked provider-route evidence, shared-data access gaps, balance-evidence snapshot posture, and ready-for-reconciliation posture. Remaining PR-07 scope is richer account/entity review workflow, external-account acceptance, and durable casework rather than basic account visibility.
 
 **Primary anchors**
 
@@ -280,7 +280,7 @@ Expose breaks, exceptions, and review workflows in WPF and API surfaces.
 - `src/Meridian.Wpf/`
 - `src/Meridian.Ui.Shared/Endpoints/`
 
-**Current delivered slice (2026-04-27):** the WPF Fund Ledger reconciliation workbench now has reset-filters recovery for hidden queue rows and runs, and the main shell queue button resolves the primary operator-inbox work item's route metadata into concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` before falling back to its page tag. Remaining PR-15 scope is a fuller Governance review page path, richer remediation playbooks, and acceptance coverage for queue-to-resolution workflows.
+**Current delivered slice (2026-04-27):** the WPF Fund Ledger reconciliation workbench now has reset-filters recovery for hidden queue rows and runs, `/api/workstation/reconciliation/calibration-summary` rolls break metadata into profile-level calibration posture, and the main shell queue button resolves the primary operator-inbox work item's route metadata into concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `AccountPortfolio` for brokerage-sync blockers before falling back to its page tag. Remaining PR-15 scope is a fuller Governance review page path, operator-approved tolerance/severity calibration, richer remediation playbooks, and acceptance coverage for queue-to-resolution workflows.
 
 ### PR-16: NAV and Attribution Services
 

@@ -116,7 +116,83 @@ public partial class WorkspaceShellContextStripControl : UserControl
         AttentionGlyphText.Text = "!";
         AttentionTitleText.Foreground = accentBrush;
         AttentionTitleText.Text = BuildAttentionTitle(attentionBadge);
-        AttentionDetailText.Text = BuildAttentionDetail(attentionBadge);
+        AttentionDetailText.Text = BuildActionableAttentionDetail(attentionBadge, ShellContext);
+    }
+
+    private static string BuildActionableAttentionDetail(
+        WorkspaceShellBadge badge,
+        WorkspaceShellContext? shellContext)
+    {
+        var detail = BuildAttentionDetail(badge);
+        var severity = string.Equals(badge.Tone, WorkspaceTone.Danger, StringComparison.Ordinal)
+            ? "action required"
+            : "warning";
+        var owner = string.IsNullOrWhiteSpace(shellContext?.WorkspaceTitle)
+            ? "current workspace"
+            : shellContext.WorkspaceTitle.Trim();
+        var source = ResolveAttentionSource(badge);
+        var action = ResolveAttentionAction(badge, owner);
+
+        if (string.IsNullOrWhiteSpace(source) && string.IsNullOrWhiteSpace(action))
+        {
+            return $"{detail}; severity: {severity}; owner: {owner}.";
+        }
+
+        return $"{detail}; severity: {severity}; owner: {owner}; source: {source}; action: {action}.";
+    }
+
+    private static string ResolveAttentionSource(WorkspaceShellBadge badge)
+    {
+        if (ContainsAny(badge.Label, "Alert", "Critical") || ContainsAny(badge.Value, "alert", "unread"))
+        {
+            return "workstation alerts";
+        }
+
+        if (ContainsAny(badge.Label, "Freshness") || ContainsAny(badge.Value, "backend", "stale", "loaded"))
+        {
+            return "shell freshness monitor";
+        }
+
+        if (ContainsAny(badge.Label, "Environment") || ContainsAny(badge.Value, "offline", "demo"))
+        {
+            return "runtime environment";
+        }
+
+        return string.IsNullOrWhiteSpace(badge.Label)
+            ? "workspace signal"
+            : badge.Label.Trim();
+    }
+
+    private static string ResolveAttentionAction(WorkspaceShellBadge badge, string owner)
+    {
+        if (ContainsAny(badge.Label, "Alert", "Critical") || ContainsAny(badge.Value, "alert", "unread"))
+        {
+            return "open Notification Center";
+        }
+
+        if (ContainsAny(badge.Label, "Freshness") || ContainsAny(badge.Value, "backend", "stale", "loaded"))
+        {
+            return string.Equals(owner, "Diagnostics", StringComparison.OrdinalIgnoreCase)
+                ? "refresh Diagnostics"
+                : "open Diagnostics or refresh the current view";
+        }
+
+        if (ContainsAny(badge.Label, "Environment") || ContainsAny(badge.Value, "offline"))
+        {
+            return "switch context or reconnect services";
+        }
+
+        return "open the linked workspace detail";
+    }
+
+    private static bool ContainsAny(string value, params string[] needles)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return needles.Any(needle => value.Contains(needle, StringComparison.OrdinalIgnoreCase));
     }
 
     private Brush TryResolveBrush(string resourceKey, Brush fallback)

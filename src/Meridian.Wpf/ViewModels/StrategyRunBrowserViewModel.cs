@@ -53,6 +53,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             {
                 RaisePropertyChanged(nameof(CanOpenSelectedRun));
                 RaisePropertyChanged(nameof(CanCompareRuns));
+                RaiseComparisonPickerStateChanged();
                 NotifyCommandsChanged();
             }
         }
@@ -71,6 +72,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             if (SetProperty(ref _comparisonRun, value))
             {
                 RaisePropertyChanged(nameof(CanCompareRuns));
+                RaiseComparisonPickerStateChanged();
                 NotifyCommandsChanged();
             }
         }
@@ -237,6 +239,37 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         SelectedRun is not null &&
         ComparisonRun is not null &&
         !string.Equals(SelectedRun.RunId, ComparisonRun.RunId, StringComparison.Ordinal);
+
+    public bool CanChooseComparisonRun =>
+        SelectedRun is not null &&
+        Runs.Any(run => !string.Equals(run.RunId, SelectedRun.RunId, StringComparison.Ordinal));
+
+    public string ComparisonGuidanceText
+    {
+        get
+        {
+            if (Runs.Count == 0)
+            {
+                return _allRuns.Count > 0
+                    ? "Reset filters to choose comparison runs from the recorded library."
+                    : "Record at least two strategy runs before comparing results.";
+            }
+
+            if (SelectedRun is null)
+                return "Select a primary run before choosing a comparison.";
+
+            if (!CanChooseComparisonRun)
+                return "Only one visible run is available. Adjust filters or record another run before comparing.";
+
+            if (ComparisonRun is null)
+                return $"Choose a second run to compare with {SelectedRun.StrategyName}.";
+
+            if (string.Equals(SelectedRun.RunId, ComparisonRun.RunId, StringComparison.Ordinal))
+                return "Choose a different run than the selected primary run.";
+
+            return $"Ready to compare {SelectedRun.StrategyName} against {ComparisonRun.StrategyName}.";
+        }
+    }
 
     public IAsyncRelayCommand RefreshCommand { get; }
     public IRelayCommand OpenDetailCommand { get; }
@@ -433,7 +466,14 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         RaisePropertyChanged(nameof(RunScopeText));
         RaisePropertyChanged(nameof(EmptyStateTitle));
         RaisePropertyChanged(nameof(EmptyStateDetail));
+        RaiseComparisonPickerStateChanged();
         ClearRunFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RaiseComparisonPickerStateChanged()
+    {
+        RaisePropertyChanged(nameof(CanChooseComparisonRun));
+        RaisePropertyChanged(nameof(ComparisonGuidanceText));
     }
 
     private static string FormatRunCount(int count, string qualifier) =>

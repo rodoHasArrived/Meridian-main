@@ -83,7 +83,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="DataDirectoryBox" Style="{StaticResource FormTextBoxStyle}"
-                                     Text="./data" IsReadOnly="True" />
+                                     Text="./data" IsReadOnly="True"
+                                     AutomationProperties.AutomationId="StorageDataDirectoryBox" />
                             <Button Grid.Column="1" Content="Browse" Style="{StaticResource SecondaryButtonStyle}"
                                     Margin="8,0,0,0" />
                         </Grid>
@@ -93,6 +94,7 @@
                         <TextBlock Text="Naming Convention" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                         <ComboBox x:Name="NamingConventionCombo"
                                   Style="{StaticResource FormComboBoxStyle}"
+                                  AutomationProperties.AutomationId="StorageNamingConventionCombo"
                                   SelectionChanged="StorageConfig_Changed">
                             <ComboBoxItem Content="By Symbol (symbol/type/date)" Tag="BySymbol" IsSelected="True" />
                             <ComboBoxItem Content="By Date (date/symbol/type)" Tag="ByDate" />
@@ -105,6 +107,7 @@
                         <TextBlock Text="Compression" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                         <ComboBox x:Name="CompressionCombo"
                                   Style="{StaticResource FormComboBoxStyle}"
+                                  AutomationProperties.AutomationId="StorageCompressionCombo"
                                   SelectionChanged="StorageConfig_Changed">
                             <ComboBoxItem Content="None" Tag="none" />
                             <ComboBoxItem Content="Gzip" Tag="gzip" IsSelected="True" />
@@ -134,19 +137,55 @@
                                TextWrapping="Wrap" Margin="0,0,0,12" />
 
                     <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            BorderBrush="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12"
+                            Margin="0,0,0,12"
+                            AutomationProperties.AutomationId="StoragePreviewScopeStrip">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Scope"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       FontWeight="SemiBold"
+                                       Margin="0,2,12,0"
+                                       VerticalAlignment="Top" />
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{Binding PreviewScopeText}"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="StoragePreviewScopeText" />
+                                <TextBlock Text="{Binding PreviewActionText}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Margin="0,2,0,0"
+                                           AutomationProperties.AutomationId="StoragePreviewActionText" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
                             CornerRadius="12"
                             Padding="16">
                         <TextBlock Text="{Binding FileTreePreviewText}"
                                    FontFamily="Cascadia Code, Consolas, monospace"
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                   TextWrapping="NoWrap" />
+                                   TextWrapping="NoWrap"
+                                   AutomationProperties.AutomationId="StorageFileTreePreviewText" />
                     </Border>
 
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                         <TextBlock Text="{Binding StorageEstimateText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   FontSize="12" />
+                                   FontSize="12"
+                                   AutomationProperties.AutomationId="StorageEstimateText" />
                     </StackPanel>
                 </StackPanel>
             </Border>

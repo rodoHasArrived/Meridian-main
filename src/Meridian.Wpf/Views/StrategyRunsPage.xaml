@@ -169,36 +169,47 @@
                             Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
                             CornerRadius="6"
                             BorderBrush="{DynamicResource InfoColorBrush}"
-                            BorderThickness="1">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Compare with:" FontSize="11"
+                            BorderThickness="1"
+                            AutomationProperties.AutomationId="StrategyRunsComparisonPickerPanel">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Compare with:" FontSize="11"
+                                           Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding Runs}"
+                                          SelectedItem="{Binding ComparisonRun, Mode=TwoWay}"
+                                          IsEnabled="{Binding CanChooseComparisonRun}"
+                                          ToolTip="{Binding ComparisonGuidanceText}"
+                                          AutomationProperties.AutomationId="StrategyRunsComparisonPicker">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <Run Text="{Binding StrategyName}" />
+                                                <Run Text=" (" /><Run Text="{Binding Mode}" /><Run Text=")" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd}}" Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Grid.Column="2" FontSize="11"
+                                           Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"
+                                           Text="{Binding ComparisonRun.Mode, StringFormat='({0})'}" />
+                            </Grid>
+                            <TextBlock Text="{Binding ComparisonGuidanceText}"
+                                       FontSize="11"
                                        Foreground="{DynamicResource ConsoleTextMutedBrush}"
-                                       VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding Runs}"
-                                      SelectedItem="{Binding ComparisonRun, Mode=TwoWay}"
-                                      ToolTip="Select a second run to diff against the primary selection">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                            <Run Text="{Binding StrategyName}" />
-                                            <Run Text=" (" /><Run Text="{Binding Mode}" /><Run Text=")" />
-                                            <Run Text=" " />
-                                            <Run Text="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd}}" Foreground="{DynamicResource ConsoleTextMutedBrush}" />
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <TextBlock Grid.Column="2" FontSize="11"
-                                       Foreground="{DynamicResource ConsoleTextMutedBrush}"
-                                       VerticalAlignment="Center" Margin="8,0,0,0"
-                                       Text="{Binding ComparisonRun.Mode, StringFormat='({0})'}" />
-                        </Grid>
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="StrategyRunsComparisonGuidanceText" />
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Border>

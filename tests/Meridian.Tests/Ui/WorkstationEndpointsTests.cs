@@ -858,7 +858,7 @@ public sealed class WorkstationEndpointsTests
             syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
             syncItem.Workspace.Should().Be("Trading");
             syncItem.TargetRoute.Should().Be(UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
-            syncItem.TargetPageTag.Should().Be("TradingShell");
+            syncItem.TargetPageTag.Should().Be("AccountPortfolio");
             syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
         }
         finally
@@ -1410,6 +1410,115 @@ public sealed class WorkstationEndpointsTests
             !string.IsNullOrWhiteSpace(item.ToleranceProfileId) &&
             !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) &&
             !string.IsNullOrWhiteSpace(item.SignoffStatus));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCalibrationSummary_ShouldAggregateToleranceProfiles()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-calibration-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var summary = await app
+            .GetTestClient()
+            .GetFromJsonAsync<ReconciliationCalibrationSummaryDto>(
+                UiApiRoutes.ReconciliationCalibrationSummary,
+                ServerJsonOptions);
+
+        summary.Should().NotBeNull();
+        summary!.TotalBreakCount.Should().BeGreaterThan(0);
+        summary.ActiveBreakCount.Should().BeGreaterThan(0);
+        summary.PendingSignoffCount.Should().BeGreaterThan(0);
+        summary.MissingCalibrationMetadataCount.Should().Be(0);
+        summary.Status.Should().BeOneOf(
+            ReconciliationCalibrationStatusDto.ReviewRequired,
+            ReconciliationCalibrationStatusDto.Blocked);
+        summary.Profiles.Should().Contain(profile =>
+            !string.IsNullOrWhiteSpace(profile.ToleranceProfileId) &&
+            !string.IsNullOrWhiteSpace(profile.ExceptionRoute) &&
+            profile.TotalBreakCount > 0 &&
+            profile.PendingSignoffCount > 0);
+        summary.Summary.Should().Contain("reconciliation");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCalibrationSummary_AfterResolution_ShouldMarkReadyForSignoff()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-calibration-resolved-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var client = app.GetTestClient();
+        var queue = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+        queue.Should().NotBeNull();
+        queue.Should().NotBeEmpty();
+
+        foreach (var item in queue!)
+        {
+            if (item.Status == ReconciliationBreakQueueStatus.Open)
+            {
+                var review = await client.PostAsJsonAsync(
+                    UiApiRoutes.ReconciliationBreakReview.Replace("{breakId}", item.BreakId, StringComparison.Ordinal),
+                    new ReviewReconciliationBreakRequest(
+                        BreakId: item.BreakId,
+                        AssignedTo: "ops-review",
+                        ReviewedBy: "qa-review",
+                        ReviewNote: "Calibration review completed."));
+                review.StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+
+            var resolve = await client.PostAsJsonAsync(
+                UiApiRoutes.ReconciliationBreakResolve.Replace("{breakId}", item.BreakId, StringComparison.Ordinal),
+                new ResolveReconciliationBreakRequest(
+                    BreakId: item.BreakId,
+                    Status: ReconciliationBreakQueueStatus.Resolved,
+                    ResolvedBy: "qa-resolve",
+                    ResolutionNote: "Tolerance profile accepted for sign-off."));
+            resolve.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        var summary = await client.GetFromJsonAsync<ReconciliationCalibrationSummaryDto>(
+            UiApiRoutes.ReconciliationCalibrationSummary,
+            ServerJsonOptions);
+
+        summary.Should().NotBeNull();
+        summary!.Status.Should().Be(ReconciliationCalibrationStatusDto.Ready);
+        summary.ActiveBreakCount.Should().Be(0);
+        summary.OpenBreakCount.Should().Be(0);
+        summary.InReviewBreakCount.Should().Be(0);
+        summary.PendingSignoffCount.Should().Be(0);
+        summary.CriticalOpenBreakCount.Should().Be(0);
+        summary.SignedOffCount.Should().Be(summary.TotalBreakCount);
+        summary.Profiles.Should().OnlyContain(profile => profile.PendingSignoffCount == 0);
+        summary.Summary.Should().Contain("ready for governance sign-off");
     }
 
     [Fact]

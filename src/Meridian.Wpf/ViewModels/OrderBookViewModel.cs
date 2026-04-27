@@ -76,6 +76,20 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _connectionIndicatorFill, value);
     }
 
+    // ── Order-flow posture ───────────────────────────────────────────────────────
+
+    private string _orderFlowPostureTitle = "Select a symbol";
+    public string OrderFlowPostureTitle { get => _orderFlowPostureTitle; private set => SetProperty(ref _orderFlowPostureTitle, value); }
+
+    private string _orderFlowPostureDetail = "Choose a symbol to load the depth ladder, spread posture, and recent trade tape.";
+    public string OrderFlowPostureDetail { get => _orderFlowPostureDetail; private set => SetProperty(ref _orderFlowPostureDetail, value); }
+
+    private string _orderFlowPostureScopeText = "No symbol selected";
+    public string OrderFlowPostureScopeText { get => _orderFlowPostureScopeText; private set => SetProperty(ref _orderFlowPostureScopeText, value); }
+
+    private string _orderFlowPostureActionText = "Choose symbol";
+    public string OrderFlowPostureActionText { get => _orderFlowPostureActionText; private set => SetProperty(ref _orderFlowPostureActionText, value); }
+
     // ── Visibility flags ──────────────────────────────────────────────────────────
 
     private bool _noDataVisible = true;
@@ -130,6 +144,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     private string _selectedSymbol = string.Empty;
     private int _depthLevels = 10;
+    private decimal? _spreadValue;
+    private decimal? _imbalancePercent;
 
     /// <summary>
     /// Raised after the symbol list loads and the first symbol is auto-selected.
@@ -178,11 +194,15 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         RecentTrades.Clear();
         NoDataVisible = true;
         NoTradesVisible = true;
+        _spreadValue = null;
+        _imbalancePercent = null;
+        UpdateOrderFlowPosture();
     }
 
     public void SetDepthLevels(int levels)
     {
-        _depthLevels = levels;
+        _depthLevels = Math.Max(1, levels);
+        UpdateOrderFlowPosture();
     }
 
     // ── Internal logic ────────────────────────────────────────────────────────────
@@ -207,6 +227,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             ConnectionState.Reconnecting => ReconnectingBrush,
             _ => DisconnectedBrush
         };
+
+        UpdateOrderFlowPosture();
     }
 
     private async Task LoadSymbolsAsync(CancellationToken ct = default)
@@ -450,6 +472,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     {
         if (bids.Count == 0 || asks.Count == 0)
         {
+            _spreadValue = null;
+            _imbalancePercent = null;
             BestBidText = "--";
             BestAskText = "--";
             MidPriceText = "--";
@@ -460,6 +484,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             ImbalanceText = "--";
             CumulativeDeltaText = "--";
             Heatmap.UpdateFromSnapshot(bids, asks); // clears heatmap when data is absent
+            UpdateOrderFlowPosture();
             return;
         }
 
@@ -472,6 +497,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         var askVolume = asks.Sum(a => (decimal)a.RawSize);
         var totalVolume = bidVolume + askVolume;
         var imbalance = totalVolume > 0 ? (bidVolume - askVolume) / totalVolume * 100 : 0;
+        _spreadValue = spread;
+        _imbalancePercent = imbalance;
 
         BestBidText = bestBid.ToString("F2");
         BestAskText = bestAsk.ToString("F2");
@@ -489,6 +516,97 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         // Push the same snapshot to the depth heatmap.
         // bids are sorted descending (best bid first); asks ascending (best ask first).
         Heatmap.UpdateFromSnapshot(bids, asks);
+        UpdateOrderFlowPosture();
+    }
+
+    private void UpdateOrderFlowPosture()
+    {
+        var state = BuildOrderFlowPosture(
+            _selectedSymbol,
+            _depthLevels,
+            ConnectionStatusText,
+            Bids.Count,
+            Asks.Count,
+            RecentTrades.Count,
+            _spreadValue,
+            _imbalancePercent,
+            CumulativeDeltaText);
+
+        OrderFlowPostureTitle = state.Title;
+        OrderFlowPostureDetail = state.Detail;
+        OrderFlowPostureScopeText = state.ScopeText;
+        OrderFlowPostureActionText = state.ActionText;
+    }
+
+    internal static OrderBookPosture BuildOrderFlowPosture(
+        string? selectedSymbol,
+        int depthLevels,
+        string? connectionStatus,
+        int bidCount,
+        int askCount,
+        int recentTradeCount,
+        decimal? spread,
+        decimal? imbalancePercent,
+        string? cumulativeDeltaText)
+    {
+        var symbol = selectedSymbol?.Trim() ?? string.Empty;
+        var normalizedLevels = Math.Max(1, depthLevels);
+        var normalizedBidCount = Math.Max(0, bidCount);
+        var normalizedAskCount = Math.Max(0, askCount);
+        var normalizedTradeCount = Math.Max(0, recentTradeCount);
+        var connection = string.IsNullOrWhiteSpace(connectionStatus) ? "Disconnected" : connectionStatus.Trim();
+
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return new OrderBookPosture(
+                "Select a symbol",
+                "Choose a symbol to load the depth ladder, spread posture, and recent trade tape.",
+                $"No symbol - {normalizedLevels} levels",
+                "Choose symbol");
+        }
+
+        var scope = $"{symbol} - {normalizedLevels} levels - {normalizedBidCount} bid / {normalizedAskCount} ask rows";
+        if (normalizedBidCount == 0 || normalizedAskCount == 0)
+        {
+            var connected = string.Equals(connection, "Connected", StringComparison.OrdinalIgnoreCase);
+            return new OrderBookPosture(
+                "Waiting for full depth",
+                connected
+                    ? $"No complete bid/ask snapshot is visible for {symbol}. Verify the depth feed or wait for the next refresh."
+                    : $"{connection} - no complete bid/ask snapshot is visible for {symbol}.",
+                scope,
+                connected ? "Verify depth feed" : "Check connection");
+        }
+
+        if (normalizedTradeCount == 0)
+        {
+            return new OrderBookPosture(
+                "Depth live, tape pending",
+                $"{normalizedBidCount + normalizedAskCount} ladder rows are visible for {symbol}, but the recent trade tape is empty. Confirm trade permissions before using cumulative delta.",
+                scope,
+                "Verify trade tape");
+        }
+
+        var spreadText = spread.HasValue ? spread.Value.ToString("F2") : "--";
+        var deltaText = string.IsNullOrWhiteSpace(cumulativeDeltaText) ? "--" : cumulativeDeltaText.Trim();
+        var imbalance = imbalancePercent.GetValueOrDefault();
+        var absoluteImbalance = Math.Abs(imbalance);
+
+        if (absoluteImbalance >= 20)
+        {
+            var side = imbalance > 0 ? "Bid-side" : "Ask-side";
+            return new OrderBookPosture(
+                $"{side} pressure building",
+                $"{side} depth is leading by {absoluteImbalance:F1}% with a {spreadText} spread and {deltaText} cumulative delta.",
+                scope,
+                "Monitor liquidity wall");
+        }
+
+        return new OrderBookPosture(
+            "Order flow ready",
+            $"Depth, spread, and trade tape are live for {symbol}; spread is {spreadText} and imbalance is {imbalance:+0.0;-0.0;0.0}%.",
+            scope,
+            "Monitor heatmap and tape");
     }
 
     /// <summary>
@@ -561,6 +679,10 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         {
             // Ignore trade fetch errors — non-critical
         }
+        finally
+        {
+            UpdateOrderFlowPosture();
+        }
     }
 
     private static string FormatSize(int size)
@@ -579,3 +701,9 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         _httpClient.Dispose();
     }
 }
+
+public sealed record OrderBookPosture(
+    string Title,
+    string Detail,
+    string ScopeText,
+    string ActionText);

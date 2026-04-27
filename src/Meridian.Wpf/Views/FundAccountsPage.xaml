@@ -331,11 +331,59 @@
 
                     <Border Style="{StaticResource CardStyle}">
                         <StackPanel>
-                            <TextBlock Text="Recent Balance Evidence" Style="{StaticResource CardHeaderStyle}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Recent Balance Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                <Border Grid.Column="1"
+                                        Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                        BorderBrush="{StaticResource WarningColorBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="999"
+                                        Padding="10,4"
+                                        Margin="12,0,0,0">
+                                    <TextBlock Text="{Binding BalanceEvidenceStatusText}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource WarningColorBrush}"
+                                               AutomationProperties.AutomationId="FundAccountsBalanceEvidenceStatus" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="{Binding BalanceEvidenceDetailText}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,10,0,0"
+                                       AutomationProperties.AutomationId="FundAccountsBalanceEvidenceDetail" />
+                            <WrapPanel Margin="0,10,0,0">
+                                <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="999"
+                                        Padding="10,4"
+                                        Margin="0,0,8,8">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Next"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0" />
+                                        <TextBlock Text="{Binding BalanceEvidenceActionText}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   AutomationProperties.AutomationId="FundAccountsBalanceEvidenceAction" />
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
                             <TextBlock Text="{Binding BalanceHistorySummaryText}"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap"
-                                       Margin="0,10,0,0" />
+                                       Margin="0,2,0,0"
+                                       AutomationProperties.AutomationId="FundAccountsBalanceHistorySummary" />
                             <ItemsControl ItemsSource="{Binding BalanceHistory}" Margin="0,12,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

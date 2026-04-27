@@ -2,6 +2,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
@@ -699,6 +700,11 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                     TargetLabel: "Target page: NotificationCenter");
             }
 
+            if (GetPrimaryAttentionWorkItem(readiness.WorkItems) is { } workItem)
+            {
+                return BuildWorkItemReviewDeskHeroState(workItem, scopeDisplayName);
+            }
+
             if (!IsOperatorReady(readiness))
             {
                 return BuildReadinessReviewDeskHeroState(readiness, scopeDisplayName);
@@ -752,6 +758,32 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             TargetLabel: $"Target page: {(isLiveMode ? "PositionBlotter" : "RunPortfolio")}");
     }
 
+    private static TradingDeskHeroState BuildWorkItemReviewDeskHeroState(
+        OperatorWorkItemDto workItem,
+        string scopeDisplayName)
+    {
+        var primaryActionId = ResolveOperatorWorkItemActionId(workItem);
+        var secondaryActionId = primaryActionId == "FundAuditTrail"
+            ? "NotificationCenter"
+            : "FundAuditTrail";
+
+        return new TradingDeskHeroState(
+            FocusLabel: workItem.Tone == OperatorWorkItemToneDto.Critical
+                ? "Readiness blocked"
+                : "Operator queue",
+            Summary: workItem.Detail,
+            Detail: $"{workItem.Label} is still open for {scopeDisplayName}; resolve it before the desk can be shown as ready.",
+            BadgeText: "Attention",
+            BadgeTone: TradingWorkspaceStatusTone.Warning,
+            HandoffTitle: workItem.Label,
+            HandoffDetail: "Open the routed queue item, then return to Trading once shared readiness has no warning or critical work items.",
+            PrimaryActionId: primaryActionId,
+            PrimaryActionLabel: ResolveHeroActionLabel(primaryActionId, workItem.Label),
+            SecondaryActionId: secondaryActionId,
+            SecondaryActionLabel: ResolveHeroActionLabel(secondaryActionId, "Audit Trail"),
+            TargetLabel: $"Target page: {ResolveHeroTargetLabel(primaryActionId, primaryActionId)}");
+    }
+
     private static TradingDeskHeroState BuildReadinessReviewDeskHeroState(
         TradingOperatorReadinessDto readiness,
         string scopeDisplayName)
@@ -793,6 +825,82 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         "dk1-trust" => "FundAuditTrail",
         _ => "NotificationCenter"
     };
+
+    private static OperatorWorkItemDto? GetPrimaryAttentionWorkItem(IReadOnlyList<OperatorWorkItemDto> workItems)
+        => workItems
+            .Where(static item => item.Tone is OperatorWorkItemToneDto.Critical or OperatorWorkItemToneDto.Warning)
+            .OrderByDescending(static item => item.Tone)
+            .ThenByDescending(static item => item.CreatedAt)
+            .ThenBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+    internal static string ResolveOperatorWorkItemActionId(OperatorWorkItemDto workItem)
+    {
+        var routeActionId = ResolveOperatorWorkItemRouteActionId(workItem.TargetRoute);
+        if (!string.IsNullOrWhiteSpace(routeActionId))
+        {
+            return routeActionId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(workItem.TargetPageTag) &&
+            !IsWorkspaceShellTag(workItem.TargetPageTag))
+        {
+            return workItem.TargetPageTag;
+        }
+
+        return workItem.Kind switch
+        {
+            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
+            OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
+            OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
+            OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
+            OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
+            OperatorWorkItemKindDto.ReportPackApproval => "FundReportPack",
+            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
+            _ => "NotificationCenter"
+        };
+    }
+
+    private static string? ResolveOperatorWorkItemRouteActionId(string? targetRoute)
+    {
+        if (string.IsNullOrWhiteSpace(targetRoute))
+        {
+            return null;
+        }
+
+        var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
+        {
+            return "FundReconciliation";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
+        {
+            return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
+            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
+        {
+            return "AccountPortfolio";
+        }
+
+        return null;
+    }
+
+    private static bool RouteEqualsOrStartsWith(string route, string knownRoute)
+    {
+        var normalizedKnownRoute = knownRoute.TrimEnd('/');
+        return string.Equals(route, normalizedKnownRoute, StringComparison.OrdinalIgnoreCase) ||
+               route.StartsWith($"{normalizedKnownRoute}/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsWorkspaceShellTag(string pageTag)
+        => string.Equals(pageTag, "ResearchShell", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(pageTag, "TradingShell", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(pageTag, "DataOperationsShell", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(pageTag, "GovernanceShell", StringComparison.OrdinalIgnoreCase);
 
     internal static TradingDeskHeroState BuildDegradedDeskHeroState() =>
         new(
@@ -921,7 +1029,10 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         "RunRisk" => "Open Risk Rail",
         "FundAuditTrail" => "Audit Trail",
         "NotificationCenter" => "Open Alerts",
+        "AccountPortfolio" => "Open Portfolio",
+        "SecurityMaster" => "Security Master",
         "FundReconciliation" => "Review Breaks",
+        "FundReportPack" => "Report Pack",
         "FundTrialBalance" => "Open Accounting",
         _ => string.IsNullOrWhiteSpace(fallbackLabel) ? "Open" : fallbackLabel
     };
@@ -936,7 +1047,10 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         "RunRisk" => "RunRisk",
         "FundAuditTrail" => "FundAuditTrail",
         "NotificationCenter" => "NotificationCenter",
+        "AccountPortfolio" => "AccountPortfolio",
+        "SecurityMaster" => "SecurityMaster",
         "FundReconciliation" => "FundReconciliation",
+        "FundReportPack" => "FundReportPack",
         "FundTrialBalance" => "FundTrialBalance",
         _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "TradingShell" : fallbackTargetPageTag
     };
@@ -946,7 +1060,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private static bool IsOperatorReady(TradingOperatorReadinessDto readiness) =>
         readiness.ReadyForPaperOperation &&
-        readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready;
+        readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready &&
+        GetPrimaryAttentionWorkItem(readiness.WorkItems) is null;
 
     private static string GetToneBadgeText(TradingWorkspaceStatusTone tone) => tone switch
     {

@@ -22,7 +22,9 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     private readonly ServiceProvider _serviceProvider;
     private bool _disposed;
 
-    public MainPageUiAutomationFacade(FundContextService? fundContextService = null)
+    public MainPageUiAutomationFacade(
+        FundContextService? fundContextService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
     {
         RunMatUiAutomationFacade.EnsureApplicationResources();
 
@@ -41,7 +43,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         WorkspaceService.Instance.ResetForTests();
 
         var runMatService = new RunMatService(_runMatRootDirectory);
-        _serviceProvider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(runMatService, fundContextService);
+        _serviceProvider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(
+            runMatService,
+            fundContextService,
+            operatorInboxApiClient);
         navigationService.SetServiceProvider(_serviceProvider);
 
         Page = _serviceProvider.GetRequiredService<MainPage>();
@@ -98,6 +103,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     public Button ShellDensityToggleButton => GetRequired<Button>("ShellDensityToggleButton");
 
     public TextBlock ShellDensityButtonLabelText => GetRequired<TextBlock>("ShellDensityButtonLabelText");
+
+    public Button OperatorInboxButton => GetRequired<Button>("OperatorInboxButton");
+
+    public TextBlock OperatorInboxButtonLabelText => GetRequired<TextBlock>("OperatorInboxButtonLabelText");
 
     public Border FixtureModeBanner => GetRequired<Border>("FixtureModeBanner");
 

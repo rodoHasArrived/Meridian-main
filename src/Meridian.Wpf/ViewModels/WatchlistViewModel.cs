@@ -228,7 +228,7 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
             var watchlists = await _watchlistService.GetAllWatchlistsAsync(_loadCts.Token);
             _allWatchlists.Clear();
 
-            foreach (var wl in watchlists)
+            foreach (var wl in SortWatchlistsForDeskDisplay(watchlists))
             {
                 _allWatchlists.Add(new WatchlistDisplayModel
                 {
@@ -367,6 +367,19 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
             visibleText,
             "No watchlists visible",
             "Clear search to return to the saved watchlist library.");
+    }
+
+    internal static IReadOnlyList<WpfServices.Watchlist> SortWatchlistsForDeskDisplay(
+        IEnumerable<WpfServices.Watchlist> watchlists)
+    {
+        if (watchlists is null)
+            return Array.Empty<WpfServices.Watchlist>();
+
+        return watchlists
+            .OrderByDescending(watchlist => watchlist.IsPinned)
+            .ThenBy(watchlist => watchlist.SortOrder)
+            .ThenBy(watchlist => watchlist.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private void ApplyPosture(WatchlistPosture posture)

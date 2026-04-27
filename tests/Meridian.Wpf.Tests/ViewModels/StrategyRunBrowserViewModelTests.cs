@@ -159,6 +159,8 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.EmptyStateTitle.Should().Be("No strategy runs match the current filters");
         vm.EmptyStateDetail.Should().Contain("Reset filters");
         vm.RunScopeText.Should().Be("0 visible of 1 recorded run");
+        vm.CanChooseComparisonRun.Should().BeFalse();
+        vm.ComparisonGuidanceText.Should().Be("Reset filters to choose comparison runs from the recorded library.");
     }
 
     [Fact]
@@ -336,6 +338,81 @@ public sealed class StrategyRunBrowserViewModelTests
     }
 
     [Fact]
+    public async Task ComparisonGuidance_WithSingleVisibleRun_ShouldDisableComparisonPicker()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Solo Strategy"));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.Runs.Should().ContainSingle();
+        vm.SelectedRun.Should().NotBeNull();
+        vm.CanChooseComparisonRun.Should().BeFalse();
+        vm.ComparisonGuidanceText.Should().Be(
+            "Only one visible run is available. Adjust filters or record another run before comparing.");
+    }
+
+    [Fact]
+    public async Task ComparisonGuidance_WithTwoVisibleRuns_ShouldPromptForSecondRun()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.Runs.Should().HaveCount(2);
+        vm.CanChooseComparisonRun.Should().BeTrue();
+        vm.ComparisonRun.Should().BeNull();
+        vm.ComparisonGuidanceText.Should().Be($"Choose a second run to compare with {vm.SelectedRun!.StrategyName}.");
+    }
+
+    [Fact]
+    public async Task ComparisonGuidance_WhenComparisonRunMatchesPrimary_ShouldRequestDifferentRun()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.ComparisonRun = vm.SelectedRun;
+
+        vm.CanCompareRuns.Should().BeFalse();
+        vm.CanChooseComparisonRun.Should().BeTrue();
+        vm.ComparisonGuidanceText.Should().Be("Choose a different run than the selected primary run.");
+    }
+
+    [Fact]
+    public async Task ComparisonGuidance_WhenDistinctComparisonRunSelected_ShouldExposeReadyState()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.ComparisonRun = vm.Runs.First(run => !string.Equals(run.RunId, vm.SelectedRun!.RunId, StringComparison.Ordinal));
+
+        vm.CanCompareRuns.Should().BeTrue();
+        vm.CanChooseComparisonRun.Should().BeTrue();
+        vm.ComparisonGuidanceText.Should().Be(
+            $"Ready to compare {vm.SelectedRun!.StrategyName} against {vm.ComparisonRun!.StrategyName}.");
+    }
+
+    [Fact]
     public void ComparisonRows_WhenNoComparisonResult_ShouldBeEmpty()
     {
         var vm = CreateEmpty();
@@ -388,6 +465,11 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsEmptyStateResetFiltersButton");
         xaml.Should().Contain("{Binding ClearRunFiltersCommand}");
         xaml.Should().Contain("{Binding HasFilterRecoveryAction");
+        xaml.Should().Contain("StrategyRunsComparisonPickerPanel");
+        xaml.Should().Contain("StrategyRunsComparisonPicker");
+        xaml.Should().Contain("StrategyRunsComparisonGuidanceText");
+        xaml.Should().Contain("{Binding CanChooseComparisonRun}");
+        xaml.Should().Contain("{Binding ComparisonGuidanceText}");
         xaml.Should().Contain("{DynamicResource EmbeddedShellHeroCardStyle}");
         xaml.Should().Contain("{DynamicResource CardStyle}");
         xaml.Should().Contain("{DynamicResource SecondaryButtonStyle}");

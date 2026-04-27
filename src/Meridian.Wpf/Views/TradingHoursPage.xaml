@@ -421,7 +421,9 @@
                     </Border>
 
                     <!-- Dynamic holiday rows -->
-                    <ItemsControl ItemsSource="{Binding Holidays}">
+                    <ItemsControl ItemsSource="{Binding Holidays}"
+                                  Visibility="{Binding HasHolidays, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  AutomationProperties.AutomationId="TradingHoursHolidayRows">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Padding="12,10">
@@ -441,6 +443,30 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <Border Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1,0,1,1"
+                            CornerRadius="0,0,8,8"
+                            Padding="18,22"
+                            Visibility="{Binding IsHolidayEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="TradingHoursHolidayEmptyState">
+                        <StackPanel HorizontalAlignment="Center" MaxWidth="560">
+                            <TextBlock Text="{Binding HolidayEmptyStateTitle}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       AutomationProperties.AutomationId="TradingHoursHolidayEmptyStateTitle" />
+                            <TextBlock Text="{Binding HolidayEmptyStateDetail}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="TradingHoursHolidayEmptyStateDetail" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
         </StackPanel>

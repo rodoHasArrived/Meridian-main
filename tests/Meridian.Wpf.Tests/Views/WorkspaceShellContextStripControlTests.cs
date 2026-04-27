@@ -85,7 +85,53 @@ public sealed class WorkspaceShellContextStripControlTests
                 banner.Visibility.Should().Be(Visibility.Visible);
                 AutomationProperties.GetAutomationId(banner).Should().Be("WorkspaceContextAttentionBanner");
                 title.Text.Should().Be("Action required");
-                detail.Text.Should().Be("Environment: Offline");
+                detail.Text.Should().Be("Environment: Offline; severity: action required; owner: Trading; source: runtime environment; action: switch context or reconnect services.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void Control_ShouldRenderActionableAttentionContextForUnreadAlerts()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var control = new WorkspaceShellContextStripControl
+            {
+                Width = 960,
+                ShellContext = new WorkspaceShellContext
+                {
+                    WorkspaceTitle = "Data Operations",
+                    WorkspaceSubtitle = "Shell",
+                    Badges =
+                    [
+                        new WorkspaceShellBadge
+                        {
+                            Label = "Critical",
+                            Value = "1 unread alert(s)",
+                            Tone = WorkspaceTone.Warning
+                        }
+                    ]
+                }
+            };
+
+            var window = CreateHostWindow(control);
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                control.UpdateLayout();
+
+                var title = control.FindName("AttentionTitleText").Should().BeOfType<TextBlock>().Subject;
+                var detail = control.FindName("AttentionDetailText").Should().BeOfType<TextBlock>().Subject;
+
+                title.Text.Should().Be("Review recommended");
+                detail.Text.Should().Be("Critical: 1 unread alert(s); severity: warning; owner: Data Operations; source: workstation alerts; action: open Notification Center.");
             }
             finally
             {

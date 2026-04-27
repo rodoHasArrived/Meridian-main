@@ -77,6 +77,64 @@ public sealed class TradingHoursViewModelTests
     }
 
     [Fact]
+    public void ApplyHolidayCalendarForTests_WhenRowsExist_HidesHolidayEmptyState()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateSubject();
+
+            viewModel.ApplyHolidayCalendarForTests(
+                [
+                    new TradingHoursViewModel.HolidayDisplayItem
+                    {
+                        DateText = "Jan 1 (Thu)",
+                        Name = "New Year's Day"
+                    }
+                ],
+                2026);
+
+            viewModel.HolidaysHeaderText.Should().Be("US Market Holidays (2026)");
+            viewModel.HasHolidays.Should().BeTrue();
+            viewModel.IsHolidayEmptyStateVisible.Should().BeFalse();
+            viewModel.Holidays.Should().ContainSingle(item => item.Name == "New Year's Day");
+        });
+    }
+
+    [Fact]
+    public void ApplyHolidayCalendarForTests_WhenNoRows_ShowsCoverageGuidance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateSubject();
+
+            viewModel.ApplyHolidayCalendarForTests([], 2026);
+
+            viewModel.HasHolidays.Should().BeFalse();
+            viewModel.IsHolidayEmptyStateVisible.Should().BeTrue();
+            viewModel.HolidayEmptyStateTitle.Should().Be("No US market holidays loaded");
+            viewModel.HolidayEmptyStateDetail.Should().Contain("2026 closure rows");
+            viewModel.HolidayEmptyStateDetail.Should().Contain("exchange-holiday coverage");
+        });
+    }
+
+    [Fact]
+    public void ApplyHolidayCalendarUnavailableForTests_ShowsFallbackGuidance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateSubject();
+
+            viewModel.ApplyHolidayCalendarUnavailableForTests(2026);
+
+            viewModel.HasHolidays.Should().BeFalse();
+            viewModel.IsHolidayEmptyStateVisible.Should().BeTrue();
+            viewModel.HolidayEmptyStateTitle.Should().Be("Holiday calendar unavailable");
+            viewModel.HolidayEmptyStateDetail.Should().Contain("session status above");
+            viewModel.Holidays.Should().BeEmpty();
+        });
+    }
+
+    [Fact]
     public void TradingHoursPageSource_BindsSessionBriefing()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingHoursPage.xaml"));
@@ -86,10 +144,18 @@ public sealed class TradingHoursViewModelTests
         xaml.Should().Contain("TradingHoursSessionBriefingTitle");
         xaml.Should().Contain("TradingHoursSessionBriefingDetail");
         xaml.Should().Contain("TradingHoursSessionBriefingTarget");
+        xaml.Should().Contain("TradingHoursHolidayRows");
+        xaml.Should().Contain("TradingHoursHolidayEmptyState");
+        xaml.Should().Contain("TradingHoursHolidayEmptyStateTitle");
+        xaml.Should().Contain("TradingHoursHolidayEmptyStateDetail");
         xaml.Should().Contain("{Binding SessionBriefingToneLabel}");
         xaml.Should().Contain("{Binding SessionBriefingTitle}");
         xaml.Should().Contain("{Binding SessionBriefingDetail}");
         xaml.Should().Contain("{Binding SessionBriefingTargetText}");
+        xaml.Should().Contain("{Binding HasHolidays");
+        xaml.Should().Contain("{Binding IsHolidayEmptyStateVisible");
+        xaml.Should().Contain("{Binding HolidayEmptyStateTitle}");
+        xaml.Should().Contain("{Binding HolidayEmptyStateDetail}");
     }
 
     private static TradingHoursViewModel CreateSubject() =>

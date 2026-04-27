@@ -91,6 +91,32 @@ public sealed class FundAccountsViewModelTests
     }
 
     [Fact]
+    public void BalanceEvidenceProjection_DistinguishesSelectionSnapshotAndLoadedStates()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.BalanceEvidenceStatusText.Should().Be("No account selected");
+        viewModel.BalanceEvidenceDetailText.Should().Contain("Choose an account");
+        viewModel.BalanceEvidenceActionText.Should().Be("Select Account");
+
+        var account = CreateBrokerageAccount(sharedDataAccess: CreateSharedDataAccess());
+        viewModel.SelectedAccount = account;
+
+        viewModel.BalanceEvidenceStatusText.Should().Be("Snapshot required");
+        viewModel.BalanceEvidenceDetailText.Should().Contain("No balance snapshots");
+        viewModel.BalanceEvidenceDetailText.Should().Contain(account.DisplayName);
+        viewModel.BalanceEvidenceActionText.Should().Be("Record Snapshot");
+
+        viewModel.BalanceHistory.Add(CreateBalanceSnapshot(account, pendingSettlement: 125m));
+
+        viewModel.BalanceEvidenceStatusText.Should().Be("Evidence loaded");
+        viewModel.BalanceEvidenceDetailText.Should().Contain("1 snapshot");
+        viewModel.BalanceEvidenceDetailText.Should().Contain("Apr 25 2026");
+        viewModel.BalanceEvidenceDetailText.Should().Contain("pending settlement");
+        viewModel.BalanceEvidenceActionText.Should().Be("Review Snapshot");
+    }
+
+    [Fact]
     public void FundAccountsPageSource_BindsOperatorBriefingProjection()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\FundAccountsPage.xaml"));
@@ -102,6 +128,12 @@ public sealed class FundAccountsViewModelTests
         xaml.Should().Contain("{Binding AccountBriefingDetail}");
         xaml.Should().Contain("{Binding AccountBriefingActionText}");
         xaml.Should().Contain("FundAccountsRoutingReadinessText");
+        xaml.Should().Contain("FundAccountsBalanceEvidenceStatus");
+        xaml.Should().Contain("FundAccountsBalanceEvidenceDetail");
+        xaml.Should().Contain("FundAccountsBalanceEvidenceAction");
+        xaml.Should().Contain("{Binding BalanceEvidenceStatusText}");
+        xaml.Should().Contain("{Binding BalanceEvidenceDetailText}");
+        xaml.Should().Contain("{Binding BalanceEvidenceActionText}");
     }
 
     [Fact]
@@ -428,6 +460,23 @@ public sealed class FundAccountsViewModelTests
             FallbackConnectionIds: isRoutable ? ["broker-a-backup"] : [],
             PolicyGate: isRoutable ? null : "production-ready",
             Candidates: []);
+
+    private static AccountBalanceSnapshotDto CreateBalanceSnapshot(
+        AccountSummaryDto account,
+        decimal? pendingSettlement = null)
+        => new(
+            SnapshotId: Guid.Parse("99999999-9999-9999-9999-999999999999"),
+            AccountId: account.AccountId,
+            FundId: account.FundId,
+            AsOfDate: new DateOnly(2026, 4, 25),
+            Currency: account.BaseCurrency,
+            CashBalance: 1_250m,
+            SecuritiesMarketValue: 4_500m,
+            AccruedInterest: 12m,
+            PendingSettlement: pendingSettlement,
+            Source: "custodian statement",
+            RecordedAt: new DateTimeOffset(2026, 4, 25, 18, 30, 0, TimeSpan.Zero),
+            ExternalReference: "snapshot-alpha");
 
     private static string GetRepositoryFilePath(string relativePath)
     {

@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Wpf.Services;
@@ -9,6 +10,8 @@ public sealed record WorkstationReconciliationActionResult(
 
 public interface IWorkstationReconciliationApiClient
 {
+    Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default);
+
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default);
 
     Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default);
@@ -34,6 +37,9 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
+
+    public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
+        => _apiClient.GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct);
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
         => await _apiClient.GetAsync<List<ReconciliationBreakQueueItem>>("/api/workstation/reconciliation/break-queue", ct).ConfigureAwait(false)

@@ -1,6 +1,6 @@
 # Codebase Audit and Cleanup Roadmap
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status:** Active cleanup backlog
 **Purpose:** Current cleanup and maintainability roadmap grounded in the repository as it exists today
 
@@ -53,7 +53,7 @@ Primary anchors:
 
 ### 2. WPF workflow cleanup
 
-The app now has shared run surfaces and a delivered four-workspace shell baseline, but workflow depth and implementation quality are still mixed across high-traffic pages.
+The app now has shared run surfaces and a delivered four-workspace shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
 
 Open work:
 

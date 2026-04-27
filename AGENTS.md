@@ -9,6 +9,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
 - `docs/development/build-observability.md` for build diagnostics, metrics, fingerprints, and debug bundles.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
+- `docs/development/desktop-testing-guide.md` for WPF test slices and shell-first regression bundles.
 - `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
@@ -218,13 +219,16 @@ pwsh ./scripts/dev/run-desktop.ps1 -NoBuild
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ShellNavigationCatalogTests|FullyQualifiedName~NavigationServiceTests|FullyQualifiedName~MainPageUiWorkflowTests|FullyQualifiedName~WorkspaceShellContextStripControlTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~WelcomePageViewModelTests|FullyQualifiedName~WorkstationWorkflowSummaryServiceTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingHoursViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~OrderBookViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~MessagingHubViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~StrategyRunBrowserViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~BatchBacktestViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~QuantScriptViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~CashFlowViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundLedgerViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundAccountsViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SecurityMasterViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
@@ -234,6 +238,7 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQu
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~NotificationCenterViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~WatchlistViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~DataQualityViewModelCharacterizationTests|FullyQualifiedName~DataQualityPageSmokeTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~StorageViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SingleInstanceServiceTests|FullyQualifiedName~DesktopWorkflowScriptTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
@@ -262,9 +267,17 @@ fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-
 Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release WPF build, such as
 the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
-for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
+for WPF desk-briefing hero state changes, including Trading shared-work-item attention routing,
+before broadening to the full WPF test pass.
+Use `ShellNavigationCatalogTests`, `NavigationServiceTests`, `MainPageUiWorkflowTests`,
+`WorkspaceShellContextStripControlTests`, `WorkspaceDeepPageChromeTests`,
+`WelcomePageViewModelTests`, and `WorkstationWorkflowSummaryServiceTests` when changing workspace
+catalog entries, shell routing/selection, context-strip attention detail, welcome readiness,
+workflow-summary handoffs, or hosted deep-page chrome.
 Use `TradingHoursViewModelTests` when changing Trading Hours session briefing, market calendar
 status projection, or `TradingHoursPage` binding coverage.
+Use `OrderBookViewModelTests` when changing Order Book posture, selected-symbol/depth scope,
+spread/cumulative-delta projection, tape-readiness handoff, or `OrderBookPage` binding coverage.
 Use `MainShellViewModelTests` and `MessagingHubViewModelTests` when changing shell operator-inbox
 actions, queue routing or route metadata resolution, Messaging Hub delivery posture, activity
 retention, empty states, or clear activity binding.
@@ -274,19 +287,25 @@ Use `BatchBacktestViewModelTests` when changing Batch Backtest sweep result stat
 guidance, cancellation/failure summaries, or `BatchBacktestPage` binding coverage.
 Use `QuantScriptViewModelTests` when changing QuantScript execution history, run-browser handoffs,
 parameter context, or source-level `QuantScriptPage` binding coverage.
+Use `CashFlowViewModelTests` when changing Run Cash Flow selected-run, missing-run, no-event, or
+loaded states, cash-flow ladder/event empty-state guidance, or `RunCashFlowPage` binding coverage.
 Use `FundLedgerViewModelTests` when changing Fund Ledger reconciliation filters, break-queue
 recovery, selected break actions, account drill-ins, or `FundLedgerPage` binding coverage.
 Use `FundAccountsViewModelTests` when changing Fund Accounts operator briefing, account inspectors,
-provider-routing previews, shared-data readiness, or `FundAccountsPage` binding coverage.
+provider-routing previews, shared-data readiness, balance-evidence snapshot posture, or
+`FundAccountsPage` binding coverage.
 Use `SecurityMasterViewModelTests` when changing Security Master runtime fallback, search recovery,
 selected-security trust workbench actions, conflict operator lanes, or `SecurityMasterPage` binding
 coverage.
 Use `ProviderHealthViewModelTests`, `SystemHealthViewModelTests` plus `SystemHealthPageSmokeTests`,
 `ActivityLogViewModelTests`, `NotificationCenterViewModelTests`, and `WatchlistViewModelTests`
 for provider-posture, system-health triage, support-triage, activity-log header actions,
-notification-history recovery, and watchlist-posture surface changes. Use
+notification-history recovery, watchlist posture, pinned-list ordering, and pinned-badge surface
+changes. Use
 `DataQualityViewModelCharacterizationTests` plus `DataQualityPageSmokeTests` when changing Data
-Quality symbol-filter recovery or empty-state guidance. Use
+Quality symbol-filter recovery or empty-state guidance. Use `StorageViewModelTests` when changing
+Storage preview scope text, preview-root normalization, `StoragePage` bindings, or preview
+automation IDs. Use
 `SingleInstanceServiceTests` plus `DesktopWorkflowScriptTests` when changing launch/deep-link
 forwarding, shell automation markers, or isolated desktop workflow restore/build behavior.
 
@@ -294,12 +313,17 @@ forwarding, shell automation markers, or isolated desktop workflow restore/build
 make desktop-build
 make desktop-test
 make desktop-test-position-blotter-route
+make desktop-test-operator-inbox-route
 ```
 
 `make desktop-test-position-blotter-route` runs
 `scripts/dev/validate-position-blotter-route.ps1`, which builds and tests the focused WPF
 position-blotter route slice with isolated output and writes validation artifacts under
 `artifacts/wpf-validation/position-blotter-route/`.
+`make desktop-test-operator-inbox-route` runs
+`scripts/dev/validate-operator-inbox-route.ps1`, which builds and tests the focused WPF
+operator-inbox route slice with isolated output and writes validation artifacts under
+`artifacts/wpf-validation/operator-inbox-route/`.
 
 TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`,
 but the current `make/desktop.mk` does not define that target. Use
@@ -310,10 +334,12 @@ TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-w
 define those targets. Use the PowerShell scripts directly unless the Make targets are added.
 
 TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`,
-`make build-wpf`, and `make test-desktop-services`, and `scripts/dev/desktop-dev.ps1` still prints
-`make build-wpf`, `make test-desktop-services`, and `make uwp-xaml-diagnose`; the current
-`make/*.mk` files do not define those targets. Prefer `pwsh ./scripts/dev/desktop-dev.ps1`,
-`make desktop-build`, `make desktop-test`, and `pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
+`make build-wpf`, and `make test-desktop-services`; `docs/development/policies/desktop-support-policy.md`
+and `docs/development/wpf-implementation-notes.md` still reference `make build-wpf` or
+`make test-desktop-services`; and `scripts/dev/desktop-dev.ps1` still prints `make build-wpf`,
+`make test-desktop-services`, and `make uwp-xaml-diagnose`. The current `make/*.mk` files do not
+define those targets. Prefer `pwsh ./scripts/dev/desktop-dev.ps1`, `make desktop-build`,
+`make desktop-test`, and `pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
 
 TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current
 `make/*.mk` files do not define that target. Use

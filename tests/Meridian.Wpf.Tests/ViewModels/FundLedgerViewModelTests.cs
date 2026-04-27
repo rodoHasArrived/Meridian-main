@@ -173,6 +173,15 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
                     item.RunId == "run-fund-ops" &&
                     item.Status == ReconciliationBreakQueueStatus.Open);
+                viewModel.ReconciliationCalibrationStatusText.Should().Be("Review Required");
+                viewModel.ReconciliationCalibrationProfilesText.Should().Be("1");
+                viewModel.ReconciliationCalibrationPendingSignoffText.Should().Be("1");
+                viewModel.ReconciliationCalibrationMissingMetadataText.Should().Be("0");
+                viewModel.ReconciliationCalibrationSummaryText.Should().Contain("sign-off");
+                viewModel.ReconciliationCalibrationProfiles.Should().ContainSingle(profile =>
+                    profile.ToleranceProfileId == "price-variance-ops" &&
+                    profile.ExceptionRoute == "fund-ops-review" &&
+                    profile.PendingSignoffCount == 1);
                 viewModel.ReconciliationDetailTitle.Should().Be("Reconciliation Strategy");
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
@@ -793,7 +802,13 @@ public sealed class FundLedgerViewModelTests
             Reason: "Ledger and portfolio quantities differ.",
             AssignedTo: null,
             DetectedAt: new DateTimeOffset(2026, 3, 21, 16, 35, 0, TimeSpan.Zero),
-            LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 35, 0, TimeSpan.Zero));
+            LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 35, 0, TimeSpan.Zero),
+            Severity: ReconciliationBreakSeverity.High,
+            ExceptionRoute: "fund-ops-review",
+            ToleranceProfileId: "price-variance-ops",
+            ToleranceBand: 100m,
+            RequiredSignoffRole: "Fund operations lead",
+            SignoffStatus: "pending-signoff");
 
     private static ReconciliationRunDetail BuildStrategyDetail(string runId)
         => new(

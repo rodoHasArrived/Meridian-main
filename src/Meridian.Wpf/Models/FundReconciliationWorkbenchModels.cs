@@ -30,10 +30,25 @@ public enum FundReconciliationSourceType : byte
 
 public sealed record FundReconciliationWorkbenchSnapshot(
     ReconciliationSummary Summary,
+    ReconciliationCalibrationSummaryDto? CalibrationSummary,
+    IReadOnlyList<FundReconciliationCalibrationProfileRow> CalibrationProfiles,
     IReadOnlyList<FundReconciliationBreakQueueRow> BreakQueueItems,
     IReadOnlyList<FundReconciliationRunRow> RunRows,
     DateTimeOffset RefreshedAt,
     int InReviewBreakCount);
+
+public sealed record FundReconciliationCalibrationProfileRow(
+    string ToleranceProfileId,
+    string ExceptionRoute,
+    ReconciliationBreakSeverity HighestSeverity,
+    string HighestSeverityLabel,
+    decimal? MaxToleranceBand,
+    string MaxToleranceBandText,
+    int TotalBreakCount,
+    int ActiveBreakCount,
+    int PendingSignoffCount,
+    int SignedOffCount,
+    string LastUpdatedAtText);
 
 public sealed record FundReconciliationBreakQueueRow(
     string BreakId,
@@ -56,7 +71,12 @@ public sealed record FundReconciliationBreakQueueRow(
     DateTimeOffset? ReviewedAt = null,
     string? ResolvedBy = null,
     DateTimeOffset? ResolvedAt = null,
-    string? ResolutionNote = null);
+    string? ResolutionNote = null,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium,
+    string ExceptionRouteLabel = "Unrouted",
+    string ToleranceProfileLabel = "Unassigned",
+    string RequiredSignoffRoleLabel = "Not configured",
+    string SignoffStatusLabel = "Pending");
 
 public sealed record FundReconciliationRunRow(
     string RowKey,
