@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-26T19:02:07.147060+00:00
+> Last updated: 2026-04-27T04:15:15.132680+00:00
 
 ## Overall Health Score
 
 ```
-  [##########################----] 88/100
+  [###########################---] 89/100
   Rating: Good
 ```
 
@@ -14,14 +14,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 434 |
-| Total lines | 144,367 |
-| Average file size (lines) | 332.6 |
-| Orphaned files | 145 |
+| Total documentation files | 399 |
+| Total lines | 143,737 |
+| Average file size (lines) | 360.2 |
+| Orphaned files | 111 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 213 |
-| **Health score** | **88/100** |
+| TODO/FIXME markers | 215 |
+| **Health score** | **89/100** |
 
 ### Score Breakdown
 
@@ -59,7 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-code-review/references/architecture.md`
 - `.claude/skills/meridian-code-review/references/schemas.md`
 - `.claude/skills/meridian-implementation-assurance/references/documentation-routing.md`
-- ... and 125 more
+- ... and 91 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-26 | 88 | 434 | 145 | 0 |
+| 2026-04-27 | 89 | 399 | 111 | 0 |
 
 ---
 
