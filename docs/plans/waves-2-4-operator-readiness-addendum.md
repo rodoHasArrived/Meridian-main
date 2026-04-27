@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
 
 ---
@@ -38,7 +38,7 @@ This document therefore adds:
 3. concrete dependencies
 4. wave and workstream exit criteria
 
-**Current-state refresh (2026-04-26):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the former dashboard landing is standardized around `ResearchShell`, desktop launch/deep-link parsing now routes into canonical workspace tags, fixture mode is presented as neutral demo data, workflow automation now confirms page state through a hidden-but-present shell marker, isolated restore/build behavior avoids target-framework asset drift, local single-instance mutex and launch-argument forwarding behavior have focused coverage, the Trading shell now includes a desk briefing hero driven by active-run, workflow-summary, and shared operator-readiness state, Data Operations now has a desk briefing hero for provider/backfill/storage/session/export handoffs, Provider Health now includes a provider-posture briefing for stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage, System Health now includes a diagnostics triage briefing for provider, storage, and retained event posture plus pending-scan versus confirmed-empty guidance, Notification Center now recovers retained history when search, unread-only, or severity filters hide it, Activity Log now includes triage posture for visible entries, retained errors/warnings, latest activity, and active filters, Watchlist now includes symbol-set posture for saved lists, pinned lists, search scope, and symbol coverage, Messaging Hub now projects delivery posture and retained activity scope from the view model, StrategyRuns now recovers retained run rows hidden by search or mode filters while showing visible-versus-recorded scope, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, packet-bound sign-off preflight now ties owner approvals to a reviewed packet, that DK1 state and risk/control audit explainability are now projected into the trading readiness lane, the initial operator-inbox endpoint aggregates readiness and reconciliation work items with navigation targets, the WPF shell queue button consumes that endpoint and routes the primary work item, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, end-to-end operator queue acceptance, and shared projection paths.
+**Current-state refresh (2026-04-27):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the former dashboard landing is standardized around `ResearchShell`, desktop launch/deep-link parsing now routes into canonical workspace tags, fixture mode is presented as neutral demo data, workflow automation now confirms page state through a hidden-but-present shell marker, isolated restore/build behavior avoids target-framework asset drift, local single-instance mutex and launch-argument forwarding behavior have focused coverage, the Trading shell now includes a desk briefing hero driven by active-run, workflow-summary, and shared operator-readiness state, Data Operations now has a desk briefing hero for provider/backfill/storage/session/export handoffs, Provider Health now includes a provider-posture briefing for stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage, System Health now includes a diagnostics triage briefing for provider, storage, and retained event posture plus pending-scan versus confirmed-empty guidance, Notification Center now recovers retained history when search, unread-only, or severity filters hide it, Activity Log now includes triage posture for visible entries, retained errors/warnings, latest activity, and active filters, Watchlist now includes symbol-set posture for saved lists, pinned lists, search scope, and symbol coverage, Messaging Hub now projects delivery posture and retained activity scope from the view model, StrategyRuns now recovers retained run rows hidden by search or mode filters while showing visible-versus-recorded scope, the Wave 1 trust gate remains closed, generated DK1 pilot parity packets are no longer retained in git, and the next operator review must use a freshly generated date-stamped packet with sign-off still pending. Packet-bound sign-off preflight ties owner approvals to a reviewed packet, that DK1 state and risk/control audit explainability are now projected into the trading readiness lane, the initial operator-inbox endpoint aggregates readiness and reconciliation work items with navigation targets, the WPF shell queue button consumes that endpoint and routes the primary work item, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, end-to-end operator queue acceptance, and shared projection paths.
 
 It should be read with:
 
@@ -98,7 +98,7 @@ It should be read with:
 ### Data Confidence and Validation
 
 - Owns Wave 1 trust-gate maintenance, scenario-based acceptance harnesses, and evidence/doc synchronization.
-- Primary repo anchors: `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, `artifacts/provider-validation/`, `tests/`.
+- Primary repo anchors: `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, generated `artifacts/provider-validation/` run outputs, `tests/`.
 
 ---
 
@@ -363,9 +363,9 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 - **Primary owner:** Data Confidence and Validation
 - **Supporting owners:** Execution and Fund Accounts
 - **Depends on:** none beyond the existing closed gate
-- **Repo anchors:** `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, `artifacts/provider-validation/`
+- **Repo anchors:** `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, generated `artifacts/provider-validation/` run outputs
 - **Deliverables:**
-  - synchronized evidence, docs, runtime artifacts, and automation summary
+  - synchronized evidence, docs, generated runtime outputs, and automation summary
   - contradiction checks whenever provider or checkpoint proof surfaces change
 - **Exit criteria:**
   - Wave 2-4 documentation does not overclaim provider or brokerage readiness

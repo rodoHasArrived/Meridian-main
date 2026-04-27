@@ -1,7 +1,7 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-04-26
-**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off preflight, cockpit readiness projection, WPF shell queue-button consumption of operator-inbox work items, and current WPF shell baseline including canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, demo-data fixture semantics, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, and desktop workflow automation hardening
+**Last Updated:** 2026-04-27
+**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, generated-artifact retention cleanup, packet-bound sign-off preflight, cockpit readiness projection, WPF shell queue-button consumption of operator-inbox work items, and current WPF shell baseline including canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, demo-data fixture semantics, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, and desktop workflow automation hardening
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
@@ -13,11 +13,11 @@ Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVEN
 
 Meridian's best opportunities are no longer broad platform-build items. The repo already shows a strong ingestion, storage, replay, export, execution, workstation, and Security Master baseline, plus concrete shared run, portfolio, ledger, and promotion seams. The highest-value opportunities now are the ones that remove trust ambiguity, harden operator workflows already in code, and keep the desktop shell consolidation tied to the same shared workflow model instead of drifting into a parallel UX program.
 
-The current planning set is also more mature than the prior April 8 scan. As of 2026-04-26:
+The current planning set is also more mature than the prior April 8 scan. As of 2026-04-27:
 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
 - the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
-- the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script, plus checked-in packet generation that produced a latest `ready-for-operator-review` parity packet with validated evidence-document checks and no packet blockers; the sign-off helper can bind owner approvals to that reviewed packet and reject stale or copied sign-off files
+- the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script plus checked-in packet generation, but generated provider-validation packets are no longer retained in git; the next operator review must start from a fresh date-stamped packet, and the sign-off helper can bind owner approvals to that reviewed packet and reject stale or copied sign-off files
 - the feature inventory and implementation anchors show that shell-first WPF consolidation, the Trading desk briefing hero, Position Blotter selection review/action readiness, the Research desk briefing hero, Data Operations briefing state, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture state, Messaging Hub delivery posture, StrategyRuns filter-aware recovery and run-scope presentation, shared workstation endpoints, canonical `ResearchShell` launch/deep-link handling, fixture/demo-mode cues, UI-automation page-state markers, corrected isolated desktop restore/build behavior, local single-instance mutex and launch-argument forwarding coverage, the Wave 2 trading-readiness contract with stable operator work-item IDs, the initial operator-inbox endpoint for readiness and reconciliation work items, WPF shell queue-button consumption of the primary operator work item, risk/control audit explainability projection, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
@@ -53,7 +53,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 4. Close the DK1 pilot parity packet on top of the closed Wave 1 trust gate
 
 - **Category:** provider readiness
-- **Gap:** The active Wave 1 gate is now repo-closed, and DK1 has a concrete pilot replay/sample-set plus a generated `ready-for-operator-review` parity packet. The sign-off helper now binds owner approvals to the reviewed packet path, generated timestamp, status, sample/evidence counts, and explainability/calibration contract status. The open work is to keep the matrix, roadmap, runtime artifacts, runbook, validation script, parity packet, trust rationale mapping, threshold calibration, and actual operator sign-off aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
+- **Gap:** The active Wave 1 gate is now repo-closed, and DK1 has a concrete pilot replay/sample-set plus generated parity-packet tooling. Generated provider-validation packets are no longer retained in git, so the next review must regenerate or attach the date-stamped packet and bind owner approvals to that reviewed packet path, generated timestamp, status, sample/evidence counts, and explainability/calibration contract status. The open work is to keep the matrix, roadmap, generated runtime outputs, runbook, validation script, parity packet, trust rationale mapping, threshold calibration, and actual operator sign-off aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
 - **User or operator value:** Later cockpit, governance, and live-readiness claims stay credible when the trust gate remains explicit and reproducible.
 - **Dependency it unlocks:** It preserves the evidence boundary that all later waves depend on and gives Wave 2 cockpit acceptance a concrete trust packet.
 - **Placement:** Critical support track for DK1 and Waves 2-4.
@@ -107,7 +107,7 @@ That is why Wave 2 cockpit hardening now outranks additional surface expansion, 
 
 ## Recommended Next Steps
 
-1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, generated parity packet, packet-bound sign-off template, evidence artifacts, and repo tests treated as the source of truth.
+1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, freshly generated parity packet, packet-bound sign-off template, generated evidence attachments, and repo tests treated as the source of truth.
 2. Define the paper-trading cockpit in operator terms: session persistence, replay confidence, audit trail visibility, and promotion review should be the acceptance center, not additional page count.
 3. Use shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work.
 4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths; the Trading desk briefing hero and Position Blotter selection-review rail should continue consuming shared execution/readiness state, and the Research desk briefing hero plus StrategyRuns recovery should continue consuming shared run/portfolio/promotion state rather than becoming separate shell-local models.

@@ -215,6 +215,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <TextBox x:Name="SearchBox"
@@ -242,7 +243,15 @@
                     <Button Grid.Column="3"
                             Content="Search"
                             Click="Search_Click"
-                            Style="{StaticResource PrimaryButtonStyle}" />
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="0,0,8,0"
+                            AutomationProperties.AutomationId="SecurityMasterSearchButton" />
+
+                    <Button Grid.Column="4"
+                            Content="Clear Search"
+                            Command="{Binding ClearSearchCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            AutomationProperties.AutomationId="SecurityMasterClearSearchButton" />
                 </Grid>
             </Border>
 
@@ -391,6 +400,36 @@
                                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    Margin="0,0,0,8" />
+                        <Border Style="{StaticResource WorkspaceEmptyStateCardStyle}"
+                                Margin="0,0,0,12"
+                                Visibility="{Binding IsSearchRecoveryVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="SecurityMasterSearchRecoveryCard">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,18">
+                                <TextBlock Text="&#xE721;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="28"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           Margin="0,0,0,10" />
+                                <TextBlock Text="{Binding SearchRecoveryTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center" />
+                                <TextBlock Text="{Binding SearchRecoveryDetail}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,12"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           MaxWidth="420" />
+                                <Button Content="Clear Search"
+                                        Command="{Binding ClearSearchCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="SecurityMasterSearchRecoveryClearButton" />
+                            </StackPanel>
+                        </Border>
                         <ListBox x:Name="ResultsList"
                                  ItemsSource="{Binding Results}"
                                  SelectedItem="{Binding SelectedSecurity, Mode=TwoWay}"

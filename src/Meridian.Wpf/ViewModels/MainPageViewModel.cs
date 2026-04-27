@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
@@ -333,7 +334,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public string OperatorInboxPrimaryLabel => GetPrimaryOperatorWorkItem(_operatorInbox)?.Label
         ?? "No open operator work items";
 
-    public string OperatorInboxTargetText => GetPrimaryOperatorWorkItem(_operatorInbox)?.TargetPageTag
+    public string OperatorInboxTargetText => ResolveOperatorInboxPageTag(GetPrimaryOperatorWorkItem(_operatorInbox))
         ?? "NotificationCenter";
 
     public int OperatorInboxReviewCount => _operatorInbox?.ReviewCount ?? 0;
@@ -789,9 +790,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void OpenOperatorInbox()
     {
         var workItem = GetPrimaryOperatorWorkItem(_operatorInbox);
-        NavigateToPage(string.IsNullOrWhiteSpace(workItem?.TargetPageTag)
+        var targetPageTag = ResolveOperatorInboxPageTag(workItem);
+        NavigateToPage(string.IsNullOrWhiteSpace(targetPageTag)
             ? "NotificationCenter"
-            : workItem.TargetPageTag);
+            : targetPageTag);
     }
 
     private void ShowCommandPalette()
@@ -1409,11 +1411,83 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private static OperatorWorkItemDto? GetPrimaryOperatorWorkItem(OperatorInboxDto? inbox)
         => inbox?.Items
-            .Where(static item => !string.IsNullOrWhiteSpace(item.TargetPageTag))
+            .Where(static item =>
+                !string.IsNullOrWhiteSpace(item.TargetPageTag) ||
+                !string.IsNullOrWhiteSpace(item.TargetRoute))
             .OrderByDescending(static item => item.Tone)
             .ThenByDescending(static item => item.CreatedAt)
             .FirstOrDefault()
         ?? inbox?.Items.FirstOrDefault();
+
+    private static string? ResolveOperatorInboxPageTag(OperatorWorkItemDto? workItem)
+    {
+        if (workItem is null)
+        {
+            return null;
+        }
+
+        if (workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval)
+        {
+            return "FundReportPack";
+        }
+
+        var routeTarget = ResolveOperatorInboxRoutePageTag(workItem.TargetRoute);
+        if (!string.IsNullOrWhiteSpace(routeTarget))
+        {
+            return routeTarget;
+        }
+
+        var kindTarget = workItem.Kind switch
+        {
+            OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
+            OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
+            _ => null
+        };
+        if (!string.IsNullOrWhiteSpace(kindTarget))
+        {
+            return kindTarget;
+        }
+
+        return string.IsNullOrWhiteSpace(workItem.TargetPageTag)
+            ? null
+            : workItem.TargetPageTag;
+    }
+
+    private static string? ResolveOperatorInboxRoutePageTag(string? targetRoute)
+    {
+        if (string.IsNullOrWhiteSpace(targetRoute))
+        {
+            return null;
+        }
+
+        var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
+        {
+            return "FundReconciliation";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
+        {
+            return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls) ||
+            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
+        {
+            return "TradingShell";
+        }
+
+        return null;
+    }
+
+    private static bool RouteEqualsOrStartsWith(string route, string knownRoute)
+    {
+        var normalizedKnownRoute = knownRoute.TrimEnd('/');
+        return string.Equals(route, normalizedKnownRoute, StringComparison.OrdinalIgnoreCase) ||
+               route.StartsWith($"{normalizedKnownRoute}/", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool HasShellContextContent(WorkspaceShellContext? shellContext)
     {

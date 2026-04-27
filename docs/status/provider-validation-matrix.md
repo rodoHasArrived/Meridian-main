@@ -1,9 +1,9 @@
 # Provider Validation Matrix
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
-This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence or committed runtime artifacts. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
+This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. Generated `artifacts/provider-validation/` outputs are no longer retained in git, so date-stamped packets are current only for the run that produced them. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
 ## Legend
 
@@ -15,14 +15,14 @@ This matrix is Meridian's active Wave 1 evidence gate. Every row must point to e
 | Scope | Offline / CI evidence | Manual / runtime evidence | Status | Bounded by |
 | --- | --- | --- | --- | --- |
 | Alpaca core provider confidence | `AlpacaBrokerageGatewayTests`, `AlpacaCorporateActionProviderTests`, `AlpacaCredentialAndReconnectTests`, `AlpacaMessageParsingTests`, `AlpacaQuotePipelineGoldenTests`, `AlpacaQuoteRoutingTests`, `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Not required for the active Wave 1 claim | ✅ | n/a |
-| Robinhood supported surface | `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests`, `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` | `artifacts/provider-validation/robinhood/2026-04-09/` with `auth-session`, `quote-polling`, `order-submit-cancel`, and `throttling-reconnect` scenario folders | ⚠️ | Unofficial API plus manual broker-session and runtime requirements |
+| Robinhood supported surface | `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests`, `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Bounded broker-session scenarios (`auth-session`, `quote-polling`, `order-submit-cancel`, `throttling-reconnect`) must be regenerated or attached for the review run; the old `artifacts/provider-validation/robinhood/2026-04-09/` packet is not retained in the current repo | ⚠️ | Unofficial API plus manual broker-session and runtime requirements |
 | Yahoo historical and fallback confidence | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` | Not required for the active Wave 1 claim; existing live Yahoo integration suites are optional developer reference only | ✅ | n/a |
 | Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 
 ## Primary Validation Command
 
-Run the committed Wave 1 command matrix with:
+Run the Wave 1 command matrix with:
 
 ```powershell
 ./scripts/dev/run-wave1-provider-validation.ps1
@@ -50,9 +50,10 @@ and emitted as `pilotReplaySampleSet` in the generated JSON summary. The DK1 pac
 validates those required samples, links the trust-rationale mapping and baseline-threshold review
 documents, checks those documents for the required DK1 reason codes, payload fields, threshold
 metrics, FP/FN review markers, and provider-matrix anchors, then reports whether the packet is
-`ready-for-operator-review` or blocked by missing or incomplete evidence. The latest regenerated
-packet at `artifacts/provider-validation/_automation/codex-dk1-packet-validation-final/dk1-pilot-parity-packet.json`
-is `ready-for-operator-review` with no blockers; DK1 exit still requires operator sign-off.
+`ready-for-operator-review` or blocked by missing or incomplete evidence. Because generated
+provider-validation outputs were removed from source control, DK1 review must use a freshly
+generated `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
+packet plus its bound operator sign-off file; DK1 exit still requires operator sign-off.
 
 ## Notes
 

@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.3
-**Date:** 2026-04-26
+**Date:** 2026-04-27
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -46,20 +46,20 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 | **Alpaca** | ✅ | Credential validation, automatic resubscription on reconnect, quote routing |
 | **Interactive Brokers** | 🔑 | Real runtime requires `-p:DefineConstants=IBAPI` plus the official `IBApi` surface; non-`IBAPI` builds expose simulation/setup guidance instead of broker connectivity |
 | **Polygon** | ⚠️ | Real connection when API key present; committed replay fixtures close the parser path, while live reconnect/websocket throttling remain explicitly runtime-bounded |
-| **Robinhood** | 🔑 | Unofficial broker-backed quote polling plus brokerage reads/orders, options chains, and historical daily bars when `ROBINHOOD_ACCESS_TOKEN` is present; runtime bounds are tracked under `artifacts/provider-validation/robinhood/2026-04-09/` |
-| **NYSE** | 🔑 | Requires NYSE Connect credentials; L1/shared-lifecycle evidence is strong, with auth/rate-limit/depth bounds tracked under `artifacts/provider-validation/nyse/2026-04-09/` |
-| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Runtime evidence for the validated adapter set lives under `artifacts/provider-validation/stocksharp/2026-04-09/`, while the active Wave 1 gate keeps StockSharp outside the core provider set as future validation inventory; crypto connectors remain optional/example paths |
+| **Robinhood** | 🔑 | Unofficial broker-backed quote polling plus brokerage reads/orders, options chains, and historical daily bars when `ROBINHOOD_ACCESS_TOKEN` is present; runtime bounds must be regenerated or attached for the review run because generated `artifacts/provider-validation/` packets are no longer retained in git |
+| **NYSE** | 🔑 | Requires NYSE Connect credentials; L1/shared-lifecycle evidence is strong, but generated runtime packets are no longer retained in git |
+| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Runtime evidence for the validated adapter set is generated outside the retained repo tree, while the active Wave 1 gate keeps StockSharp outside the core provider set as future validation inventory; crypto connectors remain optional/example paths |
 | **Failover-Aware Client** | ✅ | `FailoverAwareMarketDataClient` with `ProviderDegradationScorer`, per-provider health |
 | **Streaming Failover Service** | ✅ | `StreamingFailoverService` + `StreamingFailoverRegistry`; runtime failover orchestration with configurable rules and health evaluation |
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |
 | **NoOp Client** | ✅ | `NoOpMarketDataClient` for dry-run / test harness scenarios |
 
-Provider validation matrix and evidence links now live in `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, and `artifacts/provider-validation/`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner.
+Provider validation matrix and evidence guidance now live in `docs/status/provider-validation-matrix.md` and `docs/providers/provider-confidence-baseline.md`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner and `artifacts/provider-validation/` treated as generated run output rather than retained source.
 
 ### Remaining work to reach full provider coverage
 
 - **Polygon**: Validate WebSocket message parsing against Polygon v2 feed schema (trades, quotes, aggregates, status messages). Add round-trip integration test with a recorded WebSocket session replay.
-- **Robinhood**: Quote polling, historical bars, symbol search, options chains, and brokerage paths are in code; remaining work is explicit runtime evidence for the bounded scenarios under `artifacts/provider-validation/robinhood/2026-04-09/`.
+- **Robinhood**: Quote polling, historical bars, symbol search, options chains, and brokerage paths are in code; remaining work is explicit runtime evidence for bounded broker-session scenarios, regenerated or attached for each DK1 review run.
 - **StockSharp**: Runtime connector guidance and unsupported-path recovery messaging are now aligned; remaining work is moving the validated adapter set from bounded to captured runtime evidence without broadening the Wave 1 set.
 - **IB**: Scripted setup instructions, version-bound tests, and a compile-only smoke-build path now exist; remaining work is keeping the vendor-runtime path validated against real IB API releases and entitlements.
 
@@ -654,5 +654,5 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-04-26_
+_Last Updated: 2026-04-27_
 

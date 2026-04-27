@@ -1,9 +1,9 @@
 # Meridian - Now / Next / Later Roadmap
 
 **Generated:** 2026-03-25
-**Refreshed:** 2026-04-26
+**Refreshed:** 2026-04-27
 **Format:** Now / Next / Later compatibility view
-**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, packet-bound DK1 sign-off preflight, cockpit readiness projection, stable operator work-item IDs, initial operator-inbox endpoint evidence with WPF shell queue-button consumption, Position Blotter selection review/action-readiness evidence, Data Operations hero, Provider Health posture, System Health triage evidence, Notification Center filter-recovery evidence, Activity Log triage evidence, Watchlist posture evidence, Messaging Hub delivery-posture evidence, StrategyRuns filter-recovery evidence, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, demo-data fixture semantics, and active workstation/governance plans as of 2026-04-26
+**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, generated-artifact retention cleanup, packet-bound DK1 sign-off preflight, cockpit readiness projection, stable operator work-item IDs, initial operator-inbox endpoint evidence with WPF shell queue-button consumption, Position Blotter selection review/action-readiness evidence, Data Operations hero, Provider Health posture, System Health triage evidence, Notification Center filter-recovery evidence, Activity Log triage evidence, Watchlist posture evidence, Messaging Hub delivery-posture evidence, StrategyRuns filter-recovery evidence, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, demo-data fixture semantics, and active workstation/governance plans as of 2026-04-27
 **Status:** Refreshed compatibility view. `ROADMAP.md` and `PROGRAM_STATE.md` remain the canonical wave and status sources.
 
 This document preserves the older Now / Next / Later shape for quick reading, but it no longer defines a separate roadmap. The active roadmap is the Wave 1-6 model in [`ROADMAP.md`](ROADMAP.md), with status labels and target dates sourced from [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
@@ -24,7 +24,7 @@ This document preserves the older Now / Next / Later shape for quick reading, bu
 
 | Wave | Status | Current meaning |
 | --- | --- | --- |
-| Wave 1 | Done | Closed provider-confidence, checkpoint, and Parquet evidence gate; keep synchronized through the matrix, validation script, DK1 sample-set evidence, generated parity packet, packet-bound sign-off template, and pending operator sign-off. |
+| Wave 1 | Done | Closed provider-confidence, checkpoint, and Parquet evidence gate; keep synchronized through the matrix, validation script, DK1 sample-set evidence, freshly generated date-stamped parity packet, packet-bound sign-off template, and pending operator sign-off. |
 | Wave 2 | In Progress | Harden the existing paper-trading cockpit into a dependable operator workflow. |
 | Wave 3 | In Progress | Make shared run, portfolio, ledger, cash-flow, and reconciliation continuity feel like one product model. |
 | Wave 4 | In Progress | Productize governance and fund operations on top of the delivered Security Master baseline. |
@@ -42,10 +42,10 @@ Wave 1 is no longer an open broad provider push. The active gate is closed aroun
 **Delivery scope:**
 
 - keep Alpaca and Yahoo repo-closed through executable test evidence
-- keep Robinhood explicitly bounded by committed runtime broker-session artifacts
+- keep Robinhood explicitly bounded by broker-session runtime evidence regenerated or attached for the review run
 - keep Polygon, Interactive Brokers, NYSE, and StockSharp outside the active Wave 1 closure claim unless the matrix is intentionally widened
 - keep checkpoint reliability and Parquet L2 flush behavior tied to passing repo tests
-- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `scripts/dev/prepare-dk1-operator-signoff.ps1`, `provider-validation-matrix.md`, generated validation summaries, generated `ready-for-operator-review` parity packets, packet-bound sign-off templates, the DK1 pilot parity runbook, and the cockpit readiness projection synchronized around the emitted `pilotReplaySampleSet`
+- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `scripts/dev/prepare-dk1-operator-signoff.ps1`, `provider-validation-matrix.md`, generated validation summaries, date-stamped parity packets, packet-bound sign-off templates, the DK1 pilot parity runbook, and the cockpit readiness projection synchronized around the emitted `pilotReplaySampleSet`
 - keep the WPF Data Operations hero and Provider Health posture briefing aligned to shared provider, backfill, storage, session, and export state so they support operator handoffs without becoming separate readiness sources
 
 **Exit gate:** The matrix, roadmap, validation script output, DK1 runbook, generated parity packet, packet-bound sign-off template, dashboard, and operator sign-off all describe the same active provider set and pilot replay/sample contract.
@@ -168,7 +168,7 @@ These tracks deepen Meridian's ceiling after the core workstation product is tru
 
 Meridian can reasonably claim core operator-readiness when all four active gates are green:
 
-1. **Wave 1:** the active provider gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, checkpoint and Parquet proof remain closed, and the Wave 1 validation script reproduces the offline gate.
+1. **Wave 1:** the active provider gate for Alpaca, Robinhood, and Yahoo is documented in executable suites plus generated runtime attachments for bounded scenarios, checkpoint and Parquet proof remain closed, and the Wave 1 validation script reproduces the offline gate.
 2. **Wave 2:** the workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts.

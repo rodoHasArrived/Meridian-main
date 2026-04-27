@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -46,7 +46,7 @@ The current repository reinforces that direction rather than changing it. The WP
 | Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
 | WPF workstation shell + retained local API/web support surfaces | Partial | The primary WPF shell exposes meaningful workspace flows and projects Trading, Research, Data Operations, Provider Health, System Health, Notification Center, Activity Log, Watchlist, operator queue, and Messaging Hub support surfaces from shared readiness/run/provider/local history/messaging inputs; retained local API/web surfaces support the same contracts while workflow hardening and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
-| Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by committed artifacts, and deferred providers stay outside the active closure target |
+| Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by regenerated or attached broker-session evidence, and deferred providers stay outside the active closure target |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
 
 ---
@@ -70,10 +70,10 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 
 ### Wave 1: Closed provider confidence and checkpoint gate
 
-- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
+- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by broker-session scenarios that must be regenerated or attached for review
 - backfill checkpoint reliability and Parquet L2 flush behavior are closed Wave 1 sub-gates backed by repo tests, including retry-safe L2 flush retention on failed or cancelled writes
 - Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
-- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, the generated DK1 parity packet, packet-bound sign-off template, and the latest generated validation summary instead of architecture intent; the current DK1 packet is ready for operator review, but sign-off remains open
+- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `run-wave1-provider-validation.ps1`, generated `artifacts/provider-validation/` run outputs, the DK1 parity packet, packet-bound sign-off template, and the latest generated validation summary instead of architecture intent; generated packets are no longer retained in git, so DK1 review must use a fresh date-stamped packet and sign-off remains open
 
 ### Wave 2: Paper-trading cockpit hardening
 
@@ -132,7 +132,7 @@ Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the prim
 | Provider | Posture | Notes |
 | --- | --- | --- |
 | Alpaca | Complete | Checked-in provider suites plus the stable `/api/execution/*` seam close the active core-provider row in repo evidence |
-| Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded and must be regenerated or attached for the review run because old provider-validation packets are no longer retained in git |
 | Yahoo | Complete | Deterministic historical-provider and intraday contract evidence close the historical-only core-provider row |
 
 Deferred from the active Wave 1 gate: Polygon, Interactive Brokers, NYSE, and StockSharp remain part of broader provider inventory, but they are not current closure blockers.
@@ -143,7 +143,7 @@ Deferred from the active Wave 1 gate: Polygon, Interactive Brokers, NYSE, and St
 
 Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-1. **Wave 1 gates:** the matrix in `provider-validation-matrix.md` points to executable suites or committed artifact folders for every row, and `run-wave1-provider-validation.ps1` can reproduce the offline gate.
+1. **Wave 1 gates:** the matrix in `provider-validation-matrix.md` points to executable suites plus generated runtime attachments for bounded rows, and `run-wave1-provider-validation.ps1` can reproduce the offline gate.
 2. **Wave 2 gates:** the workstation exposes a dependable paper-trading cockpit through the shared readiness contract, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
@@ -158,7 +158,7 @@ Waves 5 and 6 deepen the product and widen later claims, but they are not prereq
 
 - [x] Keep provider claims synchronized with executable evidence in [`provider-validation-matrix.md`](provider-validation-matrix.md)
 - [x] Keep Robinhood runtime-bounded evidence and deferred-provider labels consistent with the closed Wave 1 gate
-- [x] Keep `artifacts/provider-validation/` and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
+- [x] Keep generated `artifacts/provider-validation/` outputs and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
 - [ ] Harden the paper-trading cockpit against realistic operator scenarios before widening live-readiness language
 - [ ] Keep `Backtest -> Paper` explicit, auditable, and operator-visible through the workstation
 - [ ] Extend shared run / portfolio / ledger / reconciliation continuity across `Research`, `Trading`, and `Governance`

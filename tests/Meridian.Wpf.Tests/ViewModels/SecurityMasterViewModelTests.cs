@@ -235,7 +235,61 @@ public sealed class SecurityMasterViewModelTests
             viewModel.Results.Should().BeEmpty();
             viewModel.SelectedSecurity.Should().BeNull();
             viewModel.IsLoading.Should().BeFalse();
+            viewModel.IsSearchRecoveryVisible.Should().BeTrue();
+            viewModel.SearchRecoveryTitle.Should().Be("Security Master unavailable");
+            viewModel.SearchRecoveryDetail.Should().Be("Security Master is not configured for this workstation.");
+            viewModel.ClearSearchCommand.CanExecute(null).Should().BeTrue();
         });
+    }
+
+    [Fact]
+    public void ClearSearchCommand_ShouldResetSearchResultsAndSelection()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            using var viewModel = CreateViewModel(
+                navigation,
+                new StubWorkstationSecurityMasterApiClient());
+            var security = CreateTrustSnapshot(Guid.Parse("11111111-1111-1111-1111-111111111111")).Security;
+
+            viewModel.SearchQuery = "AAPL";
+            viewModel.Results.Add(security);
+            viewModel.SelectedSecurity = security;
+
+            viewModel.HasSearchQuery.Should().BeTrue();
+            viewModel.HasSearchResults.Should().BeTrue();
+            viewModel.ClearSearchCommand.CanExecute(null).Should().BeTrue();
+
+            viewModel.ClearSearchCommand.Execute(null);
+
+            viewModel.SearchQuery.Should().BeEmpty();
+            viewModel.Results.Should().BeEmpty();
+            viewModel.SelectedSecurity.Should().BeNull();
+            viewModel.StatusText.Should().Be("Enter a query and press Search.");
+            viewModel.IsSearchRecoveryVisible.Should().BeFalse();
+            viewModel.ClearSearchCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void SecurityMasterPageSource_BindsSearchRecoveryAction()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+
+        xaml.Should().Contain("SecurityMasterClearSearchButton");
+        xaml.Should().Contain("SecurityMasterSearchRecoveryCard");
+        xaml.Should().Contain("SecurityMasterSearchRecoveryClearButton");
+        xaml.Should().Contain("{Binding IsSearchRecoveryVisible");
+        xaml.Should().Contain("{Binding SearchRecoveryTitle}");
+        xaml.Should().Contain("{Binding SearchRecoveryDetail}");
+        xaml.Should().Contain("{Binding ClearSearchCommand}");
+        viewModel.Should().Contain("ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);");
+        viewModel.Should().Contain("private void OnClearSearch()");
     }
 
     [Fact]

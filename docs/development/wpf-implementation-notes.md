@@ -64,7 +64,7 @@ Content Frame
 
 **Main shell context strip** — `MainPage` now renders the shared context strip between the workflow summary rail and the split-pane host. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
 
-**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, colors the shell queue action from the inbox tone, and routes the first actionable work item to its target page tag. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
+**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` instead of stopping on a workspace landing page. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
 
 **Page header visibility refinement** — `MainPage` now keeps the current page title visible in the primary shell header instead of leaving the bound title/subtitle collapsed. Standard density shows both title and subtitle, while compact density keeps the title visible and collapses the subtitle so the context switcher and next-action strip stay above the fold.
 
@@ -99,6 +99,8 @@ Content Frame
 **Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
+
+**Security Master search recovery** — `SecurityMasterPage` now exposes a bound `Clear Search` action in the search strip and in the results empty-state card. `SecurityMasterViewModel` tracks attempted searches, unavailable-runtime recovery, result count, and query scope locally so operators can reset a miss without triggering another workstation search call.
 
 **Security Master conflict operator lane** — the workstation conflict queue now groups open mismatches by security, scores severity and auto-resolve confidence from the selected field mismatch, and turns fund-review, reconciliation, cash-flow, and report-pack jumps on only when the active conflict actually affects those downstream workflows.
 

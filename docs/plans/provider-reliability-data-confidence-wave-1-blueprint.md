@@ -2,7 +2,7 @@
 
 **Owner:** Core Team  
 **Audience:** Infrastructure, storage, provider, QA, and operations contributors  
-**Last Updated:** 2026-04-17  
+**Last Updated:** 2026-04-27
 **Status:** Active blueprint for the Wave 1 operator-trust gate
 
 ---
@@ -64,17 +64,15 @@ Authoritative repo evidence already exists through:
 
 ### Robinhood
 
-Authoritative repo and bounded runtime evidence already exists through:
+Authoritative repo evidence exists through:
 
 - `RobinhoodBrokerageGatewayTests`
 - `RobinhoodMarketDataClientTests`
 - `RobinhoodHistoricalDataProviderTests`
 - `RobinhoodSymbolSearchProviderTests`
 - `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam`
-- `artifacts/provider-validation/robinhood/2026-04-09/auth-session/summary.md`
-- `artifacts/provider-validation/robinhood/2026-04-09/quote-polling/summary.md`
-- `artifacts/provider-validation/robinhood/2026-04-09/order-submit-cancel/summary.md`
-- `artifacts/provider-validation/robinhood/2026-04-09/throttling-reconnect/summary.md`
+
+Bounded runtime confidence still requires review-run evidence for `auth-session`, `quote-polling`, `order-submit-cancel`, and `throttling-reconnect`. The earlier `artifacts/provider-validation/robinhood/2026-04-09/` packet is no longer retained in the repo, so DK1 review must regenerate or attach the runtime packet for the review date.
 
 ### Yahoo
 
@@ -150,9 +148,9 @@ No public contracts need to change for this wave.
 - `docs/status/production-status.md`
 - `docs/status/ROADMAP.md`
 - `scripts/dev/run-wave1-provider-validation.ps1`
-- `artifacts/provider-validation/robinhood/2026-04-09/`
+- generated or attached `artifacts/provider-validation/` runtime outputs for bounded Robinhood scenarios
 
-The docs summarize the gate result. The script reproduces the offline gate. The Robinhood artifact path carries the remaining bounded runtime evidence.
+The docs summarize the gate result. The script reproduces the offline gate. Robinhood runtime packets are generated or attached evidence for the review run, not retained roadmap source.
 
 ---
 

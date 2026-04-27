@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -65,7 +65,7 @@ Implemented foundations now available to build on:
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
 - current WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, and focused tests for Batch Backtest, Position Blotter, Notification Center history recovery, Welcome, workspace queue tone styles, the workspace shell context strip, Trading desk briefing hero state selection, and Research desk briefing hero run/promotion handoffs; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
-- DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus generated parity-packet artifacts and packet-bound sign-off preflight; the latest packet is `ready-for-operator-review`, and operator sign-off must stay synchronized across the validation script, provider matrix, runbook, sign-off template, and readiness dashboard
+- DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus generated parity-packet artifacts and packet-bound sign-off preflight; generated packets are no longer retained in git, so operator sign-off must stay synchronized against a fresh date-stamped packet across the validation script, provider matrix, runbook, sign-off template, and readiness dashboard
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
@@ -83,7 +83,7 @@ Goal: preserve the closed Wave 1 trust gate without widening scope, and keep the
 Open work:
 
 - keep the active provider set fixed at Alpaca, Robinhood, and Yahoo across roadmap, status, matrix, and script surfaces
-- keep Robinhood runtime-bounded evidence explicit and current under `artifacts/provider-validation/robinhood/`
+- keep Robinhood runtime-bounded evidence explicit and current through regenerated or attached broker-session evidence for each DK1 review run
 - rerun `run-wave1-provider-validation.ps1` when provider, checkpoint, or Parquet proof surfaces change
 - keep deferred providers labeled consistently outside the active Wave 1 gate
 - continue adjacent backtesting-engine and strategy-run persistence coverage expansion without reopening Wave 1 scope
@@ -336,7 +336,7 @@ References:
 
 The repository can reasonably claim core operator-readiness when all of the following are true:
 
-1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, and checkpoint plus Parquet proof remains closed in repo tests.
+1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites plus generated runtime attachments for bounded scenarios, and checkpoint plus Parquet proof remains closed in repo tests.
 2. **Wave 2 gates:** the workstation exposes a dependable paper-trading cockpit through the shared readiness contract, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.

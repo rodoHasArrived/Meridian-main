@@ -1,6 +1,6 @@
 # Provider Confidence Baseline
 
-**Last Updated:** 2026-04-17  
+**Last Updated:** 2026-04-27
 **Scope:** Active Wave 1 provider confidence for Alpaca, Robinhood, and Yahoo
 
 Wave 1 is an evidence gate, not a coverage-inventory exercise. This baseline separates repo-closed evidence from intentionally bounded runtime evidence and keeps deferred providers out of the active closure target.
@@ -8,13 +8,13 @@ Wave 1 is an evidence gate, not a coverage-inventory exercise. This baseline sep
 Use this with:
 
 - `docs/status/provider-validation-matrix.md`
-- `artifacts/provider-validation/`
+- generated `artifacts/provider-validation/` run outputs
 - `scripts/dev/run-wave1-provider-validation.ps1`
 
 ## Baseline Rules
 
 - Offline and CI evidence is mandatory for every active Wave 1 row.
-- Manual or runtime evidence is only required when the claim cannot be closed from checked-in tests.
+- Manual or runtime evidence is only required when the claim cannot be closed from checked-in tests; generated runtime packets are review attachments and are no longer retained in git.
 - Deferred providers must stay labeled as deferred, future-wave, or reference inventory and must not drift back into the active Wave 1 gate by prose alone.
 - Do not broaden live-readiness language from this document.
 
@@ -51,10 +51,8 @@ Use this with:
 
 **Manual / runtime evidence**
 
-- `artifacts/provider-validation/robinhood/2026-04-09/auth-session/summary.md`
-- `artifacts/provider-validation/robinhood/2026-04-09/quote-polling/summary.md`
-- `artifacts/provider-validation/robinhood/2026-04-09/order-submit-cancel/summary.md`
-- `artifacts/provider-validation/robinhood/2026-04-09/throttling-reconnect/summary.md`
+- Bounded broker-session scenarios remain required for review when claiming Robinhood runtime confidence: `auth-session`, `quote-polling`, `order-submit-cancel`, and `throttling-reconnect`.
+- The old `artifacts/provider-validation/robinhood/2026-04-09/` summaries are not retained in the current repo; regenerate or attach the runtime packet for the DK1 review run.
 
 **Wave 1 posture**
 

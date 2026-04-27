@@ -88,7 +88,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsLoading
     {
         get => _isLoading;
-        private set => SetProperty(ref _isLoading, value);
+        private set
+        {
+            if (SetProperty(ref _isLoading, value))
+            {
+                RaiseSearchDerivedStateChanged();
+            }
+        }
     }
 
     private string _statusText = "Enter a query and press Search.";
@@ -460,6 +466,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private SecurityMasterEventEnvelope? _latestHistoryEvent;
     private readonly Dictionary<Guid, SecurityConflictSecurityContext> _conflictSecurityContextCache = new();
     private readonly Dictionary<Guid, SecurityMasterConflictAssessmentDto> _conflictAssessmentById = new();
+    private bool _hasSearchAttempted;
     private bool _suppressConflictLaneSelectionSync;
     private bool _suppressConflictDrivenSelectionLoad;
 
@@ -627,6 +634,42 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool HasSelectedSecurity => SelectedSecurity is not null;
 
     public int ResultCount => Results.Count;
+
+    public bool HasSearchQuery => !string.IsNullOrWhiteSpace(SearchQuery);
+
+    public bool HasSearchResults => Results.Count > 0;
+
+    public bool IsSearchRecoveryVisible => !IsLoading && _hasSearchAttempted && Results.Count == 0;
+
+    public string SearchRecoveryTitle
+    {
+        get
+        {
+            if (!_securityMasterRuntimeStatus.IsAvailable)
+            {
+                return "Security Master unavailable";
+            }
+
+            return HasSearchQuery
+                ? $"No match for \"{SearchQuery.Trim()}\""
+                : "Enter a security query";
+        }
+    }
+
+    public string SearchRecoveryDetail
+    {
+        get
+        {
+            if (!_securityMasterRuntimeStatus.IsAvailable)
+            {
+                return _securityMasterRuntimeStatus.AvailabilityDescription;
+            }
+
+            return ActiveOnly
+                ? "Try all-status search, check the identifier, or import the security universe."
+                : "Check the identifier, broaden the symbol or name, or import the security universe.";
+        }
+    }
 
     public string SearchScopeText => string.IsNullOrWhiteSpace(SearchQuery)
         ? ActiveOnly
@@ -933,6 +976,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand BackfillTradingParamsCommand { get; }
     public IAsyncRelayCommand ImportFromFileCommand { get; }
     public IRelayCommand CloseImportResultCommand { get; }
+    public IRelayCommand ClearSearchCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
     public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }
@@ -1014,6 +1058,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
         ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
+        ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
         RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
         RefreshSelectedTrustSnapshotCommand = new AsyncRelayCommand(
@@ -1131,7 +1176,31 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private void RaiseSearchDerivedStateChanged()
     {
         RaisePropertyChanged(nameof(ResultCount));
+        RaisePropertyChanged(nameof(HasSearchQuery));
+        RaisePropertyChanged(nameof(HasSearchResults));
+        RaisePropertyChanged(nameof(IsSearchRecoveryVisible));
+        RaisePropertyChanged(nameof(SearchRecoveryTitle));
+        RaisePropertyChanged(nameof(SearchRecoveryDetail));
         RaisePropertyChanged(nameof(SearchScopeText));
+        ClearSearchCommand?.NotifyCanExecuteChanged();
+    }
+
+    private bool CanClearSearch()
+        => HasSearchQuery || HasSearchResults || HasSelectedSecurity || _hasSearchAttempted;
+
+    private void OnClearSearch()
+    {
+        _cts?.Cancel();
+        _cts = null;
+        _hasSearchAttempted = false;
+
+        SearchQuery = string.Empty;
+        Results.Clear();
+        SelectedSecurity = null;
+        HistoryText = string.Empty;
+        ClearSelectedSecurityAssuranceState();
+        StatusText = "Enter a query and press Search.";
+        RaiseSearchDerivedStateChanged();
     }
 
     private void RaiseSelectionDerivedStateChanged()
@@ -1448,9 +1517,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         var query = SearchQuery.Trim();
         if (string.IsNullOrEmpty(query))
         {
+            _hasSearchAttempted = false;
+            RaiseSearchDerivedStateChanged();
             StatusText = "Enter a query and press Search.";
             return;
         }
+
+        _hasSearchAttempted = true;
+        RaiseSearchDerivedStateChanged();
 
         if (!_securityMasterRuntimeStatus.IsAvailable)
         {

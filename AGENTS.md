@@ -235,8 +235,9 @@ fixture mode and writes run artifacts under `artifacts/desktop-workflows/`.
 Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 `run-desktop.ps1` when driving an already-open shell against live local services; the runner
 forwards page/deep-link args through the single-instance pipe and waits on `ShellAutomationState`.
-During desktop workflow runs, restore lets shared projects use their declared target frameworks
-while the build step pins the WPF shell to `net9.0-windows10.0.19041.0`.
+During desktop workflow and screenshot-catalog runs, restore lets shared projects use their
+declared target frameworks while the build step pins the WPF shell to
+`net9.0-windows10.0.19041.0`.
 `robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
 fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
 Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release WPF build, such as

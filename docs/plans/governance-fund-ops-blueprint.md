@@ -14,7 +14,7 @@ This blueprint starts from the current repository state:
 - run-scoped reconciliation contracts, services, and workstation endpoints already exist
 - direct-lending services, migrations, projections, and `/api/loans/*` endpoints already exist as the first deep governance/UFL vertical slice
 - export infrastructure already exists for JSONL, Parquet, Arrow, XLSX, and CSV
-- `/api/workstation/operator/inbox` now includes open and in-review reconciliation breaks with Governance navigation targets, and the WPF shell queue button can route the primary work item into the owning workspace
+- `/api/workstation/operator/inbox` now includes open and in-review reconciliation breaks with Governance navigation targets, and the WPF shell queue button resolves the primary work item's route metadata into the concrete `FundReconciliation` workbench when applicable
 
 The design goal is to finish these capabilities without creating a parallel architecture outside Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian credible as a comprehensive front-, middle-, and back-office fund-management platform. Security Master should be treated as a delivered baseline in this blueprint, not as a future foundation wave.
 
@@ -52,7 +52,7 @@ The current repository now includes the first organization-rooted governance str
   - reconciliation posture across account and run-scoped seams
   - NAV attribution, report/export profile preview metadata, and local-first governed report-pack artifacts
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
-- Reconciliation break work items now flow into the shared operator inbox with stable scoped IDs, severity-derived tone, audit references, and `GovernanceShell` targets, so the queue surface no longer has to infer break posture from one-off page state.
+- Reconciliation break work items now flow into the shared operator inbox with stable scoped IDs, severity-derived tone, audit references, and Governance navigation hints, while WPF resolves the reconciliation route into `FundReconciliation` so the queue surface no longer has to infer break posture from one-off page state.
 
 This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, the first governed report-pack artifact generation path, a file-backed reconciliation break queue for run-scoped breaks, and shared operator-inbox projection for those breaks are now in place. Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation across external statements/custodians, broader board/investor/compliance templates, calibrated tolerance/severity routing, end-to-end queue acceptance, and publication/readiness controls still remain future implementation waves.
 

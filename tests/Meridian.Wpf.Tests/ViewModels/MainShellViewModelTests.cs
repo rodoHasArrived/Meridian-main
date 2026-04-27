@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
@@ -612,6 +613,43 @@ public sealed class MainShellViewModelTests
             vm.OpenOperatorInboxCommand.Execute(null);
 
             vm.CurrentPageTag.Should().Be("TradingShell");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_UsesRouteToOpenSpecificWorkbench()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "reconciliation-break-run-1-cash-mismatch",
+                        Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+                        Label: "Reconciliation break requires review",
+                        Detail: "Cash mismatch needs governance review.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("FundReconciliation");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentPageTag.Should().Be("FundReconciliation");
         });
     }
 

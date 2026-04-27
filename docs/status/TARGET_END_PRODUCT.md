@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-26
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence with packet-bound sign-off preflight, cockpit readiness projection, initial shared operator-inbox contract with WPF shell queue-button consumption, current WPF shell baseline, Trading/Research/Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, workflow automation hardening, and demo-data fixture semantics
+**Last Updated:** 2026-04-27
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence with generated-artifact retention cleanup and packet-bound sign-off preflight, cockpit readiness projection, initial shared operator-inbox contract with WPF shell queue-button consumption, current WPF shell baseline, Trading/Research/Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, workflow automation hardening, and demo-data fixture semantics
 
 ---
 
@@ -62,7 +62,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 
 ### Wave 1: Provider confidence and checkpoint evidence
 
-Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence. The current DK1 wrapper extends this into an Alpaca/Robinhood/Yahoo pilot parity packet with an emitted `pilotReplaySampleSet`, generated parity-packet artifacts, packet-bound sign-off preflight, trust rationale mapping, threshold calibration, and operator sign-off.
+Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence. The current DK1 wrapper extends this into an Alpaca/Robinhood/Yahoo pilot parity packet with an emitted `pilotReplaySampleSet`, generated date-stamped parity-packet artifacts that are attached for review rather than retained in git, packet-bound sign-off preflight, trust rationale mapping, threshold calibration, and operator sign-off.
 
 ### Wave 2: Paper-trading cockpit hardening
 

@@ -144,9 +144,10 @@ values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`,
 `dk1-operator-signoff-pending`, and `execution-evidence-incomplete`. This lets the WPF shell, retained web cockpit, and initial operator-inbox endpoint refresh the same blocker without creating a new random item on every poll.
 `GET /api/workstation/operator/inbox` now aggregates those readiness work items with open or
 in-review reconciliation breaks, adds workspace/page/route navigation hints, and is now consumed by
-the WPF main shell queue action so the first actionable item can route operators into the owning
-workspace. Broader end-to-end queue acceptance remains a cockpit-hardening task rather than a
-completed workflow.
+the WPF main shell queue action. The shell resolves known target routes before target page tags, so
+reconciliation work items open `FundReconciliation`, Security Master coverage opens
+`SecurityMaster`, and trading-readiness items stay in `TradingShell`. Broader end-to-end queue
+acceptance remains a cockpit-hardening task rather than a completed workflow.
 If reconciliation break queue storage cannot seed or load, the endpoint keeps the trading-readiness
 items available and adds a stable `reconciliation-break-queue-unavailable` warning routed to
 `GovernanceShell` instead of failing the whole operator inbox.

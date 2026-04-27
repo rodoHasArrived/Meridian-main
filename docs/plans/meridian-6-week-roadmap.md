@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Horizon:** Next 6 weeks
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -14,7 +14,7 @@ Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-re
 
 The next six weeks should focus on four outcomes:
 
-1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and complete operator review/sign-off for the DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, generated parity-packet artifacts, and packet-bound sign-off template
+1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and complete operator review/sign-off for the DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, freshly generated date-stamped parity-packet artifacts, and packet-bound sign-off template
 2. harden the Wave 2 paper-trading cockpit that is already visible in the workstation
 3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while consolidating the active WPF shell direction
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
@@ -41,7 +41,7 @@ This plan starts from the current repo state:
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
 - governance already has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
 - the closed Wave 1 trust gate remains the first release gate for every downstream claim
-- DK1 status is active but not closed: the latest generated parity packet is `ready-for-operator-review`, and the sign-off helper can now bind a sign-off template to that exact packet through `packetReview`, while actual operator sign-off plus workflow-facing explainability/calibration review and shared interop readiness are still in progress / at risk in `docs/status/kernel-readiness-dashboard.md`; promotion handoff is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation DK2 is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes
+- DK1 status is active but not closed: generated provider-validation packets are no longer retained in git, so the next operator review must start from a fresh date-stamped parity packet and a sign-off template bound to that exact packet through `packetReview`; actual operator sign-off plus workflow-facing explainability/calibration review and shared interop readiness are still in progress / at risk in `docs/status/kernel-readiness-dashboard.md`; promotion handoff is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation DK2 is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes
 
 ---
 
@@ -77,7 +77,7 @@ This plan starts from the current repo state:
 - Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly runtime-bounded, and deferred providers stay clearly outside the active gate
 - the DK1 pilot replay/sample-set contract is emitted by `scripts/dev/run-wave1-provider-validation.ps1`, packaged by `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, bound to operator approvals by `scripts/dev/prepare-dk1-operator-signoff.ps1 -PacketPath`, and reviewed through the DK1 pilot parity runbook
 - backfill checkpoints, gap detection, and Parquet L2 flush behavior remain on the passing command matrix instead of drifting back into assumed reliability
-- the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, and generated validation summaries
+- the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, and generated validation summaries, with generated `artifacts/provider-validation/` packets treated as run outputs rather than retained repo evidence
 - the Data Operations desk briefing hero and Provider Health posture briefing remain consumers of shared provider, backfill, storage, session, and export state instead of becoming separate operational-readiness models
 
 ### Outcome 2: Wave 2 paper trading is dependable, not just visible
@@ -110,7 +110,7 @@ This plan starts from the current repo state:
 
 | Week | Focus | Goals | Deliverables |
 | --- | --- | --- | --- |
-| 1 | DK1 / Wave 1 closeout confirmation | rerun the closed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; generated `ready-for-operator-review` DK1 parity packet; packet-bound sign-off template; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links; operator sign-off follow-up |
+| 1 | DK1 / Wave 1 closeout confirmation | rerun the closed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; freshly generated date-stamped DK1 parity packet; packet-bound sign-off template; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links; operator sign-off follow-up |
 | 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
 | 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion approval/rejection rationale checklist; cockpit operator-path checklist |
 | 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating the active WPF shell direction | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; shell-navigation validation targets tied to active flows |
@@ -129,7 +129,7 @@ Priorities:
 - keep the DK1 `pilotReplaySampleSet` synchronized across the validation script, generated summaries, generated parity packet, packet-bound sign-off template, provider-validation matrix, and pilot parity runbook
 - keep deferred-provider guidance synchronized so Polygon, Interactive Brokers, NYSE, and StockSharp do not drift back into the active gate by prose alone
 - rerun `run-wave1-provider-validation.ps1` whenever provider, checkpoint, or Parquet proof surfaces change
-- keep provider-confidence docs, runtime artifacts, and validation summaries synchronized
+- keep provider-confidence docs, generated runtime outputs, and validation summaries synchronized
 
 ### Workstream B: Wave 2 paper-trading cockpit hardening
 

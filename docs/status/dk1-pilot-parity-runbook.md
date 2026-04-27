@@ -17,7 +17,7 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
 - Provider validation matrix (authoritative provider evidence table): [`provider-validation-matrix.md`](./provider-validation-matrix.md)
 - Wave 1 validation command script (must be executed for every parity run): [`scripts/dev/run-wave1-provider-validation.ps1`](../../scripts/dev/run-wave1-provider-validation.ps1)
 - Operator sign-off preflight helper: [`scripts/dev/prepare-dk1-operator-signoff.ps1`](../../scripts/dev/prepare-dk1-operator-signoff.ps1)
-- Generated automation outputs (must be attached for the run date):
+- Generated automation outputs (must be attached for the run date; these files are generated run evidence and are no longer retained in git):
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
@@ -26,7 +26,7 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
 ### Provider-specific evidence links
 
 - **Alpaca row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](./provider-validation-matrix.md#wave-1-matrix) (Alpaca core provider confidence tests)
-- **Robinhood row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](./provider-validation-matrix.md#wave-1-matrix) + runtime packet path `artifacts/provider-validation/robinhood/2026-04-09/`
+- **Robinhood row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](./provider-validation-matrix.md#wave-1-matrix) + regenerated or attached runtime packet evidence for the review date
 - **Yahoo row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](./provider-validation-matrix.md#wave-1-matrix) (historical/fallback test suites)
 
 ---
@@ -46,7 +46,7 @@ The generated `pilotReplaySampleSet` is the review contract for DK1 pilot parity
 | --- | --- | --- | --- |
 | `DK1-ALPACA-QUOTE-GOLDEN` | Alpaca | `AAPL` quote pipeline fixture at `2026-03-19T14:30:00Z` | `tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json` plus `AlpacaQuotePipelineGoldenTests` |
 | `DK1-ALPACA-PARSER-EDGE-CASES` | Alpaca | `AAPL`, `MSFT`, `QQQ`, `SPY` parser/routing edge cases from the 2024-06-15 fixture window | `AlpacaMessageParsingTests`, `AlpacaQuoteRoutingTests`, `AlpacaCredentialAndReconnectTests` |
-| `DK1-ROBINHOOD-SUPPORTED-SURFACE` | Robinhood | `AAPL`/`MSFT` offline polling fixtures plus the 2026-04-09 bounded runtime packet | `RobinhoodMarketDataClientTests`, `RobinhoodBrokerageGatewayTests`, and `artifacts/provider-validation/robinhood/2026-04-09/manifest.json` |
+| `DK1-ROBINHOOD-SUPPORTED-SURFACE` | Robinhood | `AAPL`/`MSFT` offline polling fixtures plus regenerated or attached bounded runtime evidence for the review date | `RobinhoodMarketDataClientTests`, `RobinhoodBrokerageGatewayTests`, and the review-run Robinhood runtime packet when runtime confidence is claimed |
 | `DK1-YAHOO-HISTORICAL-FALLBACK` | Yahoo | `AAPL`/`SPY` daily, adjusted daily, and intraday historical fixtures | `YahooFinanceHistoricalDataProviderTests` and `YahooFinanceIntradayContractTests` |
 
 Reviewers should treat a run as incomplete if the generated summary omits this sample ledger, even
@@ -61,7 +61,7 @@ when all test steps pass.
 2. **Execute Wave 1 command matrix**
    - Run `./scripts/dev/run-wave1-provider-validation.ps1` from repo root.
 3. **Capture output artifacts**
-   - Archive the generated Wave 1 summary and DK1 pilot parity packet files from `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
+   - Attach or externally archive the generated Wave 1 summary and DK1 pilot parity packet files from `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`; do not assume a prior committed artifact path is current evidence.
 4. **Assemble provider packet**
    - Confirm Alpaca, Robinhood, Yahoo evidence remains aligned with the matrix row expectations.
    - Confirm the generated `pilotReplaySampleSet` contains the four DK1 samples above.
@@ -166,5 +166,5 @@ is not treated as `signed` for DK1 exit unless `packetBindingStatus` is `valid`.
 - [ ] Packet blockers reviewed and cleared, or explicitly carried into the DK1 weekly review.
 - [ ] Operator sign-off JSON attached when DK1 exit is requested.
 - [ ] `operatorSignoff.status=signed` and `operatorSignoff.missingOwners=[]` verified before DK1 exit.
-- [ ] Robinhood manual runtime packet linked (if applicable).
+- [ ] Robinhood manual runtime packet regenerated or attached for the review date (if applicable).
 - [ ] Dashboard DK1 parity status updated with evidence references.
