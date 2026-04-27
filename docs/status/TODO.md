@@ -28,18 +28,18 @@ Total items: **80**
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-arm64/sosdocsunix.txt` | 974 | `NOTE` | ❌ | NOTE: |
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-x64/sosdocsunix.txt` | 2 | `NOTE` | ❌ | NOTE: THIS FILE CONTAINS SOS DOCUMENTATION. THE FORMAT OF THE FILE IS: |
 | `.tools/.store/dotnet-dump/9.0.661903/dotnet-dump/9.0.661903/tools/net8.0/any/osx-x64/sosdocsunix.txt` | 974 | `NOTE` | ❌ | NOTE: |
-| `AGENTS.md` | 124 | `TODO` | ❌ | TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, |
-| `AGENTS.md` | 128 | `TODO` | ❌ | TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest` |
-| `AGENTS.md` | 133 | `TODO` | ❌ | TODO: `docs/HELP.md` mentions `--diagnostics`, but `DiagnosticsCommands` currently handles |
-| `AGENTS.md` | 138 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
-| `AGENTS.md` | 142 | `TODO` | ❌ | TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but |
-| `AGENTS.md` | 146 | `TODO` | ❌ | TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI |
-| `AGENTS.md` | 301 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
-| `AGENTS.md` | 305 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
-| `AGENTS.md` | 309 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
-| `AGENTS.md` | 315 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
-| `AGENTS.md` | 472 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
-| `AGENTS.md` | 476 | `TODO` | ❌ | TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive` |
+| `AGENTS.md` | 125 | `TODO` | ❌ | TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, |
+| `AGENTS.md` | 129 | `TODO` | ❌ | TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest` |
+| `AGENTS.md` | 134 | `TODO` | ❌ | TODO: `docs/HELP.md` mentions `--diagnostics`, but `DiagnosticsCommands` currently handles |
+| `AGENTS.md` | 139 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
+| `AGENTS.md` | 143 | `TODO` | ❌ | TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but |
+| `AGENTS.md` | 147 | `TODO` | ❌ | TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI |
+| `AGENTS.md` | 328 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
+| `AGENTS.md` | 332 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
+| `AGENTS.md` | 336 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
+| `AGENTS.md` | 344 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
+| `AGENTS.md` | 501 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
+| `AGENTS.md` | 505 | `TODO` | ❌ | TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive` |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 379 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 388 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
