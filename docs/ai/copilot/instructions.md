@@ -7658,6 +7658,7 @@ Meridian-main
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TradingHoursViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
