@@ -4931,9 +4931,6 @@ Use these documents together when planning or implementing new work:
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
-├── issues
-│   ├── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
-│   └── phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk
@@ -7800,6 +7797,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-588 directories, 7072 files
+587 directories, 7070 files
 ```
 <!-- readme-tree end -->
