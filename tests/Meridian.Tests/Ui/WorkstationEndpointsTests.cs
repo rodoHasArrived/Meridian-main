@@ -1519,6 +1519,59 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_RunReviewPacket_ShouldReturnStableActionableWorkItems()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runId = $"run-review-packet-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(runId));
+
+        var client = app.GetTestClient();
+        var first = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>(
+            $"/api/workstation/runs/{runId}/review-packet",
+            ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>(
+            $"/api/workstation/runs/{runId}/review-packet",
+            ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.WorkItems.Should().NotBeEmpty();
+        first.WorkItems.Select(static item => item.WorkItemId)
+            .Should()
+            .Equal(second!.WorkItems.Select(static item => item.WorkItemId));
+        first.WorkItems.Should().OnlyContain(static item =>
+            !string.IsNullOrWhiteSpace(item.Workspace) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute) &&
+            !string.IsNullOrWhiteSpace(item.TargetPageTag));
+        first.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+            item.Workspace == "Trading" &&
+            item.TargetRoute == UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal) &&
+            item.TargetPageTag == "TradingShell");
+        first.WorkItems.Should().NotContain(static item =>
+            item.WorkItemId.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunReviewPacket_ShouldReturnNotFoundForMissingRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/runs/no-such-run/review-packet");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityMasterRoutes_ShouldReturnSearchAndDetailPayloads()
     {
         var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
@@ -2154,6 +2207,7 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
+        services.AddSingleton<StrategyRunReviewPacketService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
     }
 

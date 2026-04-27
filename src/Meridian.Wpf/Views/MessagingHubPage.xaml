@@ -37,13 +37,25 @@
                         <TextBlock Text="{Binding ConnectionStatusText}" FontSize="11"
                                    Foreground="White" FontWeight="SemiBold" />
                     </Border>
-                    <Button x:Name="RefreshButton" Click="Refresh_Click"
-                            Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xE72C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" Margin="0,0,6,0" />
-                            <TextBlock Text="Refresh" />
-                        </StackPanel>
-                    </Button>
+                    <StackPanel VerticalAlignment="Center">
+                        <Button x:Name="RefreshButton"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="MessagingHubRefreshButton"
+                                AutomationProperties.Name="Refresh messaging hub">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE72C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" Margin="0,0,6,0" />
+                                <TextBlock Text="Refresh" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="{Binding LastRefreshText}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,6,0,0"
+                                   AutomationProperties.AutomationId="MessagingHubLastRefreshText" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
             </Border>

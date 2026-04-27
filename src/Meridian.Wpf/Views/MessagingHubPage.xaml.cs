@@ -29,5 +29,4 @@ public partial class MessagingHubPage : Page
 
     private void OnPageLoaded(object sender, RoutedEventArgs e) => _viewModel.Start();
     private void OnPageUnloaded(object sender, RoutedEventArgs e) => _viewModel.Stop();
-    private void Refresh_Click(object sender, RoutedEventArgs e) => _viewModel.Refresh();
 }

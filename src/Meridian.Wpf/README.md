@@ -132,6 +132,7 @@ Examples:
 `SystemHealth` includes a triage briefing ahead of the resource metrics so provider, storage, and event posture produce one visible support handoff without another health fetch.
 `NotificationCenter` includes a reset-filters empty-state action and view-model-owned severity filter state so search, unread-only, and severity-filter misses can recover the retained history list without another service read or code-behind checkbox synchronization.
 `ActivityLog` includes a triage strip and reset-filters empty-state action ahead of the virtualized log list so support workflows can see retained errors, warnings, the latest event, and active filter scope, then recover hidden retained entries without another backend request.
+`MessagingHub` includes a bound refresh action with header recency text, a delivery-posture card, retained-activity scope, and a disabled clear action when no messaging rows are retained.
 `Watchlist` includes a posture card and dynamic empty-state copy so search misses, unpinned libraries, and ready pinned lists each give the operator a clear next step.
 `SecurityMaster` includes a search-recovery empty state and view-model-owned `ClearSearchCommand` so failed or unavailable searches can clear the query, selected security, and retained results without issuing another service call.
 `DataQuality` distinguishes symbol search misses from an empty monitored-symbol library and exposes a `Clear Filter` recovery action in the Quality by Symbol panel.

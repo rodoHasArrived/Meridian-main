@@ -28,7 +28,10 @@ public sealed class MessagingHubViewModelTests
                 viewModel.RecentActivityScopeText.Should().Be("No activity in this session");
                 viewModel.NoActivityVisible.Should().BeTrue();
                 viewModel.CanClearActivity.Should().BeFalse();
+                viewModel.RefreshCommand.CanExecute(null).Should().BeTrue();
                 viewModel.ClearActivityCommand.CanExecute(null).Should().BeFalse();
+                viewModel.LastRefreshText.Should().StartWith("Updated ");
+                viewModel.LastRefreshText.Should().EndWith(" UTC");
             }
             finally
             {
@@ -63,6 +66,36 @@ public sealed class MessagingHubViewModelTests
             finally
             {
                 viewModel.Stop();
+                service.ClearSubscriptions();
+            }
+        });
+    }
+
+    [Fact]
+    public void RefreshCommand_UpdatesRegisteredTypesAndRefreshRecency()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var service = WpfServices.MessagingService.Instance;
+            service.ClearSubscriptions();
+
+            using var subscription = service.Subscribe(WpfServices.MessageTypes.NavigationRequested, _ => { });
+            using var viewModel = CreateViewModel(service);
+            try
+            {
+                viewModel.LastRefreshText.Should().Be("Waiting for refresh");
+
+                viewModel.RefreshCommand.Execute(null);
+
+                viewModel.MessageTypes.Should().Contain(item =>
+                    item.TypeName == "Navigation Requested" &&
+                    item.CountText == "1 subscriber");
+                viewModel.SubscribersText.Should().Be("1");
+                viewModel.LastRefreshText.Should().StartWith("Updated ");
+                viewModel.LastRefreshText.Should().EndWith(" UTC");
+            }
+            finally
+            {
                 service.ClearSubscriptions();
             }
         });
@@ -176,13 +209,18 @@ public sealed class MessagingHubViewModelTests
         xaml.Should().Contain("MessagingHubPostureTitle");
         xaml.Should().Contain("MessagingHubPostureDetail");
         xaml.Should().Contain("MessagingHubRecentActivityScopeText");
+        xaml.Should().Contain("MessagingHubRefreshButton");
+        xaml.Should().Contain("MessagingHubLastRefreshText");
         xaml.Should().Contain("MessagingHubClearActivityButton");
         xaml.Should().Contain("MessagingHubActivityEmptyStateTitle");
         xaml.Should().Contain("MessagingHubActivityEmptyStateDetail");
         xaml.Should().Contain("{Binding MessagingPostureTitle}");
         xaml.Should().Contain("{Binding MessagingPostureDetail}");
         xaml.Should().Contain("{Binding RecentActivityScopeText}");
+        xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
+        xaml.Should().Contain("{Binding LastRefreshText}");
         xaml.Should().Contain("Command=\"{Binding ClearActivityCommand}\"");
+        codeBehind.Should().NotContain("Refresh_Click");
         codeBehind.Should().NotContain("ClearActivity_Click");
     }
 

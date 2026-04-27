@@ -39,7 +39,9 @@ checks as market-data evidence only. Brokerage/account continuity is read-side a
   Master coverage, and operator work items for WPF and workstation APIs.
 - `src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs` exposes one run review packet
   for Research, Trading, and Governance so run, portfolio, ledger, reconciliation, attribution, and
-  optional brokerage evidence use the same source.
+  optional brokerage evidence use the same source. Review-packet work items now use stable,
+  run-scoped identifiers plus workspace route/page hints so clients can poll the same blocker
+  without creating duplicate queue items.
 - `src/Meridian.Wpf/ViewModels/FundAccountsViewModel.cs` and `FundAccountsPage.xaml` project
   fund-context, account-queue, provider-routing, shared-data-access, and ready-for-reconciliation
   posture from loaded account/provider evidence as the current WPF account handoff surface.

@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
@@ -98,6 +99,7 @@ public sealed class StrategyRunReviewPacketService
         {
             var promotion = run.Promotion ?? run.Summary.Promotion!;
             items.Add(NewItem(
+                "promotion-review",
                 OperatorWorkItemKindDto.PromotionReview,
                 "Promotion review required",
                 promotion.Reason,
@@ -112,6 +114,7 @@ public sealed class StrategyRunReviewPacketService
         if (missingSecurityCount > 0)
         {
             items.Add(NewItem(
+                "security-master-coverage-gap",
                 OperatorWorkItemKindDto.SecurityMasterCoverage,
                 "Security Master coverage gap",
                 $"{missingSecurityCount} run security reference(s) are missing coverage.",
@@ -124,6 +127,7 @@ public sealed class StrategyRunReviewPacketService
             foreach (var warning in continuityWarnings)
             {
                 items.Add(NewItem(
+                    $"continuity-{warning.Code}",
                     OperatorWorkItemKindDto.ReconciliationBreak,
                     warning.Code,
                     warning.Message,
@@ -137,6 +141,7 @@ public sealed class StrategyRunReviewPacketService
         if (brokerageStatus is not null && brokerageStatus.Health is not WorkstationBrokerageSyncHealth.Healthy)
         {
             items.Add(NewItem(
+                "brokerage-sync-attention",
                 OperatorWorkItemKindDto.BrokerageSync,
                 "Brokerage sync attention",
                 brokerageStatus.Warnings.FirstOrDefault()
@@ -152,6 +157,7 @@ public sealed class StrategyRunReviewPacketService
         if (items.Count == 0)
         {
             items.Add(NewItem(
+                "review-packet-ready",
                 OperatorWorkItemKindDto.PromotionReview,
                 "Review packet ready",
                 "Run, continuity, fill, attribution, and optional brokerage evidence are available.",
@@ -167,6 +173,7 @@ public sealed class StrategyRunReviewPacketService
     }
 
     private static OperatorWorkItemDto NewItem(
+        string idPrefix,
         OperatorWorkItemKindDto kind,
         string label,
         string detail,
@@ -174,8 +181,11 @@ public sealed class StrategyRunReviewPacketService
         string? runId,
         Guid? fundAccountId = null,
         string? auditReference = null)
-        => new(
-            WorkItemId: $"operator-{Guid.NewGuid():N}",
+    {
+        var navigation = ResolveNavigation(kind, runId, fundAccountId);
+        var scope = fundAccountId?.ToString("N") ?? runId ?? auditReference ?? label;
+        return new(
+            WorkItemId: BuildScopedId(idPrefix, scope),
             Kind: kind,
             Label: label,
             Detail: detail,
@@ -183,5 +193,78 @@ public sealed class StrategyRunReviewPacketService
             CreatedAt: DateTimeOffset.UtcNow,
             RunId: runId,
             FundAccountId: fundAccountId,
-            AuditReference: auditReference);
+            AuditReference: auditReference,
+            Workspace: navigation.Workspace,
+            TargetRoute: navigation.TargetRoute,
+            TargetPageTag: navigation.TargetPageTag);
+    }
+
+    private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveNavigation(
+        OperatorWorkItemKindDto kind,
+        string? runId,
+        Guid? fundAccountId)
+    {
+        return kind switch
+        {
+            OperatorWorkItemKindDto.SecurityMasterCoverage => (
+                "Governance",
+                UiApiRoutes.WorkstationSecurityMasterSearch,
+                "SecurityMaster"),
+            OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
+                "Governance",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "FundReconciliation"),
+            OperatorWorkItemKindDto.BrokerageSync => (
+                "Trading",
+                fundAccountId.HasValue
+                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
+                "TradingShell"),
+            _ => (
+                "Trading",
+                string.IsNullOrWhiteSpace(runId)
+                    ? UiApiRoutes.WorkstationTradingReadiness
+                    : UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal),
+                "TradingShell")
+        };
+    }
+
+    private static string BuildScopedId(string prefix, string scope)
+    {
+        var normalizedPrefix = NormalizeIdToken(prefix);
+        var normalizedScope = NormalizeIdToken(scope);
+        return string.IsNullOrEmpty(normalizedScope)
+            ? normalizedPrefix
+            : $"{normalizedPrefix}-{normalizedScope}";
+    }
+
+    private static string NormalizeIdToken(string value)
+    {
+        Span<char> buffer = stackalloc char[value.Length];
+        var length = 0;
+        var previousWasSeparator = false;
+
+        foreach (var character in value.Trim())
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                buffer[length++] = char.ToLowerInvariant(character);
+                previousWasSeparator = false;
+                continue;
+            }
+
+            if (!previousWasSeparator && length > 0)
+            {
+                buffer[length++] = '-';
+                previousWasSeparator = true;
+            }
+        }
+
+        if (length > 0 && buffer[length - 1] == '-')
+        {
+            length--;
+        }
+
+        return new string(buffer[..length]);
+    }
 }

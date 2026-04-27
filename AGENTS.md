@@ -33,6 +33,8 @@ Keep it short and prefer the canonical Meridian guidance sources:
 ```bash
 make help
 dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --help diagnostics
+dotnet run --project src/Meridian/Meridian.csproj -- --help security-master
 python3 build/python/cli/buildctl.py --help
 ```
 
@@ -91,6 +93,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --symbols-archived
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add AAPL,MSFT
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add ES --depth-levels 20
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add SPY --no-depth
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add QQQ --no-trades
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add AAPL --no-depth --update
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-remove TSLA
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-import symbols.csv
 dotnet run --project src/Meridian/Meridian.csproj -- --symbols-export symbols.txt
@@ -122,8 +126,14 @@ TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`,
 operator examples. Verify the intended ETL workflow before adding those as standard commands.
 
 TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
-and `--calibrate-provider-degradation`, but their prerequisites are specialized. Verify current
-operator setup before adding short-form examples here.
+and `--calibrate-provider-degradation`, but their prerequisites are specialized. Use
+`--help security-master` for Security Master details, and verify current operator setup before
+adding short-form examples here.
+
+TODO: `docs/HELP.md` mentions `--diagnostics`, but `DiagnosticsCommands` currently handles
+specific flags (`--quick-check`, `--test-connectivity`, `--show-config`, `--error-codes`, and
+`--validate-credentials`) rather than a standalone `--diagnostics` flag. Use `--help diagnostics`
+for the reference topic unless that flag is implemented.
 
 TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently
 maps `--package-format` to zip, tar.gz/tgz, or 7z. Verify the intended CSV export workflow before
@@ -132,6 +142,10 @@ adding that as a standard package command.
 TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but
 `JsonlReplayer` currently treats the value as a directory root while help text describes a JSONL
 file path. Verify the intended replay path semantics before adding a standard CLI replay example.
+
+TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI
+workflow, but no command handler was found. Keep it out of standard command examples until it is
+implemented.
 
 ## MCP Workflows
 
@@ -400,6 +414,13 @@ make ai-docs-archive
 make verify-adrs
 make verify-contracts
 make verify-tooling-metadata
+make docs
+make gen-context
+make gen-interfaces
+make gen-structure
+make gen-providers
+make gen-workflows
+make update-claude-md
 python3 scripts/check_contract_compatibility_gate.py --base origin/main --head HEAD
 python3 scripts/generate_contract_review_packet.py --base origin/main --head HEAD --output artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.json --markdown-output artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.md
 python3 -m unittest tests/scripts/test_check_contract_compatibility_gate.py

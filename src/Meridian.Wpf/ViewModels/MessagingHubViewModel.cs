@@ -70,8 +70,12 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
     private string _activityEmptyStateDetail = "Publish a workflow or inter-page message; this panel keeps the latest 50 deliveries.";
     public string ActivityEmptyStateDetail { get => _activityEmptyStateDetail; private set => SetProperty(ref _activityEmptyStateDetail, value); }
 
+    private string _lastRefreshText = "Waiting for refresh";
+    public string LastRefreshText { get => _lastRefreshText; private set => SetProperty(ref _lastRefreshText, value); }
+
     public bool CanClearActivity => ActivityItems.Count > 0;
 
+    public IRelayCommand RefreshCommand { get; }
     public IRelayCommand ClearActivityCommand { get; }
 
     public MessagingHubViewModel(
@@ -86,6 +90,7 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         _errorBrush = errorBrush;
         _connectionBadgeBackground = errorBrush;
 
+        RefreshCommand = new RelayCommand(Refresh);
         ClearActivityCommand = new RelayCommand(ClearActivity, () => CanClearActivity);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
@@ -208,8 +213,10 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         _subscriberCount = totalSubscribers;
         SubscribersText = totalSubscribers.ToString("N0");
 
-        var elapsed = (DateTime.UtcNow - _pageLoadedAt).TotalSeconds;
+        var now = DateTime.UtcNow;
+        var elapsed = (now - _pageLoadedAt).TotalSeconds;
         MessageRateText = elapsed > 0 ? $"{_totalMessages / elapsed:F1}/s" : "0/s";
+        LastRefreshText = $"Updated {now:HH:mm:ss} UTC";
 
         UpdateMessagingPosture();
         UpdateActivityVisibility();
