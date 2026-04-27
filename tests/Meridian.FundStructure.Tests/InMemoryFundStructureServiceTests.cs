@@ -213,9 +213,35 @@ public sealed class InMemoryFundStructureServiceTests
         var view = await fixture.StructureService.GetAccountingViewAsync(
             new AccountingStructureQuery(BusinessId: fixture.FundBusinessId));
 
+        Assert.Contains(view.Accounts, account => account.AccountId == unassignedAccount.AccountId);
         Assert.Contains(view.LedgerGroups, group =>
             group.DisplayName == LedgerGroupId.UnassignedValue
             && group.AccountIds.Contains(unassignedAccount.AccountId));
+    }
+
+    [Fact]
+    public async Task GetAccountingViewAsync_WithInvestmentPortfolioFilter_ExcludesFundScopedAccountWithoutPortfolioLink()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+
+        var fundOnlyAccount = await fixture.AccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "FUND-ONLY",
+            DisplayName: "Fund Only Cash",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "test",
+            FundId: fixture.FundId,
+            LedgerReference: "FUND-ONLY-TB"));
+
+        var view = await fixture.StructureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(
+                BusinessId: fixture.FundBusinessId,
+                InvestmentPortfolioId: fixture.DirectFundPortfolioId));
+
+        Assert.DoesNotContain(view.Accounts, account => account.AccountId == fundOnlyAccount.AccountId);
+        Assert.DoesNotContain(view.LedgerGroups, group => group.AccountIds.Contains(fundOnlyAccount.AccountId));
     }
 
     [Fact]

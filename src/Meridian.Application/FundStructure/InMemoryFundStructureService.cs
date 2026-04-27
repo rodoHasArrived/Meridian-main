@@ -1019,12 +1019,10 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             .ToList();
         portfolios = AttachSharedDataAccess(portfolios, sharedDataAccess).ToList();
         var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        var hasAccountScopeFilter = HasAccountingAccountScopeFilter(query);
         var accounts = scoped.Accounts
             .Where(account => query.LedgerReference is null || string.Equals(account.LedgerReference, query.LedgerReference, StringComparison.OrdinalIgnoreCase))
-            .Where(account =>
-                portfolioIds.Count == 0
-                || (TryParseGuid(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId))
-                || IsAccountLinkedToAny(account.AccountId, portfolioIds, scoped.OwnershipLinks))
+            .Where(account => !hasAccountScopeFilter || IsAccountInAccountingScope(account, query, portfolioIds, scoped.OwnershipLinks))
             .ToList();
 
         var organization = query.OrganizationId.HasValue
@@ -3214,6 +3212,35 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private static bool IsFundPortfolio(InvestmentPortfolioSummaryDto portfolio) =>
         portfolio.FundId.HasValue || portfolio.SleeveId.HasValue || portfolio.VehicleId.HasValue;
+
+    private static bool HasAccountingAccountScopeFilter(AccountingStructureQuery query) =>
+        query.ClientId.HasValue
+        || query.FundId.HasValue
+        || query.SleeveId.HasValue
+        || query.VehicleId.HasValue
+        || query.InvestmentPortfolioId.HasValue;
+
+    private static bool IsAccountInAccountingScope(
+        AccountSummaryDto account,
+        AccountingStructureQuery query,
+        IReadOnlyCollection<Guid> portfolioIds,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks)
+    {
+        if ((TryParseGuid(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId))
+            || IsAccountLinkedToAny(account.AccountId, portfolioIds, ownershipLinks))
+        {
+            return true;
+        }
+
+        if (query.ClientId.HasValue || query.InvestmentPortfolioId.HasValue)
+        {
+            return false;
+        }
+
+        return (query.FundId.HasValue && account.FundId == query.FundId.Value)
+            || (query.SleeveId.HasValue && account.SleeveId == query.SleeveId.Value)
+            || (query.VehicleId.HasValue && account.VehicleId == query.VehicleId.Value);
+    }
 
     private static IEnumerable<AccountSummaryDto> GetScopeAccounts(
         IEnumerable<AccountSummaryDto> accounts,
