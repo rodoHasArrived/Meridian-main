@@ -132,8 +132,8 @@ public partial class WorkspaceDeepPageHostPage : Page
         CommandBar.Visibility = showStandaloneChrome ? Visibility.Visible : Visibility.Collapsed;
 
         SummaryCard.Margin = showStandaloneChrome
-            ? new Thickness(0, 0, 0, 18)
-            : new Thickness(0, 0, 0, 12);
+            ? new Thickness(0, 0, 0, 10)
+            : new Thickness(0, 0, 0, 8);
     }
 
     private void ApplyHostedChromeState()

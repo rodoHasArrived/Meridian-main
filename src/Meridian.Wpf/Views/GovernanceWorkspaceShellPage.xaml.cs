@@ -227,7 +227,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     private void SwitchContext_Click(object sender, RoutedEventArgs e) => RequestContextSelection();
     private void OpenDiagnosticsFromEmptyState_Click(object sender, RoutedEventArgs e) => ExecuteAction("Diagnostics", navigate: false);
     private void OpenAuditTrail_Click(object sender, RoutedEventArgs e) => ExecuteAction("FundAuditTrail", navigate: false);
-    private void OpenProviderHealth_Click(object sender, RoutedEventArgs e) => ExecuteAction("ProviderHealth", navigate: false);
+    private void OpenDataQuality_Click(object sender, RoutedEventArgs e) => ExecuteAction("DataQuality", navigate: false);
     private void OpenSystemHealth_Click(object sender, RoutedEventArgs e) => ExecuteAction("SystemHealth", navigate: false);
     private void OpenNotifications_Click(object sender, RoutedEventArgs e) => ExecuteAction("NotificationCenter", navigate: false);
     private void OnGovernanceHeroPrimaryActionClick(object sender, RoutedEventArgs e) => ExecuteAction(_heroPrimaryActionId, navigate: false);
@@ -391,7 +391,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     private static IReadOnlyList<WorkspaceQueueItem> BuildAuditQueue(ReconciliationSummary reconciliation, IReadOnlyList<NotificationHistoryItem> notifications, int unreadAlerts) =>
     [
         new WorkspaceQueueItem { Title = "Audit trail and approvals", Detail = notifications.FirstOrDefault() is { } latest ? $"Latest notification: {latest.Title} at {latest.Timestamp:t}. Open grouped alerts and acknowledgement history from the workspace." : "No recent notifications. Keep the audit trail docked when approval gates change.", StatusLabel = unreadAlerts > 0 ? "Unread alerts" : "Quiet", CountLabel = unreadAlerts > 0 ? $"{unreadAlerts} unread" : $"{notifications.Count} recent", Tone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info, PrimaryActionId = "FundAuditTrail", PrimaryActionLabel = "Open Audit", SecondaryActionId = "NotificationCenter", SecondaryActionLabel = "Alerts" },
-        new WorkspaceQueueItem { Title = "Diagnostics and provider trust checks", Detail = reconciliation.OpenBreakCount > 0 ? "Use diagnostics and provider health before releasing approvals with open reconciliation pressure." : "Diagnostics and provider health remain available as quick trust checks before operator handoff.", StatusLabel = unreadAlerts > 0 ? "Escalated" : "Available", CountLabel = unreadAlerts > 0 ? $"{unreadAlerts} alert-linked" : "Diagnostics ready", Tone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info, PrimaryActionId = "Diagnostics", PrimaryActionLabel = "Diagnostics", SecondaryActionId = "ProviderHealth", SecondaryActionLabel = "Provider Health" }
+        new WorkspaceQueueItem { Title = "Diagnostics and system readiness checks", Detail = reconciliation.OpenBreakCount > 0 ? "Use diagnostics and system health before releasing approvals with open reconciliation pressure." : "Diagnostics and system health remain available as quick trust checks before operator handoff.", StatusLabel = unreadAlerts > 0 ? "Escalated" : "Available", CountLabel = unreadAlerts > 0 ? $"{unreadAlerts} alert-linked" : "Diagnostics ready", Tone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info, PrimaryActionId = "Diagnostics", PrimaryActionLabel = "Diagnostics", SecondaryActionId = "SystemHealth", SecondaryActionLabel = "System Health" }
     ];
 
     private void ApplyGovernanceLaneSummaries(

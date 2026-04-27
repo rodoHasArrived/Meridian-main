@@ -157,4 +157,43 @@ public sealed class WelcomePageViewModelTests : IDisposable
                 item.Title == "Storage target" && item.StatusLabel == "Custom path");
         });
     }
+
+    [Theory]
+    [InlineData(false, 0, "data", "0 of 3 checks ready", "Provider connectivity is blocking")]
+    [InlineData(true, 0, "D:\\Meridian\\data", "2 of 3 checks ready", "no symbol inventory is configured")]
+    [InlineData(true, 12, "data", "2 of 3 checks ready", "confirm the default storage target")]
+    [InlineData(true, 12, "D:\\Meridian\\data", "3 of 3 checks ready", "Provider, symbol, and storage checks are clear")]
+    public void ApplyOverviewSnapshotForTests_ProjectsReadinessProgress(
+        bool isConnected,
+        int symbolCount,
+        string configuredDataRoot,
+        string expectedProgress,
+        string expectedSummaryFragment)
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateViewModel();
+
+            viewModel.ApplyOverviewSnapshotForTests(
+                isConnected,
+                connectionProviderText: isConnected ? "Alpaca" : "No provider connected",
+                symbolCount,
+                storagePath: configuredDataRoot,
+                configuredDataRoot);
+
+            viewModel.ReadinessProgressText.Should().Be(expectedProgress);
+            viewModel.ReadinessSummaryText.Should().Contain(expectedSummaryFragment);
+        });
+    }
+
+    [Fact]
+    public void WelcomePageXaml_BindsReadinessProgressStrip()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\WelcomePage.xaml"));
+
+        xaml.Should().Contain("WelcomeReadinessProgressText");
+        xaml.Should().Contain("WelcomeReadinessSummaryText");
+        xaml.Should().Contain("{Binding ReadinessProgressText}");
+        xaml.Should().Contain("{Binding ReadinessSummaryText}");
+    }
 }

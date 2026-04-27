@@ -264,12 +264,6 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         typeof(MainPageViewModel)
             .GetMethod("UpdateFixtureModeBanner", BindingFlags.Instance | BindingFlags.NonPublic)?
             .Invoke(ViewModel, null);
-        typeof(MainPageViewModel)
-            .GetField("_fixtureModeBannerVisibility", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .SetValue(ViewModel, fixtureModeDetector.IsNonLiveMode ? Visibility.Visible : Visibility.Collapsed);
-        typeof(MainPageViewModel)
-            .GetField("_fixtureModeBannerText", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .SetValue(ViewModel, fixtureModeDetector.ModeLabel);
         FlushUi();
     }
 

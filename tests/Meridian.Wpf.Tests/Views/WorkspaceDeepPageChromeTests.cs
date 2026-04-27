@@ -56,6 +56,62 @@ public sealed class WorkspaceDeepPageChromeTests
     }
 
     [Theory]
+    [InlineData("ProviderHealth", "Provider Health", "Data Operations")]
+    [InlineData("Diagnostics", "Diagnostics", "Governance")]
+    public void WorkspaceDeepPageHostPage_ShouldKeepStandaloneChromeCompactAtReviewViewport(
+        string pageTag,
+        string expectedTitle,
+        string expectedWorkspace)
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var navigationService = (Meridian.Wpf.Services.NavigationService)Activator.CreateInstance(
+                typeof(Meridian.Wpf.Services.NavigationService),
+                nonPublic: true)!;
+
+            var hostPage = new WorkspaceDeepPageHostPage(
+                navigationService,
+                shellContextService: null,
+                pageTag,
+                new Page(),
+                navigationParameter: null,
+                presentationMode: WorkspaceChromePresentationMode.Standalone);
+
+            var window = new Window
+            {
+                Width = 1365,
+                Height = 768,
+                Content = hostPage
+            };
+
+            try
+            {
+                window.Show();
+                RunMatUiAutomationFacade.DrainDispatcher();
+                window.UpdateLayout();
+
+                var title = hostPage.FindName("PageTitleText").Should().BeOfType<TextBlock>().Subject;
+                var subtitle = hostPage.FindName("PageSubtitleText").Should().BeOfType<TextBlock>().Subject;
+                var summaryCard = hostPage.FindName("SummaryCard").Should().BeOfType<Border>().Subject;
+                var workspaceBadge = hostPage.FindName("WorkspaceBadgeText").Should().BeOfType<TextBlock>().Subject;
+                var hostedFrame = hostPage.FindName("HostedFrame").Should().BeOfType<Frame>().Subject;
+
+                title.Text.Should().Be(expectedTitle);
+                subtitle.Text.Should().NotBeNullOrWhiteSpace();
+                workspaceBadge.Text.Should().Be(expectedWorkspace);
+                summaryCard.ActualHeight.Should().BeLessThan(180);
+                hostedFrame.ActualHeight.Should().BeGreaterThan(360);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Theory]
     [InlineData(@"src\Meridian.Wpf\Views\AnalysisExportPage.xaml", "EmbeddedShellHeaderStackPanelStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\SymbolMappingPage.xaml", "EmbeddedShellHeaderGridStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\RetentionAssurancePage.xaml", "EmbeddedShellHeaderStackPanelStyle")]
@@ -66,6 +122,8 @@ public sealed class WorkspaceDeepPageChromeTests
     [InlineData(@"src\Meridian.Wpf\Views\NotificationCenterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml", "EmbeddedShellHeroCardStyle")]
+    [InlineData(@"src\Meridian.Wpf\Views\ProviderHealthPage.xaml", "EmbeddedShellHeroCardStyle")]
+    [InlineData(@"src\Meridian.Wpf\Views\DiagnosticsPage.xaml", "EmbeddedShellHeroCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\DataQualityPage.xaml", "WorkspaceCommandBarControl")]
     [InlineData(@"src\Meridian.Wpf\Views\DataQualityPage.xaml", "WorkspaceInteractionPanel")]
     [InlineData(@"src\Meridian.Wpf\Views\PositionBlotterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]

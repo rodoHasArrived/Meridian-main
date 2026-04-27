@@ -18,6 +18,7 @@ public sealed class MainShellViewModelTests
     private static MainPageViewModel CreateMainPageViewModel(
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null,
+        WorkspaceShellContextService? workspaceShellContextService = null,
         SettingsConfigurationService? settingsConfigurationService = null,
         IWorkstationOperatorInboxApiClient? operatorInboxClient = null)
     {
@@ -36,6 +37,7 @@ public sealed class MainShellViewModelTests
             fixtureModeDetector,
             fundContextService,
             operatingContextService,
+            workspaceShellContextService,
             operatorInboxApiClient: operatorInboxClient,
             settingsConfigurationService: settingsConfigurationService);
     }
@@ -262,6 +264,35 @@ public sealed class MainShellViewModelTests
             vm.CurrentPageTag.Should().Be("AddProviderWizard");
         });
     }
+
+    [Fact]
+    public void NavigateToProviderHealth_KeepsDataOperationsWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("ProviderHealth");
+
+            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentPageTag.Should().Be("ProviderHealth");
+        });
+    }
+
+    [Fact]
+    public void NavigateToDiagnostics_KeepsGovernanceWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("Diagnostics");
+
+            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentPageTag.Should().Be("Diagnostics");
+        });
+    }
+
     [Fact]
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
@@ -278,7 +309,7 @@ public sealed class MainShellViewModelTests
 
             detector.SetFixtureMode(true);
 
-            vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
+            vm.FixtureModeBannerVisibility.Should().Be(Visibility.Collapsed);
             vm.FixtureModeBannerText.Should().Contain("Demo data mode");
             vm.ShellStatusText.Should().Be("Demo data");
             vm.ShellStatusTone.Should().Be(WorkspaceTone.Info);
@@ -481,7 +512,10 @@ public sealed class MainShellViewModelTests
                 var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
                 await operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review");
 
-                using var vm = CreateMainPageViewModel(fundContext, operatingContextService, settingsConfigurationService);
+                using var vm = CreateMainPageViewModel(
+                    fundContext,
+                    operatingContextService,
+                    settingsConfigurationService: settingsConfigurationService);
 
                 vm.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
                 vm.IsCompactShellDensity.Should().BeTrue();
@@ -650,6 +684,70 @@ public sealed class MainShellViewModelTests
 
             vm.CurrentWorkspace.Should().Be("governance");
             vm.CurrentPageTag.Should().Be("FundReconciliation");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_PromotesQueueAttentionIntoShellContext()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            NotificationService.Instance.ClearHistory();
+            var fundContext = await CreateFundContextAsync();
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "reconciliation-break-run-1-cash-mismatch",
+                        Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+                        Label: "Reconciliation break requires review",
+                        Detail: "Cash mismatch needs governance review.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        Workspace: "Governance",
+                        TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}/break-123/review",
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+            var statusService = Substitute.For<IStatusService>();
+            statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<StatusResponse?>(new StatusResponse
+                {
+                    IsConnected = true,
+                    TimestampUtc = DateTimeOffset.UtcNow,
+                    Metrics = new MetricsData { IsStale = false }
+                }));
+            var contextService = new WorkspaceShellContextService(
+                fundContext,
+                FixtureModeDetector.Instance,
+                NotificationService.Instance,
+                statusService);
+
+            using var vm = CreateMainPageViewModel(
+                fundContextService: fundContext,
+                workspaceShellContextService: contextService,
+                operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.ShellContext.Badges.Any(badge => badge.Label == "Queue action"));
+
+            vm.ShellContext.Badges.Should().ContainEquivalentOf(new WorkspaceShellBadge
+            {
+                Label = "Attention",
+                Value = "1 review: Reconciliation break requires review | warning | Governance | open FundReconciliation",
+                Glyph = "\uE7F4",
+                Tone = WorkspaceTone.Warning
+            });
+            vm.ShellContext.Badges.Should().ContainEquivalentOf(new WorkspaceShellBadge
+            {
+                Label = "Queue action",
+                Value = "Open FundReconciliation",
+                Glyph = "\uE7F4",
+                Tone = WorkspaceTone.Warning
+            });
         });
     }
 

@@ -289,7 +289,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public Visibility ShellContextVisibility => HasShellContextContent(ShellContext)
-        && !(IsCompactShellDensity && IsWorkflowPageActive)
+        && IsWorkflowPageActive
+        && !IsCompactShellDensity
         ? Visibility.Visible
         : Visibility.Collapsed;
 
@@ -340,29 +341,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public int OperatorInboxReviewCount => _operatorInbox?.ReviewCount ?? 0;
 
     public string OperatorInboxTone
-    {
-        get
-        {
-            if (_operatorInbox is null)
-            {
-                return WorkspaceTone.Neutral;
-            }
-
-            if (_operatorInbox.CriticalCount > 0)
-            {
-                return WorkspaceTone.Danger;
-            }
-
-            if (_operatorInbox.WarningCount > 0)
-            {
-                return WorkspaceTone.Warning;
-            }
-
-            return _operatorInbox.Items.Count > 0
-                ? WorkspaceTone.Info
-                : WorkspaceTone.Success;
-        }
-    }
+        => ResolveOperatorInboxTone(_operatorInbox);
 
     public string CurrentWorkspace
     {
@@ -392,6 +371,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             RaisePropertyChanged(nameof(HasPrimaryWorkflowSummary));
             RaisePropertyChanged(nameof(PrimaryWorkflowTargetText));
+            RaisePropertyChanged(nameof(PrimaryWorkflowDetailVisibility));
         }
     }
 
@@ -415,6 +395,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             RaisePropertyChanged(nameof(SecondaryWorkflowSummariesVisibility));
             RaisePropertyChanged(nameof(SecondaryWorkflowToggleText));
+            RaisePropertyChanged(nameof(PrimaryWorkflowDetailVisibility));
         }
     }
 
@@ -429,6 +410,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public string WorkflowSummaryDescriptionText => IsCompactShellDensity
         ? "Current workspace action first. Other workspace actions stay one click away."
         : "Current workspace action first, with blockers and target pages kept visible.";
+
+    public Visibility PrimaryWorkflowDetailVisibility => ShouldShowPrimaryWorkflowDetail(PrimaryWorkflowSummary)
+        || AreSecondaryWorkflowSummariesExpanded
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public bool IsWorkspaceHomePageActive
         => string.Equals(CurrentPageTag, GetWorkspaceHomePageTag(CurrentWorkspace), StringComparison.OrdinalIgnoreCase);
@@ -1004,9 +990,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void UpdateFixtureModeBanner()
     {
-        FixtureModeBannerVisibility = _fixtureModeDetector.IsNonLiveMode
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        FixtureModeBannerVisibility = Visibility.Collapsed;
         FixtureModeBannerText = _fixtureModeDetector.ModeLabel;
     }
 
@@ -1123,12 +1107,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             }
         });
 
+        var (operatorInbox, operatorInboxError) = await BuildOperatorInboxAsync(ct).ConfigureAwait(false);
         var shellContext = fallbackShellContext;
         try
         {
             if (_workspaceShellContextService is not null)
             {
-                shellContext = await _workspaceShellContextService.CreateAsync(BuildShellContextInput(), ct).ConfigureAwait(false);
+                shellContext = await _workspaceShellContextService.CreateAsync(BuildShellContextInput(operatorInbox), ct).ConfigureAwait(false);
             }
         }
         catch
@@ -1137,7 +1122,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         var workflowSummaries = await BuildWorkflowSummariesAsync(ct).ConfigureAwait(false);
-        var (operatorInbox, operatorInboxError) = await BuildOperatorInboxAsync(ct).ConfigureAwait(false);
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is null || dispatcher.CheckAccess())
@@ -1314,6 +1298,17 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ];
     }
 
+    private static bool ShouldShowPrimaryWorkflowDetail(WorkspaceWorkflowSummary? summary)
+        => summary is not null
+            && (summary.PrimaryBlocker.IsBlocking
+                || IsAttentionTone(summary.StatusTone)
+                || IsAttentionTone(summary.PrimaryBlocker.Tone));
+
+    private static bool IsAttentionTone(string? tone)
+        => string.Equals(tone, WorkspaceTone.Warning, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(tone, WorkspaceTone.Danger, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(tone, "Critical", StringComparison.OrdinalIgnoreCase);
+
     private void UpdateWorkflowPresentation()
     {
         var primary = _workflowSummaries.FirstOrDefault(summary =>
@@ -1339,8 +1334,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SecondaryWorkflowToggleText));
     }
 
-    private WorkspaceShellContextInput BuildShellContextInput()
+    private WorkspaceShellContextInput BuildShellContextInput(OperatorInboxDto? operatorInbox = null)
     {
+        operatorInbox ??= _operatorInbox;
+        var primaryWorkItem = GetPrimaryOperatorWorkItem(operatorInbox);
+        var hasOperatorQueueAttention = primaryWorkItem is not null && operatorInbox?.ReviewCount > 0;
+        var operatorInboxTone = ResolveOperatorInboxTone(operatorInbox);
+
         return new WorkspaceShellContextInput
         {
             WorkspaceTitle = CurrentPageTitle,
@@ -1352,10 +1352,66 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ReviewStateTone = SelectedWindowMode == BoundedWindowMode.WorkbenchPreset
                 ? WorkspaceTone.Info
                 : WorkspaceTone.Neutral,
-            CriticalLabel = "Workflow",
-            CriticalValue = WorkspaceHeading,
-            CriticalTone = WorkspaceTone.Info
+            CriticalLabel = hasOperatorQueueAttention ? "Attention" : "Workflow",
+            CriticalValue = hasOperatorQueueAttention
+                ? BuildOperatorQueueAttentionValue(operatorInbox, primaryWorkItem!)
+                : WorkspaceHeading,
+            CriticalTone = hasOperatorQueueAttention ? operatorInboxTone : WorkspaceTone.Info,
+            AdditionalBadges = hasOperatorQueueAttention
+                ?
+                [
+                    new WorkspaceShellBadge
+                    {
+                        Label = "Queue action",
+                        Value = $"Open {ResolveOperatorInboxPageTag(primaryWorkItem!) ?? "NotificationCenter"}",
+                        Glyph = "\uE7F4",
+                        Tone = operatorInboxTone
+                    }
+                ]
+                : Array.Empty<WorkspaceShellBadge>()
         };
+    }
+
+    private static string ResolveOperatorInboxTone(OperatorInboxDto? inbox)
+    {
+        if (inbox is null)
+        {
+            return WorkspaceTone.Neutral;
+        }
+
+        if (inbox.CriticalCount > 0)
+        {
+            return WorkspaceTone.Danger;
+        }
+
+        if (inbox.WarningCount > 0)
+        {
+            return WorkspaceTone.Warning;
+        }
+
+        return inbox.Items.Count > 0
+            ? WorkspaceTone.Info
+            : WorkspaceTone.Success;
+    }
+
+    private string BuildOperatorQueueAttentionValue(OperatorInboxDto? operatorInbox, OperatorWorkItemDto primaryWorkItem)
+    {
+        var reviewCount = operatorInbox?.ReviewCount ?? 0;
+        var countText = reviewCount > 1 ? $"{reviewCount} reviews" : "1 review";
+        var severity = primaryWorkItem.Tone switch
+        {
+            OperatorWorkItemToneDto.Critical => "critical",
+            OperatorWorkItemToneDto.Warning => "warning",
+            OperatorWorkItemToneDto.Success => "success",
+            _ => "info"
+        };
+        var target = ResolveOperatorInboxPageTag(primaryWorkItem) ?? "NotificationCenter";
+        var targetWorkspace = ShellNavigationCatalog.GetWorkspace(ShellNavigationCatalog.InferWorkspaceIdForPageTag(target));
+        var owner = string.IsNullOrWhiteSpace(primaryWorkItem.Workspace)
+            ? targetWorkspace?.Title ?? WorkspaceHeading
+            : primaryWorkItem.Workspace.Trim();
+
+        return $"{countText}: {primaryWorkItem.Label} | {severity} | {owner} | open {target}";
     }
 
     private WorkspaceShellContext BuildFallbackShellContext()

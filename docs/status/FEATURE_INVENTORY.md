@@ -253,17 +253,19 @@ not the primary operator shell; WPF owns current workstation delivery.
 - Workspace home pages now act as shell-first operator launchpads (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) instead of a long page-directory entry model.
 - Desktop launch and workflow automation now normalize page/deep-link startup actions through `DesktopLaunchArguments`, forward secondary launch arguments to the primary instance through the single-instance named pipe, keep `ShellAutomationState` available as a hidden-but-present page marker, and split isolated restore/build arguments so shortcuts and screenshot/manual workflows target the same canonical workspace tags operators use without target-framework asset drift.
 - Command palette (`Ctrl+K`), keyboard shortcuts, workspace-tile switching, and governance/fund-ops aliases keep low-frequency pages reachable without promoting them to top-level roots.
-- Workspace shell context strips now standardize scope, environment, freshness, review-state, alert, and currency cues across the four workstation shells.
+- Workspace shell context strips now standardize scope, environment, freshness, review-state, alert, and currency cues across the four workstation shells; current shell orchestration can promote active operator-inbox review items into the critical context lane without replacing the shared readiness source.
 - `TradingWorkspaceShellPage` now includes a desk briefing hero that projects current desk focus, readiness tone, next handoff, and primary/secondary actions from active-run, workflow-summary, and shared operator-readiness inputs.
+- `TradingHoursPage` now includes a session briefing card that distinguishes regular-session live risk, pre-market staging, after-hours review, and closed-planning handoffs from market-calendar state before an operator stages trading work.
 - `ResearchWorkspaceShellPage` now includes a research desk briefing hero that projects market briefing, selected-run posture, run-detail and portfolio drill-ins, and paper-promotion review handoffs from shared workstation run data.
 - `DataOperationsWorkspaceShellPage` now includes a data-operations desk briefing hero backed by `DataOperationsWorkspacePresentationBuilder`; it projects provider health, resumable backfills, storage health, collection sessions, export jobs, operational blockers, and next-handoff actions from shared service data.
 - `WatchlistPage` now includes watchlist posture guidance for saved list count, pinned list coverage, symbol coverage, visible search scope, and empty-state handoffs before an operator loads or imports symbol sets.
 - `ProviderHealthPage` now includes a provider-posture briefing that condenses stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage into one next handoff before the operator scans individual provider cards.
 - `SystemHealthPage` now includes a system triage briefing that condenses provider health, storage posture, disk pressure, and retained event severity into one next handoff before the operator scans diagnostics panels; provider and recent-event empty states distinguish pending scans from confirmed empty snapshots.
 - `NotificationCenterPage` now supports history recovery when search, unread-only, or severity filters hide retained notifications; `NotificationCenterViewModel` resets those filters against the already-loaded history window.
-- `ActivityLogPage` now includes a triage strip that summarizes visible entries, retained error and warning counts, latest entry posture, and active filters before the operator scans retained log rows.
+- `ActivityLogPage` now includes a triage strip that summarizes visible entries, retained error and warning counts, latest entry posture, and active filters before the operator scans retained log rows, plus header export and clear actions that stay disabled until visible or retained log state supports them.
 - `StrategyRunsPage` now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded run scope beside search, and exposes a reset-filters recovery action against the already-loaded run browser rows.
 - Fixture/offline workflow mode is explicitly separated from operational readiness: the shell presents deterministic fixture state as neutral demo data, while Data Operations carries environment-mode context when provider telemetry is absent.
+- Provider Health is owned by Data Operations navigation and workflow summaries, while Diagnostics and System Health remain Governance-owned operational support surfaces.
 - Legacy deep pages now route through `WorkspaceDeepPageHostPage` in both standalone and docked presentations, so direct navigation and workspace docks share the same workspace title, reachability metadata, related-workflow chrome, and trust-state posture without removing the underlying page functionality.
 - Legacy deep pages can now suppress duplicate inner hero/title chrome through `WorkspaceShellChromeState` plus embedded-shell styles (`EmbeddedShellHeroCardStyle`, `EmbeddedShellHeaderGridStyle`, and `EmbeddedShellHeaderStackPanelStyle`), tightening density when pages are already hosted inside the shared workstation shell.
 - Action-heavy hosted pages including `MessagingHubPage`, `NotificationCenterPage`, `SecurityMasterPage`, `ServiceManagerPage`, and `PositionBlotterPage` now collapse decorative identity chrome while preserving their page-specific commands, status badges, and trust signals inside the shared shell host.
@@ -278,7 +280,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 - Theme switching, notification center, info bar
 - Offline indicator (single notification + warning on backend unreachable)
 - Session state persistence (active workspace, last page, window bounds)
-- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, Provider Health posture-state tests, System Health triage-state tests, Activity Log triage-state tests, Watchlist posture-state tests, local single-instance mutex and launch-argument forwarding coverage, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
+- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, Provider Health posture-state tests, Trading Hours session-briefing tests, System Health triage-state tests, Activity Log triage/export/clear-state tests, Watchlist posture-state tests, local single-instance mutex and launch-argument forwarding coverage, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
 
 ### Pages with live service connections (Implemented)
 
@@ -296,6 +298,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 | DataQualityPage | DataQualityServiceBase | Quality metrics dashboard with symbol-filter scope and empty-state guidance |
 | DataSamplingPage | DataSamplingService | Data sampling configuration |
 | DataCalendarPage | DataCalendarService | Calendar heat-map of collected dates |
+| TradingHoursPage | ApiClientService | Market session status with trading-desk briefing |
 | DataBrowserPage | ArchiveBrowserService | Browse stored data files |
 | DataExportPage | AnalysisExportService | Export stored data |
 | AnalysisExportPage | AnalysisExportService | Advanced export options |
@@ -304,7 +307,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 | LiveDataViewerPage | LiveDataService | Real-time tick viewer |
 | OrderBookPage | OrderBookVisualizationService | L2 order book display |
 | CollectionSessionPage | CollectionSessionService | Active session summary |
-| ActivityLogPage | ApiClientService | Live event log with triage posture |
+| ActivityLogPage | ApiClientService | Live event log with triage posture plus export/clear actions |
 | DiagnosticsPage | NavigationService, NotificationService | System diagnostics |
 | SetupWizardPage | SetupWizardService | First-run onboarding |
 | PackageManagerPage | PortablePackagerService | Create/import packages |
@@ -331,7 +334,7 @@ The current WPF app exposes broad capability coverage and the active shell basel
 
 - **Research** - backtests, Lean engine flows, charts, replay, experiment comparison
 - **Trading** - live monitoring, orders, fills, positions, strategy operation
-- **Data Operations** - providers, symbols, backfills, schedules, storage, exports
+- **Data Operations** - providers, provider health, symbols, backfills, schedules, storage, exports
 - **Governance** - portfolio, ledger, diagnostics, retention, notifications, and settings
 
 This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-4. The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.

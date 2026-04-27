@@ -48,6 +48,12 @@ public sealed class WelcomePageViewModel : BindableBase
         private set => SetProperty(ref _readinessItems, value);
     }
 
+    private string _readinessProgressText = "0 of 3 checks ready";
+    public string ReadinessProgressText { get => _readinessProgressText; private set => SetProperty(ref _readinessProgressText, value); }
+
+    private string _readinessSummaryText = "Connection, symbol inventory, and storage posture are still being checked.";
+    public string ReadinessSummaryText { get => _readinessSummaryText; private set => SetProperty(ref _readinessSummaryText, value); }
+
     private WelcomeNextAction _nextAction = CreateDefaultNextAction();
     public WelcomeNextAction NextAction
     {
@@ -189,6 +195,9 @@ public sealed class WelcomePageViewModel : BindableBase
             symbolCount,
             normalizedStoragePath,
             configuredDataRoot);
+        var readinessSummary = BuildReadinessSummary(isConnected, symbolCount, configuredDataRoot);
+        ReadinessProgressText = readinessSummary.ProgressText;
+        ReadinessSummaryText = readinessSummary.SummaryText;
         NextAction = BuildNextAction(
             isConnected,
             symbolCount,
@@ -349,6 +358,38 @@ public sealed class WelcomePageViewModel : BindableBase
         ];
     }
 
+    private static WelcomeReadinessSummary BuildReadinessSummary(
+        bool isConnected,
+        int symbolCount,
+        string configuredDataRoot)
+    {
+        var readyChecks = 0;
+        if (isConnected)
+        {
+            readyChecks++;
+        }
+
+        if (symbolCount > 0)
+        {
+            readyChecks++;
+        }
+
+        if (!IsDefaultStoragePath(configuredDataRoot))
+        {
+            readyChecks++;
+        }
+
+        var summaryText = readyChecks switch
+        {
+            3 => "Provider, symbol, and storage checks are clear. Move into the shell that owns the next operator decision.",
+            _ when !isConnected => "Provider connectivity is blocking live workstation flows. Start with provider recovery before checking downstream queues.",
+            _ when symbolCount == 0 => "Provider connectivity is available, but no symbol inventory is configured for collection or quality workflows.",
+            _ => "Provider and symbol coverage are available; confirm the default storage target before broader collection or export work."
+        };
+
+        return new WelcomeReadinessSummary($"{readyChecks} of 3 checks ready", summaryText);
+    }
+
     private static WelcomeNextAction BuildNextAction(
         bool isConnected,
         int symbolCount,
@@ -474,6 +515,10 @@ public sealed record WelcomeReadinessItem(
     string IconGlyph,
     Brush AccentBrush,
     Brush AccentBackgroundBrush);
+
+public sealed record WelcomeReadinessSummary(
+    string ProgressText,
+    string SummaryText);
 
 public sealed record WelcomeNextAction(
     string ToneLabel,

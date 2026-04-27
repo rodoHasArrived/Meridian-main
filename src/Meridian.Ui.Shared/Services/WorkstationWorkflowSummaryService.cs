@@ -316,7 +316,7 @@ public sealed class WorkstationWorkflowSummaryService
                     NextAction: new WorkflowNextAction(
                         Label: "Open Provider Health",
                         Detail: "Inspect provider posture and reconnect degraded feeds.",
-                        TargetPageTag: "Provider",
+                        TargetPageTag: "ProviderHealth",
                         Tone: "Primary"),
                     PrimaryBlocker: CreateBlocker(
                         code: "provider-degradation",

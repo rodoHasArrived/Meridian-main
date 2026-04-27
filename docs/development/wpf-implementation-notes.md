@@ -50,7 +50,7 @@ Shell Summary Rail
 └── Shared context strip with page title, subtitle, badges, and attention rail
 
 Content Frame
-├── Fixture Mode Banner (orange, conditional on non-live mode)
+├── Single app-level fixture/offline indicator plus shell status badge
 └── WPF Frame → page navigation
 ```
 
@@ -58,13 +58,13 @@ Content Frame
 
 **Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
 
-**Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target) plus a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data Operations before the landing page suggests Research, Trading, or Governance shells.
+**Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target), a readiness progress strip, and a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data Operations before the landing page suggests Research, Trading, or Governance shells.
 
-**Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated second-row attention rail before the rest of the badge wall. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
+**Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated attention rail after the page title and wrapped badge row. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
 
-**Main shell context strip** — `MainPage` now renders the shared context strip between the workflow summary rail and the split-pane host. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
+**Main shell context strip** — `MainPage` renders the shared context strip for workflow pages and suppresses it on workspace landing pages where the compact next-action row already carries the first operator handoff. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
 
-**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, includes the selected account operating context as `fundAccountId` when one is active, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` instead of stopping on a workspace landing page. The Trading shell uses the same account context when it requests shared operator readiness, so brokerage-sync blockers and account-scoped readiness stay aligned between the queue and the cockpit. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
+**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, includes the selected account operating context as `fundAccountId` when one is active, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` instead of stopping on a workspace landing page. Queue attention text includes review count, severity, owner/source, and the concrete target page so the context-strip warning is actionable. The Trading shell uses the same account context when it requests shared operator readiness, so brokerage-sync blockers and account-scoped readiness stay aligned between the queue and the cockpit. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
 
 **Page header visibility refinement** — `MainPage` now keeps the current page title visible in the primary shell header instead of leaving the bound title/subtitle collapsed. Standard density shows both title and subtitle, while compact density keeps the title visible and collapses the subtitle so the context switcher and next-action strip stay above the fold.
 
@@ -132,8 +132,8 @@ Four built-in workspace templates:
 | --- | --- |
 | `research` | Dashboard, LiveData, Charts, RunMat, StrategyRuns, OrderBook, Watchlist |
 | `trading` | Backtest, StrategyRuns, LeanIntegration, PortfolioImport, TradingHours |
-| `data-operations` | Provider, Symbols, Backfill, Storage, DataExport, PackageManager, Schedules |
-| `governance` | DataQuality, ProviderHealth, SystemHealth, Diagnostics, Settings, AdminMaintenance |
+| `data-operations` | Provider, ProviderHealth, Symbols, Backfill, Storage, DataExport, PackageManager, Schedules |
+| `governance` | DataQuality, SystemHealth, Diagnostics, Settings, AdminMaintenance |
 
 Each workspace persists:
 
@@ -194,6 +194,7 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | Tag | Class |
 | --- | --- |
 | `Provider` | `ProviderPage` |
+| `ProviderHealth` | `ProviderHealthPage` |
 | `DataSources` | `DataSourcesPage` |
 | `Symbols` | `SymbolsPage` |
 | `SymbolMapping` | `SymbolMappingPage` |
@@ -219,7 +220,6 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | Tag | Class |
 | --- | --- |
 | `DataQuality` | `DataQualityPage` |
-| `ProviderHealth` | `ProviderHealthPage` |
 | `CollectionSessions` | `CollectionSessionPage` |
 | `ArchiveHealth` | `ArchiveHealthPage` |
 | `ServiceManager` | `ServiceManagerPage` |

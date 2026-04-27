@@ -221,6 +221,7 @@ public sealed class NavigationServiceTests : IDisposable
 
     [Theory]
     [InlineData("Provider")]
+    [InlineData("ProviderHealth")]
     [InlineData("Symbols")]
     [InlineData("Backfill")]
     [InlineData("Storage")]
@@ -240,7 +241,6 @@ public sealed class NavigationServiceTests : IDisposable
 
     [Theory]
     [InlineData("DataQuality")]
-    [InlineData("ProviderHealth")]
     [InlineData("SystemHealth")]
     [InlineData("Diagnostics")]
     [InlineData("Settings")]

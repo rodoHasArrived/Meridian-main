@@ -628,6 +628,7 @@ public sealed class WorkspaceService
                 Pages = new List<WorkspacePage>
                 {
                     new WorkspacePage { PageTag = "Provider", Title = "Provider", IsDefault = true },
+                    new WorkspacePage { PageTag = "ProviderHealth", Title = "Provider Health" },
                     new WorkspacePage { PageTag = "DataSources", Title = "Data Sources" },
                     new WorkspacePage { PageTag = "Symbols", Title = "Symbols" },
                     new WorkspacePage { PageTag = "SymbolMapping", Title = "Symbol Mapping" },
@@ -665,7 +666,6 @@ public sealed class WorkspaceService
                 {
                     new WorkspacePage { PageTag = "DataQuality", Title = "Data Quality", IsDefault = true },
                     new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
-                    new WorkspacePage { PageTag = "ProviderHealth", Title = "Provider Health" },
                     new WorkspacePage { PageTag = "SystemHealth", Title = "System Health" },
                     new WorkspacePage { PageTag = "Diagnostics", Title = "Diagnostics" },
                     new WorkspacePage { PageTag = "ArchiveHealth", Title = "Archive Health" },

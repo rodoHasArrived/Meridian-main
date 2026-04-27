@@ -186,6 +186,58 @@ public sealed class WorkspaceShellContextStripControlTests
         });
     }
 
+    [Fact]
+    public void Control_ShouldKeepTitleReadableWhenManyBadgesWrap()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var control = new WorkspaceShellContextStripControl
+            {
+                Width = 960,
+                ShellContext = new WorkspaceShellContext
+                {
+                    WorkspaceTitle = "Provider Health",
+                    WorkspaceSubtitle = "Data Operations provider workflow with shared environment, freshness, and alert context.",
+                    Badges =
+                    [
+                        new WorkspaceShellBadge { Label = "Workspace", Value = "Data Operations", Tone = WorkspaceTone.Info },
+                        new WorkspaceShellBadge { Label = "Scope", Value = "Fund", Tone = WorkspaceTone.Neutral },
+                        new WorkspaceShellBadge { Label = "Environment", Value = "Demo data", Tone = WorkspaceTone.Info },
+                        new WorkspaceShellBadge { Label = "As Of", Value = "Apr 27 2026 09:15", Tone = WorkspaceTone.Neutral },
+                        new WorkspaceShellBadge { Label = "Freshness", Value = "Provider workflow active", Tone = WorkspaceTone.Neutral },
+                        new WorkspaceShellBadge { Label = "Reachability", Value = "Secondary", Tone = WorkspaceTone.Neutral },
+                        new WorkspaceShellBadge { Label = "Related", Value = "4 routes", Tone = WorkspaceTone.Info },
+                        new WorkspaceShellBadge { Label = "Alerts", Value = "No recent alerts", Tone = WorkspaceTone.Neutral }
+                    ]
+                }
+            };
+
+            var window = CreateHostWindow(control);
+            try
+            {
+                window.Width = 980;
+                window.Height = 260;
+                window.Show();
+                window.UpdateLayout();
+                control.UpdateLayout();
+
+                var title = control.FindName("WorkspaceContextTitleText").Should().BeOfType<TextBlock>().Subject;
+                var badges = control.FindName("ContextBadgeItemsControl").Should().BeOfType<ItemsControl>().Subject;
+
+                title.Text.Should().Be("Provider Health");
+                title.ActualWidth.Should().BeGreaterThan(600);
+                badges.ActualWidth.Should().BeGreaterThan(600);
+                badges.TranslatePoint(new Point(0, 0), control).Y.Should().BeGreaterThan(title.TranslatePoint(new Point(0, 0), control).Y);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window CreateHostWindow(FrameworkElement content)
     {
         return new Window

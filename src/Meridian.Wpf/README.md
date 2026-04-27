@@ -8,8 +8,8 @@ The current WPF application already spans research, trading-adjacent, data-opera
 
 - **Research workflows** - Research workspace, backtests, charts, replay, run comparison, RunMat, and Lean integration
 - **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
-- **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
-- **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
+- **Data operations** - symbols, providers, provider health, backfills, schedules, storage, packaging, and export flows
+- **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, system health, retention, and settings
 - **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context, the governance shell keeps the currently selected lane plus its next handoff visible above the queue wall, and the trading shell now keeps a desk-briefing hero above the workbench so context, replay/controls posture, and the next desk action stay explicit
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
@@ -32,6 +32,7 @@ Recent governance work is also moving older utility pages into shell-native work
 `BatchBacktest` now gives the sweep results pane stateful empty guidance for idle, validation-blocked, running, failed-without-results, cancelled, and populated result states using only the existing batch counters and summaries.
 `RunMat` now gives the output panel an empty/streaming state and disables Stop unless a script run is active, using only the current run state and retained output lines.
 `QuantScript` now includes a dedicated Run History tab that surfaces recorded executions, selected-run evidence, console preview, and the existing Strategy Runs handoff actions.
+`Welcome` now adds a readiness progress strip to the next-action panel so provider, symbol, and storage setup posture is visible before the operator opens a workspace shell.
 
 ## Why WPF?
 
@@ -123,11 +124,11 @@ The application still contains many page-level screens, but the active desktop d
 
 Examples:
 
-- `Welcome`: workspace launcher plus Data Operations collection quick start
+- `Welcome`: workspace launcher plus Data Operations collection quick start and readiness progress
 - `Research`: `ResearchShell` workspace overview, `Backtest`, `BatchBacktest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
 - `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `PositionBlotter`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
-- `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
-- `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
+- `Data Operations`: `Provider`, `ProviderHealth`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
+- `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
 
 `PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
 `TradingHours` includes a session-briefing strip that translates the current calendar state into a live-risk, pre-market, after-hours, or closed-planning handoff beside the exchange schedule.

@@ -173,7 +173,7 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_FixtureBannerAndTickerToggle_ShouldRespondToUserActions()
+    public void MainPage_FixtureIndicatorAndTickerToggle_ShouldRespondToUserActions()
     {
         WpfTestThread.Run(() =>
         {
@@ -183,10 +183,9 @@ public sealed class MainPageUiWorkflowTests
 
             FixtureModeDetector.Instance.IsFixtureMode.Should().BeTrue();
             FixtureModeDetector.Instance.ModeLabel.Should().Contain("Demo data mode");
-            AutomationProperties.GetAutomationId(facade.FixtureModeDismissButton).Should().Be("FixtureModeDismissButton");
-
-            facade.Click(facade.FixtureModeDismissButton);
             facade.ViewModel.FixtureModeBannerVisibility.Should().Be(Visibility.Collapsed);
+            facade.FixtureModeBanner.Visibility.Should().Be(Visibility.Collapsed);
+            facade.ViewModel.ShellStatusText.Should().Be("Demo data");
 
             facade.ViewModel.TickerStripVisible.Should().BeFalse();
             facade.Click(facade.TickerStripToggleButton);
@@ -268,9 +267,8 @@ public sealed class MainPageUiWorkflowTests
 
                 using var facade = new MainPageUiAutomationFacade();
 
-                await WaitForConditionAsync(() => facade.ViewModel.ShellContextVisibility == Visibility.Visible).ConfigureAwait(true);
-
                 facade.OpenCommandPalettePage("Backtest");
+                await WaitForConditionAsync(() => facade.ViewModel.ShellContextVisibility == Visibility.Visible).ConfigureAwait(true);
                 facade.Click(facade.ShellDensityToggleButton);
 
                 facade.ViewModel.IsWorkflowPageActive.Should().BeTrue();
@@ -379,12 +377,19 @@ public sealed class MainPageUiWorkflowTests
         {
             using var facade = new MainPageUiAutomationFacade();
 
+            await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary is not null).ConfigureAwait(true);
+            facade.ViewModel.IsWorkspaceHomePageActive.Should().BeTrue();
+            facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
+            facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
+
+            facade.OpenCommandPalettePage("SecurityMaster");
+
             await WaitForConditionAsync(() =>
                 facade.ViewModel.ShellContextVisibility == Visibility.Visible &&
-                !string.IsNullOrWhiteSpace(facade.WorkspaceContextTitleText.Text)).ConfigureAwait(true);
+                string.Equals(facade.WorkspaceContextTitleText.Text, "Security Master", StringComparison.Ordinal)).ConfigureAwait(true);
 
             facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Visible);
-            facade.WorkspaceContextTitleText.Text.Should().Be("Research Workspace");
+            facade.WorkspaceContextTitleText.Text.Should().Be("Security Master");
             facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
             facade.WorkspaceContextAttentionBanner.Visibility.Should().Be(Visibility.Visible);
             facade.WorkspaceContextAttentionTitleText.Text.Should().NotBeNullOrWhiteSpace();
@@ -392,14 +397,6 @@ public sealed class MainPageUiWorkflowTests
             attentionDetail.Should().NotBeNullOrWhiteSpace();
             (attentionDetail.Contains("Environment", StringComparison.Ordinal)
                 || attentionDetail.Contains("Operating Context", StringComparison.Ordinal)).Should().BeTrue();
-
-            facade.OpenCommandPalettePage("SecurityMaster");
-
-            await WaitForConditionAsync(() =>
-                string.Equals(facade.WorkspaceContextTitleText.Text, "Security Master", StringComparison.Ordinal)).ConfigureAwait(true);
-
-            facade.WorkspaceContextTitleText.Text.Should().Be("Security Master");
-            facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
         });
     }
 

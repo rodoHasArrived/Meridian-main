@@ -90,6 +90,27 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void ProviderHealth_ShouldBelongToDataOperationsWhileDiagnosticsStaysGovernanceOwned()
+    {
+        var providerHealth = ShellNavigationCatalog.GetPage("ProviderHealth");
+        var diagnostics = ShellNavigationCatalog.GetPage("Diagnostics");
+
+        providerHealth.Should().NotBeNull();
+        providerHealth!.WorkspaceId.Should().Be("data-operations");
+        ShellNavigationCatalog.GetPagesForWorkspace("data-operations")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain("ProviderHealth");
+        ShellNavigationCatalog.GetRelatedPages("DataOperationsShell")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain("ProviderHealth");
+
+        diagnostics.Should().NotBeNull();
+        diagnostics!.WorkspaceId.Should().Be("governance");
+    }
+
+    [Fact]
     public void ResolveDefaultPanes_TradingWorkbenchPreset_UsesPresetPanes()
     {
         var panes = ShellNavigationCatalog.ResolveDefaultPanes(new WorkspaceShellState(

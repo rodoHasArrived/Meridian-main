@@ -220,6 +220,7 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingHoursViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~MessagingHubViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~StrategyRunBrowserViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~BatchBacktestViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
@@ -262,6 +263,8 @@ Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release W
 the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
 for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
+Use `TradingHoursViewModelTests` when changing Trading Hours session briefing, market calendar
+status projection, or `TradingHoursPage` binding coverage.
 Use `MainShellViewModelTests` and `MessagingHubViewModelTests` when changing shell operator-inbox
 actions, queue routing or route metadata resolution, Messaging Hub delivery posture, activity
 retention, empty states, or clear activity binding.
@@ -280,8 +283,8 @@ selected-security trust workbench actions, conflict operator lanes, or `Security
 coverage.
 Use `ProviderHealthViewModelTests`, `SystemHealthViewModelTests` plus `SystemHealthPageSmokeTests`,
 `ActivityLogViewModelTests`, `NotificationCenterViewModelTests`, and `WatchlistViewModelTests`
-for provider-posture, system-health triage, support-triage, notification-history recovery, and
-watchlist-posture surface changes. Use
+for provider-posture, system-health triage, support-triage, activity-log header actions,
+notification-history recovery, and watchlist-posture surface changes. Use
 `DataQualityViewModelCharacterizationTests` plus `DataQualityPageSmokeTests` when changing Data
 Quality symbol-filter recovery or empty-state guidance. Use
 `SingleInstanceServiceTests` plus `DesktopWorkflowScriptTests` when changing launch/deep-link
