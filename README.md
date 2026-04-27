@@ -329,12 +329,6 @@ Use these documents together when planning or implementing new work:
 │       │   ├── agents
 │       │   │   └── openai.yaml
 │       │   ├── evals
-│       │   │   ├── artifacts
-│       │   │   │   ├── eval-1.jsonl
-│       │   │   │   ├── eval-2.jsonl
-│       │   │   │   ├── eval-3.jsonl
-│       │   │   │   ├── eval-4.jsonl
-│       │   │   │   └── eval-5.jsonl
 │       │   │   ├── benchmark_baseline.json
 │       │   │   ├── evals.json
 │       │   │   ├── meridian-implementation-assurance.prompts.csv
@@ -687,97 +681,6 @@ Use these documents together when planning or implementing new work:
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           ├── TEST_MATRIX_FIX_SUMMARY.md
 │           └── desktop-improvements-executive-summary.md
-├── artifacts
-│   └── provider-validation
-│       ├── README.md
-│       ├── _automation
-│       │   ├── 2026-04-09
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   ├── 2026-04-16
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   ├── 2026-04-17
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   ├── 2026-04-20
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   ├── 2026-04-25
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   ├── codex-dk1-packet-validation-final
-│       │   │   ├── dk1-pilot-parity-packet.json
-│       │   │   ├── dk1-pilot-parity-packet.md
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   └── codex-suggetion-dk1-sample-contract
-│       │       ├── dk1-pilot-parity-packet.json
-│       │       ├── dk1-pilot-parity-packet.md
-│       │       ├── wave1-validation-summary.json
-│       │       └── wave1-validation-summary.md
-│       ├── interactive-brokers
-│       │   ├── 2026-04-09
-│       │   │   ├── bootstrap
-│       │   │   │   └── summary.md
-│       │   │   ├── disconnect-reconnect
-│       │   │   │   └── summary.md
-│       │   │   ├── manifest.json
-│       │   │   ├── market-data-entitlements
-│       │   │   │   └── summary.md
-│       │   │   └── server-version
-│       │   │       └── summary.md
-│       │   └── 2026-04-14
-│       │       └── manual-validation-checklist.md
-│       ├── nyse
-│       │   └── 2026-04-09
-│       │       ├── auth-connectivity
-│       │       │   └── summary.md
-│       │       ├── l1-streaming-reconnect
-│       │       │   └── summary.md
-│       │       ├── manifest.json
-│       │       ├── premium-depth
-│       │       │   └── summary.md
-│       │       └── rate-limit
-│       │           └── summary.md
-│       ├── robinhood
-│       │   └── 2026-04-09
-│       │       ├── auth-session
-│       │       │   └── summary.md
-│       │       ├── manifest.json
-│       │       ├── order-submit-cancel
-│       │       │   └── summary.md
-│       │       ├── quote-polling
-│       │       │   └── summary.md
-│       │       └── throttling-reconnect
-│       │           └── summary.md
-│       └── stocksharp
-│           └── 2026-04-09
-│               ├── cqg-bootstrap
-│               │   └── summary.md
-│               ├── cqg-historical
-│               │   └── summary.md
-│               ├── cqg-streaming
-│               │   └── summary.md
-│               ├── interactive-brokers-bootstrap
-│               │   └── summary.md
-│               ├── interactive-brokers-historical
-│               │   └── summary.md
-│               ├── interactive-brokers-streaming
-│               │   └── summary.md
-│               ├── iqfeed-bootstrap
-│               │   └── summary.md
-│               ├── iqfeed-historical
-│               │   └── summary.md
-│               ├── iqfeed-streaming
-│               │   └── summary.md
-│               ├── manifest.json
-│               ├── rithmic-bootstrap
-│               │   └── summary.md
-│               ├── rithmic-historical
-│               │   └── summary.md
-│               └── rithmic-streaming
-│                   └── summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
@@ -5099,6 +5002,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── validate-position-blotter-route.ps1
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
+│   ├── generate_contract_review_packet.py
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -6894,6 +6798,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkspaceShellContextService.cs
 │       │   ├── WorkspaceShellStateProviders.cs
 │       │   ├── WorkstationOperatingContextService.cs
+│       │   ├── WorkstationOperatorInboxApiClient.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
 │       │   ├── WorkstationResearchBriefingService.cs
 │       │   ├── WorkstationSecurityMasterApiClient.cs
@@ -7828,10 +7733,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
+│   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
+│   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
@@ -7878,12 +7785,13 @@ Use these documents together when planning or implementing new work:
 │   ├── scripts
 │   │   ├── setup-verification.sh
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   └── test_prepare_dk1_operator_signoff.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-629 directories, 7115 files
+585 directories, 7067 files
 ```
 <!-- readme-tree end -->
