@@ -5003,6 +5003,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
+│   │   ├── validate-operator-inbox-route.ps1
 │   │   └── validate-position-blotter-route.ps1
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
@@ -7719,7 +7720,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkspaceServiceTests.cs
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
-│   │   │   └── WorkstationOperatingContextServiceTests.cs
+│   │   │   ├── WorkstationOperatingContextServiceTests.cs
+│   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -7744,12 +7746,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── OrderBookViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
+│   │   │   ├── StorageViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
@@ -7797,6 +7801,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-587 directories, 7070 files
+587 directories, 7074 files
 ```
 <!-- readme-tree end -->
