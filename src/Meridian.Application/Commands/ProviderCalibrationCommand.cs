@@ -32,8 +32,17 @@ internal sealed class ProviderCalibrationCommand : ICliCommand
 
         var baselineConfigPath = CliArguments.GetValue(args, "--baseline-config");
         var candidateConfigPath = CliArguments.GetValue(args, "--candidate-config");
-        var baselineConfig = await LoadConfigOrDefaultAsync(baselineConfigPath, ct).ConfigureAwait(false);
-        var candidateConfig = await LoadConfigOrDefaultAsync(candidateConfigPath, ct).ConfigureAwait(false);
+        var baselineConfig = await LoadConfigOrDefaultAsync(baselineConfigPath, "--baseline-config", ct).ConfigureAwait(false);
+        if (baselineConfig is null)
+        {
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
+        }
+
+        var candidateConfig = await LoadConfigOrDefaultAsync(candidateConfigPath, "--candidate-config", ct).ConfigureAwait(false);
+        if (candidateConfig is null)
+        {
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
+        }
 
         var baselineProfile = new ProviderDegradationKernelProfile(
             baselineKernelVersion,
@@ -94,17 +103,26 @@ internal sealed class ProviderCalibrationCommand : ICliCommand
             : CliResult.Fail(ErrorCode.ConfigurationInvalid);
     }
 
-    private static async Task<ProviderDegradationConfig> LoadConfigOrDefaultAsync(string? path, CancellationToken ct)
+    private Task<ProviderDegradationConfig?> LoadConfigOrDefaultAsync(string? path, string optionName, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        if (string.IsNullOrWhiteSpace(path))
         {
-            return ProviderDegradationConfig.Default;
+            return Task.FromResult<ProviderDegradationConfig?>(ProviderDegradationConfig.Default);
         }
 
-        await using var stream = File.OpenRead(path);
-        var config = await JsonSerializer.DeserializeAsync<ProviderDegradationConfig>(stream, cancellationToken: ct)
-            .ConfigureAwait(false);
+        if (!File.Exists(path))
+        {
+            _log.Error("Provider calibration failed: supplied {OptionName} path does not exist: {ConfigPath}", optionName, path);
+            return Task.FromResult<ProviderDegradationConfig?>(null);
+        }
 
+        return LoadConfigAsync(path, ct);
+    }
+
+    private static async Task<ProviderDegradationConfig> LoadConfigAsync(string path, CancellationToken ct)
+    {
+        await using var stream = File.OpenRead(path);
+        var config = await JsonSerializer.DeserializeAsync<ProviderDegradationConfig>(stream, cancellationToken: ct).ConfigureAwait(false);
         return config ?? ProviderDegradationConfig.Default;
     }
 
