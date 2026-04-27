@@ -629,8 +629,6 @@ Use these documents together when planning or implementing new work:
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
-├── PROJECTS
-│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── README.md
 ├── archive
 │   └── docs
@@ -681,6 +679,15 @@ Use these documents together when planning or implementing new work:
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           ├── TEST_MATRIX_FIX_SUMMARY.md
 │           └── desktop-improvements-executive-summary.md
+├── artifacts
+│   └── provider-validation
+│       └── _automation
+│           └── 2026-04-27
+│               ├── dk1-operator-signoff.json
+│               ├── dk1-pilot-parity-packet.json
+│               ├── dk1-pilot-parity-packet.md
+│               ├── wave1-validation-summary.json
+│               └── wave1-validation-summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
@@ -7792,6 +7799,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-585 directories, 7067 files
+588 directories, 7071 files
 ```
 <!-- readme-tree end -->
