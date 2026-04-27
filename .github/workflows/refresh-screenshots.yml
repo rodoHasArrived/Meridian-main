@@ -1,8 +1,8 @@
 # Refresh WPF Desktop Screenshots
 #
 # Builds the Meridian WPF workstation in fixture mode, captures the desktop
-# screenshot catalog with scripts/dev/capture-desktop-screenshots.ps1, and
-# commits updated PNGs under docs/screenshots/desktop/.
+# screenshot catalog with scripts/dev/run-desktop-workflow.ps1, and commits
+# updated PNGs under docs/screenshots/desktop/.
 #
 # Triggered:
 #   - Weekly on Monday at 06:00 UTC
@@ -56,6 +56,21 @@ jobs:
     # Prevent recursive runs from the bot commit.
     if: github.actor != 'github-actions[bot]'
 
+    strategy:
+      fail-fast: false
+      matrix:
+        workflow:
+          - name: screenshot-catalog
+            output: docs/screenshots/desktop
+          - name: manual-overview
+            output: docs/screenshots/desktop/manuals/manual-overview
+          - name: manual-data-operations
+            output: docs/screenshots/desktop/manuals/manual-data-operations
+          - name: manual-research-and-trading
+            output: docs/screenshots/desktop/manuals/manual-research-and-trading
+          - name: manual-governance
+            output: docs/screenshots/desktop/manuals/manual-governance
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -70,80 +85,31 @@ jobs:
         shell: pwsh
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
 
-      # Capture *all* desktop screenshots defined in scripts/dev/desktop-workflows.json
-      # (screenshot-catalog + all manual workflows that includeInManual: true).
-      - name: Capture desktop screenshot catalog
+      - name: Capture ${{ matrix.workflow.name }} screenshots
         shell: pwsh
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
           pwsh -File scripts/dev/run-desktop-workflow.ps1 `
-            -Workflow screenshot-catalog `
+            -Workflow "${{ matrix.workflow.name }}" `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
             -Configuration "${{ env.WPF_CONFIGURATION }}" `
             -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}" 
-
-      - name: Capture manual-overview screenshots
-        shell: pwsh
-        env:
-          MDC_FIXTURE_MODE: '1'
-        run: |
-          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
-            -Workflow manual-overview `
-            -ProjectPath "${{ env.WPF_PROJECT }}" `
-            -Configuration "${{ env.WPF_CONFIGURATION }}" `
-            -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-overview" 
-
-      - name: Capture manual-data-operations screenshots
-        shell: pwsh
-        env:
-          MDC_FIXTURE_MODE: '1'
-        run: |
-          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
-            -Workflow manual-data-operations `
-            -ProjectPath "${{ env.WPF_PROJECT }}" `
-            -Configuration "${{ env.WPF_CONFIGURATION }}" `
-            -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-data-operations" 
-
-      - name: Capture manual-research-and-trading screenshots
-        shell: pwsh
-        env:
-          MDC_FIXTURE_MODE: '1'
-        run: |
-          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
-            -Workflow manual-research-and-trading `
-            -ProjectPath "${{ env.WPF_PROJECT }}" `
-            -Configuration "${{ env.WPF_CONFIGURATION }}" `
-            -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-research-and-trading" 
-
-      - name: Capture manual-governance screenshots
-        shell: pwsh
-        env:
-          MDC_FIXTURE_MODE: '1'
-        run: |
-          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
-            -Workflow manual-governance `
-            -ProjectPath "${{ env.WPF_PROJECT }}" `
-            -Configuration "${{ env.WPF_CONFIGURATION }}" `
-            -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-governance" 
+            -ScreenshotDirectory "${{ matrix.workflow.output }}"
 
       - name: Detect screenshot changes
         id: detect_changes
         shell: pwsh
         run: |
-          git status --porcelain
           $changed = git status --porcelain -- "${{ env.WPF_SCREENSHOT_OUTPUT }}" | Measure-Object | Select-Object -ExpandProperty Count
           if ($changed -gt 0) {
             "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "changed_count=$changed" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             Write-Host "Detected $changed changed file(s) under ${{ env.WPF_SCREENSHOT_OUTPUT }}"
           }
           else {
             "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "changed_count=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             Write-Host "No changes detected under ${{ env.WPF_SCREENSHOT_OUTPUT }}"
           }
 
@@ -151,7 +117,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: wpf-desktop-screenshots
+          name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
           path: |
             docs/screenshots/desktop/**/*.png
             artifacts/desktop-workflows/**/manifest.json
@@ -161,6 +127,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      # NOTE: This workflow commits directly to main.
+      # Ensure your branch protection rules allow GitHub Actions to push.
       - name: Commit WPF desktop screenshots
         if: steps.detect_changes.outputs.changed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v7
@@ -174,15 +142,18 @@ jobs:
         if: always()
         shell: pwsh
         run: |
+          $pngCount = 0
+          if (Test-Path "${{ env.WPF_SCREENSHOT_OUTPUT }}") {
+            $pngCount = (Get-ChildItem -Path "${{ env.WPF_SCREENSHOT_OUTPUT }}" -Recurse -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+          }
+
           $lines = @(
             '## UI Screenshot Refresh'
             ''
-            "Changes detected: **${{ steps.detect_changes.outputs.changed }}**"
-            ''
-            '### Output roots'
-            ''
-            "- ``${{ env.WPF_SCREENSHOT_OUTPUT }}/`` (catalog)"
-            "- ``${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/`` (manual workflows)"
+            "Workflow: **${{ matrix.workflow.name }}**"
+            "Output: ``${{ matrix.workflow.output }}``"
+            "PNG files found: **$pngCount**"
+            "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
           )
 
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
