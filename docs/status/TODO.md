@@ -34,12 +34,12 @@ Total items: **80**
 | `AGENTS.md` | 138 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
 | `AGENTS.md` | 142 | `TODO` | ❌ | TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but |
 | `AGENTS.md` | 146 | `TODO` | ❌ | TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI |
-| `AGENTS.md` | 298 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
-| `AGENTS.md` | 302 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
-| `AGENTS.md` | 306 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
-| `AGENTS.md` | 312 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
-| `AGENTS.md` | 461 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
-| `AGENTS.md` | 465 | `TODO` | ❌ | TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive` |
+| `AGENTS.md` | 301 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
+| `AGENTS.md` | 305 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
+| `AGENTS.md` | 309 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
+| `AGENTS.md` | 315 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
+| `AGENTS.md` | 472 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
+| `AGENTS.md` | 476 | `TODO` | ❌ | TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive` |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 379 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 388 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
@@ -65,8 +65,8 @@ Total items: **80**
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 171 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 135 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 95 | `NOTE` | ❌ | Note: item.ResolutionNote), ct).ConfigureAwait(false); |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 191 | `NOTE` | ❌ | Note: request.ReviewNote), ct).ConfigureAwait(false); |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 254 | `NOTE` | ❌ | Note: request.ResolutionNote), ct).ConfigureAwait(false); |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 192 | `NOTE` | ❌ | Note: request.ReviewNote), ct).ConfigureAwait(false); |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 258 | `NOTE` | ❌ | Note: request.ResolutionNote), ct).ConfigureAwait(false); |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 514 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
