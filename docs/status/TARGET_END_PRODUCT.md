@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
 **Last Updated:** 2026-04-27
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence with generated-artifact retention cleanup and packet-bound sign-off preflight, cockpit readiness projection, initial shared operator-inbox contract with WPF shell queue-button consumption, current WPF shell baseline, Trading/Research/Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, workflow automation hardening, and demo-data fixture semantics
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence with generated-artifact retention cleanup and packet-bound sign-off preflight, cockpit readiness projection, initial shared operator-inbox contract with route-aware WPF shell queue-button consumption, current WPF shell baseline, Trading/Research/Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts operator briefing, canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, workflow automation hardening, and demo-data fixture semantics
 
 ---
 
@@ -42,7 +42,7 @@ Data Operations is where operators manage providers, symbols, backfills, data qu
 
 ### Governance
 
-Governance is where operators review Security Master coverage, portfolio and ledger outcomes, reconciliation breaks, cash-flow questions, multi-ledger views, and governed reporting outputs.
+Governance is where operators review Security Master coverage, fund-account queues and provider-routing posture, portfolio and ledger outcomes, reconciliation breaks, cash-flow questions, multi-ledger views, and governed reporting outputs.
 
 ---
 
@@ -50,11 +50,11 @@ Governance is where operators review Security Master coverage, portfolio and led
 
 - evidence-backed provider trust and checkpoint confidence
 - shared run history across backtest, paper, and live-aware modes
-- explicit `Backtest -> Paper -> Live` promotion workflow with auditability, stable readiness work items, an initial shared operator-inbox route for readiness and reconciliation blockers, WPF shell queue routing for the primary work item, and operator-visible action readiness
+- explicit `Backtest -> Paper -> Live` promotion workflow with auditability, stable readiness work items, an initial shared operator-inbox route for readiness and reconciliation blockers, route-aware WPF shell queue routing for the primary work item, and operator-visible action readiness
 - portfolio, fills, attribution, ledger, cash-flow, and reconciliation visibility from the same run-centered model
 - the delivered Security Master baseline as the authoritative instrument-definition layer
 - governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
-- a primary WPF operator shell and retained local API/web support surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline plus Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter-aware recovery/run-scope presentation, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, and clear demo-data fixture cues are present, while workflow-level acceptance remains tied to Waves 2-4
+- a primary WPF operator shell and retained local API/web support surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline plus Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter-aware recovery/run-scope presentation, QuantScript local execution-history handoffs to shared Research surfaces for mirrored runs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data briefing, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, and clear demo-data fixture cues are present, while workflow-level acceptance remains tied to Waves 2-4
 
 ---
 
@@ -96,7 +96,7 @@ Waves 5-6 deepen the product and widen later claims, but they are not prerequisi
 
 ## Optional Advanced Research / Scale Tracks
 
-- deeper QuantScript libraries and workflow integration
+- deeper QuantScript libraries and workflow integration beyond the delivered local execution-history and mirrored-run handoff slice
 - L3 inference and queue-aware simulation
 - multi-instance coordination
 - Phase 16 performance work
@@ -108,4 +108,4 @@ These improve Meridian's ceiling, but they are not required for the core end-sta
 
 ## One-Paragraph Narrative
 
-When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect portfolio and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Research`, `Trading`, `Data Operations`, and `Governance` are separate workspaces, but they share one model of runs, instruments, portfolio state, and audit evidence.
+When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect account, portfolio, and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Research`, `Trading`, `Data Operations`, and `Governance` are separate workspaces, but they share one model of runs, instruments, account posture, portfolio state, and audit evidence.

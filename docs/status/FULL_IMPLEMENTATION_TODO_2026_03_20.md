@@ -208,7 +208,7 @@ Goal: ship the QuantScript capability as a real project, not only a blueprint.
 **Status: Closed.** The QuantScript project has been fully implemented:
 
 - `src/Meridian.QuantScript/` — Roslyn scripting API, `PriceSeries`/`ReturnSeries` domain types, `StatisticsEngine`, `BacktestProxy`, `QuantDataContext`, `PlotQueue`
-- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics result tabs, ScottPlot charting
+- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics/Run History result tabs, ScottPlot charting, and shared Research handoffs for mirrored runs
 - `tests/Meridian.QuantScript.Tests/` — compiler, runner, statistics engine, plot queue, portfolio builder tests
 - `scripts/example-sharpe.csx` — sample script
 

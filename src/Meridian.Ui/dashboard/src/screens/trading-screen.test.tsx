@@ -249,8 +249,23 @@ const serverReadinessData: TradingWorkspaceResponse = {
       }
     },
     brokerageSync: null,
-    workItems: [],
-    warnings: []
+    workItems: [
+      {
+        workItemId: "execution-evidence-incomplete",
+        kind: "ExecutionControl",
+        label: "Execution evidence incomplete",
+        detail: "OrderRejected is missing actor, scope, and rationale.",
+        tone: "Warning",
+        createdAt: "2026-04-26T16:00:00Z",
+        runId: null,
+        fundAccountId: null,
+        auditReference: "audit-risk-missing-context",
+        workspace: "Trading",
+        targetRoute: "/api/workstation/trading/readiness",
+        targetPageTag: "TradingShell"
+      }
+    ],
+    warnings: ["Replay evidence is stale for sess-1."]
   }
 };
 
@@ -291,6 +306,10 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
     expect(screen.getByText("DK1 trust gate")).toBeInTheDocument();
     expect(screen.getAllByText("Review required")).toHaveLength(2);
+    expect(screen.getByText("Operator work items")).toBeInTheDocument();
+    expect(screen.getByText("Execution evidence incomplete")).toBeInTheDocument();
+    expect(screen.getByText("OrderRejected is missing actor, scope, and rationale.")).toBeInTheDocument();
+    expect(screen.getByText("Replay evidence is stale for sess-1.")).toBeInTheDocument();
   });
 
   it("handles promotion happy path", async () => {

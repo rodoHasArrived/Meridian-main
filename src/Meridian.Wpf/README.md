@@ -14,7 +14,7 @@ The current WPF application already spans research, trading-adjacent, data-opera
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
-Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
+Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, a stateful operator brief, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
 `NotificationCenter` now supports history triage with search, unread-only filtering, directly bound severity filters, per-item acknowledgement, and a reset-filters recovery action so governance operators can work events as a queue instead of a flat feed.
 `ProviderHealth` now opens with a compact provider-posture briefing that turns connected/disconnected streaming counts, backfill availability, and stale snapshots into one next handoff before the operator scans individual provider cards.
 `SystemHealth` now opens with a triage briefing that folds provider health, storage pressure, corrupted/orphaned storage evidence, and retained event severity into one next handoff before the operator scans CPU, storage, and recent-event panels; its provider and recent-event empty states distinguish pending scans from confirmed empty snapshots.
@@ -27,6 +27,8 @@ Recent governance work is also moving older utility pages into shell-native work
 `DataBrowser` now refreshes its retained market-data window as filters change and shows a reset-filters empty state when search, type, venue, or date filters hide every row.
 `ResearchWorkspaceShellPage` now keeps a desk-briefing hero above the market briefing so operators can see the current cycle focus, the next handoff, and the primary blocker before dropping into run history or promotion candidates.
 `StrategyRuns` now distinguishes an empty run library from filters that hide retained runs, shows the visible/recorded run scope beside search, and exposes a reset-filters recovery action without reloading the run store.
+`RunMat` now gives the output panel an empty/streaming state and disables Stop unless a script run is active, using only the current run state and retained output lines.
+`QuantScript` now includes a dedicated Run History tab that surfaces recorded executions, selected-run evidence, console preview, and the existing Strategy Runs handoff actions.
 
 ## Why WPF?
 
@@ -125,6 +127,7 @@ Examples:
 - `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
 
 `PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
+`FundAccounts` includes a stateful operator brief that projects fund-context, account-queue, provider-routing, blocked-route, shared-data, and ready-for-reconciliation states from already-loaded account and provider evidence.
 `ProviderHealth` includes a provider-posture briefing ahead of the individual provider grids so stale snapshots, offline streaming sessions, mixed-provider states, and blocked backfill coverage produce one visible next handoff.
 `SystemHealth` includes a triage briefing ahead of the resource metrics so provider, storage, and event posture produce one visible support handoff without another health fetch.
 `NotificationCenter` includes a reset-filters empty-state action and view-model-owned severity filter state so search, unread-only, and severity-filter misses can recover the retained history list without another service read or code-behind checkbox synchronization.
@@ -136,6 +139,8 @@ Examples:
 `TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
 `ResearchWorkspaceShellPage` now keeps the active research cycle explicit with a desk-briefing hero that upgrades no-op trading-review prompts into actionable run-browser, portfolio, or promotion handoffs based on the selected run state.
 `StrategyRuns` includes a filter-aware empty state and `Reset Filters` action so search or mode misses can recover the already-loaded run browser rows without another service read.
+`RunMat` exposes output-line count plus idle, streaming, and no-output guidance beside the existing Last Run and resolved-executable panels.
+`QuantScript` renders its retained execution history in the workbench so notebook users can inspect parameters, outputs, mirrored backtest evidence, and run-browser handoffs without leaving the page.
 
 ## Development Notes
 

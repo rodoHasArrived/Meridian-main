@@ -2,16 +2,17 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
-> Current-state refresh (2026-04-26): keep this matrix as a broad product-vision view, not a
+> Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a
 > parallel delivery plan. Canonical wave status and dates live in
 > [`../status/PROGRAM_STATE.md`](../status/PROGRAM_STATE.md). The WPF shell baseline, delivered
 > Security Master seam, fund-structure services, cash-flow projections, first governed report-pack
-> path, and file-backed reconciliation break queue have moved several rows from "planned" to
-> "in progress" or "implemented baseline"; operator-readiness still depends on the active Wave
-> 2-4 gates.
+> path, file-backed reconciliation break queue, route-aware operator-inbox handling, Security
+> Master search recovery, and Fund Accounts operator briefing have moved several rows from
+> "planned" to "in progress" or "implemented baseline"; operator-readiness still depends on the
+> active Wave 2-4 gates.
 
 ## 1. Product Vision
 
@@ -75,13 +76,13 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, and StrategyRuns filter recovery are present; workflow acceptance remains active Wave 2-4 work |
+| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, StrategyRuns filter recovery, QuantScript local run-history handoffs, Security Master search recovery, and Fund Accounts operator briefing are present; workflow acceptance remains active Wave 2-4 work |
 | Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger flow exists; StrategyRuns now shows visible-versus-recorded run scope and recovers filters that hide retained runs |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
-| Order, execution, and trade management | Front office / Middle office | In progress | Phase 2 | Paper-session, replay, risk/control audit explainability, promotion, DK1 trust-gate, trading-readiness, and initial operator-inbox contracts are in code; dependable daily-use acceptance and WPF queue consumption remain Wave 2 work |
-| Account and entity management | Middle office / Back office | In progress | Phase 2 | Fund-structure graph, assignment, account, entity, sleeve, vehicle, and environment-design seams exist; richer operator review flows remain open |
-| Security Master productization | Middle office / Cross-cutting platform | Implemented baseline | Phase 2 | Security Master is the delivered authoritative instrument seam across WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance |
+| Order, execution, and trade management | Front office / Middle office | In progress | Phase 2 | Paper-session, replay, risk/control audit explainability, promotion, DK1 trust-gate, trading-readiness, and initial operator-inbox contracts are in code; route-aware WPF queue consumption is present, while dependable daily-use acceptance remains Wave 2 work |
+| Account and entity management | Middle office / Back office | In progress | Phase 2 | Fund-structure graph, assignment, account, entity, sleeve, vehicle, and environment-design seams exist; Fund Accounts now projects account-queue, provider-routing, shared-data, and reconciliation-readiness states; richer operator review and durable casework flows remain open |
+| Security Master productization | Middle office / Cross-cutting platform | Implemented baseline | Phase 2 | Security Master is the delivered authoritative instrument seam across WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance; the WPF browser now includes runtime-unavailable search recovery and bound `Clear Search` reset |
 | Position and portfolio oversight | Middle office | In progress | Phase 2 | Shared read models exist; broader operator tooling pending |
 | Multi-ledger accounting | Back office | In progress | Phase 3 | Ledger-grouping rules and fund-structure assignment seams exist; consolidation and operator acceptance remain open |
 | Trial balance and account-summary analysis | Back office | In progress | Phase 3 | Fund Operations workspace and report-pack services expose trial-balance slices; broader account-summary UX remains open |
@@ -173,7 +174,7 @@ The current repository already supports parts of the target vision:
 
 - ingestion, replay, storage, diagnostics, and export are in place
 - shared run, portfolio, and ledger read services already exist
-- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows, Trading/Research/Data Operations briefing surfaces, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, and StrategyRuns filter recovery
+- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows with search recovery, Fund Accounts account/provider-routing briefing, Trading/Research/Data Operations briefing surfaces, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage, Watchlist posture, StrategyRuns filter recovery, QuantScript local run-history handoffs, and route-aware operator-inbox navigation
 - Security Master has contracts, services, storage, migrations, F# domain anchors, WPF drill-ins, conflict handling, corporate actions, trading parameters, and shared coverage/provenance propagation
 - fund-structure, account/entity, ledger-group, cash-flow, and governed report-pack seams are in code, with focused tests around fund structure, report-pack schema/version behavior, and Fund Operations projections
 - reconciliation now includes a file-backed break queue with review, resolve/dismiss, and audit-history routes, while broader external-account/custodian matching and calibrated casework remain open
@@ -209,7 +210,7 @@ Meridian should be considered successful against this vision when:
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
 
-## 11. Recommended Next Steps (2026-04-26 Snapshot)
+## 11. Recommended Next Steps (2026-04-27 Snapshot)
 
 These next steps keep the vision matrix aligned with the canonical Waves 2-4 path and the DK1/DK2 readiness wrapper.
 
@@ -222,7 +223,7 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 **Exit criteria**
 
 - `Backtest -> Paper` can be exercised as one auditable operator path.
-- Replay, DK1 trust posture, promotion checklist state, and operator work items are visible from the shared readiness contract and initial operator-inbox endpoint, with WPF shell queue-button routing for the primary work item.
+- Replay, DK1 trust posture, promotion checklist state, and operator work items are visible from the shared readiness contract and initial operator-inbox endpoint, with route-aware WPF shell queue-button routing for the primary work item.
 - The WPF shell supports the workflow without introducing shell-local readiness semantics.
 
 ### Wave B: deepen shared run / portfolio / ledger continuity
@@ -241,7 +242,7 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 1. Extend the delivered file-backed reconciliation break queue into calibrated, durable casework.
 2. Turn governed report packs from generated artifacts into reviewed, approved, and publishable outputs with provenance.
-3. Connect account/entity, cash-flow, multi-ledger, reconciliation, and reporting views through the shared Fund Operations projection path.
+3. Connect account/entity, cash-flow, multi-ledger, reconciliation, and reporting views through the shared Fund Operations projection path, keeping Fund Accounts on shared account/provider-route/shared-data evidence.
 
 **Exit criteria**
 

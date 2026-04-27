@@ -210,7 +210,8 @@ export type OperatorWorkItemKind =
   | "SecurityMasterCoverage"
   | "ReconciliationBreak"
   | "ReportPackApproval"
-  | "ProviderTrustGate";
+  | "ProviderTrustGate"
+  | "ExecutionControl";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
 export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
@@ -225,6 +226,9 @@ export interface OperatorWorkItem {
   runId: string | null;
   fundAccountId: string | null;
   auditReference: string | null;
+  workspace?: string | null;
+  targetRoute?: string | null;
+  targetPageTag?: string | null;
 }
 
 export interface TradingAcceptanceGate {

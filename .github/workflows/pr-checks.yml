@@ -87,6 +87,26 @@ jobs:
           --head "HEAD" \
           --pr-body-file "$RUNNER_TEMP/pr-body.md"
 
+    - name: Generate contract review packet
+      if: always()
+      run: |
+        mkdir -p artifacts/contract-review/pr-${{ github.event.pull_request.number }}
+        python3 scripts/generate_contract_review_packet.py \
+          --base "${{ github.event.pull_request.base.sha }}" \
+          --head "HEAD" \
+          --pr-body-file "$RUNNER_TEMP/pr-body.md" \
+          --output artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.json \
+          --markdown-output artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.md
+        cat artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.md >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload contract review packet
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: contract-review-packet
+        path: artifacts/contract-review/pr-${{ github.event.pull_request.number }}/
+        retention-days: 14
+
   config-schema:
     name: Config Schema Check
     runs-on: ubuntu-latest

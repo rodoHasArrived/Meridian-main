@@ -72,7 +72,13 @@ Content Frame
 
 **Strategy run browser filter recovery** — `StrategyRunsPage` now shows visible-vs-recorded run scope beside search and overlays a dynamic empty state when no rows are visible. `StrategyRunBrowserViewModel` distinguishes a truly empty run library from search or mode filters that hide retained rows, and its `ClearRunFiltersCommand` restores the in-memory run list without another run-store read.
 
+**RunMat output readiness** — `RunMatPage` now keeps the script output panel actionable before and during runs. `RunMatViewModel` projects output-line count, idle/streaming/empty-output guidance, and `StopRunCommand` availability from the existing in-memory output collection and run state, so the output list gains recovery context without adding another timer, process read, or persistence write.
+
+**QuantScript run-history handoff** — `QuantScriptPage` now renders the execution-history state already maintained by `QuantScriptViewModel` as a dedicated `Run History` tab. The tab shows recorded executions, selected-run evidence, console preview, and existing Strategy Runs handoff commands without adding a new history read, timer, or execution-path side effect.
+
 **Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
+
+**Fund Accounts operator briefing** — `FundAccountsPage` now turns the static operator brief into a stateful fund-account handoff. `FundAccountsViewModel` projects fund-context, empty account queue, missing route evidence, blocked provider routes, shared-data access gaps, and ready-for-reconciliation states from the already-loaded account queue, route previews, provider bindings, and `FundStructureSharedDataAccessDto` baseline without another service call.
 
 **Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 

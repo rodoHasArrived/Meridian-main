@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
 > **Retirement note (2026-04-09):** Browser workstation references in this roadmap, including any WPF/web alignment language carried over from earlier planning, are historical only. Current implementation should stay desktop-first and use the retained desktop-local API seams where needed.
@@ -171,6 +171,8 @@ Extend the delivered Security Master seam into the governance and fund-operation
 
 Introduce first-class account, entity, fund, sleeve, and vehicle structures.
 
+**Current delivered slice (2026-04-27):** fund-account and fund-structure seams now feed a WPF Fund Accounts operator brief for fund context, empty account queues, missing or blocked provider-route evidence, shared-data access gaps, and ready-for-reconciliation posture. Remaining PR-07 scope is richer account/entity review workflow, external-account acceptance, and durable casework rather than basic account visibility.
+
 **Primary anchors**
 
 - new contract/domain/service modules under:
@@ -259,7 +261,7 @@ Broaden reconciliation from narrow event matching to fund-ops break logic.
 
 Add application-layer reconciliation runs, exception queues, and governance orchestration.
 
-**Current delivered slice (2026-04-26):** run-scoped reconciliation plus a file-backed break queue now exist with review, resolve/dismiss, and audit-history routes, and open/in-review breaks now project into `/api/workstation/operator/inbox` with stable IDs, audit references, severity tone, and `GovernanceShell` navigation targets. Remaining PR-14 scope is richer matching, calibration, external statement/custodian coverage, and durable queue acceptance beyond the initial shared projection.
+**Current delivered slice (2026-04-27):** run-scoped reconciliation plus a file-backed break queue now exist with review, resolve/dismiss, and audit-history routes, and open/in-review breaks now project into `/api/workstation/operator/inbox` with stable IDs, audit references, severity tone, and Governance navigation hints that WPF resolves into the concrete `FundReconciliation` workbench when applicable. Remaining PR-14 scope is richer matching, calibration, external statement/custodian coverage, and durable queue acceptance beyond the initial shared projection.
 
 **Primary anchors**
 
@@ -278,7 +280,7 @@ Expose breaks, exceptions, and review workflows in WPF and API surfaces.
 - `src/Meridian.Wpf/`
 - `src/Meridian.Ui.Shared/Endpoints/`
 
-**Current delivered slice (2026-04-26):** the WPF Fund Ledger reconciliation workbench now has reset-filters recovery for hidden queue rows and runs, and the main shell queue button can route the primary operator-inbox work item to its owning workspace. Remaining PR-15 scope is a fuller Governance review page path, richer remediation playbooks, and acceptance coverage for queue-to-resolution workflows.
+**Current delivered slice (2026-04-27):** the WPF Fund Ledger reconciliation workbench now has reset-filters recovery for hidden queue rows and runs, and the main shell queue button resolves the primary operator-inbox work item's route metadata into concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` before falling back to its page tag. Remaining PR-15 scope is a fuller Governance review page path, richer remediation playbooks, and acceptance coverage for queue-to-resolution workflows.
 
 ### PR-16: NAV and Attribution Services
 

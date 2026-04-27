@@ -1,6 +1,6 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 
 ## Summary
 
@@ -40,6 +40,9 @@ checks as market-data evidence only. Brokerage/account continuity is read-side a
 - `src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs` exposes one run review packet
   for Research, Trading, and Governance so run, portfolio, ledger, reconciliation, attribution, and
   optional brokerage evidence use the same source.
+- `src/Meridian.Wpf/ViewModels/FundAccountsViewModel.cs` and `FundAccountsPage.xaml` project
+  fund-context, account-queue, provider-routing, shared-data-access, and ready-for-reconciliation
+  posture from loaded account/provider evidence as the current WPF account handoff surface.
 
 Implemented routes:
 
@@ -346,6 +349,8 @@ Current focused coverage added with the operator-ready slice:
 - `TradingWorkspaceShellPageTests` includes source-level coverage that the WPF cockpit consumes
   `TradingOperatorReadinessService`; current WPF test discovery should be checked before relying on
   that project for executable assertions.
+- `FundAccountsViewModelTests.AccountBriefingProjection_*` covers the WPF account briefing states
+  for fund context, routing evidence, blocked routes, shared-data gaps, and ready accounts.
 
 Suggested validation commands:
 

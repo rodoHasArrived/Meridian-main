@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-04-26
-**Status:** Active blueprint — WPF shell/navigation baseline is implemented; DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero; the shared operator-inbox endpoint now aggregates readiness and reconciliation work items with navigation targets and the WPF shell queue button routes the primary work item; DK1 sign-off templates can bind owner approvals to the reviewed parity packet; Data Operations now has provider/backfill/storage/export handoff surfaces including Provider Health posture briefing, System Health triage is present for diagnostics handoffs, Notification Center can recover hidden retained history after aggressive filters, Activity Log triage is present for local operational review, Watchlist posture helps stage symbol sets before monitoring/research/trading handoffs, Messaging Hub projects delivery posture and retained activity scope, StrategyRuns can recover filtered-away retained runs while showing visible-versus-recorded scope, and desktop workflow automation now covers canonical launch/deep-link routing and single-instance argument forwarding; workflow validation and cockpit/shared-model/governance hardening remain in progress
+**Last Updated:** 2026-04-27
+**Status:** Active blueprint — WPF shell/navigation baseline is implemented; DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero; the shared operator-inbox endpoint now aggregates readiness and reconciliation work items with navigation targets and the WPF shell queue button resolves known route metadata into concrete workbenches before falling back to page tags; DK1 sign-off templates can bind owner approvals to the reviewed parity packet; Data Operations now has provider/backfill/storage/export handoff surfaces including Provider Health posture briefing, System Health triage is present for diagnostics handoffs, Notification Center can recover hidden retained history after aggressive filters, Activity Log triage is present for local operational review, Watchlist posture helps stage symbol sets before monitoring/research/trading handoffs, Messaging Hub projects delivery posture and retained activity scope, StrategyRuns can recover filtered-away retained runs while showing visible-versus-recorded scope, QuantScript exposes local Run History with Research handoffs for mirrored runs, Security Master exposes runtime/search recovery, Fund Accounts projects account-queue/provider-routing/shared-data readiness, and desktop workflow automation now covers canonical launch/deep-link routing and single-instance argument forwarding; workflow validation and cockpit/shared-model/governance hardening remain in progress
 
 ---
 
@@ -37,7 +37,7 @@ Meridian already contains strong underlying capabilities:
 - a double-entry ledger implementation
 - a broad WPF page inventory and supporting UI services
 
-However, those capabilities are still exposed through multiple page- and service-centric flows. The WPF shell now has a four-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, shell queue-button consumption of the shared operator inbox, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that the active workflows are better, not just that the shell is more organized.
+However, those capabilities are still exposed through multiple page- and service-centric flows. The WPF shell now has a four-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter recovery, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data briefing, route-aware shell queue-button consumption of the shared operator inbox, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that the active workflows are better, not just that the shell is more organized.
 
 ### Current pain points
 
@@ -290,7 +290,7 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Make new functionality discoverable without requiring core engine rewrites.
 
-**Current status (2026-04-26):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter-aware recovery/run-scope presentation, shell operator queue button state, shell/navigation smoke tests, `ShellAutomationState` page-state confirmation, deterministic isolated workflow restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
+**Current status (2026-04-27):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter-aware recovery/run-scope presentation, QuantScript local Run History with Research handoffs for mirrored runs, Security Master runtime/search recovery, Fund Accounts operator briefing, shell operator queue button state, shell/navigation smoke tests, `ShellAutomationState` page-state confirmation, deterministic isolated workflow restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
 
 **Work**
 
@@ -308,7 +308,7 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Unify backtest, paper, and live-facing state around common models.
 
-**Current status (2026-04-26):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
+**Current status (2026-04-27):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
 
 **Work**
 
@@ -354,7 +354,7 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Turn paper trading into a reliable pre-live environment.
 
-**Current status (2026-04-26):** Partial. Paper/execution primitives, cockpit surfaces, DK1 trust-gate readiness projection, and position/order/fill/replay/session paths are present. Promotion rejection outcome severity and audit-history refresh are being hardened, but dependable daily operation is still a Wave 2 / DK1 acceptance problem.
+**Current status (2026-04-27):** Partial. Paper/execution primitives, cockpit surfaces, DK1 trust-gate readiness projection, position/order/fill/replay/session paths, route-aware operator queue handling, and promotion checklist/audit evidence are present. Dependable daily operation is still a Wave 2 / DK1 acceptance problem.
 
 **Work**
 
@@ -459,4 +459,6 @@ The migration should be considered successful when the following are true:
 9. Keep Activity Log triage as supporting operational review evidence for errors, warnings, latest activity, and active filters, not a substitute for readiness gates.
 10. Keep Watchlist posture as symbol-set staging guidance for saved lists, pinned lists, search scope, and symbol coverage, not as a separate readiness gate.
 11. Keep StrategyRuns filter recovery as shared-run support evidence for visible-versus-recorded scope and retained-row recovery, not as a separate run-store or readiness model.
-12. Prioritize Phase 2, Phase 4, and Phase 5 work that reduces page-local orchestration and strengthens shared contracts rather than broadening shell surface area.
+12. Keep QuantScript Run History as research support evidence for local execution records and mirrored-run handoffs into shared Research surfaces, not as closure of broader Backtest Studio unification.
+13. Keep Fund Accounts operator briefing as governance support evidence for shared account, provider-routing, and shared-data-access posture, not as closure of external-account or durable casework readiness.
+14. Prioritize Phase 2, Phase 4, and Phase 5 work that reduces page-local orchestration and strengthens shared contracts rather than broadening shell surface area.

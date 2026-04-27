@@ -148,6 +148,10 @@ the WPF main shell queue action. The shell resolves known target routes before t
 reconciliation work items open `FundReconciliation`, Security Master coverage opens
 `SecurityMaster`, and trading-readiness items stay in `TradingShell`. Broader end-to-end queue
 acceptance remains a cockpit-hardening task rather than a completed workflow.
+The retained web cockpit also renders the readiness contract's operator work items and warnings
+beside the acceptance gates, so API diagnostics can show the same replay, promotion, trust-gate,
+brokerage-sync, reconciliation, and execution-control blockers that desktop operators see through
+the shared queue.
 If reconciliation break queue storage cannot seed or load, the endpoint keeps the trading-readiness
 items available and adds a stable `reconciliation-break-queue-unavailable` warning routed to
 `GovernanceShell` instead of failing the whole operator inbox.
@@ -322,6 +326,7 @@ Rejection uses the same operator-review packet shape through `RejectPromotionReq
   - replay verification shows evidence counts and last verification time
   - promotion approval posts full operator context
   - promotion history remains visible after a reload fetch
+  - server readiness work items and warnings remain visible beside acceptance gates
 - extend `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts`
   - approval helper posts the full request body
   - control/manual-override helpers call the expected routes

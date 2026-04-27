@@ -1,6 +1,6 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-04-26
+Last reviewed: 2026-04-27
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -55,13 +55,32 @@ This matrix defines compatibility commitments for:
 Any pull request touching scoped surfaces must pass:
 
 1. **Standard PR gates:** existing build/test/format gates in `.github/workflows/pr-checks.yml`.
-2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals, shared `UiApiRoutes` constant removals or value changes, plus scoped record constructor parameter and enum-member removals.
-3. **Contract regression tests (required when contract code changes):**
+2. **Contract review packet:** `scripts/generate_contract_review_packet.py` for the same base/head range. The packet summarizes tracked surfaces, change category, migration-note status, and reviewer checklist items for the weekly interop cadence.
+3. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals, shared `UiApiRoutes` constant removals or value changes, plus scoped record constructor parameter and enum-member removals.
+4. **Contract regression tests (required when contract code changes):**
    - targeted workstation contract serialization/deserialization tests,
    - strategy service interface compatibility tests,
    - ledger read/write snapshot compatibility tests,
    - workstation endpoint request/response shape tests.
-4. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
+5. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
+
+## Weekly Interop Review Cadence
+
+Run the contract review packet before the weekly shared-interop review and attach the JSON/Markdown
+output to the review notes or PR artifact bundle:
+
+```bash
+python3 scripts/generate_contract_review_packet.py --base origin/main --head HEAD --output artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.json --markdown-output artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.md
+```
+
+The packet is ready for cadence review when it has no blocking findings. For potential breaking
+changes, that requires a matrix migration-note entry and PR-body migration notes; pass
+`--pr-body-file <path>` when evaluating a pull request so the packet can verify those notes. A ready
+packet is still a review input, not owner approval; record the owner decision and any follow-up in
+the weekly interop notes and, when readiness status changes, in `kernel-readiness-dashboard.md`.
+Pull request checks also upload a `contract-review-packet` artifact and append the Markdown packet
+to the contract-compatibility job summary so reviewers can inspect tracked surfaces and blocking
+findings even when the compatibility gate fails.
 
 ## Migration Notes
 
@@ -73,6 +92,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-04-26: Added `UiApiRoutes.cs` route constants to the compatibility scope and gate heuristics so shared route removals or string changes require migration notes. No runtime contract break introduced.
 - 2026-04-26: Added additive trading-readiness control evidence fields (`TradingControlEvidenceDto`, `TradingControlReadinessDto.RecentEvidence`, explainability counts, and warnings) plus `OperatorWorkItemKindDto.ExecutionControl`. Older clients can ignore the new payload fields; enum-aware clients should treat the new work-item kind as an execution-risk blocker.
 - 2026-04-26: Added additive operator-inbox route `GET /api/workstation/operator/inbox`, `OperatorInboxDto`, and optional navigation fields on `OperatorWorkItemDto` so desktop/web consumers can open shared readiness and reconciliation work items from one queue. Older clients can continue reading readiness `WorkItems` without consuming the new route or optional fields.
+- 2026-04-27: Added `scripts/generate_contract_review_packet.py` as the repeatable weekly shared-interop review artifact for tracked contract changes. No runtime contract break introduced.
 
 ## Pull Request Author Checklist
 

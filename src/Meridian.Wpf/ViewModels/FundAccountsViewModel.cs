@@ -47,7 +47,10 @@ public sealed partial class FundAccountsViewModel : BindableBase
         set
         {
             if (SetProperty(ref _selectedFundId, value))
+            {
                 LoadFundAccountsCommand.NotifyCanExecuteChanged();
+                RaiseAccountBriefingProperties();
+            }
         }
     }
 
@@ -58,7 +61,10 @@ public sealed partial class FundAccountsViewModel : BindableBase
         private set
         {
             if (SetProperty(ref _selectedFundProfileId, value))
+            {
                 RaisePropertyChanged(nameof(FundContextLabel));
+                RaiseAccountBriefingProperties();
+            }
         }
     }
 
@@ -74,6 +80,93 @@ public sealed partial class FundAccountsViewModel : BindableBase
         }
     }
 
+    public string AccountBriefingTitle
+    {
+        get
+        {
+            if (SelectedFundId is null && string.IsNullOrWhiteSpace(SelectedFundProfileId))
+                return "Fund context required";
+
+            if (TotalAccountCount == 0)
+                return "Account queue is empty";
+
+            if (SelectedAccount is null)
+                return "Select an account to inspect";
+
+            if (IsProviderRoutingBusy)
+                return "Refreshing provider routing";
+
+            if (RoutePreviews.Count == 0 && ProviderBindings.Count == 0)
+                return "Routing evidence missing";
+
+            if (BlockedRoutePreviewCount > 0)
+                return "Provider routing blocked";
+
+            if (HasSharedDataAccessGap(SelectedAccount))
+                return "Shared data access incomplete";
+
+            return "Account ready for reconciliation";
+        }
+    }
+
+    public string AccountBriefingDetail
+    {
+        get
+        {
+            if (SelectedFundId is null && string.IsNullOrWhiteSpace(SelectedFundProfileId))
+                return "Load a fund profile before account queues and provider routing can be evaluated.";
+
+            if (TotalAccountCount == 0)
+                return "No accounts are loaded for the active fund profile; create or ingest accounts before reconciling governance evidence.";
+
+            if (SelectedAccount is null)
+                return "Pick an account from a governance lane to review balances, shared-data access, and route previews.";
+
+            if (IsProviderRoutingBusy)
+                return $"Refreshing provider route previews for {SelectedAccount.DisplayName}.";
+
+            if (RoutePreviews.Count == 0 && ProviderBindings.Count == 0)
+                return "Refresh routing to load provider bindings and capability previews for the selected account.";
+
+            if (BlockedRoutePreviewCount > 0)
+                return $"{BlockedRoutePreviewCount} of {RoutePreviews.Count} capability route preview(s) are blocked for {SelectedAccount.DisplayName}; review reasons and fallback coverage.";
+
+            if (HasSharedDataAccessGap(SelectedAccount))
+                return $"{SelectedAccount.DisplayName} has a shared-data access gap: {BuildSharedDataAccessGapSummary(SelectedAccount)}.";
+
+            return $"{SelectedAccount.DisplayName} has {RoutePreviews.Count} route preview(s), {ProviderBindings.Count} scoped binding(s), and shared-data posture ready for reconciliation.";
+        }
+    }
+
+    public string AccountBriefingActionText
+    {
+        get
+        {
+            if (SelectedFundId is null && string.IsNullOrWhiteSpace(SelectedFundProfileId))
+                return "Select Fund Profile";
+
+            if (TotalAccountCount == 0)
+                return "Create Account";
+
+            if (SelectedAccount is null)
+                return "Select Account";
+
+            if (IsProviderRoutingBusy)
+                return "Wait For Routing";
+
+            if (RoutePreviews.Count == 0 && ProviderBindings.Count == 0)
+                return "Refresh Routing";
+
+            if (BlockedRoutePreviewCount > 0)
+                return "Review Route Preview";
+
+            if (HasSharedDataAccessGap(SelectedAccount))
+                return "Review Shared Data";
+
+            return "Record Snapshot";
+        }
+    }
+
     public ObservableCollection<AccountSummaryDto> CustodianAccounts { get; } = [];
     public ObservableCollection<AccountSummaryDto> BankAccounts { get; } = [];
     public ObservableCollection<AccountSummaryDto> BrokerageAccounts { get; } = [];
@@ -81,6 +174,11 @@ public sealed partial class FundAccountsViewModel : BindableBase
     public ObservableCollection<AccountBalanceSnapshotDto> BalanceHistory { get; } = [];
     public ObservableCollection<FundAccountProviderBindingItem> ProviderBindings { get; } = [];
     public ObservableCollection<FundAccountRoutePreviewItem> RoutePreviews { get; } = [];
+
+    private int TotalAccountCount => BrokerageAccounts.Count + CustodianAccounts.Count + BankAccounts.Count + OtherAccounts.Count;
+
+    private int BlockedRoutePreviewCount
+        => RoutePreviews.Count(preview => string.Equals(preview.StatusLabel, "Blocked", StringComparison.OrdinalIgnoreCase));
 
     private AccountSummaryDto? _selectedAccount;
     public AccountSummaryDto? SelectedAccount
@@ -97,6 +195,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 InspectSelectedAccountCommand.NotifyCanExecuteChanged();
                 RaisePropertyChanged(nameof(SelectedAccountSummary));
                 RaiseSelectedAccountInspectorProperties();
+                RaiseAccountBriefingProperties();
             }
         }
     }
@@ -107,10 +206,10 @@ public sealed partial class FundAccountsViewModel : BindableBase
             : $"{SelectedAccount.DisplayName} • {SelectedAccount.AccountType} • {SelectedAccount.BaseCurrency} • {SelectedAccount.Institution ?? "Institution not set"}";
 
     public string AccountQueueStatusText
-        => $"{BrokerageAccounts.Count + CustodianAccounts.Count + BankAccounts.Count + OtherAccounts.Count} account(s) across {BrokerageAccounts.Count} brokerage, {CustodianAccounts.Count} custody, {BankAccounts.Count} bank, and {OtherAccounts.Count} other governance lanes.";
+        => $"{TotalAccountCount} account(s) across {BrokerageAccounts.Count} brokerage, {CustodianAccounts.Count} custody, {BankAccounts.Count} bank, and {OtherAccounts.Count} other governance lanes.";
 
     public string TotalAccountCountText
-        => (BrokerageAccounts.Count + CustodianAccounts.Count + BankAccounts.Count + OtherAccounts.Count).ToString();
+        => TotalAccountCount.ToString();
 
     public string CustodyAndBankCountText
         => (CustodianAccounts.Count + BankAccounts.Count).ToString();
@@ -197,7 +296,11 @@ public sealed partial class FundAccountsViewModel : BindableBase
     public bool IsProviderRoutingBusy
     {
         get => _isProviderRoutingBusy;
-        private set => SetProperty(ref _isProviderRoutingBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isProviderRoutingBusy, value))
+                RaiseAccountBriefingProperties();
+        }
     }
 
     private string? _providerRoutingStatus;
@@ -209,6 +312,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             if (SetProperty(ref _providerRoutingStatus, value))
             {
                 RaisePropertyChanged(nameof(SelectedAccountRoutingReadinessText));
+                RaiseAccountBriefingProperties();
             }
         }
     }
@@ -261,6 +365,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             RaisePropertyChanged(nameof(CustodyAndBankCountText));
             RaisePropertyChanged(nameof(BrokerageAccountCountText));
             RaisePropertyChanged(nameof(OtherAccountCountText));
+            RaiseAccountBriefingProperties();
         }
         catch (Exception ex)
         {
@@ -359,6 +464,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             BalanceHistory.Clear();
             ProviderRoutingStatus = "Select an account to inspect provider routing.";
             RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+            RaiseAccountBriefingProperties();
             return;
         }
 
@@ -495,6 +601,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         ProviderRoutingStatus = ProviderBindings.Count == 0 && RoutePreviews.Count == 0
             ? "No scoped provider bindings matched this account."
             : $"Loaded {ProviderBindings.Count} binding(s) and {RoutePreviews.Count} route preview(s).";
+        RaiseAccountBriefingProperties();
     }
 
     private void RaiseSelectedAccountInspectorProperties()
@@ -507,6 +614,39 @@ public sealed partial class FundAccountsViewModel : BindableBase
         RaisePropertyChanged(nameof(SelectedAccountHistoricalPriceText));
         RaisePropertyChanged(nameof(SelectedAccountBackfillText));
         RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+    }
+
+    private void RaiseAccountBriefingProperties()
+    {
+        RaisePropertyChanged(nameof(AccountBriefingTitle));
+        RaisePropertyChanged(nameof(AccountBriefingDetail));
+        RaisePropertyChanged(nameof(AccountBriefingActionText));
+    }
+
+    private static bool HasSharedDataAccessGap(AccountSummaryDto account)
+    {
+        if (account.SharedDataAccess is not { } access)
+            return true;
+
+        return !access.SecurityMaster.IsAvailable ||
+               !access.HistoricalPrices.IsAvailable ||
+               !access.Backfill.IsAvailable;
+    }
+
+    private static string BuildSharedDataAccessGapSummary(AccountSummaryDto account)
+    {
+        if (account.SharedDataAccess is not { } access)
+            return "shared-data posture missing";
+
+        var gaps = new List<string>();
+        if (!access.SecurityMaster.IsAvailable)
+            gaps.Add("Security Master");
+        if (!access.HistoricalPrices.IsAvailable)
+            gaps.Add("historical prices");
+        if (!access.Backfill.IsAvailable)
+            gaps.Add("backfill");
+
+        return gaps.Count == 0 ? "no shared-data gap detected" : string.Join(", ", gaps);
     }
 
     private static string BuildSelectedAccountScopeText(AccountSummaryDto account)

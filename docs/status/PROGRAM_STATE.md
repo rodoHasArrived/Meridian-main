@@ -1,6 +1,6 @@
 # Meridian - Canonical Program State
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-04-27
 **Status Source of Truth:** This table is the canonical cross-document wave status source for status docs in `docs/status/`.
 
 Use this table as the single source of truth for wave status labels and target dates. The following files reference this table and should not redefine wave status independently:

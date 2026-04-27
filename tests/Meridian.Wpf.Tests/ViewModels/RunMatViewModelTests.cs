@@ -25,6 +25,8 @@ public sealed class RunMatViewModelTests
 
         vm.IsRunning.Should().BeFalse();
         vm.CanRun.Should().BeTrue();
+        vm.CanStopRun.Should().BeFalse();
+        vm.StopRunCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -35,6 +37,9 @@ public sealed class RunMatViewModelTests
         vm.IsRunning = true;
 
         vm.CanRun.Should().BeFalse();
+        vm.CanStopRun.Should().BeTrue();
+        vm.StopRunCommand.CanExecute(null).Should().BeTrue();
+        vm.OutputEmptyStateTitle.Should().Be("RunMat output is streaming");
     }
 
     [Fact]
@@ -46,6 +51,32 @@ public sealed class RunMatViewModelTests
         vm.IsRunning = false;
 
         vm.CanRun.Should().BeTrue();
+        vm.CanStopRun.Should().BeFalse();
+        vm.StopRunCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void InitialOutputPresentation_ShouldShowIdleEmptyState()
+    {
+        var (vm, _, _) = CreateSubject();
+
+        vm.HasOutputLines.Should().BeFalse();
+        vm.IsOutputEmptyStateVisible.Should().BeTrue();
+        vm.OutputLineCountText.Should().Be("0 output lines");
+        vm.OutputEmptyStateTitle.Should().Be("No output captured yet");
+        vm.OutputEmptyStateDetail.Should().Contain("Run a script");
+    }
+
+    [Fact]
+    public void OutputLinesCollection_WhenLineAdded_ShouldHideEmptyStateAndUpdateCount()
+    {
+        var (vm, _, _) = CreateSubject();
+
+        vm.OutputLines.Add(new RunMatOutputLine(DateTime.UtcNow, RunMatOutputKind.StdOut, "mean(y)=0.42"));
+
+        vm.HasOutputLines.Should().BeTrue();
+        vm.IsOutputEmptyStateVisible.Should().BeFalse();
+        vm.OutputLineCountText.Should().Be("1 output line");
     }
 
     // ── NewScript command tests ────────────────────────────────────────────
@@ -90,6 +121,18 @@ public sealed class RunMatViewModelTests
         var act = () => vm.StopRunCommand.Execute(null);
 
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void StopRunCommand_WhenRunning_ShouldProjectCancellationFeedback()
+    {
+        var (vm, _, _) = CreateSubject();
+        vm.IsRunning = true;
+
+        vm.StopRunCommand.Execute(null);
+
+        vm.StatusText.Should().Be("Cancellation requested.");
+        vm.LastRunSummary.Should().Be("Cancellation requested.");
     }
 
     // ── InitializeAsync tests ─────────────────────────────────────────────
@@ -148,6 +191,21 @@ public sealed class RunMatViewModelTests
         vm.Scripts.Should().ContainSingle(s => s.Name == "direct.m");
     }
 
+    [Fact]
+    public void RunMatPageSource_ShouldBindOutputEmptyStateAndStopCommandState()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\RunMatPage.xaml"));
+
+        xaml.Should().Contain("RunMatOutputLineCountText");
+        xaml.Should().Contain("{Binding OutputLineCountText}");
+        xaml.Should().Contain("RunMatOutputEmptyStatePanel");
+        xaml.Should().Contain("{Binding IsOutputEmptyStateVisible");
+        xaml.Should().Contain("{Binding OutputEmptyStateTitle}");
+        xaml.Should().Contain("{Binding OutputEmptyStateDetail}");
+        xaml.Should().Contain("RunMatStopScriptButton");
+        xaml.Should().Contain("Command=\"{Binding StopRunCommand}\"");
+    }
+
     // ── Dispose ───────────────────────────────────────────────────────────
 
     [Fact]
@@ -169,5 +227,22 @@ public sealed class RunMatViewModelTests
         var act = () => vm.Dispose();
 
         act.Should().NotThrow();
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }

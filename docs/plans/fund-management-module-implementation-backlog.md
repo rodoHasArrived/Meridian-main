@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, and delivery leads
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-27
 **Status:** Active implementation backlog
 
 > **Retirement note (2026-04-09):** Any references here to the browser workstation, `src/Meridian.Ui`, or browser-first run detail flows describe the retired standalone dashboard. Keep the product intent, but re-scope future implementation to WPF and the retained desktop-local API surface.
@@ -759,7 +759,7 @@ The export and report-pack infrastructure exists for internal governance reports
 
 ## Immediate Next Slices
 
-1. Add new contracts for account/entity structures and governance workstation DTOs.
+1. Extend the delivered account/entity structures into richer Fund Accounts review workflows, building on the current account-queue, provider-routing, shared-data, and reconciliation-readiness briefing.
 2. Expand shared run and ledger read services for paper/live, multi-ledger, and reconciliation summaries.
 3. Introduce application services for reconciliation orchestration and report generation.
 4. Add WPF governance surfaces for reconciliation, cash-flow, and reporting.

@@ -121,6 +121,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         {
             RaisePropertyChanged(nameof(RunHistoryTabHeader));
             RaisePropertyChanged(nameof(HasRunHistory));
+            RaisePropertyChanged(nameof(HasNoRunHistory));
+            RaisePropertyChanged(nameof(RunHistoryScopeText));
             NotifyHistoryCommandStateChanged();
         };
         NotebookCells.CollectionChanged += (_, _) =>
@@ -227,6 +229,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public bool HasNotebookCells => NotebookCells.Count > 0;
     public bool HasRunHistory => RunHistory.Count > 0;
+    public bool HasNoRunHistory => RunHistory.Count == 0;
     public bool IsDirty
     {
         get => _isDirty;
@@ -244,6 +247,33 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public string TradesTabHeader => Trades.Count > 0 ? $"Trades ({Trades.Count})" : "Trades";
     public string DiagnosticsTabHeader => Diagnostics.Count > 0 ? $"Diagnostics ({Diagnostics.Count})" : "Diagnostics";
     public string RunHistoryTabHeader => RunHistory.Count > 0 ? $"Run History ({RunHistory.Count})" : "Run History";
+    public string RunHistoryScopeText => RunHistory.Count switch
+    {
+        0 => "No execution history",
+        1 => "1 execution record",
+        _ => $"{RunHistory.Count} execution records"
+    };
+
+    public string HistoryEmptyStateTitle => "No QuantScript execution history yet";
+    public string HistoryEmptyStateDetail => "Run a cell or notebook to capture parameters, outputs, and run-browser handoffs.";
+    public string SelectedHistoryTitle => SelectedExecutionRecord?.DocumentTitle ?? "No history entry selected";
+    public string SelectedHistoryDetail => SelectedExecutionRecord is null
+        ? "Select a history entry to inspect the captured parameters, console excerpt, and Strategy Runs handoff."
+        : $"{SelectedExecutionRecord.StatusText} {SelectedExecutionRecord.DocumentKindLabel} from {SelectedExecutionRecord.ExecutedAtText}";
+    public string SelectedHistoryEvidenceText => SelectedExecutionRecord is null
+        ? "No execution evidence selected"
+        : string.Join(
+            " | ",
+            FormatCount(SelectedExecutionRecord.Metrics.Count, "metric"),
+            FormatCount(SelectedExecutionRecord.PlotTitles.Count, "plot"),
+            FormatCount(SelectedExecutionRecord.CapturedBacktestCount, "mirrored backtest"));
+    public string SelectedHistoryRunLinkText => SelectedExecutionRecord is null
+        ? "No run handoff selected"
+        : SelectedExecutionRecord.HasMirroredRun
+            ? $"Mirrored Strategy Runs handoff: {SelectedExecutionRecord.MirroredRunId}"
+            : "Local execution only; no Strategy Runs handoff was recorded.";
+    public string SelectedHistoryParameterText => SelectedExecutionRecord?.ParameterSummary ?? "No parameters selected";
+    public string SelectedHistoryConsolePreview => SelectedExecutionRecord?.ConsolePreview ?? "No console output selected";
     public bool CanOpenSelectedHistoryRun => SelectedExecutionRecord?.HasMirroredRun == true;
     public bool CanCompareSelectedHistoryRun => SelectedExecutionRecord?.HasMirroredRun == true;
 
@@ -651,7 +681,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             foreach (var record in history)
                 RunHistory.Add(record);
 
-            SelectedExecutionRecord ??= RunHistory.FirstOrDefault();
+            if (SelectedExecutionRecord is null ||
+                !RunHistory.Any(record => string.Equals(record.ExecutionId, SelectedExecutionRecord.ExecutionId, StringComparison.Ordinal)))
+            {
+                SelectedExecutionRecord = RunHistory.FirstOrDefault();
+            }
         }
         catch (OperationCanceledException)
         {
@@ -1251,8 +1285,17 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     {
         RaisePropertyChanged(nameof(CanOpenSelectedHistoryRun));
         RaisePropertyChanged(nameof(CanCompareSelectedHistoryRun));
+        RaisePropertyChanged(nameof(SelectedHistoryTitle));
+        RaisePropertyChanged(nameof(SelectedHistoryDetail));
+        RaisePropertyChanged(nameof(SelectedHistoryEvidenceText));
+        RaisePropertyChanged(nameof(SelectedHistoryRunLinkText));
+        RaisePropertyChanged(nameof(SelectedHistoryParameterText));
+        RaisePropertyChanged(nameof(SelectedHistoryConsolePreview));
         OpenRunBrowserCommand.NotifyCanExecuteChanged();
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         CompareInResearchCommand.NotifyCanExecuteChanged();
     }
+
+    private static string FormatCount(int count, string noun) =>
+        $"{count} {noun}{(count == 1 ? string.Empty : "s")}";
 }

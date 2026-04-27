@@ -208,7 +208,10 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQu
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~MessagingHubViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~StrategyRunBrowserViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~QuantScriptViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundLedgerViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundAccountsViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SecurityMasterViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ProviderHealthViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SystemHealthViewModelTests|FullyQualifiedName~SystemHealthPageSmokeTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ActivityLogViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
@@ -245,12 +248,19 @@ the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
 for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
 Use `MainShellViewModelTests` and `MessagingHubViewModelTests` when changing shell operator-inbox
-actions, queue routing, Messaging Hub delivery posture, activity retention, empty states, or clear
-activity binding.
+actions, queue routing or route metadata resolution, Messaging Hub delivery posture, activity
+retention, empty states, or clear activity binding.
 Use `StrategyRunBrowserViewModelTests` when changing run-browser filters, filter recovery, empty
 states, comparison state, or `StrategyRunsPage` binding coverage.
+Use `QuantScriptViewModelTests` when changing QuantScript execution history, run-browser handoffs,
+parameter context, or source-level `QuantScriptPage` binding coverage.
 Use `FundLedgerViewModelTests` when changing Fund Ledger reconciliation filters, break-queue
 recovery, selected break actions, account drill-ins, or `FundLedgerPage` binding coverage.
+Use `FundAccountsViewModelTests` when changing Fund Accounts operator briefing, account inspectors,
+provider-routing previews, shared-data readiness, or `FundAccountsPage` binding coverage.
+Use `SecurityMasterViewModelTests` when changing Security Master runtime fallback, search recovery,
+selected-security trust workbench actions, conflict operator lanes, or `SecurityMasterPage` binding
+coverage.
 Use `ProviderHealthViewModelTests`, `SystemHealthViewModelTests` plus `SystemHealthPageSmokeTests`,
 `ActivityLogViewModelTests`, `NotificationCenterViewModelTests`, and `WatchlistViewModelTests`
 for provider-posture, system-health triage, support-triage, notification-history recovery, and
@@ -333,6 +343,9 @@ pwsh ./scripts/dev/build-ibapi-smoke.ps1
 This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet
 proof. It writes summaries and DK1 parity packets under
 `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
+Generated provider-validation summaries and DK1 parity packets are run-date evidence and are no
+longer retained in git; regenerate or attach current artifacts for DK1 reviews instead of relying
+on older artifact paths.
 `run-wave1-provider-validation.ps1` invokes `generate-dk1-pilot-parity-packet.ps1` when present;
 run the packet generator directly only when rebuilding from an existing Wave 1 summary. Generate
 and validate the sign-off template with `-PacketPath` so the retained `packetReview` binds owner
@@ -388,7 +401,9 @@ make verify-adrs
 make verify-contracts
 make verify-tooling-metadata
 python3 scripts/check_contract_compatibility_gate.py --base origin/main --head HEAD
+python3 scripts/generate_contract_review_packet.py --base origin/main --head HEAD --output artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.json --markdown-output artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.md
 python3 -m unittest tests/scripts/test_check_contract_compatibility_gate.py
+python3 -m unittest tests/scripts/test_generate_contract_review_packet.py
 make docs-all
 make skill-list
 make skill-resources SKILL=meridian-code-review
@@ -419,6 +434,8 @@ python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/gener
 Run `scripts/check_contract_compatibility_gate.py` when changing scoped contracts, including
 `src/Meridian.Contracts/Api/UiApiRoutes.cs`; shared route removals or value changes require
 migration notes in `docs/status/contract-compatibility-matrix.md`.
+Run `scripts/generate_contract_review_packet.py` before weekly shared-interop reviews when scoped
+contracts change; attach the JSON/Markdown packet and record the owner decision.
 
 TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet
 implemented and only delegates to `buildctl doctor`. Do not advertise it as a fix workflow until

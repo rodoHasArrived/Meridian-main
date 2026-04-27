@@ -9,6 +9,7 @@ using Meridian.QuantScript.Plotting;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
@@ -124,6 +125,65 @@ public sealed class QuantScriptViewModelTests
     {
         var vm = CreateVm();
         vm.ChartsTabHeader.Should().Be("Charts");
+    }
+
+    [Fact]
+    public void RunHistoryPresentation_WhenEmpty_ShowsEmptyStateAndDisablesHandoffs()
+    {
+        var vm = CreateVm();
+
+        vm.RunHistoryTabHeader.Should().Be("Run History");
+        vm.RunHistoryScopeText.Should().Be("No execution history");
+        vm.HasRunHistory.Should().BeFalse();
+        vm.HasNoRunHistory.Should().BeTrue();
+        vm.HistoryEmptyStateTitle.Should().Be("No QuantScript execution history yet");
+        vm.HistoryEmptyStateDetail.Should().Contain("Run a cell or notebook");
+        vm.SelectedHistoryTitle.Should().Be("No history entry selected");
+        vm.SelectedHistoryDetail.Should().Contain("Select a history entry");
+        vm.SelectedHistoryEvidenceText.Should().Be("No execution evidence selected");
+        vm.OpenRunBrowserCommand.CanExecute(null).Should().BeFalse();
+        vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
+        vm.CompareInResearchCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void SelectedExecutionRecord_WithMirroredRun_EnablesRunHistoryHandoffs()
+    {
+        var vm = CreateVm();
+        var record = MakeHistoryRecord(mirroredRunId: "run-quant-1");
+
+        vm.RunHistory.Add(record);
+        vm.SelectedExecutionRecord = record;
+
+        vm.RunHistoryTabHeader.Should().Be("Run History (1)");
+        vm.RunHistoryScopeText.Should().Be("1 execution record");
+        vm.HasRunHistory.Should().BeTrue();
+        vm.HasNoRunHistory.Should().BeFalse();
+        vm.SelectedHistoryTitle.Should().Be("Momentum Notebook");
+        vm.SelectedHistoryDetail.Should().Contain("Success Notebook");
+        vm.SelectedHistoryEvidenceText.Should().Be("1 metric | 1 plot | 1 mirrored backtest");
+        vm.SelectedHistoryRunLinkText.Should().Contain("run-quant-1");
+        vm.SelectedHistoryParameterText.Should().Contain("symbol=SPY");
+        vm.SelectedHistoryConsolePreview.Should().Be("Loaded 42 bars");
+        vm.OpenRunBrowserCommand.CanExecute(null).Should().BeTrue();
+        vm.OpenRunDetailCommand.CanExecute(null).Should().BeTrue();
+        vm.CompareInResearchCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void SelectedExecutionRecord_WithoutMirroredRun_DisablesRunHistoryHandoffs()
+    {
+        var vm = CreateVm();
+        var record = MakeHistoryRecord(mirroredRunId: null);
+
+        vm.RunHistory.Add(record);
+        vm.SelectedExecutionRecord = record;
+
+        vm.SelectedHistoryEvidenceText.Should().Be("1 metric | 1 plot | 0 mirrored backtests");
+        vm.SelectedHistoryRunLinkText.Should().Be("Local execution only; no Strategy Runs handoff was recorded.");
+        vm.OpenRunBrowserCommand.CanExecute(null).Should().BeFalse();
+        vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
+        vm.CompareInResearchCommand.CanExecute(null).Should().BeFalse();
     }
 
     // ── ScriptSource property ─────────────────────────────────────────────────
@@ -260,6 +320,60 @@ public sealed class QuantScriptViewModelTests
         runner.LastParameters["from"].Should().Be(new DateOnly(2024, 1, 2));
         runner.LastParameters["to"].Should().Be(new DateOnly(2024, 2, 3));
         runner.LastParameters["interval"].Should().Be("daily");
+    }
+
+    [Fact]
+    public void QuantScriptPageSource_BindsRunHistoryTab()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\QuantScriptPage.xaml"));
+
+        xaml.Should().Contain("QuantScriptRunHistoryTab");
+        xaml.Should().Contain("{Binding RunHistoryTabHeader}");
+        xaml.Should().Contain("{Binding RunHistoryScopeText}");
+        xaml.Should().Contain("QuantScriptRunHistoryGrid");
+        xaml.Should().Contain("{Binding RunHistory}");
+        xaml.Should().Contain("{Binding SelectedExecutionRecord, Mode=TwoWay}");
+        xaml.Should().Contain("{Binding OpenRunBrowserCommand}");
+        xaml.Should().Contain("{Binding OpenRunDetailCommand}");
+        xaml.Should().Contain("{Binding CompareInResearchCommand}");
+        xaml.Should().Contain("{Binding HasNoRunHistory");
+        xaml.Should().Contain("{Binding SelectedHistoryConsolePreview}");
+    }
+
+    private static QuantScriptExecutionRecord MakeHistoryRecord(string? mirroredRunId)
+        => new(
+            ExecutionId: Guid.NewGuid().ToString("N"),
+            DocumentTitle: "Momentum Notebook",
+            DocumentPath: @"C:\Meridian\quant\momentum.qsnb",
+            DocumentKind: QuantScriptDocumentKind.Notebook,
+            ExecutedAtUtc: new DateTimeOffset(2026, 4, 26, 16, 0, 0, TimeSpan.Zero),
+            Success: true,
+            ParameterSnapshot: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["symbol"] = "SPY"
+            },
+            RuntimeParameters: [],
+            ConsoleExcerpt: "Loaded 42 bars",
+            Metrics: [new QuantScriptExecutionMetricRecord("Sharpe", "1.23", "Risk")],
+            PlotTitles: ["Equity Curve"],
+            CapturedBacktestCount: mirroredRunId is null ? 0 : 1,
+            MirroredRunId: mirroredRunId);
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }
 

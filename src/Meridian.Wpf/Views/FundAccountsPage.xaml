@@ -70,15 +70,53 @@
                                 Padding="14"
                                 Margin="0,16,0,0">
                             <StackPanel>
-                                <TextBlock Text="Operator Brief" Style="{StaticResource CardHeaderStyle}" />
-                                <TextBlock Text="{Binding AccountQueueStatusText}"
+                                <TextBlock Text="Operator Brief"
+                                           Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding AccountBriefingTitle}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,8,0,0"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="FundAccountsBriefingTitle" />
+                                <TextBlock Text="{Binding AccountBriefingDetail}"
                                            Style="{StaticResource CardDescriptionStyle}"
                                            Margin="0,6,0,0"
-                                           TextWrapping="Wrap" />
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="FundAccountsBriefingDetail" />
+                                <WrapPanel Margin="0,12,0,0">
+                                    <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                            BorderBrush="{StaticResource WarningColorBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="999"
+                                            Padding="10,4"
+                                            Margin="0,0,8,8">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Next"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,6,0" />
+                                            <TextBlock Text="{Binding AccountBriefingActionText}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource WarningColorBrush}"
+                                                       VerticalAlignment="Center"
+                                                       AutomationProperties.AutomationId="FundAccountsBriefingAction" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="{Binding AccountQueueStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="FundAccountsQueueScopeText" />
+                                </WrapPanel>
                                 <TextBlock Text="{Binding SelectedAccountRoutingReadinessText}"
                                            Style="{StaticResource CardDescriptionStyle}"
                                            Margin="0,10,0,0"
-                                           TextWrapping="Wrap" />
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="FundAccountsRoutingReadinessText" />
                             </StackPanel>
                         </Border>
 

@@ -855,6 +855,185 @@
           </Grid>
         </TabItem>
 
+        <!-- Tab 5: Run History -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="{Binding RunHistoryTabHeader}" />
+          </TabItem.Header>
+          <Grid Margin="8"
+                AutomationProperties.AutomationId="QuantScriptRunHistoryTab">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Margin="0,0,0,8"
+                    Padding="10,8"
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                  <TextBlock FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             Text="Execution History" />
+                  <TextBlock Margin="0,3,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextMutedBrush}"
+                             Text="{Binding RunHistoryScopeText}"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryScopeText" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                  <Button Margin="0,0,6,0"
+                          Padding="10,5"
+                          Command="{Binding OpenRunBrowserCommand}"
+                          Style="{StaticResource SecondaryButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryOpenBrowserButton">
+                    <TextBlock FontSize="11" Text="Open Browser" />
+                  </Button>
+                  <Button Margin="0,0,6,0"
+                          Padding="10,5"
+                          Command="{Binding OpenRunDetailCommand}"
+                          Style="{StaticResource GhostButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryOpenDetailButton">
+                    <TextBlock FontSize="11" Text="Open Detail" />
+                  </Button>
+                  <Button Padding="10,5"
+                          Command="{Binding CompareInResearchCommand}"
+                          Style="{StaticResource GhostButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryCompareButton">
+                    <TextBlock FontSize="11" Text="Compare" />
+                  </Button>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="360" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" MinWidth="260" />
+              </Grid.ColumnDefinitions>
+
+              <DataGrid Grid.Column="0"
+                        AutoGenerateColumns="False"
+                        Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                        BorderThickness="0"
+                        FontSize="12"
+                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                        GridLinesVisibility="None"
+                        HeadersVisibility="Column"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding RunHistory}"
+                        RowBackground="{StaticResource ConsoleBackgroundDarkBrush}"
+                        SelectedItem="{Binding SelectedExecutionRecord, Mode=TwoWay}"
+                        Visibility="{Binding HasRunHistory, Converter={StaticResource BoolVis}}"
+                        AutomationProperties.AutomationId="QuantScriptRunHistoryGrid">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Width="130" Binding="{Binding ExecutedAtText}" Header="Executed" />
+                  <DataGridTextColumn Width="180" Binding="{Binding DocumentTitle}" Header="Document" />
+                  <DataGridTextColumn Width="80" Binding="{Binding StatusText}" Header="Status" />
+                  <DataGridTextColumn Width="120" Binding="{Binding DocumentKindLabel}" Header="Kind" />
+                  <DataGridTextColumn Width="150" Binding="{Binding MirroredRunLabel}" Header="Run Handoff" />
+                  <DataGridTextColumn Width="*" Binding="{Binding ParameterSummary}" Header="Parameters" />
+                </DataGrid.Columns>
+              </DataGrid>
+
+              <Border Grid.Column="2"
+                      Padding="12"
+                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                      BorderBrush="{StaticResource ConsoleBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="6"
+                      Visibility="{Binding HasRunHistory, Converter={StaticResource BoolVis}}"
+                      AutomationProperties.AutomationId="QuantScriptRunHistoryDetailPanel">
+                <StackPanel>
+                  <TextBlock FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             Text="{Binding SelectedHistoryTitle}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistorySelectedTitle" />
+                  <TextBlock Margin="0,6,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Text="{Binding SelectedHistoryDetail}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistorySelectedDetail" />
+
+                  <Rectangle Height="1"
+                             Margin="0,12,0,12"
+                             Fill="{StaticResource ConsoleBorderBrush}" />
+
+                  <TextBlock FontSize="11"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             Text="{Binding SelectedHistoryEvidenceText}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryEvidenceText" />
+                  <TextBlock Margin="0,8,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Text="{Binding SelectedHistoryRunLinkText}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryRunLinkText" />
+                  <TextBlock Margin="0,8,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextMutedBrush}"
+                             Text="{Binding SelectedHistoryParameterText}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryParameterText" />
+
+                  <Border Margin="0,12,0,0"
+                          Padding="10"
+                          Background="{StaticResource ConsoleBackgroundLightBrush}"
+                          BorderBrush="{StaticResource ConsoleBorderBrush}"
+                          BorderThickness="1"
+                          CornerRadius="4">
+                    <TextBlock FontFamily="{StaticResource MeridianDataFontFamily}"
+                               FontSize="11"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               Text="{Binding SelectedHistoryConsolePreview}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="QuantScriptRunHistoryConsolePreview" />
+                  </Border>
+                </StackPanel>
+              </Border>
+
+              <StackPanel Grid.ColumnSpan="3"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          MaxWidth="420"
+                          Visibility="{Binding HasNoRunHistory, Converter={StaticResource BoolVis}}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryEmptyState">
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="30"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           Text="&#xE81C;" />
+                <TextBlock Margin="0,10,0,0"
+                           HorizontalAlignment="Center"
+                           Style="{StaticResource EmptyStateTitleStyle}"
+                           Text="{Binding HistoryEmptyStateTitle}" />
+                <TextBlock Margin="0,6,0,0"
+                           HorizontalAlignment="Center"
+                           Style="{StaticResource EmptyStateDescriptionStyle}"
+                           Text="{Binding HistoryEmptyStateDetail}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </TabItem>
+
       </TabControl>
     </Grid>
   </Grid>

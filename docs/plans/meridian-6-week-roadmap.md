@@ -23,7 +23,7 @@ Explicit non-goals in this window:
 
 - Wave 5 Backtest Studio unification
 - broader Wave 6 live integration readiness expansion beyond clarifying prerequisites
-- optional advanced research / scale tracks such as deeper QuantScript expansion, L3 inference, multi-instance coordination, preferred-equity follow-ons, and Phase 16 performance work
+- optional advanced research / scale tracks such as deeper QuantScript expansion beyond the delivered local run-history handoff slice, L3 inference, multi-instance coordination, preferred-equity follow-ons, and Phase 16 performance work
 - broad cleanup or parallel UX programs that do not directly move Waves 1-4
 
 ---
@@ -33,9 +33,9 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the WPF workstation shell is the primary operator shell and is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; the retained local API/web surfaces remain supporting consumers of the same workstation contracts
-- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center history recovery, Welcome, System Health triage, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter-aware recovery/run-scope presentation, workspace queue tone styles, the workspace shell context strip, operator queue button state, the Trading desk briefing hero, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the Data Operations desk briefing hero's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
+- the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center history recovery, Welcome, System Health triage, Activity Log triage, Watchlist posture, Messaging Hub delivery posture, StrategyRuns filter-aware recovery/run-scope presentation, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data briefing states, workspace queue tone styles, the workspace shell context strip, route-aware operator queue button state, the Trading desk briefing hero, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the Data Operations desk briefing hero's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
 - fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores shared project assets without pinning the WPF target framework before building the desktop shell with the pinned WPF framework and confirming page tags, so test evidence should distinguish demo-state validation from operational readiness
-- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay consistency/freshness, controls, recent risk/control audit evidence, missing-field explainability warnings, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and stable operator work items, plus an initial `/api/workstation/operator/inbox` aggregation contract for readiness and reconciliation work items that the WPF main shell consumes through its queue button; `PromotionApprovalChecklist` defines required review items for paper and live promotion approvals
+- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay consistency/freshness, controls, recent risk/control audit evidence, missing-field explainability warnings, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and stable operator work items, plus an initial `/api/workstation/operator/inbox` aggregation contract for readiness and reconciliation work items that the WPF main shell consumes through route-aware queue-button navigation; `PromotionApprovalChecklist` defines required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
@@ -86,7 +86,7 @@ This plan starts from the current repo state:
 - the WPF Trading desk briefing hero is validated as a consumer of shared active-run, workflow-summary, and operator-readiness state rather than a separate cockpit model
 - `Backtest -> Paper` remains explicit, auditable, and easier to exercise end to end
 - session persistence, replay behavior, and stale-replay recovery have clearer operator acceptance criteria
-- the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, risk/control explainability warnings, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items, with an initial shared operator-inbox endpoint and WPF shell queue-button consumption available for readiness/reconciliation queue aggregation
+- the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, risk/control explainability warnings, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items, with an initial shared operator-inbox endpoint and route-aware WPF shell queue-button consumption available for readiness, Security Master, and reconciliation queue aggregation
 - the local replay-audit hardening slice now records replay consistency, compared fill/order/ledger evidence counts, last-persisted timestamps, and primary mismatch reason so readiness reconstruction has durable audit metadata to read from, and the readiness gate drops back to review-required when those compared counts no longer match the active session
 
 ### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
@@ -96,13 +96,14 @@ This plan starts from the current repo state:
 - WPF refinements in scope reinforce the same shared orchestration seams instead of introducing new page-local logic
 - the Research desk briefing hero remains a shared-model consumer for selected runs, portfolio drill-ins, and `Backtest -> Paper` promotion review instead of becoming a separate research-only orchestration path
 - StrategyRuns filter recovery remains a shared-run support improvement: it should recover already-loaded run rows and clarify visible-versus-recorded scope without becoming a separate run-store workflow
+- QuantScript Run History remains a shared-run support improvement: it should expose local execution records and only hand off to Strategy Runs, run detail, or compare flows when a mirrored run exists
 - current shell-navigation work is validated as a workflow-first improvement rather than just a visual reshuffle
 - desktop launch/deep-link and screenshot workflow evidence uses the same canonical workspace tags operators use (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) and confirms page state through the hidden-but-present `ShellAutomationState` marker
 
 ### Outcome 4: Wave 4 governance work shows up as product, not just planning
 
 - Security Master remains the delivered baseline while account/entity, reconciliation, cash-flow, multi-ledger, and reporting-adjacent workflows deepen on top of it
-- the next governance slice is defined in terms of shared DTOs, read models, export seams, reconciliation break-queue state, and operator surfaces rather than a parallel governance stack
+- the next governance slice is defined in terms of shared DTOs, read models, export seams, account/provider-routing evidence, reconciliation break-queue state, and operator surfaces rather than a parallel governance stack
 
 ---
 
@@ -157,6 +158,7 @@ Priorities:
 
 - keep Security Master authoritative while extending its use across governance workflows
 - define the next concrete slices for account/entity, multi-ledger, cash-flow, reconciliation, and reporting work
+- treat the Fund Accounts operator brief as Wave 4 support evidence only while it remains a projection of shared account, provider-routing, and shared-data-access state
 - keep governance work grounded in shared DTOs, read models, and export seams rather than a separate subsystem
 
 ### Supporting discipline: Workflow-first WPF consolidation and validation
@@ -169,6 +171,7 @@ Priorities:
 - treat the Trading desk briefing hero and Position Blotter selection-review rail as Wave 2 support evidence only when they continue to reflect shared execution, readiness, replay, controls, trust-gate, and brokerage-sync posture without duplicating service logic
 - treat the Research desk briefing hero as Wave 3 support evidence only when it keeps selected-run, run-detail, portfolio, and paper-promotion handoffs tied to shared workstation read models
 - treat StrategyRuns filter recovery as Wave 3 support evidence only when it clarifies shared run scope and recovers hidden retained rows without duplicating run-read service state
+- treat QuantScript Run History as Wave 3 support evidence only when it keeps script/notebook execution records local while using shared Research surfaces for mirrored run handoffs
 - treat the Data Operations desk briefing hero and Provider Health posture briefing as Wave 1/DK1 support evidence only when they keep provider, backfill, storage, session, and export handoffs tied to shared operational services
 - treat System Health triage as support-triage evidence only when it summarizes provider, storage, and retained event posture and distinguishes pending scans from confirmed empty snapshots without substituting for readiness gates, provider validation, or durable incident queues
 - treat Notification Center filter recovery as governance/operator-triage support evidence only when it helps recover retained history without substituting for durable work-item queues
