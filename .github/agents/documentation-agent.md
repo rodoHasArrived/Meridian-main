@@ -551,6 +551,15 @@ Meridian-main
 │   │           │       └── THIRD-PARTY-NOTICES.txt
 │   │           └── project.assets.json
 │   └── dotnet-dump.exe
+├── artifacts
+│   └── provider-validation
+│       └── _automation
+│           └── 2026-04-27
+│               ├── dk1-operator-signoff.json
+│               ├── dk1-pilot-parity-packet.json
+│               ├── dk1-pilot-parity-packet.md
+│               ├── wave1-validation-summary.json
+│               └── wave1-validation-summary.md
 ├── benchmarks
 │   ├── Meridian.Benchmarks
 │   │   ├── Budget
@@ -4833,8 +4842,6 @@ Meridian-main
 │       │   └── dotnet-upgrade
 │       │       └── SKILL.md
 │       └── README.md
-├── PROJECTS
-│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh
