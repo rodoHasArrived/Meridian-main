@@ -40,6 +40,18 @@ public sealed class TradingHoursViewModel : BindableBase
     private string _marketStatusTimeText = string.Empty;
     public string MarketStatusTimeText { get => _marketStatusTimeText; private set => SetProperty(ref _marketStatusTimeText, value); }
 
+    private string _sessionBriefingToneLabel = "Calendar status";
+    public string SessionBriefingToneLabel { get => _sessionBriefingToneLabel; private set => SetProperty(ref _sessionBriefingToneLabel, value); }
+
+    private string _sessionBriefingTitle = "Loading session status";
+    public string SessionBriefingTitle { get => _sessionBriefingTitle; private set => SetProperty(ref _sessionBriefingTitle, value); }
+
+    private string _sessionBriefingDetail = "Loading the market calendar before projecting the next trading-desk handoff.";
+    public string SessionBriefingDetail { get => _sessionBriefingDetail; private set => SetProperty(ref _sessionBriefingDetail, value); }
+
+    private string _sessionBriefingTargetText = "Regular session: 9:30 AM - 4:00 PM ET";
+    public string SessionBriefingTargetText { get => _sessionBriefingTargetText; private set => SetProperty(ref _sessionBriefingTargetText, value); }
+
     // ── Exchange row properties ───────────────────────────────────────────────────────
     private Brush _nyseRegularStatusDotFill = Brushes.Gray;
     public Brush NyseRegularStatusDotFill { get => _nyseRegularStatusDotFill; private set => SetProperty(ref _nyseRegularStatusDotFill, value); }
@@ -76,6 +88,12 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         await LoadMarketStatusAsync(ct);
         await LoadHolidaysAsync(ct);
+    }
+
+    public void ApplyMarketStatusForTests(string state, string reason, DateTimeOffset? nextSession = null)
+    {
+        UpdateStatusBanner(state, reason, nextSession);
+        UpdateSessionRows(state);
     }
 
     // ── Data loading ──────────────────────────────────────────────────────────────────
@@ -158,17 +176,13 @@ public sealed class TradingHoursViewModel : BindableBase
         MarketStatusTextForeground = textColor;
         MarketStatusReasonText = reason;
         MarketStatusTimeText = $"As of {DateTime.UtcNow:HH:mm} UTC";
+        NextSessionText = FormatNextSessionText(nextSession);
 
-        if (nextSession.HasValue)
-        {
-            var eastern = GetEasternTimeZone();
-            var local = TimeZoneInfo.ConvertTime(nextSession.Value, eastern);
-            NextSessionText = $"Next session: {local:ddd, MMM d} at {local:h:mm tt} ET";
-        }
-        else
-        {
-            NextSessionText = string.Empty;
-        }
+        var briefing = BuildSessionBriefing(state, reason, NextSessionText);
+        SessionBriefingToneLabel = briefing.ToneLabel;
+        SessionBriefingTitle = briefing.Title;
+        SessionBriefingDetail = briefing.Detail;
+        SessionBriefingTargetText = briefing.TargetText;
     }
 
     private void UpdateSessionRows(string state)
@@ -229,6 +243,49 @@ public sealed class TradingHoursViewModel : BindableBase
         catch { return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); }
     }
 
+    private static string FormatNextSessionText(DateTimeOffset? nextSession)
+    {
+        if (!nextSession.HasValue)
+        {
+            return string.Empty;
+        }
+
+        var eastern = GetEasternTimeZone();
+        var local = TimeZoneInfo.ConvertTime(nextSession.Value, eastern);
+        return $"Next session: {local:ddd, MMM d} at {local:h:mm tt} ET";
+    }
+
+    private static SessionBriefing BuildSessionBriefing(string state, string reason, string nextSessionText)
+    {
+        var reasonText = string.IsNullOrWhiteSpace(reason) ? "Calendar status is available." : reason.Trim();
+
+        return state switch
+        {
+            "Open" => new SessionBriefing(
+                "Live risk window",
+                "Regular session is active",
+                "Monitor blotter, position drift, and provider latency before routing risk-sensitive work.",
+                "Regular session: 9:30 AM - 4:00 PM ET"),
+            "PreMarket" => new SessionBriefing(
+                "Pre-market staging",
+                "Extended session is active before the open",
+                "Confirm watchlists, liquidity, and backfill freshness before the regular session starts.",
+                "Pre-market: 4:00 AM - 9:30 AM ET"),
+            "AfterHours" => new SessionBriefing(
+                "After-hours review",
+                "Extended session is active after the close",
+                "Review late fills, reconciliation notes, and overnight research handoffs before the next open.",
+                "After-hours: 4:00 PM - 8:00 PM ET"),
+            _ => new SessionBriefing(
+                "Closed planning",
+                "Regular trading is closed",
+                string.IsNullOrWhiteSpace(nextSessionText)
+                    ? $"{reasonText} Review overnight research, queued backfills, and staged orders before the next open."
+                    : $"{nextSessionText}. Review overnight research, queued backfills, and staged orders before the open.",
+                "Regular session: 9:30 AM - 4:00 PM ET")
+        };
+    }
+
     private static Brush GetResource(string key, Brush fallback) =>
         System.Windows.Application.Current?.TryFindResource(key) as Brush ?? fallback;
 
@@ -239,6 +296,12 @@ public sealed class TradingHoursViewModel : BindableBase
         public string DateText { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
     }
+
+    private sealed record SessionBriefing(
+        string ToneLabel,
+        string Title,
+        string Detail,
+        string TargetText);
 }
 
 // Calendar API response DTOs (kept in this file — only used by this ViewModel)

@@ -47,10 +47,19 @@
                               IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
                               Foreground="{StaticResource ConsoleTextMutedBrush}"
                               VerticalAlignment="Center" Margin="0,0,16,0"/>
-                    <Button Content="Export" Click="Export_Click" Margin="0,0,8,0"
-                            Style="{StaticResource SecondaryButtonStyle}"/>
-                    <Button Content="Clear" Click="Clear_Click"
-                            Style="{StaticResource GhostButtonStyle}"/>
+                    <Button Content="Export"
+                            Click="Export_Click"
+                            Margin="0,0,8,0"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            IsEnabled="{Binding CanExportVisibleLogs}"
+                            AutomationProperties.AutomationId="ActivityLogExportButton"
+                            AutomationProperties.Name="Export visible activity log entries"/>
+                    <Button Content="Clear"
+                            Click="Clear_Click"
+                            Style="{StaticResource GhostButtonStyle}"
+                            IsEnabled="{Binding CanClearLog}"
+                            AutomationProperties.AutomationId="ActivityLogClearButton"
+                            AutomationProperties.Name="Clear retained activity log entries"/>
                 </StackPanel>
             </Grid>
         </Border>

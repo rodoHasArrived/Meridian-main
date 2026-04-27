@@ -45,6 +45,9 @@ public partial class ActivityLogPage : Page
 
     private void Export_Click(object sender, RoutedEventArgs e)
     {
+        if (!_viewModel.CanExportVisibleLogs)
+            return;
+
         var dialog = new SaveFileDialog
         {
             Title = "Export Activity Log",
@@ -74,6 +77,9 @@ public partial class ActivityLogPage : Page
 
     private void Clear_Click(object sender, RoutedEventArgs e)
     {
+        if (!_viewModel.ClearCommand.CanExecute(null))
+            return;
+
         var result = MessageBox.Show(
             "Are you sure you want to clear all log entries?",
             "Clear Activity Log",

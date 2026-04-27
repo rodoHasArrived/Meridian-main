@@ -21,6 +21,9 @@ public sealed class ActivityLogViewModelTests
 
             viewModel.LogCount.Should().Be("3 entries");
             viewModel.VisibleLogCountText.Should().Be("3 visible");
+            viewModel.CanClearLog.Should().BeTrue();
+            viewModel.CanExportVisibleLogs.Should().BeTrue();
+            viewModel.ClearCommand.CanExecute(null).Should().BeTrue();
             viewModel.ErrorLogCountText.Should().Be("1 error");
             viewModel.WarningLogCountText.Should().Be("1 warning");
             viewModel.ActivityPostureTitle.Should().Be("Errors need review");
@@ -80,6 +83,9 @@ public sealed class ActivityLogViewModelTests
             viewModel.HasLogHistory.Should().BeTrue();
             viewModel.HasActiveFilters.Should().BeTrue();
             viewModel.HasFilterRecoveryAction.Should().BeTrue();
+            viewModel.CanClearLog.Should().BeTrue();
+            viewModel.CanExportVisibleLogs.Should().BeFalse();
+            viewModel.ClearCommand.CanExecute(null).Should().BeTrue();
             viewModel.EmptyStateTitle.Should().Be("No log entries match the current filters");
             viewModel.ClearFiltersCommand.CanExecute(null).Should().BeTrue();
 
@@ -109,6 +115,9 @@ public sealed class ActivityLogViewModelTests
             viewModel.HasLogHistory.Should().BeFalse();
             viewModel.HasActiveFilters.Should().BeFalse();
             viewModel.HasFilterRecoveryAction.Should().BeFalse();
+            viewModel.CanClearLog.Should().BeFalse();
+            viewModel.CanExportVisibleLogs.Should().BeFalse();
+            viewModel.ClearCommand.CanExecute(null).Should().BeFalse();
             viewModel.EmptyStateTitle.Should().Be("No log entries to display");
             viewModel.EmptyStateDetail.Should().Contain("Connect the backend");
             viewModel.ClearFiltersCommand.CanExecute(null).Should().BeFalse();
@@ -136,6 +145,9 @@ public sealed class ActivityLogViewModelTests
             viewModel.LatestLogTimeText.Should().Be("--");
             viewModel.LatestLogSummary.Should().Be("No activity captured yet.");
             viewModel.ActivityPostureTitle.Should().Be("Waiting for activity");
+            viewModel.CanClearLog.Should().BeFalse();
+            viewModel.CanExportVisibleLogs.Should().BeFalse();
+            viewModel.ClearCommand.CanExecute(null).Should().BeFalse();
 
             notifications.ClearHistory();
         });
@@ -150,7 +162,11 @@ public sealed class ActivityLogViewModelTests
         xaml.Should().Contain("ActivityLogLevelFilterCombo");
         xaml.Should().Contain("ActivityLogCategoryFilterCombo");
         xaml.Should().Contain("ActivityLogSearchBox");
+        xaml.Should().Contain("ActivityLogExportButton");
+        xaml.Should().Contain("ActivityLogClearButton");
         xaml.Should().Contain("ActivityLogResetFiltersButton");
+        xaml.Should().Contain("{Binding CanExportVisibleLogs}");
+        xaml.Should().Contain("{Binding CanClearLog}");
         xaml.Should().Contain("{Binding LevelFilter, Mode=TwoWay");
         xaml.Should().Contain("{Binding CategoryFilter, Mode=TwoWay");
         xaml.Should().Contain("{Binding SearchText, Mode=TwoWay");

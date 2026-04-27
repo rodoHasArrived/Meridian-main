@@ -133,6 +133,10 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     public bool HasFilterRecoveryAction => HasLogHistory && HasActiveFilters;
 
+    public bool CanClearLog => HasLogHistory;
+
+    public bool CanExportVisibleLogs => FilteredLogs.Count > 0;
+
     public string EmptyStateTitle => HasFilterRecoveryAction
         ? "No log entries match the current filters"
         : "No log entries to display";
@@ -162,7 +166,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         _notificationService = notificationService;
         _baseUrl = statusService.BaseUrl;
 
-        ClearCommand = new RelayCommand(ExecuteClear);
+        ClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog);
         ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
@@ -533,8 +537,11 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(HasLogHistory));
         OnPropertyChanged(nameof(HasActiveFilters));
         OnPropertyChanged(nameof(HasFilterRecoveryAction));
+        OnPropertyChanged(nameof(CanClearLog));
+        OnPropertyChanged(nameof(CanExportVisibleLogs));
         OnPropertyChanged(nameof(EmptyStateTitle));
         OnPropertyChanged(nameof(EmptyStateDetail));
+        ClearCommand.NotifyCanExecuteChanged();
         ClearFiltersCommand.NotifyCanExecuteChanged();
     }
 
