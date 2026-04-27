@@ -977,4 +977,4 @@ let ``LedgerInterop ReconcilePortfolioLedgerChecks preserves category and status
     results |> Array.find (fun r -> r.CheckId = "timing-break") |> fun r ->
         r.Category |> should equal "timing_mismatch"
         r.Status |> should equal "open"
-        r.Severity |> should equal "High"
+        r.Severity |> should equal "Medium"

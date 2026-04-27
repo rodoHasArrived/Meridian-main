@@ -50,6 +50,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
             self.assertEqual("signed", packet["operatorSignoff"]["status"])
             self.assertTrue(packet["operatorSignoff"]["validForDk1Exit"])
             self.assertEqual("valid", packet["operatorSignoff"]["packetBindingStatus"])
+            self.assertEqual(packet["operatorSignoff"]["packetReview"]["generatedAtUtc"], packet["generatedAtUtc"])
             self.assertEqual([], packet["operatorSignoff"]["missingOwners"])
             self.assertEqual(
                 ["Data Operations", "Provider Reliability", "Trading"],

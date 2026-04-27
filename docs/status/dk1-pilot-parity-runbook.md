@@ -76,8 +76,8 @@ when all test steps pass.
    - Validate the completed sign-off before regenerating the packet:
      `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json -Validate`.
    - Regenerate the packet with `./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
-   - Alternatively pass the same sign-off file through the full validation wrapper: `./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
-   - The packet generator also checks the sign-off `packetReview` against the already generated packet before accepting it as DK1-exit evidence. Copied, stale, or unbound sign-off files write `operatorSignoff.packetBindingStatus=invalid`, `operatorSignoff.validForDk1Exit=false`, and fail regeneration.
+   - Do not rerun the full validation wrapper with the same signed file after owner approval. `run-wave1-provider-validation.ps1` emits a new packet timestamp before invoking the packet generator, so a sign-off file bound to the previously reviewed packet is intentionally rejected as stale and must be regenerated/re-reviewed for the new packet.
+   - The packet generator checks the sign-off `packetReview` against the already generated packet before accepting it as DK1-exit evidence. Copied, stale, or unbound sign-off files write `operatorSignoff.packetBindingStatus=invalid`, `operatorSignoff.validForDk1Exit=false`, and fail regeneration.
    - Confirm `operatorSignoff.status` is `signed`, `signedOwners` contains all three required owners, and `missingOwners` is empty before claiming DK1 exit.
 6. **Publish parity packet**
    - Add links to output artifacts in the weekly DK1 review note and in the dashboard row.

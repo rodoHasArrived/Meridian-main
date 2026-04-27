@@ -65,13 +65,13 @@
   </ItemGroup>
 
   <ItemGroup Label="OpenTelemetry">
-    <PackageVersion Include="OpenTelemetry" Version="1.15.2" />
-    <PackageVersion Include="OpenTelemetry.Api" Version="1.15.2" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.2" />
+    <PackageVersion Include="OpenTelemetry" Version="1.15.3" />
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.15.1" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.2" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.14.0-beta.1" />
   </ItemGroup>
 
@@ -210,5 +210,15 @@
          Transitive dependency from several packages resolving to 4.3.0.
          Fixed in 4.3.1+ -->
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
+
+    <!-- Microsoft.IdentityModel.JsonWebTokens / System.IdentityModel.Tokens.Jwt:
+         Fix GHSA-59j7-ghrg-fj52 (Moderate) - DoS from transitive Microsoft.Data.SqlClient 4.0.5.
+         Fixed in 6.34.0+ on the 6.x line. Pin the related IdentityModel family together. -->
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.35.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Logging" Version="6.35.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols" Version="6.35.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.35.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.35.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.35.0" />
   </ItemGroup>
 </Project>

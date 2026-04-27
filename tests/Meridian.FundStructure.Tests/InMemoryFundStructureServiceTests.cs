@@ -195,6 +195,70 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task GetAccountingViewAsync_WithBusinessFilter_ExcludesOtherBusinessEntityScopedAccount()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var otherBusinessId = Guid.NewGuid();
+        var otherFundId = Guid.NewGuid();
+        var otherEntityId = Guid.NewGuid();
+        var otherVehicleId = Guid.NewGuid();
+
+        await fixture.StructureService.CreateBusinessAsync(new CreateBusinessRequest(
+            otherBusinessId,
+            fixture.OrganizationId,
+            BusinessKindDto.FundManager,
+            "FUND-OPS-002",
+            "Other Funds",
+            "USD",
+            now,
+            "test"));
+        await fixture.StructureService.CreateFundAsync(new CreateFundRequest(
+            otherFundId,
+            "FUND-002",
+            "Other Credit Fund",
+            "USD",
+            now,
+            "test",
+            BusinessId: otherBusinessId));
+        await fixture.StructureService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            otherEntityId,
+            LegalEntityTypeDto.Vehicle,
+            "ENTITY-002",
+            "Other SPV",
+            "DE",
+            "USD",
+            now,
+            "test"));
+        await fixture.StructureService.CreateVehicleAsync(new CreateVehicleRequest(
+            otherVehicleId,
+            otherFundId,
+            otherEntityId,
+            "VEHICLE-002",
+            "Other SPV",
+            "USD",
+            now,
+            "test"));
+        var otherAccount = await fixture.AccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "OTHER-ACCT-001",
+            DisplayName: "Other Business Cash",
+            BaseCurrency: "USD",
+            EffectiveFrom: now,
+            CreatedBy: "test",
+            EntityId: otherEntityId,
+            VehicleId: otherVehicleId,
+            LedgerReference: "OTHER-TB"));
+
+        var view = await fixture.StructureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(BusinessId: fixture.FundBusinessId));
+
+        Assert.DoesNotContain(view.Accounts, account => account.AccountId == otherAccount.AccountId);
+        Assert.DoesNotContain(view.LedgerGroups, group => group.AccountIds.Contains(otherAccount.AccountId));
+    }
+
+    [Fact]
     public async Task GetAccountingViewAsync_InvalidLedgerReferenceFallsBackToUnassignedGroup()
     {
         var fixture = await CreateHybridFixtureAsync();
@@ -242,6 +306,21 @@ public sealed class InMemoryFundStructureServiceTests
 
         Assert.DoesNotContain(view.Accounts, account => account.AccountId == fundOnlyAccount.AccountId);
         Assert.DoesNotContain(view.LedgerGroups, group => group.AccountIds.Contains(fundOnlyAccount.AccountId));
+    }
+
+    [Fact]
+    public async Task GetAccountingViewAsync_WithFundAndMismatchedSleeveFilters_ExcludesFundScopedAccounts()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+
+        var view = await fixture.StructureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(
+                BusinessId: fixture.FundBusinessId,
+                FundId: fixture.FundId,
+                SleeveId: Guid.NewGuid()));
+
+        Assert.DoesNotContain(view.Accounts, account => account.AccountId == fixture.FundAccountId);
+        Assert.DoesNotContain(view.LedgerGroups, group => group.AccountIds.Contains(fixture.FundAccountId));
     }
 
     [Fact]

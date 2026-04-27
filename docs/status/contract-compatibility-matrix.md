@@ -82,6 +82,12 @@ Pull request checks also upload a `contract-review-packet` artifact and append t
 to the contract-compatibility job summary so reviewers can inspect tracked surfaces and blocking
 findings even when the compatibility gate fails.
 
+## Weekly Interop Owner Decisions
+
+| Review date | Packet evidence | Gate result | Owner decision | Follow-up |
+| --- | --- | --- | --- | --- |
+| 2026-04-27 | `artifacts/contract-review/2026-04-27/contract-review-packet.json` and `artifacts/contract-review/2026-04-27/contract-review-packet.md` | Baseline packet for `origin/main...HEAD` had 0 tracked surface changes, no blocking findings, and `readyForCadenceReview=true`. | Shared Platform Interop owner approved and locked the weekly Wednesday shared-interop review cadence. Every cadence review must attach the generated JSON/Markdown packet, run the same-range compatibility gate, and record the owner decision before Wave 3/Wave 4 shared-contract work can claim readiness. | Run the next packet before the 2026-05-06 shared-interop review, and add migration notes plus PR-body evidence for any potential breaking contract change. |
+
 ## Migration Notes
 
 Use this section for every potential contract-breaking change. Entries must be append-only.

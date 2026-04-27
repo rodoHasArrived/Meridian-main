@@ -1,0 +1,105 @@
+{
+  "generatedAtUtc": "2026-04-27T04:23:29.0348620Z",
+  "purpose": "DK1 operator sign-off for the Alpaca/Robinhood/Yahoo pilot parity packet.",
+  "requiredOwners": [
+    "Data Operations",
+    "Provider Reliability",
+    "Trading"
+  ],
+  "instructions": [
+    "Only fill this file after Data Operations, Provider Reliability, and Trading have reviewed the DK1 packet.",
+    "When packetReview is present, do not copy this sign-off file to another DK1 packet; regenerate the template for each reviewed packet.",
+    "Each approval must include owner, signedBy, signedAtUtc, approved decision, and rationale.",
+    "Run prepare-dk1-operator-signoff.ps1 -Validate before passing this file to run-wave1-provider-validation.ps1 or generate-dk1-pilot-parity-packet.ps1."
+  ],
+  "packetReview": {
+    "path": "artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json",
+    "status": "ready-for-operator-review",
+    "generatedAtUtc": "04/27/2026 04:31:34",
+    "sourceSummary": "artifacts/provider-validation/_automation/2026-04-27/wave1-validation-summary.json",
+    "sourceResult": "passed",
+    "requiredSampleCount": 4,
+    "readySampleCount": 4,
+    "evidenceDocumentCount": 4,
+    "validatedEvidenceDocumentCount": 4,
+    "trustRationaleContractStatus": "validated",
+    "baselineThresholdContractStatus": "validated",
+    "validForOperatorReview": true,
+    "blockers": [],
+    "samples": [
+      {
+        "id": "DK1-ALPACA-QUOTE-GOLDEN",
+        "status": "ready",
+        "missingRequirements": []
+      },
+      {
+        "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+        "status": "ready",
+        "missingRequirements": []
+      },
+      {
+        "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+        "status": "ready",
+        "missingRequirements": []
+      },
+      {
+        "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+        "status": "ready",
+        "missingRequirements": []
+      }
+    ],
+    "evidenceDocuments": [
+      {
+        "name": "DK1 pilot parity runbook",
+        "gate": "parity",
+        "status": "validated",
+        "path": "docs/status/dk1-pilot-parity-runbook.md",
+        "missingRequirements": []
+      },
+      {
+        "name": "DK1 trust rationale mapping",
+        "gate": "explainability",
+        "status": "validated",
+        "path": "docs/status/dk1-trust-rationale-mapping.md",
+        "missingRequirements": []
+      },
+      {
+        "name": "DK1 baseline trust thresholds",
+        "gate": "calibration",
+        "status": "validated",
+        "path": "docs/status/dk1-baseline-trust-thresholds.md",
+        "missingRequirements": []
+      },
+      {
+        "name": "Provider validation matrix",
+        "gate": "parity",
+        "status": "validated",
+        "path": "docs/status/provider-validation-matrix.md",
+        "missingRequirements": []
+      }
+    ]
+  },
+  "approvals": [
+    {
+      "owner": "Data Operations",
+      "signedBy": "RODO",
+      "signedAtUtc": "2026-04-27T04:28:01.5476745Z",
+      "decision": "approved",
+      "rationale": "Reviewed the 2026-04-27 Wave 1 validation summary and DK1 pilot sample set; active provider evidence and deferred-provider scope are accepted."
+    },
+    {
+      "owner": "Provider Reliability",
+      "signedBy": "RODO",
+      "signedAtUtc": "2026-04-27T04:28:01.5476745Z",
+      "decision": "approved",
+      "rationale": "Reviewed validated trust-rationale and baseline-threshold contracts; Robinhood bounded-runtime caveat remains explicit and accepted."
+    },
+    {
+      "owner": "Trading",
+      "signedBy": "RODO",
+      "signedAtUtc": "2026-04-27T04:28:01.5476745Z",
+      "decision": "approved",
+      "rationale": "Reviewed DK1 trust-gate packet for downstream cockpit readiness; approval is limited to provider-trust gate handoff and does not claim live readiness."
+    }
+  ]
+}

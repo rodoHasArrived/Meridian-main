@@ -1018,11 +1018,10 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             .Where(portfolio => query.InvestmentPortfolioId is null || portfolio.InvestmentPortfolioId == query.InvestmentPortfolioId.Value)
             .ToList();
         portfolios = AttachSharedDataAccess(portfolios, sharedDataAccess).ToList();
-        var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
-        var hasAccountScopeFilter = HasAccountingAccountScopeFilter(query);
+        var accountScope = BuildAccountingAccountScope(scoped, portfolios);
         var accounts = scoped.Accounts
             .Where(account => query.LedgerReference is null || string.Equals(account.LedgerReference, query.LedgerReference, StringComparison.OrdinalIgnoreCase))
-            .Where(account => !hasAccountScopeFilter || IsAccountInAccountingScope(account, query, portfolioIds, scoped.OwnershipLinks))
+            .Where(account => IsAccountInAccountingScope(account, query, accountScope, scoped.OwnershipLinks))
             .ToList();
 
         var organization = query.OrganizationId.HasValue
@@ -3223,24 +3222,87 @@ public sealed class InMemoryFundStructureService : IFundStructureService
     private static bool IsAccountInAccountingScope(
         AccountSummaryDto account,
         AccountingStructureQuery query,
-        IReadOnlyCollection<Guid> portfolioIds,
+        AccountingAccountScope accountScope,
         IReadOnlyList<OwnershipLinkDto> ownershipLinks)
     {
-        if ((TryParseGuid(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId))
-            || IsAccountLinkedToAny(account.AccountId, portfolioIds, ownershipLinks))
+        if (IsAccountLinkedToAccountingPortfolios(account, accountScope.PortfolioIds, ownershipLinks))
         {
             return true;
         }
 
+        if (HasAccountingAccountScopeFilter(query))
+        {
+            return MatchesDirectAccountingAccountFilters(account, query);
+        }
+
+        return IsAccountInAccountingBusinessScope(account, accountScope, ownershipLinks);
+    }
+
+    private static AccountingAccountScope BuildAccountingAccountScope(
+        StructureScope scoped,
+        IReadOnlyList<InvestmentPortfolioSummaryDto> portfolios)
+    {
+        var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        var fundIds = scoped.Funds.Select(static fund => fund.FundId).ToHashSet();
+        var sleeveIds = scoped.Sleeves.Select(static sleeve => sleeve.SleeveId).ToHashSet();
+        var vehicleIds = scoped.Vehicles.Select(static vehicle => vehicle.VehicleId).ToHashSet();
+        var scopedEntityIds = scoped.Entities.Select(static entity => entity.EntityId).ToHashSet();
+        var entityParentIds = scoped.Businesses.Select(static business => business.BusinessId)
+            .Concat(fundIds)
+            .Concat(sleeveIds)
+            .Concat(vehicleIds)
+            .Concat(portfolioIds)
+            .ToHashSet();
+        var entityIds = scoped.Funds.SelectMany(static fund => fund.EntityIds)
+            .Concat(scoped.Vehicles.Select(static vehicle => vehicle.LegalEntityId))
+            .Concat(portfolios.Where(static portfolio => portfolio.EntityId.HasValue).Select(static portfolio => portfolio.EntityId!.Value))
+            .Concat(scoped.OwnershipLinks
+                .Where(link => scopedEntityIds.Contains(link.ChildNodeId) && entityParentIds.Contains(link.ParentNodeId))
+                .Select(static link => link.ChildNodeId))
+            .ToHashSet();
+
+        return new AccountingAccountScope(entityIds, fundIds, sleeveIds, vehicleIds, portfolioIds);
+    }
+
+    private static bool IsAccountLinkedToAccountingPortfolios(
+        AccountSummaryDto account,
+        IReadOnlyCollection<Guid> portfolioIds,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks) =>
+        (TryParseGuid(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId))
+        || IsAccountLinkedToAny(account.AccountId, portfolioIds, ownershipLinks);
+
+    private static bool MatchesDirectAccountingAccountFilters(
+        AccountSummaryDto account,
+        AccountingStructureQuery query)
+    {
         if (query.ClientId.HasValue || query.InvestmentPortfolioId.HasValue)
         {
             return false;
         }
 
-        return (query.FundId.HasValue && account.FundId == query.FundId.Value)
-            || (query.SleeveId.HasValue && account.SleeveId == query.SleeveId.Value)
-            || (query.VehicleId.HasValue && account.VehicleId == query.VehicleId.Value);
+        var hasDirectScopeFilter = query.FundId.HasValue || query.SleeveId.HasValue || query.VehicleId.HasValue;
+        return hasDirectScopeFilter
+            && MatchesOptionalScope(account.FundId, query.FundId)
+            && MatchesOptionalScope(account.SleeveId, query.SleeveId)
+            && MatchesOptionalScope(account.VehicleId, query.VehicleId);
     }
+
+    private static bool MatchesOptionalScope(Guid? value, Guid? filter) =>
+        !filter.HasValue || value == filter.Value;
+
+    private static bool IsAccountInAccountingBusinessScope(
+        AccountSummaryDto account,
+        AccountingAccountScope accountScope,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks) =>
+        (account.EntityId.HasValue && accountScope.EntityIds.Contains(account.EntityId.Value))
+        || (account.FundId.HasValue && accountScope.FundIds.Contains(account.FundId.Value))
+        || (account.SleeveId.HasValue && accountScope.SleeveIds.Contains(account.SleeveId.Value))
+        || (account.VehicleId.HasValue && accountScope.VehicleIds.Contains(account.VehicleId.Value))
+        || IsAccountLinkedToAccountingPortfolios(account, accountScope.PortfolioIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.EntityIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.FundIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.SleeveIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.VehicleIds, ownershipLinks);
 
     private static IEnumerable<AccountSummaryDto> GetScopeAccounts(
         IEnumerable<AccountSummaryDto> accounts,
@@ -3745,6 +3807,13 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         GovernanceCashFlowScopeDto Scope,
         IReadOnlyList<AccountSummaryDto> Accounts,
         string BaseCurrency);
+
+    private sealed record AccountingAccountScope(
+        IReadOnlySet<Guid> EntityIds,
+        IReadOnlySet<Guid> FundIds,
+        IReadOnlySet<Guid> SleeveIds,
+        IReadOnlySet<Guid> VehicleIds,
+        IReadOnlySet<Guid> PortfolioIds);
 
     private sealed record AccountCashFlowWindow(
         AccountSummaryDto Account,

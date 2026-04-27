@@ -637,8 +637,17 @@ $operatorSignoff = Get-OperatorSignoffPacket `
     -RequiredOwners $requiredOperatorOwners `
     -ExpectedPacketReview $reviewedPacket
 
+$packetGeneratedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+if ($operatorSignoff.validForDk1Exit -and $null -ne $operatorSignoff.packetReview) {
+    $reviewedGeneratedAtUtc = Get-ObjectPropertyValue -Object $operatorSignoff.packetReview -Name "generatedAtUtc"
+    $reviewedGeneratedAtUtcText = [string]$reviewedGeneratedAtUtc
+    if (-not [string]::IsNullOrWhiteSpace($reviewedGeneratedAtUtcText)) {
+        $packetGeneratedAtUtc = $reviewedGeneratedAtUtc
+    }
+}
+
 $packet = [ordered]@{
-    generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+    generatedAtUtc = $packetGeneratedAtUtc
     dateStamp = if ($summary.PSObject.Properties.Name -contains "dateStamp") { [string]$summary.dateStamp } else { $DateStamp }
     sourceSummary = ConvertTo-RelativePath -Path $SummaryJsonPath
     sourceResult = $summaryResult
