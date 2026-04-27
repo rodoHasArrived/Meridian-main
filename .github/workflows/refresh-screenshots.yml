@@ -21,6 +21,8 @@ on:
       - '.github/workflows/refresh-screenshots.yml'
       - 'config/appsettings.sample.json'
       - 'scripts/dev/SharedBuild.ps1'
+      - 'scripts/dev/desktop-workflows.json'
+      - 'scripts/dev/run-desktop-workflow.ps1'
       - 'scripts/dev/capture-desktop-screenshots.ps1'
       - 'src/Meridian.Ui.Services/**'
       - 'src/Meridian.Ui.Shared/**'
@@ -51,6 +53,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 40
 
+    # Prevent recursive runs from the bot commit.
+    if: github.actor != 'github-actions[bot]'
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -65,16 +70,82 @@ jobs:
         shell: pwsh
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
 
-      - name: Capture WPF desktop screenshots
+      # Capture *all* desktop screenshots defined in scripts/dev/desktop-workflows.json
+      # (screenshot-catalog + all manual workflows that includeInManual: true).
+      - name: Capture desktop screenshot catalog
         shell: pwsh
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
-          pwsh -File scripts/dev/capture-desktop-screenshots.ps1 `
+          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
+            -Workflow screenshot-catalog `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
             -Configuration "${{ env.WPF_CONFIGURATION }}" `
             -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -OutputDir "${{ env.WPF_SCREENSHOT_OUTPUT }}"
+            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}" 
+
+      - name: Capture manual-overview screenshots
+        shell: pwsh
+        env:
+          MDC_FIXTURE_MODE: '1'
+        run: |
+          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
+            -Workflow manual-overview `
+            -ProjectPath "${{ env.WPF_PROJECT }}" `
+            -Configuration "${{ env.WPF_CONFIGURATION }}" `
+            -Framework "${{ env.WPF_FRAMEWORK }}" `
+            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-overview" 
+
+      - name: Capture manual-data-operations screenshots
+        shell: pwsh
+        env:
+          MDC_FIXTURE_MODE: '1'
+        run: |
+          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
+            -Workflow manual-data-operations `
+            -ProjectPath "${{ env.WPF_PROJECT }}" `
+            -Configuration "${{ env.WPF_CONFIGURATION }}" `
+            -Framework "${{ env.WPF_FRAMEWORK }}" `
+            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-data-operations" 
+
+      - name: Capture manual-research-and-trading screenshots
+        shell: pwsh
+        env:
+          MDC_FIXTURE_MODE: '1'
+        run: |
+          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
+            -Workflow manual-research-and-trading `
+            -ProjectPath "${{ env.WPF_PROJECT }}" `
+            -Configuration "${{ env.WPF_CONFIGURATION }}" `
+            -Framework "${{ env.WPF_FRAMEWORK }}" `
+            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-research-and-trading" 
+
+      - name: Capture manual-governance screenshots
+        shell: pwsh
+        env:
+          MDC_FIXTURE_MODE: '1'
+        run: |
+          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
+            -Workflow manual-governance `
+            -ProjectPath "${{ env.WPF_PROJECT }}" `
+            -Configuration "${{ env.WPF_CONFIGURATION }}" `
+            -Framework "${{ env.WPF_FRAMEWORK }}" `
+            -ScreenshotDirectory "${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/manual-governance" 
+
+      - name: Detect screenshot changes
+        id: detect_changes
+        shell: pwsh
+        run: |
+          git status --porcelain
+          $changed = git status --porcelain -- "${{ env.WPF_SCREENSHOT_OUTPUT }}" | Measure-Object | Select-Object -ExpandProperty Count
+          if ($changed -gt 0) {
+            "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "Detected $changed changed file(s) under ${{ env.WPF_SCREENSHOT_OUTPUT }}"
+          }
+          else {
+            "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "No changes detected under ${{ env.WPF_SCREENSHOT_OUTPUT }}"
+          }
 
       - name: Upload WPF screenshot diagnostics
         if: always()
@@ -82,52 +153,36 @@ jobs:
         with:
           name: wpf-desktop-screenshots
           path: |
-            docs/screenshots/desktop/*.png
+            docs/screenshots/desktop/**/*.png
+            artifacts/desktop-workflows/**/manifest.json
+            artifacts/desktop-workflows/**/logs/*.log
             wpf-startup-stdout.log
             wpf-startup-stderr.log
           if-no-files-found: warn
           retention-days: 7
 
       - name: Commit WPF desktop screenshots
+        if: steps.detect_changes.outputs.changed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'docs(screenshots): refresh WPF desktop screenshots'
-          file_pattern: docs/screenshots/desktop/*.png
+          file_pattern: docs/screenshots/desktop/**/*.png
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          push_options: '--force-with-lease'
 
       - name: Write workflow summary
         if: always()
         shell: pwsh
         run: |
-          $rows = @(
-            'Dashboard'        , 'wpf-dashboard.png'
-            'Providers'        , 'wpf-providers.png'
-            'Provider Health'  , 'wpf-provider-health.png'
-            'Backfill'         , 'wpf-backfill.png'
-            'Symbols'          , 'wpf-symbols.png'
-            'Live Data'        , 'wpf-live-data.png'
-            'Storage'          , 'wpf-storage.png'
-            'Data Quality'     , 'wpf-data-quality.png'
-            'Data Browser'     , 'wpf-data-browser.png'
-            'Strategy Runs'    , 'wpf-strategy-runs.png'
-            'Backtest'         , 'wpf-backtest.png'
-            'Quant Script'     , 'wpf-quant-script.png'
-            'Security Master'  , 'wpf-security-master.png'
-            'Diagnostics'      , 'wpf-diagnostics.png'
-            'Settings'         , 'wpf-settings.png'
-          )
-
           $lines = @(
-            '## WPF Desktop Screenshot Refresh'
+            '## UI Screenshot Refresh'
             ''
-            '| Page | File |'
-            '|------|------|'
+            "Changes detected: **${{ steps.detect_changes.outputs.changed }}**"
+            ''
+            '### Output roots'
+            ''
+            "- ``${{ env.WPF_SCREENSHOT_OUTPUT }}/`` (catalog)"
+            "- ``${{ env.WPF_SCREENSHOT_OUTPUT }}/manuals/`` (manual workflows)"
           )
-
-          for ($i = 0; $i -lt $rows.Count; $i += 2) {
-            $lines += "| $($rows[$i]) | ``docs/screenshots/desktop/$($rows[$i + 1])`` |"
-          }
 
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
