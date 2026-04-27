@@ -674,6 +674,41 @@ public sealed class MainShellViewModelTests
         });
     }
 
+    [Fact]
+    public void OperatorInboxPresentation_RequestsActiveAccountScopedInbox()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var accountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [],
+                CriticalCount: 0,
+                WarningCount: 0,
+                ReviewCount: 0,
+                Summary: "No operator work items are open.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            vm.SelectedOperatingContext = new WorkstationOperatingContext
+            {
+                ScopeKind = OperatingContextScopeKind.Account,
+                ScopeId = accountId.ToString("D"),
+                AccountId = accountId.ToString("D"),
+                DisplayName = "Northwind Brokerage Account",
+                DefaultWorkspaceId = "trading",
+                DefaultLandingPageTag = "TradingShell"
+            };
+            vm.RefreshPageCommand.Execute(null);
+
+            await WaitForConditionAsync(() => inboxClient.FundAccountCalls.Contains(accountId));
+
+            inboxClient.FundAccountCalls.Should().Contain(accountId);
+            vm.OperatorInboxSummary.Should().Be("No operator work items are open.");
+        });
+    }
+
     private static async Task<FundContextService> CreateFundContextAsync()
     {
         var storagePath = Path.Combine(
@@ -724,8 +759,21 @@ public sealed class MainShellViewModelTests
 
     private sealed class FakeOperatorInboxApiClient : IWorkstationOperatorInboxApiClient
     {
+        private readonly object _gate = new();
+        private readonly List<Guid?> _fundAccountCalls = [];
         private readonly OperatorInboxDto? _inbox;
         private readonly Exception? _exception;
+
+        public IReadOnlyList<Guid?> FundAccountCalls
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _fundAccountCalls.ToArray();
+                }
+            }
+        }
 
         public FakeOperatorInboxApiClient(OperatorInboxDto inbox)
         {
@@ -739,6 +787,11 @@ public sealed class MainShellViewModelTests
 
         public Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default)
         {
+            lock (_gate)
+            {
+                _fundAccountCalls.Add(fundAccountId);
+            }
+
             if (_exception is not null)
             {
                 throw _exception;

@@ -173,7 +173,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ReviewedBy = request.ReviewedBy,
                 ReviewedAt = now,
                 LastUpdatedAt = now,
-                ResolutionNote = request.ReviewNote
+                ResolutionNote = request.ReviewNote,
+                SignoffStatus = "in-review"
             };
 
             _items[request.BreakId] = updated;
@@ -236,7 +237,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ResolvedBy = request.ResolvedBy,
                 ResolvedAt = now,
                 LastUpdatedAt = now,
-                ResolutionNote = request.ResolutionNote
+                ResolutionNote = request.ResolutionNote,
+                SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
+                    ? "signed-off"
+                    : "dismissed"
             };
 
             _items[request.BreakId] = updated;

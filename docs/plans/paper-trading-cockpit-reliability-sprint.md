@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-04-26
+**Last Reviewed:** 2026-04-27
 
 ## Summary
 
@@ -132,7 +132,7 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 - latest replay verification evidence from the execution audit trail
 - execution-control state, including circuit breaker and manual overrides
 - durable promotion decision state and trace completeness
-- DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet plus packet-bound sign-off preflight
+- DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet plus packet-bound sign-off validation
 - DK1 pilot sample rows, evidence-document rows, trust-rationale contract status, and baseline-threshold contract status so explainability/calibration review is visible from the same cockpit contract
 - explicit acceptance gates plus an overall readiness status / paper-operation readiness flag
 - recent risk/control audit evidence with actor, scope, rationale, and missing-field warnings
@@ -146,8 +146,12 @@ values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`,
 in-review reconciliation breaks, adds workspace/page/route navigation hints, and is now consumed by
 the WPF main shell queue action. The shell resolves known target routes before target page tags, so
 reconciliation work items open `FundReconciliation`, Security Master coverage opens
-`SecurityMaster`, and trading-readiness items stay in `TradingShell`. Broader end-to-end queue
+`SecurityMaster`, and trading-readiness items stay in `TradingShell`. When the active WPF operating
+context is an account, the shell passes that account as `fundAccountId` so brokerage-sync and
+account-scoped readiness blockers remain visible in the same queue. Broader end-to-end queue
 acceptance remains a cockpit-hardening task rather than a completed workflow.
+The Trading WPF shell also passes the active account context into its readiness request, so the
+cockpit status card and shell queue use the same account-scoped brokerage-sync posture.
 The retained web cockpit also renders the readiness contract's operator work items and warnings
 beside the acceptance gates, so API diagnostics can show the same replay, promotion, trust-gate,
 brokerage-sync, reconciliation, and execution-control blockers that desktop operators see through
@@ -163,18 +167,23 @@ pass/review/blocked decision instead of reconstructing acceptance differently in
 The WPF Trading desk briefing hero must use that shared overall readiness result, not only
 `TrustGate.ReadyForOperatorReview`, so a DK1 packet that still needs operator sign-off cannot make
 the shell look ready.
-Pending DK1 operator sign-off, replay mismatch, open circuit breaker, or incomplete promotion trace
-keeps the lane in review or blocked state even when lower-level endpoint data is visible.
+A future DK1 packet without valid operator sign-off, replay mismatch, open circuit breaker, or incomplete promotion trace keeps the lane in review or blocked state even when lower-level endpoint data is visible.
 Legacy DK1 packets that omit the validated explainability or calibration contract are treated as
 blocked trust-gate evidence rather than silently inheriting `ready-for-operator-review`.
 Material order/control audit rows that omit actor, scope, or rationale now keep the
 `audit-controls` gate in review and surface an `ExecutionControl` work item so the cockpit can
 explain why a decision was allowed, rejected, or manually overridden.
 
-`GET /api/workstation/trading` also includes the same readiness payload so workstation consumers can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
+`GET /api/workstation/trading` also includes the same readiness payload so workstation consumers can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When a future generated DK1 packet is `ready-for-operator-review` but lacks valid sign-off, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
 
 Replay readiness is rebuilt from durable execution-audit evidence, so replay verification audit entries persist `isConsistent`, compared fill/order/ledger counts, last-persisted timestamps, and the primary mismatch reason. This keeps the shared readiness lane specific after restart and when verification was triggered through the service layer instead of the endpoint wrapper.
 The replay gate now treats those compared counts as a freshness contract: if the active session's fill, order, or ledger-entry counts diverge after verification, the gate drops back to review-required and emits a stable `paper-replay-stale-{sessionId}` work item until replay verification is run again.
+The WPF cockpit acceptance card now renders those stale replay counts beside session state, showing active-session order/fill/ledger counts and the latest verified replay counts instead of treating a count-stale but otherwise consistent replay audit as green.
+
+Reconciliation break queue items now carry calibrated governance routing metadata: exception route,
+tolerance profile, tolerance band, required sign-off role, and sign-off status. The operator inbox
+projects those fields into reconciliation work-item details so open and in-review breaks can be
+routed for governance handling without losing the shared trading-readiness work items.
 
 #### `PaperSessionReplayVerificationDto`
 
@@ -187,8 +196,9 @@ Replay verification now carries fields that make replay evidence operator-readab
 - `LastPersistedOrderUpdateAt`
 - `VerificationAuditId`
 
-This keeps the current verify endpoint but makes the result strong enough to act as a gate; the
-remaining work is to keep those evidence counts wired into cockpit and WPF acceptance scenarios.
+This keeps the current verify endpoint but makes the result strong enough to act as a gate; WPF now
+wires those evidence counts into its acceptance status so stale active-vs-verified replay counts are
+visible beside session state.
 
 #### `IPromotionRecordStore`
 

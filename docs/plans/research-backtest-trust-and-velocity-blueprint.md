@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Research, Desktop, Backtesting, API, and Architecture contributors
-**Last Updated:** 2026-04-26
-**Status:** Active focused blueprint for the next Research implementation slice; request-level batch sweeps, WPF Batch Backtest ViewModel coverage, and StrategyRuns filter-aware run-scope recovery are now present, while real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open
+**Last Updated:** 2026-04-27
+**Status:** Active focused blueprint for the next Research implementation slice; request-level batch sweeps, WPF Batch Backtest ViewModel coverage, BatchBacktest results empty guidance, and StrategyRuns filter-aware run-scope recovery are now present, while real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open
 
 > Companion to:
 >
@@ -16,7 +16,7 @@
 
 This blueprint defines the next implementation slice for Meridian's Research workspace.
 
-The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-26, the Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, and ViewModel tests are present. The StrategyRuns browser also now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded scope, and can reset filters against already-loaded rows. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, and deeper stage-aware shared orchestration.
+The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-27, the Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, stateful results empty guidance, and ViewModel tests are present. The StrategyRuns browser also now distinguishes an empty run library from filters that hide retained runs, shows visible-versus-recorded scope, and can reset filters against already-loaded rows. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, and deeper stage-aware shared orchestration.
 
 The slice delivers three user-facing outcomes:
 
@@ -169,7 +169,7 @@ The Backtest page and Research shell should display those stages explicitly rath
 
 ### 6. Turn batch backtesting into a real Parameter Lab
 
-`src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` is no longer only a simulated demo: it now drives validated request-level parameter sweeps through `IBatchBacktestService`, with progress, cancellation, result metrics, and ViewModel coverage. `src/Meridian.Backtesting/BatchBacktestService.cs` also applies swept parameters to each `BacktestRequest`, but it still runs a `NoOpStrategy` rather than selected strategy definitions.
+`src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` is no longer only a simulated demo: it now drives validated request-level parameter sweeps through `IBatchBacktestService`, with progress, cancellation, result metrics, stateful empty guidance for idle/validation/running/failed/cancelled result states, and ViewModel coverage. `src/Meridian.Backtesting/BatchBacktestService.cs` also applies swept parameters to each `BacktestRequest`, but it still runs a `NoOpStrategy` rather than selected strategy definitions.
 
 This slice should not ship more UI around placeholder strategy execution. The next step is to connect the new sweep controls to real strategy selection, run persistence, and sweep grouping.
 
@@ -401,8 +401,8 @@ public interface IResearchSweepWorkflowService
 | `src/Meridian.Wpf/ViewModels/BacktestViewModel.cs` | Replace hard-coded strategy path, bind preflight, switch to orchestrator-backed run lifecycle | Main Research launcher seam |
 | `src/Meridian.Wpf/Views/BacktestPage.xaml` | Add strategy picker, dynamic parameter region, preflight card, stage console | Main operator surface |
 | `src/Meridian.Wpf/Services/BacktestService.cs` | Refactor into orchestrator-backed adapter | Remove local-engine-only workflow |
-| `src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` | Connect current request-sweep execution to strategy selection and persisted sweep grouping | Request-level sweep UI exists; strategy/run persistence remains open |
-| `src/Meridian.Wpf/Views/BatchBacktestPage.xaml` | Present sweep controls and persisted results | Parameter Lab surface |
+| `src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` | Connect current request-sweep execution and result-state guidance to strategy selection and persisted sweep grouping | Request-level sweep UI and empty-state guidance exist; strategy/run persistence remains open |
+| `src/Meridian.Wpf/Views/BatchBacktestPage.xaml` | Present sweep controls and persisted results | Parameter Lab surface with empty results guidance |
 | `src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml` | Add active run stage and recent sweep widgets | Shell coordination |
 | `src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml.cs` | Load preflight/run/sweep summary from services | Shell behavior |
 | `src/Meridian.Backtesting/BatchBacktestService.cs` | Accept real run definitions instead of `NoOpStrategy` | Request parameters are applied per run; selected strategy execution remains open |

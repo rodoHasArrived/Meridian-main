@@ -33,6 +33,132 @@ public sealed class TradingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void ResolveFundAccountId_WithAccountContext_ReturnsAccountId()
+    {
+        var accountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var resolved = TradingWorkspaceShellPage.ResolveFundAccountId(new WorkstationOperatingContext
+        {
+            ScopeKind = OperatingContextScopeKind.Account,
+            ScopeId = "account-scope-id",
+            AccountId = accountId.ToString("D"),
+            DisplayName = "Northwind Brokerage Account"
+        });
+
+        resolved.Should().Be(accountId);
+    }
+
+    [Fact]
+    public void ResolveFundAccountId_WithAccountScopeFallback_ReturnsScopeId()
+    {
+        var accountId = Guid.Parse("61e8f9ac-6d5e-47f0-9328-c8ee72bf74f4");
+        var resolved = TradingWorkspaceShellPage.ResolveFundAccountId(new WorkstationOperatingContext
+        {
+            ScopeKind = OperatingContextScopeKind.Account,
+            ScopeId = accountId.ToString("D"),
+            DisplayName = "Northwind Brokerage Account"
+        });
+
+        resolved.Should().Be(accountId);
+    }
+
+    [Fact]
+    public void ResolveFundAccountId_WithFundContext_ReturnsNull()
+    {
+        var resolved = TradingWorkspaceShellPage.ResolveFundAccountId(new WorkstationOperatingContext
+        {
+            ScopeKind = OperatingContextScopeKind.Fund,
+            ScopeId = "alpha-credit",
+            DisplayName = "Alpha Credit"
+        });
+
+        resolved.Should().BeNull();
+    }
+
+    [Fact]
+    public void BuildReplayStatusItem_WithStaleReplayEvidence_ShowsActiveAndVerifiedCounts()
+    {
+        var readiness = new TradingOperatorReadinessDto(
+            AsOf: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            ActiveSession: new TradingPaperSessionReadinessDto(
+                SessionId: "paper-desk-stale",
+                StrategyId: "strategy-stale",
+                StrategyName: "Atlas Intraday",
+                IsActive: true,
+                InitialCash: 250_000m,
+                CreatedAt: new DateTimeOffset(2026, 4, 27, 13, 0, 0, TimeSpan.Zero),
+                ClosedAt: null,
+                SymbolCount: 5,
+                OrderCount: 19,
+                PositionCount: 3,
+                PortfolioValue: 254_000m)
+            {
+                FillCount = 15,
+                LedgerEntryCount = 11
+            },
+            Sessions: [],
+            Replay: new TradingReplayReadinessDto(
+                SessionId: "paper-desk-stale",
+                ReplaySource: "local",
+                IsConsistent: true,
+                ComparedFillCount: 14,
+                ComparedOrderCount: 18,
+                ComparedLedgerEntryCount: 9,
+                VerifiedAt: new DateTimeOffset(2026, 4, 27, 14, 45, 0, TimeSpan.Zero),
+                LastPersistedFillAt: null,
+                LastPersistedOrderUpdateAt: null,
+                VerificationAuditId: "audit-stale",
+                MismatchReasons: []),
+            Controls: new TradingControlReadinessDto(
+                CircuitBreakerOpen: false,
+                CircuitBreakerReason: null,
+                CircuitBreakerChangedBy: null,
+                CircuitBreakerChangedAt: null,
+                ManualOverrideCount: 0,
+                SymbolLimitCount: 1,
+                DefaultMaxPositionSize: 50_000m),
+            Promotion: null,
+            TrustGate: new TradingTrustGateReadinessDto(
+                GateId: "dk1",
+                Status: "ready",
+                ReadyForOperatorReview: true,
+                OperatorSignoffRequired: false,
+                OperatorSignoffStatus: "signed",
+                GeneratedAt: null,
+                PacketPath: null,
+                SourceSummary: null,
+                RequiredSampleCount: 0,
+                ReadySampleCount: 0,
+                ValidatedEvidenceDocumentCount: 0,
+                RequiredOwners: [],
+                Blockers: [],
+                Detail: "Trust gate evidence is ready."),
+            BrokerageSync: null,
+            WorkItems: [],
+            Warnings: [])
+        {
+            AcceptanceGates =
+            [
+                new TradingAcceptanceGateDto(
+                    GateId: "replay",
+                    Label: "Replay verified",
+                    Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                    Detail: "Replay verification for paper session paper-desk-stale is stale (fills active=15, verified=14; orders active=19, verified=18; ledger active=11, verified=9).",
+                    SessionId: "paper-desk-stale",
+                    AuditReference: "audit-stale")
+            ],
+            OverallStatus = TradingAcceptanceGateStatusDto.ReviewRequired,
+            ReadyForPaperOperation = false
+        };
+
+        var item = TradingWorkspaceShellPage.BuildReplayStatusItem(readiness);
+
+        item.Label.Should().Be("Replay stale");
+        item.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        item.Detail.Should().Contain("orders active=19, verified=18");
+        item.Detail.Should().Contain("Active session has 19 order(s), 15 fill(s), and 11 ledger entry(s); replay verified 18 order(s), 14 fill(s), and 9 ledger entry(s).");
+    }
+
+    [Fact]
     public void BuildDeskHeroState_WithoutOperatingContext_UsesSwitchContextAction()
     {
         var workflow = new WorkspaceWorkflowSummary(

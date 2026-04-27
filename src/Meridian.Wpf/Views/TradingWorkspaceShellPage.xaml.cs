@@ -213,7 +213,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
         try
         {
-            return await _operatorReadinessService.GetAsync().ConfigureAwait(true);
+            return await _operatorReadinessService
+                .GetAsync(ResolveFundAccountId(_operatingContextService?.CurrentContext))
+                .ConfigureAwait(true);
         }
         catch
         {
@@ -319,9 +321,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         var isOperatorReady = IsOperatorReady(readiness)
             && readiness.Warnings.Count == 0
             && readiness.WorkItems.All(static item => item.Tone is not OperatorWorkItemToneDto.Warning and not OperatorWorkItemToneDto.Critical);
-        TradingStatusSummaryText.Text = readiness.ActiveSession is null
-            ? "No active paper session is ready for operator acceptance."
-            : $"Paper session {readiness.ActiveSession.SessionId} readiness, replay, controls, promotion, and brokerage continuity evidence.";
+        TradingStatusSummaryText.Text = BuildSessionReadinessSummary(readiness);
         TradingStatusBadgeText.Text = isOperatorReady ? "Ready" : "Attention";
         ApplyTone(
             TradingStatusBadgeBorder,
@@ -358,18 +358,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             ValidationStatusPill,
             ValidationStatusLabelText,
             ValidationStatusDetailText,
-            new TradingWorkspaceStatusItem
-            {
-                Label = readiness.Replay is null
-                    ? "Replay evidence unavailable"
-                    : readiness.Replay.IsConsistent ? "Replay verified" : "Replay mismatch",
-                Detail = readiness.Replay is null
-                    ? "Paper replay verification has not produced shared readiness evidence yet."
-                    : readiness.Replay.IsConsistent
-                        ? $"{readiness.Replay.ComparedOrderCount} order(s), {readiness.Replay.ComparedFillCount} fill(s), and {readiness.Replay.ComparedLedgerEntryCount} ledger entry(s) verified."
-                        : readiness.Replay.MismatchReasons.FirstOrDefault() ?? "Paper replay verification recorded a mismatch.",
-                Tone = readiness.Replay?.IsConsistent == true ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning
-            });
+            BuildReplayStatusItem(readiness));
 
         if (readiness.Warnings.Count > 0)
         {
@@ -488,6 +477,75 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             promotion,
             audit,
             validation);
+    }
+
+    internal static Guid? ResolveFundAccountId(WorkstationOperatingContext? context)
+    {
+        if (context is null)
+        {
+            return null;
+        }
+
+        var accountId = context.AccountId;
+        if (string.IsNullOrWhiteSpace(accountId) &&
+            context.ScopeKind == OperatingContextScopeKind.Account)
+        {
+            accountId = context.ScopeId;
+        }
+
+        return Guid.TryParse(accountId, out var parsed)
+            ? parsed
+            : null;
+    }
+
+    internal static TradingWorkspaceStatusItem BuildReplayStatusItem(TradingOperatorReadinessDto readiness)
+    {
+        ArgumentNullException.ThrowIfNull(readiness);
+
+        var replayGate = readiness.AcceptanceGates.FirstOrDefault(static gate =>
+            string.Equals(gate.GateId, "replay", StringComparison.OrdinalIgnoreCase));
+
+        if (readiness.Replay is null)
+        {
+            return new TradingWorkspaceStatusItem
+            {
+                Label = "Replay evidence unavailable",
+                Detail = replayGate?.Detail ?? "Paper replay verification has not produced shared readiness evidence yet.",
+                Tone = TradingWorkspaceStatusTone.Warning
+            };
+        }
+
+        var countDetail = BuildReplayCountDetail(readiness.ActiveSession, readiness.Replay);
+        if (!readiness.Replay.IsConsistent)
+        {
+            return new TradingWorkspaceStatusItem
+            {
+                Label = "Replay mismatch",
+                Detail = JoinStatusDetails(
+                    readiness.Replay.MismatchReasons.FirstOrDefault() ?? "Paper replay verification recorded a mismatch.",
+                    countDetail),
+                Tone = TradingWorkspaceStatusTone.Warning
+            };
+        }
+
+        if (replayGate is { Status: not TradingAcceptanceGateStatusDto.Ready })
+        {
+            return new TradingWorkspaceStatusItem
+            {
+                Label = replayGate.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase)
+                    ? "Replay stale"
+                    : "Replay review required",
+                Detail = JoinStatusDetails(replayGate.Detail, countDetail),
+                Tone = TradingWorkspaceStatusTone.Warning
+            };
+        }
+
+        return new TradingWorkspaceStatusItem
+        {
+            Label = "Replay verified",
+            Detail = countDetail,
+            Tone = TradingWorkspaceStatusTone.Success
+        };
     }
 
     internal static TradingStatusCardPresentation BuildDegradedStatusCardPresentation() =>
@@ -771,6 +829,50 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             ? fallbackDetail
             : readiness.TrustGate.Detail;
         return $"{trustDetail} Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf} with {readiness.BrokerageSync.PositionCount} position(s) and {readiness.BrokerageSync.OpenOrderCount} open order(s).{controlEvidence}";
+    }
+
+    private static string BuildSessionReadinessSummary(TradingOperatorReadinessDto readiness)
+    {
+        if (readiness.ActiveSession is null)
+        {
+            return "No active paper session is ready for operator acceptance.";
+        }
+
+        var session = readiness.ActiveSession;
+        var activeCounts = $"{session.OrderCount} order(s), {session.FillCount} fill(s), and {session.LedgerEntryCount} ledger entry(s)";
+        if (readiness.Replay is null)
+        {
+            return $"Paper session {session.SessionId} has {activeCounts}; replay verification is still missing.";
+        }
+
+        return $"Paper session {session.SessionId} has {activeCounts}; replay verified {readiness.Replay.ComparedOrderCount} order(s), {readiness.Replay.ComparedFillCount} fill(s), and {readiness.Replay.ComparedLedgerEntryCount} ledger entry(s).";
+    }
+
+    private static string BuildReplayCountDetail(
+        TradingPaperSessionReadinessDto? activeSession,
+        TradingReplayReadinessDto replay)
+    {
+        if (activeSession is null)
+        {
+            return $"Replay verified {replay.ComparedOrderCount} order(s), {replay.ComparedFillCount} fill(s), and {replay.ComparedLedgerEntryCount} ledger entry(s).";
+        }
+
+        return $"Active session has {activeSession.OrderCount} order(s), {activeSession.FillCount} fill(s), and {activeSession.LedgerEntryCount} ledger entry(s); replay verified {replay.ComparedOrderCount} order(s), {replay.ComparedFillCount} fill(s), and {replay.ComparedLedgerEntryCount} ledger entry(s).";
+    }
+
+    private static string JoinStatusDetails(string first, string second)
+    {
+        if (string.IsNullOrWhiteSpace(first))
+        {
+            return second;
+        }
+
+        if (string.IsNullOrWhiteSpace(second))
+        {
+            return first;
+        }
+
+        return $"{first.Trim()} {second.Trim()}";
     }
 
     private static string BuildControlReadinessDetail(TradingControlReadinessDto controls)

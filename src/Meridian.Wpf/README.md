@@ -14,6 +14,8 @@ The current WPF application already spans research, trading-adjacent, data-opera
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
+The persistent status bar now surfaces pipeline queue pressure from the existing status snapshot beside connection state, throughput, backfills, drop badges, and UTC time, so operators can spot queue saturation without opening a diagnostics page or triggering another service read.
+
 Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, a stateful operator brief, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
 `NotificationCenter` now supports history triage with search, unread-only filtering, directly bound severity filters, per-item acknowledgement, and a reset-filters recovery action so governance operators can work events as a queue instead of a flat feed.
 `ProviderHealth` now opens with a compact provider-posture briefing that turns connected/disconnected streaming counts, backfill availability, and stale snapshots into one next handoff before the operator scans individual provider cards.
@@ -27,6 +29,7 @@ Recent governance work is also moving older utility pages into shell-native work
 `DataBrowser` now refreshes its retained market-data window as filters change and shows a reset-filters empty state when search, type, venue, or date filters hide every row.
 `ResearchWorkspaceShellPage` now keeps a desk-briefing hero above the market briefing so operators can see the current cycle focus, the next handoff, and the primary blocker before dropping into run history or promotion candidates.
 `StrategyRuns` now distinguishes an empty run library from filters that hide retained runs, shows the visible/recorded run scope beside search, and exposes a reset-filters recovery action without reloading the run store.
+`BatchBacktest` now gives the sweep results pane stateful empty guidance for idle, validation-blocked, running, failed-without-results, cancelled, and populated result states using only the existing batch counters and summaries.
 `RunMat` now gives the output panel an empty/streaming state and disables Stop unless a script run is active, using only the current run state and retained output lines.
 `QuantScript` now includes a dedicated Run History tab that surfaces recorded executions, selected-run evidence, console preview, and the existing Strategy Runs handoff actions.
 
@@ -140,6 +143,7 @@ Examples:
 `TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
 `ResearchWorkspaceShellPage` now keeps the active research cycle explicit with a desk-briefing hero that upgrades no-op trading-review prompts into actionable run-browser, portfolio, or promotion handoffs based on the selected run state.
 `StrategyRuns` includes a filter-aware empty state and `Reset Filters` action so search or mode misses can recover the already-loaded run browser rows without another service read.
+`BatchBacktest` hides the empty result grid until rows exist and shows automation-addressable guidance for unresolved validation, active sweeps waiting on first rows, failed batches, and cancelled runs.
 `RunMat` exposes output-line count plus idle, streaming, and no-output guidance beside the existing Last Run and resolved-executable panels.
 `QuantScript` renders its retained execution history in the workbench so notebook users can inspect parameters, outputs, mirrored backtest evidence, and run-browser handoffs without leaving the page.
 

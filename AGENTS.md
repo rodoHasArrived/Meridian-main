@@ -207,7 +207,7 @@ python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.W
 Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
 DTOs, execution-control evidence, acceptance gates, or operator work-item projection.
 Use `MapWorkstationEndpoints_OperatorInbox` for changes to the operator inbox endpoint, navigation
-hints, readiness work-item aggregation, or reconciliation break queue projection.
+hints, readiness work-item aggregation, or reconciliation routing/sign-off detail projection.
 
 ## Desktop Workflows
 
@@ -222,6 +222,7 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQu
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~MessagingHubViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~StrategyRunBrowserViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~BatchBacktestViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~QuantScriptViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundLedgerViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundAccountsViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
@@ -266,6 +267,8 @@ actions, queue routing or route metadata resolution, Messaging Hub delivery post
 retention, empty states, or clear activity binding.
 Use `StrategyRunBrowserViewModelTests` when changing run-browser filters, filter recovery, empty
 states, comparison state, or `StrategyRunsPage` binding coverage.
+Use `BatchBacktestViewModelTests` when changing Batch Backtest sweep result states, empty-state
+guidance, cancellation/failure summaries, or `BatchBacktestPage` binding coverage.
 Use `QuantScriptViewModelTests` when changing QuantScript execution history, run-browser handoffs,
 parameter context, or source-level `QuantScriptPage` binding coverage.
 Use `FundLedgerViewModelTests` when changing Fund Ledger reconciliation filters, break-queue
@@ -325,7 +328,9 @@ evidence:
 
 ```powershell
 Invoke-RestMethod http://localhost:8080/api/workstation/trading/readiness
+Invoke-RestMethod "http://localhost:8080/api/workstation/trading/readiness?fundAccountId=<account-guid>"
 Invoke-RestMethod http://localhost:8080/api/workstation/operator/inbox
+Invoke-RestMethod "http://localhost:8080/api/workstation/operator/inbox?fundAccountId=<account-guid>"
 Invoke-RestMethod http://localhost:8080/api/workstation/trading
 Invoke-RestMethod http://localhost:8080/api/execution/sessions/<session-id>/replay
 ```
@@ -333,7 +338,9 @@ Invoke-RestMethod http://localhost:8080/api/execution/sessions/<session-id>/repl
 The readiness endpoint is `GET /api/workstation/trading/readiness`. The broader workstation
 trading payload (`GET /api/workstation/trading`) embeds the same readiness data. The operator inbox
 endpoint (`GET /api/workstation/operator/inbox`) aggregates readiness work items and open or
-in-review reconciliation breaks with navigation hints. The replay route,
+in-review reconciliation breaks with navigation hints and routing/sign-off detail. Use the
+`fundAccountId` query parameter when checking account-scoped brokerage-sync readiness or the WPF
+account operating context. The replay route,
 `GET /api/execution/sessions/{sessionId}/replay`, verifies a paper session replay and writes
 durable execution-audit evidence used to reconstruct replay readiness after restart.
 Replay readiness is stale if the active paper session's fill, order, or ledger-entry counts diverge
@@ -348,7 +355,6 @@ items alongside session, replay, promotion, DK1 trust-gate, and brokerage-sync p
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1
 pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json
 pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json -Validate
-pwsh ./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/build-ibapi-smoke.ps1
@@ -357,15 +363,17 @@ pwsh ./scripts/dev/build-ibapi-smoke.ps1
 This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet
 proof. It writes summaries and DK1 parity packets under
 `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
-Generated provider-validation summaries and DK1 parity packets are run-date evidence and are no
-longer retained in git; regenerate or attach current artifacts for DK1 reviews instead of relying
-on older artifact paths.
+Generated provider-validation summaries and DK1 parity packets are run-date evidence; regenerate
+or attach current artifacts for DK1 reviews instead of relying on older artifact paths.
 `run-wave1-provider-validation.ps1` invokes `generate-dk1-pilot-parity-packet.ps1` when present;
 run the packet generator directly only when rebuilding from an existing Wave 1 summary. Generate
 and validate the sign-off template with `-PacketPath` so the retained `packetReview` binds owner
-approvals to the reviewed DK1 parity packet. Pass the `prepare-dk1-operator-signoff.ps1` output
-through `-OperatorSignoffPath` after owner review so the packet records machine-readable sign-off status. A
-`ready-for-operator-review` DK1 packet still requires signed owner evidence before DK1 exit.
+approvals to the reviewed DK1 parity packet. After owner review, pass the signed file to
+`generate-dk1-pilot-parity-packet.ps1 -OperatorSignoffPath` for the already reviewed packet. Do not
+rerun `run-wave1-provider-validation.ps1 -OperatorSignoffPath` with the same signed file after
+approval; the wrapper emits a new packet timestamp, so the old packet binding is intentionally
+stale. A `ready-for-operator-review` DK1 packet still requires `operatorSignoff.status=signed`, a
+valid packet binding, and no missing owners before DK1 exit.
 `build-ibapi-smoke.ps1` is a compile-only Interactive Brokers adapter smoke build that enables
 `EnableIbApiSmoke=true` on `src/Meridian.Infrastructure/Meridian.Infrastructure.csproj`.
 The Wave 2 cockpit readiness contract reads DK1 packet posture through
@@ -383,6 +391,7 @@ make verify-setup
 make diagnose-build
 make collect-debug
 make collect-debug-minimal
+pwsh ./scripts/dev/cleanup-generated.ps1
 make build-profile
 make build-binlog
 make build-graph
@@ -457,6 +466,8 @@ Run `scripts/check_contract_compatibility_gate.py` when changing scoped contract
 migration notes in `docs/status/contract-compatibility-matrix.md`.
 Run `scripts/generate_contract_review_packet.py` before weekly shared-interop reviews when scoped
 contracts change; attach the JSON/Markdown packet and record the owner decision.
+`scripts/dev/cleanup-generated.ps1` previews generated build/test output cleanup by default; add
+`-Execute` only after reviewing the listed untracked directories.
 
 TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet
 implemented and only delegates to `buildctl doctor`. Do not advertise it as a fix workflow until

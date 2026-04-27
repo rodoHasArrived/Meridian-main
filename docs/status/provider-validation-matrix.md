@@ -3,7 +3,7 @@
 **Last Updated:** 2026-04-27
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
-This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. Generated `artifacts/provider-validation/` outputs are no longer retained in git, so date-stamped packets are current only for the run that produced them. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
+This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
 ## Legend
 
@@ -50,10 +50,10 @@ and emitted as `pilotReplaySampleSet` in the generated JSON summary. The DK1 pac
 validates those required samples, links the trust-rationale mapping and baseline-threshold review
 documents, checks those documents for the required DK1 reason codes, payload fields, threshold
 metrics, FP/FN review markers, and provider-matrix anchors, then reports whether the packet is
-`ready-for-operator-review` or blocked by missing or incomplete evidence. Because generated
-provider-validation outputs were removed from source control, DK1 review must use a freshly
-generated `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
-packet plus its bound operator sign-off file; DK1 exit still requires operator sign-off.
+`ready-for-operator-review` or blocked by missing or incomplete evidence. The current 2026-04-27
+packet is signed and valid for DK1 exit. Future DK1 reviews must use a freshly generated
+`artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json` packet plus
+its bound operator sign-off file before replacing that signed evidence.
 
 ## Notes
 

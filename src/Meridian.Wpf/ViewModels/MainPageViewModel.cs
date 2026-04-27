@@ -1182,7 +1182,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         try
         {
-            return (await _operatorInboxApiClient.GetInboxAsync(ct: ct).ConfigureAwait(false), null);
+            return (await _operatorInboxApiClient
+                .GetInboxAsync(ResolveOperatorInboxFundAccountId(), ct)
+                .ConfigureAwait(false), null);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -1192,6 +1194,26 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         {
             return (null, "Operator queue is awaiting backend readiness.");
         }
+    }
+
+    private Guid? ResolveOperatorInboxFundAccountId()
+    {
+        var context = _operatingContextService?.CurrentContext ?? SelectedOperatingContext;
+        if (context is null)
+        {
+            return null;
+        }
+
+        var accountId = context.AccountId;
+        if (string.IsNullOrWhiteSpace(accountId) &&
+            context.ScopeKind == OperatingContextScopeKind.Account)
+        {
+            accountId = context.ScopeId;
+        }
+
+        return Guid.TryParse(accountId, out var parsed)
+            ? parsed
+            : null;
     }
 
     private void ApplyOperatorInbox(OperatorInboxDto? inbox, string? error)

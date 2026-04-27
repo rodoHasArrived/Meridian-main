@@ -14,7 +14,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
+        <Border Grid.Row="0" Style="{DynamicResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -23,30 +23,30 @@
             <StackPanel Grid.Column="0">
                 <StackPanel Orientation="Horizontal">
                     <Border Width="44" Height="44" CornerRadius="14"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
-                        <TextBlock Text="&#xE8B0;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{DynamicResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
+                        <TextBlock Text="&#xE8B0;" FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                   FontSize="24" Foreground="{DynamicResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                     </Border>
                     <StackPanel>
-                        <TextBlock Text="Strategy Run Browser" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                        <TextBlock Text="Strategy Run Browser" Style="{DynamicResource PageTitleStyle}" />
+                        <TextBlock Text="{Binding StatusText}" Style="{DynamicResource CardDescriptionStyle}" Margin="0,6,0,0" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="Refresh"
                         Command="{Binding RefreshCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
+                        Style="{DynamicResource SecondaryButtonStyle}"
                         Margin="0,0,8,0" />
                 <Button Content="Open Detail"
                         Command="{Binding OpenDetailCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}" />
+                        Style="{DynamicResource PrimaryButtonStyle}" />
             </StackPanel>
         </Grid>
         </Border>
 
-        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+        <Border Grid.Row="1" Style="{DynamicResource CardStyle}" Margin="0,0,0,20">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
@@ -56,18 +56,18 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Search" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
+                    <TextBlock Text="Search" FontSize="11" Foreground="{DynamicResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource FormTextBoxStyle}"
+                             Style="{DynamicResource FormTextBoxStyle}"
                              AutomationProperties.AutomationId="StrategyRunsSearchBox" />
                     <TextBlock Text="{Binding RunScopeText}"
                                FontSize="11"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Foreground="{DynamicResource ConsoleTextMutedBrush}"
                                Margin="0,6,0,0"
                                AutomationProperties.AutomationId="StrategyRunsScopeText" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Mode" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
+                    <TextBlock Text="Mode" FontSize="11" Foreground="{DynamicResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
                     <ComboBox ItemsSource="{Binding ModeFilters}"
                               SelectedItem="{Binding SelectedModeFilter, Mode=TwoWay}"
                               AutomationProperties.AutomationId="StrategyRunsModeFilter" />
@@ -75,26 +75,26 @@
                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
                     <Button Content="Portfolio"
                             Command="{Binding OpenPortfolioCommand}"
-                            Style="{StaticResource GhostButtonStyle}"
+                            Style="{DynamicResource GhostButtonStyle}"
                             Margin="0,0,8,0" />
                     <Button Content="Ledger"
                             Command="{Binding OpenLedgerCommand}"
-                            Style="{StaticResource GhostButtonStyle}"
+                            Style="{DynamicResource GhostButtonStyle}"
                             Margin="0,0,8,0" />
                     <Button Content="Reset Filters"
                             Command="{Binding ClearRunFiltersCommand}"
-                            Style="{StaticResource GhostButtonStyle}"
+                            Style="{DynamicResource GhostButtonStyle}"
                             Visibility="{Binding HasActiveFilters, Converter={StaticResource BoolToVisibilityConverter}}"
                             AutomationProperties.AutomationId="StrategyRunsResetFiltersButton"
                             Margin="0,0,8,0" />
                     <Button Content="Compare"
                             Command="{Binding CompareRunsCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Style="{DynamicResource SecondaryButtonStyle}"
                             ToolTip="Select a Comparison Run then click Compare to diff the two runs"
                             Margin="0,0,8,0" />
                     <Button Content="Clear"
                             Command="{Binding ClearComparisonCommand}"
-                            Style="{StaticResource GhostButtonStyle}"
+                            Style="{DynamicResource GhostButtonStyle}"
                             Visibility="{Binding IsComparisonVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Grid>
@@ -106,7 +106,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+            <Border Grid.Column="0" Style="{DynamicResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -119,7 +119,7 @@
                               IsReadOnly="True"
                               CanUserSortColumns="True"
                               HeadersVisibility="Column"
-                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                              Background="{DynamicResource ConsoleBackgroundLightBrush}"
                               BorderThickness="0"
                               AutomationProperties.AutomationId="StrategyRunsGrid">
                         <DataGrid.Columns>
@@ -142,22 +142,22 @@
                                 AutomationProperties.AutomationId="StrategyRunsEmptyStatePanel"
                                 AutomationProperties.Name="{Binding EmptyStateTitle}">
                         <TextBlock Text="&#xE8B0;"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                    FontSize="40"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Foreground="{DynamicResource ConsoleTextMutedBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,14" />
                         <TextBlock Text="{Binding EmptyStateTitle}"
-                                   Style="{StaticResource EmptyStateTitleStyle}"
+                                   Style="{DynamicResource EmptyStateTitleStyle}"
                                    Margin="0,0,0,8"
                                    AutomationProperties.AutomationId="StrategyRunsEmptyStateTitle" />
                         <TextBlock Text="{Binding EmptyStateDetail}"
-                                   Style="{StaticResource EmptyStateDescriptionStyle}"
+                                   Style="{DynamicResource EmptyStateDescriptionStyle}"
                                    TextWrapping="Wrap"
                                    AutomationProperties.AutomationId="StrategyRunsEmptyStateDetail" />
                         <Button Content="Reset Filters"
                                 Command="{Binding ClearRunFiltersCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Style="{DynamicResource SecondaryButtonStyle}"
                                 Visibility="{Binding HasFilterRecoveryAction, Converter={StaticResource BoolToVisibilityConverter}}"
                                 Margin="0,16,0,0"
                                 HorizontalAlignment="Center"
@@ -166,9 +166,9 @@
 
                     <!-- Comparison run picker -->
                     <Border Grid.Row="1" Margin="0,12,0,0" Padding="10,8"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
                             CornerRadius="6"
-                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderBrush="{DynamicResource InfoColorBrush}"
                             BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -177,7 +177,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Compare with:" FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Foreground="{DynamicResource ConsoleTextMutedBrush}"
                                        VerticalAlignment="Center" Margin="0,0,8,0" />
                             <ComboBox Grid.Column="1"
                                       ItemsSource="{Binding Runs}"
@@ -195,7 +195,7 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                             <TextBlock Grid.Column="2" FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Foreground="{DynamicResource ConsoleTextMutedBrush}"
                                        VerticalAlignment="Center" Margin="8,0,0,0"
                                        Text="{Binding ComparisonRun.Mode, StringFormat='({0})'}" />
                         </Grid>
@@ -207,11 +207,11 @@
             <Border Grid.Column="1"
                     Width="380"
                     Margin="16,0,0,0"
-                    Style="{StaticResource CardStyle}"
+                    Style="{DynamicResource CardStyle}"
                     Visibility="{Binding IsComparisonVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0">
-                        <TextBlock Text="Run Comparison" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,14" />
+                        <TextBlock Text="Run Comparison" Style="{DynamicResource CardHeaderStyle}" Margin="0,0,0,14" />
 
                         <!-- Column headers -->
                         <Grid Margin="0,0,0,8">
@@ -221,16 +221,16 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Metric" FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontWeight="SemiBold" />
+                                       Foreground="{DynamicResource ConsoleTextMutedBrush}" FontWeight="SemiBold" />
                             <TextBlock Grid.Column="1" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{StaticResource InfoColorBrush}"
+                                       Foreground="{DynamicResource InfoColorBrush}"
                                        Text="{Binding ComparisonResult[0].Mode, StringFormat='A ({0})'}" />
                             <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{StaticResource SuccessColorBrush}"
+                                       Foreground="{DynamicResource SuccessColorBrush}"
                                        Text="{Binding ComparisonResult[1].Mode, StringFormat='B ({0})'}" />
                         </Grid>
 
-                        <Rectangle Height="1" Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" Opacity="0.2" />
+                        <Rectangle Height="1" Fill="{DynamicResource ConsoleTextMutedBrush}" Margin="0,0,0,8" Opacity="0.2" />
 
                         <ItemsControl ItemsSource="{Binding ComparisonRows}">
                             <ItemsControl.ItemTemplate>
@@ -242,7 +242,7 @@
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                   Foreground="{DynamicResource ConsoleTextMutedBrush}" />
                                         <TextBlock Grid.Column="1" Text="{Binding ValueA}" FontSize="11" />
                                         <TextBlock Grid.Column="2" Text="{Binding ValueB}" FontSize="11" />
                                     </Grid>

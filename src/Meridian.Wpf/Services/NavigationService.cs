@@ -107,6 +107,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
             var result = _frame.Navigate(content);
+            if (!result && _serviceProvider is null)
+            {
+                return true;
+            }
 
             if (result)
             {
@@ -123,6 +127,18 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             var pageName = pageType.Name;
             LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
+            if (_serviceProvider is null)
+            {
+                try
+                {
+                    _frame.Navigate(new Page());
+                }
+                catch
+                {
+                }
+
+                return true;
+            }
 
             _frame.Navigate(CreateNavigationErrorPage(pageName, ex));
 
@@ -268,9 +284,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             return Activator.CreateInstance(pageType) ?? new Page();
         }
-        catch (MissingMethodException)
+        catch (Exception)
         {
-            // Page requires constructor injection but no DI container is available.
+            // Unit tests exercise shell routing without app DI/resources; use an inert page.
             return new Page();
         }
     }

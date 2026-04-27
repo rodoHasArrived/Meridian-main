@@ -1576,6 +1576,7 @@ public static class WorkstationEndpoints
         var status = item.Status == ReconciliationBreakQueueStatus.InReview
             ? "in review"
             : "open";
+        var routeDetail = BuildReconciliationRoutingDetail(item);
 
         return new OperatorWorkItemDto(
             WorkItemId: BuildOperatorInboxScopedId("reconciliation-break", item.BreakId),
@@ -1583,7 +1584,7 @@ public static class WorkstationEndpoints
             Label: item.Status == ReconciliationBreakQueueStatus.InReview
                 ? "Reconciliation break in review"
                 : "Reconciliation break requires review",
-            Detail: $"{item.StrategyName}: {item.Reason} The break is {status} and {assignment}.",
+            Detail: $"{item.StrategyName}: {item.Reason} The break is {status} and {assignment}. {routeDetail}",
             Tone: tone,
             CreatedAt: item.DetectedAt,
             RunId: item.RunId,
@@ -1591,6 +1592,27 @@ public static class WorkstationEndpoints
             Workspace: "Governance",
             TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
             TargetPageTag: "GovernanceShell");
+    }
+
+    private static string BuildReconciliationRoutingDetail(ReconciliationBreakQueueItem item)
+    {
+        var exceptionRoute = string.IsNullOrWhiteSpace(item.ExceptionRoute)
+            ? "operations-triage"
+            : item.ExceptionRoute;
+        var toleranceProfileId = string.IsNullOrWhiteSpace(item.ToleranceProfileId)
+            ? "standard-recon-tolerance"
+            : item.ToleranceProfileId;
+        var requiredSignoffRole = string.IsNullOrWhiteSpace(item.RequiredSignoffRole)
+            ? "Operations reviewer"
+            : item.RequiredSignoffRole;
+        var signoffStatus = string.IsNullOrWhiteSpace(item.SignoffStatus)
+            ? "pending-signoff"
+            : item.SignoffStatus;
+        var toleranceBand = item.ToleranceBand.HasValue
+            ? $" ({item.ToleranceBand.Value.ToString("0.##", CultureInfo.InvariantCulture)} tolerance)"
+            : string.Empty;
+
+        return $"Exception route: {exceptionRoute}; tolerance profile {toleranceProfileId}{toleranceBand}; sign-off {signoffStatus} by {requiredSignoffRole}.";
     }
 
     private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveOperatorNavigation(
@@ -2235,7 +2257,12 @@ public static class WorkstationEndpoints
                     AssignedTo: null,
                     DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
                     LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                    Severity: ReconciliationBreakSeverity.Critical),
+                    Severity: ReconciliationBreakSeverity.Critical,
+                    ExceptionRoute: "governance-variance-escalation",
+                    ToleranceProfileId: "critical-zero-tolerance",
+                    ToleranceBand: 0m,
+                    RequiredSignoffRole: "Governance sign-off",
+                    SignoffStatus: "pending-signoff"),
                 new ReconciliationBreakQueueItem(
                     BreakId: "BRK-gov-run-001-2",
                     RunId: "gov-run-001",
@@ -2250,7 +2277,12 @@ public static class WorkstationEndpoints
                     ReviewedBy: "ops.gov",
                     ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
                     ResolutionNote: "Investigating ticker reclassification.",
-                    Severity: ReconciliationBreakSeverity.Medium)
+                    Severity: ReconciliationBreakSeverity.Medium,
+                    ExceptionRoute: "security-master-governance-review",
+                    ToleranceProfileId: "coverage-classification-review",
+                    ToleranceBand: 0m,
+                    RequiredSignoffRole: "Governance analyst",
+                    SignoffStatus: "in-review")
             },
             workspace = new
             {
@@ -3427,6 +3459,10 @@ public static class WorkstationEndpoints
             {
                 var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
                 var now = DateTimeOffset.UtcNow;
+                var routing = ResolveReconciliationExceptionRouting(
+                    reconciliationBreak.Category,
+                    reconciliationBreak.Severity,
+                    Math.Abs(reconciliationBreak.Variance));
                 await repository.CreateIfMissingAsync(
                     new ReconciliationBreakQueueItem(
                         BreakId: breakId,
@@ -3439,10 +3475,77 @@ public static class WorkstationEndpoints
                         AssignedTo: null,
                         DetectedAt: now,
                         LastUpdatedAt: now,
-                        Severity: reconciliationBreak.Severity),
+                        Severity: reconciliationBreak.Severity,
+                        ExceptionRoute: routing.ExceptionRoute,
+                        ToleranceProfileId: routing.ToleranceProfileId,
+                        ToleranceBand: routing.ToleranceBand,
+                        RequiredSignoffRole: routing.RequiredSignoffRole,
+                        SignoffStatus: routing.SignoffStatus),
                     ct).ConfigureAwait(false);
             }
         }
+    }
+
+    private sealed record ReconciliationExceptionRouting(
+        string ExceptionRoute,
+        string ToleranceProfileId,
+        decimal ToleranceBand,
+        string RequiredSignoffRole,
+        string SignoffStatus);
+
+    private static ReconciliationExceptionRouting ResolveReconciliationExceptionRouting(
+        ReconciliationBreakCategory category,
+        ReconciliationBreakSeverity severity,
+        decimal variance)
+    {
+        if (severity == ReconciliationBreakSeverity.Critical)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: category is ReconciliationBreakCategory.MissingLedgerCoverage or ReconciliationBreakCategory.MissingBankCoverage
+                    ? "governance-coverage-escalation"
+                    : "governance-variance-escalation",
+                ToleranceProfileId: "critical-zero-tolerance",
+                ToleranceBand: 0m,
+                RequiredSignoffRole: "Governance sign-off",
+                SignoffStatus: "pending-signoff");
+        }
+
+        if (severity == ReconciliationBreakSeverity.High)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: "fund-ops-review",
+                ToleranceProfileId: "high-variance-watch",
+                ToleranceBand: Math.Max(100m, Math.Round(variance * 0.05m, 2)),
+                RequiredSignoffRole: "Fund operations lead",
+                SignoffStatus: "pending-signoff");
+        }
+
+        if (category is ReconciliationBreakCategory.ClassificationGap or ReconciliationBreakCategory.MissingPortfolioCoverage)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: "security-master-governance-review",
+                ToleranceProfileId: "coverage-classification-review",
+                ToleranceBand: 0m,
+                RequiredSignoffRole: "Governance analyst",
+                SignoffStatus: "routing-review");
+        }
+
+        if (severity == ReconciliationBreakSeverity.Low || severity == ReconciliationBreakSeverity.Info)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: "ops-monitor",
+                ToleranceProfileId: "low-variance-watch",
+                ToleranceBand: 500m,
+                RequiredSignoffRole: "Operations reviewer",
+                SignoffStatus: "monitor");
+        }
+
+        return new ReconciliationExceptionRouting(
+            ExceptionRoute: "operations-triage",
+            ToleranceProfileId: "standard-recon-tolerance",
+            ToleranceBand: Math.Max(250m, Math.Round(variance * 0.02m, 2)),
+            RequiredSignoffRole: "Operations reviewer",
+            SignoffStatus: "pending-signoff");
     }
 
     private static async Task EnsureBreakQueueSeededAsync(IServiceProvider services, CancellationToken ct)

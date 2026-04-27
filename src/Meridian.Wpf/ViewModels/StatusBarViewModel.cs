@@ -22,6 +22,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
     private static readonly Brush _greenBrush = CreateAndFreezeBrush(76, 175, 80);
     private static readonly Brush _amberBrush = CreateAndFreezeBrush(255, 152, 0);
     private static readonly Brush _redBrush = CreateAndFreezeBrush(244, 67, 54);
+    private static readonly Brush _mutedBrush = CreateAndFreezeBrush(120, 147, 174);
     private static readonly Brush _transparentBrush = Brushes.Transparent;
 
     // Drop rate above this fraction (1%) flips backend status to Degraded.
@@ -80,6 +81,20 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _throughputLabel, value);
     }
 
+    private string _pipelineQueueLabel = "Queue: n/a";
+    public string PipelineQueueLabel
+    {
+        get => _pipelineQueueLabel;
+        private set => SetProperty(ref _pipelineQueueLabel, value);
+    }
+
+    private Brush _pipelineQueueBrush;
+    public Brush PipelineQueueBrush
+    {
+        get => _pipelineQueueBrush;
+        private set => SetProperty(ref _pipelineQueueBrush, value);
+    }
+
     private int _activeBackfillCount = 0;
     public int ActiveBackfillCount
     {
@@ -131,6 +146,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         _statusDotBrush = _greenBrush;
         _errorBadgeBrush = _transparentBrush;
+        _pipelineQueueBrush = _mutedBrush;
     }
 
     /// <summary>
@@ -193,6 +209,8 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             var droppedTotal = status?.Metrics?.Dropped ?? 0;
 
             var throughputLabel = FormatThroughput(throughput);
+            var pipelineQueueLabel = FormatPipelineQueue(status?.Pipeline);
+            var pipelineQueueBrush = DerivePipelineQueueBrush(status?.Pipeline);
 
             // Compute new drops since the last tick. The first sample only seeds the
             // baseline so a long-running collector does not light the badge red on
@@ -206,13 +224,15 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             _hasPreviousDrops = true;
 
             var (backendStatus, dotBrush) = DeriveBackendStatus(status, dropRate);
-            var toolTip = BuildToolTip(backendStatus, throughput, dropRate, droppedTotal);
+            var toolTip = BuildToolTip(backendStatus, throughput, dropRate, droppedTotal, pipelineQueueLabel);
             var totalNewDrops = newDrops > int.MaxValue ? int.MaxValue : (int)newDrops;
             var errorBadgeBrush = totalNewDrops > 0 ? _redBrush : _transparentBrush;
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 ThroughputLabel = throughputLabel;
+                PipelineQueueLabel = pipelineQueueLabel;
+                PipelineQueueBrush = pipelineQueueBrush;
                 BackendStatus = backendStatus;
                 StatusDotBrush = dotBrush;
                 ErrorCount = totalNewDrops;
@@ -252,6 +272,52 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
     }
 
     /// <summary>
+    /// Formats pipeline queue pressure from the status snapshot without issuing another status call.
+    /// </summary>
+    internal static string FormatPipelineQueue(PipelineData? pipeline)
+    {
+        if (pipeline is null)
+        {
+            return "Queue: n/a";
+        }
+
+        var currentQueueSize = Math.Max(0, pipeline.CurrentQueueSize);
+        if (pipeline.QueueCapacity > 0)
+        {
+            var utilizationPercent = (currentQueueSize / (double)pipeline.QueueCapacity) * 100.0;
+            return string.Create(
+                CultureInfo.InvariantCulture,
+                $"Queue: {currentQueueSize:N0}/{pipeline.QueueCapacity:N0} ({utilizationPercent:0}%)");
+        }
+
+        var utilization = NormalizeQueueUtilization(pipeline.QueueUtilization);
+        return utilization is null
+            ? "Queue: n/a"
+            : string.Create(CultureInfo.InvariantCulture, $"Queue: {utilization.Value * 100.0:0}%");
+    }
+
+    internal static Brush DerivePipelineQueueBrush(PipelineData? pipeline)
+    {
+        var utilization = GetPipelineQueueUtilization(pipeline);
+        if (utilization is null)
+        {
+            return _mutedBrush;
+        }
+
+        if (utilization.Value >= 0.9)
+        {
+            return _redBrush;
+        }
+
+        if (utilization.Value >= 0.7)
+        {
+            return _amberBrush;
+        }
+
+        return _greenBrush;
+    }
+
+    /// <summary>
     /// Returns the operator-facing status label and dot colour derived from a status snapshot.
     /// "Disconnected" overrides everything; otherwise drop rate above
     /// <see cref="DegradedDropRateThreshold"/> downgrades to "Degraded".
@@ -271,11 +337,45 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         return ("Connected", _greenBrush);
     }
 
-    private static string BuildToolTip(string backendStatus, double eventsPerSecond, double dropRate, long droppedTotal)
+    private static string BuildToolTip(
+        string backendStatus,
+        double eventsPerSecond,
+        double dropRate,
+        long droppedTotal,
+        string pipelineQueueLabel)
     {
         var rate = FormatThroughput(eventsPerSecond);
         var dropPct = (dropRate * 100).ToString("F2", CultureInfo.InvariantCulture);
-        return $"Status: {backendStatus}\nThroughput: {rate}\nDrop rate: {dropPct}%\nDropped (lifetime): {droppedTotal:N0}";
+        var queue = pipelineQueueLabel.StartsWith("Queue: ", StringComparison.Ordinal)
+            ? pipelineQueueLabel["Queue: ".Length..]
+            : pipelineQueueLabel;
+        return $"Status: {backendStatus}\nThroughput: {rate}\nPipeline queue: {queue}\nDrop rate: {dropPct}%\nDropped (lifetime): {droppedTotal:N0}";
+    }
+
+    private static double? GetPipelineQueueUtilization(PipelineData? pipeline)
+    {
+        if (pipeline is null)
+        {
+            return null;
+        }
+
+        if (pipeline.QueueCapacity > 0)
+        {
+            return Math.Max(0, pipeline.CurrentQueueSize) / (double)pipeline.QueueCapacity;
+        }
+
+        return NormalizeQueueUtilization(pipeline.QueueUtilization);
+    }
+
+    private static double? NormalizeQueueUtilization(double utilization)
+    {
+        if (utilization <= 0 || double.IsNaN(utilization) || double.IsInfinity(utilization))
+        {
+            return null;
+        }
+
+        var normalized = utilization > 1.0 ? utilization / 100.0 : utilization;
+        return Math.Max(0, normalized);
     }
 
     public void Dispose()

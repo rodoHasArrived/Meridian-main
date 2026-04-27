@@ -388,6 +388,9 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsEmptyStateResetFiltersButton");
         xaml.Should().Contain("{Binding ClearRunFiltersCommand}");
         xaml.Should().Contain("{Binding HasFilterRecoveryAction");
+        xaml.Should().Contain("{DynamicResource EmbeddedShellHeroCardStyle}");
+        xaml.Should().Contain("{DynamicResource CardStyle}");
+        xaml.Should().Contain("{DynamicResource SecondaryButtonStyle}");
     }
 
     private static StrategyRunSummary MakeSummary(

@@ -8,6 +8,7 @@
 
     <Page.Resources>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
         <Style x:Key="MetricValueStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="24" />
@@ -272,7 +273,9 @@
                                       IsReadOnly="True"
                                       MinHeight="420"
                                       ColumnHeaderHeight="32"
-                                      RowHeight="28">
+                                      RowHeight="28"
+                                      Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibilityConverter}}"
+                                      AutomationProperties.AutomationId="BatchBacktestResultsGrid">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Parameters" Binding="{Binding ParametersSummary}" Width="220" />
                                     <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
@@ -286,6 +289,40 @@
                                     <DataGridTextColumn Header="Error" Binding="{Binding ErrorMessage}" Width="*" />
                                 </DataGrid.Columns>
                             </DataGrid>
+
+                            <Border MinHeight="420"
+                                    Background="{DynamicResource ConsoleBackgroundLightBrush}"
+                                    BorderBrush="{DynamicResource ConsoleBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="28,24"
+                                    Visibility="{Binding IsResultsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    AutomationProperties.AutomationId="BatchBacktestResultsEmptyState">
+                                <StackPanel HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            MaxWidth="520">
+                                    <TextBlock Text="&#xE768;"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="26"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,12" />
+                                    <TextBlock Text="{Binding ResultsEmptyStateTitle}"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="BatchBacktestResultsEmptyStateTitle" />
+                                    <TextBlock Text="{Binding ResultsEmptyStateDetail}"
+                                               FontSize="13"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0"
+                                               AutomationProperties.AutomationId="BatchBacktestResultsEmptyStateDetail" />
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Border>
                 </StackPanel>

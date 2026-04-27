@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows.Media;
 using FluentAssertions;
 using Meridian.Contracts.Api;
@@ -41,6 +42,58 @@ public sealed class StatusBarViewModelTests
         StatusBarViewModel.FormatThroughput(bogus).Should().Be("0 ev/s");
     }
 
+    // ── FormatPipelineQueue ───────────────────────────────────────────────
+
+    [Fact]
+    public void FormatPipelineQueue_WhenSnapshotIsMissing_ShouldShowUnavailableQueue()
+    {
+        StatusBarViewModel.FormatPipelineQueue(null).Should().Be("Queue: n/a");
+    }
+
+    [Fact]
+    public void FormatPipelineQueue_WhenCapacityIsKnown_ShouldShowCurrentCapacityAndPercent()
+    {
+        var pipeline = new PipelineData
+        {
+            CurrentQueueSize = 250,
+            QueueCapacity = 1_000
+        };
+
+        StatusBarViewModel.FormatPipelineQueue(pipeline).Should().Be("Queue: 250/1,000 (25%)");
+    }
+
+    [Theory]
+    [InlineData(0.72f)]
+    [InlineData(72f)]
+    public void FormatPipelineQueue_WhenOnlyUtilizationIsKnown_ShouldNormalizePercent(float utilization)
+    {
+        var pipeline = new PipelineData
+        {
+            QueueCapacity = 0,
+            QueueUtilization = utilization
+        };
+
+        StatusBarViewModel.FormatPipelineQueue(pipeline).Should().Be("Queue: 72%");
+    }
+
+    [Fact]
+    public void DerivePipelineQueueBrush_WhenQueueIsNearCapacity_ShouldEscalateTone()
+    {
+        var low = StatusBarViewModel.DerivePipelineQueueBrush(new PipelineData
+        {
+            CurrentQueueSize = 10,
+            QueueCapacity = 100
+        });
+        var high = StatusBarViewModel.DerivePipelineQueueBrush(new PipelineData
+        {
+            CurrentQueueSize = 95,
+            QueueCapacity = 100
+        });
+
+        high.Should().NotBeSameAs(low);
+        high.Should().NotBeSameAs(Brushes.Transparent);
+    }
+
     // ── DeriveBackendStatus ───────────────────────────────────────────────
 
     [Fact]
@@ -75,5 +128,34 @@ public sealed class StatusBarViewModelTests
         var (label, _) = StatusBarViewModel.DeriveBackendStatus(
             status, dropRate: StatusBarViewModel.DegradedDropRateThreshold + 0.001);
         label.Should().Be("Degraded");
+    }
+
+    [Fact]
+    public void StatusBarControlSource_ShouldBindPipelineQueueIndicator()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\StatusBarControl.xaml"));
+
+        xaml.Should().Contain("StatusBarPipelineQueueLabel");
+        xaml.Should().Contain("{Binding PipelineQueueLabel}");
+        xaml.Should().Contain("{Binding PipelineQueueBrush}");
+        xaml.Should().Contain("AutomationProperties.Name=\"Pipeline queue\"");
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            $"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }

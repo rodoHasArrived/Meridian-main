@@ -182,7 +182,12 @@ public sealed record ReconciliationBreakQueueItem(
     string? ResolvedBy = null,
     DateTimeOffset? ResolvedAt = null,
     string? ResolutionNote = null,
-    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium);
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium,
+    string? ExceptionRoute = null,
+    string? ToleranceProfileId = null,
+    decimal? ToleranceBand = null,
+    string? RequiredSignoffRole = null,
+    string? SignoffStatus = null);
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

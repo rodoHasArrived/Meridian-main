@@ -75,6 +75,10 @@ public sealed class BatchBacktestViewModelTests
             viewModel.ProgressPercent.Should().Be(100);
             viewModel.StatusText.Should().Contain("failed");
             viewModel.Results.Single(item => item.HasError).ErrorMessage.Should().Be("No local data found");
+            viewModel.HasResults.Should().BeTrue();
+            viewModel.IsResultsEmptyStateVisible.Should().BeFalse();
+            viewModel.ResultsEmptyStateTitle.Should().Be("Batch results need review");
+            viewModel.ResultsEmptyStateDetail.Should().Contain("1 succeeded, 1 failed");
         });
     }
 
@@ -98,6 +102,10 @@ public sealed class BatchBacktestViewModelTests
             viewModel.Results.Should().BeEmpty();
             viewModel.StatusText.Should().Be("Batch failed: batch service unavailable");
             viewModel.SummaryText.Should().Be("No completed summary was returned.");
+            viewModel.HasResults.Should().BeFalse();
+            viewModel.IsResultsEmptyStateVisible.Should().BeTrue();
+            viewModel.ResultsEmptyStateTitle.Should().Be("Batch did not return results");
+            viewModel.ResultsEmptyStateDetail.Should().Be("No completed summary was returned.");
         });
     }
 
@@ -125,6 +133,112 @@ public sealed class BatchBacktestViewModelTests
             service.CancellationObserved.Should().BeTrue();
             viewModel.IsRunning.Should().BeFalse();
             viewModel.StatusText.Should().Be("Cancelled.");
+            viewModel.HasResults.Should().BeFalse();
+            viewModel.IsResultsEmptyStateVisible.Should().BeTrue();
+            viewModel.ResultsEmptyStateTitle.Should().Be("Batch cancelled before results");
+            viewModel.ResultsEmptyStateDetail.Should().Contain("completed before cancellation");
+        });
+    }
+
+    [Fact]
+    public void ResultsEmptyState_InitialAndValidationStatesProvideOperatorGuidance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var service = new CapturingBatchBacktestService((_, _, _) =>
+                Task.FromResult(new BatchBacktestSummary
+                {
+                    Runs = [],
+                    TotalDuration = TimeSpan.Zero
+                }));
+            var viewModel = new BatchBacktestViewModel(service)
+            {
+                SweepStart = 100_000m,
+                SweepStop = 100_000m,
+                SweepStep = 100_000m
+            };
+
+            viewModel.HasResults.Should().BeFalse();
+            viewModel.IsResultsEmptyStateVisible.Should().BeTrue();
+            viewModel.ResultsEmptyStateTitle.Should().Be("No batch results yet");
+            viewModel.ResultsEmptyStateDetail.Should().Contain("Start the configured sweep");
+
+            viewModel.SweepStep = 0;
+
+            viewModel.CanStartBatch.Should().BeFalse();
+            viewModel.ResultsEmptyStateTitle.Should().Be("No batch results yet");
+            viewModel.ResultsEmptyStateDetail.Should().Be("Resolve the validation issue, then start the request sweep.");
+        });
+    }
+
+    [Fact]
+    public void BatchBacktestPageSource_BindsResultsEmptyState()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\BatchBacktestPage.xaml"));
+
+        xaml.Should().Contain("BatchBacktestResultsGrid");
+        xaml.Should().Contain("BatchBacktestResultsEmptyState");
+        xaml.Should().Contain("{Binding HasResults, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding IsResultsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding ResultsEmptyStateTitle}");
+        xaml.Should().Contain("{Binding ResultsEmptyStateDetail}");
+        xaml.Should().Contain("BatchBacktestResultsEmptyStateTitle");
+        xaml.Should().Contain("BatchBacktestResultsEmptyStateDetail");
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
+
+    [Fact]
+    public void ClearResultsCommand_ReturnsResultsPanelToIdleGuidance()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var service = new CapturingBatchBacktestService((request, _, _) =>
+                Task.FromResult(new BatchBacktestSummary
+                {
+                    Runs =
+                    [
+                        new BatchBacktestRun
+                        {
+                            Parameters = request.ParameterGrid[0],
+                            Result = BuildResult(request.BaseRequest),
+                            DurationMs = 125
+                        }
+                    ],
+                    TotalDuration = TimeSpan.FromMilliseconds(125)
+                }));
+            var viewModel = new BatchBacktestViewModel(service)
+            {
+                SweepStart = 100_000m,
+                SweepStop = 100_000m,
+                SweepStep = 100_000m
+            };
+
+            await viewModel.StartBatchCommand.ExecuteAsync(null);
+
+            viewModel.HasResults.Should().BeTrue();
+
+            viewModel.ClearResultsCommand.Execute(null);
+
+            viewModel.HasResults.Should().BeFalse();
+            viewModel.IsResultsEmptyStateVisible.Should().BeTrue();
+            viewModel.ResultsEmptyStateTitle.Should().Be("No batch results yet");
+            viewModel.ResultsEmptyStateDetail.Should().Contain("Start the configured sweep");
         });
     }
 

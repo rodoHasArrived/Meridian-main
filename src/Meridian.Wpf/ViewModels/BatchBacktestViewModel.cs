@@ -277,13 +277,25 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
     public int TotalRuns
     {
         get => _totalRuns;
-        private set => SetProperty(ref _totalRuns, value);
+        private set
+        {
+            if (SetProperty(ref _totalRuns, value))
+            {
+                RaiseResultsStateChanged();
+            }
+        }
     }
 
     public int CompletedRuns
     {
         get => _completedRuns;
-        private set => SetProperty(ref _completedRuns, value);
+        private set
+        {
+            if (SetProperty(ref _completedRuns, value))
+            {
+                RaiseResultsStateChanged();
+            }
+        }
     }
 
     public int SucceededRuns
@@ -307,25 +319,49 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
     public string CurrentLabel
     {
         get => _currentLabel;
-        private set => SetProperty(ref _currentLabel, value);
+        private set
+        {
+            if (SetProperty(ref _currentLabel, value))
+            {
+                RaiseResultsStateChanged();
+            }
+        }
     }
 
     public string StatusText
     {
         get => _statusText;
-        private set => SetProperty(ref _statusText, value);
+        private set
+        {
+            if (SetProperty(ref _statusText, value))
+            {
+                RaiseResultsStateChanged();
+            }
+        }
     }
 
     public string SummaryText
     {
         get => _summaryText;
-        private set => SetProperty(ref _summaryText, value);
+        private set
+        {
+            if (SetProperty(ref _summaryText, value))
+            {
+                RaiseResultsStateChanged();
+            }
+        }
     }
 
     public string ValidationSummary
     {
         get => _validationSummary;
-        private set => SetProperty(ref _validationSummary, value);
+        private set
+        {
+            if (SetProperty(ref _validationSummary, value))
+            {
+                RaiseResultsStateChanged();
+            }
+        }
     }
 
     public string TotalDurationText
@@ -345,6 +381,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
                 StartBatchCommand.NotifyCanExecuteChanged();
                 CancelCommand.NotifyCanExecuteChanged();
                 ClearResultsCommand.NotifyCanExecuteChanged();
+                RaiseResultsStateChanged();
             }
         }
     }
@@ -352,6 +389,67 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
     public bool CanStartBatch => !IsRunning && string.IsNullOrWhiteSpace(ValidationSummary);
 
     public bool HasResults => Results.Count > 0;
+
+    public bool IsResultsEmptyStateVisible => !HasResults;
+
+    public string ResultsEmptyStateTitle
+    {
+        get
+        {
+            if (HasResults)
+            {
+                return FailedRuns > 0 ? "Batch results need review" : "Batch results ready";
+            }
+
+            if (IsRunning)
+            {
+                return "Waiting for first result";
+            }
+
+            if (StatusText.StartsWith("Batch failed:", StringComparison.Ordinal))
+            {
+                return "Batch did not return results";
+            }
+
+            if (string.Equals(StatusText, "Cancelled.", StringComparison.Ordinal))
+            {
+                return "Batch cancelled before results";
+            }
+
+            return "No batch results yet";
+        }
+    }
+
+    public string ResultsEmptyStateDetail
+    {
+        get
+        {
+            if (HasResults)
+            {
+                return SummaryText;
+            }
+
+            if (IsRunning)
+            {
+                return TotalRuns <= 0
+                    ? $"{CurrentLabel}. Waiting for batch progress."
+                    : $"{CurrentLabel} - {CompletedRuns:N0} of {TotalRuns:N0} completed.";
+            }
+
+            if (StatusText.StartsWith("Batch failed:", StringComparison.Ordinal) ||
+                string.Equals(StatusText, "Cancelled.", StringComparison.Ordinal))
+            {
+                return SummaryText;
+            }
+
+            if (!string.IsNullOrWhiteSpace(ValidationSummary))
+            {
+                return "Resolve the validation issue, then start the request sweep.";
+            }
+
+            return "Start the configured sweep to populate return, risk, trade, event, and duration columns.";
+        }
+    }
 
     public string ParameterPreviewText
     {
@@ -447,7 +545,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
         }
 
         Results.Clear();
-        RaisePropertyChanged(nameof(HasResults));
+        RaiseResultsStateChanged();
         CompletedRuns = 0;
         SucceededRuns = 0;
         FailedRuns = 0;
@@ -539,7 +637,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
     private void ResetRunState(int totalRuns)
     {
         Results.Clear();
-        RaisePropertyChanged(nameof(HasResults));
+        RaiseResultsStateChanged();
         TotalRuns = totalRuns;
         CompletedRuns = 0;
         SucceededRuns = 0;
@@ -578,7 +676,7 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
         TotalDurationText = FormatDuration(summary.TotalDuration);
         StatusText = FailedRuns == 0 ? "Batch complete." : "Batch complete with failed runs.";
         SummaryText = $"{SucceededRuns:N0} succeeded, {FailedRuns:N0} failed, {TotalDurationText} total.";
-        RaisePropertyChanged(nameof(HasResults));
+        RaiseResultsStateChanged();
         ClearResultsCommand.NotifyCanExecuteChanged();
     }
 
@@ -599,6 +697,14 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
         ValidationSummary = string.Join(" ", errors.Where(error => !string.IsNullOrWhiteSpace(error)).Distinct());
         RaisePropertyChanged(nameof(CanStartBatch));
         StartBatchCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RaiseResultsStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasResults));
+        RaisePropertyChanged(nameof(IsResultsEmptyStateVisible));
+        RaisePropertyChanged(nameof(ResultsEmptyStateTitle));
+        RaisePropertyChanged(nameof(ResultsEmptyStateDetail));
     }
 
     private string FormatSweepValue(decimal value)

@@ -826,6 +826,51 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithFundAccountId_ShouldProjectBrokerageSyncWorkItem()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-inbox", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            var status = await brokerageSync.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Failed);
+
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(brokerageSync);
+            });
+
+            var inbox = await app
+                .GetTestClient()
+                .GetFromJsonAsync<OperatorInboxDto>(
+                    $"/api/workstation/operator/inbox?fundAccountId={fundAccountId:D}",
+                    ServerJsonOptions);
+
+            inbox.Should().NotBeNull();
+            var syncItem = inbox!.Items.Should()
+                .ContainSingle(item =>
+                    item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                    item.FundAccountId == fundAccountId)
+                .Which;
+            syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
+            syncItem.Workspace.Should().Be("Trading");
+            syncItem.TargetRoute.Should().Be(UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+            syncItem.TargetPageTag.Should().Be("TradingShell");
+            syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks()
     {
         await using var app = await CreateAppAsync(services =>
@@ -863,6 +908,8 @@ public sealed class WorkstationEndpointsTests
         breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
         breakItem.TargetPageTag.Should().Be("GovernanceShell");
         breakItem.Detail.Should().Contain("The break is open");
+        breakItem.Detail.Should().Contain("Exception route:");
+        breakItem.Detail.Should().Contain("sign-off");
     }
 
     [Fact]
@@ -1357,6 +1404,12 @@ public sealed class WorkstationEndpointsTests
         queue!.Should().Contain(item =>
             item.RunId == runId &&
             reconciliation!.Breaks.Any(reconciliationBreak => item.BreakId == $"{runId}:{reconciliationBreak.CheckId}"));
+        queue.Should().Contain(item =>
+            item.RunId == runId &&
+            !string.IsNullOrWhiteSpace(item.ExceptionRoute) &&
+            !string.IsNullOrWhiteSpace(item.ToleranceProfileId) &&
+            !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) &&
+            !string.IsNullOrWhiteSpace(item.SignoffStatus));
     }
 
     [Fact]
@@ -1395,6 +1448,8 @@ public sealed class WorkstationEndpointsTests
         updated!.RunId.Should().Be(runId);
         updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         updated.AssignedTo.Should().Be("ops-review");
+        updated.SignoffStatus.Should().Be("in-review");
+        updated.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -1450,6 +1505,7 @@ public sealed class WorkstationEndpointsTests
         resolved.Should().NotBeNull();
         resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
         resolved.ResolvedBy.Should().Be("qa-resolve");
+        resolved.SignoffStatus.Should().Be("signed-off");
     }
 
     [Fact]
@@ -2209,6 +2265,40 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<StrategyRunContinuityService>();
         services.AddSingleton<StrategyRunReviewPacketService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
+    }
+
+    private static BrokeragePortfolioSyncService CreateFailedBrokerageSyncService(string root)
+        => new(
+            new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
+            catalogs: [],
+            portfolioAdapters: [new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing.")],
+            activityAdapters: [new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing.")],
+            services: new ServiceCollection().BuildServiceProvider(),
+            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
+
+    private sealed class ThrowingPortfolioAdapter(string providerId, string message) : IBrokeragePortfolioSync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException(message);
+        }
+    }
+
+    private sealed class ThrowingActivityAdapter(string providerId, string message) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException(message);
+        }
     }
 
     private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository

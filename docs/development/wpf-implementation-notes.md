@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-04-20 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-04-27 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -64,15 +64,19 @@ Content Frame
 
 **Main shell context strip** — `MainPage` now renders the shared context strip between the workflow summary rail and the split-pane host. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
 
-**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` instead of stopping on a workspace landing page. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
+**Operator queue action** — `MainPage` now consumes `GET /api/workstation/operator/inbox` through `IWorkstationOperatorInboxApiClient`, includes the selected account operating context as `fundAccountId` when one is active, colors the shell queue action from the inbox tone, and routes the first actionable work item by route metadata before falling back to its target page tag. Known shared routes open concrete workbenches such as `FundReconciliation`, `SecurityMaster`, or `TradingShell` instead of stopping on a workspace landing page. The Trading shell uses the same account context when it requests shared operator readiness, so brokerage-sync blockers and account-scoped readiness stay aligned between the queue and the cockpit. If the backend queue is unavailable, the action falls back to `NotificationCenter` instead of inventing shell-local readiness state.
 
 **Page header visibility refinement** — `MainPage` now keeps the current page title visible in the primary shell header instead of leaving the bound title/subtitle collapsed. Standard density shows both title and subtitle, while compact density keeps the title visible and collapses the subtitle so the context switcher and next-action strip stay above the fold.
+
+**Persistent status bar pipeline pressure** — `StatusBarControl` now shows a compact queue-pressure label beside throughput. `StatusBarViewModel` formats queue size/capacity or normalized utilization from the existing `StatusResponse.Pipeline` snapshot, colors the label by utilization thresholds, and includes the same queue state in the status tooltip without adding another timer, service call, or buffer.
 
 **Research desk briefing hero** — `ResearchWorkspaceShellPage` now keeps the current research cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
 
 **Strategy run browser filter recovery** — `StrategyRunsPage` now shows visible-vs-recorded run scope beside search and overlays a dynamic empty state when no rows are visible. `StrategyRunBrowserViewModel` distinguishes a truly empty run library from search or mode filters that hide retained rows, and its `ClearRunFiltersCommand` restores the in-memory run list without another run-store read.
 
 **RunMat output readiness** — `RunMatPage` now keeps the script output panel actionable before and during runs. `RunMatViewModel` projects output-line count, idle/streaming/empty-output guidance, and `StopRunCommand` availability from the existing in-memory output collection and run state, so the output list gains recovery context without adding another timer, process read, or persistence write.
+
+**Batch Backtest result readiness** — `BatchBacktestPage` now replaces the blank results grid with a bound empty-state panel when no sweep rows are available. `BatchBacktestViewModel` projects idle, validation-blocked, running-before-first-result, failed-without-results, cancelled, and populated result states from the existing batch status counters and summaries without adding service calls, timers, or persistence writes.
 
 **QuantScript run-history handoff** — `QuantScriptPage` now renders the execution-history state already maintained by `QuantScriptViewModel` as a dedicated `Run History` tab. The tab shows recorded executions, selected-run evidence, console preview, and existing Strategy Runs handoff commands without adding a new history read, timer, or execution-path side effect.
 
@@ -82,7 +86,7 @@ Content Frame
 
 **Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 
-**Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path.
+**Trading desk briefing hero** — `TradingWorkspaceShellPage` now keeps the current desk focus, readiness tone, and next handoff visible above the workbench. The hero state reuses the existing active-run, workflow-summary, and shared operator-readiness inputs so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states update without adding another service fetch path. The validation status card also reads the shared replay acceptance gate and shows active-session versus verified replay order, fill, and ledger counts when replay evidence is stale.
 
 **Position Blotter empty-state reset** — `PositionBlotterPage` now replaces a blank grid with a focused empty-state card when no rows are displayed. Filter/search misses explain that hidden rows can be restored with `Reset Filters`, while truly empty snapshots keep reset disabled and leave `Refresh` as the recovery action.
 
