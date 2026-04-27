@@ -7757,6 +7757,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TradingHoursViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
@@ -7799,6 +7800,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-588 directories, 7071 files
+588 directories, 7072 files
 ```
 <!-- readme-tree end -->
