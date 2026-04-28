@@ -111,6 +111,11 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "args": ["--output", "docs/status/metrics-dashboard.md"],
         "output": "docs/status/metrics-dashboard.md",
     },
+    "generate-workflow-manifest": {
+        "script": "generate-workflow-manifest.py",
+        "args": [],
+        "output": "docs/status/workflow-validation-summary.json",
+    },
     "create-todo-issues": {
         "script": "create-todo-issues.py",
         "args": ["--scan-json", TODO_SCAN_JSON_PATH, "--output-json", TODO_ISSUE_SUMMARY_PATH],
@@ -119,7 +124,7 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
 }
 
 PROFILE_CONFIG: Dict[str, List[str]] = {
-    "quick": ["scan-todos", "validate-examples", "repair-links", "check-ai-inventory"],
+    "quick": ["scan-todos", "validate-examples", "repair-links", "check-ai-inventory", "generate-workflow-manifest"],
     "core": [
         "scan-todos",
         "generate-structure-docs",
@@ -127,6 +132,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "validate-examples",
         "check-ai-inventory",
         "generate-coverage",
+        "generate-workflow-manifest",
     ],
     "full": [
         "scan-todos",
@@ -142,6 +148,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-dependency-graph",
         "sync-readme-badges",
         "generate-metrics-dashboard",
+        "generate-workflow-manifest",
     ],
 }
 

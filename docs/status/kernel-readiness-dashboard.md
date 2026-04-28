@@ -16,9 +16,11 @@
 
 ## Program Cadence and Operating Window
 
+- **Roadmap/readiness escalation feed:** use generated [`program-state-summary.md`](./program-state-summary.md) / [`program-state-summary.json`](./program-state-summary.json) for wave-level primary owner, backup owner, escalation SLA, and dependency-owner routing.
+
 - **Cadence:** weekly subsystem review (Mon), cross-subsystem interop review (Wed), operator-readiness review (Fri)
 - **Current operating window:** 2026-04-20 through 2026-06-26
-- **Status publication rule:** update this dashboard at least once per week; release-governance decisions reference this file plus `provider-validation-matrix.md`
+- **Status publication rule:** update this dashboard at least once per week; release-governance decisions reference this file plus `provider-validation-matrix.md`, and must pass `python3 scripts/check_program_state_consistency.py` before publication.
 
 ---
 

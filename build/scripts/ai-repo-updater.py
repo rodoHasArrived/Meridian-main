@@ -1150,6 +1150,58 @@ def run_audit(root: Path, command: str) -> AuditReport:
     return report
 
 
+def run_shared_preflight(
+    root: Path,
+    scenario: str,
+    required_commands: list[str],
+    required_paths: list[Path],
+    writable_dirs: list[Path],
+) -> dict[str, Any]:
+    """Run the shared preflight wrapper so CI and local runs emit the same diagnostics."""
+    preflight_script = root / "scripts" / "dev" / "preflight_runner.py"
+    if not preflight_script.exists():
+        return {
+            "scenario": scenario,
+            "status": "blocked",
+            "blockingChecks": [
+                {
+                    "check": "path.preflight_runner",
+                    "message": f"Shared preflight runner is missing: {preflight_script}",
+                    "recommendation": "Restore scripts/dev/preflight_runner.py before running this command.",
+                }
+            ],
+            "warnings": [],
+            "nextAction": "Resolve blocking checks and rerun preflight.",
+        }
+
+    command = [sys.executable, str(preflight_script), "--scenario", scenario]
+    for item in required_commands:
+        command.extend(["--required-command", item])
+    for item in required_paths:
+        command.extend(["--required-path", str(item)])
+    for item in writable_dirs:
+        command.extend(["--writable-dir", str(item)])
+
+    proc = subprocess.run(command, cwd=root, capture_output=True, text=True)
+    try:
+        payload = json.loads(proc.stdout or "{}")
+    except json.JSONDecodeError:
+        payload = {
+            "scenario": scenario,
+            "status": "blocked",
+            "blockingChecks": [
+                {
+                    "check": "preflight.output",
+                    "message": "Shared preflight runner returned non-JSON output.",
+                    "recommendation": "Inspect preflight_runner.py output and fix JSON emission.",
+                }
+            ],
+            "warnings": [],
+            "nextAction": "Resolve blocking checks and rerun preflight.",
+        }
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:  # noqa: C901
     parser = argparse.ArgumentParser(
         description="AI Repository Updater — audit and improve the codebase.",
@@ -1206,6 +1258,16 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         return 0
 
     elif args.command == "verify":
+        preflight = run_shared_preflight(
+            args.root,
+            scenario="ai-repo-updater.verify",
+            required_commands=["git", "dotnet"],
+            required_paths=[args.root / "Meridian.sln"],
+            writable_dirs=[args.root / "artifacts"],
+        )
+        if preflight.get("status") != "ok":
+            print(json.dumps(preflight, indent=2))
+            return 2
         result = run_verify(args.root)
         if args.json_output:
             args.json_output.parent.mkdir(parents=True, exist_ok=True)
@@ -1214,6 +1276,16 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         return 0 if result.get("overall_ok") else 1
 
     elif args.command in ("maintenance-light", "maintenance-full"):
+        preflight = run_shared_preflight(
+            args.root,
+            scenario=f"ai-repo-updater.{args.command}",
+            required_commands=["git", "dotnet", "python3"],
+            required_paths=[args.root / "Meridian.sln", args.root / "build" / "python" / "cli" / "buildctl.py"],
+            writable_dirs=[args.root / ".ai", args.root / "artifacts"],
+        )
+        if preflight.get("status") != "ok":
+            print(json.dumps(preflight, indent=2))
+            return 2
         lane = "light" if args.command == "maintenance-light" else "full"
         result = run_maintenance(args.root, lane)
         status_file = args.status_file or args.json_output or (args.root / ".ai" / "maintenance-status.json")
