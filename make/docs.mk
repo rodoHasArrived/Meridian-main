@@ -3,10 +3,10 @@
 # =============================================================================
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
-        gen-interfaces gen-structure gen-providers gen-workflows \
+        gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
         update-claude-md docs-all
 
-docs: gen-context verify-adrs ## Generate all documentation from code
+docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
 
 gen-context: ## Generate project-context.md from code annotations
@@ -65,6 +65,11 @@ gen-workflows: ## Generate workflows overview documentation
 		--workflows-only
 	@echo "$(GREEN)Generated docs/generated/workflows-overview.md$(NC)"
 
+gen-workflow-manifest: ## Generate workflow manifest docs snippets and drift artifacts
+	@echo "$(BLUE)Generating workflow manifest artifacts...$(NC)"
+	@python3 build/scripts/docs/generate-workflow-manifest.py
+	@echo "$(GREEN)Generated workflow manifest artifacts$(NC)"
+
 update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 	@echo "$(BLUE)Updating CLAUDE.md repository structure...$(NC)"
 	@python3 build/scripts/docs/update-claude-md.py \
@@ -72,5 +77,5 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
 
-docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows verify-adrs ## Generate all documentation
+docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest verify-adrs ## Generate all documentation
 	@echo "$(GREEN)All documentation generated$(NC)"
