@@ -28,6 +28,7 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
 . (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
+. (Join-Path $PSScriptRoot 'shared/retry.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
@@ -772,10 +773,12 @@ $manifest = [ordered]@{
         startedAt = (Get-Date).ToString('o')
     }
     steps = @()
+    retryTelemetry = @()
 }
 
 $ownedProcess = $null
 $window = $null
+$retryTelemetry = New-Object System.Collections.ArrayList
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
 $preflight = Invoke-MeridianPreflight `
     -Scenario 'desktop-workflow' `
@@ -968,20 +971,97 @@ try {
                 Send-WindowKeys -Window $window -Keys $keys
             }
 
-            Start-Sleep -Milliseconds $stepWaitMs
-            $pageReadiness = Wait-ForShellPage `
-                -Process $ownedProcess `
-                -ExpectedPageTag $pageTag `
-                -AcceptedPageTags $acceptedPageTags `
-                -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
-            $window = $pageReadiness.Window
-            $stepResult.observedPageTag = $pageReadiness.State.PageTag
-            $stepResult.observedPageTitle = $pageReadiness.State.PageTitle
+            $captureRetry = Invoke-MeridianRetry `
+                -Name ("{0}/step-{1:D2}/{2}" -f $Workflow, $stepIndex, $captureName) `
+                -MaxAttempts 6 `
+                -BaseDelayMs ([Math]::Max(250, [int]($stepWaitMs / 3))) `
+                -MaxDelayMs ([Math]::Max(1200, $stepWaitMs * 2)) `
+                -JitterMs 180 `
+                -TelemetrySink $retryTelemetry `
+                -Predicate {
+                    if ($null -ne $ownedProcess -and $ownedProcess.HasExited) {
+                        return [pscustomobject]@{
+                            ready = $false
+                            failure = (New-MeridianRetryFailure -Code 'desktop.process.exited' -Reason "Meridian desktop exited unexpectedly with code $($ownedProcess.ExitCode)." -Data @{ exitCode = $ownedProcess.ExitCode })
+                        }
+                    }
+
+                    $candidateWindow = Wait-MeridianWindow -TimeoutSec 5 -Process $ownedProcess
+                    if ($null -eq $candidateWindow) {
+                        return [pscustomobject]@{
+                            ready = $false
+                            failure = (New-MeridianRetryFailure -Code 'desktop.window.not_visible' -Reason 'Meridian window was not visible.' -Data @{})
+                        }
+                    }
+
+                    $rect = $candidateWindow.Current.BoundingRectangle
+                    if ($rect.Width -lt 200 -or $rect.Height -lt 200) {
+                        return [pscustomobject]@{
+                            ready = $false
+                            failure = (New-MeridianRetryFailure -Code 'desktop.window.too_small' -Reason "Window bounds are too small for capture ($($rect.Width)x$($rect.Height))." -Data @{ width = $rect.Width; height = $rect.Height })
+                        }
+                    }
+
+                    $shellState = Get-ShellAutomationState -Window $candidateWindow
+                    if (-not $shellState.Ready -or [string]::IsNullOrWhiteSpace($shellState.PageTag)) {
+                        return [pscustomobject]@{
+                            ready = $false
+                            failure = (New-MeridianRetryFailure -Code 'desktop.automation.marker_missing' -Reason 'Shell automation readiness marker was not present.' -Data @{ pageTag = $shellState.PageTag; pageTitle = $shellState.PageTitle })
+                        }
+                    }
+
+                    $expectedTags = @()
+                    if (-not [string]::IsNullOrWhiteSpace($pageTag)) { $expectedTags += $pageTag }
+                    if ($acceptedPageTags) { $expectedTags += @($acceptedPageTags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) }
+                    $expectedTags = @($expectedTags | Select-Object -Unique)
+
+                    if ($expectedTags.Count -gt 0 -and -not ($expectedTags -contains $shellState.PageTag)) {
+                        return [pscustomobject]@{
+                            ready = $false
+                            failure = (New-MeridianRetryFailure -Code 'desktop.route.not_active' -Reason "Expected page tag '$pageTag' was not active." -Data @{ expectedTags = $expectedTags; observedPageTag = $shellState.PageTag; observedPageTitle = $shellState.PageTitle })
+                        }
+                    }
+
+                    return [pscustomobject]@{
+                        ready = $true
+                        window = $candidateWindow
+                        state = $shellState
+                    }
+                } `
+                -Action {
+                    param($readiness)
+
+                    Activate-MeridianWindow | Out-Null
+                    if ($shouldCapture -and $null -ne $capturePath) {
+                        return [pscustomobject]@{
+                            capturePath = (Save-WindowCapture -Window $readiness.window -Path $capturePath)
+                            state = $readiness.state
+                            window = $readiness.window
+                        }
+                    }
+
+                    return [pscustomobject]@{
+                        capturePath = $null
+                        state = $readiness.state
+                        window = $readiness.window
+                    }
+                }
+
+            if (-not $captureRetry.Success) {
+                $failure = $captureRetry.Failure
+                $failureCode = if ($failure -and $failure.PSObject.Properties.Name -contains 'code') { $failure.code } else { 'retry.unknown_failure' }
+                $failureReason = if ($failure -and $failure.PSObject.Properties.Name -contains 'reason') { $failure.reason } else { 'Capture readiness did not succeed before retries were exhausted.' }
+                throw "[${failureCode}] $failureReason"
+            }
+
+            $window = $captureRetry.Value.window
+            $stepResult.retryAttempts = $captureRetry.Attempts
+            $stepResult.retryName = $captureRetry.Telemetry.name
+            $stepResult.observedPageTag = $captureRetry.Value.state.PageTag
+            $stepResult.observedPageTitle = $captureRetry.Value.state.PageTitle
 
             if ($shouldCapture -and $null -ne $capturePath) {
-                Activate-MeridianWindow | Out-Null
-                $window = Wait-MeridianWindow -TimeoutSec 10 -Process $ownedProcess
-                $savedPath = Save-WindowCapture -Window $window -Path $capturePath
+                $savedPath = $captureRetry.Value.capturePath
                 $stepResult.capturePath = $savedPath
                 Write-Ok "Saved $savedPath"
             }
@@ -1011,6 +1091,22 @@ catch {
 }
 finally {
     $manifest.run.finishedAt = (Get-Date).ToString('o')
+    $manifest.retryTelemetry = @($retryTelemetry)
+    $manifest.retrySummary = [ordered]@{
+        total = $retryTelemetry.Count
+        failures = @(
+            $retryTelemetry |
+                Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |
+                Group-Object { $_.failure.code } |
+                Sort-Object Count -Descending |
+                ForEach-Object {
+                    [ordered]@{
+                        code = $_.Name
+                        count = $_.Count
+                    }
+                }
+        )
+    }
     $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
     if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
