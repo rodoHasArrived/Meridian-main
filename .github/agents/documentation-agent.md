@@ -6588,6 +6588,7 @@ Meridian-main
 │       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── TradingWorkspaceShellPresentationModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceQueueRegionState.cs
@@ -6658,6 +6659,7 @@ Meridian-main
 │       │   ├── TickerStripService.cs
 │       │   ├── ToastNotificationService.cs
 │       │   ├── TooltipService.cs
+│       │   ├── TradingWorkspaceShellPresentationService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
 │       │   ├── WindowStartupRecovery.cs
@@ -6762,6 +6764,7 @@ Meridian-main
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
+│       │   ├── TradingWorkspaceShellViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
 │       │   ├── WorkspacePageViewModel.cs
@@ -7627,6 +7630,7 @@ Meridian-main
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
+│   │   │   ├── TradingWorkspaceShellViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
@@ -7663,10 +7667,12 @@ Meridian-main
 │   │   └── TestAssemblyConfiguration.cs
 │   ├── scripts
 │   │   ├── setup-verification.sh
+│   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_maintenance_full_workflow.py
 │   │   └── test_prepare_dk1_operator_signoff.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
