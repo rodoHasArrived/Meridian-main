@@ -436,6 +436,7 @@ Meridian-main
 │   │   ├── makefile.yml
 │   │   ├── nightly.yml
 │   │   ├── pr-checks.yml
+│   │   ├── program-state-validation.yml
 │   │   ├── prompt-generation.yml
 │   │   ├── python-package-conda.yml
 │   │   ├── readme-tree.yml
@@ -454,7 +455,8 @@ Meridian-main
 │   │   ├── test-matrix.yml
 │   │   ├── ticker-data-collection.yml
 │   │   ├── update-diagrams.yml
-│   │   └── validate-workflows.yml
+│   │   ├── validate-workflows.yml
+│   │   └── workflow-docs-parity.yml
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
 │   ├── labeler.yml
@@ -680,6 +682,8 @@ Meridian-main
 │       │   ├── generate-metrics-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── generate-workflow-manifest.py
+│       │   ├── lint-command-snippets.py
 │       │   ├── README.md
 │       │   ├── repair-links.py
 │       │   ├── rules-engine.py
@@ -838,6 +842,7 @@ Meridian-main
 │   │   ├── adding-custom-rules.md
 │   │   ├── build-observability.md
 │   │   ├── central-package-management.md
+│   │   ├── desktop-command-surface-migration.md
 │   │   ├── desktop-testing-guide.md
 │   │   ├── desktop-workflow-automation.md
 │   │   ├── documentation-automation.md
@@ -4642,6 +4647,7 @@ Meridian-main
 │   │   ├── provider-registry.md
 │   │   ├── README.md
 │   │   ├── repository-structure.md
+│   │   ├── workflow-command-reference.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
 │   │   ├── pilot-operator-quickstart.md
@@ -4747,6 +4753,7 @@ Meridian-main
 │   │   └── strategy-promotion-history.md
 │   ├── screenshots
 │   │   ├── desktop
+│   │   │   ├── catalog.json
 │   │   │   ├── wpf-backfill.png
 │   │   │   ├── wpf-backtest.png
 │   │   │   ├── wpf-dashboard.png
@@ -4827,6 +4834,8 @@ Meridian-main
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
+│   │   ├── program-state-summary.json
+│   │   ├── program-state-summary.md
 │   │   ├── PROGRAM_STATE.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
@@ -4834,9 +4843,13 @@ Meridian-main
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
+│   │   ├── run-contract.schema.json
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
-│   │   └── wave4-evidence-template.md
+│   │   ├── wave4-evidence-template.md
+│   │   ├── workflow-drift-report.md
+│   │   ├── workflow-manifest.json
+│   │   └── workflow-validation-summary.json
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
@@ -4893,6 +4906,15 @@ Meridian-main
 │   ├── dev
 │   │   ├── fixtures
 │   │   │   └── robinhood-options-smoke.seed.json
+│   │   ├── shared
+│   │   │   └── retry.ps1
+│   │   ├── workflow-profiles
+│   │   │   ├── debug-startup.json
+│   │   │   ├── manual-data-operations.json
+│   │   │   ├── manual-governance.json
+│   │   │   ├── manual-overview.json
+│   │   │   ├── manual-research-and-trading.json
+│   │   │   └── screenshot-catalog.json
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── cleanup-generated.ps1
@@ -4902,23 +4924,34 @@ Meridian-main
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
+│   │   ├── screenshot-diff-config.json
+│   │   ├── screenshot_diff_report.py
 │   │   ├── SharedBuild.ps1
+│   │   ├── SharedCheckpoint.ps1
+│   │   ├── SharedPreflight.ps1
+│   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── validate-operator-inbox-route.ps1
-│   │   └── validate-position-blotter-route.ps1
+│   │   ├── validate-position-blotter-route.ps1
+│   │   ├── validate-screenshot-contract.py
+│   │   └── validate-workflow-profile.ps1
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
 │   ├── check_contract_compatibility_gate.py
 │   ├── check_program_state_consistency.py
+│   ├── check_workflow_docs_parity.py
 │   ├── compare_benchmarks.py
+│   ├── compare_run_contract.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── generate_contract_review_packet.py
+│   ├── generate_program_state_summary.py
 │   ├── report_canonicalization_drift.py
 │   └── wpf_finance_ux_checks.py
 ├── src
@@ -7718,12 +7751,16 @@ Meridian-main
 │   │   ├── setup-verification.sh
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
+│   │   ├── test_compare_run_contract.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_maintenance_full_workflow.py
-│   │   └── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   └── test_screenshot_diff_report.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md
