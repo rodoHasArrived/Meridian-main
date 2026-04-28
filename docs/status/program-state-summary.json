@@ -1,0 +1,71 @@
+{
+  "source": "docs/status/PROGRAM_STATE.md",
+  "waves": [
+    {
+      "Wave": "W1",
+      "Owner": "Data Operations + Provider Reliability",
+      "Primary Owner": "Data Confidence and Validation",
+      "Backup Owner": "Trading Workstation",
+      "Escalation SLA": "4 hours / 1 business day",
+      "Dependency Owners": "Trading Workstation; Shared Platform Interop; Governance and Ledger",
+      "Status": "Done",
+      "Target Date": "2026-04-17",
+      "Evidence Link": "[`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary)"
+    },
+    {
+      "Wave": "W2",
+      "Owner": "Trading Workstation",
+      "Primary Owner": "Execution and Fund Accounts",
+      "Backup Owner": "Workstation Shell and UX",
+      "Escalation SLA": "4 hours / 1 business day",
+      "Dependency Owners": "Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger",
+      "Status": "In Progress",
+      "Target Date": "2026-05-29",
+      "Evidence Link": "[`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion)"
+    },
+    {
+      "Wave": "W3",
+      "Owner": "Shared Platform Interop",
+      "Primary Owner": "Shared Workflow and Contracts",
+      "Backup Owner": "Workstation Shell and UX",
+      "Escalation SLA": "1 business day / 2 business days",
+      "Dependency Owners": "Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation",
+      "Status": "In Progress",
+      "Target Date": "2026-06-26",
+      "Evidence Link": "[`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity)"
+    },
+    {
+      "Wave": "W4",
+      "Owner": "Governance + Fund Ops",
+      "Primary Owner": "Governance and Ledger",
+      "Backup Owner": "Shared Workflow and Contracts",
+      "Escalation SLA": "1 business day / 2 business days",
+      "Dependency Owners": "Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop",
+      "Status": "In Progress",
+      "Target Date": "2026-07-24",
+      "Evidence Link": "[`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline)"
+    },
+    {
+      "Wave": "W5",
+      "Owner": "Research Platform",
+      "Primary Owner": "Strategy and Research",
+      "Backup Owner": "Shared Workflow and Contracts",
+      "Escalation SLA": "2 business days / 3 business days",
+      "Dependency Owners": "Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop",
+      "Status": "Planned",
+      "Target Date": "2026-08-21",
+      "Evidence Link": "[`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification)"
+    },
+    {
+      "Wave": "W6",
+      "Owner": "Execution + Brokerage Integrations",
+      "Primary Owner": "Execution and Brokerage Integrations",
+      "Backup Owner": "Governance and Ledger",
+      "Escalation SLA": "4 hours / 1 business day",
+      "Dependency Owners": "Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX",
+      "Status": "Planned",
+      "Target Date": "2026-09-18",
+      "Evidence Link": "[`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness)"
+    }
+  ]
+}

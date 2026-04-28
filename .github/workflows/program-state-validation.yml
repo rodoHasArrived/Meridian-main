@@ -1,0 +1,50 @@
+name: Program State Validation
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "docs/status/PROGRAM_STATE.md"
+      - "docs/status/ROADMAP.md"
+      - "docs/status/IMPROVEMENTS.md"
+      - "docs/status/production-status.md"
+      - "docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md"
+      - "docs/status/ROADMAP_COMBINED.md"
+      - "docs/status/kernel-readiness-dashboard.md"
+      - "docs/status/program-state-summary.json"
+      - "docs/status/program-state-summary.md"
+      - "scripts/check_program_state_consistency.py"
+      - "scripts/generate_program_state_summary.py"
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/status/PROGRAM_STATE.md"
+      - "docs/status/ROADMAP.md"
+      - "docs/status/IMPROVEMENTS.md"
+      - "docs/status/production-status.md"
+      - "docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md"
+      - "docs/status/ROADMAP_COMBINED.md"
+      - "docs/status/kernel-readiness-dashboard.md"
+      - "docs/status/program-state-summary.json"
+      - "docs/status/program-state-summary.md"
+      - "scripts/check_program_state_consistency.py"
+      - "scripts/generate_program_state_summary.py"
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-program-state:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate ownership metadata and cross-doc consistency
+        run: python3 scripts/check_program_state_consistency.py
+
+      - name: Validate generated program-state summaries are up to date
+        run: python3 scripts/generate_program_state_summary.py --check

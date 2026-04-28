@@ -2,17 +2,19 @@
 
 This guide helps contributors set up and test the WPF desktop application for Meridian.
 
+> Migration note: desktop workflow orchestration commands are PowerShell-first as of April 2026. See [desktop-command-surface-migration.md](./desktop-command-surface-migration.md) for deprecated-to-supported command mappings.
+
 ## Quick Commands Reference
 
 ```bash
 # Environment validation
-make desktop-dev-bootstrap
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 # Build desktop application
-make build-wpf                    # Build WPF desktop app
+make desktop-build                # Build WPF desktop app
 
 # Run tests
-make test-desktop-services        # Run all desktop-focused tests
+make desktop-test                 # Run all desktop-focused tests
 dotnet test tests/Meridian.Wpf.Tests        # WPF service tests (Windows only)
 dotnet test tests/Meridian.Ui.Tests         # Shared UI service tests (Windows only)
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
@@ -26,12 +28,6 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-operator-inbo
 Run the desktop development bootstrap script to validate your environment:
 
 ```bash
-make desktop-dev-bootstrap
-```
-
-Or directly with PowerShell:
-
-```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 ```
 
@@ -49,7 +45,7 @@ This script validates:
 
 ```bash
 # Run all desktop-focused tests (platform-aware)
-make test-desktop-services
+make desktop-test
 
 # Or run specific test projects:
 dotnet test tests/Meridian.Wpf.Tests  # Windows only
@@ -317,7 +313,7 @@ See [UI Fixture Mode Guide](./ui-fixture-mode-guide.md) for complete documentati
 ### WPF Application (Recommended)
 
 ```bash
-make build-wpf
+make desktop-build
 
 # Or directly:
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64
