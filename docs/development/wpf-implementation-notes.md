@@ -512,7 +512,7 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 Run with:
 
 ```bash
-make test-desktop-services
+make desktop-test
 ```
 
 ---

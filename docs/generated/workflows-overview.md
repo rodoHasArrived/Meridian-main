@@ -1,6 +1,6 @@
 # Workflows Overview
 
-> Auto-generated on 2026-04-28 13:31:28 UTC. Do not edit manually.
+> Auto-generated on 2026-04-28 22:07:09 UTC. Do not edit manually.
 
 | Workflow File | Name |
 |---|---|
@@ -27,6 +27,7 @@
 | `.github/workflows/makefile.yml` | Makefile CI |
 | `.github/workflows/nightly.yml` | Nightly Testing |
 | `.github/workflows/pr-checks.yml` | Pull Request Checks |
+| `.github/workflows/program-state-validation.yml` | Program State Validation |
 | `.github/workflows/prompt-generation.yml` | Prompt Generation |
 | `.github/workflows/python-package-conda.yml` | Python Package using Conda |
 | `.github/workflows/readme-tree.yml` | README Tree Sync |
@@ -44,3 +45,4 @@
 | `.github/workflows/ticker-data-collection.yml` | Ticker Data Collection |
 | `.github/workflows/update-diagrams.yml` | Update Diagram Artifacts |
 | `.github/workflows/validate-workflows.yml` | Validate Workflows |
+| `.github/workflows/workflow-docs-parity.yml` | Workflow Docs Parity |

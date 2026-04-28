@@ -22,6 +22,9 @@ on:
       - 'config/appsettings.sample.json'
       - 'scripts/dev/SharedBuild.ps1'
       - 'scripts/dev/desktop-workflows.json'
+      - 'scripts/dev/workflow-profiles/**'
+      - 'scripts/dev/SharedWorkflowProfiles.ps1'
+      - 'scripts/dev/validate-workflow-profile.ps1'
       - 'scripts/dev/run-desktop-workflow.ps1'
       - 'scripts/dev/capture-desktop-screenshots.ps1'
       - 'src/Meridian.Ui.Services/**'
@@ -41,10 +44,25 @@ on:
           - all
           - catalog
           - manuals
+      cleanup_mode:
+        description: 'Stale screenshot cleanup behavior in commit job.'
+        type: choice
+        default: dry-run
+        options:
+          - dry-run
+          - enforce
       output_root:
         description: 'Root directory for desktop screenshots.'
         type: string
         default: docs/screenshots/desktop
+      approve_review_needed:
+        description: 'Allow committing review-needed screenshot deltas from this run.'
+        type: boolean
+        default: false
+      review_approval_note:
+        description: 'Audit note explaining why review-needed screenshot diffs are acceptable.'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -62,12 +80,62 @@ env:
   WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
   WPF_CONFIGURATION: Release
   WPF_FRAMEWORK: net9.0-windows10.0.19041.0
+  SCREENSHOT_TIMING_BASELINE_MINUTES: 25
+  SCREENSHOT_TIMING_REGRESSION_PERCENT: 20
 
 jobs:
+  build-wpf:
+    name: Build WPF binaries
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    # Prevent recursive runs from the bot commit.
+    if: github.actor != 'github-actions[bot]'
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: desktop-screenshots
+
+      - name: Restore WPF project
+        run: |
+          dotnet restore "${{ env.WPF_PROJECT }}" --verbosity minimal /p:EnableWindowsTargeting=true
+
+      - name: Build WPF project once
+        run: |
+          dotnet build "${{ env.WPF_PROJECT }}" `
+            -c "${{ env.WPF_CONFIGURATION }}" `
+            -f "${{ env.WPF_FRAMEWORK }}" `
+            --no-restore `
+            --verbosity minimal `
+            /p:EnableWindowsTargeting=true `
+            /p:EnableFullWpfBuild=true `
+            -maxcpucount:1
+
+      - name: Upload WPF build binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: wpf-build-binaries
+          path: |
+            src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/**
+            src/Meridian/bin/${{ env.WPF_CONFIGURATION }}/**
+          if-no-files-found: error
+          retention-days: 2
+
   desktop-screenshots:
     name: Take WPF screenshots
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 35
+    needs: build-wpf
 
     # Prevent recursive runs from the bot commit.
     if: github.actor != 'github-actions[bot]'
@@ -119,6 +187,12 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache-suffix: desktop-screenshots
 
+      - name: Download WPF build binaries
+        uses: actions/download-artifact@v5
+        with:
+          name: wpf-build-binaries
+          path: .
+
       - name: Copy sample config
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
 
@@ -131,12 +205,47 @@ jobs:
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
+          $startedUtc = (Get-Date).ToUniversalTime()
+
           pwsh -File scripts/dev/run-desktop-workflow.ps1 `
             -Workflow "${{ matrix.workflow.name }}" `
+            -Profile "${{ matrix.workflow.name }}" `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
             -Configuration "${{ env.WPF_CONFIGURATION }}" `
             -Framework "${{ env.WPF_FRAMEWORK }}" `
-            -ScreenshotDirectory "${{ matrix.workflow.output }}"
+            -OutputRoot "artifacts/desktop-workflows/${{ matrix.workflow.name }}" `
+            -ScreenshotDirectory "${{ matrix.workflow.output }}" `
+            -SkipBuild
+
+          $finishedUtc = (Get-Date).ToUniversalTime()
+          $durationSeconds = [int][Math]::Round(($finishedUtc - $startedUtc).TotalSeconds)
+
+          New-Item -ItemType Directory -Force -Path artifacts/screenshot-runtime | Out-Null
+
+          [ordered]@{
+            workflow = "${{ matrix.workflow.name }}"
+            startedUtc = $startedUtc.ToString('o')
+            finishedUtc = $finishedUtc.ToString('o')
+            durationSeconds = $durationSeconds
+          } | ConvertTo-Json | Set-Content -Encoding utf8 "artifacts/screenshot-runtime/${{ matrix.workflow.name }}.json"
+
+      - name: Upload workflow runtime report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-runtime-${{ matrix.workflow.name }}
+          path: artifacts/screenshot-runtime/${{ matrix.workflow.name }}.json
+          if-no-files-found: warn
+          retention-days: 7
+
+
+      - name: Validate screenshot contract (catalog)
+        if: |
+          (github.event_name != 'workflow_dispatch' ||
+          inputs.workflows == 'all' ||
+          inputs.workflows == 'catalog') &&
+          matrix.workflow.name == 'screenshot-catalog'
+        run: python scripts/dev/validate-screenshot-contract.py
 
       - name: Upload WPF screenshot diagnostics
         if: always()
@@ -145,8 +254,8 @@ jobs:
           name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
           path: |
             ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
-            artifacts/desktop-workflows/**/manifest.json
-            artifacts/desktop-workflows/**/logs/*.log
+            artifacts/desktop-workflows/${{ matrix.workflow.name }}/**/manifest.json
+            artifacts/desktop-workflows/${{ matrix.workflow.name }}/**/logs/*.log
             wpf-startup-stdout.log
             wpf-startup-stderr.log
           if-no-files-found: warn
@@ -179,30 +288,314 @@ jobs:
         with:
           path: _artifacts
 
+      - name: Setup Python for screenshot diff analysis
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install screenshot diff dependencies
+        run: python -m pip install --disable-pip-version-check --quiet pillow
+
       - name: Merge downloaded PNGs into workspace
         run: |
           $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $normalizedOutputRoot = $outputRoot.Replace('\\','/').Trim('/')
           New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 
           $pngs = Get-ChildItem -Path _artifacts -Recurse -Filter *.png -ErrorAction SilentlyContinue
           Write-Host "Downloaded PNG count: $($pngs.Count)"
 
           foreach ($png in $pngs) {
-            $rel = $png.FullName.Substring((Resolve-Path _artifacts).Path.Length).TrimStart('\\')
+            $artifactRoot = (Resolve-Path _artifacts).Path
+            $rel = $png.FullName.Substring($artifactRoot.Length).TrimStart('\\','/')
+            $relNormalized = $rel.Replace('\\','/')
 
             # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
             # Find the first occurrence of the output root inside that path and copy from there.
-            $idx = $rel.ToLower().IndexOf($outputRoot.ToLower())
+            $idx = $relNormalized.ToLower().IndexOf($normalizedOutputRoot.ToLower())
             if ($idx -lt 0) {
               continue
             }
 
-            $subPath = $rel.Substring($idx + $outputRoot.Length).TrimStart('\\','/')
+            $subPath = $relNormalized.Substring($idx + $normalizedOutputRoot.Length).TrimStart('/')
             $dest = Join-Path $outputRoot $subPath
 
             New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
             Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
           }
+
+      - name: Prune stale screenshots (dry-run/enforce)
+        id: prune
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $selectedMode = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
+          $cleanupMode = "${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_mode || 'dry-run' }}"
+
+          Write-Host "Selected workflow mode: $selectedMode"
+          Write-Host "Cleanup mode: $cleanupMode"
+
+          $workflowConfigPath = 'scripts/dev/desktop-workflows.json'
+          if (-not (Test-Path -LiteralPath $workflowConfigPath)) {
+            throw "Workflow definition file not found: $workflowConfigPath"
+          }
+
+          $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
+          if ($null -eq $workflowConfig.workflows) {
+            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+          }
+
+          $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
+          if ($allDefinitions.Count -eq 0) {
+            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+          }
+
+          $selectedDefinitions = @()
+          switch ($selectedMode) {
+            'catalog' {
+              $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' })
+            }
+            'manuals' {
+              $selectedDefinitions = @($allDefinitions | Where-Object { [bool]$_.includeInManual })
+            }
+            default {
+              $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' -or [bool]$_.includeInManual })
+            }
+          }
+
+          if ($selectedDefinitions.Count -eq 0) {
+            throw "No workflows selected for mode '$selectedMode'."
+          }
+
+          $expectedFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+          $managedScopes = New-Object 'System.Collections.Generic.List[object]'
+          $managedScopeKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+          foreach ($definition in $selectedDefinitions) {
+            $workflowName = [string]$definition.name
+            $isCatalogWorkflow = $workflowName -eq 'screenshot-catalog'
+            $workflowDir = if ($isCatalogWorkflow) {
+              $outputRoot
+            }
+            else {
+              Join-Path $outputRoot ("manuals/$workflowName")
+            }
+
+            $resolvedWorkflowDir = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $workflowDir).FullName).Path
+            $scopeKey = '{0}|{1}' -f $resolvedWorkflowDir, $isCatalogWorkflow
+            if ($managedScopeKeys.Add($scopeKey)) {
+              $managedScopes.Add([PSCustomObject]@{
+                Path = $resolvedWorkflowDir
+                Recurse = -not $isCatalogWorkflow
+              }) | Out-Null
+            }
+
+            foreach ($step in @($definition.steps)) {
+              $captureName = [string]$step.captureName
+              if ([string]::IsNullOrWhiteSpace($captureName)) {
+                continue
+              }
+
+              $expectedPath = Join-Path $workflowDir "$captureName.png"
+              $normalizedExpectedPath = [System.IO.Path]::GetFullPath($expectedPath)
+              $null = $expectedFiles.Add($normalizedExpectedPath)
+            }
+          }
+
+          $candidates = New-Object System.Collections.Generic.List[string]
+          foreach ($managedScope in $managedScopes) {
+            $managedDir = [string]$managedScope.Path
+            if (-not (Test-Path -LiteralPath $managedDir)) {
+              continue
+            }
+
+            $scanRecursively = [bool]$managedScope.Recurse
+
+            if ($scanRecursively) {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -Recurse -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+            else {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+
+            foreach ($png in $pngs) {
+              $fullPath = [System.IO.Path]::GetFullPath($png.FullName)
+              if (-not $expectedFiles.Contains($fullPath)) {
+                $candidates.Add($fullPath)
+              }
+            }
+          }
+
+          $deleted = New-Object System.Collections.Generic.List[string]
+          if ($cleanupMode -eq 'enforce') {
+            foreach ($candidate in $candidates) {
+              Remove-Item -LiteralPath $candidate -Force
+              $deleted.Add($candidate)
+            }
+          }
+
+          Write-Host "Expected screenshot file count: $($expectedFiles.Count)"
+          Write-Host "Stale screenshot candidates: $($candidates.Count)"
+          if ($cleanupMode -eq 'enforce') {
+            Write-Host "Deleted stale screenshots: $($deleted.Count)"
+          }
+          else {
+            Write-Host 'Dry-run only: no screenshot files were deleted.'
+          }
+
+          $repoRoot = (Get-Location).Path
+          $toRelativePath = {
+            param([string]$absolutePath, [string]$basePath)
+            return [System.IO.Path]::GetRelativePath($basePath, $absolutePath).Replace('\\','/')
+          }
+
+          $candidateRelative = @($candidates | ForEach-Object { & $toRelativePath $_ $repoRoot })
+          $deletedRelative = @($deleted | ForEach-Object { & $toRelativePath $_ $repoRoot })
+
+          $pruneSummary = [ordered]@{
+            selectedMode = $selectedMode
+            cleanupMode = $cleanupMode
+            expectedCount = $expectedFiles.Count
+            staleCandidateCount = $candidates.Count
+            deletedCount = $deleted.Count
+            staleCandidates = $candidateRelative
+            deletedFiles = $deletedRelative
+          }
+
+          $pruneSummaryPath = '_artifacts/prune-summary.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path -Parent $pruneSummaryPath) | Out-Null
+          $pruneSummary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pruneSummaryPath -Encoding utf8
+
+          "selected_mode=$selectedMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "cleanup_mode=$cleanupMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "expected_count=$($expectedFiles.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "stale_count=$($candidates.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "deleted_count=$($deleted.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "prune_summary_path=$pruneSummaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - name: Validate screenshot outputs and workflow manifests
+        id: validate_outputs
+        run: |
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $selection = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
+          $normalizedOutputRoot = $outputRoot.Replace('\', '/').Trim('/')
+
+          $includeManuals = $selection -in @('all', 'manuals')
+          $includeCatalog = $selection -in @('all', 'catalog')
+
+          $trackedPngs = git ls-files "$outputRoot/**/*.png"
+          $expectedFiles = @()
+          foreach ($file in $trackedPngs) {
+            $normalizedFile = $file.Replace('\', '/')
+            $isManual = $normalizedFile -like "$normalizedOutputRoot/manuals/*"
+            if (($isManual -and $includeManuals) -or (-not $isManual -and $includeCatalog)) {
+              $expectedFiles += $file
+            }
+          }
+
+          $missingFiles = @()
+          $zeroByteFiles = @()
+          foreach ($expected in $expectedFiles) {
+            if (-not (Test-Path -LiteralPath $expected)) {
+              $missingFiles += $expected
+              continue
+            }
+
+            $size = (Get-Item -LiteralPath $expected).Length
+            if ($size -le 0) {
+              $zeroByteFiles += $expected
+            }
+          }
+
+          $manifestPaths = Get-ChildItem -Path _artifacts -Recurse -Filter manifest.json -File -ErrorAction SilentlyContinue
+          $failedSteps = New-Object System.Collections.Generic.List[string]
+
+          function Get-FailedManifestStatuses {
+            param(
+              [Parameter(Mandatory = $true)] [object] $Node,
+              [Parameter(Mandatory = $true)] [string] $ManifestPath,
+              [string] $Context = ''
+            )
+
+            if ($null -eq $Node) {
+              return
+            }
+
+            if ($Node -is [System.Collections.IEnumerable] -and -not ($Node -is [string])) {
+              foreach ($item in $Node) {
+                Get-FailedManifestStatuses -Node $item -ManifestPath $ManifestPath -Context $Context
+              }
+              return
+            }
+
+            if ($Node -is [pscustomobject] -or $Node -is [hashtable]) {
+              $statusProp = $Node.PSObject.Properties['status']
+              if ($statusProp -and $statusProp.Value -eq 'failed') {
+                $stepName = $Node.PSObject.Properties['name']?.Value
+                if (-not $stepName) {
+                  $stepName = $Node.PSObject.Properties['id']?.Value
+                }
+                if (-not $stepName) {
+                  $stepName = $Context
+                }
+                if (-not $stepName) {
+                  $stepName = '(unknown-step)'
+                }
+                $failedSteps.Add("$ManifestPath :: $stepName") | Out-Null
+              }
+
+              foreach ($property in $Node.PSObject.Properties) {
+                $nextContext = if ($Context) { "$Context/$($property.Name)" } else { $property.Name }
+                Get-FailedManifestStatuses -Node $property.Value -ManifestPath $ManifestPath -Context $nextContext
+              }
+            }
+          }
+
+          foreach ($manifest in $manifestPaths) {
+            try {
+              $json = Get-Content -LiteralPath $manifest.FullName -Raw | ConvertFrom-Json
+              $manifestRel = $manifest.FullName.Replace((Resolve-Path .).Path, '.').Replace('\', '/')
+              Get-FailedManifestStatuses -Node $json -ManifestPath $manifestRel
+            }
+            catch {
+              $manifestRel = $manifest.FullName.Replace((Resolve-Path .).Path, '.').Replace('\', '/')
+              $failedSteps.Add("$manifestRel :: (invalid-json)") | Out-Null
+            }
+          }
+
+          $validationFailed = ($missingFiles.Count -gt 0) -or ($zeroByteFiles.Count -gt 0) -or ($failedSteps.Count -gt 0)
+          if ($validationFailed) {
+            "passed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            $summary = @(
+              '## Screenshot validation failed',
+              '',
+              "Expected PNG set checked: **$($expectedFiles.Count)** file(s) for selection ``$selection`` under ``$outputRoot``."
+            )
+
+            if ($missingFiles.Count -gt 0) {
+              $summary += ''
+              $summary += "### Missing PNG files ($($missingFiles.Count))"
+              $summary += ($missingFiles | ForEach-Object { "- ``$_``" })
+            }
+
+            if ($zeroByteFiles.Count -gt 0) {
+              $summary += ''
+              $summary += "### Zero-byte PNG files ($($zeroByteFiles.Count))"
+              $summary += ($zeroByteFiles | ForEach-Object { "- ``$_``" })
+            }
+
+            if ($failedSteps.Count -gt 0) {
+              $summary += ''
+              $summary += "### Failed workflow manifest steps ($($failedSteps.Count))"
+              $summary += ($failedSteps | ForEach-Object { "- ``$_``" })
+            }
+
+            $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            throw "Screenshot validation failed."
+          }
+
+          "passed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Screenshot validation passed. Checked $($expectedFiles.Count) expected PNG file(s) and $($manifestPaths.Count) manifest file(s)."
 
       - name: Detect screenshot changes
         id: detect_changes
@@ -220,9 +613,76 @@ jobs:
             Write-Host "No changes detected under $outputRoot"
           }
 
+      - name: Classify screenshot diffs
+        id: classify_diffs
+        if: steps.detect_changes.outputs.changed == 'true'
+        run: |
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $approvalState = if ("${{ github.event_name == 'workflow_dispatch' && inputs.approve_review_needed || 'false' }}" -eq 'true') { 'approved' } else { 'pending' }
+          $approvalReason = "${{ github.event_name == 'workflow_dispatch' && inputs.review_approval_note || '' }}"
+
+          if ($approvalState -eq 'approved' -and [string]::IsNullOrWhiteSpace($approvalReason)) {
+            throw 'approve_review_needed=true requires review_approval_note for auditability.'
+          }
+
+          New-Item -ItemType Directory -Force -Path artifacts/screenshot-diff | Out-Null
+          $changedFilesPath = 'artifacts/screenshot-diff/changed-files.txt'
+          $diffFiles = @(git diff --name-only -- "$outputRoot/**/*.png")
+          $diffFiles | Set-Content -LiteralPath $changedFilesPath -Encoding utf8
+
+          $baselineRoot = Join-Path (Resolve-Path .).Path '_baseline'
+          if (Test-Path -LiteralPath $baselineRoot) {
+            Remove-Item -LiteralPath $baselineRoot -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $baselineRoot | Out-Null
+          git archive HEAD -- "$outputRoot" | tar -xf - -C $baselineRoot
+
+          $jsonPath = 'artifacts/screenshot-diff/diff-summary.json'
+          $reportDir = 'artifacts/screenshot-diff/report'
+
+          python scripts/dev/screenshot_diff_report.py `
+            --current-root . `
+            --baseline-root $baselineRoot `
+            --config scripts/dev/screenshot-diff-config.json `
+            --report-dir $reportDir `
+            --changed-files $changedFilesPath `
+            --approval $approvalState `
+            --approval-actor "${{ github.actor }}" `
+            --approval-reason "$approvalReason" `
+            --output-json $jsonPath
+
+          $result = Get-Content -LiteralPath $jsonPath -Raw | ConvertFrom-Json
+          $blockingCount = [int]$result.counts.'blocking-regression'
+          $reviewCount = [int]$result.counts.'review-needed'
+          $noiseCount = [int]$result.counts.'non-blocking-noise'
+          $reviewApprovalRequired = [bool]$result.gate.reviewApprovalRequired
+          $commitAllowed = -not $reviewApprovalRequired
+
+          "blocking_count=$blockingCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "review_needed_count=$reviewCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "non_blocking_count=$noiseCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "commit_allowed=$commitAllowed" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "report_dir=$reportDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "summary_json=$jsonPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+          if ($blockingCount -gt 0) {
+            throw "Blocking screenshot regressions detected ($blockingCount)."
+          }
+
+      - name: Upload screenshot diff report
+        if: always() && steps.detect_changes.outputs.changed == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-diff-report
+          path: artifacts/screenshot-diff/**
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Commit WPF desktop screenshots
         if: |
+          steps.validate_outputs.outputs.passed == 'true' &&
           steps.detect_changes.outputs.changed == 'true' &&
+          (steps.classify_diffs.outputs.commit_allowed == 'true') &&
           (github.event_name != 'workflow_dispatch' || inputs.commit == true)
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
@@ -246,6 +706,15 @@ jobs:
             "Output root: ``$outputRoot``"
             "PNG files found: **$pngCount**"
             "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
+            "Workflow mode: **${{ steps.prune.outputs.selected_mode }}**"
+            "Cleanup mode: **${{ steps.prune.outputs.cleanup_mode }}**"
+            "Expected files (selected mode): **${{ steps.prune.outputs.expected_count }}**"
+            "Stale candidates: **${{ steps.prune.outputs.stale_count }}**"
+            "Deleted files: **${{ steps.prune.outputs.deleted_count }}**"
+            "Blocking screenshot diffs: **${{ steps.classify_diffs.outputs.blocking_count || '0' }}**"
+            "Review-needed diffs: **${{ steps.classify_diffs.outputs.review_needed_count || '0' }}**"
+            "Non-blocking noise diffs: **${{ steps.classify_diffs.outputs.non_blocking_count || '0' }}**"
+            "Commit allowed by diff policy: **${{ steps.classify_diffs.outputs.commit_allowed || 'true' }}**"
             ''
             '### Environment'
             "Ref: ``${{ github.ref }}``"
@@ -253,4 +722,98 @@ jobs:
             "Runner OS: ``${{ runner.os }}``"
           )
 
+          $summaryPath = '${{ steps.prune.outputs.prune_summary_path }}'
+          if ($summaryPath -and (Test-Path -LiteralPath $summaryPath)) {
+            $pruneSummary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+
+            $lines += ''
+            $lines += '### Deleted files'
+            if (@($pruneSummary.deletedFiles).Count -gt 0) {
+              foreach ($file in @($pruneSummary.deletedFiles)) {
+                $lines += "- ``$file``"
+              }
+            }
+            else {
+              $lines += '- _None_'
+            }
+
+            $lines += ''
+            $lines += '### Dry-run stale candidates'
+            if (@($pruneSummary.staleCandidates).Count -gt 0) {
+              foreach ($file in @($pruneSummary.staleCandidates)) {
+                $lines += "- ``$file``"
+              }
+            }
+            else {
+              $lines += '- _None_'
+            }
+          }
+
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+  timing-summary:
+    name: Workflow timing summary
+    runs-on: windows-latest
+    timeout-minutes: 10
+    needs: desktop-screenshots
+    if: always() && github.actor != 'github-actions[bot]'
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Download timing artifacts
+        uses: actions/download-artifact@v5
+        with:
+          pattern: screenshot-runtime-*
+          path: _runtime
+          merge-multiple: true
+
+      - name: Compare runtime to baseline
+        run: |
+          $baselineMinutes = [double]${{ env.SCREENSHOT_TIMING_BASELINE_MINUTES }}
+          $thresholdPercent = [double]${{ env.SCREENSHOT_TIMING_REGRESSION_PERCENT }}
+
+          $timingFiles = @(Get-ChildItem -Path _runtime -Filter *.json -File -ErrorAction SilentlyContinue)
+          if ($timingFiles.Count -eq 0) {
+            throw 'No timing artifacts were produced by the screenshot matrix jobs.'
+          }
+
+          $records = @()
+          foreach ($file in $timingFiles) {
+            $records += Get-Content -Raw -LiteralPath $file.FullName | ConvertFrom-Json
+          }
+
+          $totalSeconds = ($records | Measure-Object -Property durationSeconds -Sum).Sum
+          $totalMinutes = [Math]::Round(($totalSeconds / 60.0), 2)
+          $allowedMinutes = [Math]::Round(($baselineMinutes * (1 + ($thresholdPercent / 100.0))), 2)
+          $deltaPercent = if ($baselineMinutes -gt 0) {
+            [Math]::Round((($totalMinutes - $baselineMinutes) / $baselineMinutes) * 100.0, 2)
+          }
+          else {
+            0
+          }
+
+          $lines = @(
+            '## UI Screenshot Runtime Summary',
+            '',
+            "Baseline: **$baselineMinutes min**",
+            "Regression threshold: **$thresholdPercent%**",
+            "Allowed max runtime: **$allowedMinutes min**",
+            "Measured total runtime: **$totalMinutes min**",
+            "Delta vs baseline: **$deltaPercent%**",
+            '',
+            '| Workflow | Duration (sec) |',
+            '| --- | ---: |'
+          )
+
+          foreach ($record in ($records | Sort-Object workflow)) {
+            $lines += "| $($record.workflow) | $($record.durationSeconds) |"
+          }
+
+          $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+          if ($totalMinutes -gt $allowedMinutes) {
+            throw "Screenshot runtime regression detected: $totalMinutes min exceeded allowed $allowedMinutes min ($thresholdPercent% over baseline)."
+          }

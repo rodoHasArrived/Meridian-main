@@ -399,3 +399,41 @@ If you encounter issues with these scripts:
 ---
 
 *This directory is part of the Meridian documentation automation system.*
+
+### Readiness and Coverage Dashboards
+
+The following generators emit both Markdown and JSON artifacts and support `--summary` for one-line CLI diagnostics.
+
+```bash
+python3 generate-pilot-readiness-dashboard.py \
+  --output docs/status/pilot-readiness-dashboard.md \
+  --json-output docs/status/pilot-readiness-dashboard.json \
+  --summary
+
+python3 generate-paper-replay-reliability-dashboard.py \
+  --output docs/status/paper-replay-reliability-dashboard.md \
+  --json-output docs/status/paper-replay-reliability-dashboard.json \
+  --summary
+
+python3 generate-evidence-continuity-dashboard.py \
+  --output docs/status/evidence-continuity-dashboard.md \
+  --json-output docs/status/evidence-continuity-dashboard.json \
+  --summary
+
+python3 generate-governance-readiness-dashboard.py \
+  --output docs/status/governance-readiness-dashboard.md \
+  --json-output docs/status/governance-readiness-dashboard.json \
+  --summary
+
+python3 generate-api-contract-coverage-dashboard.py \
+  --output docs/status/api-contract-coverage-dashboard.md \
+  --json-output docs/status/api-contract-coverage-dashboard.json \
+  --summary
+```
+
+**Expected outputs:**
+- `docs/status/pilot-readiness-dashboard.md` + `.json`
+- `docs/status/paper-replay-reliability-dashboard.md` + `.json`
+- `docs/status/evidence-continuity-dashboard.md` + `.json`
+- `docs/status/governance-readiness-dashboard.md` + `.json`
+- `docs/status/api-contract-coverage-dashboard.md` + `.json`

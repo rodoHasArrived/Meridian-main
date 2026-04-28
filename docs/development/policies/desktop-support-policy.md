@@ -21,12 +21,12 @@ Expected for WPF-affecting changes:
 ## Required checks by change type
 
 ### WPF-only change
-- `make build-wpf`
-- `make test-desktop-services`
+- `make desktop-build`
+- `make desktop-test`
 
 ### Shared desktop services change (`Ui.Services` or shared contracts)
-- `make build-wpf`
-- `make test-desktop-services`
+- `make desktop-build`
+- `make desktop-test`
 
 ## Ownership and maintenance expectations
 

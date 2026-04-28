@@ -29,6 +29,10 @@ $preflight = Invoke-MeridianPreflight `
     -Scenario 'dk1-pilot-parity-packet' `
     -RequiredPaths @($SummaryJsonPath) `
     -WritableDirectories @($summaryDir) `
+<<<<<<< HEAD
+=======
+    -EmitJson `
+>>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
     -AllowWarnings
 
 if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath) -and -not (Test-Path -LiteralPath $OperatorSignoffPath)) {

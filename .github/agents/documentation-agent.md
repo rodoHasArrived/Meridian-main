@@ -398,6 +398,7 @@ Meridian-main
 │   │   ├── makefile.yml
 │   │   ├── nightly.yml
 │   │   ├── pr-checks.yml
+│   │   ├── program-state-validation.yml
 │   │   ├── prompt-generation.yml
 │   │   ├── python-package-conda.yml
 │   │   ├── readme-tree.yml
@@ -416,7 +417,8 @@ Meridian-main
 │   │   ├── test-matrix.yml
 │   │   ├── ticker-data-collection.yml
 │   │   ├── update-diagrams.yml
-│   │   └── validate-workflows.yml
+│   │   ├── validate-workflows.yml
+│   │   └── workflow-docs-parity.yml
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
 │   ├── labeler.yml
@@ -634,14 +636,22 @@ Meridian-main
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── check-ai-inventory.py
 │       │   ├── create-todo-issues.py
+│       │   ├── dashboard_rendering.py
 │       │   ├── generate-ai-navigation.py
+│       │   ├── generate-api-contract-coverage-dashboard.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
+│       │   ├── generate-evidence-continuity-dashboard.py
+│       │   ├── generate-governance-readiness-dashboard.py
 │       │   ├── generate-health-dashboard.py
 │       │   ├── generate-metrics-dashboard.py
+│       │   ├── generate-paper-replay-reliability-dashboard.py
+│       │   ├── generate-pilot-readiness-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── generate-workflow-manifest.py
+│       │   ├── lint-command-snippets.py
 │       │   ├── README.md
 │       │   ├── repair-links.py
 │       │   ├── rules-engine.py
@@ -800,6 +810,7 @@ Meridian-main
 │   │   ├── adding-custom-rules.md
 │   │   ├── build-observability.md
 │   │   ├── central-package-management.md
+│   │   ├── desktop-command-surface-migration.md
 │   │   ├── desktop-testing-guide.md
 │   │   ├── desktop-workflow-automation.md
 │   │   ├── documentation-automation.md
@@ -821,6 +832,78 @@ Meridian-main
 │   │   ├── ui-fixture-mode-guide.md
 │   │   └── wpf-implementation-notes.md
 │   ├── diagrams
+│   │   ├── analytics
+│   │   │   ├── backtesting-engine.dot
+│   │   │   ├── backtesting-engine.png
+│   │   │   ├── backtesting-engine.svg
+│   │   │   └── README.md
+│   │   ├── architecture
+│   │   │   ├── c4
+│   │   │   │   ├── c4-level1-context.dot
+│   │   │   │   ├── c4-level1-context.png
+│   │   │   │   ├── c4-level1-context.svg
+│   │   │   │   ├── c4-level2-containers.dot
+│   │   │   │   ├── c4-level2-containers.png
+│   │   │   │   ├── c4-level2-containers.svg
+│   │   │   │   ├── c4-level3-components.dot
+│   │   │   │   ├── c4-level3-components.png
+│   │   │   │   └── c4-level3-components.svg
+│   │   │   ├── platform
+│   │   │   │   ├── domain-event-model.dot
+│   │   │   │   ├── domain-event-model.png
+│   │   │   │   ├── domain-event-model.svg
+│   │   │   │   ├── fsharp-domain.dot
+│   │   │   │   ├── fsharp-domain.png
+│   │   │   │   ├── fsharp-domain.svg
+│   │   │   │   ├── mcp-server.dot
+│   │   │   │   ├── mcp-server.png
+│   │   │   │   ├── mcp-server.svg
+│   │   │   │   ├── project-dependencies.dot
+│   │   │   │   ├── project-dependencies.png
+│   │   │   │   ├── project-dependencies.svg
+│   │   │   │   ├── provider-architecture.dot
+│   │   │   │   ├── provider-architecture.png
+│   │   │   │   ├── provider-architecture.svg
+│   │   │   │   ├── runtime-hosts.dot
+│   │   │   │   ├── runtime-hosts.png
+│   │   │   │   ├── runtime-hosts.svg
+│   │   │   │   ├── storage-architecture.dot
+│   │   │   │   ├── storage-architecture.png
+│   │   │   │   ├── storage-architecture.svg
+│   │   │   │   ├── workstation-delivery.dot
+│   │   │   │   ├── workstation-delivery.png
+│   │   │   │   └── workstation-delivery.svg
+│   │   │   └── README.md
+│   │   ├── operations
+│   │   │   ├── data-quality-monitoring.dot
+│   │   │   ├── data-quality-monitoring.png
+│   │   │   ├── data-quality-monitoring.svg
+│   │   │   ├── deployment-options.dot
+│   │   │   ├── deployment-options.png
+│   │   │   ├── deployment-options.svg
+│   │   │   ├── README.md
+│   │   │   ├── resilience-patterns.dot
+│   │   │   ├── resilience-patterns.png
+│   │   │   └── resilience-patterns.svg
+│   │   ├── reference
+│   │   │   ├── cli-commands.dot
+│   │   │   ├── cli-commands.png
+│   │   │   ├── cli-commands.svg
+│   │   │   ├── configuration-management.dot
+│   │   │   ├── configuration-management.png
+│   │   │   ├── configuration-management.svg
+│   │   │   ├── README.md
+│   │   │   ├── symbol-search-resolution.dot
+│   │   │   ├── symbol-search-resolution.png
+│   │   │   └── symbol-search-resolution.svg
+│   │   ├── ui
+│   │   │   ├── README.md
+│   │   │   ├── ui-implementation-flow.dot
+│   │   │   ├── ui-implementation-flow.png
+│   │   │   ├── ui-implementation-flow.svg
+│   │   │   ├── ui-navigation-map.dot
+│   │   │   ├── ui-navigation-map.png
+│   │   │   └── ui-navigation-map.svg
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
@@ -890,91 +973,34 @@ Meridian-main
 │   │   │   ├── Use Case Diagram - Meridian.svg
 │   │   │   ├── use-case-diagram.png
 │   │   │   └── use-case-diagram.puml
-│   │   ├── backfill-workflow.dot
-│   │   ├── backfill-workflow.png
-│   │   ├── backfill-workflow.svg
-│   │   ├── backtesting-engine.dot
-│   │   ├── backtesting-engine.png
-│   │   ├── backtesting-engine.svg
-│   │   ├── c4-level1-context.dot
-│   │   ├── c4-level1-context.png
-│   │   ├── c4-level1-context.svg
-│   │   ├── c4-level2-containers.dot
-│   │   ├── c4-level2-containers.png
-│   │   ├── c4-level2-containers.svg
-│   │   ├── c4-level3-components.dot
-│   │   ├── c4-level3-components.png
-│   │   ├── c4-level3-components.svg
-│   │   ├── cli-commands.dot
-│   │   ├── cli-commands.png
-│   │   ├── cli-commands.svg
-│   │   ├── configuration-management.dot
-│   │   ├── configuration-management.png
-│   │   ├── configuration-management.svg
-│   │   ├── data-flow.dot
-│   │   ├── data-flow.png
-│   │   ├── data-flow.svg
-│   │   ├── data-quality-monitoring.dot
-│   │   ├── data-quality-monitoring.png
-│   │   ├── data-quality-monitoring.svg
-│   │   ├── deployment-options.dot
-│   │   ├── deployment-options.png
-│   │   ├── deployment-options.svg
-│   │   ├── domain-event-model.dot
-│   │   ├── domain-event-model.png
-│   │   ├── domain-event-model.svg
-│   │   ├── event-pipeline-sequence.dot
-│   │   ├── event-pipeline-sequence.png
-│   │   ├── event-pipeline-sequence.svg
-│   │   ├── execution-layer.dot
-│   │   ├── execution-layer.png
-│   │   ├── execution-layer.svg
-│   │   ├── fsharp-domain.dot
-│   │   ├── fsharp-domain.png
-│   │   ├── fsharp-domain.svg
-│   │   ├── fund-ops-reconciliation.dot
-│   │   ├── fund-ops-reconciliation.png
-│   │   ├── fund-ops-reconciliation.svg
-│   │   ├── mcp-server.dot
-│   │   ├── mcp-server.png
-│   │   ├── mcp-server.svg
-│   │   ├── onboarding-flow.dot
-│   │   ├── onboarding-flow.png
-│   │   ├── onboarding-flow.svg
-│   │   ├── project-dependencies.dot
-│   │   ├── project-dependencies.png
-│   │   ├── project-dependencies.svg
-│   │   ├── provider-architecture.dot
-│   │   ├── provider-architecture.png
-│   │   ├── provider-architecture.svg
-│   │   ├── README.md
-│   │   ├── resilience-patterns.dot
-│   │   ├── resilience-patterns.png
-│   │   ├── resilience-patterns.svg
-│   │   ├── runtime-hosts.dot
-│   │   ├── runtime-hosts.png
-│   │   ├── runtime-hosts.svg
-│   │   ├── security-master-lifecycle.dot
-│   │   ├── security-master-lifecycle.png
-│   │   ├── security-master-lifecycle.svg
-│   │   ├── storage-architecture.dot
-│   │   ├── storage-architecture.png
-│   │   ├── storage-architecture.svg
-│   │   ├── strategy-lifecycle.dot
-│   │   ├── strategy-lifecycle.png
-│   │   ├── strategy-lifecycle.svg
-│   │   ├── symbol-search-resolution.dot
-│   │   ├── symbol-search-resolution.png
-│   │   ├── symbol-search-resolution.svg
-│   │   ├── ui-implementation-flow.dot
-│   │   ├── ui-implementation-flow.png
-│   │   ├── ui-implementation-flow.svg
-│   │   ├── ui-navigation-map.dot
-│   │   ├── ui-navigation-map.png
-│   │   ├── ui-navigation-map.svg
-│   │   ├── workstation-delivery.dot
-│   │   ├── workstation-delivery.png
-│   │   └── workstation-delivery.svg
+│   │   ├── workflows
+│   │   │   ├── operations
+│   │   │   │   ├── backfill-workflow.dot
+│   │   │   │   ├── backfill-workflow.png
+│   │   │   │   ├── backfill-workflow.svg
+│   │   │   │   ├── data-flow.dot
+│   │   │   │   ├── data-flow.png
+│   │   │   │   ├── data-flow.svg
+│   │   │   │   ├── event-pipeline-sequence.dot
+│   │   │   │   ├── event-pipeline-sequence.png
+│   │   │   │   ├── event-pipeline-sequence.svg
+│   │   │   │   ├── execution-layer.dot
+│   │   │   │   ├── execution-layer.png
+│   │   │   │   ├── execution-layer.svg
+│   │   │   │   ├── fund-ops-reconciliation.dot
+│   │   │   │   ├── fund-ops-reconciliation.png
+│   │   │   │   ├── fund-ops-reconciliation.svg
+│   │   │   │   ├── onboarding-flow.dot
+│   │   │   │   ├── onboarding-flow.png
+│   │   │   │   ├── onboarding-flow.svg
+│   │   │   │   ├── security-master-lifecycle.dot
+│   │   │   │   ├── security-master-lifecycle.png
+│   │   │   │   ├── security-master-lifecycle.svg
+│   │   │   │   ├── strategy-lifecycle.dot
+│   │   │   │   ├── strategy-lifecycle.png
+│   │   │   │   └── strategy-lifecycle.svg
+│   │   │   └── README.md
+│   │   └── README.md
 │   ├── docfx
 │   │   ├── api
 │   │   │   ├── .manifest
@@ -4604,6 +4630,7 @@ Meridian-main
 │   │   ├── provider-registry.md
 │   │   ├── README.md
 │   │   ├── repository-structure.md
+│   │   ├── workflow-command-reference.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
 │   │   ├── pilot-operator-quickstart.md
@@ -4709,6 +4736,7 @@ Meridian-main
 │   │   └── strategy-promotion-history.md
 │   ├── screenshots
 │   │   ├── desktop
+│   │   │   ├── catalog.json
 │   │   │   ├── wpf-backfill.png
 │   │   │   ├── wpf-backtest.png
 │   │   │   ├── wpf-dashboard.png
@@ -4789,6 +4817,8 @@ Meridian-main
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
+│   │   ├── program-state-summary.json
+│   │   ├── program-state-summary.md
 │   │   ├── PROGRAM_STATE.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
@@ -4796,9 +4826,13 @@ Meridian-main
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
+│   │   ├── run-contract.schema.json
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
-│   │   └── wave4-evidence-template.md
+│   │   ├── wave4-evidence-template.md
+│   │   ├── workflow-drift-report.md
+│   │   ├── workflow-manifest.json
+│   │   └── workflow-validation-summary.json
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
@@ -4855,6 +4889,15 @@ Meridian-main
 │   ├── dev
 │   │   ├── fixtures
 │   │   │   └── robinhood-options-smoke.seed.json
+│   │   ├── shared
+│   │   │   └── retry.ps1
+│   │   ├── workflow-profiles
+│   │   │   ├── debug-startup.json
+│   │   │   ├── manual-data-operations.json
+│   │   │   ├── manual-governance.json
+│   │   │   ├── manual-overview.json
+│   │   │   ├── manual-research-and-trading.json
+│   │   │   └── screenshot-catalog.json
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── cleanup-generated.ps1
@@ -4864,23 +4907,34 @@ Meridian-main
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
+│   │   ├── screenshot-diff-config.json
+│   │   ├── screenshot_diff_report.py
 │   │   ├── SharedBuild.ps1
+│   │   ├── SharedCheckpoint.ps1
+│   │   ├── SharedPreflight.ps1
+│   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── validate-operator-inbox-route.ps1
-│   │   └── validate-position-blotter-route.ps1
+│   │   ├── validate-position-blotter-route.ps1
+│   │   ├── validate-screenshot-contract.py
+│   │   └── validate-workflow-profile.ps1
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
 │   ├── check_contract_compatibility_gate.py
 │   ├── check_program_state_consistency.py
+│   ├── check_workflow_docs_parity.py
 │   ├── compare_benchmarks.py
+│   ├── compare_run_contract.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── generate_contract_review_packet.py
+│   ├── generate_program_state_summary.py
 │   ├── report_canonicalization_drift.py
 │   └── wpf_finance_ux_checks.py
 ├── src
@@ -7680,12 +7734,16 @@ Meridian-main
 │   │   ├── setup-verification.sh
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
+│   │   ├── test_compare_run_contract.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_maintenance_full_workflow.py
-│   │   └── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   └── test_screenshot_diff_report.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md

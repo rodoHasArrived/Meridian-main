@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "workflow": "screenshot-catalog",
+  "desktopDirectory": "docs/screenshots/desktop",
+  "screenshots": [
+    {
+      "id": "D01",
+      "captureName": "wpf-dashboard",
+      "filename": "wpf-dashboard.png",
+      "pageTag": "StrategyShell",
+      "docLabel": "Dashboard"
+    },
+    {
+      "id": "D02",
+      "captureName": "wpf-providers",
+      "filename": "wpf-providers.png",
+      "pageTag": "Provider",
+      "docLabel": "Providers"
+    },
+    {
+      "id": "D03",
+      "captureName": "wpf-provider-health",
+      "filename": "wpf-provider-health.png",
+      "pageTag": "ProviderHealth",
+      "docLabel": "Provider Health"
+    },
+    {
+      "id": "D04",
+      "captureName": "wpf-backfill",
+      "filename": "wpf-backfill.png",
+      "pageTag": "Backfill",
+      "docLabel": "Backfill"
+    },
+    {
+      "id": "D05",
+      "captureName": "wpf-symbols",
+      "filename": "wpf-symbols.png",
+      "pageTag": "Symbols",
+      "docLabel": "Symbols"
+    },
+    {
+      "id": "D06",
+      "captureName": "wpf-live-data",
+      "filename": "wpf-live-data.png",
+      "pageTag": "LiveData",
+      "docLabel": "Live Data"
+    },
+    {
+      "id": "D07",
+      "captureName": "wpf-storage",
+      "filename": "wpf-storage.png",
+      "pageTag": "Storage",
+      "docLabel": "Storage"
+    },
+    {
+      "id": "D08",
+      "captureName": "wpf-data-quality",
+      "filename": "wpf-data-quality.png",
+      "pageTag": "DataQuality",
+      "docLabel": "Data Quality"
+    },
+    {
+      "id": "D09",
+      "captureName": "wpf-data-browser",
+      "filename": "wpf-data-browser.png",
+      "pageTag": "DataBrowser",
+      "docLabel": "Data Browser"
+    },
+    {
+      "id": "D10",
+      "captureName": "wpf-strategy-runs",
+      "filename": "wpf-strategy-runs.png",
+      "pageTag": "StrategyRuns",
+      "docLabel": "Strategy Runs"
+    },
+    {
+      "id": "D11",
+      "captureName": "wpf-backtest",
+      "filename": "wpf-backtest.png",
+      "pageTag": "Backtest",
+      "docLabel": "Backtest"
+    },
+    {
+      "id": "D12",
+      "captureName": "wpf-quant-script",
+      "filename": "wpf-quant-script.png",
+      "pageTag": "QuantScript",
+      "docLabel": "Quant Script"
+    },
+    {
+      "id": "D13",
+      "captureName": "wpf-security-master",
+      "filename": "wpf-security-master.png",
+      "pageTag": "SecurityMaster",
+      "docLabel": "Security Master"
+    },
+    {
+      "id": "D14",
+      "captureName": "wpf-diagnostics",
+      "filename": "wpf-diagnostics.png",
+      "pageTag": "Diagnostics",
+      "docLabel": "Diagnostics"
+    },
+    {
+      "id": "D15",
+      "captureName": "wpf-settings",
+      "filename": "wpf-settings.png",
+      "pageTag": "Settings",
+      "docLabel": "Settings"
+    }
+  ]
+}
