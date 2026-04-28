@@ -232,7 +232,11 @@ jobs:
           }
 
           $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
-          $allDefinitions = @($workflowConfig.workflows)
+          if ($null -eq $workflowConfig.workflows) {
+            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+          }
+
+          $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
           if ($allDefinitions.Count -eq 0) {
             throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
           }
