@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meridian/docs/status/run-contract.schema.json",
+  "title": "Meridian Run Contract",
+  "description": "Canonical run-contract payload for Wave 1 provider validation, desktop workflow automation, and readiness projection evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "generatedAtUtc",
+    "workflows"
+  ],
+  "properties": {
+    "contractVersion": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+$"
+    },
+    "generatedAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "baselineRef": {
+      "type": "string",
+      "description": "Identifier of the approved baseline packet/run this payload should compare against."
+    },
+    "workflows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/workflow"
+      }
+    }
+  },
+  "$defs": {
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflowId",
+        "displayName",
+        "gateStatus",
+        "invariantCheckpoints",
+        "keyMetrics",
+        "acceptedToleranceWindows",
+        "requiredArtifactPaths"
+      ],
+      "properties": {
+        "workflowId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gateStatus": {
+          "$ref": "#/$defs/status"
+        },
+        "invariantCheckpoints": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/checkpoint"
+          }
+        },
+        "keyMetrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/metric"
+          }
+        },
+        "acceptedToleranceWindows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/toleranceWindow"
+          }
+        },
+        "requiredArtifactPaths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/artifactRequirement"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warning",
+        "fail",
+        "not-run"
+      ]
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "details": {
+          "type": "string"
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "value",
+        "unit",
+        "direction"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "higher_is_better",
+            "lower_is_better",
+            "stable"
+          ]
+        }
+      }
+    },
+    "toleranceWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metricId",
+        "warningDegradationPercent",
+        "failureDegradationPercent"
+      ],
+      "properties": {
+        "metricId": {
+          "type": "string"
+        },
+        "warningDegradationPercent": {
+          "type": "number",
+          "minimum": 0
+        },
+        "failureDegradationPercent": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "artifactRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "path",
+        "required"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
