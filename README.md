@@ -6732,6 +6732,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── TradingWorkspaceShellPresentationModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceQueueRegionState.cs
@@ -6803,6 +6804,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TickerStripService.cs
 │       │   ├── ToastNotificationService.cs
 │       │   ├── TooltipService.cs
+│       │   ├── TradingWorkspaceShellPresentationService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
 │       │   ├── WindowStartupRecovery.cs
@@ -6907,6 +6909,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
+│       │   ├── TradingWorkspaceShellViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
 │       │   ├── WorkspacePageViewModel.cs
@@ -7768,6 +7771,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
+│   │   │   ├── TradingWorkspaceShellViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
@@ -7802,15 +7806,17 @@ Use these documents together when planning or implementing new work:
 │   ├── coverlet.runsettings
 │   ├── scripts
 │   │   ├── setup-verification.sh
+│   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_maintenance_full_workflow.py
 │   │   └── test_prepare_dk1_operator_signoff.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-587 directories, 7080 files
+587 directories, 7086 files
 ```
 <!-- readme-tree end -->
