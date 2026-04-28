@@ -21,11 +21,7 @@
         {
           "title": "Research Workspace",
           "pageTag": "StrategyShell",
-<<<<<<< HEAD
           "captureName": "wpf-research-workspace",
-=======
-          "captureName": "wpf-dashboard",
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
           "notes": "Validate that the shell loads cleanly and the Research workspace remains screenshot ready."
         },
         {

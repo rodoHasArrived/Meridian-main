@@ -480,27 +480,12 @@ function Wait-ForShellPage {
     param(
         [System.Diagnostics.Process]$Process,
         [string]$ExpectedPageTag,
-        [string[]]$AcceptedPageTags = @(),
         [int]$TimeoutSec = 12
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
     $lastState = $null
-<<<<<<< HEAD
     $expectedCanonicalPageTag = Resolve-WorkflowPageTag -PageTag $ExpectedPageTag
-=======
-    $acceptableTags = @()
-
-    if (-not [string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
-        $acceptableTags += $ExpectedPageTag
-    }
-
-    if ($AcceptedPageTags) {
-        $acceptableTags += @($AcceptedPageTags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-    }
-
-    $acceptableTags = @($acceptableTags | Select-Object -Unique)
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
 
     while ((Get-Date) -lt $deadline) {
         if ($null -ne $Process -and $Process.HasExited) {
@@ -511,16 +496,9 @@ function Wait-ForShellPage {
         $window = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
         $lastState = Get-ShellAutomationState -Window $window
 
-<<<<<<< HEAD
         if ($lastState.Ready -and (
                 [string]::IsNullOrWhiteSpace($expectedCanonicalPageTag) -or
                 [string]::Equals($lastState.PageTag, $expectedCanonicalPageTag, [System.StringComparison]::Ordinal))) {
-=======
-        $pageMatches = [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
-            ($acceptableTags -contains $lastState.PageTag)
-
-        if ($lastState.Ready -and $pageMatches) {
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
             return [pscustomobject]@{
                 Window = $window
                 State = $lastState
@@ -532,17 +510,7 @@ function Wait-ForShellPage {
 
     $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
     $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
-<<<<<<< HEAD
     throw "Requested page '$ExpectedPageTag' (canonical '$expectedCanonicalPageTag') was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
-=======
-
-    if ([string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
-        throw "Shell readiness markers were not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
-    }
-
-    $acceptedSummary = if ($acceptableTags.Count -gt 0) { $acceptableTags -join "', '" } else { '' }
-    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Accepted page tags: '$acceptedSummary'. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
 }
 
 function Wait-ForStableShellPage {
@@ -1152,15 +1120,7 @@ try {
         $stepIndex += 1
         $title = [string](Get-ConfigValue -Table $step -Key 'title' -Fallback "Step $stepIndex")
         $pageTag = [string](Get-ConfigValue -Table $step -Key 'pageTag' -Fallback '')
-<<<<<<< HEAD
         $expectedPageTag = Resolve-WorkflowPageTag -PageTag $pageTag
-=======
-        $acceptedPageTags = @()
-        if ($step.Contains('acceptedPageTags')) {
-            $acceptedPageTags = @($step.acceptedPageTags)
-        }
-
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
         $notes = [string](Get-ConfigValue -Table $step -Key 'notes' -Fallback '')
         $keys = [string](Get-ConfigValue -Table $step -Key 'keys' -Fallback '')
         $launchArgs = @()
@@ -1182,11 +1142,7 @@ try {
             index = $stepIndex
             title = $title
             pageTag = $pageTag
-<<<<<<< HEAD
             expectedPageTag = $expectedPageTag
-=======
-            acceptedPageTags = $acceptedPageTags
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
             notes = $notes
             keys = $keys
             launchArgs = $launchArgs
@@ -1262,8 +1218,7 @@ try {
                     }
 
                     $expectedTags = @()
-                    if (-not [string]::IsNullOrWhiteSpace($pageTag)) { $expectedTags += $pageTag }
-                    if ($acceptedPageTags) { $expectedTags += @($acceptedPageTags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) }
+                    if (-not [string]::IsNullOrWhiteSpace($expectedPageTag)) { $expectedTags += $expectedPageTag }
                     $expectedTags = @($expectedTags | Select-Object -Unique)
 
                     if ($expectedTags.Count -gt 0 -and -not ($expectedTags -contains $shellState.PageTag)) {

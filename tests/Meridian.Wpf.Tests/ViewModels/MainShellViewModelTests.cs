@@ -682,7 +682,7 @@ public sealed class MainShellViewModelTests
 
             vm.OpenOperatorInboxCommand.Execute(null);
 
-            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentWorkspace.Should().Be("accounting");
             vm.CurrentPageTag.Should().Be("FundReconciliation");
         });
     }
