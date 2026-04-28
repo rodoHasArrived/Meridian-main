@@ -290,12 +290,23 @@ jobs:
           }
 
           $candidates = New-Object System.Collections.Generic.List[string]
+          $manualsRoot = [System.IO.Path]::GetFullPath((Join-Path $outputRoot 'manuals'))
+          $manualsRootPrefix = $manualsRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
           foreach ($managedDir in $managedDirectories) {
             if (-not (Test-Path -LiteralPath $managedDir)) {
               continue
             }
 
-            $pngs = Get-ChildItem -LiteralPath $managedDir -Recurse -File -Filter '*.png' -ErrorAction SilentlyContinue
+            $normalizedManagedDir = [System.IO.Path]::GetFullPath($managedDir)
+            $scanRecursively = $normalizedManagedDir.Equals($manualsRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+              $normalizedManagedDir.StartsWith($manualsRootPrefix, [System.StringComparison]::OrdinalIgnoreCase)
+
+            if ($scanRecursively) {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -Recurse -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+            else {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
             foreach ($png in $pngs) {
               $fullPath = [System.IO.Path]::GetFullPath($png.FullName)
               if (-not $expectedFiles.Contains($fullPath)) {
