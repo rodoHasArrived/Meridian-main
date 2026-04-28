@@ -337,6 +337,15 @@ When `--auto-create-todos` is enabled:
 3. If scan-todos fails, issue creation is skipped with a clear error message
 4. On success, it calls `create-todo-issues.py` with `--output-json docs/status/todo-issue-creation-summary.json`
 
+
+### Dashboard JSON Source-of-Truth
+
+The dashboard generators (`generate-health-dashboard.py` and `generate-metrics-dashboard.py`) use **JSON as the canonical stage**:
+
+1. The script computes metrics and writes canonical JSON (`--json-output`).
+2. Markdown rendering (`--output`) loads that JSON payload and renders deterministically from it.
+3. Automation should always pass both flags for dashboards, so Markdown cannot drift from the machine-readable payload.
+4. Required evidence inputs are validated; missing evidence causes a non-zero exit to surface automation drift early.
 ## Status Dashboard Evidence Surfaces
 
 Use the dashboards below as the canonical generated status surfaces for readiness evidence triage. Each dashboard includes both a Markdown operator view (`.md`) and machine-readable sidecar (`.json`) path so automation and human review stay aligned.
@@ -423,9 +432,12 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/status/TODO.md` | scan-todos.py | TODO tracking |
 | `docs/status/todo-scan-results.json` | scan-todos.py | Machine-readable TODO scan results used for auto issue creation |
 | `docs/status/todo-issue-creation-summary.json` | create-todo-issues.py | Machine-readable issue creation summary with status counts and issue numbers |
-| `docs/status/health-dashboard.md` | generate-health-dashboard.py | Health metrics |
+| `docs/status/health-dashboard.md` | generate-health-dashboard.py | Health metrics rendered from canonical JSON |
+| `docs/status/health-dashboard.json` | generate-health-dashboard.py | Canonical health dashboard payload |
 | `docs/status/link-repair-report.md` | repair-links.py | Broken link report |
 | `docs/status/example-validation.md` | validate-examples.py | Code example validation |
+| `docs/status/metrics-dashboard.md` | generate-metrics-dashboard.py | Build/test metrics rendered from canonical JSON |
+| `docs/status/metrics-dashboard.json` | generate-metrics-dashboard.py | Canonical metrics dashboard payload |
 | `docs/status/ai-inventory-report.md` | check-ai-inventory.py | AI assistant asset catalog drift report |
 | `docs/status/ai-inventory-report.json` | check-ai-inventory.py | Machine-readable AI inventory and drift findings |
 | `docs/status/coverage-report.md` | generate-coverage.py | Documentation coverage |

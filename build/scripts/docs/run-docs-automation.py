@@ -53,7 +53,7 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
-        "args": ["--output", "docs/status/health-dashboard.md"],
+        "args": ["--output", "docs/status/health-dashboard.md", "--json-output", "docs/status/health-dashboard.json"],
         "output": "docs/status/health-dashboard.md",
     },
     "repair-links": {
@@ -108,7 +108,7 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-metrics-dashboard": {
         "script": "generate-metrics-dashboard.py",
-        "args": ["--output", "docs/status/metrics-dashboard.md"],
+        "args": ["--output", "docs/status/metrics-dashboard.md", "--json-output", "docs/status/metrics-dashboard.json"],
         "output": "docs/status/metrics-dashboard.md",
     },
     "generate-api-contract-coverage-dashboard": {
