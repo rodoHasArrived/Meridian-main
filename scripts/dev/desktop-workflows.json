@@ -308,7 +308,8 @@
       "steps": [
         {
           "title": "Governance Workspace",
-          "pageTag": "GovernanceShell",
+          "pageTag": "GovernanceWorkspace",
+          "acceptedPageTags": ["GovernanceShell"],
           "captureName": "01-governance-shell",
           "notes": "Start in Governance to orient around the oversight shell and confirm the shared workbench identity card."
         },
