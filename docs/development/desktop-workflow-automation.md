@@ -91,7 +91,7 @@ Bundle contents:
 - `screenshots/`: normalized copy of captured step frames plus `*-failed-attempt.png` frames when a step throws.
 - `bundle-summary.md`: generated summary with top failure cause, first failing stage, and a suggested rerun command.
 
-The bundle is generated for both success and failure runs so contributors can use one troubleshooting schema across local debugging and CI automation.
+The bundle is generated for successful runs and for failures that occur after the workflow runner enters its main execution path, so contributors can usually use one troubleshooting schema across local debugging and CI automation. Very early startup failures, such as preflight blocks or assembly-load errors, may not include the full bundle contents.
 
 ## Manual Generation
 
