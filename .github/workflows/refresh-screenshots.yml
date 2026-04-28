@@ -263,7 +263,7 @@ jobs:
               $outputRoot
             }
             else {
-              Join-Path $outputRoot ("manuals/$workflowName")
+              Join-Path (Join-Path $outputRoot 'manuals') $workflowName
             }
 
             $null = $managedDirectories.Add((Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $workflowDir).FullName).Path)
