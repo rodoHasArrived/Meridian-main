@@ -2,7 +2,10 @@ param(
     [string]$Configuration = "Release",
     [string]$DateStamp = (Get-Date).ToString("yyyy-MM-dd"),
     [string]$OutputRoot = "artifacts/provider-validation/_automation",
-    [string]$OperatorSignoffPath = ""
+    [string]$OperatorSignoffPath = "",
+    [string]$CheckpointPath = "",
+    [string[]]$ForceCheckpointStep = @(),
+    [switch]$AllowCheckpointInputMismatch
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,6 +17,7 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
 }
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+. (Join-Path $PSScriptRoot "SharedCheckpoint.ps1")
 $summaryDir = Join-Path $repoRoot $OutputRoot | Join-Path -ChildPath $DateStamp
 New-Item -ItemType Directory -Force -Path $summaryDir | Out-Null
 $preflight = Invoke-MeridianPreflight `
@@ -305,8 +309,54 @@ function Invoke-Step {
     }
 }
 
-$results = foreach ($step in $steps) {
-    Invoke-Step -Step $step
+$checkpoint = Initialize-MeridianCheckpoint `
+    -Workflow "run-wave1-provider-validation" `
+    -CheckpointPath $CheckpointPath `
+    -InputObject ([ordered]@{
+        configuration = $Configuration
+        dateStamp = $DateStamp
+        outputRoot = $OutputRoot
+        operatorSignoffPath = $OperatorSignoffPath
+        steps = @($steps | ForEach-Object { [string]$_.Name })
+    }) `
+    -ForceStep $ForceCheckpointStep `
+    -AllowInputMismatch:$AllowCheckpointInputMismatch
+
+$results = New-Object System.Collections.Generic.List[object]
+foreach ($step in $steps) {
+    $stepSlug = ($step.Name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')
+    if (-not (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId $stepSlug)) {
+        Write-Host "==> $($step.Name) (checkpoint resume: skipped)"
+        $logPath = Join-Path $summaryDir "$stepSlug.log"
+        $results.Add([ordered]@{
+            name = $step.Name
+            kind = $step.Kind
+            status = "passed"
+            exitCode = 0
+            durationSeconds = 0
+            command = "resumed-from-checkpoint"
+            logPath = $logPath.Substring($repoRoot.Length + 1).Replace('\', '/')
+            tail = "Step reused from checkpoint."
+        }) | Out-Null
+        continue
+    }
+
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -Description $step.Name
+    try {
+        $stepResult = Invoke-Step -Step $step
+        if ($stepResult.status -eq "failed") {
+            Fail-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -Message "Step failed with exit code $($stepResult.exitCode)."
+        }
+        else {
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -ArtifactPointers @($stepResult.logPath)
+        }
+
+        $results.Add($stepResult) | Out-Null
+    }
+    catch {
+        Fail-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -Message $_.Exception.Message
+        throw
+    }
 }
 
 $failedResults = @($results | Where-Object status -eq "failed")
@@ -327,7 +377,11 @@ $summary = [ordered]@{
 
 $jsonPath = Join-Path $summaryDir "wave1-validation-summary.json"
 $mdPath = Join-Path $summaryDir "wave1-validation-summary.md"
-$summary | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonPath
+if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-wave1-summary-json") {
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -Description "Write wave1-validation-summary.json"
+    $summary | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonPath
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -ArtifactPointers @($jsonPath)
+}
 
 $md = @(
     "# Wave 1 Validation Summary",
@@ -399,7 +453,11 @@ $md += @(
     "- $(($deferredProviders -join ", "))"
 )
 
-$md -join [Environment]::NewLine | Set-Content -Path $mdPath
+if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-wave1-summary-md") {
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-md" -Description "Write wave1-validation-summary.md"
+    $md -join [Environment]::NewLine | Set-Content -Path $mdPath
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-md" -ArtifactPointers @($mdPath)
+}
 
 $packetScript = Join-Path $PSScriptRoot "generate-dk1-pilot-parity-packet.ps1"
 if (Test-Path -LiteralPath $packetScript) {
@@ -410,12 +468,25 @@ if (Test-Path -LiteralPath $packetScript) {
         $packetArgs.OperatorSignoffPath = $OperatorSignoffPath
     }
 
-    if ($summary.result -ne "passed") {
-        $packetArgs.AllowFailedSummary = $true
-        & $packetScript @packetArgs
+    if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "generate-dk1-packet") {
+        Start-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -Description "Generate DK1 parity packet."
+        try {
+            if ($summary.result -ne "passed") {
+                $packetArgs.AllowFailedSummary = $true
+                & $packetScript @packetArgs
+            }
+            else {
+                & $packetScript @packetArgs
+            }
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -ArtifactPointers @($summaryDir)
+        }
+        catch {
+            Fail-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -Message $_.Exception.Message
+            throw
+        }
     }
     else {
-        & $packetScript @packetArgs
+        Write-Host "==> DK1 parity packet generation (checkpoint resume: skipped)"
     }
 }
 

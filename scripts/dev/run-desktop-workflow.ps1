@@ -15,7 +15,10 @@ param(
     [switch]$ReuseExistingApp,
     [switch]$NoFixture,
     [switch]$PassThru,
-    [int]$LaunchTimeoutSec = 90
+    [int]$LaunchTimeoutSec = 90,
+    [string]$CheckpointPath = '',
+    [string[]]$ForceCheckpointStep = @(),
+    [switch]$AllowCheckpointInputMismatch
 )
 
 Set-StrictMode -Version Latest
@@ -695,11 +698,38 @@ else {
     Get-ConfigBool -Table $workflowDefinition -Key 'fixtureMode' -Fallback (Get-ConfigBool -Table $defaults -Key 'fixtureMode' -Fallback $true)
 }
 
+if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
+    $CheckpointPath = Join-Path $resolvedOutputRoot "checkpoints/$Workflow.checkpoint.json"
+}
+
+$checkpoint = Initialize-MeridianCheckpoint `
+    -Workflow "run-desktop-workflow:$Workflow" `
+    -CheckpointPath $CheckpointPath `
+    -InputObject ([ordered]@{
+        workflow = $Workflow
+        definitionPath = $catalogPath
+        projectPath = $resolvedProjectPath
+        configuration = $resolvedConfiguration
+        framework = $resolvedFramework
+        exeName = $resolvedExeName
+        outputRoot = $resolvedOutputRoot
+        screenshotDirectory = $resolvedScreenshotDirectory
+        skipBuild = [bool]$SkipBuild
+        fixtureMode = $useFixture
+    }) `
+    -ForceStep $ForceCheckpointStep `
+    -AllowInputMismatch:$AllowCheckpointInputMismatch
+
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$runDirectory = Join-Path $resolvedOutputRoot "$timestamp-$Workflow"
+$existingRunDirectory = if ($checkpoint.Data.metadata.ContainsKey('runDirectory')) { [string]$checkpoint.Data.metadata.runDirectory } else { '' }
+$runDirectory = if (-not [string]::IsNullOrWhiteSpace($existingRunDirectory)) { $existingRunDirectory } else { Join-Path $resolvedOutputRoot "$timestamp-$Workflow" }
 $logDirectory = Join-Path $runDirectory 'logs'
 $screenshotDirectory = if ($null -ne $resolvedScreenshotDirectory) { $resolvedScreenshotDirectory } else { Join-Path $runDirectory 'screenshots' }
 $manifestPath = Join-Path $runDirectory 'manifest.json'
+$checkpoint.Data.metadata.runDirectory = $runDirectory
+$checkpoint.Data.metadata.manifestPath = $manifestPath
+$checkpoint.Data.metadata.screenshotDirectory = $screenshotDirectory
+Save-MeridianCheckpointContext -Context $checkpoint
 
 New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screenshotDirectory | Out-Null
 
@@ -759,7 +789,8 @@ try {
         Write-Info 'Created config/appsettings.json from sample.'
     }
 
-    if (-not $SkipBuild) {
+    if (-not $SkipBuild -and (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'build-desktop')) {
+        Start-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -Description 'Restore and build Meridian desktop shell.'
         $desktopRestoreArgs = @(
             Get-MeridianBuildArguments `
                 -IsolationKey $buildIsolationKey `
@@ -786,6 +817,10 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet build failed for '$resolvedProjectPath'."
         }
+        Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
+    }
+    elseif (-not $SkipBuild) {
+        Write-Info 'Skipping desktop build (checkpoint resume).'
     }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
@@ -815,19 +850,26 @@ try {
             $launchArguments += '--fixture'
         }
 
-        Write-Info "Launching Meridian desktop: $exePath"
-        $ownedProcess = Start-Process -FilePath $exePath `
-            -ArgumentList $launchArguments `
-            -WorkingDirectory $repoRoot `
-            -RedirectStandardOutput $stdoutPath `
-            -RedirectStandardError $stderrPath `
-            -PassThru `
-            -WindowStyle Normal
+        if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
+            Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
+            Write-Info "Launching Meridian desktop: $exePath"
+            $ownedProcess = Start-Process -FilePath $exePath `
+                -ArgumentList $launchArguments `
+                -WorkingDirectory $repoRoot `
+                -RedirectStandardOutput $stdoutPath `
+                -RedirectStandardError $stderrPath `
+                -PassThru `
+                -WindowStyle Normal
 
-        $manifest.run.launchArguments = $launchArguments
-        $manifest.run.processId = $ownedProcess.Id
-        $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
-        Write-Ok 'Meridian window detected.'
+            $manifest.run.launchArguments = $launchArguments
+            $manifest.run.processId = $ownedProcess.Id
+            $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
+            Write-Ok 'Meridian window detected.'
+        }
+        else {
+            Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
+        }
     }
 
     $operatingContextConfirmed = Ensure-EnteredOperatingContext -Process $ownedProcess
@@ -880,6 +922,15 @@ try {
 
         try {
             Write-Info ("Running step {0}: {1}" -f $stepIndex, $title)
+            $checkpointStepId = ('workflow-step-{0:D2}' -f $stepIndex)
+            if (-not (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId $checkpointStepId)) {
+                Write-Info ("Skipping step {0}: {1} (checkpoint resume)." -f $stepIndex, $title)
+                $stepResult.status = 'ok'
+                $stepResult.completedAt = (Get-Date).ToString('o')
+                $manifest.steps += [pscustomobject]$stepResult
+                continue
+            }
+            Start-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Description $title
 
             if ($null -ne $ownedProcess -and $ownedProcess.HasExited) {
                 throw "Meridian desktop exited unexpectedly with code $($ownedProcess.ExitCode)."
@@ -912,11 +963,13 @@ try {
 
             $stepResult.status = 'ok'
             $stepResult.completedAt = (Get-Date).ToString('o')
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($capturePath)
         }
         catch {
             $stepResult.status = 'failed'
             $stepResult.error = $_.Exception.Message
             $stepResult.completedAt = (Get-Date).ToString('o')
+            Fail-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Message $_.Exception.Message
             $manifest.steps += [pscustomobject]$stepResult
             throw
         }
