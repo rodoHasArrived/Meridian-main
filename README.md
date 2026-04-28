@@ -760,6 +760,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── README.md
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
+│       │   ├── check-ai-inventory.py
 │       │   ├── create-todo-issues.py
 │       │   ├── generate-ai-navigation.py
 │       │   ├── generate-changelog.py
@@ -776,6 +777,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── sync-readme-badges.py
 │       │   ├── test-scripts.py
 │       │   ├── tests
+│       │   │   ├── test_check_ai_inventory.py
 │       │   │   └── test_scan_todos.py
 │       │   ├── update-claude-md.py
 │       │   ├── validate-api-docs.py
@@ -869,6 +871,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── agents
 │   │   │   └── README.md
 │   │   ├── ai-known-errors.md
+│   │   ├── assistant-workflow-contract.md
 │   │   ├── claude
 │   │   │   ├── CLAUDE.actions.md
 │   │   │   ├── CLAUDE.api.md
@@ -7735,8 +7738,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WpfTestThread.cs
 │   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
+│   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── AggregatePortfolioViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
@@ -7794,6 +7799,7 @@ Use these documents together when planning or implementing new work:
 │   ├── scripts
 │   │   ├── setup-verification.sh
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_code_quality_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   └── test_prepare_dk1_operator_signoff.py
@@ -7801,6 +7807,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-587 directories, 7074 files
+587 directories, 7080 files
 ```
 <!-- readme-tree end -->
