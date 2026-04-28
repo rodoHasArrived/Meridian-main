@@ -147,3 +147,24 @@ Supported step fields:
 - The runner will refuse to hijack an already-running `Meridian.Desktop` session unless `-ReuseExistingApp` is supplied.
 - The scripts assume Windows and the full WPF build target.
 - Manual screenshots are copied out of the per-run artifacts so each generated manual is self-contained.
+
+## Screenshot diff classes and approval flow
+
+`refresh-screenshots.yml` now classifies changed screenshots into:
+
+- `blocking-regression` (major layout/structure loss, missing route/component evidence, missing image baseline/current image, or threshold breach),
+- `review-needed` (moderate visual delta that needs a human decision),
+- `non-blocking-noise` (small anti-aliasing/theme variance).
+
+Thresholds, pixel tolerance, and per-image mask rectangles are versioned in:
+
+- `scripts/dev/screenshot-diff-config.json`
+
+The workflow publishes a `screenshot-diff-report` artifact with per-image category labels plus baseline/current/diff thumbnails.
+
+Default CI behavior gates only on `blocking-regression`. `review-needed` does not fail the job by default, but auto-commit is withheld unless an explicit workflow-dispatch approval is supplied:
+
+- `approve_review_needed=true`
+- `review_approval_note=<required audit rationale>`
+
+Approval actor/reason are recorded in the generated diff summary so baseline updates remain intentional and auditable.
