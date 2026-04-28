@@ -17,7 +17,7 @@
       "steps": [
         {
           "title": "Research Workspace",
-          "pageTag": "ResearchShell",
+          "pageTag": "StrategyShell",
           "captureName": "wpf-research-workspace",
           "notes": "Validate that the shell loads cleanly and the Research workspace remains screenshot ready."
         },
@@ -109,7 +109,7 @@
       "steps": [
         {
           "title": "Research Workspace",
-          "pageTag": "ResearchShell",
+          "pageTag": "StrategyShell",
           "captureName": "01-research-workspace",
           "notes": "Confirm that the shell rendered, the demo data banner is visible, and the status bar started updating."
         },
@@ -155,7 +155,7 @@
       "steps": [
         {
           "title": "Research Workspace",
-          "pageTag": "ResearchShell",
+          "pageTag": "StrategyShell",
           "captureName": "01-research-workspace",
           "notes": "Start on the Research workspace to review the shell status bar, demo data banner, and the first-launch landing experience."
         },
@@ -167,7 +167,7 @@
         },
         {
           "title": "Research Workspace",
-          "pageTag": "ResearchShell",
+          "pageTag": "StrategyShell",
           "captureName": "03-research-workspace",
           "notes": "The Research workspace now keeps the current workspace next action above the fold while secondary workspace actions stay behind expansion."
         },
@@ -257,7 +257,7 @@
       "steps": [
         {
           "title": "Research Workspace",
-          "pageTag": "ResearchShell",
+          "pageTag": "StrategyShell",
           "captureName": "01-research-shell",
           "notes": "The Research workspace is the umbrella view for strategy discovery, analysis, and run review."
         },
