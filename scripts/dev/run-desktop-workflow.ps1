@@ -666,6 +666,72 @@ function Send-WindowKeys {
     [System.Windows.Forms.SendKeys]::SendWait($Keys)
 }
 
+function New-StageState {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [hashtable]$Inputs = @{},
+        [int]$RetryCount = 0
+    )
+
+    return [ordered]@{
+        stage = $Name
+        contractVersion = 1
+        inputs = $Inputs
+        outputs = @{}
+        timestamps = [ordered]@{
+            startedAt = (Get-Date).ToString('o')
+            finishedAt = $null
+        }
+        status = 'running'
+        retryCount = $RetryCount
+        errors = @()
+        path = $Path
+    }
+}
+
+function Save-StageState {
+    param([Parameter(Mandatory = $true)][hashtable]$Stage)
+
+    $output = [ordered]@{
+        stage = $Stage.stage
+        contractVersion = $Stage.contractVersion
+        inputs = $Stage.inputs
+        outputs = $Stage.outputs
+        timestamps = $Stage.timestamps
+        status = $Stage.status
+        retryCount = $Stage.retryCount
+        errors = @($Stage.errors)
+    }
+
+    $output | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $Stage.path -Encoding utf8
+}
+
+function Get-StageState {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return $null }
+    return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -AsHashtable
+}
+
+function Test-StageOutputsValid {
+    param([hashtable]$StageData)
+    if ($null -eq $StageData -or -not $StageData.ContainsKey('outputs')) {
+        return $false
+    }
+
+    $outputs = $StageData.outputs
+    if ($null -eq $outputs) { return $false }
+
+    if ($outputs.ContainsKey('requiredFiles')) {
+        foreach ($path in @($outputs.requiredFiles)) {
+            if ([string]::IsNullOrWhiteSpace([string]$path)) { continue }
+            if (-not (Test-Path -LiteralPath [string]$path)) { return $false }
+        }
+    }
+
+    return $true
+}
+
 $catalogPath = Resolve-RepoPath $DefinitionPath
 $initialOutputRoot = if ($PSBoundParameters.ContainsKey('OutputRoot')) { Resolve-RepoPath $OutputRoot } else { Resolve-RepoPath 'artifacts/desktop-workflows' }
 $catalogPreflight = Invoke-MeridianPreflight `
@@ -773,118 +839,230 @@ $manifest = [ordered]@{
     }
     steps = @()
 }
+$stageOrder = @('preflight', 'build', 'launch', 'capture', 'post-process', 'publish')
+$stageStatuses = [ordered]@{}
+$stageContracts = [ordered]@{}
+$runSummaryPath = Join-Path $runDirectory 'run-summary.json'
+$lastSuccessfulStage = $null
+foreach ($stageName in $stageOrder) {
+    $stagePath = Join-Path $runDirectory "$stageName.stage.json"
+    $existing = Get-StageState -Path $stagePath
+    if ($null -ne $existing -and [string]$existing.status -eq 'succeeded' -and (Test-StageOutputsValid -StageData $existing)) {
+        $stageStatuses[$stageName] = 'skipped-valid'
+        $stageContracts[$stageName] = $existing
+        $lastSuccessfulStage = $stageName
+    }
+    else {
+        $stageStatuses[$stageName] = 'pending'
+    }
+}
+
+$resumeFromIndex = 0
+for ($i = 0; $i -lt $stageOrder.Count; $i++) {
+    if ($stageStatuses[$stageOrder[$i]] -ne 'skipped-valid') {
+        $resumeFromIndex = $i
+        break
+    }
+    $resumeFromIndex = $i + 1
+}
+
+for ($i = $resumeFromIndex + 1; $i -lt $stageOrder.Count; $i++) {
+    if ($stageStatuses[$stageOrder[$i]] -eq 'skipped-valid') {
+        $stageStatuses[$stageOrder[$i]] = 'pending'
+    }
+}
 
 $ownedProcess = $null
 $window = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
-$preflight = Invoke-MeridianPreflight `
-    -Scenario 'desktop-workflow' `
-    -RequiredCommands @('dotnet') `
-    -RequiredPaths @($catalogPath, $resolvedProjectPath) `
-    -WritableDirectories @($resolvedOutputRoot, $screenshotDirectory, $runDirectory, $logDirectory) `
-    -RequireWindows `
-    -FeatureFlagExpectations $(if (-not $useFixture) { @{ 'MDC_FIXTURE_MODE' = '0' } } else { @{} }) `
-    -EmitJson `
-    -AllowWarnings
-
-if ($preflight.status -eq 'blocked') {
-    $preflightPath = Join-Path $runDirectory 'preflight.json'
-    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
-    throw "Preflight failed. See '$preflightPath' for diagnostics."
-}
-
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 [void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
 [void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
 
 try {
-    if (-not (Test-Path -LiteralPath 'config/appsettings.json') -and (Test-Path -LiteralPath 'config/appsettings.sample.json')) {
-        Copy-Item -LiteralPath 'config/appsettings.sample.json' -Destination 'config/appsettings.json' -Force
-        Write-Info 'Created config/appsettings.json from sample.'
+    if ($stageStatuses['preflight'] -ne 'skipped-valid') {
+        $preflightStagePath = Join-Path $runDirectory 'preflight.stage.json'
+        $preflightStage = New-StageState -Name 'preflight' -Path $preflightStagePath -Inputs @{
+            workflow = $Workflow
+            catalogPath = $catalogPath
+            projectPath = $resolvedProjectPath
+        }
+
+        try {
+            $preflight = Invoke-MeridianPreflight `
+                -Scenario 'desktop-workflow' `
+                -RequiredCommands @('dotnet') `
+                -RequiredPaths @($catalogPath, $resolvedProjectPath) `
+                -WritableDirectories @($resolvedOutputRoot, $screenshotDirectory, $runDirectory, $logDirectory) `
+                -RequireWindows `
+                -FeatureFlagExpectations $(if (-not $useFixture) { @{ 'MDC_FIXTURE_MODE' = '0' } } else { @{} }) `
+                -EmitJson `
+                -AllowWarnings
+            $preflightPath = Join-Path $runDirectory 'preflight.json'
+            $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+            if ($preflight.status -eq 'blocked') {
+                throw "Preflight failed. See '$preflightPath' for diagnostics."
+            }
+
+            $preflightStage.outputs = @{
+                preflightPath = $preflightPath
+                requiredFiles = @($preflightPath)
+            }
+            $preflightStage.status = 'succeeded'
+            $stageStatuses['preflight'] = 'succeeded'
+            $lastSuccessfulStage = 'preflight'
+        }
+        catch {
+            $preflightStage.status = 'failed'
+            $preflightStage.errors = @($_.Exception.Message)
+            $stageStatuses['preflight'] = 'failed'
+            throw
+        }
+        finally {
+            $preflightStage.timestamps.finishedAt = (Get-Date).ToString('o')
+            Save-StageState -Stage $preflightStage
+            $stageContracts['preflight'] = (Get-StageState -Path $preflightStagePath)
+        }
+    }
+    else {
+        Write-Info 'Skipping preflight stage (valid existing outputs).'
     }
 
-    if (-not $SkipBuild -and (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'build-desktop')) {
-        Start-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -Description 'Restore and build Meridian desktop shell.'
-        $desktopRestoreArgs = @(
-            Get-MeridianBuildArguments `
-                -IsolationKey $buildIsolationKey `
-                -AdditionalProperties @("Configuration=$resolvedConfiguration") `
-                -EnableFullWpfBuild
-        )
-
-        $desktopBuildArgs = @(
-            Get-MeridianBuildArguments `
-                -IsolationKey $buildIsolationKey `
-                -TargetFramework $resolvedFramework `
-                -AdditionalProperties @("Configuration=$resolvedConfiguration") `
-                -EnableFullWpfBuild
-        )
-
-        Write-Info "Restoring $resolvedProjectPath ..."
-        & dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs
-        if ($LASTEXITCODE -ne 0) {
-            throw "dotnet restore failed for '$resolvedProjectPath'."
+    if (-not $SkipBuild -and $stageStatuses['build'] -ne 'skipped-valid') {
+        $buildStagePath = Join-Path $runDirectory 'build.stage.json'
+        $existingBuildState = Get-StageState -Path $buildStagePath
+        $buildStage = New-StageState -Name 'build' -Path $buildStagePath -RetryCount $(if ($existingBuildState) { [int]$existingBuildState.retryCount + 1 } else { 0 }) -Inputs @{
+            projectPath = $resolvedProjectPath
+            configuration = $resolvedConfiguration
+            framework = $resolvedFramework
+            skipBuild = [bool]$SkipBuild
         }
+        try {
+            if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'build-desktop') {
+                Start-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -Description 'Restore and build Meridian desktop shell.'
+                $desktopRestoreArgs = @(
+                    Get-MeridianBuildArguments `
+                        -IsolationKey $buildIsolationKey `
+                        -AdditionalProperties @("Configuration=$resolvedConfiguration") `
+                        -EnableFullWpfBuild
+                )
+                $desktopBuildArgs = @(
+                    Get-MeridianBuildArguments `
+                        -IsolationKey $buildIsolationKey `
+                        -TargetFramework $resolvedFramework `
+                        -AdditionalProperties @("Configuration=$resolvedConfiguration") `
+                        -EnableFullWpfBuild
+                )
+                Write-Info "Restoring $resolvedProjectPath ..."
+                & dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs
+                if ($LASTEXITCODE -ne 0) { throw "dotnet restore failed for '$resolvedProjectPath'." }
 
-        Write-Info "Building $resolvedProjectPath ($resolvedConfiguration, $resolvedFramework) ..."
-        & dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs
-        if ($LASTEXITCODE -ne 0) {
-            throw "dotnet build failed for '$resolvedProjectPath'."
+                Write-Info "Building $resolvedProjectPath ($resolvedConfiguration, $resolvedFramework) ..."
+                & dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs
+                if ($LASTEXITCODE -ne 0) { throw "dotnet build failed for '$resolvedProjectPath'." }
+                Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
+            }
+            $buildStage.outputs = @{ exePath = $exePath; requiredFiles = @($exePath) }
+            $buildStage.status = 'succeeded'
+            $stageStatuses['build'] = 'succeeded'
+            $lastSuccessfulStage = 'build'
         }
-        Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
+        catch {
+            $buildStage.status = 'failed'
+            $buildStage.errors = @($_.Exception.Message)
+            $stageStatuses['build'] = 'failed'
+            throw
+        }
+        finally {
+            $buildStage.timestamps.finishedAt = (Get-Date).ToString('o')
+            Save-StageState -Stage $buildStage
+            $stageContracts['build'] = (Get-StageState -Path $buildStagePath)
+        }
     }
     elseif (-not $SkipBuild) {
-        Write-Info 'Skipping desktop build (checkpoint resume).'
+        Write-Info 'Skipping build stage (valid existing outputs).'
     }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
         throw "Desktop executable was not found at '$exePath'."
     }
 
-    $existingProcesses = @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)
-    if ($existingProcesses.Count -gt 0) {
-        if (-not $ReuseExistingApp) {
-            throw "Meridian.Desktop is already running. Close it or rerun with -ReuseExistingApp."
+    if ($stageStatuses['launch'] -ne 'skipped-valid') {
+        $launchStagePath = Join-Path $runDirectory 'launch.stage.json'
+        $existingLaunchState = Get-StageState -Path $launchStagePath
+        $launchStage = New-StageState -Name 'launch' -Path $launchStagePath -RetryCount $(if ($existingLaunchState) { [int]$existingLaunchState.retryCount + 1 } else { 0 }) -Inputs @{
+            reuseExistingApp = [bool]$ReuseExistingApp
+            fixtureMode = $useFixture
         }
+        try {
+            $existingProcesses = @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)
+            if ($existingProcesses.Count -gt 0) {
+                if (-not $ReuseExistingApp) {
+                    throw "Meridian.Desktop is already running. Close it or rerun with -ReuseExistingApp."
+                }
 
-        Write-Warn "Reusing existing Meridian.Desktop process $($existingProcesses[0].Id)."
-        $manifest.run.reusedExistingApp = $true
-        $window = Wait-MeridianWindow -TimeoutSec 15 -Process $null
+                Write-Warn "Reusing existing Meridian.Desktop process $($existingProcesses[0].Id)."
+                $manifest.run.reusedExistingApp = $true
+                $window = Wait-MeridianWindow -TimeoutSec 15 -Process $null
+                $launchStage.outputs = @{
+                    reusedExistingProcess = $true
+                    processId = $existingProcesses[0].Id
+                    requiredFiles = @()
+                }
+            }
+            else {
+                if ($useFixture) {
+                    [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', '1', 'Process')
+                }
+                else {
+                    [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', $null, 'Process')
+                }
+
+                $launchArguments = @()
+                if ($useFixture) { $launchArguments += '--fixture' }
+
+                if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
+                    Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
+                }
+                Write-Info "Launching Meridian desktop: $exePath"
+                $ownedProcess = Start-Process -FilePath $exePath `
+                    -ArgumentList $launchArguments `
+                    -WorkingDirectory $repoRoot `
+                    -RedirectStandardOutput $stdoutPath `
+                    -RedirectStandardError $stderrPath `
+                    -PassThru `
+                    -WindowStyle Normal
+                $manifest.run.launchArguments = $launchArguments
+                $manifest.run.processId = $ownedProcess.Id
+                $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
+                Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
+                Write-Ok 'Meridian window detected.'
+                $launchStage.outputs = @{
+                    processId = $ownedProcess.Id
+                    stdoutLog = $stdoutPath
+                    stderrLog = $stderrPath
+                    requiredFiles = @($stdoutPath, $stderrPath)
+                }
+            }
+            $launchStage.status = 'succeeded'
+            $stageStatuses['launch'] = 'succeeded'
+            $lastSuccessfulStage = 'launch'
+        }
+        catch {
+            $launchStage.status = 'failed'
+            $launchStage.errors = @($_.Exception.Message)
+            $stageStatuses['launch'] = 'failed'
+            throw
+        }
+        finally {
+            $launchStage.timestamps.finishedAt = (Get-Date).ToString('o')
+            Save-StageState -Stage $launchStage
+            $stageContracts['launch'] = (Get-StageState -Path $launchStagePath)
+        }
     }
     else {
-        if ($useFixture) {
-            [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', '1', 'Process')
-        }
-        else {
-            [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', $null, 'Process')
-        }
-
-        $launchArguments = @()
-        if ($useFixture) {
-            $launchArguments += '--fixture'
-        }
-
-        if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
-            Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
-            Write-Info "Launching Meridian desktop: $exePath"
-            $ownedProcess = Start-Process -FilePath $exePath `
-                -ArgumentList $launchArguments `
-                -WorkingDirectory $repoRoot `
-                -RedirectStandardOutput $stdoutPath `
-                -RedirectStandardError $stderrPath `
-                -PassThru `
-                -WindowStyle Normal
-
-            $manifest.run.launchArguments = $launchArguments
-            $manifest.run.processId = $ownedProcess.Id
-            $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
-            Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
-            Write-Ok 'Meridian window detected.'
-        }
-        else {
-            Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
-        }
+        Write-Info 'Skipping launch stage (valid existing outputs).'
     }
 
     $operatingContextConfirmed = Ensure-EnteredOperatingContext -Process $ownedProcess
@@ -901,8 +1079,16 @@ try {
     $manifest.run.initialPageTitle = $startupReadiness.State.PageTitle
     Write-Ok "Shell ready on $($startupReadiness.State.PageTag) ($($startupReadiness.State.PageTitle))."
 
-    $stepIndex = 0
-    foreach ($step in $workflowDefinition.steps) {
+    $captureFailedSteps = @()
+    if ($stageStatuses['capture'] -ne 'skipped-valid') {
+        $captureStagePath = Join-Path $runDirectory 'capture.stage.json'
+        $existingCaptureState = Get-StageState -Path $captureStagePath
+        $captureStage = New-StageState -Name 'capture' -Path $captureStagePath -RetryCount $(if ($existingCaptureState) { [int]$existingCaptureState.retryCount + 1 } else { 0 }) -Inputs @{
+            screenshotDirectory = $screenshotDirectory
+            stepCount = @($workflowDefinition.steps).Count
+        }
+        $stepIndex = 0
+        foreach ($step in $workflowDefinition.steps) {
         $stepIndex += 1
         $title = [string](Get-ConfigValue -Table $step -Key 'title' -Fallback "Step $stepIndex")
         $pageTag = [string](Get-ConfigValue -Table $step -Key 'pageTag' -Fallback '')
@@ -995,14 +1181,92 @@ try {
             $stepResult.error = $_.Exception.Message
             $stepResult.completedAt = (Get-Date).ToString('o')
             Fail-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Message $_.Exception.Message
-            $manifest.steps += [pscustomobject]$stepResult
-            throw
+            $captureFailedSteps += $stepResult
+            Write-Warn ("Step {0} failed: {1}" -f $stepIndex, $_.Exception.Message)
         }
 
-        $manifest.steps += [pscustomobject]$stepResult
+            $manifest.steps += [pscustomobject]$stepResult
+        }
+        $captureSucceeded = @($manifest.steps | Where-Object { $_.status -eq 'ok' -and $_.capturePath }).Count
+        $captureFailed = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+        $captureStage.outputs = @{
+            manifestPath = $manifestPath
+            screenshotDirectory = $screenshotDirectory
+            capturesSucceeded = $captureSucceeded
+            capturesFailed = $captureFailed
+            requiredFiles = @($manifestPath, $screenshotDirectory)
+        }
+        if ($captureSucceeded -eq 0 -and @($workflowDefinition.steps).Count -gt 0) {
+            $captureStage.status = 'failed'
+            $captureStage.errors = @('No screenshots were captured successfully.')
+            $stageStatuses['capture'] = 'failed'
+            throw 'Capture stage failed: no screenshots were captured successfully.'
+        }
+        elseif ($captureFailed -gt 0) {
+            $captureStage.status = 'partial'
+            $captureStage.errors = @("Failed steps: $captureFailed")
+            $stageStatuses['capture'] = 'partial'
+        }
+        else {
+            $captureStage.status = 'succeeded'
+            $stageStatuses['capture'] = 'succeeded'
+            $lastSuccessfulStage = 'capture'
+        }
+        $captureStage.timestamps.finishedAt = (Get-Date).ToString('o')
+        Save-StageState -Stage $captureStage
+        $stageContracts['capture'] = (Get-StageState -Path $captureStagePath)
+    }
+    else {
+        Write-Info 'Skipping capture stage (valid existing outputs).'
     }
 
-    $manifest.run.status = 'ok'
+    if ($stageStatuses['post-process'] -ne 'skipped-valid') {
+        $postProcessPath = Join-Path $runDirectory 'post-process.stage.json'
+        $postProcessStage = New-StageState -Name 'post-process' -Path $postProcessPath -Inputs @{ actions = @('none') }
+        $postProcessStage.outputs = @{ requiredFiles = @($manifestPath) }
+        $postProcessStage.status = 'succeeded'
+        $postProcessStage.timestamps.finishedAt = (Get-Date).ToString('o')
+        Save-StageState -Stage $postProcessStage
+        $stageStatuses['post-process'] = 'succeeded'
+        $stageContracts['post-process'] = (Get-StageState -Path $postProcessPath)
+        $lastSuccessfulStage = 'post-process'
+    }
+    else {
+        Write-Info 'Skipping post-process stage (valid existing outputs).'
+    }
+
+    if ($stageStatuses['publish'] -ne 'skipped-valid') {
+        $publishPath = Join-Path $runDirectory 'publish.stage.json'
+        $publishStage = New-StageState -Name 'publish' -Path $publishPath -Inputs @{ publishEnabled = $workflowDefinition.Contains('publish') }
+        $publishedFiles = @()
+        if ($workflowDefinition.Contains('publish')) {
+            $publishDirectory = Resolve-RepoPath ([string](Get-ConfigValue -Table $workflowDefinition.publish -Key 'directory' -Fallback ''))
+            if (-not [string]::IsNullOrWhiteSpace($publishDirectory)) {
+                New-Item -ItemType Directory -Force -Path $publishDirectory | Out-Null
+                foreach ($step in @($manifest.steps | Where-Object { $_.status -eq 'ok' -and $_.capturePath })) {
+                    $destination = Join-Path $publishDirectory ([System.IO.Path]::GetFileName([string]$step.capturePath))
+                    Copy-Item -LiteralPath $step.capturePath -Destination $destination -Force
+                    $publishedFiles += $destination
+                }
+            }
+        }
+        $publishStage.outputs = @{ publishedFiles = $publishedFiles; requiredFiles = @($publishedFiles) }
+        $publishStage.status = 'succeeded'
+        $publishStage.timestamps.finishedAt = (Get-Date).ToString('o')
+        Save-StageState -Stage $publishStage
+        $stageStatuses['publish'] = 'succeeded'
+        $stageContracts['publish'] = (Get-StageState -Path $publishPath)
+        $lastSuccessfulStage = 'publish'
+    }
+    else {
+        Write-Info 'Skipping publish stage (valid existing outputs).'
+    }
+
+    $failedCount = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+    $okCount = @($manifest.steps | Where-Object { $_.status -eq 'ok' }).Count
+    $manifest.run.status = if ($failedCount -gt 0) { 'partial' } else { 'ok' }
+    $manifest.run.partialFailures = $failedCount
+    $manifest.run.completedSteps = $okCount
 }
 catch {
     $manifest.run.status = 'failed'
@@ -1012,6 +1276,21 @@ catch {
 finally {
     $manifest.run.finishedAt = (Get-Date).ToString('o')
     $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+    $runSummary = [ordered]@{
+        workflow = $Workflow
+        runDirectory = $runDirectory
+        manifestPath = $manifestPath
+        generatedAt = (Get-Date).ToString('o')
+        lastSuccessfulStage = $lastSuccessfulStage
+        stages = $stageStatuses
+        totals = [ordered]@{
+            steps = @($manifest.steps).Count
+            succeeded = @($manifest.steps | Where-Object { $_.status -eq 'ok' }).Count
+            failed = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+        }
+        status = if (@($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count -gt 0) { 'partial' } else { [string]$manifest.run.status }
+    }
+    $runSummary | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $runSummaryPath -Encoding utf8
 
     if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
         try {
@@ -1029,7 +1308,7 @@ finally {
 }
 
 $savedCaptures = @($manifest.steps | Where-Object { $_.status -eq 'ok' -and $_.capturePath })
-Write-Ok "Workflow '$Workflow' completed. Manifest: $manifestPath"
+Write-Ok "Workflow '$Workflow' completed. Manifest: $manifestPath. Run summary: $runSummaryPath"
 Write-Host ''
 $savedCaptures |
     Select-Object @{ Name = 'Step'; Expression = { $_.index } }, Title, CapturePath |
