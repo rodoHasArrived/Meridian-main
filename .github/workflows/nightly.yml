@@ -110,7 +110,7 @@ jobs:
 
     steps:
     - name: Create issue on failure
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
           const title = `Nightly tests failed on ${new Date().toISOString().split('T')[0]}`;
@@ -150,7 +150,7 @@ jobs:
 
     steps:
     - name: Close nightly failure issue if all tests pass
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
           const issues = await github.rest.issues.listForRepo({

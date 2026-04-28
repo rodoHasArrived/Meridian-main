@@ -432,7 +432,7 @@ jobs:
         id: trigger-copilot
         if: steps.copilot-ref.outputs.dispatch_ref != ''
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const promptFiles = `${{ steps.changed-prompts.outputs.files }}`

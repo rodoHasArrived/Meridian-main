@@ -157,7 +157,7 @@ jobs:
       - name: Resolve issue payload for workflow_dispatch
         if: github.event_name == 'workflow_dispatch'
         id: fetch_issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
         with:
@@ -1863,7 +1863,7 @@ jobs:
 
       - name: Post PR automation summary comment
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           ANY_CHANGED: ${{ needs.detect-changes.outputs.any_changed }}
           HAS_GENERATED_CHANGES: ${{ needs.regenerate-docs.outputs.has_changes || 'false' }}

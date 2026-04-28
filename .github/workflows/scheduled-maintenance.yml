@@ -734,7 +734,7 @@ jobs:
 
       - name: List merged branches
         id: merged
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: branches } = await github.rest.repos.listBranches({
@@ -793,7 +793,7 @@ jobs:
 
       - name: Identify stale unmerged branches
         id: stale
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: branches } = await github.rest.repos.listBranches({
@@ -976,7 +976,7 @@ jobs:
         if: |
           github.event.inputs.cache_action == 'list' ||
           github.event_name == 'schedule'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const caches = await github.rest.actions.getActionsCacheList({
@@ -1013,7 +1013,7 @@ jobs:
         if: |
           github.event.inputs.cache_action == 'clean-old' ||
           github.event_name == 'schedule'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const caches = await github.rest.actions.getActionsCacheList({
@@ -1049,7 +1049,7 @@ jobs:
 
       - name: Clean all caches
         if: github.event.inputs.cache_action == 'clean-all'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const caches = await github.rest.actions.getActionsCacheList({
@@ -1219,7 +1219,7 @@ jobs:
         if: |
           needs.full-test-suite.result == 'failure' ||
           needs.dependency-health.result == 'failure'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
