@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $summaryDir = Join-Path (Join-Path $repoRoot $OutputRoot) $DateStamp
@@ -20,8 +21,27 @@ else {
     $summaryDir = Split-Path -Parent $SummaryJsonPath
 }
 
-if (-not (Test-Path -LiteralPath $SummaryJsonPath)) {
-    throw "Wave 1 validation summary was not found: $SummaryJsonPath"
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'dk1-pilot-parity-packet' `
+    -RequiredPaths @($SummaryJsonPath) `
+    -WritableDirectories @($summaryDir) `
+    -EmitJson `
+    -AllowWarnings
+
+if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath) -and -not (Test-Path -LiteralPath $OperatorSignoffPath)) {
+    $preflight.blockingChecks += [pscustomobject]@{
+        check = "path.operatorSignoff"
+        message = "Operator sign-off file was not found: $OperatorSignoffPath"
+        recommendation = "Provide a valid operator sign-off path or omit -OperatorSignoffPath."
+    }
+    $preflight.status = 'blocked'
+    $preflight.nextAction = 'Resolve blocking checks and rerun preflight.'
+}
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $summaryDir 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
 
 $summary = Get-Content -Raw -LiteralPath $SummaryJsonPath | ConvertFrom-Json

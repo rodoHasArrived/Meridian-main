@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $dateStamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")
@@ -18,6 +19,25 @@ if ([string]::IsNullOrWhiteSpace($OutputPath)) {
 }
 else {
     $OutputPath = [System.IO.Path]::GetFullPath($OutputPath)
+}
+
+$outputDirectory = Split-Path -Parent $OutputPath
+$requiredPaths = @()
+if (-not [string]::IsNullOrWhiteSpace($PacketPath)) {
+    $requiredPaths += [System.IO.Path]::GetFullPath($PacketPath)
+}
+
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'dk1-operator-signoff' `
+    -RequiredPaths $requiredPaths `
+    -WritableDirectories @($outputDirectory) `
+    -EmitJson `
+    -AllowWarnings
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $outputDirectory 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
 
 function ConvertTo-RelativePath {
@@ -406,7 +426,6 @@ if ((Test-Path -LiteralPath $OutputPath) -and -not $Force) {
     throw "Operator sign-off file already exists: $OutputPath. Re-run with -Force to replace it."
 }
 
-$outputDirectory = Split-Path -Parent $OutputPath
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
 $template = New-OperatorSignoffTemplate -RequiredOwners $requiredOperatorOwners -PacketReview $packetReview

@@ -24,18 +24,11 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
-
-function Assert-Command {
-    param([string]$Name)
-
-    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
-        throw "Required command '$Name' was not found in PATH."
-    }
-}
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -655,20 +648,19 @@ function Send-WindowKeys {
     [System.Windows.Forms.SendKeys]::SendWait($Keys)
 }
 
-Assert-Command -Name 'dotnet'
-
-if (-not ($IsWindows -or $env:OS -eq 'Windows_NT')) {
-    throw 'Desktop workflow automation requires Windows because Meridian.Wpf is a Windows-only application.'
-}
-
-Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.Windows.Forms
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
-
 $catalogPath = Resolve-RepoPath $DefinitionPath
-if (-not (Test-Path -LiteralPath $catalogPath)) {
-    throw "Workflow catalog was not found at '$catalogPath'."
+$initialOutputRoot = if ($PSBoundParameters.ContainsKey('OutputRoot')) { Resolve-RepoPath $OutputRoot } else { Resolve-RepoPath 'artifacts/desktop-workflows' }
+$catalogPreflight = Invoke-MeridianPreflight `
+    -Scenario 'desktop-workflow-catalog' `
+    -RequiredCommands @('dotnet') `
+    -RequiredPaths @($catalogPath) `
+    -WritableDirectories @($initialOutputRoot) `
+    -RequireWindows `
+    -EmitJson `
+    -AllowWarnings
+
+if ($catalogPreflight.status -eq 'blocked') {
+    throw "Preflight failed before workflow load. $(($catalogPreflight.blockingChecks | ConvertTo-Json -Depth 6 -Compress))"
 }
 
 $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json -AsHashtable
@@ -740,6 +732,26 @@ $manifest = [ordered]@{
 $ownedProcess = $null
 $window = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'desktop-workflow' `
+    -RequiredCommands @('dotnet') `
+    -RequiredPaths @($catalogPath, $resolvedProjectPath) `
+    -WritableDirectories @($resolvedOutputRoot, $screenshotDirectory, $runDirectory, $logDirectory) `
+    -RequireWindows `
+    -FeatureFlagExpectations $(if (-not $useFixture) { @{ 'MDC_FIXTURE_MODE' = '0' } } else { @{} }) `
+    -EmitJson `
+    -AllowWarnings
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $runDirectory 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
+}
+
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Windows.Forms
+[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
+[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
 
 try {
     if (-not (Test-Path -LiteralPath 'config/appsettings.json') -and (Test-Path -LiteralPath 'config/appsettings.sample.json')) {
