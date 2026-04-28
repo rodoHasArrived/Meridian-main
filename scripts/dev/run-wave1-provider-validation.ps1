@@ -10,6 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 if ($PSVersionTable.PSVersion.Major -ge 7) {
     $PSNativeCommandUseErrorActionPreference = $false
@@ -19,8 +20,31 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 . (Join-Path $PSScriptRoot "SharedCheckpoint.ps1")
 $summaryDir = Join-Path $repoRoot $OutputRoot | Join-Path -ChildPath $DateStamp
 New-Item -ItemType Directory -Force -Path $summaryDir | Out-Null
-if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
-    $CheckpointPath = Join-Path $summaryDir "wave1-validation.checkpoint.json"
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'wave1-provider-validation' `
+    -RequiredCommands @('dotnet', 'pwsh') `
+    -RequiredPaths @(
+        (Join-Path $repoRoot "tests/Meridian.Tests/Meridian.Tests.csproj"),
+        (Join-Path $repoRoot "scripts/dev/generate-dk1-pilot-parity-packet.ps1")
+    ) `
+    -WritableDirectories @($summaryDir) `
+    -EmitJson `
+    -AllowWarnings
+
+if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath) -and -not (Test-Path -LiteralPath $OperatorSignoffPath)) {
+    $preflight.blockingChecks += [pscustomobject]@{
+        check = "path.operatorSignoff"
+        message = "Operator sign-off file was not found: $OperatorSignoffPath"
+        recommendation = "Provide a valid operator sign-off path or omit -OperatorSignoffPath."
+    }
+    $preflight.status = 'blocked'
+    $preflight.nextAction = 'Resolve blocking checks and rerun preflight.'
+}
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $summaryDir 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
 
 $testProject = "tests/Meridian.Tests/Meridian.Tests.csproj"
