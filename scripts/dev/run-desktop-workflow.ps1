@@ -1115,13 +1115,18 @@ finally {
         } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
     }
 
-    & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
-        -BundlePath $bundleDirectory `
-        -ManifestPath $manifestPath `
-        -WorkflowName $workflowDefinition.name `
-        -UseFixture:$useFixture `
-        -SkipBuild:$SkipBuild `
-        -ReuseExistingApp:$ReuseExistingApp | Out-Null
+    try {
+        & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
+            -BundlePath $bundleDirectory `
+            -ManifestPath $manifestPath `
+            -WorkflowName $workflowDefinition.name `
+            -UseFixture:$useFixture `
+            -SkipBuild:$SkipBuild `
+            -ReuseExistingApp:$ReuseExistingApp | Out-Null
+    }
+    catch {
+        Write-Warn "Failed to summarize desktop workflow bundle: $($_.Exception.Message)"
+    }
 
     if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
         try {
