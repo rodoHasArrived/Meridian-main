@@ -36,6 +36,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence
 
+from dashboard_rendering import (
+    current_utc_timestamp,
+    load_canonical_json,
+    render_markdown_from_json,
+    write_canonical_json,
+)
+
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -367,7 +374,7 @@ def analyse(root: Path) -> HealthMetrics:
         no_heading_files=no_heading_files,
         stale_files=stale_files,
         all_files=file_infos,
-        scan_time=now.isoformat(),
+        scan_time=current_utc_timestamp(),
         root_dir=str(root),
     )
     metrics.health_score = compute_health_score(metrics)
@@ -399,8 +406,11 @@ def _score_label(score: int) -> str:
     return "Critical"
 
 
-def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
-    """Generate a Markdown health dashboard report."""
+def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
+    metrics = HealthMetrics(
+        **{k: v for k, v in payload.items() if k in {"total_files","total_lines","orphaned_count","no_heading_count","stale_count","todo_count","average_lines","health_score","orphaned_files","no_heading_files","stale_files","scan_time","root_dir"}},
+        all_files=[FileInfo(**item) for item in payload.get("all_files", [])],
+    )
     lines: list[str] = []
 
     lines.append("# Documentation Health Dashboard")
@@ -526,6 +536,14 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
     return "\n".join(lines)
 
 
+def generate_markdown_from_json_payload(payload: dict) -> str:
+    return render_markdown_from_json(
+        json_payload=payload,
+        render_body=_render_markdown_body_from_payload,
+        data_sources=["repo markdown (*.md)", "git commit metadata"],
+    )
+
+
 def generate_summary(metrics: HealthMetrics) -> str:
     """Return a compact single-paragraph summary for ``GITHUB_STEP_SUMMARY``."""
     return (
@@ -607,27 +625,32 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
         print(f"Error during analysis: {exc}", file=sys.stderr)
         return 1
 
-    # Write Markdown report.
-    if args.output is not None:
-        try:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(generate_markdown(metrics), encoding="utf-8")
-            print(f"Markdown report written to {args.output}")
-        except OSError as exc:
-            print(f"Error writing Markdown report: {exc}", file=sys.stderr)
-            return 1
+    if args.output is not None and args.json_output is None:
+        print("Error: --output requires --json-output so markdown is rendered from canonical JSON.", file=sys.stderr)
+        return 1
 
-    # Write JSON output.
+    if not any(root.rglob("*.md")):
+        print("Error: missing required markdown evidence input (*.md files).", file=sys.stderr)
+        return 1
+
+    payload = metrics.to_dict()
+
     if args.json_output is not None:
         try:
-            args.json_output.parent.mkdir(parents=True, exist_ok=True)
-            args.json_output.write_text(
-                json.dumps(metrics.to_dict(), indent=2, default=str),
-                encoding="utf-8",
-            )
+            write_canonical_json(payload, args.json_output)
             print(f"JSON metrics written to {args.json_output}")
         except OSError as exc:
             print(f"Error writing JSON output: {exc}", file=sys.stderr)
+            return 1
+
+    if args.output is not None:
+        try:
+            canonical = load_canonical_json(args.json_output)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(generate_markdown_from_json_payload(canonical), encoding="utf-8")
+            print(f"Markdown report written to {args.output}")
+        except OSError as exc:
+            print(f"Error writing Markdown report: {exc}", file=sys.stderr)
             return 1
 
     # Print summary.

@@ -29,6 +29,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from dashboard_rendering import (
+    current_utc_timestamp,
+    load_canonical_json,
+    render_markdown_from_json,
+    write_canonical_json,
+)
+
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -238,8 +245,14 @@ def _status_badge(rate: float) -> str:
         return "🔴 Poor"
 
 
-def generate_markdown(dashboard: MetricsDashboard) -> str:
-    """Generate Markdown metrics dashboard."""
+def _render_markdown_body_from_payload(payload: dict) -> str:
+    dashboard = MetricsDashboard(
+        workflows={name: WorkflowMetrics(**metrics) for name, metrics in payload.get("workflows", {}).items()},
+        tests=TestMetrics(**payload.get("tests", {})),
+        builds=BuildMetrics(**payload.get("builds", {})),
+        generated_at=payload.get("generated_at", ""),
+        lookback_days=payload.get("lookback_days", DEFAULT_LOOKBACK_DAYS),
+    )
     lines = []
 
     lines.append("# Build Metrics Dashboard")
@@ -356,6 +369,14 @@ def generate_markdown(dashboard: MetricsDashboard) -> str:
     return "\n".join(lines)
 
 
+def generate_markdown_from_json_payload(payload: dict) -> str:
+    return render_markdown_from_json(
+        json_payload=payload,
+        render_body=_render_markdown_body_from_payload,
+        data_sources=[".github/workflows/*.yml", "TestResults/*.trx", "build logs"],
+    )
+
+
 def generate_summary(dashboard: MetricsDashboard) -> str:
     """Generate concise summary for GITHUB_STEP_SUMMARY."""
     total_runs = sum(w.total_runs for w in dashboard.workflows.values())
@@ -380,7 +401,7 @@ def generate_summary(dashboard: MetricsDashboard) -> str:
 def build_dashboard(root: Path, lookback_days: int) -> MetricsDashboard:
     """Build metrics dashboard from repository data."""
     dashboard = MetricsDashboard(
-        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        generated_at=current_utc_timestamp(),
         lookback_days=lookback_days,
     )
 
@@ -438,21 +459,29 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"Error building dashboard: {exc}", file=sys.stderr)
         return 1
 
-    # Write Markdown
+    if args.output and not args.json_output:
+        print("Error: --output requires --json-output so markdown is rendered from canonical JSON.", file=sys.stderr)
+        return 1
+
+    if not (root / '.github' / 'workflows').exists():
+        print("Error: missing required workflow evidence directory .github/workflows", file=sys.stderr)
+        return 1
+    if not (root / 'TestResults').exists():
+        print("Error: missing required test evidence directory TestResults", file=sys.stderr)
+        return 1
+
+    payload = dashboard.to_dict()
+
+    if args.json_output:
+        write_canonical_json(payload, args.json_output)
+        print(f"JSON metrics written to {args.json_output}")
+
     if args.output:
-        md = generate_markdown(dashboard)
+        canonical = load_canonical_json(args.json_output)
+        md = generate_markdown_from_json_payload(canonical)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(md, encoding='utf-8')
         print(f"Metrics dashboard written to {args.output}")
-
-    # Write JSON
-    if args.json_output:
-        args.json_output.parent.mkdir(parents=True, exist_ok=True)
-        args.json_output.write_text(
-            json.dumps(dashboard.to_dict(), indent=2, default=str),
-            encoding='utf-8'
-        )
-        print(f"JSON metrics written to {args.json_output}")
 
     # Print summary
     if args.summary:
