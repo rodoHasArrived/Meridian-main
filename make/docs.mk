@@ -79,7 +79,10 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
 
-docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest verify-adrs ## Generate all documentation
+docs-lint: ## Validate documented make/pwsh command snippets resolve to real targets/scripts
+	@python3 build/scripts/docs/lint-command-snippets.py
+
+docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows verify-adrs ## Generate all documentation
 	@echo "$(GREEN)All documentation generated$(NC)"
 
 check-workflow-docs-parity: ## Validate docs workflow command parity and generate remediation report
