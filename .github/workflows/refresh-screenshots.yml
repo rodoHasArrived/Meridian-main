@@ -22,6 +22,9 @@ on:
       - 'config/appsettings.sample.json'
       - 'scripts/dev/SharedBuild.ps1'
       - 'scripts/dev/desktop-workflows.json'
+      - 'scripts/dev/workflow-profiles/**'
+      - 'scripts/dev/SharedWorkflowProfiles.ps1'
+      - 'scripts/dev/validate-workflow-profile.ps1'
       - 'scripts/dev/run-desktop-workflow.ps1'
       - 'scripts/dev/capture-desktop-screenshots.ps1'
       - 'src/Meridian.Ui.Services/**'
@@ -198,6 +201,7 @@ jobs:
 
           pwsh -File scripts/dev/run-desktop-workflow.ps1 `
             -Workflow "${{ matrix.workflow.name }}" `
+            -Profile "${{ matrix.workflow.name }}" `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
             -Configuration "${{ env.WPF_CONFIGURATION }}" `
             -Framework "${{ env.WPF_FRAMEWORK }}" `

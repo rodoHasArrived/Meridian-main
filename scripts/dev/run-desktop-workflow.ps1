@@ -3,6 +3,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$Workflow,
+    [string]$Profile,
+    [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
     [string]$DefinitionPath = 'scripts/dev/desktop-workflows.json',
     [string]$ProjectPath,
     [string]$Configuration,
@@ -28,7 +30,7 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
 . (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
-. (Join-Path $PSScriptRoot 'shared/retry.ps1')
+. (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
@@ -756,14 +758,24 @@ if ($null -eq $workflowDefinition) {
     throw "Workflow '$Workflow' was not found in '$catalogPath'."
 }
 
-$projectPathInput = if ($PSBoundParameters.ContainsKey('ProjectPath')) { $ProjectPath } else { Get-ConfigValue -Table $defaults -Key 'projectPath' -Fallback 'src/Meridian.Wpf/Meridian.Wpf.csproj' }
+$resolvedProfileName = if ($PSBoundParameters.ContainsKey('Profile') -and -not [string]::IsNullOrWhiteSpace($Profile)) { $Profile } else { $Workflow }
+$null = & (Join-Path $PSScriptRoot 'validate-workflow-profile.ps1') -Profile $resolvedProfileName -ProfileRoot $ProfileRoot -NoFixture:$NoFixture -ReuseExistingApp:$ReuseExistingApp -EmitJson
+$profileEnvelope = Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $resolvedProfileName -ProfileRoot $ProfileRoot
+$profileBuild = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'build' -Fallback @{}
+$profileFixture = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'fixture' -Fallback @{}
+$profileScreenshots = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'screenshots' -Fallback @{}
+$profileRetention = Get-MeridianWorkflowProfileValue -Table $profileScreenshots -Key 'retention' -Fallback @{}
+
+$projectPathInput = if ($PSBoundParameters.ContainsKey('ProjectPath')) { $ProjectPath } else { Get-MeridianWorkflowProfileValue -Table $profileBuild -Key 'projectPath' -Fallback (Get-ConfigValue -Table $defaults -Key 'projectPath' -Fallback 'src/Meridian.Wpf/Meridian.Wpf.csproj') }
 $resolvedProjectPath = Resolve-RepoPath $projectPathInput
-$resolvedConfiguration = if ($PSBoundParameters.ContainsKey('Configuration')) { $Configuration } else { [string](Get-ConfigValue -Table $defaults -Key 'configuration' -Fallback 'Release') }
-$resolvedFramework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framework } else { [string](Get-ConfigValue -Table $defaults -Key 'framework' -Fallback 'net9.0-windows10.0.19041.0') }
-$resolvedExeName = if ($PSBoundParameters.ContainsKey('ExeName')) { $ExeName } else { [string](Get-ConfigValue -Table $defaults -Key 'exeName' -Fallback 'Meridian.Desktop.exe') }
-$outputRootInput = if ($PSBoundParameters.ContainsKey('OutputRoot')) { $OutputRoot } else { [string](Get-ConfigValue -Table $defaults -Key 'outputRoot' -Fallback 'artifacts/desktop-workflows') }
+$resolvedConfiguration = if ($PSBoundParameters.ContainsKey('Configuration')) { $Configuration } else { [string](Get-MeridianWorkflowProfileValue -Table $profileBuild -Key 'configuration' -Fallback (Get-ConfigValue -Table $defaults -Key 'configuration' -Fallback 'Release')) }
+$resolvedFramework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framework } else { [string](Get-MeridianWorkflowProfileValue -Table $profileBuild -Key 'framework' -Fallback (Get-ConfigValue -Table $defaults -Key 'framework' -Fallback 'net9.0-windows10.0.19041.0')) }
+$resolvedExeName = if ($PSBoundParameters.ContainsKey('ExeName')) { $ExeName } else { [string](Get-MeridianWorkflowProfileValue -Table $profileBuild -Key 'exeName' -Fallback (Get-ConfigValue -Table $defaults -Key 'exeName' -Fallback 'Meridian.Desktop.exe')) }
+$outputRootInput = if ($PSBoundParameters.ContainsKey('OutputRoot')) { $OutputRoot } else { [string](Get-MeridianWorkflowProfileValue -Table $profileScreenshots -Key 'outputRoot' -Fallback (Get-ConfigValue -Table $defaults -Key 'outputRoot' -Fallback 'artifacts/desktop-workflows')) }
 $resolvedOutputRoot = Resolve-RepoPath $outputRootInput
-Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot
+$retentionDays = [int](Get-MeridianWorkflowProfileValue -Table $profileRetention -Key 'maxAgeDays' -Fallback 14)
+$retentionLatest = [int](Get-MeridianWorkflowProfileValue -Table $profileRetention -Key 'retainLatest' -Fallback 10)
+Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot -MaxAgeDays $retentionDays -RetainLatest $retentionLatest
 $buildIsolationKey = New-MeridianBuildIsolationKey -Prefix ("desktop-workflow-" + $Workflow)
 $resolvedScreenshotDirectory = if ($PSBoundParameters.ContainsKey('ScreenshotDirectory')) {
     Resolve-RepoPath $ScreenshotDirectory
@@ -777,7 +789,13 @@ $useFixture = if ($NoFixture) {
     $false
 }
 else {
-    Get-ConfigBool -Table $workflowDefinition -Key 'fixtureMode' -Fallback (Get-ConfigBool -Table $defaults -Key 'fixtureMode' -Fallback $true)
+    $profileFixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $profileFixture -Key 'required' -Fallback $true)
+    if ($profileFixtureRequired) {
+        $true
+    }
+    else {
+        Get-ConfigBool -Table $workflowDefinition -Key 'fixtureMode' -Fallback (Get-ConfigBool -Table $defaults -Key 'fixtureMode' -Fallback $true)
+    }
 }
 
 if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
@@ -789,6 +807,7 @@ $checkpoint = Initialize-MeridianCheckpoint `
     -CheckpointPath $CheckpointPath `
     -InputObject ([ordered]@{
         workflow = $Workflow
+        profile = $resolvedProfileName
         definitionPath = $catalogPath
         projectPath = $resolvedProjectPath
         configuration = $resolvedConfiguration
@@ -826,6 +845,8 @@ $manifest = [ordered]@{
         purpose = $workflowDefinition.purpose
     }
     run = [ordered]@{
+        profile = $resolvedProfileName
+        profilePath = $profileEnvelope.path
         catalogPath = $catalogPath
         projectPath = $resolvedProjectPath
         configuration = $resolvedConfiguration
