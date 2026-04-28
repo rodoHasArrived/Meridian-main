@@ -5,6 +5,7 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 ## What the Automation Covers
 
 - `scripts/dev/run-desktop-workflow.ps1` launches the WPF shell, drives a named workflow, captures screenshots, and writes a JSON manifest.
+- `scripts/dev/summarize-desktop-workflow-bundle.ps1` reads bundle diagnostics and emits `bundle-summary.md` with failure-first triage hints.
 - `scripts/dev/generate-desktop-user-manual.ps1` runs one or more manual workflows and produces a markdown user manual plus screenshot assets.
 - `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
 - `scripts/dev/desktop-workflows.json` is the catalog of named workflows and per-step notes.
@@ -76,6 +77,21 @@ Each run writes:
 - `manifest.json` with operating-context confirmation, step timing, capture paths, and step notes
 - `logs/stdout.log` and `logs/stderr.log` for startup diagnostics
 - per-step screenshots
+
+In addition, every run now produces a fixed debug bundle under:
+
+`artifacts/desktop-workflows/<run-id>/bundle/`
+
+Bundle contents:
+
+- `workflow-log.txt`: full PowerShell transcript from the workflow runner (high-level runner events and exceptions).
+- `stage-status.json`: ordered stage lifecycle entries (`running`, `ok`, `failed`, `skipped`) including timestamps and messages.
+- `environment.json`: host/runtime snapshot (host name, user, OS, PowerShell version, fixture/reuse/build flags, run paths).
+- `last-successful-step.json`: most recent successful workflow step details, or a sentinel message when no step succeeded.
+- `screenshots/`: normalized copy of captured step frames plus `*-failed-attempt.png` frames when a step throws.
+- `bundle-summary.md`: generated summary with top failure cause, first failing stage, and a suggested rerun command.
+
+The bundle is generated for both success and failure runs so contributors can use one troubleshooting schema across local debugging and CI automation.
 
 ## Manual Generation
 

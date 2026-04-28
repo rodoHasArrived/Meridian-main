@@ -666,6 +666,30 @@ function Send-WindowKeys {
     [System.Windows.Forms.SendKeys]::SendWait($Keys)
 }
 
+function Add-StageStatus {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Collections.Generic.List[object]]$StageStatus,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Stage,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Status,
+
+        [string]$Message = '',
+        [object]$Metadata = $null
+    )
+
+    $StageStatus.Add([ordered]@{
+            stage = $Stage
+            status = $Status
+            message = $Message
+            metadata = $Metadata
+            timestampUtc = (Get-Date).ToUniversalTime().ToString('O')
+        }) | Out-Null
+}
+
 $catalogPath = Resolve-RepoPath $DefinitionPath
 $initialOutputRoot = if ($PSBoundParameters.ContainsKey('OutputRoot')) { Resolve-RepoPath $OutputRoot } else { Resolve-RepoPath 'artifacts/desktop-workflows' }
 $catalogPreflight = Invoke-MeridianPreflight `
@@ -739,14 +763,21 @@ $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $existingRunDirectory = if ($checkpoint.Data.metadata.ContainsKey('runDirectory')) { [string]$checkpoint.Data.metadata.runDirectory } else { '' }
 $runDirectory = if (-not [string]::IsNullOrWhiteSpace($existingRunDirectory)) { $existingRunDirectory } else { Join-Path $resolvedOutputRoot "$timestamp-$Workflow" }
 $logDirectory = Join-Path $runDirectory 'logs'
+$bundleDirectory = Join-Path $runDirectory 'bundle'
+$bundleScreenshotDirectory = Join-Path $bundleDirectory 'screenshots'
+$bundleWorkflowLogPath = Join-Path $bundleDirectory 'workflow-log.txt'
+$bundleStageStatusPath = Join-Path $bundleDirectory 'stage-status.json'
+$bundleEnvironmentPath = Join-Path $bundleDirectory 'environment.json'
+$bundleLastSuccessfulStepPath = Join-Path $bundleDirectory 'last-successful-step.json'
 $screenshotDirectory = if ($null -ne $resolvedScreenshotDirectory) { $resolvedScreenshotDirectory } else { Join-Path $runDirectory 'screenshots' }
 $manifestPath = Join-Path $runDirectory 'manifest.json'
 $checkpoint.Data.metadata.runDirectory = $runDirectory
 $checkpoint.Data.metadata.manifestPath = $manifestPath
 $checkpoint.Data.metadata.screenshotDirectory = $screenshotDirectory
+$checkpoint.Data.metadata.bundleDirectory = $bundleDirectory
 Save-MeridianCheckpointContext -Context $checkpoint
 
-New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screenshotDirectory | Out-Null
+New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screenshotDirectory, $bundleDirectory, $bundleScreenshotDirectory | Out-Null
 
 $stdoutPath = Join-Path $logDirectory 'stdout.log'
 $stderrPath = Join-Path $logDirectory 'stderr.log'
@@ -767,6 +798,7 @@ $manifest = [ordered]@{
         fixtureMode = $useFixture
         runDirectory = $runDirectory
         screenshotDirectory = $screenshotDirectory
+        bundleDirectory = $bundleDirectory
         stdoutLog = $stdoutPath
         stderrLog = $stderrPath
         startedAt = (Get-Date).ToString('o')
@@ -776,7 +808,29 @@ $manifest = [ordered]@{
 
 $ownedProcess = $null
 $window = $null
+$workflowTranscriptActive = $false
+$stageStatus = [System.Collections.Generic.List[object]]::new()
+$lastSuccessfulStep = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
+
+$environmentSnapshot = [ordered]@{
+    workflow = $Workflow
+    runDirectory = $runDirectory
+    bundleDirectory = $bundleDirectory
+    hostName = [System.Environment]::MachineName
+    userName = [System.Environment]::UserName
+    osVersion = [System.Environment]::OSVersion.VersionString
+    powershellVersion = $PSVersionTable.PSVersion.ToString()
+    dotnetRoot = [System.Environment]::GetEnvironmentVariable('DOTNET_ROOT')
+    fixtureMode = $useFixture
+    reuseExistingApp = [bool]$ReuseExistingApp
+    skipBuild = [bool]$SkipBuild
+    generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
+}
+$environmentSnapshot | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $bundleEnvironmentPath -Encoding utf8
+Start-Transcript -LiteralPath $bundleWorkflowLogPath -Force | Out-Null
+$workflowTranscriptActive = $true
+
 $preflight = Invoke-MeridianPreflight `
     -Scenario 'desktop-workflow' `
     -RequiredCommands @('dotnet') `
@@ -792,6 +846,7 @@ if ($preflight.status -eq 'blocked') {
     $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
     throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
+Add-StageStatus -StageStatus $stageStatus -Stage 'preflight' -Status 'ok' -Message 'Desktop workflow preflight checks completed.'
 
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
@@ -805,6 +860,7 @@ try {
     }
 
     if (-not $SkipBuild -and (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'build-desktop')) {
+        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'running' -Message 'Building Meridian desktop shell.'
         Start-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -Description 'Restore and build Meridian desktop shell.'
         $desktopRestoreArgs = @(
             Get-MeridianBuildArguments `
@@ -833,9 +889,14 @@ try {
             throw "dotnet build failed for '$resolvedProjectPath'."
         }
         Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
+        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'ok' -Message 'Desktop build completed.' -Metadata @{ exePath = $exePath }
     }
     elseif (-not $SkipBuild) {
         Write-Info 'Skipping desktop build (checkpoint resume).'
+        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
+    }
+    else {
+        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped because -SkipBuild was supplied.'
     }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
@@ -866,6 +927,7 @@ try {
         }
 
         if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
+            Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
             Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
             Write-Info "Launching Meridian desktop: $exePath"
             $ownedProcess = Start-Process -FilePath $exePath `
@@ -880,10 +942,12 @@ try {
             $manifest.run.processId = $ownedProcess.Id
             $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
             Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
+            Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
             Write-Ok 'Meridian window detected.'
         }
         else {
             Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
+            Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
         }
     }
 
@@ -892,6 +956,7 @@ try {
     if (-not $operatingContextConfirmed) {
         throw 'Operating context was not confirmed; screenshot workflow cannot continue before shell readiness. Check EnterWorkstationButton and Seed Sample Contexts automation.'
     }
+    Add-StageStatus -StageStatus $stageStatus -Stage 'ensure-operating-context' -Status 'ok' -Message 'Operating context confirmed.'
 
     Write-Ok 'Operating context confirmed.'
 
@@ -899,6 +964,7 @@ try {
     $window = $startupReadiness.Window
     $manifest.run.initialPageTag = $startupReadiness.State.PageTag
     $manifest.run.initialPageTitle = $startupReadiness.State.PageTitle
+    Add-StageStatus -StageStatus $stageStatus -Stage 'startup-readiness' -Status 'ok' -Message 'Shell readiness confirmed.' -Metadata @{ pageTag = $startupReadiness.State.PageTag; pageTitle = $startupReadiness.State.PageTitle }
     Write-Ok "Shell ready on $($startupReadiness.State.PageTag) ($($startupReadiness.State.PageTitle))."
 
     $stepIndex = 0
@@ -952,6 +1018,7 @@ try {
                 continue
             }
             Start-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Description $title
+            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'running' -Message $title
 
             if ($null -ne $ownedProcess -and $ownedProcess.HasExited) {
                 throw "Meridian desktop exited unexpectedly with code $($ownedProcess.ExitCode)."
@@ -983,17 +1050,41 @@ try {
                 $window = Wait-MeridianWindow -TimeoutSec 10 -Process $ownedProcess
                 $savedPath = Save-WindowCapture -Window $window -Path $capturePath
                 $stepResult.capturePath = $savedPath
+                $bundleCapturePath = Join-Path $bundleScreenshotDirectory ([System.IO.Path]::GetFileName($savedPath))
+                Copy-Item -LiteralPath $savedPath -Destination $bundleCapturePath -Force
+                $stepResult.bundleCapturePath = $bundleCapturePath
                 Write-Ok "Saved $savedPath"
             }
 
             $stepResult.status = 'ok'
             $stepResult.completedAt = (Get-Date).ToString('o')
+            $lastSuccessfulStep = [ordered]@{
+                index = $stepResult.index
+                title = $stepResult.title
+                pageTag = $stepResult.pageTag
+                observedPageTag = $stepResult.observedPageTag
+                observedPageTitle = $stepResult.observedPageTitle
+                capturePath = $stepResult.capturePath
+                bundleCapturePath = $stepResult.bundleCapturePath
+                completedAt = $stepResult.completedAt
+            }
             Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($capturePath)
+            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'ok' -Message $title -Metadata @{ capturePath = $capturePath }
         }
         catch {
             $stepResult.status = 'failed'
             $stepResult.error = $_.Exception.Message
             $stepResult.completedAt = (Get-Date).ToString('o')
+            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'failed' -Message $_.Exception.Message -Metadata @{ title = $title; index = $stepIndex }
+            try {
+                if ($null -ne $window) {
+                    $failedCapturePath = Join-Path $bundleScreenshotDirectory ('{0:D2}-{1}-failed-attempt.png' -f $stepIndex, (($title -replace '[^A-Za-z0-9]+', '-').Trim('-').ToLowerInvariant()))
+                    $stepResult.failedAttemptCapturePath = Save-WindowCapture -Window $window -Path $failedCapturePath
+                }
+            }
+            catch {
+                Write-Warn "Failed to capture failed-attempt screenshot for step '$title': $($_.Exception.Message)"
+            }
             Fail-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Message $_.Exception.Message
             $manifest.steps += [pscustomobject]$stepResult
             throw
@@ -1007,11 +1098,30 @@ try {
 catch {
     $manifest.run.status = 'failed'
     $manifest.run.error = $_.Exception.Message
+    Add-StageStatus -StageStatus $stageStatus -Stage 'workflow' -Status 'failed' -Message $_.Exception.Message
     throw
 }
 finally {
     $manifest.run.finishedAt = (Get-Date).ToString('o')
     $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+    $stageStatus | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
+    if ($null -ne $lastSuccessfulStep) {
+        $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
+    }
+    else {
+        [ordered]@{
+            message = 'No successful workflow step was recorded.'
+            generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
+        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
+    }
+
+    & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
+        -BundlePath $bundleDirectory `
+        -ManifestPath $manifestPath `
+        -WorkflowName $workflowDefinition.name `
+        -UseFixture:$useFixture `
+        -SkipBuild:$SkipBuild `
+        -ReuseExistingApp:$ReuseExistingApp | Out-Null
 
     if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
         try {
@@ -1026,6 +1136,14 @@ finally {
     }
 
     [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', $originalFixtureEnv, 'Process')
+    if ($workflowTranscriptActive) {
+        try {
+            Stop-Transcript | Out-Null
+        }
+        catch {
+            Write-Warn "Failed to stop workflow transcript: $($_.Exception.Message)"
+        }
+    }
 }
 
 $savedCaptures = @($manifest.steps | Where-Object { $_.status -eq 'ok' -and $_.capturePath })
