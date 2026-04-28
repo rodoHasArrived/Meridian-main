@@ -5034,6 +5034,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
+│   │   ├── shared
+│   │   │   └── retry.ps1
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
 │   │   └── validate-screenshot-contract.py
@@ -7858,6 +7860,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-587 directories, 7121 files
+588 directories, 7122 files
 ```
 <!-- readme-tree end -->

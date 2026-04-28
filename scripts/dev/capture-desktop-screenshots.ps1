@@ -391,6 +391,8 @@ if ($fixtureRequired) {
 $exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $Configuration -Framework $Framework -BinaryName $ExeName -IsolationKey $buildIsolationKey
 $stdoutPath = 'wpf-startup-stdout.log'
 $stderrPath = 'wpf-startup-stderr.log'
+$retryTelemetry = New-Object System.Collections.ArrayList
+$retryTelemetryPath = Join-Path $OutputDir 'retry-telemetry.json'
 
 if (-not (Test-Path $exePath)) {
   throw "WPF executable was not found at '$exePath'. Build the project or check your parameters."
@@ -402,30 +404,47 @@ $proc = Start-Process -FilePath $exePath -RedirectStandardOutput $stdoutPath -Re
 try {
   $window = $null
   Write-Host 'Waiting for Meridian window (up to 90 seconds)...'
-  for ($i = 0; $i -lt 45; $i++) {
-    Start-Sleep -Seconds 2
+  $windowRetry = Invoke-MeridianRetry `
+    -Name 'capture/launch/window-visible' `
+    -MaxAttempts 45 `
+    -BaseDelayMs 500 `
+    -MaxDelayMs 2000 `
+    -JitterMs 150 `
+    -TelemetrySink $retryTelemetry `
+    -Predicate {
+      if ($proc.HasExited) {
+        return [pscustomobject]@{
+          ready = $false
+          failure = (New-MeridianRetryFailure -Code 'desktop.process.exited' -Reason "WPF process exited before the main window appeared (exit code $($proc.ExitCode))." -Data @{ exitCode = $proc.ExitCode })
+        }
+      }
 
-    if ($proc.HasExited) {
-      Write-Host "Application exited with code $($proc.ExitCode)."
-      if (Test-Path $stdoutPath) { Write-Host '--- stdout ---'; Get-Content $stdoutPath | Write-Host }
-      if (Test-Path $stderrPath) { Write-Host '--- stderr ---'; Get-Content $stderrPath | Write-Host }
-      throw 'WPF process exited before the main window appeared.'
+      $candidateWindow = Find-MeridianWindow
+      if ($null -eq $candidateWindow) {
+        return [pscustomobject]@{
+          ready = $false
+          failure = (New-MeridianRetryFailure -Code 'desktop.window.not_visible' -Reason 'Meridian window was not visible yet.' -Data @{})
+        }
+      }
+
+      return [pscustomobject]@{
+        ready = $true
+        window = $candidateWindow
+      }
+    } `
+    -Action {
+      param($state)
+      return $state.window
     }
 
-    $window = Find-MeridianWindow
-    if ($window) {
-      Write-Host 'Meridian window detected.'
-      break
-    }
-  }
-
-  if (-not $window) {
+  if (-not $windowRetry.Success) {
     if (Test-Path $stdoutPath) { Write-Host '--- stdout ---'; Get-Content $stdoutPath | Write-Host }
     if (Test-Path $stderrPath) { Write-Host '--- stderr ---'; Get-Content $stderrPath | Write-Host }
-    throw 'Meridian window did not appear within 90 seconds.'
+    $launchFailure = $windowRetry.Failure
+    throw "[{0}] {1}" -f $launchFailure.code, $launchFailure.reason
   }
-
-  Start-Sleep -Seconds 4
+  $window = $windowRetry.Value
+  Write-Host 'Meridian window detected.'
 
   if (-not (Ensure-EnteredFundProfile -Window $window)) {
     Write-Warning 'Unable to enter the fund profile selector. Continuing without page navigation.'
@@ -468,7 +487,56 @@ try {
     $window = Find-MeridianWindow
 
     if ($window -and $ok) {
-      Save-WindowCapture -Window $window -Path (Join-Path $OutputDir "wpf-$slug.png")
+      $targetPath = Join-Path $OutputDir "wpf-$slug.png"
+      $captureRetry = Invoke-MeridianRetry `
+        -Name ("capture/page/$slug") `
+        -MaxAttempts 6 `
+        -BaseDelayMs 350 `
+        -MaxDelayMs 2500 `
+        -JitterMs 180 `
+        -TelemetrySink $retryTelemetry `
+        -Predicate {
+          $candidateWindow = Find-MeridianWindow
+          if ($null -eq $candidateWindow) {
+            return [pscustomobject]@{
+              ready = $false
+              failure = (New-MeridianRetryFailure -Code 'desktop.window.not_visible' -Reason "Window was not visible while capturing '$search'." -Data @{ page = $search; slug = $slug })
+            }
+          }
+
+          $shellMarker = $candidateWindow.FindFirst(
+            [System.Windows.Automation.TreeScope]::Descendants,
+            (New-Object System.Windows.Automation.PropertyCondition(
+              [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+              'ShellAutomationState'
+            ))
+          )
+
+          if ($null -eq $shellMarker) {
+            return [pscustomobject]@{
+              ready = $false
+              failure = (New-MeridianRetryFailure -Code 'desktop.automation.marker_missing' -Reason "Shell automation marker was not found while capturing '$search'." -Data @{ page = $search; slug = $slug })
+            }
+          }
+
+          return [pscustomobject]@{
+            ready = $true
+            window = $candidateWindow
+          }
+        } `
+        -Action {
+          param($state)
+          Save-WindowCapture -Window $state.window -Path $targetPath
+          return $targetPath
+        }
+
+      if ($captureRetry.Success) {
+        Write-Host "Saved: $($captureRetry.Value)"
+      }
+      else {
+        $failure = $captureRetry.Failure
+        Write-Warning ("Skipping '{0}' due to retry exhaustion [{1}] {2}" -f $search, $failure.code, $failure.reason)
+      }
     } else {
       Write-Warning "Skipping '$search' because navigation failed or window reference was lost."
     }
@@ -480,6 +548,25 @@ try {
     Format-Table -AutoSize
 }
 finally {
+  $retryReport = [ordered]@{
+    generatedAt = (Get-Date).ToString('o')
+    outputDirectory = $OutputDir
+    telemetry = @($retryTelemetry)
+    failureRanking = @(
+      $retryTelemetry |
+        Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |
+        Group-Object { $_.failure.code } |
+        Sort-Object Count -Descending |
+        ForEach-Object {
+          [ordered]@{
+            code = $_.Name
+            count = $_.Count
+          }
+        }
+    )
+  }
+  $retryReport | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $retryTelemetryPath -Encoding utf8
+
   if (-not $KeepAppOpen) {
     Write-Host 'Stopping WPF process...'
     try { $proc | Stop-Process -Force -ErrorAction SilentlyContinue } catch {}
