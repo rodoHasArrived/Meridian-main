@@ -1,0 +1,63 @@
+name: Workflow Docs Parity
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "docs/HELP.md"
+      - "docs/development/**"
+      - "README.md"
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - "scripts/check_workflow_docs_parity.py"
+      - "src/Meridian/**"
+      - "src/Meridian.Application/**"
+      - "make/**"
+      - "Makefile"
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/HELP.md"
+      - "docs/development/**"
+      - "README.md"
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - "scripts/check_workflow_docs_parity.py"
+      - "src/Meridian/**"
+      - "src/Meridian.Application/**"
+      - "make/**"
+      - "Makefile"
+
+permissions:
+  contents: read
+
+jobs:
+  docs-workflow-parity:
+    name: Docs workflow parity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Run parity checker
+        run: |
+          python3 scripts/check_workflow_docs_parity.py --report artifacts/docs/workflow-docs-parity-report.md
+
+      - name: Publish report summary
+        if: always()
+        run: |
+          echo "## Workflow Docs Parity" >> "$GITHUB_STEP_SUMMARY"
+          cat artifacts/docs/workflow-docs-parity-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload remediation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-docs-parity-report
+          path: artifacts/docs/workflow-docs-parity-report.md
