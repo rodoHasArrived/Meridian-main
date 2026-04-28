@@ -3,13 +3,18 @@ param(
     [string]$PacketPath = "",
     [switch]$Validate,
     [switch]$Force,
-    [switch]$Json
+    [switch]$Json,
+    [string]$CheckpointPath = "",
+    [string[]]$ForceCheckpointStep = @(),
+    [switch]$AllowCheckpointInputMismatch
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+. (Join-Path $PSScriptRoot "SharedCheckpoint.ps1")
 $dateStamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")
 $requiredOperatorOwners = @("Data Operations", "Provider Reliability", "Trading")
 
@@ -18,6 +23,40 @@ if ([string]::IsNullOrWhiteSpace($OutputPath)) {
 }
 else {
     $OutputPath = [System.IO.Path]::GetFullPath($OutputPath)
+}
+if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
+    $CheckpointPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $OutputPath) "dk1-operator-signoff.checkpoint.json"))
+}
+$checkpoint = Initialize-MeridianCheckpoint `
+    -Workflow "prepare-dk1-operator-signoff" `
+    -CheckpointPath $CheckpointPath `
+    -InputObject ([ordered]@{
+        outputPath = $OutputPath
+        packetPath = $PacketPath
+        validate = [bool]$Validate
+        force = [bool]$Force
+        json = [bool]$Json
+    }) `
+    -ForceStep $ForceCheckpointStep `
+    -AllowInputMismatch:$AllowCheckpointInputMismatch
+
+$outputDirectory = Split-Path -Parent $OutputPath
+$requiredPaths = @()
+if (-not [string]::IsNullOrWhiteSpace($PacketPath)) {
+    $requiredPaths += [System.IO.Path]::GetFullPath($PacketPath)
+}
+
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'dk1-operator-signoff' `
+    -RequiredPaths $requiredPaths `
+    -WritableDirectories @($outputDirectory) `
+    -EmitJson `
+    -AllowWarnings
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $outputDirectory 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
 
 function ConvertTo-RelativePath {
@@ -377,6 +416,11 @@ else {
 Assert-PacketReadyForOperatorReview -PacketReview $packetReview
 
 if ($Validate) {
+    $validateStepStarted = $false
+    if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "validate-signoff") {
+        Start-MeridianCheckpointStep -Context $checkpoint -StepId "validate-signoff" -Description "Validate existing DK1 operator sign-off."
+        $validateStepStarted = $true
+    }
     $review = Get-OperatorSignoffReview -Path $OutputPath -RequiredOwners $requiredOperatorOwners -PacketReview $packetReview
     if ($Json) {
         $review | ConvertTo-Json -Depth 8
@@ -398,6 +442,9 @@ if ($Validate) {
         }
         throw "DK1 operator sign-off is not complete. Missing owners: $(if ($review.missingOwners.Count -eq 0) { 'none' } else { $review.missingOwners -join ', ' }); packet binding requirements: $packetBindingDetail"
     }
+    if ($validateStepStarted) {
+        Complete-MeridianCheckpointStep -Context $checkpoint -StepId "validate-signoff" -ArtifactPointers @($OutputPath)
+    }
 
     return
 }
@@ -406,11 +453,14 @@ if ((Test-Path -LiteralPath $OutputPath) -and -not $Force) {
     throw "Operator sign-off file already exists: $OutputPath. Re-run with -Force to replace it."
 }
 
-$outputDirectory = Split-Path -Parent $OutputPath
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
 $template = New-OperatorSignoffTemplate -RequiredOwners $requiredOperatorOwners -PacketReview $packetReview
-$template | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $OutputPath -Encoding UTF8
+if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-signoff-template") {
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-signoff-template" -Description "Write DK1 operator sign-off template."
+    $template | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $OutputPath -Encoding UTF8
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-signoff-template" -ArtifactPointers @($OutputPath)
+}
 
 if ($Json) {
     [ordered]@{

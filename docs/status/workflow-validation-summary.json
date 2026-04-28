@@ -1,0 +1,23 @@
+{
+  "manifest": "docs/status/workflow-manifest.json",
+  "workflowCount": 4,
+  "declared": {
+    "makeTargets": [
+      "desktop-test-operator-inbox-route"
+    ],
+    "scriptPaths": [
+      "build/scripts/docs/generate-workflow-manifest.py",
+      "build/scripts/docs/run-docs-automation.py",
+      "scripts/dev/capture-desktop-screenshots.ps1",
+      "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
+      "scripts/dev/run-desktop-workflow.ps1",
+      "scripts/dev/run-wave1-provider-validation.ps1",
+      "scripts/dev/validate-operator-inbox-route.ps1"
+    ]
+  },
+  "missing": {
+    "makeTargets": [],
+    "scriptPaths": []
+  },
+  "status": "clean"
+}

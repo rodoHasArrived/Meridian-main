@@ -15,7 +15,10 @@ param(
     [switch]$ReuseExistingApp,
     [switch]$NoFixture,
     [switch]$PassThru,
-    [int]$LaunchTimeoutSec = 90
+    [int]$LaunchTimeoutSec = 90,
+    [string]$CheckpointPath = '',
+    [string[]]$ForceCheckpointStep = @(),
+    [switch]$AllowCheckpointInputMismatch
 )
 
 Set-StrictMode -Version Latest
@@ -24,18 +27,11 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
-
-function Assert-Command {
-    param([string]$Name)
-
-    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
-        throw "Required command '$Name' was not found in PATH."
-    }
-}
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -461,11 +457,23 @@ function Wait-ForShellPage {
     param(
         [System.Diagnostics.Process]$Process,
         [string]$ExpectedPageTag,
+        [string[]]$AcceptedPageTags = @(),
         [int]$TimeoutSec = 12
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
     $lastState = $null
+    $acceptableTags = @()
+
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
+        $acceptableTags += $ExpectedPageTag
+    }
+
+    if ($AcceptedPageTags) {
+        $acceptableTags += @($AcceptedPageTags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    }
+
+    $acceptableTags = @($acceptableTags | Select-Object -Unique)
 
     while ((Get-Date) -lt $deadline) {
         if ($null -ne $Process -and $Process.HasExited) {
@@ -476,9 +484,10 @@ function Wait-ForShellPage {
         $window = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
         $lastState = Get-ShellAutomationState -Window $window
 
-        if ($lastState.Ready -and (
-                [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
-                [string]::Equals($lastState.PageTag, $ExpectedPageTag, [System.StringComparison]::Ordinal))) {
+        $pageMatches = [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
+            ($acceptableTags -contains $lastState.PageTag)
+
+        if ($lastState.Ready -and $pageMatches) {
             return [pscustomobject]@{
                 Window = $window
                 State = $lastState
@@ -488,13 +497,15 @@ function Wait-ForShellPage {
         Start-Sleep -Milliseconds 350
     }
 
-    if ([string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
-        throw "Shell readiness markers were not confirmed before capture."
-    }
-
     $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
     $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
-    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
+        throw "Shell readiness markers were not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+    }
+
+    $acceptedSummary = if ($acceptableTags.Count -gt 0) { $acceptableTags -join "', '" } else { '' }
+    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Accepted page tags: '$acceptedSummary'. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
 }
 
 function Wait-ForStableShellPage {
@@ -655,20 +666,19 @@ function Send-WindowKeys {
     [System.Windows.Forms.SendKeys]::SendWait($Keys)
 }
 
-Assert-Command -Name 'dotnet'
-
-if (-not ($IsWindows -or $env:OS -eq 'Windows_NT')) {
-    throw 'Desktop workflow automation requires Windows because Meridian.Wpf is a Windows-only application.'
-}
-
-Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.Windows.Forms
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
-
 $catalogPath = Resolve-RepoPath $DefinitionPath
-if (-not (Test-Path -LiteralPath $catalogPath)) {
-    throw "Workflow catalog was not found at '$catalogPath'."
+$initialOutputRoot = if ($PSBoundParameters.ContainsKey('OutputRoot')) { Resolve-RepoPath $OutputRoot } else { Resolve-RepoPath 'artifacts/desktop-workflows' }
+$catalogPreflight = Invoke-MeridianPreflight `
+    -Scenario 'desktop-workflow-catalog' `
+    -RequiredCommands @('dotnet') `
+    -RequiredPaths @($catalogPath) `
+    -WritableDirectories @($initialOutputRoot) `
+    -RequireWindows `
+    -EmitJson `
+    -AllowWarnings
+
+if ($catalogPreflight.status -eq 'blocked') {
+    throw "Preflight failed before workflow load. $(($catalogPreflight.blockingChecks | ConvertTo-Json -Depth 6 -Compress))"
 }
 
 $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json -AsHashtable
@@ -703,11 +713,38 @@ else {
     Get-ConfigBool -Table $workflowDefinition -Key 'fixtureMode' -Fallback (Get-ConfigBool -Table $defaults -Key 'fixtureMode' -Fallback $true)
 }
 
+if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
+    $CheckpointPath = Join-Path $resolvedOutputRoot "checkpoints/$Workflow.checkpoint.json"
+}
+
+$checkpoint = Initialize-MeridianCheckpoint `
+    -Workflow "run-desktop-workflow:$Workflow" `
+    -CheckpointPath $CheckpointPath `
+    -InputObject ([ordered]@{
+        workflow = $Workflow
+        definitionPath = $catalogPath
+        projectPath = $resolvedProjectPath
+        configuration = $resolvedConfiguration
+        framework = $resolvedFramework
+        exeName = $resolvedExeName
+        outputRoot = $resolvedOutputRoot
+        screenshotDirectory = $resolvedScreenshotDirectory
+        skipBuild = [bool]$SkipBuild
+        fixtureMode = $useFixture
+    }) `
+    -ForceStep $ForceCheckpointStep `
+    -AllowInputMismatch:$AllowCheckpointInputMismatch
+
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$runDirectory = Join-Path $resolvedOutputRoot "$timestamp-$Workflow"
+$existingRunDirectory = if ($checkpoint.Data.metadata.ContainsKey('runDirectory')) { [string]$checkpoint.Data.metadata.runDirectory } else { '' }
+$runDirectory = if (-not [string]::IsNullOrWhiteSpace($existingRunDirectory)) { $existingRunDirectory } else { Join-Path $resolvedOutputRoot "$timestamp-$Workflow" }
 $logDirectory = Join-Path $runDirectory 'logs'
 $screenshotDirectory = if ($null -ne $resolvedScreenshotDirectory) { $resolvedScreenshotDirectory } else { Join-Path $runDirectory 'screenshots' }
 $manifestPath = Join-Path $runDirectory 'manifest.json'
+$checkpoint.Data.metadata.runDirectory = $runDirectory
+$checkpoint.Data.metadata.manifestPath = $manifestPath
+$checkpoint.Data.metadata.screenshotDirectory = $screenshotDirectory
+Save-MeridianCheckpointContext -Context $checkpoint
 
 New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screenshotDirectory | Out-Null
 
@@ -740,6 +777,26 @@ $manifest = [ordered]@{
 $ownedProcess = $null
 $window = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'desktop-workflow' `
+    -RequiredCommands @('dotnet') `
+    -RequiredPaths @($catalogPath, $resolvedProjectPath) `
+    -WritableDirectories @($resolvedOutputRoot, $screenshotDirectory, $runDirectory, $logDirectory) `
+    -RequireWindows `
+    -FeatureFlagExpectations $(if (-not $useFixture) { @{ 'MDC_FIXTURE_MODE' = '0' } } else { @{} }) `
+    -EmitJson `
+    -AllowWarnings
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $runDirectory 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
+}
+
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Windows.Forms
+[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
+[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
 
 try {
     if (-not (Test-Path -LiteralPath 'config/appsettings.json') -and (Test-Path -LiteralPath 'config/appsettings.sample.json')) {
@@ -747,7 +804,8 @@ try {
         Write-Info 'Created config/appsettings.json from sample.'
     }
 
-    if (-not $SkipBuild) {
+    if (-not $SkipBuild -and (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'build-desktop')) {
+        Start-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -Description 'Restore and build Meridian desktop shell.'
         $desktopRestoreArgs = @(
             Get-MeridianBuildArguments `
                 -IsolationKey $buildIsolationKey `
@@ -774,6 +832,10 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet build failed for '$resolvedProjectPath'."
         }
+        Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
+    }
+    elseif (-not $SkipBuild) {
+        Write-Info 'Skipping desktop build (checkpoint resume).'
     }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
@@ -803,19 +865,26 @@ try {
             $launchArguments += '--fixture'
         }
 
-        Write-Info "Launching Meridian desktop: $exePath"
-        $ownedProcess = Start-Process -FilePath $exePath `
-            -ArgumentList $launchArguments `
-            -WorkingDirectory $repoRoot `
-            -RedirectStandardOutput $stdoutPath `
-            -RedirectStandardError $stderrPath `
-            -PassThru `
-            -WindowStyle Normal
+        if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
+            Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
+            Write-Info "Launching Meridian desktop: $exePath"
+            $ownedProcess = Start-Process -FilePath $exePath `
+                -ArgumentList $launchArguments `
+                -WorkingDirectory $repoRoot `
+                -RedirectStandardOutput $stdoutPath `
+                -RedirectStandardError $stderrPath `
+                -PassThru `
+                -WindowStyle Normal
 
-        $manifest.run.launchArguments = $launchArguments
-        $manifest.run.processId = $ownedProcess.Id
-        $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
-        Write-Ok 'Meridian window detected.'
+            $manifest.run.launchArguments = $launchArguments
+            $manifest.run.processId = $ownedProcess.Id
+            $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
+            Write-Ok 'Meridian window detected.'
+        }
+        else {
+            Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
+        }
     }
 
     $operatingContextConfirmed = Ensure-EnteredOperatingContext -Process $ownedProcess
@@ -837,6 +906,11 @@ try {
         $stepIndex += 1
         $title = [string](Get-ConfigValue -Table $step -Key 'title' -Fallback "Step $stepIndex")
         $pageTag = [string](Get-ConfigValue -Table $step -Key 'pageTag' -Fallback '')
+        $acceptedPageTags = @()
+        if ($step.Contains('acceptedPageTags')) {
+            $acceptedPageTags = @($step.acceptedPageTags)
+        }
+
         $notes = [string](Get-ConfigValue -Table $step -Key 'notes' -Fallback '')
         $keys = [string](Get-ConfigValue -Table $step -Key 'keys' -Fallback '')
         $launchArgs = @()
@@ -858,6 +932,7 @@ try {
             index = $stepIndex
             title = $title
             pageTag = $pageTag
+            acceptedPageTags = $acceptedPageTags
             notes = $notes
             keys = $keys
             launchArgs = $launchArgs
@@ -868,6 +943,15 @@ try {
 
         try {
             Write-Info ("Running step {0}: {1}" -f $stepIndex, $title)
+            $checkpointStepId = ('workflow-step-{0:D2}' -f $stepIndex)
+            if (-not (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId $checkpointStepId)) {
+                Write-Info ("Skipping step {0}: {1} (checkpoint resume)." -f $stepIndex, $title)
+                $stepResult.status = 'ok'
+                $stepResult.completedAt = (Get-Date).ToString('o')
+                $manifest.steps += [pscustomobject]$stepResult
+                continue
+            }
+            Start-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Description $title
 
             if ($null -ne $ownedProcess -and $ownedProcess.HasExited) {
                 throw "Meridian desktop exited unexpectedly with code $($ownedProcess.ExitCode)."
@@ -885,7 +969,11 @@ try {
             }
 
             Start-Sleep -Milliseconds $stepWaitMs
-            $pageReadiness = Wait-ForShellPage -Process $ownedProcess -ExpectedPageTag $pageTag -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
+            $pageReadiness = Wait-ForShellPage `
+                -Process $ownedProcess `
+                -ExpectedPageTag $pageTag `
+                -AcceptedPageTags $acceptedPageTags `
+                -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
             $window = $pageReadiness.Window
             $stepResult.observedPageTag = $pageReadiness.State.PageTag
             $stepResult.observedPageTitle = $pageReadiness.State.PageTitle
@@ -900,11 +988,13 @@ try {
 
             $stepResult.status = 'ok'
             $stepResult.completedAt = (Get-Date).ToString('o')
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($capturePath)
         }
         catch {
             $stepResult.status = 'failed'
             $stepResult.error = $_.Exception.Message
             $stepResult.completedAt = (Get-Date).ToString('o')
+            Fail-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Message $_.Exception.Message
             $manifest.steps += [pscustomobject]$stepResult
             throw
         }
