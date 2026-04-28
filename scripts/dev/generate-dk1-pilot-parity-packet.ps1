@@ -3,13 +3,18 @@ param(
     [string]$OutputRoot = "artifacts/provider-validation/_automation",
     [string]$SummaryJsonPath = "",
     [string]$OperatorSignoffPath = "",
-    [switch]$AllowFailedSummary
+    [switch]$AllowFailedSummary,
+    [string]$CheckpointPath = "",
+    [string[]]$ForceCheckpointStep = @(),
+    [switch]$AllowCheckpointInputMismatch
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+. (Join-Path $PSScriptRoot "SharedCheckpoint.ps1")
 $summaryDir = Join-Path (Join-Path $repoRoot $OutputRoot) $DateStamp
 
 if ([string]::IsNullOrWhiteSpace($SummaryJsonPath)) {
@@ -20,11 +25,44 @@ else {
     $summaryDir = Split-Path -Parent $SummaryJsonPath
 }
 
-if (-not (Test-Path -LiteralPath $SummaryJsonPath)) {
-    throw "Wave 1 validation summary was not found: $SummaryJsonPath"
+$preflight = Invoke-MeridianPreflight `
+    -Scenario 'dk1-pilot-parity-packet' `
+    -RequiredPaths @($SummaryJsonPath) `
+    -WritableDirectories @($summaryDir) `
+    -AllowWarnings
+
+if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath) -and -not (Test-Path -LiteralPath $OperatorSignoffPath)) {
+    $preflight.blockingChecks += [pscustomobject]@{
+        check = "path.operatorSignoff"
+        message = "Operator sign-off file was not found: $OperatorSignoffPath"
+        recommendation = "Provide a valid operator sign-off path or omit -OperatorSignoffPath."
+    }
+    $preflight.status = 'blocked'
+    $preflight.nextAction = 'Resolve blocking checks and rerun preflight.'
+}
+
+if ($preflight.status -eq 'blocked') {
+    $preflightPath = Join-Path $summaryDir 'preflight.json'
+    $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
+    throw "Preflight failed. See '$preflightPath' for diagnostics."
+}
+if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
+    $CheckpointPath = Join-Path $summaryDir "dk1-pilot-parity-packet.checkpoint.json"
 }
 
 $summary = Get-Content -Raw -LiteralPath $SummaryJsonPath | ConvertFrom-Json
+$checkpoint = Initialize-MeridianCheckpoint `
+    -Workflow "generate-dk1-pilot-parity-packet" `
+    -CheckpointPath $CheckpointPath `
+    -InputObject ([ordered]@{
+        dateStamp = $DateStamp
+        outputRoot = $OutputRoot
+        summaryJsonPath = $SummaryJsonPath
+        operatorSignoffPath = $OperatorSignoffPath
+        allowFailedSummary = [bool]$AllowFailedSummary
+    }) `
+    -ForceStep $ForceCheckpointStep `
+    -AllowInputMismatch:$AllowCheckpointInputMismatch
 
 $requiredSamples = @(
     [ordered]@{
@@ -694,7 +732,11 @@ $packet = [ordered]@{
     blockers = @($blockers)
 }
 
-$packet | ConvertTo-Json -Depth 7 | Set-Content -Path $jsonPath
+if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-dk1-packet-json") {
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-dk1-packet-json" -Description "Write DK1 pilot parity packet JSON."
+    $packet | ConvertTo-Json -Depth 7 | Set-Content -Path $jsonPath
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-dk1-packet-json" -ArtifactPointers @($jsonPath)
+}
 
 $md = @(
     "# DK1 Pilot Parity Packet",
@@ -804,7 +846,11 @@ else {
     }
 }
 
-$md -join [Environment]::NewLine | Set-Content -Path $mdPath
+if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-dk1-packet-markdown") {
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-dk1-packet-markdown" -Description "Write DK1 pilot parity packet markdown."
+    $md -join [Environment]::NewLine | Set-Content -Path $mdPath
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-dk1-packet-markdown" -ArtifactPointers @($mdPath)
+}
 
 Write-Host "DK1 pilot parity packet written to:"
 Write-Host "  $jsonPath"

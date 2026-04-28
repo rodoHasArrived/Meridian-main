@@ -66,7 +66,10 @@ The runner resolves the Meridian window from the owned `Meridian.Desktop` proces
 only falls back to narrow title-based UI Automation lookup. Avoid broad root-window scans in this
 script; they can time out on headless CI runners while heavy pages are loading. Descendant lookups
 for shell readiness markers are timeout-tolerant and return "not ready yet" so the existing polling
-loop can continue through transient WPF navigation delays.
+loop can continue through transient WPF navigation delays. Workflow definitions should use the
+canonical shell tags currently emitted by WPF automation: `StrategyShell`, `DataShell`, and
+`AccountingShell`. The runner still accepts compatibility workspace tags such as `ResearchShell`,
+`DataOperationsShell`, and `GovernanceShell` for older local workflow files.
 
 Each run writes:
 
@@ -119,9 +122,9 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
   "includeInManual": true,
   "steps": [
     {
-      "title": "Research Workspace",
-      "pageTag": "ResearchShell",
-      "captureName": "01-research-workspace",
+      "title": "Strategy Workspace",
+      "pageTag": "StrategyShell",
+      "captureName": "01-strategy-workspace",
       "notes": "Explain why this workspace matters."
     }
   ]
@@ -131,7 +134,7 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
 Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
-- `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use `ResearchShell`, `TradingShell`, `DataOperationsShell`, or `GovernanceShell`
+- `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use canonical shell tags such as `StrategyShell`, `TradingShell`, `DataShell`, or `AccountingShell`; compatibility aliases remain accepted for existing workflows
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot

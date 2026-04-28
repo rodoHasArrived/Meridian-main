@@ -63,6 +63,27 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertTrue(active_bin.exists())
             self.assertFalse(old_obj.exists())
 
+    def test_prunes_recent_artifacts_beyond_retained_latest(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            oldest_bin = self._create_artifact(repo_root, "artifacts/bin/run-1", age_days=3)
+            retained_bin = self._create_artifact(repo_root, "artifacts/bin/run-2", age_days=2)
+            newest_bin = self._create_artifact(repo_root, "artifacts/bin/run-3", age_days=1)
+
+            deleted_count, freed_bytes = self.buildctl._prune_isolated_build_artifacts(
+                repo_root,
+                max_age_days=14,
+                retain_latest=2,
+                active_isolation_key=None,
+                now=datetime(2026, 4, 28, tzinfo=timezone.utc),
+            )
+
+            self.assertEqual(deleted_count, 1)
+            self.assertGreaterEqual(freed_bytes, 1)
+            self.assertFalse(oldest_bin.exists())
+            self.assertTrue(retained_bin.exists())
+            self.assertTrue(newest_bin.exists())
+
     def test_non_positive_retention_disables_pruning(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
@@ -71,6 +92,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             deleted_count, freed_bytes = self.buildctl._prune_isolated_build_artifacts(
                 repo_root,
                 max_age_days=0,
+                retain_latest=0,
                 active_isolation_key=None,
                 now=datetime(2026, 4, 28, tzinfo=timezone.utc),
             )

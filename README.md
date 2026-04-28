@@ -126,8 +126,9 @@ Build safety note:
 - For automation or concurrent local runs, pass `--isolation-key <name>` so the build graph
   writes under `artifacts/bin/<name>/` and `artifacts/obj/<name>/` instead of shared project
   `bin/obj` folders. `buildctl.py` prunes stale isolated output directories older than 14 days
-  before isolated builds; use `--isolation-retention-days <days>` to tune that window or `0` to
-  disable it for a run.
+  and trims excess same-day output beyond the latest 10 runs per artifact root before isolated
+  builds; use `--isolation-retention-days <days>` and `--isolation-retain-latest <count>` to tune
+  those limits, or set both to `0` to disable cleanup for a run.
 - Keep the F# test project's transitive `xunit.v3` runtime pin aligned with
   `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
 

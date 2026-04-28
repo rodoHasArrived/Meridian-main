@@ -55,6 +55,39 @@ runs:
       shell: bash
       run: dotnet --version
 
+    - name: Configure macOS .NET apphost lookup
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        dotnet_path="$(command -v dotnet)"
+        dotnet_realpath="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$dotnet_path")"
+        dotnet_dir="$(cd "$(dirname "$dotnet_realpath")" && pwd -P)"
+        dotnet_root="$dotnet_dir"
+        if [[ ! -d "$dotnet_root/host/fxr" ]]; then
+          parent_root="$(cd "$dotnet_dir/.." && pwd -P)"
+          if [[ -d "$parent_root/host/fxr" ]]; then
+            dotnet_root="$parent_root"
+          fi
+        fi
+
+        if [[ ! -d "$dotnet_root/host/fxr" ]]; then
+          echo "::error::Resolved dotnet root '$dotnet_root' does not contain host/fxr."
+          dotnet --info
+          exit 1
+        fi
+
+        # xUnit v3 launches the generated test apphost directly for F# discovery.
+        # macOS hosted runners can expose a working dotnet command without apphost
+        # lookup variables, which leaves the generated apphost unable to find hostfxr.
+        # Resolve symlinks first so DOTNET_ROOT points at the host/fxr tree, not
+        # a shim directory such as /usr/local/bin.
+        {
+          echo "DOTNET_ROOT=$dotnet_root"
+          echo "DOTNET_ROOT_ARM64=$dotnet_root"
+          echo "DOTNET_ROOT_X64=$dotnet_root"
+        } >> "$GITHUB_ENV"
+
     - name: Cache NuGet packages
       id: nuget-cache
       uses: actions/cache@v5.0.3

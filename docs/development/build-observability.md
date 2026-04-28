@@ -77,8 +77,10 @@ make history                 # Build history summary
 
 When `buildctl.py build` runs with `--isolation-key`, it writes generated MSBuild output under
 `artifacts/bin/<key>/` and `artifacts/obj/<key>/` and prunes stale isolated output directories older
-than 14 days before starting the build. Override the age window with
-`--isolation-retention-days <days>` or set it to `0` for a run that must skip cleanup.
+than 14 days before starting the build. It also trims excess same-day output beyond the latest 10
+runs per artifact root so repeated local automation does not fill the disk before age-based cleanup
+can run. Override the age window with `--isolation-retention-days <days>` and the count guard with
+`--isolation-retain-latest <count>`, or set both to `0` for a run that must skip cleanup.
 
 ## Event Schema
 

@@ -351,6 +351,26 @@ function Test-ShellAutomationReady {
     return $state.Ready -and -not [string]::IsNullOrWhiteSpace($state.PageTag)
 }
 
+function Resolve-WorkflowPageTag {
+    param(
+        [string]$PageTag
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PageTag)) {
+        return $PageTag
+    }
+
+    switch ($PageTag.Trim()) {
+        'ResearchShell' { return 'StrategyShell' }
+        'ResearchWorkspace' { return 'StrategyShell' }
+        'DataOperationsShell' { return 'DataShell' }
+        'DataOperationsWorkspace' { return 'DataShell' }
+        'GovernanceShell' { return 'AccountingShell' }
+        'GovernanceWorkspace' { return 'AccountingShell' }
+        default { return $PageTag.Trim() }
+    }
+}
+
 function Ensure-EnteredOperatingContext {
     param(
         [System.Diagnostics.Process]$Process
@@ -466,6 +486,7 @@ function Wait-ForShellPage {
 
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
     $lastState = $null
+    $expectedCanonicalPageTag = Resolve-WorkflowPageTag -PageTag $ExpectedPageTag
 
     while ((Get-Date) -lt $deadline) {
         if ($null -ne $Process -and $Process.HasExited) {
@@ -477,8 +498,8 @@ function Wait-ForShellPage {
         $lastState = Get-ShellAutomationState -Window $window
 
         if ($lastState.Ready -and (
-                [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
-                [string]::Equals($lastState.PageTag, $ExpectedPageTag, [System.StringComparison]::Ordinal))) {
+                [string]::IsNullOrWhiteSpace($expectedCanonicalPageTag) -or
+                [string]::Equals($lastState.PageTag, $expectedCanonicalPageTag, [System.StringComparison]::Ordinal))) {
             return [pscustomobject]@{
                 Window = $window
                 State = $lastState
@@ -494,7 +515,7 @@ function Wait-ForShellPage {
 
     $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
     $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
-    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+    throw "Requested page '$ExpectedPageTag' (canonical '$expectedCanonicalPageTag') was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
 }
 
 function Wait-ForStableShellPage {
@@ -837,6 +858,7 @@ try {
         $stepIndex += 1
         $title = [string](Get-ConfigValue -Table $step -Key 'title' -Fallback "Step $stepIndex")
         $pageTag = [string](Get-ConfigValue -Table $step -Key 'pageTag' -Fallback '')
+        $expectedPageTag = Resolve-WorkflowPageTag -PageTag $pageTag
         $notes = [string](Get-ConfigValue -Table $step -Key 'notes' -Fallback '')
         $keys = [string](Get-ConfigValue -Table $step -Key 'keys' -Fallback '')
         $launchArgs = @()
@@ -858,6 +880,7 @@ try {
             index = $stepIndex
             title = $title
             pageTag = $pageTag
+            expectedPageTag = $expectedPageTag
             notes = $notes
             keys = $keys
             launchArgs = $launchArgs

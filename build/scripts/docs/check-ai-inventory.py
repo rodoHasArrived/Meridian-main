@@ -131,6 +131,44 @@ def markdown_contains_any(text: str, markers: Iterable[str]) -> bool:
 def collect_inventory(root: Path) -> list[InventoryItem]:
     items: list[InventoryItem] = []
 
+    for rel_path in ("AGENTS.md", "CLAUDE.md"):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="root-assistant-compatibility",
+                    kind="entrypoint",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
+
+    for rel_path in (".codex/config.toml",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="codex",
+                    kind="config",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
+
+    for path in sorted_files(root, ".codex/environments/*.toml"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="environment-config",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT,),
+                alternate_markers=(".codex/environments/",),
+            )
+        )
+
     for path in sorted_files(root, ".codex/skills/*/SKILL.md"):
         name = path.parent.name
         items.append(
@@ -146,6 +184,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
     for path in sorted_files(root, ".codex/skills/*/agents/openai.yaml"):
         name = path.parents[1].name
         items.append(InventoryItem(surface="codex", kind="openai-metadata", name=name, path=repo_relative(root, path)))
+
+    for rel_path in (".claude/settings.json", ".claude/settings.local.json"):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="claude",
+                    kind="config",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
 
     for path in sorted_files(root, ".claude/skills/*/SKILL.md"):
         name = path.parent.name
@@ -175,6 +226,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 expected_docs=(AGENTS_README,),
             )
         )
+
+    for rel_path in (".github/copilot-instructions.md",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="github-copilot",
+                    kind="instruction-entrypoint",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
 
     for path in sorted_files(root, ".claude/agents/*.md"):
         items.append(
@@ -323,7 +387,8 @@ def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequ
     by_severity = Counter(finding.severity for finding in findings)
     return {
         "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
-        "repositoryRoot": str(root.resolve()),
+        "repositoryRoot": ".",
+        "repositoryName": root.name,
         "status": "pass" if not findings else "drift",
         "summary": {
             "inventoryCount": len(inventory),

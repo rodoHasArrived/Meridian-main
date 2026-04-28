@@ -206,8 +206,10 @@ python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.W
 ```
 
 `buildctl.py build --isolation-key ...` prunes stale isolated output directories older than 14 days
-from `artifacts/bin` and `artifacts/obj` before the build starts; use
-`--isolation-retention-days <days>` to tune the window or `0` to disable cleanup for a run.
+from `artifacts/bin` and `artifacts/obj` before the build starts, and trims excess same-day output
+beyond the latest 10 runs per artifact root; use `--isolation-retention-days <days>` and
+`--isolation-retain-latest <count>` to tune those limits, or set both to `0` to disable cleanup for a
+run.
 
 Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
 DTOs, execution-control evidence, acceptance gates, or operator work-item projection.

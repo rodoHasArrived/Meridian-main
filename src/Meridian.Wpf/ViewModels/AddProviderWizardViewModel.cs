@@ -10,6 +10,11 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class AddProviderWizardViewModel : BindableBase
 {
+    private const string ProviderFilterAll = "all";
+    private const string ProviderFilterFree = "free";
+    private const string ProviderFilterStreaming = "streaming";
+    private const string ProviderFilterHistorical = "historical";
+
     // ---- Static brush constants (avoids FindResource in ViewModel) ----
     private static readonly SolidColorBrush SuccessBrush = new(Color.FromRgb(63, 185, 80));
     private static readonly SolidColorBrush InfoBrush = new(Color.FromRgb(88, 166, 255));
@@ -53,6 +58,81 @@ public sealed class AddProviderWizardViewModel : BindableBase
 
     // Step progress
     private int _currentStep = 1;
+
+    // Provider catalog filter
+    private IReadOnlyList<ProviderCatalogEntry> _providerCatalogEntries = Array.Empty<ProviderCatalogEntry>();
+    private IReadOnlyList<ProviderCredentialStatus> _providerCredentialStatuses = Array.Empty<ProviderCredentialStatus>();
+    private string _activeProviderFilter = ProviderFilterAll;
+
+    public AddProviderWizardViewModel()
+    {
+        SelectProviderFilterCommand = new RelayCommand<string>(SelectProviderFilter);
+    }
+
+    // ---- Provider catalog display ----
+
+    public ObservableCollection<ProviderCatalogViewModel> ProviderCatalog { get; } = new();
+
+    public IRelayCommand<string> SelectProviderFilterCommand { get; }
+
+    public string ActiveProviderFilter
+    {
+        get => _activeProviderFilter;
+        private set
+        {
+            if (SetProperty(ref _activeProviderFilter, value))
+            {
+                RaiseProviderFilterChanged();
+            }
+        }
+    }
+
+    public bool IsAllProviderFilterActive => ActiveProviderFilter == ProviderFilterAll;
+
+    public bool IsFreeProviderFilterActive => ActiveProviderFilter == ProviderFilterFree;
+
+    public bool IsStreamingProviderFilterActive => ActiveProviderFilter == ProviderFilterStreaming;
+
+    public bool IsHistoricalProviderFilterActive => ActiveProviderFilter == ProviderFilterHistorical;
+
+    public Visibility ProviderCatalogVisibility => ProviderCatalog.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility ProviderCatalogEmptyVisibility => ProviderCatalog.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility ProviderCatalogRecoveryVisibility =>
+        ProviderCatalog.Count == 0 && ActiveProviderFilter != ProviderFilterAll
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+    public string ProviderCatalogScopeText
+    {
+        get
+        {
+            var total = _providerCatalogEntries.Count;
+            var visible = ProviderCatalog.Count;
+            var label = GetProviderFilterLabel(ActiveProviderFilter);
+
+            if (total == 0)
+                return "Provider catalog unavailable.";
+
+            if (ActiveProviderFilter == ProviderFilterAll)
+                return visible == 1 ? "1 provider available." : $"{visible} providers available.";
+
+            return visible == 1
+                ? $"1 provider matches {label}."
+                : $"{visible} providers match {label}.";
+        }
+    }
+
+    public string ProviderCatalogEmptyTitle =>
+        _providerCatalogEntries.Count == 0
+            ? "No provider catalog loaded"
+            : $"No {GetProviderFilterLabel(ActiveProviderFilter)} providers";
+
+    public string ProviderCatalogEmptyDetail =>
+        _providerCatalogEntries.Count == 0
+            ? "Open Settings again after the provider registry is available."
+            : "Switch to All providers to continue setup from the full catalog.";
 
     // ---- Selected-provider display properties ----
 
@@ -227,6 +307,25 @@ public sealed class AddProviderWizardViewModel : BindableBase
 
     // ---- Helper methods called by code-behind ----
 
+    /// <summary>
+    /// Loads provider catalog data and projects the active filter into display card view models.
+    /// </summary>
+    public void LoadProviderCatalog(
+        IEnumerable<ProviderCatalogEntry> providers,
+        IEnumerable<ProviderCredentialStatus> credentialStatuses)
+    {
+        _providerCatalogEntries = providers.ToArray();
+        _providerCredentialStatuses = credentialStatuses.ToArray();
+        RefreshProviderCatalog();
+    }
+
+    /// <summary>Gets the backing provider entry for a selected catalog card.</summary>
+    public ProviderCatalogEntry? FindProvider(string providerId)
+    {
+        return _providerCatalogEntries.FirstOrDefault(provider =>
+            string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Populates the right-panel detail properties from the selected provider entry.</summary>
     public void ApplySelectedProvider(ProviderCatalogEntry provider)
     {
@@ -328,5 +427,158 @@ public sealed class AddProviderWizardViewModel : BindableBase
     {
         CertificationStatusText = message;
         SummaryCertificationText = success ? "Passed" : "Needs attention";
+    }
+
+    private void SelectProviderFilter(string? filter)
+    {
+        ActiveProviderFilter = NormalizeProviderFilter(filter);
+        RefreshProviderCatalog();
+    }
+
+    private void RefreshProviderCatalog()
+    {
+        var statusesByProviderId = _providerCredentialStatuses
+            .GroupBy(status => status.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        var filtered = _providerCatalogEntries
+            .Where(ProviderMatchesActiveFilter)
+            .Select(provider =>
+            {
+                statusesByProviderId.TryGetValue(provider.Id, out var status);
+                return new ProviderCatalogViewModel(provider, status);
+            })
+            .ToArray();
+
+        ProviderCatalog.Clear();
+
+        foreach (var provider in filtered)
+        {
+            ProviderCatalog.Add(provider);
+        }
+
+        RaiseProviderCatalogChanged();
+    }
+
+    private bool ProviderMatchesActiveFilter(ProviderCatalogEntry provider)
+    {
+        return ActiveProviderFilter switch
+        {
+            ProviderFilterFree => provider.Tier is ProviderTier.Free or ProviderTier.FreeWithAccount,
+            ProviderFilterStreaming => provider.SupportsStreaming,
+            ProviderFilterHistorical => provider.SupportsHistorical,
+            _ => true,
+        };
+    }
+
+    private static string NormalizeProviderFilter(string? filter)
+    {
+        return filter?.Trim().ToLowerInvariant() switch
+        {
+            ProviderFilterFree => ProviderFilterFree,
+            ProviderFilterStreaming => ProviderFilterStreaming,
+            ProviderFilterHistorical => ProviderFilterHistorical,
+            _ => ProviderFilterAll,
+        };
+    }
+
+    private static string GetProviderFilterLabel(string filter)
+    {
+        return filter switch
+        {
+            ProviderFilterFree => "free",
+            ProviderFilterStreaming => "streaming",
+            ProviderFilterHistorical => "historical",
+            _ => "all",
+        };
+    }
+
+    private void RaiseProviderFilterChanged()
+    {
+        RaisePropertyChanged(nameof(IsAllProviderFilterActive));
+        RaisePropertyChanged(nameof(IsFreeProviderFilterActive));
+        RaisePropertyChanged(nameof(IsStreamingProviderFilterActive));
+        RaisePropertyChanged(nameof(IsHistoricalProviderFilterActive));
+        RaiseProviderCatalogChanged();
+    }
+
+    private void RaiseProviderCatalogChanged()
+    {
+        RaisePropertyChanged(nameof(ProviderCatalogVisibility));
+        RaisePropertyChanged(nameof(ProviderCatalogEmptyVisibility));
+        RaisePropertyChanged(nameof(ProviderCatalogRecoveryVisibility));
+        RaisePropertyChanged(nameof(ProviderCatalogScopeText));
+        RaisePropertyChanged(nameof(ProviderCatalogEmptyTitle));
+        RaisePropertyChanged(nameof(ProviderCatalogEmptyDetail));
+    }
+}
+
+/// <summary>
+/// View model for provider catalog cards in the wizard.
+/// </summary>
+public sealed class ProviderCatalogViewModel
+{
+    private static readonly Brush TierFreeBrush = CreateBrush(Color.FromArgb(40, 63, 185, 80));
+    private static readonly Brush TierLimitedBrush = CreateBrush(Color.FromArgb(40, 210, 153, 34));
+    private static readonly Brush TierPremiumBrush = CreateBrush(Color.FromArgb(40, 88, 166, 255));
+    private static readonly Brush TierFallbackBrush = CreateBrush(Color.FromArgb(40, 128, 128, 128));
+    private static readonly Brush CredentialConfiguredBrush = CreateBrush(Color.FromRgb(63, 185, 80));
+    private static readonly Brush CredentialPartialBrush = CreateBrush(Color.FromRgb(210, 153, 34));
+    private static readonly Brush CredentialMissingBrush = CreateBrush(Color.FromRgb(248, 81, 73));
+    private static readonly Brush CredentialUnknownBrush = CreateBrush(Color.FromRgb(139, 148, 158));
+
+    public ProviderCatalogViewModel(ProviderCatalogEntry entry, ProviderCredentialStatus? credStatus)
+    {
+        Id = entry.Id;
+        DisplayName = entry.DisplayName;
+        Description = entry.Description;
+        SupportsStreaming = entry.SupportsStreaming;
+        SupportsHistorical = entry.SupportsHistorical;
+
+        TierLabel = entry.Tier switch
+        {
+            ProviderTier.Free => "FREE",
+            ProviderTier.FreeWithAccount => "FREE*",
+            ProviderTier.LimitedFree => "LIMITED",
+            ProviderTier.Premium => "PREMIUM",
+            _ => "FREE",
+        };
+        TierBrush = entry.Tier switch
+        {
+            ProviderTier.Free or ProviderTier.FreeWithAccount => TierFreeBrush,
+            ProviderTier.LimitedFree => TierLimitedBrush,
+            ProviderTier.Premium => TierPremiumBrush,
+            _ => TierFallbackBrush,
+        };
+
+        CredentialStatusBrush = credStatus?.State switch
+        {
+            CredentialState.Configured => CredentialConfiguredBrush,
+            CredentialState.Partial => CredentialPartialBrush,
+            CredentialState.Missing => CredentialMissingBrush,
+            CredentialState.NotRequired => CredentialConfiguredBrush,
+            _ => CredentialUnknownBrush,
+        };
+
+        StreamingVisibility = entry.SupportsStreaming ? Visibility.Visible : Visibility.Collapsed;
+        HistoricalVisibility = entry.SupportsHistorical ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public string Id { get; }
+    public string DisplayName { get; }
+    public string Description { get; }
+    public bool SupportsStreaming { get; }
+    public bool SupportsHistorical { get; }
+    public string TierLabel { get; }
+    public Brush TierBrush { get; }
+    public Brush CredentialStatusBrush { get; }
+    public Visibility StreamingVisibility { get; }
+    public Visibility HistoricalVisibility { get; }
+
+    private static Brush CreateBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
     }
 }

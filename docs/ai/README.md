@@ -54,6 +54,11 @@ Validate AI catalog consistency with:
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
+The checker inventories root assistant entrypoints, Codex and Claude configuration, Copilot
+instructions, agents, skills, prompts, AI workflow files, `docs/ai/`, and MCP prompt/resource/tool
+surfaces. Its Markdown and JSON reports are safe to share because they use a portable repository
+identity instead of local absolute paths.
+
 ### Tier 2: Navigation and Routing
 
 | File | Purpose |

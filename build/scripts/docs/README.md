@@ -223,8 +223,10 @@ python3 validate-examples.py --output example-validation.md
 
 ### check-ai-inventory.py
 
-Detects catalog drift across AI assistant assets in `.codex/`, `.claude/`, `.github/`,
-`docs/ai/`, and MCP prompt/resource/tool surfaces.
+Detects catalog drift across AI assistant entrypoints, Codex and Claude configuration, Copilot
+instructions, `.codex/`, `.claude/`, `.github/`, `docs/ai/`, and MCP prompt/resource/tool surfaces.
+Reports use a portable repository identity so generated Markdown or JSON does not record a local
+absolute checkout path.
 
 ```bash
 python3 check-ai-inventory.py --summary

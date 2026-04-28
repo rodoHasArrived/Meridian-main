@@ -50,6 +50,7 @@ PASS = f"{GREEN}✓ pass{NC}"
 WARN = f"{YELLOW}⚠ warn{NC}"
 FAIL = f"{RED}✗ FAIL{NC}"
 _DEFAULT_ISOLATION_RETENTION_DAYS = 14
+_DEFAULT_ISOLATION_RETAIN_LATEST = 10
 _ISOLATED_BUILD_ARTIFACT_ROOTS = ("artifacts/bin", "artifacts/obj")
 
 
@@ -130,6 +131,16 @@ def _default_isolation_retention_days() -> int:
         return _DEFAULT_ISOLATION_RETENTION_DAYS
 
 
+def _default_isolation_retain_latest() -> int:
+    raw = os.environ.get("MERIDIAN_BUILD_ARTIFACT_RETAIN_LATEST")
+    if raw is None:
+        return _DEFAULT_ISOLATION_RETAIN_LATEST
+    try:
+        return int(raw)
+    except ValueError:
+        return _DEFAULT_ISOLATION_RETAIN_LATEST
+
+
 def _format_bytes(byte_count: int) -> str:
     if byte_count >= 1024**3:
         return f"{byte_count / 1024**3:.2f} GB"
@@ -166,11 +177,12 @@ def _prune_isolated_build_artifacts(
     repo_root: Path,
     *,
     max_age_days: int,
+    retain_latest: int = _DEFAULT_ISOLATION_RETAIN_LATEST,
     active_isolation_key: str | None = None,
     now: datetime | None = None,
 ) -> tuple[int, int]:
     """Remove stale isolated MSBuild output directories under artifacts/bin and artifacts/obj."""
-    if max_age_days <= 0:
+    if max_age_days <= 0 and retain_latest <= 0:
         return 0, 0
 
     reference_time = now or datetime.now(timezone.utc)
@@ -186,6 +198,7 @@ def _prune_isolated_build_artifacts(
         if not artifact_root.is_dir():
             continue
 
+        candidates: list[tuple[Path, int, float]] = []
         for directory in artifact_root.iterdir():
             if not directory.is_dir() or directory.is_symlink():
                 continue
@@ -203,12 +216,33 @@ def _prune_isolated_build_artifacts(
 
             try:
                 candidate_bytes, newest_mtime = _directory_stats(candidate_path)
-                if newest_mtime >= cutoff_timestamp:
-                    continue
+            except OSError as exc:
+                print(
+                    f"WARN: Failed to inspect isolated build artifact directory '{candidate_path}': {exc}",
+                    file=sys.stderr,
+                )
+                continue
+
+            candidates.append((candidate_path, candidate_bytes, newest_mtime))
+
+        retained_by_count: set[Path] = set()
+        if retain_latest > 0:
+            retained_by_count = {
+                path
+                for path, _, _ in sorted(candidates, key=lambda item: item[2], reverse=True)[:retain_latest]
+            }
+
+        for candidate_path, candidate_bytes, newest_mtime in candidates:
+            age_expired = max_age_days > 0 and newest_mtime < cutoff_timestamp
+            count_exceeded = retain_latest > 0 and candidate_path not in retained_by_count
+            if not age_expired and not count_exceeded:
+                continue
+
+            try:
                 shutil.rmtree(candidate_path)
             except OSError as exc:
                 print(
-                    f"WARN: Failed to prune stale isolated build artifact directory '{candidate_path}': {exc}",
+                    f"WARN: Failed to prune isolated build artifact directory '{candidate_path}': {exc}",
                     file=sys.stderr,
                 )
                 continue
@@ -741,15 +775,19 @@ def cmd_build(args: argparse.Namespace) -> int:
         deleted_count, freed_bytes = _prune_isolated_build_artifacts(
             REPO_ROOT,
             max_age_days=getattr(args, "isolation_retention_days", _DEFAULT_ISOLATION_RETENTION_DAYS),
+            retain_latest=getattr(args, "isolation_retain_latest", _DEFAULT_ISOLATION_RETAIN_LATEST),
             active_isolation_key=isolation_key,
         )
         if deleted_count:
             print(
                 "INFO: Pruned "
-                f"{deleted_count} stale isolated build artifact "
+                f"{deleted_count} isolated build artifact "
                 f"{'directory' if deleted_count == 1 else 'directories'} "
-                "older than "
+                "using age/count retention "
+                "(older than "
                 f"{getattr(args, 'isolation_retention_days', _DEFAULT_ISOLATION_RETENTION_DAYS)} days "
+                "or beyond latest "
+                f"{getattr(args, 'isolation_retain_latest', _DEFAULT_ISOLATION_RETAIN_LATEST)} per root) "
                 "from artifacts/bin and artifacts/obj "
                 f"({_format_bytes(freed_bytes)} recovered)."
             )
@@ -1155,7 +1193,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=_default_isolation_retention_days(),
         help=(
             "Prune isolated artifacts/bin and artifacts/obj output directories older than this "
-            "many days before an isolated build; set 0 to disable."
+            "many days before an isolated build; set 0 to disable age-based pruning."
+        ),
+    )
+    p_build.add_argument(
+        "--isolation-retain-latest",
+        type=int,
+        default=_default_isolation_retain_latest(),
+        help=(
+            "Retain this many newest isolated artifacts/bin and artifacts/obj output directories "
+            "per root before count-based pruning; set 0 to disable count-based pruning."
         ),
     )
     p_build.add_argument("--property", action="append", default=[])

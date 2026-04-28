@@ -45,7 +45,6 @@ public partial class SymbolsPage : Page
         InitializeComponent();
         DataContext = _vm;
 
-        SymbolsListView.ItemsSource = _vm.FilteredSymbols;
         WatchlistsView.ItemsSource = _vm.Watchlists;
 
         Unloaded += OnPageUnloaded;
@@ -61,30 +60,6 @@ public partial class SymbolsPage : Page
     {
         await _vm.StartAsync();
         RestorePageFilterState();
-        CallApplyFilters();
-    }
-
-    private void CallApplyFilters()
-    {
-        if (SymbolSearchBox is null || FilterCombo is null || ExchangeFilterCombo is null)
-            return;
-
-        _vm.ApplyFilters(
-            SymbolSearchBox.Text?.ToUpper() ?? string.Empty,
-            GetComboSelectedTag(FilterCombo) ?? "All",
-            GetComboSelectedTag(ExchangeFilterCombo) ?? "All");
-    }
-
-    private void SymbolSearch_TextChanged(object sender, TextChangedEventArgs e) => CallApplyFilters();
-
-    private void Filter_Changed(object sender, SelectionChangedEventArgs e) => CallApplyFilters();
-
-    private void ClearFilters_Click(object sender, RoutedEventArgs e)
-    {
-        SymbolSearchBox.Text = "";
-        SelectComboItemByTag(FilterCombo, "All");
-        SelectComboItemByTag(ExchangeFilterCombo, "All");
-        CallApplyFilters();
     }
 
     private void SecurityType_Changed(object sender, SelectionChangedEventArgs e)
@@ -117,13 +92,11 @@ public partial class SymbolsPage : Page
     private void BulkEnableTrades_Click(object sender, RoutedEventArgs e)
     {
         _vm.BulkEnableTrades();
-        CallApplyFilters();
     }
 
     private void BulkEnableDepth_Click(object sender, RoutedEventArgs e)
     {
         _vm.BulkEnableDepth();
-        CallApplyFilters();
     }
 
     private async void BulkDelete_Click(object sender, RoutedEventArgs e)
@@ -136,7 +109,6 @@ public partial class SymbolsPage : Page
             return;
 
         await _vm.BulkDeleteSymbolsAsync(selected);
-        CallApplyFilters();
     }
 
     private void ImportCsv_Click(object sender, RoutedEventArgs e)
@@ -238,7 +210,6 @@ public partial class SymbolsPage : Page
         if (error == null)
         {
             ClearForm();
-            CallApplyFilters();
         }
     }
 
@@ -254,7 +225,6 @@ public partial class SymbolsPage : Page
 
         await _vm.DeleteSymbolAsync(_selectedSymbol);
         ClearForm();
-        CallApplyFilters();
     }
 
     private void ClearForm_Click(object sender, RoutedEventArgs e) => ClearForm();
@@ -291,7 +261,6 @@ public partial class SymbolsPage : Page
         if (sender is Button btn && btn.Tag is string templateName)
         {
             _vm.AddTemplate(templateName);
-            CallApplyFilters();
         }
     }
 
@@ -299,7 +268,6 @@ public partial class SymbolsPage : Page
     {
         var watchlistId = (sender is Button b && b.Tag is string id) ? id : null;
         await _vm.LoadWatchlistSymbolsAsync(watchlistId);
-        CallApplyFilters();
     }
 
     private async void SaveWatchlist_Click(object sender, RoutedEventArgs e)
@@ -319,33 +287,26 @@ public partial class SymbolsPage : Page
     {
         await _vm.LoadSymbolsFromConfigAsync();
         LastRefreshText.Text = "Last refreshed: just now";
-        CallApplyFilters();
     }
 
     private void SavePageFilterState()
     {
-        if (FilterCombo is null || ExchangeFilterCombo is null)
-            return;
-
-        _workspaceService.UpdatePageFilterState(PageTag, "SearchText", SymbolSearchBox.Text);
-        _workspaceService.UpdatePageFilterState(PageTag, "FilterCombo", GetComboSelectedTag(FilterCombo) ?? "All");
-        _workspaceService.UpdatePageFilterState(PageTag, "ExchangeFilter", GetComboSelectedTag(ExchangeFilterCombo) ?? "All");
+        _workspaceService.UpdatePageFilterState(PageTag, "SearchText", _vm.SearchText);
+        _workspaceService.UpdatePageFilterState(PageTag, "FilterCombo", _vm.SelectedSubscriptionFilter);
+        _workspaceService.UpdatePageFilterState(PageTag, "ExchangeFilter", _vm.SelectedExchangeFilter);
     }
 
     private void RestorePageFilterState()
     {
-        if (FilterCombo is null || ExchangeFilterCombo is null)
-            return;
-
         var searchText = _workspaceService.GetPageFilterState(PageTag, "SearchText");
         if (searchText is not null)
-            SymbolSearchBox.Text = searchText;
+            _vm.SearchText = searchText;
         var filter = _workspaceService.GetPageFilterState(PageTag, "FilterCombo");
         if (filter is not null)
-            SelectComboItemByTag(FilterCombo, filter);
+            _vm.SelectedSubscriptionFilter = filter;
         var exchange = _workspaceService.GetPageFilterState(PageTag, "ExchangeFilter");
         if (exchange is not null)
-            SelectComboItemByTag(ExchangeFilterCombo, exchange);
+            _vm.SelectedExchangeFilter = exchange;
     }
 
     private static void SelectComboItemByTag(ComboBox combo, string tag)

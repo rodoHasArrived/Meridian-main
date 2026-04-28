@@ -17,7 +17,7 @@ The current repository evidence supports these AI surfaces:
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
 | Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml` | Repo-local specialist skills, OpenAI/Codex metadata, and environment entrypoints |
-| Claude / Claude Code | `.claude/settings.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, and model selection |
+| Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/`, `.github/workflows/copilot-*` | Repository-wide coding-agent guidance, path instructions, agents, prompts, and setup workflows |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `src/Meridian.McpServer/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
 | AI automation workflows | `.github/workflows/prompt-generation.yml`, `.github/workflows/reusable-ai-analysis.yml`, `.github/workflows/skill-evals.yml`, `.github/workflows/documentation.yml` | CI-generated prompts, AI analysis, skill evaluation, and known-error intake |
@@ -85,6 +85,7 @@ Every assistant and automation should use the same high-level flow:
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/`, `src/Meridian.McpServer/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `.github/workflows/prompt-generation.yml`, `.github/workflows/skill-evals.yml`, skill `evals/` folders | Generated prompt files and eval reports |
+| Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
 
 ---
 
@@ -104,6 +105,8 @@ Use this checklist when changing any AI-related asset:
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.
 - [ ] Regenerate `docs/ai/generated/repo-navigation.*` only when routing truth, projects, symbols,
       or authoritative docs change.
+- [ ] Keep generated AI inventory reports portable; they must not include local absolute repository
+      paths, secrets, or machine-only identifiers.
 - [ ] Run targeted validation and record the command result.
 
 ---

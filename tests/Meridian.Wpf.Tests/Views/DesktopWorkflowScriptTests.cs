@@ -18,14 +18,35 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("Find-DescendantByAutomationId -Window $Window -AutomationId 'PageTitleText'");
         script.Should().Contain("Transient UI Automation timeouts are expected while WPF pages load");
         script.Should().Contain("function Get-ShellAutomationState");
+        script.Should().Contain("function Resolve-WorkflowPageTag");
+        script.Should().Contain("'ResearchShell' { return 'StrategyShell' }");
+        script.Should().Contain("'DataOperationsShell' { return 'DataShell' }");
+        script.Should().Contain("'GovernanceShell' { return 'AccountingShell' }");
+        script.Should().Contain("$expectedCanonicalPageTag = Resolve-WorkflowPageTag -PageTag $ExpectedPageTag");
         script.Should().Contain("function Wait-ForShellPage");
         script.Should().Contain("function Wait-ForStableShellPage");
         script.Should().Contain("function Send-ForwardedLaunchArgs");
         script.Should().Contain("Forwarded desktop args through single-instance pipe");
         script.Should().Contain("$startupReadiness = Wait-ForStableShellPage");
-        script.Should().Contain("Requested page '$ExpectedPageTag' was not confirmed before capture.");
+        script.Should().Contain("Requested page '$ExpectedPageTag' (canonical '$expectedCanonicalPageTag') was not confirmed before capture.");
+        script.Should().Contain("$expectedPageTag = Resolve-WorkflowPageTag -PageTag $pageTag");
+        script.Should().Contain("expectedPageTag = $expectedPageTag");
         script.Should().Contain("$pageReadiness = Wait-ForShellPage");
         script.Should().Contain("$stepResult.observedPageTag = $pageReadiness.State.PageTag");
+    }
+
+    [Fact]
+    public void DesktopWorkflowCatalog_ShouldUseCanonicalWorkspacePageTags()
+    {
+        var workflowCatalog = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-workflows.json"));
+
+        workflowCatalog.Should().Contain("\"pageTag\": \"StrategyShell\"");
+        workflowCatalog.Should().Contain("\"pageTag\": \"DataShell\"");
+        workflowCatalog.Should().Contain("\"pageTag\": \"AccountingShell\"");
+
+        workflowCatalog.Should().NotContain("\"pageTag\": \"ResearchShell\"");
+        workflowCatalog.Should().NotContain("\"pageTag\": \"DataOperationsShell\"");
+        workflowCatalog.Should().NotContain("\"pageTag\": \"GovernanceShell\"");
     }
 
     [Fact]
