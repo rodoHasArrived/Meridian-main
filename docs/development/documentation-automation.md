@@ -337,6 +337,75 @@ When `--auto-create-todos` is enabled:
 3. If scan-todos fails, issue creation is skipped with a clear error message
 4. On success, it calls `create-todo-issues.py` with `--output-json docs/status/todo-issue-creation-summary.json`
 
+## Status Dashboard Evidence Surfaces
+
+Use the dashboards below as the canonical generated status surfaces for readiness evidence triage. Each dashboard includes both a Markdown operator view (`.md`) and machine-readable sidecar (`.json`) path so automation and human review stay aligned.
+
+### Dashboard Catalog
+
+| Dashboard | Purpose | Required evidence inputs | Outputs |
+| --- | --- | --- | --- |
+| **Docs automation run summary** | Consolidated pass/fail view across all selected docs scripts, plus per-script duration and failure details. | `run-docs-automation.py` execution metadata for selected profile/scripts; downstream script result files produced during the run. | `docs/status/docs-automation-summary.md` and `docs/status/docs-automation-summary.json` |
+| **Wave 1 provider validation status** | Tracks provider gate posture (Alpaca/Robinhood/Yahoo), checkpoint reliability, and DK1 packet readiness handoff. | `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`; `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`; optional signed `dk1-operator-signoff.json` packet binding. | `docs/status/provider-validation-matrix.md` and `docs/status/provider-validation-matrix.json` |
+| **Replay verification readiness** | Confirms active paper-session replay verification freshness used by trading readiness claims. | Execution replay verification outputs (for example `GET /api/execution/sessions/{sessionId}/replay` evidence captures and execution-audit artifacts referenced by readiness workflows). | `docs/status/kernel-readiness-dashboard.md` and `docs/status/kernel-readiness-dashboard.json` |
+| **Reconciliation and operator inbox state** | Summarizes unresolved/open/in-review reconciliation cases and account-scoped operator work-item routing. | Reconciliation case state exports plus workstation operator inbox/readiness evidence (`/api/workstation/operator/inbox`, `/api/workstation/trading/readiness`). | `docs/status/program-state-summary.md` and `docs/status/program-state-summary.json` |
+| **Report-pack and contract compatibility posture** | Governs report-pack and contract drift risk before releases, including compatibility/deprecation checks. | Report-pack generation/validation outputs; contract checks (for example `scripts/check_contract_compatibility_gate.py` outputs and generated contract review packet artifacts). | `docs/status/contract-compatibility-matrix.md` and `docs/status/contract-compatibility-matrix.json` |
+
+### Required Evidence References Per Dashboard
+
+- **Docs automation run summary**
+  - Must reference the exact profile or explicit `--scripts` set used for the run.
+  - Must retain script-level failure detail when blockers are present.
+  - Must link any dependent artifacts that failed generation (for example `workflow-drift-report.md`).
+- **Wave 1 provider validation status**
+  - Must include current run-date summary artifact and DK1 packet path under `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
+  - Must include signed operator sign-off binding when claiming `ready-for-operator-review` or stronger state.
+  - Must flag stale packets whose timestamp predates the latest validation run.
+- **Replay verification readiness**
+  - Must reference the session identifier and replay verification timestamp used by readiness conclusions.
+  - Must mark replay evidence stale when fill/order/ledger counters diverge from latest verification audit.
+  - Must link remediation action (rerun replay verification) before readiness can return to green.
+- **Reconciliation and operator inbox state**
+  - Must include counts by reconciliation case state (`open`, `in-review`, `resolved`) and account scope if applicable.
+  - Must reference operator inbox/readiness endpoint captures used for routing and sign-off claims.
+  - Must classify blockers by owning workflow lane (trading, accounting, or shared operations).
+- **Report-pack and contract compatibility posture**
+  - Must include latest contract compatibility gate output and packet artifact references.
+  - Must call out any report-pack generation failures, missing sections, or schema drift.
+  - Must identify blocking compatibility changes requiring migration/deprecation action before release.
+
+### Operator Guidance: Blockers and Stale Evidence
+
+- Treat any dashboard blocker as **actionable** until an updated evidence artifact is generated and linked.
+- Treat dated evidence as **stale** when it predates the latest related workflow run, packet, or replay audit.
+- For stale evidence, rerun the narrowest supporting workflow first (provider validation, replay verification, reconciliation export, or contract check) and then regenerate docs automation summaries.
+- Do not claim readiness from a dashboard whose `.md` and `.json` sidecars disagree; rerun automation and resolve drift before sign-off.
+- When a dashboard remains blocked after rerun, escalate with the failing command, artifact path, and owning lane in the summary report.
+
+### Artifact Generation Commands (Full + Targeted)
+
+```bash
+# Full docs automation profile with explicit status outputs
+python3 build/scripts/docs/run-docs-automation.py \
+  --profile full \
+  --json-output docs/status/docs-automation-summary.json \
+  --summary-output docs/status/docs-automation-summary.md
+
+# Targeted generation for status surfaces (explicit scripts mode)
+python3 build/scripts/docs/run-docs-automation.py \
+  --scripts generate-health-dashboard,generate-coverage,generate-workflow-manifest,rules-engine \
+  --json-output docs/status/docs-automation-summary.json \
+  --summary-output docs/status/docs-automation-summary.md
+
+# Targeted governance/evidence checks with contract compatibility verification
+python3 build/scripts/docs/run-docs-automation.py \
+  --scripts scan-todos,validate-examples,check-ai-inventory \
+  --continue-on-error \
+  --json-output docs/status/docs-automation-summary.json \
+  --summary-output docs/status/docs-automation-summary.md
+python3 scripts/check_contract_compatibility_gate.py --base origin/main --head HEAD
+```
+
 ## Custom Rules
 
 Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Custom Rules](adding-custom-rules.md) for details.

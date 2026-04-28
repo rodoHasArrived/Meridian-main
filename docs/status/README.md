@@ -61,6 +61,10 @@ Machine-readable sidecars that remain active in this folder:
 - `docs-automation-summary.json` - automation run summary consumed by docs tooling
 - `program-state-summary.json` - generated wave ownership/escalation metadata consumed by roadmap/readiness reporting
 
+## Dashboard Evidence Reference
+
+For dashboard purpose, required evidence inputs, `.md` + `.json` output paths, blocker triage, and stale-evidence handling guidance, see [Documentation Automation - Status Dashboard Evidence Surfaces](../development/documentation-automation.md#status-dashboard-evidence-surfaces).
+
 ## Archived Snapshots
 
 These dated snapshots remain useful for history, but they no longer act as active status guidance:
