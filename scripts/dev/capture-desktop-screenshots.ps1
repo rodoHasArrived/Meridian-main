@@ -1,10 +1,12 @@
 [CmdletBinding()]
 param(
-  [string]$ProjectPath = 'src/Meridian.Wpf/Meridian.Wpf.csproj',
-  [string]$Configuration = 'Release',
-  [string]$Framework = 'net9.0-windows10.0.19041.0',
-  [string]$ExeName = 'Meridian.Desktop.exe',
-  [string]$OutputDir = 'docs/screenshots/desktop',
+  [string]$Profile = 'screenshot-catalog',
+  [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
+  [string]$ProjectPath,
+  [string]$Configuration,
+  [string]$Framework,
+  [string]$ExeName,
+  [string]$OutputDir,
   [switch]$SkipBuild,
   [switch]$KeepAppOpen
 )
@@ -14,6 +16,22 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+$null = & (Join-Path $PSScriptRoot 'validate-workflow-profile.ps1') -Profile $Profile -ProfileRoot $ProfileRoot -EmitJson
+. (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
+$profileEnvelope = Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot
+$buildProfile = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'build' -Fallback @{}
+$fixtureProfile = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'fixture' -Fallback @{}
+$screenshotsProfile = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'screenshots' -Fallback @{}
+$retentionProfile = Get-MeridianWorkflowProfileValue -Table $screenshotsProfile -Key 'retention' -Fallback @{}
+
+$ProjectPath = if ($PSBoundParameters.ContainsKey('ProjectPath')) { $ProjectPath } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'projectPath' -Fallback 'src/Meridian.Wpf/Meridian.Wpf.csproj') }
+$Configuration = if ($PSBoundParameters.ContainsKey('Configuration')) { $Configuration } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'configuration' -Fallback 'Release') }
+$Framework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framework } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'framework' -Fallback 'net9.0-windows10.0.19041.0') }
+$ExeName = if ($PSBoundParameters.ContainsKey('ExeName')) { $ExeName } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'exeName' -Fallback 'Meridian.Desktop.exe') }
+$OutputDir = if ($PSBoundParameters.ContainsKey('OutputDir')) { $OutputDir } else { [string](Get-MeridianWorkflowProfileValue -Table $screenshotsProfile -Key 'outputRoot' -Fallback 'docs/screenshots/desktop') }
+$fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $true)
+$retentionDays = [int](Get-MeridianWorkflowProfileValue -Table $retentionProfile -Key 'maxAgeDays' -Fallback 14)
+$retentionLatest = [int](Get-MeridianWorkflowProfileValue -Table $retentionProfile -Key 'retainLatest' -Fallback 10)
 $resolvedProjectPath = if ([System.IO.Path]::IsPathRooted($ProjectPath)) {
   [System.IO.Path]::GetFullPath($ProjectPath)
 }
@@ -21,6 +39,7 @@ else {
   [System.IO.Path]::GetFullPath((Join-Path $repoRoot $ProjectPath))
 }
 $buildIsolationKey = New-MeridianBuildIsolationKey -Prefix 'desktop-screenshots'
+Invoke-MeridianWorkflowArtifactRetention -OutputRoot ([System.IO.Path]::GetFullPath((Join-Path $repoRoot $OutputDir))) -MaxAgeDays $retentionDays -RetainLatest $retentionLatest
 
 function Assert-Command {
   param([string]$Name)
@@ -366,7 +385,9 @@ if (-not $SkipBuild) {
   )
 }
 
-$env:MDC_FIXTURE_MODE = '1'
+if ($fixtureRequired) {
+  $env:MDC_FIXTURE_MODE = '1'
+}
 $exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $Configuration -Framework $Framework -BinaryName $ExeName -IsolationKey $buildIsolationKey
 $stdoutPath = 'wpf-startup-stdout.log'
 $stderrPath = 'wpf-startup-stderr.log'
