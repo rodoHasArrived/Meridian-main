@@ -207,6 +207,130 @@ jobs:
             Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
           }
 
+      - name: Validate screenshot outputs and workflow manifests
+        id: validate_outputs
+        run: |
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $selection = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
+          $normalizedOutputRoot = $outputRoot.Replace('\', '/').Trim('/')
+
+          $includeManuals = $selection -in @('all', 'manuals')
+          $includeCatalog = $selection -in @('all', 'catalog')
+
+          $trackedPngs = git ls-files "$outputRoot/**/*.png"
+          $expectedFiles = @()
+          foreach ($file in $trackedPngs) {
+            $normalizedFile = $file.Replace('\', '/')
+            $isManual = $normalizedFile -like "$normalizedOutputRoot/manuals/*"
+            if (($isManual -and $includeManuals) -or (-not $isManual -and $includeCatalog)) {
+              $expectedFiles += $file
+            }
+          }
+
+          $missingFiles = @()
+          $zeroByteFiles = @()
+          foreach ($expected in $expectedFiles) {
+            if (-not (Test-Path -LiteralPath $expected)) {
+              $missingFiles += $expected
+              continue
+            }
+
+            $size = (Get-Item -LiteralPath $expected).Length
+            if ($size -le 0) {
+              $zeroByteFiles += $expected
+            }
+          }
+
+          $manifestPaths = Get-ChildItem -Path _artifacts -Recurse -Filter manifest.json -File -ErrorAction SilentlyContinue
+          $failedSteps = New-Object System.Collections.Generic.List[string]
+
+          function Get-FailedManifestStatuses {
+            param(
+              [Parameter(Mandatory = $true)] [object] $Node,
+              [Parameter(Mandatory = $true)] [string] $ManifestPath,
+              [string] $Context = ''
+            )
+
+            if ($null -eq $Node) {
+              return
+            }
+
+            if ($Node -is [System.Collections.IEnumerable] -and -not ($Node -is [string])) {
+              foreach ($item in $Node) {
+                Get-FailedManifestStatuses -Node $item -ManifestPath $ManifestPath -Context $Context
+              }
+              return
+            }
+
+            if ($Node -is [pscustomobject] -or $Node -is [hashtable]) {
+              $statusProp = $Node.PSObject.Properties['status']
+              if ($statusProp -and $statusProp.Value -eq 'failed') {
+                $stepName = $Node.PSObject.Properties['name']?.Value
+                if (-not $stepName) {
+                  $stepName = $Node.PSObject.Properties['id']?.Value
+                }
+                if (-not $stepName) {
+                  $stepName = $Context
+                }
+                if (-not $stepName) {
+                  $stepName = '(unknown-step)'
+                }
+                $failedSteps.Add("$ManifestPath :: $stepName") | Out-Null
+              }
+
+              foreach ($property in $Node.PSObject.Properties) {
+                $nextContext = if ($Context) { "$Context/$($property.Name)" } else { $property.Name }
+                Get-FailedManifestStatuses -Node $property.Value -ManifestPath $ManifestPath -Context $nextContext
+              }
+            }
+          }
+
+          foreach ($manifest in $manifestPaths) {
+            try {
+              $json = Get-Content -LiteralPath $manifest.FullName -Raw | ConvertFrom-Json
+              $manifestRel = $manifest.FullName.Replace((Resolve-Path .).Path, '.').Replace('\', '/')
+              Get-FailedManifestStatuses -Node $json -ManifestPath $manifestRel
+            }
+            catch {
+              $manifestRel = $manifest.FullName.Replace((Resolve-Path .).Path, '.').Replace('\', '/')
+              $failedSteps.Add("$manifestRel :: (invalid-json)") | Out-Null
+            }
+          }
+
+          $validationFailed = ($missingFiles.Count -gt 0) -or ($zeroByteFiles.Count -gt 0) -or ($failedSteps.Count -gt 0)
+          if ($validationFailed) {
+            "passed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            $summary = @(
+              '## Screenshot validation failed',
+              '',
+              "Expected PNG set checked: **$($expectedFiles.Count)** file(s) for selection ``$selection`` under ``$outputRoot``."
+            )
+
+            if ($missingFiles.Count -gt 0) {
+              $summary += ''
+              $summary += "### Missing PNG files ($($missingFiles.Count))"
+              $summary += ($missingFiles | ForEach-Object { "- ``$_``" })
+            }
+
+            if ($zeroByteFiles.Count -gt 0) {
+              $summary += ''
+              $summary += "### Zero-byte PNG files ($($zeroByteFiles.Count))"
+              $summary += ($zeroByteFiles | ForEach-Object { "- ``$_``" })
+            }
+
+            if ($failedSteps.Count -gt 0) {
+              $summary += ''
+              $summary += "### Failed workflow manifest steps ($($failedSteps.Count))"
+              $summary += ($failedSteps | ForEach-Object { "- ``$_``" })
+            }
+
+            $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            throw "Screenshot validation failed."
+          }
+
+          "passed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Screenshot validation passed. Checked $($expectedFiles.Count) expected PNG file(s) and $($manifestPaths.Count) manifest file(s)."
+
       - name: Detect screenshot changes
         id: detect_changes
         run: |
@@ -225,6 +349,7 @@ jobs:
 
       - name: Commit WPF desktop screenshots
         if: |
+          steps.validate_outputs.outputs.passed == 'true' &&
           steps.detect_changes.outputs.changed == 'true' &&
           (github.event_name != 'workflow_dispatch' || inputs.commit == true)
         uses: stefanzweifel/git-auto-commit-action@v7
