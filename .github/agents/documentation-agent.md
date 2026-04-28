@@ -628,9 +628,11 @@ Meridian-main
 │   └── scripts
 │       ├── docs
 │       │   ├── tests
+│       │   │   ├── test_check_ai_inventory.py
 │       │   │   └── test_scan_todos.py
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
+│       │   ├── check-ai-inventory.py
 │       │   ├── create-todo-issues.py
 │       │   ├── generate-ai-navigation.py
 │       │   ├── generate-changelog.py
@@ -761,6 +763,7 @@ Meridian-main
 │   │   ├── skills
 │   │   │   └── README.md
 │   │   ├── ai-known-errors.md
+│   │   ├── assistant-workflow-contract.md
 │   │   └── README.md
 │   ├── architecture
 │   │   ├── c4-diagrams.md
@@ -7598,8 +7601,10 @@ Meridian-main
 │   │   │   ├── StrategyRunWorkspaceTestData.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── AggregatePortfolioViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
@@ -7659,6 +7664,7 @@ Meridian-main
 │   ├── scripts
 │   │   ├── setup-verification.sh
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_code_quality_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   └── test_prepare_dk1_operator_signoff.py
