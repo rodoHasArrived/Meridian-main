@@ -5,6 +5,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -27,6 +28,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly WorkspaceShellContextService? _workspaceShellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private readonly IWorkstationOperatorInboxApiClient? _operatorInboxApiClient;
+    private readonly IWorkflowActionCatalog? _workflowActionCatalog;
     private readonly SettingsConfigurationService _settingsConfigurationService;
     private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
     private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
@@ -86,7 +88,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         WorkspaceShellContextService? workspaceShellContextService = null,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
         IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
-        SettingsConfigurationService? settingsConfigurationService = null)
+        SettingsConfigurationService? settingsConfigurationService = null,
+        IWorkflowActionCatalog? workflowActionCatalog = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
@@ -95,6 +98,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _workspaceShellContextService = workspaceShellContextService;
         _workflowSummaryService = workflowSummaryService;
         _operatorInboxApiClient = operatorInboxApiClient;
+        _workflowActionCatalog = workflowActionCatalog;
         _settingsConfigurationService = settingsConfigurationService ?? SettingsConfigurationService.Instance;
         _shellDensityMode = _settingsConfigurationService.GetShellDensityMode();
 
@@ -1537,11 +1541,17 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .FirstOrDefault()
         ?? inbox?.Items.FirstOrDefault();
 
-    private static string? ResolveOperatorInboxPageTag(OperatorWorkItemDto? workItem)
+    private string? ResolveOperatorInboxPageTag(OperatorWorkItemDto? workItem)
     {
         if (workItem is null)
         {
             return null;
+        }
+
+        var catalogTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogTarget))
+        {
+            return catalogTarget;
         }
 
         if (workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval)

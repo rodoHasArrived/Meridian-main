@@ -190,7 +190,7 @@ public sealed class MainShellViewModelTests
             vm.NavigateToPageCommand.Execute("GovernanceShell");
             vm.NavigateToPageCommand.Execute("SecurityMaster");
 
-            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentWorkspace.Should().Be("accounting");
             vm.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
             vm.RecentPagesSummaryText.Should().Be("1 recent governance workflow");
 

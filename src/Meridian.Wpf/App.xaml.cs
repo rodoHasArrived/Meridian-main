@@ -32,6 +32,7 @@ using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -383,6 +384,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.WorkflowLibraryViewModel>();
 
         // ── Credential management ────────────────────────────────────────────
         services.AddSingleton<WpfServices.CredentialService>();
@@ -518,6 +520,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Dk1TrustGateReadinessService>();
         services.AddSingleton<TradingOperatorReadinessService>();
         services.AddSingleton<StrategyRunReviewPacketService>();
+        services.AddWorkflowLibrary();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
         services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         services.AddSingleton<PromotionService>();

@@ -9,6 +9,7 @@ This directory contains Python scripts for automating documentation tasks in the
 - [Enhanced Scripts](#enhanced-scripts)
 - [Quick Reference](#quick-reference)
 - [Development](#development)
+- [Readiness and Coverage Dashboards](#readiness-and-coverage-dashboards)
 
 ## Core Scripts
 
@@ -302,6 +303,9 @@ These scripts are integrated into the `.github/workflows/documentation.yml` work
 6. **validate-examples** job - Runs validate-examples.py
 7. **generate-changelog** job - Runs generate-changelog.py
 8. **AI inventory check** - Runs check-ai-inventory.py through the local runner profiles
+9. **Readiness dashboards** - `run-docs-automation.py --profile core` and `--profile full`
+   include the pilot readiness, paper replay reliability, evidence continuity, governance
+   readiness, and API contract coverage dashboards.
 
 New scripts can be added by following the patterns in the workflow file.
 
@@ -402,7 +406,8 @@ If you encounter issues with these scripts:
 
 ### Readiness and Coverage Dashboards
 
-The following generators emit both Markdown and JSON artifacts and support `--summary` for one-line CLI diagnostics.
+The following generators emit canonical JSON first, render Markdown from that payload, and support
+`--summary` for one-line CLI diagnostics.
 
 ```bash
 python3 generate-pilot-readiness-dashboard.py \

@@ -14,6 +14,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -80,6 +81,20 @@ public static class WorkstationEndpoints
         .WithName("GetWorkstationWorkflowSummary")
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(501);
+
+        group.MapGet("/workflows", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowLibraryService>();
+            if (service is null)
+            {
+                var fallback = new WorkflowLibraryService(WorkflowRegistry.CreateDefault());
+                return Results.Json(fallback.GetLibrary(), jsonOptions);
+            }
+
+            return Results.Json(service.GetLibrary(), jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowLibrary")
+        .Produces<WorkflowLibraryDto>(200);
 
         group.MapGet("/trading", async (HttpContext context) =>
         {

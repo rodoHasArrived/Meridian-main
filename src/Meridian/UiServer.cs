@@ -18,6 +18,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -119,6 +120,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<Dk1TrustGateReadinessService>();
         builder.Services.AddSingleton<TradingOperatorReadinessService>();
         builder.Services.AddSingleton<StrategyRunReviewPacketService>();
+        builder.Services.AddWorkflowLibrary();
         builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         // Durable promotion-record store is required by PromotionService; without it

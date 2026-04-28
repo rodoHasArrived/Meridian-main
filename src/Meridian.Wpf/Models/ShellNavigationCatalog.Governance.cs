@@ -44,6 +44,7 @@ public static partial class ShellNavigationCatalog
         Page<HelpPage>("Help", "Help and support", "Access support resources and workstation guidance.", "settings", "Support", "\uE897", 120, ShellNavigationVisibilityTier.Overflow, ["help", "support"], ["KeyboardShortcuts", "Settings"]),
         Page<SetupWizardPage>("SetupWizard", "Setup wizard", "Complete initial workstation setup and guided configuration.", "settings", "Support", "\uE8B0", 130, ShellNavigationVisibilityTier.Overflow, ["setup", "wizard"], ["Settings", "CredentialManagement"], hideFromDefaultPalette: true),
         Page<WorkspacePage>("Workspaces", "Workspace layouts", "Workspace layout catalog and saved-layout surface.", "settings", "Workspace layouts", "\uE8A9", 140, ShellNavigationVisibilityTier.Overflow, ["workspaces", "layouts"], ["SettingsShell"], hideFromDefaultPalette: true),
+        Page<WorkflowLibraryPage>("WorkflowLibrary", "Workflow library", "Reusable workflow catalog and action launch surface.", "settings", "Workspace layouts", "\uE8FD", 145, ShellNavigationVisibilityTier.Secondary, ["workflow", "library", "actions", "templates"], ["Workspaces", "SettingsShell"]),
         Page<WelcomePage>("Welcome", "Welcome", "Onboarding entry point and first-run guidance.", "settings", "Support", "\uE80F", 150, ShellNavigationVisibilityTier.Overflow, ["welcome", "onboarding"], ["SetupWizard", "Help"], hideFromDefaultPalette: true)
     ];
 }
