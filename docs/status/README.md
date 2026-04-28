@@ -18,7 +18,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 
 | Document | Description |
 | --- | --- |
-| [PROGRAM_STATE.md](PROGRAM_STATE.md) | Canonical wave status labels, owners, target dates, and evidence links reused by status docs |
+| [PROGRAM_STATE.md](PROGRAM_STATE.md) | Canonical wave status labels, ownership/escalation metadata (primary owner, backup owner, SLA, dependency owners), target dates, and evidence links reused by status docs |
 | [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) | Short stakeholder-facing snapshot that combines roadmap, opportunities, and target-state direction |
 | [ROADMAP.md](ROADMAP.md) | Primary wave-structured delivery roadmap |
 | [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md) | Prioritized repo-grounded opportunities that sit alongside the roadmap |
@@ -49,6 +49,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [coverage-report.md](coverage-report.md) | Documentation coverage summary |
 | [metrics-dashboard.md](metrics-dashboard.md) | Documentation metrics dashboard |
 | [docs-automation-summary.md](docs-automation-summary.md) | Latest docs automation run summary |
+| [program-state-summary.md](program-state-summary.md) | Generated wave escalation summary used by roadmap/readiness reporting |
 | [api-docs-report.md](api-docs-report.md) | API docs validation summary |
 | [example-validation.md](example-validation.md) | Code-block validation output |
 | [link-repair-report.md](link-repair-report.md) | Internal link audit output |
@@ -58,6 +59,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 Machine-readable sidecars that remain active in this folder:
 
 - `docs-automation-summary.json` - automation run summary consumed by docs tooling
+- `program-state-summary.json` - generated wave ownership/escalation metadata consumed by roadmap/readiness reporting
 
 ## Archived Snapshots
 
