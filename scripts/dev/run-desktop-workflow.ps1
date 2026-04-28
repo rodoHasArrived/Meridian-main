@@ -737,14 +737,16 @@ function Test-StageOutputsValid {
 
 $catalogPath = Resolve-RepoPath $DefinitionPath
 $initialOutputRoot = if ($PSBoundParameters.ContainsKey('OutputRoot')) { Resolve-RepoPath $OutputRoot } else { Resolve-RepoPath 'artifacts/desktop-workflows' }
-$catalogPreflight = Invoke-MeridianPreflight `
-    -Scenario 'desktop-workflow-catalog' `
-    -RequiredCommands @('dotnet') `
-    -RequiredPaths @($catalogPath) `
-    -WritableDirectories @($initialOutputRoot) `
-    -RequireWindows `
-    -EmitJson `
-    -AllowWarnings
+$catalogPreflightArgs = @{
+    Scenario = 'desktop-workflow-catalog'
+    RequiredCommands = [string[]]@('dotnet')
+    RequiredPaths = [string[]]@($catalogPath)
+    WritableDirectories = [string[]]@($initialOutputRoot)
+    RequireWindows = $true
+    EmitJson = $true
+    AllowWarnings = $true
+}
+$catalogPreflight = Invoke-MeridianPreflight @catalogPreflightArgs
 
 if ($catalogPreflight.status -eq 'blocked') {
     throw "Preflight failed before workflow load. $(($catalogPreflight.blockingChecks | ConvertTo-Json -Depth 6 -Compress))"
@@ -914,15 +916,17 @@ try {
         }
 
         try {
-            $preflight = Invoke-MeridianPreflight `
-                -Scenario 'desktop-workflow' `
-                -RequiredCommands @('dotnet') `
-                -RequiredPaths @($catalogPath, $resolvedProjectPath) `
-                -WritableDirectories @($resolvedOutputRoot, $screenshotDirectory, $runDirectory, $logDirectory) `
-                -RequireWindows `
-                -FeatureFlagExpectations $(if (-not $useFixture) { @{ 'MDC_FIXTURE_MODE' = '0' } } else { @{} }) `
-                -EmitJson `
-                -AllowWarnings
+            $preflightArgs = @{
+                Scenario = 'desktop-workflow'
+                RequiredCommands = [string[]]@('dotnet')
+                RequiredPaths = [string[]]@($catalogPath, $resolvedProjectPath)
+                WritableDirectories = [string[]]@($resolvedOutputRoot, $screenshotDirectory, $runDirectory, $logDirectory)
+                RequireWindows = $true
+                FeatureFlagExpectations = $(if (-not $useFixture) { @{ 'MDC_FIXTURE_MODE' = '0' } } else { @{} })
+                EmitJson = $true
+                AllowWarnings = $true
+            }
+            $preflight = Invoke-MeridianPreflight @preflightArgs
             $preflightPath = Join-Path $runDirectory 'preflight.json'
             $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
             if ($preflight.status -eq 'blocked') {
