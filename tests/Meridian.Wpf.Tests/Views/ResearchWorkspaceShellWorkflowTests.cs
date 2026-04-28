@@ -8,11 +8,14 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
@@ -50,11 +53,16 @@ public sealed class ResearchWorkspaceShellWorkflowTests
 
             configureServices.Should().NotBeNull();
             configureServices!.Invoke(null, [services]);
+            var briefing = BuildBriefing(runId, expectedSummary);
             services.RemoveAll(typeof(IWorkstationResearchBriefingApiClient));
             services.AddSingleton<IWorkstationResearchBriefingApiClient>(new FakeWorkstationResearchBriefingApiClient
             {
-                Briefing = BuildBriefing(runId, expectedSummary)
+                Briefing = briefing
             });
+            services.RemoveAll(typeof(IResearchBriefingWorkspaceService));
+            services.AddSingleton<IResearchBriefingWorkspaceService>(new FakeResearchBriefingWorkspaceService(briefing));
+            services.RemoveAll(typeof(IStatusService));
+            services.AddSingleton<IStatusService>(new FakeStatusService());
 
             using var serviceProvider = services.BuildServiceProvider();
             NavigationService.Instance.SetServiceProvider(serviceProvider);
@@ -79,6 +87,14 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 page.ApplyTemplate();
                 page.UpdateLayout();
                 window.UpdateLayout();
+
+                var viewModel = page.DataContext.Should().BeOfType<ResearchWorkspaceShellViewModel>().Subject;
+
+                await WaitForConditionAsync(() =>
+                    (!viewModel.IsLoading && string.Equals(viewModel.BriefingSummaryText, expectedSummary, StringComparison.Ordinal)) ||
+                    viewModel.HasError).ConfigureAwait(true);
+                viewModel.HasError.Should().BeFalse(viewModel.ErrorMessage);
+                viewModel.BriefingSummaryText.Should().Be(expectedSummary);
 
                 await WaitForConditionAsync(() =>
                 {
@@ -367,5 +383,30 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 Environment.SetEnvironmentVariable(pair.Key, pair.Value);
             }
         }
+    }
+
+    private sealed class FakeResearchBriefingWorkspaceService : IResearchBriefingWorkspaceService
+    {
+        private readonly ResearchBriefingDto _briefing;
+
+        public FakeResearchBriefingWorkspaceService(ResearchBriefingDto briefing)
+            => _briefing = briefing;
+
+        public Task<ResearchBriefingDto> GetBriefingAsync(CancellationToken ct = default)
+            => Task.FromResult(_briefing);
+    }
+
+    private sealed class FakeStatusService : IStatusService
+    {
+        public string ServiceUrl => "http://localhost:8080";
+
+        public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<StatusResponse?>(new StatusResponse { IsConnected = true });
+
+        public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
+            => throw new NotSupportedException("The Research shell workflow test only consumes GetStatusAsync.");
+
+        public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
+            => throw new NotSupportedException("The Research shell workflow test only consumes GetStatusAsync.");
     }
 }

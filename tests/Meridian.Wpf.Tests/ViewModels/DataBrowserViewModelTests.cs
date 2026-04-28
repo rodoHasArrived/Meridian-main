@@ -69,6 +69,58 @@ public sealed class DataBrowserViewModelTests
     }
 
     [Fact]
+    public void TimePeriodSelection_AppliesDateRangeAndResetRestoresAllTime()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = new DataBrowserViewModel();
+            var expectedFrom = DateTime.Today.AddDays(-1);
+
+            viewModel.RefreshResults();
+            viewModel.SelectedTimePeriodKey.Should().Be(DataBrowserTimePeriodOption.AllTimeKey);
+            viewModel.TimePeriodScopeText.Should().Be("All retained records");
+            viewModel.ActiveFilterCount.Should().Be(0);
+            viewModel.PagedRecords.Should().NotBeEmpty();
+
+            viewModel.SelectedTimePeriodKey = "1D";
+
+            viewModel.FromDate.Should().Be(expectedFrom);
+            viewModel.ToDate.Should().BeNull();
+            viewModel.SelectedTimePeriodKey.Should().Be("1D");
+            viewModel.TimePeriodScopeText.Should().Be("1 Day");
+            viewModel.ActiveFilterCount.Should().Be(1);
+            viewModel.PagedRecords.Should().OnlyContain(record => record.Timestamp >= expectedFrom);
+            viewModel.ResetFiltersCommand.CanExecute(null).Should().BeTrue();
+
+            viewModel.ResetFiltersCommand.Execute(null);
+
+            viewModel.SelectedTimePeriodKey.Should().Be(DataBrowserTimePeriodOption.AllTimeKey);
+            viewModel.FromDate.Should().BeNull();
+            viewModel.ToDate.Should().BeNull();
+            viewModel.TimePeriodScopeText.Should().Be("All retained records");
+            viewModel.ActiveFilterCount.Should().Be(0);
+        });
+    }
+
+    [Fact]
+    public void ManualDateRange_MarksTimePeriodAsCustom()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = new DataBrowserViewModel();
+            var fromDate = DateTime.Today.AddDays(-10);
+            var toDate = DateTime.Today.AddDays(-2);
+
+            viewModel.FromDate = fromDate;
+            viewModel.ToDate = toDate;
+
+            viewModel.SelectedTimePeriodKey.Should().Be(DataBrowserTimePeriodOption.CustomKey);
+            viewModel.TimePeriodScopeText.Should().Be($"{fromDate:MMM d} to {toDate:MMM d}");
+            viewModel.ActiveFilterCount.Should().Be(1);
+        });
+    }
+
+    [Fact]
     public void DataBrowserPageSource_BindsRecoveryStateAndResetCommand()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\DataBrowserPage.xaml"));
@@ -77,6 +129,10 @@ public sealed class DataBrowserViewModelTests
         xaml.Should().Contain("DataBrowserSearchBox");
         xaml.Should().Contain("DataBrowserDataTypeCombo");
         xaml.Should().Contain("DataBrowserVenueCombo");
+        xaml.Should().Contain("DataBrowserTimePeriodCombo");
+        xaml.Should().Contain("ItemsSource=\"{Binding TimePeriods}\"");
+        xaml.Should().Contain("SelectedValue=\"{Binding SelectedTimePeriodKey");
+        xaml.Should().Contain("TimePeriodScopeText");
         xaml.Should().Contain("DataBrowserEmptyStatePanel");
         xaml.Should().Contain("DataBrowserResetFiltersButton");
         xaml.Should().Contain("{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}}");
@@ -85,6 +141,8 @@ public sealed class DataBrowserViewModelTests
         xaml.Should().Contain("{Binding ResetFiltersCommand}");
         xaml.Should().Contain("{Binding HasFilterRecoveryAction");
         xaml.Should().NotContain("Click=\"ResetFilters_Click\"");
+        xaml.Should().NotContain("TimePeriodCombo_SelectionChanged");
+        codeBehind.Should().Contain("SelectedTimePeriodKey");
         codeBehind.Should().NotContain("ResetFilters_Click");
     }
 

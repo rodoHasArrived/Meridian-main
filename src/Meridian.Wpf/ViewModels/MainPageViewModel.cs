@@ -17,8 +17,8 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class MainPageViewModel : BindableBase, IDisposable
 {
-    private const string DefaultWorkspace = "research";
-    private const string DefaultPageTag = "ResearchShell";
+    private const string DefaultWorkspace = "strategy";
+    private const string DefaultPageTag = "StrategyShell";
 
     private readonly INavigationService _navigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
@@ -34,6 +34,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly ObservableCollection<ShellNavigationItem> _overflowNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _relatedWorkflowItems = [];
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
+    private readonly ObservableCollection<WorkspaceTileItem> _workspaceTiles = [];
     private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
     private readonly ObservableCollection<WorkspaceWorkflowSummary> _workflowSummaries = [];
     private readonly ObservableCollection<WorkspaceWorkflowSummary> _secondaryWorkflowSummaries = [];
@@ -50,8 +51,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
-    private string _currentPageTitle = "Research Workspace";
-    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor research outcomes.";
+    private string _currentPageTitle = "Strategy Workspace";
+    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor strategy outcomes.";
     private bool _tickerStripVisible;
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
@@ -104,6 +105,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         OverflowNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_overflowNavigationItems);
         RelatedWorkflowItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_relatedWorkflowItems);
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
+        WorkspaceTiles = new ReadOnlyObservableCollection<WorkspaceTileItem>(_workspaceTiles);
         OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
         WorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_workflowSummaries);
         SecondaryWorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_secondaryWorkflowSummaries);
@@ -137,6 +139,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             _operatingContextService.WindowModeChanged += OnWindowModeChanged;
         }
 
+        RefreshWorkspaceTiles();
         var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? DefaultPageTag;
         InitializeCurrentPageState(initialPage);
         RefreshCommandPalettePages();
@@ -165,6 +168,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public ReadOnlyObservableCollection<ShellNavigationItem> RelatedWorkflowItems { get; }
 
     public ReadOnlyObservableCollection<RecentPageEntry> RecentPages { get; }
+
+    public ReadOnlyObservableCollection<WorkspaceTileItem> WorkspaceTiles { get; }
 
     public ReadOnlyObservableCollection<WorkstationOperatingContext> OperatingContexts { get; }
 
@@ -421,13 +426,25 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public bool IsWorkflowPageActive => !IsWorkspaceHomePageActive;
 
-    public bool IsResearchWorkspaceActive => string.Equals(_currentWorkspace, "research", StringComparison.OrdinalIgnoreCase);
+    public bool IsStrategyWorkspaceActive => string.Equals(_currentWorkspace, "strategy", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsResearchWorkspaceActive => IsStrategyWorkspaceActive;
 
     public bool IsTradingWorkspaceActive => string.Equals(_currentWorkspace, "trading", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsDataOperationsWorkspaceActive => string.Equals(_currentWorkspace, "data-operations", StringComparison.OrdinalIgnoreCase);
+    public bool IsPortfolioWorkspaceActive => string.Equals(_currentWorkspace, "portfolio", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsGovernanceWorkspaceActive => string.Equals(_currentWorkspace, "governance", StringComparison.OrdinalIgnoreCase);
+    public bool IsAccountingWorkspaceActive => string.Equals(_currentWorkspace, "accounting", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsReportingWorkspaceActive => string.Equals(_currentWorkspace, "reporting", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsDataWorkspaceActive => string.Equals(_currentWorkspace, "data", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsDataOperationsWorkspaceActive => IsDataWorkspaceActive;
+
+    public bool IsSettingsWorkspaceActive => string.Equals(_currentWorkspace, "settings", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsGovernanceWorkspaceActive => IsAccountingWorkspaceActive;
 
     public bool HasSecondaryNavigation => _secondaryNavigationItems.Count > 0;
 
@@ -639,6 +656,26 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private WorkspaceShellDescriptor CurrentWorkspaceDescriptor =>
         ShellNavigationCatalog.GetWorkspace(_currentWorkspace) ?? ShellNavigationCatalog.GetDefaultWorkspace();
 
+    private void RefreshWorkspaceTiles()
+    {
+        _workspaceTiles.Clear();
+        foreach (var workspace in ShellNavigationCatalog.Workspaces)
+        {
+            _workspaceTiles.Add(new WorkspaceTileItem(workspace, IsCurrentWorkspace(workspace.Id)));
+        }
+    }
+
+    private void RefreshWorkspaceTileSelection()
+    {
+        foreach (var tile in _workspaceTiles)
+        {
+            tile.IsActive = IsCurrentWorkspace(tile.WorkspaceId);
+        }
+    }
+
+    private bool IsCurrentWorkspace(string workspaceId)
+        => string.Equals(_currentWorkspace, workspaceId, StringComparison.OrdinalIgnoreCase);
+
     private void OnNavigated(object? sender, NavigationEventArgs e)
     {
         _suppressNavigation = true;
@@ -725,7 +762,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void SelectWorkspace(string? workspace, bool navigateToHome = false)
     {
-        var normalized = ShellNavigationCatalog.GetWorkspace(workspace)?.Id ?? DefaultWorkspace;
+        var normalized = ResolveWorkspaceId(workspace);
 
         if (SetProperty(ref _currentWorkspace, normalized))
         {
@@ -739,10 +776,17 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
+            RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
             RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
             RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsPortfolioWorkspaceActive));
+            RaisePropertyChanged(nameof(IsAccountingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsReportingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceActive));
             RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
+            RaisePropertyChanged(nameof(IsSettingsWorkspaceActive));
             RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+            RefreshWorkspaceTileSelection();
             RefreshShellNavigation();
             RefreshCommandPalettePages();
             RefreshRecentPages();
@@ -758,6 +802,22 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
                 NavigateToPage(homePageTag);
             }
         }
+    }
+
+    private static string ResolveWorkspaceId(string? workspace)
+    {
+        if (ShellNavigationCatalog.GetWorkspace(workspace) is { } descriptor)
+        {
+            return descriptor.Id;
+        }
+
+        return workspace?.Trim().ToLowerInvariant() switch
+        {
+            "research" => "strategy",
+            "data-operations" => "data",
+            "governance" => "accounting",
+            _ => DefaultWorkspace
+        };
     }
 
     private static string? InferWorkspaceFromPage(string? pageTag)
@@ -1257,45 +1317,25 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ? new WorkflowBlockerSummary("fallback", "Fallback summary", "Shared workflow guidance is using deterministic fallback text.", WorkspaceTone.Info, false)
             : new WorkflowBlockerSummary("choose-context", "No operating context selected", "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
 
-        return
-        [
-            new WorkspaceWorkflowSummary(
-                "research",
-                "Research",
-                "Fallback workflow summary",
-                "Start a new backtest or review recorded research runs.",
-                WorkspaceTone.Info,
-                new WorkflowNextAction("Start Backtest", "Open the research backtest surface.", "Backtest", WorkspaceTone.Primary),
-                blocker,
-                []),
-            new WorkspaceWorkflowSummary(
-                "trading",
-                "Trading",
-                hasOperatingContext ? "Fallback trading guidance" : "Context required",
-                hasOperatingContext ? "Open the cockpit or review strategy runs." : "Trading guidance is waiting for a selected context.",
+        return ShellNavigationCatalog.Workspaces
+            .Select(workspace => new WorkspaceWorkflowSummary(
+                workspace.Id,
+                workspace.Title,
+                hasOperatingContext ? $"Fallback {workspace.Title.ToLowerInvariant()} guidance" : "Context required",
+                hasOperatingContext
+                    ? $"Open the {workspace.Title.ToLowerInvariant()} workspace home."
+                    : $"{workspace.Title} guidance is waiting for a selected context.",
                 hasOperatingContext ? WorkspaceTone.Info : WorkspaceTone.Warning,
-                new WorkflowNextAction(hasOperatingContext ? "Open Trading Shell" : "Choose Context", "Open the trading workspace home.", "TradingShell", WorkspaceTone.Primary),
-                blocker,
-                []),
-            new WorkspaceWorkflowSummary(
-                "data-operations",
-                "Data Operations",
-                "Fallback queue overview",
-                "Open providers, backfill, or storage surfaces from the workspace home.",
-                WorkspaceTone.Info,
-                new WorkflowNextAction("Open Queue Overview", "Open the data operations shell.", "DataOperationsShell", WorkspaceTone.Primary),
-                new WorkflowBlockerSummary("fallback", "Deterministic fallback", "Live data-operations posture is unavailable, so the shell is rendering stable fallback text.", WorkspaceTone.Info, false),
-                []),
-            new WorkspaceWorkflowSummary(
-                "governance",
-                "Governance",
-                hasOperatingContext ? "Fallback governance guidance" : "Context required",
-                hasOperatingContext ? "Open the governance shell to review accounting and reconciliation posture." : "Governance guidance is waiting for a selected context.",
-                hasOperatingContext ? WorkspaceTone.Info : WorkspaceTone.Warning,
-                new WorkflowNextAction(hasOperatingContext ? "Open Governance Shell" : "Choose Context", "Open the governance workspace home.", "GovernanceShell", WorkspaceTone.Primary),
-                blocker,
-                [])
-        ];
+                new WorkflowNextAction(
+                    hasOperatingContext ? $"Open {workspace.Title} Shell" : "Choose Context",
+                    $"Open the {workspace.Title.ToLowerInvariant()} workspace home.",
+                    workspace.HomePageTag,
+                    WorkspaceTone.Primary),
+                workspace.Id == "data"
+                    ? new WorkflowBlockerSummary("fallback", "Deterministic fallback", "Live data guidance is unavailable, so stable fallback text is shown.", WorkspaceTone.Info, false)
+                    : blocker,
+                []))
+            .ToArray();
     }
 
     private static bool ShouldShowPrimaryWorkflowDetail(WorkspaceWorkflowSummary? summary)
@@ -1767,4 +1807,38 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public sealed record RecentPageEntry(string PageTag, string DisplayName);
+
+    public sealed class WorkspaceTileItem : BindableBase
+    {
+        private bool _isActive;
+
+        public WorkspaceTileItem(WorkspaceShellDescriptor workspace, bool isActive)
+        {
+            WorkspaceId = workspace.Id;
+            Title = workspace.Title;
+            TileSummary = workspace.TileSummary;
+            HomePageTag = workspace.HomePageTag;
+            AutomationId = $"Workspace{workspace.Title.Replace(" ", string.Empty, StringComparison.OrdinalIgnoreCase)}Button";
+            AutomationName = $"{workspace.Title} Workspace";
+            _isActive = isActive;
+        }
+
+        public string WorkspaceId { get; }
+
+        public string Title { get; }
+
+        public string TileSummary { get; }
+
+        public string HomePageTag { get; }
+
+        public string AutomationId { get; }
+
+        public string AutomationName { get; }
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set => SetProperty(ref _isActive, value);
+        }
+    }
 }

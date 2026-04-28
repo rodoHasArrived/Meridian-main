@@ -29,7 +29,9 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     private string _totalGapsText = "0";
     private string _totalGapDurationText = "--";
     private string _repairableGapsText = "0";
+    private int _repairableGapCount;
     private bool _canRepairGaps;
+    private bool _isRepairConfirmationVisible;
 
     // ---- Comparison state ----
     private bool _isComparisonBusy;
@@ -52,8 +54,27 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
 
     public AdvancedAnalyticsViewModel(AdvancedAnalyticsServiceBase analyticsService)
     {
-        _analyticsService = analyticsService;
+        _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
+
+        RefreshAllCommand = new AsyncRelayCommand(() => RefreshAllAsync(), () => CanRefreshAll);
+        GenerateReportCommand = new AsyncRelayCommand(() => GenerateReportAsync(), () => CanGenerateReport);
+        AnalyzeGapsCommand = new AsyncRelayCommand(() => AnalyzeGapsAsync(), () => CanAnalyzeGaps);
+        RequestRepairGapsCommand = new RelayCommand(RequestRepairGaps, () => CanRequestRepairGaps);
+        ConfirmRepairGapsCommand = new AsyncRelayCommand(() => RepairGapsAsync(), () => CanConfirmRepairGaps);
+        CancelRepairGapsCommand = new RelayCommand(CancelRepairGaps, () => IsRepairConfirmationVisible);
+        CompareProvidersCommand = new AsyncRelayCommand(() => CompareProvidersAsync(), () => CanCompareProviders);
+        DismissStatusCommand = new RelayCommand(DismissStatus, () => IsStatusVisible);
     }
+
+    // ---- Commands ----
+    public IAsyncRelayCommand RefreshAllCommand { get; }
+    public IAsyncRelayCommand GenerateReportCommand { get; }
+    public IAsyncRelayCommand AnalyzeGapsCommand { get; }
+    public IRelayCommand RequestRepairGapsCommand { get; }
+    public IAsyncRelayCommand ConfirmRepairGapsCommand { get; }
+    public IRelayCommand CancelRepairGapsCommand { get; }
+    public IAsyncRelayCommand CompareProvidersCommand { get; }
+    public IRelayCommand DismissStatusCommand { get; }
 
     // ---- Collections ----
     public ObservableCollection<string> AvailableSymbols { get; } = new();
@@ -74,13 +95,27 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     public string CompareSymbol
     {
         get => _compareSymbol;
-        set => SetProperty(ref _compareSymbol, value);
+        set
+        {
+            if (SetProperty(ref _compareSymbol, value))
+            {
+                RaisePropertyChanged(nameof(CanCompareProviders));
+                RaisePropertyChanged(nameof(CompareGuidanceText));
+                CompareProvidersCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     public DateTime CompareDate
     {
         get => _compareDate;
-        set => SetProperty(ref _compareDate, value);
+        set
+        {
+            if (SetProperty(ref _compareDate, value))
+            {
+                RaisePropertyChanged(nameof(CompareGuidanceText));
+            }
+        }
     }
 
     // ---- Quality report properties ----
@@ -116,7 +151,18 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     public bool IsGapAnalysisBusy
     {
         get => _isGapAnalysisBusy;
-        private set => SetProperty(ref _isGapAnalysisBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isGapAnalysisBusy, value))
+            {
+                RaisePropertyChanged(nameof(CanAnalyzeGaps));
+                RaisePropertyChanged(nameof(CanRequestRepairGaps));
+                RaisePropertyChanged(nameof(CanConfirmRepairGaps));
+                AnalyzeGapsCommand.NotifyCanExecuteChanged();
+                RequestRepairGapsCommand.NotifyCanExecuteChanged();
+                ConfirmRepairGapsCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     public bool IsGapSummaryVisible
@@ -140,20 +186,63 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     public string RepairableGapsText
     {
         get => _repairableGapsText;
-        private set => SetProperty(ref _repairableGapsText, value);
+        private set
+        {
+            if (SetProperty(ref _repairableGapsText, value))
+            {
+                RaisePropertyChanged(nameof(RepairConfirmationDetail));
+            }
+        }
     }
 
     public bool CanRepairGaps
     {
         get => _canRepairGaps;
-        private set => SetProperty(ref _canRepairGaps, value);
+        private set
+        {
+            if (SetProperty(ref _canRepairGaps, value))
+            {
+                if (!value)
+                {
+                    IsRepairConfirmationVisible = false;
+                }
+
+                RaisePropertyChanged(nameof(CanRequestRepairGaps));
+                RaisePropertyChanged(nameof(CanConfirmRepairGaps));
+                RaisePropertyChanged(nameof(RepairConfirmationDetail));
+                RequestRepairGapsCommand.NotifyCanExecuteChanged();
+                ConfirmRepairGapsCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsRepairConfirmationVisible
+    {
+        get => _isRepairConfirmationVisible;
+        private set
+        {
+            if (SetProperty(ref _isRepairConfirmationVisible, value))
+            {
+                RaisePropertyChanged(nameof(CanConfirmRepairGaps));
+                CancelRepairGapsCommand.NotifyCanExecuteChanged();
+                ConfirmRepairGapsCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     // ---- Comparison properties ----
     public bool IsComparisonBusy
     {
         get => _isComparisonBusy;
-        private set => SetProperty(ref _isComparisonBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isComparisonBusy, value))
+            {
+                RaisePropertyChanged(nameof(CanCompareProviders));
+                RaisePropertyChanged(nameof(CompareGuidanceText));
+                CompareProvidersCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     public bool IsComparisonResultsVisible
@@ -185,14 +274,29 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     public bool IsRefreshBusy
     {
         get => _isRefreshBusy;
-        private set => SetProperty(ref _isRefreshBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isRefreshBusy, value))
+            {
+                RaisePropertyChanged(nameof(CanRefreshAll));
+                RaisePropertyChanged(nameof(CanGenerateReport));
+                RefreshAllCommand.NotifyCanExecuteChanged();
+                GenerateReportCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     // ---- InfoBar properties ----
     public bool IsStatusVisible
     {
         get => _isStatusVisible;
-        private set => SetProperty(ref _isStatusVisible, value);
+        private set
+        {
+            if (SetProperty(ref _isStatusVisible, value))
+            {
+                DismissStatusCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     public string StatusIcon
@@ -219,6 +323,54 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
         private set => SetProperty(ref _statusMessage, value);
     }
 
+    public bool CanRefreshAll => !IsRefreshBusy;
+
+    public bool CanGenerateReport => !IsRefreshBusy;
+
+    public bool CanAnalyzeGaps => !IsGapAnalysisBusy;
+
+    public bool CanRequestRepairGaps => CanRepairGaps && !IsGapAnalysisBusy;
+
+    public bool CanConfirmRepairGaps => CanRequestRepairGaps && IsRepairConfirmationVisible;
+
+    public bool CanCompareProviders => !IsComparisonBusy && !string.IsNullOrWhiteSpace(CompareSymbol);
+
+    public string CompareGuidanceText
+    {
+        get
+        {
+            if (IsComparisonBusy)
+                return "Provider comparison is running.";
+
+            var symbol = CompareSymbol.Trim();
+            if (string.IsNullOrWhiteSpace(symbol))
+                return "Enter a symbol before comparing provider consistency.";
+
+            return $"Ready to compare {symbol.ToUpperInvariant()} provider data for {CompareDate:MMM d, yyyy}.";
+        }
+    }
+
+    public string RepairConfirmationTitle => "Confirm gap repair";
+
+    public string RepairConfirmationDetail
+    {
+        get
+        {
+            if (!CanRepairGaps)
+                return "Run gap analysis first; no repairable gaps are currently selected.";
+
+            var scope = string.IsNullOrWhiteSpace(GapSymbol)
+                ? "all analyzed symbols"
+                : GapSymbol.Trim().ToUpperInvariant();
+
+            var repairableLabel = _repairableGapCount == 1
+                ? "1 repairable gap"
+                : $"{RepairableGapsText} repairable gaps";
+
+            return $"This will request alternative-provider backfill for {repairableLabel} in {scope}.";
+        }
+    }
+
     // ---- Init ----
 
     public async Task InitializeAsync(CancellationToken ct = default)
@@ -242,6 +394,12 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
         {
             IsRefreshBusy = false;
         }
+    }
+
+    public async Task GenerateReportAsync(CancellationToken ct = default)
+    {
+        await LoadQualityReportAsync(ct);
+        ShowSuccess("Quality report generated.");
     }
 
     // ---- Symbols ----
@@ -344,8 +502,10 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
                 TotalGapDurationText = FormatDuration(result.TotalGapDuration);
 
                 var repairableCount = result.Gaps.Count(g => g.IsRepairable);
+                _repairableGapCount = repairableCount;
                 RepairableGapsText = repairableCount.ToString();
                 CanRepairGaps = repairableCount > 0;
+                IsRepairConfirmationVisible = false;
 
                 GapItems.Clear();
                 foreach (var g in result.Gaps)
@@ -380,11 +540,15 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
 
     public async Task RepairGapsAsync(CancellationToken ct = default)
     {
-        if (_lastGapAnalysis == null)
+        if (_lastGapAnalysis == null || !CanRepairGaps)
+        {
+            ShowError("Repair unavailable", "Run gap analysis and select repairable gaps before starting a repair.");
             return;
+        }
 
         try
         {
+            IsRepairConfirmationVisible = false;
             var result = await _analyticsService.RepairGapsAsync(new GapRepairOptions
             {
                 UseAlternativeProviders = true
@@ -553,6 +717,16 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
     // ---- Helpers ----
 
     public void DismissStatus() => IsStatusVisible = false;
+
+    public void RequestRepairGaps()
+    {
+        if (!CanRequestRepairGaps)
+            return;
+
+        IsRepairConfirmationVisible = true;
+    }
+
+    public void CancelRepairGaps() => IsRepairConfirmationVisible = false;
 
     public void ShowSuccess(string message) =>
         SetStatus("\uE73E", Color.FromRgb(72, 187, 120), "Success", message);

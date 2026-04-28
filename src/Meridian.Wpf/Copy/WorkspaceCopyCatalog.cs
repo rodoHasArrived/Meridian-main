@@ -12,25 +12,9 @@ public sealed record WorkspaceCopyEntry(string Key, string Text);
 
 public static class WorkspaceCopyCatalog
 {
-    // Copy key convention: workspace.section.intent
-    public const string ResearchShellTitle = Research.ShellTitle;
-    public const string DataOperationsShellTitle = DataOperations.ShellTitle;
-
-    public static class Research
-    {
-        public const string WorkspaceId = "research";
-        public static readonly WorkspaceDescriptorCopy Descriptor = new(
-            WorkspaceId,
-            "Research",
-            "Backtest studio, run comparison, charts, and investigation flows.",
-            "Operate model exploration with docked run, portfolio, and promotion context.",
-            "Runs · Compare · Promote",
-            "Backtest Studio");
-
-        public const string ShellTitle = "Research Workspace";
-        public const string ShellSubtitle = "Market briefing, run studio, and promotion-aware research workflow.";
-        public const string PrimaryScopeLabel = "Research";
-    }
+    // Compatibility constants for existing XAML surfaces that still use legacy class names.
+    public const string ResearchShellTitle = Strategy.ShellTitle;
+    public const string DataOperationsShellTitle = Data.ShellTitle;
 
     public static class Trading
     {
@@ -39,8 +23,8 @@ public static class WorkspaceCopyCatalog
             WorkspaceId,
             "Trading",
             "Live readiness, order flow, execution, and risk-aware monitoring.",
-            "Operate trading workflows with explicit paper/live separation and audit reachability.",
-            "Live · Orders · Risk",
+            "Operate trading workflows with paper/live separation and audit reachability.",
+            "Live | Orders | Risk",
             "Trading Desk");
 
         public const string ShellTitle = "Trading Desk";
@@ -48,74 +32,152 @@ public static class WorkspaceCopyCatalog
         public const string PrimaryScopeLabel = "Desk";
     }
 
-    public static class DataOperations
+    public static class Portfolio
     {
-        public const string WorkspaceId = "data-operations";
+        public const string WorkspaceId = "portfolio";
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Data Operations",
-            "Providers, ingestion, storage, schedules, exports, and blocker visibility.",
-            "Operate collection queues, freshness checks, and exports from one workstation.",
-            "Providers · Storage · Jobs",
-            "Data Operations Workspace");
+            "Portfolio",
+            "Account, aggregate, fund, lending, and portfolio import review.",
+            "Review account and fund exposure with import and lending workflows nearby.",
+            "Accounts | Exposure | Import",
+            "Portfolio Workspace");
 
-        public const string ShellTitle = "Data Operations Workspace";
-        public const string ShellSubtitle = "Provider freshness, backfill pressure, storage health, and export job visibility in one fixed operator shell.";
+        public const string ShellTitle = "Portfolio Workspace";
+        public const string ShellSubtitle = "Account, aggregate, fund, lending, and import workflows for portfolio review.";
+    }
+
+    public static class Accounting
+    {
+        public const string WorkspaceId = "accounting";
+        public static readonly WorkspaceDescriptorCopy Descriptor = new(
+            WorkspaceId,
+            "Accounting",
+            "Ledger, cash, banking, reconciliation, trial balance, and audit review.",
+            "Operate accounting, reconciliation, cash, banking, and audit evidence from one area.",
+            "Ledger | Cash | Audit",
+            "Accounting Workspace");
+
+        public const string ShellTitle = "Accounting Workspace";
+        public const string ShellSubtitleNoFund = "Fund-aware accounting shell for ledger, reconciliation, trial balance, and audit readiness.";
+        public const string ShellSubtitleFund = "Review accounting, reconciliations, cash, financing, and approval gates without leaving the shell.";
+    }
+
+    public static class Reporting
+    {
+        public const string WorkspaceId = "reporting";
+        public static readonly WorkspaceDescriptorCopy Descriptor = new(
+            WorkspaceId,
+            "Reporting",
+            "Report packs, dashboards, analysis export, and reusable export presets.",
+            "Prepare reporting outputs and analysis handoffs from a focused workspace.",
+            "Packs | Dashboard | Export",
+            "Reporting Workspace");
+
+        public const string ShellTitle = "Reporting Workspace";
+        public const string ShellSubtitle = "Report packs, dashboards, and analysis export workflows.";
+    }
+
+    public static class Strategy
+    {
+        public const string WorkspaceId = "strategy";
+        public static readonly WorkspaceDescriptorCopy Descriptor = new(
+            WorkspaceId,
+            "Strategy",
+            "Backtest studio, run comparison, charts, scripting, and replay flows.",
+            "Operate model exploration with docked run, portfolio, and promotion context.",
+            "Runs | Compare | Scripts",
+            "Strategy Studio");
+
+        public const string ShellTitle = "Strategy Workspace";
+        public const string ShellSubtitle = "Market briefing, run studio, and promotion-aware strategy workflow.";
+        public const string PrimaryScopeLabel = "Strategy";
+    }
+
+    public static class Data
+    {
+        public const string WorkspaceId = "data";
+        public static readonly WorkspaceDescriptorCopy Descriptor = new(
+            WorkspaceId,
+            "Data",
+            "Providers, ingestion, storage, schedules, quality, and data products.",
+            "Operate collection queues, freshness checks, storage, and exports from one workspace.",
+            "Providers | Storage | Quality",
+            "Data Workspace");
+
+        public const string ShellTitle = "Data Workspace";
+        public const string ShellSubtitle = "Provider freshness, backfill pressure, storage health, and export job visibility in one operator shell.";
         public const string PrimaryScopeLabel = "Queue";
         public const string DefaultScopeLabel = "Provider and storage health";
         public const string DefaultScopeSummary = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
     }
 
-    public static class Governance
+    public static class Settings
     {
-        public const string WorkspaceId = "governance";
+        public const string WorkspaceId = "settings";
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Governance",
-            "Controls, diagnostics, fund operations, reconciliation, and trust-critical review.",
-            "Operate accounts, ledger, reconciliation, and audit work from a single review area.",
-            "Ledger · Audit · Controls",
-            "Governance Workspace");
+            "Settings",
+            "Preferences, credentials, diagnostics, services, alerts, help, and setup.",
+            "Manage workstation configuration, support, notifications, diagnostics, and setup.",
+            "Prefs | Health | Help",
+            "Settings Workspace");
 
-        public const string ShellTitle = "Governance Workspace";
-        public const string ShellSubtitleNoFund = "Organization-aware review shell for operations, accounting, reconciliation, reporting, and audit readiness.";
-        public const string ShellSubtitleFund = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.";
+        public const string ShellTitle = "Settings Workspace";
+        public const string ShellSubtitle = "Workstation configuration, diagnostics, support, and operator setup.";
+    }
+
+    public static class Research
+    {
+        public const string WorkspaceId = Strategy.WorkspaceId;
+        public static readonly WorkspaceDescriptorCopy Descriptor = Strategy.Descriptor;
+        public const string ShellTitle = Strategy.ShellTitle;
+        public const string ShellSubtitle = Strategy.ShellSubtitle;
+        public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;
+    }
+
+    public static class DataOperations
+    {
+        public const string WorkspaceId = Data.WorkspaceId;
+        public static readonly WorkspaceDescriptorCopy Descriptor = Data.Descriptor;
+        public const string ShellTitle = Data.ShellTitle;
+        public const string ShellSubtitle = Data.ShellSubtitle;
+        public const string PrimaryScopeLabel = Data.PrimaryScopeLabel;
+        public const string DefaultScopeLabel = Data.DefaultScopeLabel;
+        public const string DefaultScopeSummary = Data.DefaultScopeSummary;
+    }
+
+    public static class Governance
+    {
+        public const string WorkspaceId = Accounting.WorkspaceId;
+        public static readonly WorkspaceDescriptorCopy Descriptor = Accounting.Descriptor;
+        public const string ShellTitle = Accounting.ShellTitle;
+        public const string ShellSubtitleNoFund = Accounting.ShellSubtitleNoFund;
+        public const string ShellSubtitleFund = Accounting.ShellSubtitleFund;
     }
 
     public static IReadOnlyList<WorkspaceCopyEntry> Entries { get; } =
     [
-        new("research.workspace.title", Research.Descriptor.Title),
-        new("research.workspace.description", Research.Descriptor.Description),
-        new("research.workspace.summary", Research.Descriptor.Summary),
-        new("research.workspace.tile-summary", Research.Descriptor.TileSummary),
-        new("research.shell.title", Research.ShellTitle),
-        new("research.shell.subtitle", Research.ShellSubtitle),
-        new("research.shell.primary-scope-label", Research.PrimaryScopeLabel),
-
-        new("trading.workspace.title", Trading.Descriptor.Title),
-        new("trading.workspace.description", Trading.Descriptor.Description),
-        new("trading.workspace.summary", Trading.Descriptor.Summary),
-        new("trading.workspace.tile-summary", Trading.Descriptor.TileSummary),
-        new("trading.shell.title", Trading.ShellTitle),
-        new("trading.shell.subtitle", Trading.ShellSubtitle),
-        new("trading.shell.primary-scope-label", Trading.PrimaryScopeLabel),
-
-        new("data-operations.workspace.title", DataOperations.Descriptor.Title),
-        new("data-operations.workspace.description", DataOperations.Descriptor.Description),
-        new("data-operations.workspace.summary", DataOperations.Descriptor.Summary),
-        new("data-operations.workspace.tile-summary", DataOperations.Descriptor.TileSummary),
-        new("data-operations.shell.title", DataOperations.ShellTitle),
-        new("data-operations.shell.subtitle", DataOperations.ShellSubtitle),
-        new("data-operations.shell.primary-scope-label", DataOperations.PrimaryScopeLabel),
-        new("data-operations.shell.scope-default", DataOperations.DefaultScopeLabel),
-        new("data-operations.shell.scope-summary-default", DataOperations.DefaultScopeSummary),
-
-        new("governance.workspace.title", Governance.Descriptor.Title),
-        new("governance.workspace.description", Governance.Descriptor.Description),
-        new("governance.workspace.summary", Governance.Descriptor.Summary),
-        new("governance.workspace.tile-summary", Governance.Descriptor.TileSummary),
-        new("governance.shell.title", Governance.ShellTitle),
-        new("governance.shell.subtitle-no-fund", Governance.ShellSubtitleNoFund),
-        new("governance.shell.subtitle-fund", Governance.ShellSubtitleFund)
+        .. BuildEntries(Trading.WorkspaceId, Trading.Descriptor, Trading.ShellTitle, Trading.ShellSubtitle),
+        .. BuildEntries(Portfolio.WorkspaceId, Portfolio.Descriptor, Portfolio.ShellTitle, Portfolio.ShellSubtitle),
+        .. BuildEntries(Accounting.WorkspaceId, Accounting.Descriptor, Accounting.ShellTitle, Accounting.ShellSubtitleNoFund),
+        .. BuildEntries(Reporting.WorkspaceId, Reporting.Descriptor, Reporting.ShellTitle, Reporting.ShellSubtitle),
+        .. BuildEntries(Strategy.WorkspaceId, Strategy.Descriptor, Strategy.ShellTitle, Strategy.ShellSubtitle),
+        .. BuildEntries(Data.WorkspaceId, Data.Descriptor, Data.ShellTitle, Data.ShellSubtitle),
+        .. BuildEntries(Settings.WorkspaceId, Settings.Descriptor, Settings.ShellTitle, Settings.ShellSubtitle)
     ];
+
+    private static IEnumerable<WorkspaceCopyEntry> BuildEntries(
+        string keyPrefix,
+        WorkspaceDescriptorCopy descriptor,
+        string shellTitle,
+        string shellSubtitle)
+    {
+        yield return new($"{keyPrefix}.workspace.title", descriptor.Title);
+        yield return new($"{keyPrefix}.workspace.description", descriptor.Description);
+        yield return new($"{keyPrefix}.workspace.summary", descriptor.Summary);
+        yield return new($"{keyPrefix}.workspace.tile-summary", descriptor.TileSummary);
+        yield return new($"{keyPrefix}.shell.title", shellTitle);
+        yield return new($"{keyPrefix}.shell.subtitle", shellSubtitle);
+    }
 }

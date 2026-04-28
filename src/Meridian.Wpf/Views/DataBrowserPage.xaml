@@ -133,19 +133,18 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0" />
                         <ComboBox x:Name="TimePeriodCombo"
+                                  ItemsSource="{Binding TimePeriods}"
+                                  DisplayMemberPath="Label"
+                                  SelectedValuePath="Key"
+                                  SelectedValue="{Binding SelectedTimePeriodKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
                                   FontSize="13"
-                                  MinWidth="100"
-                                  VerticalAlignment="Center">
-                            <ComboBoxItem Content="1 Day" IsSelected="True" />
-                            <ComboBoxItem Content="1 Week" />
-                            <ComboBoxItem Content="1 Month" />
-                            <ComboBoxItem Content="3 Months" />
-                            <ComboBoxItem Content="1 Year" />
-                            <ComboBoxItem Content="All Time" />
-                        </ComboBox>
+                                  MinWidth="118"
+                                  VerticalAlignment="Center"
+                                  AutomationProperties.AutomationId="DataBrowserTimePeriodCombo"
+                                  AutomationProperties.Name="Data browser time period filter" />
                     </StackPanel>
                 </Border>
 
@@ -317,11 +316,14 @@
                                        VerticalAlignment="Center" />
 
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding FilteredCountText}"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        VerticalAlignment="Center"
-                                       Margin="12,0,0,0" />
+                                       Margin="12,0,0,0">
+                                <Run Text="{Binding FilteredCountText}" />
+                                <Run Text=" | " />
+                                <Run Text="{Binding TimePeriodScopeText}" />
+                            </TextBlock>
 
                             <!-- Sort selector -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,12,0">

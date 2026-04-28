@@ -11,7 +11,7 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class WorkstationWorkflowSummaryServiceTests
 {
     [Fact]
-    public async Task GetAsync_WithDegradedProviderMetrics_RoutesDataOperationsActionToProviderHealth()
+    public async Task GetAsync_WithDegradedProviderMetrics_RoutesDataActionToProviderHealth()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-workflow-summary-" + Guid.NewGuid().ToString("N"));
         var configPath = Path.Combine(root, "config", "appsettings.json");
@@ -62,7 +62,7 @@ public sealed class WorkstationWorkflowSummaryServiceTests
                 configStore: new Meridian.Application.UI.ConfigStore(configPath));
 
             var summary = await summaryService.GetAsync();
-            var dataOperationsSummary = summary.Workspaces.Single(static workspace => workspace.WorkspaceId == "data-operations");
+            var dataOperationsSummary = summary.Workspaces.Single(static workspace => workspace.WorkspaceId == "data");
 
             dataOperationsSummary.StatusLabel.Should().Be("Provider degradation detected");
             dataOperationsSummary.NextAction.Label.Should().Be("Open Provider Health");

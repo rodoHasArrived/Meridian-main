@@ -26,7 +26,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - Meridian is a .NET 9 fund-management and trading-platform codebase.
 - `src/Meridian.Wpf/` is the primary operator shell. Prefer desktop-first workflow guidance.
 - Treat `src/Meridian.Ui/` as a retained local diagnostics/API support surface, not the primary operator shell.
-- Keep top-level operator navigation to `Research`, `Trading`, `Data Operations`, and `Governance`.
+- Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - Use the narrowest validation command that covers the files changed.
 
 ## Command Discovery

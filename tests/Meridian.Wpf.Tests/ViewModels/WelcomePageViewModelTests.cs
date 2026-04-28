@@ -35,19 +35,22 @@ public sealed class WelcomePageViewModelTests : IDisposable
 
             viewModel.WorkspaceCards.Select(card => card.Title)
                 .Should()
-                .Equal("Research", "Trading", "Data Operations", "Governance");
+                .Equal("Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings");
 
             viewModel.WorkspaceCards.Select(card => card.PageTag)
                 .Should()
-                .Equal("ResearchShell", "TradingShell", "DataOperationsShell", "GovernanceShell");
+                .Equal("TradingShell", "PortfolioShell", "AccountingShell", "ReportingShell", "StrategyShell", "DataShell", "SettingsShell");
         });
     }
 
     [Theory]
-    [InlineData("ResearchShell")]
     [InlineData("TradingShell")]
-    [InlineData("DataOperationsShell")]
-    [InlineData("GovernanceShell")]
+    [InlineData("PortfolioShell")]
+    [InlineData("AccountingShell")]
+    [InlineData("ReportingShell")]
+    [InlineData("StrategyShell")]
+    [InlineData("DataShell")]
+    [InlineData("SettingsShell")]
     public void NavigateToWorkspaceCommand_NavigatesToRequestedShell(string pageTag)
     {
         WpfTestThread.Run(() =>
@@ -61,7 +64,7 @@ public sealed class WelcomePageViewModelTests : IDisposable
     }
 
     [Fact]
-    public void NavigateToDataOperationsWorkspaceCommand_NavigatesToDataOperationsShell()
+    public void NavigateToDataOperationsWorkspaceCommand_NavigatesToDataShell()
     {
         WpfTestThread.Run(() =>
         {
@@ -69,7 +72,7 @@ public sealed class WelcomePageViewModelTests : IDisposable
 
             viewModel.NavigateToDataOperationsWorkspaceCommand.Execute(null);
 
-            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataOperationsShell");
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataShell");
         });
     }
 
@@ -152,7 +155,7 @@ public sealed class WelcomePageViewModelTests : IDisposable
 
             viewModel.NextAction.ToneLabel.Should().Be("Ready for operator flow");
             viewModel.NextAction.PrimaryActionPageTag.Should().Be("TradingShell");
-            viewModel.NextAction.SecondaryActionPageTag.Should().Be("ResearchShell");
+            viewModel.NextAction.SecondaryActionPageTag.Should().Be("StrategyShell");
             viewModel.ReadinessItems.Should().ContainSingle(item =>
                 item.Title == "Storage target" && item.StatusLabel == "Custom path");
         });

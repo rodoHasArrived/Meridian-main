@@ -250,6 +250,9 @@ control and order outcomes. Each evidence row carries the audit id, category/act
 actor, scope, rationale, and any missing fields. The WPF trading shell uses the same evidence to
 populate the workflow status card, risk rail, and desk-briefing hero when control explainability is
 incomplete.
+`OrderSubmitted` audit rows require explicit rationale through the audit message or
+reason/rationale metadata; action/outcome alone is not enough to mark the `audit-controls` gate
+ready.
 
 #### Frontend promotion request
 
@@ -266,6 +269,11 @@ The promotion service now rejects approvals that omit required checklist items. 
 `Backtest -> Paper` checklist is `DK1_TRUST_PACKET_REVIEWED`, `RUN_LINEAGE_REVIEWED`,
 `PORTFOLIO_LEDGER_CONTINUITY_REVIEWED`, and `RISK_CONTROLS_REVIEWED`; `Paper -> Live` also
 requires `LIVE_OVERRIDE_REVIEWED`.
+
+The shared trading readiness lane only treats promotion history as current when the durable
+promotion record links to the latest run through `SourceRunId` or `TargetRunId`. Older promotion
+records for unrelated or prior same-strategy runs must leave the `promotion` gate in review so the
+cockpit cannot inherit stale approval evidence.
 
 Rejection uses the same operator-review packet shape through `RejectPromotionRequest`:
 

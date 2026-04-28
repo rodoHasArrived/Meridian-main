@@ -9,6 +9,14 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
 
+        script.Should().Contain("function Get-MeridianWindowFromProcess");
+        script.Should().Contain("return [System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)");
+        script.Should().Contain("Find-MeridianWindow -Process $Process");
+        script.Should().NotContain("$root.FindAll(");
+        script.Should().Contain("function Find-DescendantByAutomationId");
+        script.Should().Contain("Find-DescendantByAutomationId -Window $Window -AutomationId 'ShellAutomationState'");
+        script.Should().Contain("Find-DescendantByAutomationId -Window $Window -AutomationId 'PageTitleText'");
+        script.Should().Contain("Transient UI Automation timeouts are expected while WPF pages load");
         script.Should().Contain("function Get-ShellAutomationState");
         script.Should().Contain("function Wait-ForShellPage");
         script.Should().Contain("function Wait-ForStableShellPage");

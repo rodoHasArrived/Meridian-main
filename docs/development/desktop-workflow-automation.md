@@ -35,7 +35,7 @@ make desktop-screenshots
 ## Available Workflows
 
 | Workflow | Purpose | Output |
-|---|---|---|
+| --- | --- | --- |
 | `debug-startup` | Fast startup and diagnostics sweep for debugging | `artifacts/desktop-workflows/<timestamp>-debug-startup/` |
 | `screenshot-catalog` | Refresh the existing WPF screenshot set used by docs | `docs/screenshots/desktop/` when run through `capture-desktop-screenshots.ps1` |
 | `manual-overview` | Shell and workspace overview for operators | Included in the generated user manual |
@@ -61,6 +61,12 @@ Before any screenshot is saved, the runner now:
 3. re-queries the live shell window,
 4. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
 5. fails the step if the requested page was not actually confirmed.
+
+The runner resolves the Meridian window from the owned `Meridian.Desktop` process handle first and
+only falls back to narrow title-based UI Automation lookup. Avoid broad root-window scans in this
+script; they can time out on headless CI runners while heavy pages are loading. Descendant lookups
+for shell readiness markers are timeout-tolerant and return "not ready yet" so the existing polling
+loop can continue through transient WPF navigation delays.
 
 Each run writes:
 
@@ -99,6 +105,7 @@ For a specialized operator-facing smoke pass that validates Robinhood setup and 
 - It uses the bundled seed at `scripts/dev/fixtures/robinhood-options-smoke.seed.json` instead of relying on whatever happens to be in `%LocalAppData%\Meridian`.
 - It starts the primary desktop shell without `--page` arguments, waits for the operating context to restore, and only then uses forwarded `--page=<PageTag>` launches as a retry path.
 - Run artifacts now land under `artifacts/desktop-workflows/robinhood-options-smoke/`, including seeded session JSON, post-run workspace snapshots, screenshots, and UI automation dumps for failures.
+
 ## Adding a New Workflow
 
 Add a new entry to `scripts/dev/desktop-workflows.json`:

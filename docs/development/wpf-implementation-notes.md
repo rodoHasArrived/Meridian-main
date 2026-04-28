@@ -90,6 +90,16 @@ Content Frame
 
 **Aggregate Portfolio position readiness** — `AggregatePortfolioPage` now replaces the blank desk-level positions grid with view-model-owned guidance for first load, active refresh, unavailable aggregate endpoints, and loaded snapshots with no netted positions. `AggregatePortfolioViewModel` owns the empty-state copy and grid visibility while reusing the existing aggregate/exposure endpoints, refresh command, and polling timer.
 
+**Portfolio Import action readiness** — `PortfolioImportPage` now binds file, index, and manual-entry actions to `PortfolioImportViewModel` commands instead of page click handlers. The view model owns import readiness copy, command enablement, and manual symbol counts so invalid file/manual actions are disabled before service calls start, while the view stays focused on layout and rendering.
+
+**Advanced Analytics action readiness** — `AdvancedAnalyticsPage` now binds refresh, report generation, gap analysis, repair confirmation, provider comparison, and status dismissal to `AdvancedAnalyticsViewModel` commands. The view model owns comparison readiness copy and the inline repair-confirmation state from the already-loaded gap analysis result, so repair no longer depends on a page-level `MessageBox` and no new service calls, timers, or persistence writes are introduced.
+
+**Analysis Export action readiness** — `AnalysisExportPage` now binds export launch and preset save actions to `AnalysisExportViewModel` commands instead of page click handlers. The view model owns required-field, metric-selection, symbol-scope, date-scope, and recent-export presentation state so invalid exports are disabled with inline guidance before an operator queues work, without adding service calls, timers, or persistence writes.
+
+**Data Export quick-export readiness** — `DataExportPage` now shows a compact readiness strip before the Quick Export controls. `DataExportViewModel` owns export command enablement, selected-symbol count, date-scope copy, format/compression guidance, validation recovery, and progress state so invalid quick exports are disabled before an operator queues work, without adding service calls, timers, or persistence writes.
+
+**Time Series Alignment action readiness** — `TimeSeriesAlignmentPage` now binds alignment setup, symbol chips, preset application, validation, run progress, results, and recent alignment history through `TimeSeriesAlignmentViewModel`. The view model owns command enablement and inline readiness copy for missing symbols, dates, or selected fields, then maps the bound setup into the existing `TimeSeriesAlignmentService` request without adding backend behavior, polling, or persistence writes.
+
 **Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 
 **Fund Ledger reconciliation calibration posture** — `FundReconciliationWorkbenchService` now loads `GET /api/workstation/reconciliation/calibration-summary` through `IWorkstationReconciliationApiClient` while it loads the break queue. `FundLedgerViewModel` projects the returned status, pending sign-off count, missing metadata count, and tolerance-profile rollups into `FundLedgerPage` so governance operators can see calibration blockers before resolving or signing off reconciliation work. Use the focused `FundLedgerViewModelTests` and `FundReconciliationWorkbenchServiceTests` filters when changing this surface.
@@ -116,7 +126,7 @@ Content Frame
 
 **Data Quality symbol search recovery** — `DataQualityPage` now distinguishes an empty monitored-symbol library from a symbol-filter search miss. The `Quality by Symbol` panel shows the active filter scope, search-miss copy, and a `Clear Filter` recovery action backed by `DataQualityViewModel` in-memory filtering, so operators can recover without refreshing or leaving the page.
 
-**Data Browser filter recovery** — `DataBrowserPage` now refreshes its retained market-data window as search, data-type, venue, and date filters change. Filter misses render a bound empty-state panel with `Reset Filters`, backed by `DataBrowserViewModel.ResetFiltersCommand`, so operators can recover hidden rows without leaving the page or issuing another backend request.
+**Data Browser filter recovery** — `DataBrowserPage` now refreshes its retained market-data window as search, data-type, venue, time-period, and date filters change. `DataBrowserViewModel` owns the time-period options, selected period, derived date range, scope copy, and `Reset Filters` command, so operators can scope the retained rows from the toolbar and recover hidden rows without leaving the page or issuing another backend request.
 
 **Storage preview scope strip** — `StoragePage` now annotates the live file-structure preview with a bound scope strip that shows the selected root, naming convention, and compression mode. `StorageViewModel.RefreshPreview()` normalizes relative Windows and POSIX-style preview roots, updates the sample tree, and exposes automation IDs for the preview scope, guidance, tree, estimate, and selector controls without adding another storage scan or persistence write.
 
@@ -399,18 +409,20 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ## Workspace Shells
 
-Research and Trading workspace shells remain lightweight presenter pages that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages. Data Operations now uses a service-backed projection layer that folds provider, backfill, storage, session, notification, and export-job telemetry into a single operator shell.
+The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy and Trading shells keep presentation state in view models backed by WPF-scoped presentation services; their pages handle WPF lifecycle, docking, tone resources, and navigation forwarding. Data uses a service-backed projection layer that folds provider, backfill, storage, session, notification, and export-job telemetry into a single operator shell.
 
 Shell implementation now shares descriptor-driven infrastructure:
 
 - `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
 - `WorkspaceShellViewModelBase` carries shell command state
 - `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes
-- `ShellNavigationCatalog.Workspaces.cs` is the source of truth for default panes and preset layouts across `Research`, `Trading`, `Data Operations`, and `Governance`
+- `ShellNavigationCatalog.Workspaces.cs` is the source of truth for default panes and preset layouts across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`
 
 ### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
 
-**Purpose**: Single-page landing for the Research workspace. Shows the current research-cycle handoff, recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
+**Purpose**: Single-page landing for the Strategy workspace. Shows the current strategy-cycle handoff, recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser. `ResearchShell` remains a hidden compatibility alias for this page.
+
+`ResearchWorkspaceShellViewModel` owns the shell's loading/error state, KPI text, desk-briefing hero, workflow blocker/evidence, active-run summary, briefing collections, command group, and action requests. `ResearchWorkspaceShellPresentationService` composes the existing run workspace, research briefing, watchlist, fund/operating context, shell context, workflow summary, and optional promotion services into immutable UI state without adding backend behavior. `ResearchWorkspaceShellPage.xaml.cs` stays limited to lifecycle, AvalonDock pane hosting, tone resource application, and forwarding view-model action requests to `NavigationService` or `OpenWorkspacePage`.
 
 **Design zones**:
 

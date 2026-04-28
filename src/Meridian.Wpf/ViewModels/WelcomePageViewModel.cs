@@ -90,7 +90,7 @@ public sealed class WelcomePageViewModel : BindableBase
         NavigateToProviderCommand = new RelayCommand(() => _navigationService.NavigateTo("Provider"));
         NavigateToSymbolsCommand = new RelayCommand(() => _navigationService.NavigateTo("Symbols"));
         NavigateToStorageCommand = new RelayCommand(() => _navigationService.NavigateTo("Storage"));
-        NavigateToDataOperationsWorkspaceCommand = new RelayCommand(() => _navigationService.NavigateTo("DataOperationsShell"));
+        NavigateToDataOperationsWorkspaceCommand = new RelayCommand(() => _navigationService.NavigateTo("DataShell"));
         NavigateToDataQualityCommand = new RelayCommand(() => _navigationService.NavigateTo("DataQuality"));
         OpenDocumentationCommand = new RelayCommand(OpenDocumentation);
 
@@ -239,15 +239,6 @@ public sealed class WelcomePageViewModel : BindableBase
     private static IReadOnlyList<WelcomeWorkspaceCard> CreateWorkspaceCards() =>
     [
         CreateWorkspaceCard(
-            WorkspaceCopyCatalog.Research.Descriptor,
-            "ResearchShell",
-            "\uEC35",
-            "Open Studio",
-            "InfoColorBrush",
-            "ConsoleAccentBlueAlpha10Brush",
-            Brushes.DodgerBlue,
-            new SolidColorBrush(Color.FromArgb(0x33, 0x2D, 0x9C, 0xDB))),
-        CreateWorkspaceCard(
             WorkspaceCopyCatalog.Trading.Descriptor,
             "TradingShell",
             "\uE945",
@@ -257,8 +248,44 @@ public sealed class WelcomePageViewModel : BindableBase
             Brushes.LimeGreen,
             new SolidColorBrush(Color.FromArgb(0x33, 0x2D, 0xD4, 0xA4))),
         CreateWorkspaceCard(
-            WorkspaceCopyCatalog.DataOperations.Descriptor,
-            "DataOperationsShell",
+            WorkspaceCopyCatalog.Portfolio.Descriptor,
+            "PortfolioShell",
+            "\uE8EC",
+            "Open Portfolio",
+            "InfoColorBrush",
+            "ConsoleAccentBlueAlpha10Brush",
+            Brushes.DodgerBlue,
+            new SolidColorBrush(Color.FromArgb(0x33, 0x2D, 0x9C, 0xDB))),
+        CreateWorkspaceCard(
+            WorkspaceCopyCatalog.Accounting.Descriptor,
+            "AccountingShell",
+            "\uE9D2",
+            "Open Ledger",
+            "AccentPurpleBrush",
+            "ConsoleAccentPurpleAlpha10Brush",
+            Brushes.MediumPurple,
+            new SolidColorBrush(Color.FromArgb(0x33, 0x9B, 0x7C, 0xFF))),
+        CreateWorkspaceCard(
+            WorkspaceCopyCatalog.Reporting.Descriptor,
+            "ReportingShell",
+            "\uE9F9",
+            "Open Reports",
+            "InfoColorBrush",
+            "ConsoleAccentBlueAlpha10Brush",
+            Brushes.SteelBlue,
+            new SolidColorBrush(Color.FromArgb(0x33, 0x2D, 0x9C, 0xDB))),
+        CreateWorkspaceCard(
+            WorkspaceCopyCatalog.Strategy.Descriptor,
+            "StrategyShell",
+            "\uEC35",
+            "Open Studio",
+            "InfoColorBrush",
+            "ConsoleAccentBlueAlpha10Brush",
+            Brushes.DodgerBlue,
+            new SolidColorBrush(Color.FromArgb(0x33, 0x2D, 0x9C, 0xDB))),
+        CreateWorkspaceCard(
+            WorkspaceCopyCatalog.Data.Descriptor,
+            "DataShell",
             "\uEE94",
             "Open Workspace",
             "WarningColorBrush",
@@ -266,10 +293,10 @@ public sealed class WelcomePageViewModel : BindableBase
             Brushes.DarkOrange,
             new SolidColorBrush(Color.FromArgb(0x33, 0xF6, 0xB4, 0x4B))),
         CreateWorkspaceCard(
-            WorkspaceCopyCatalog.Governance.Descriptor,
-            "GovernanceShell",
+            WorkspaceCopyCatalog.Settings.Descriptor,
+            "SettingsShell",
             "\uE8D7",
-            "Open Review",
+            "Open Settings",
             "AccentPurpleBrush",
             "ConsoleAccentPurpleAlpha10Brush",
             Brushes.MediumPurple,
@@ -285,10 +312,10 @@ public sealed class WelcomePageViewModel : BindableBase
 
         return new WelcomeNextAction(
             "Setup gap",
-            "Finish setup in Data Operations",
+            "Finish setup in Data",
             "The desktop landing page starts in setup mode until connection, symbol coverage, and storage posture are known.",
-            "Open Data Operations",
-            "DataOperationsShell",
+            "Open Data",
+            "DataShell",
             "Open Provider",
             "Provider",
             accentBrush,
@@ -417,8 +444,8 @@ public sealed class WelcomePageViewModel : BindableBase
                 "Reconnect the workstation host or verify provider settings before moving into live desk, queue, or freshness workflows.",
                 "Open Provider",
                 "Provider",
-                "Open Data Operations",
-                "DataOperationsShell",
+                "Open Data",
+                "DataShell",
                 dangerBrush,
                 dangerBackgroundBrush);
         }
@@ -431,8 +458,8 @@ public sealed class WelcomePageViewModel : BindableBase
                 "Connectivity is healthy, but no subscriptions are configured yet. Seed symbols before running collection or quality review.",
                 "Add Symbols",
                 "Symbols",
-                "Open Data Operations",
-                "DataOperationsShell",
+                "Open Data",
+                "DataShell",
                 warningBrush,
                 warningBackgroundBrush);
         }
@@ -445,8 +472,8 @@ public sealed class WelcomePageViewModel : BindableBase
                 $"The desktop is usable, but storage still resolves to the default target at {storagePath}. Confirm retention and export posture before broader runs.",
                 "Open Storage",
                 "Storage",
-                "Open Data Operations",
-                "DataOperationsShell",
+                "Open Data",
+                "DataShell",
                 warningBrush,
                 warningBackgroundBrush);
         }
@@ -457,8 +484,8 @@ public sealed class WelcomePageViewModel : BindableBase
             "Connection, symbols, and storage are all in place. Move into the shell that owns the next operator decision instead of staying on the landing page.",
             "Open Trading Desk",
             "TradingShell",
-            "Open Research Workspace",
-            "ResearchShell",
+            "Open Strategy Workspace",
+            "StrategyShell",
             successBrush,
             successBackgroundBrush);
     }

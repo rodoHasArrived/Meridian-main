@@ -47,7 +47,7 @@ The solution currently includes these major areas:
 The primary runnable project. Supports multiple modes via `--mode <mode>`:
 
 | Mode / flag | What runs |
-|---|---|
+| --- | --- |
 | `--mode desktop` | Collector + desktop-local API host on `http://localhost:8080` |
 | `--mode headless` | Collector only, no HTTP server |
 | `--backfill` | Historical data backfill (combine with `--backfill-provider`, `--backfill-symbols`, `--backfill-from`, `--backfill-to`) |
@@ -128,6 +128,8 @@ Build safety note:
   `bin/obj` folders. `buildctl.py` prunes stale isolated output directories older than 14 days
   before isolated builds; use `--isolation-retention-days <days>` to tune that window or `0` to
   disable it for a run.
+- Keep the F# test project's transitive `xunit.v3` runtime pin aligned with
+  `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
 
 ## Planning Source of Truth
 
@@ -142,7 +144,7 @@ Use these documents together when planning or implementing new work:
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
 - [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes
 <!-- readme-tree start -->
-```
+```text
 .
 ├── .artifacts
 │   └── link-repair-report.md

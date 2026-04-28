@@ -187,7 +187,7 @@ public sealed class NavigationServiceTests : IDisposable
     [InlineData("LeanIntegration")]
     [InlineData("PortfolioImport")]
     [InlineData("TradingHours")]
-    public void IsPageRegistered_TradingWorkflowPages_ShouldReturnTrue(string pageTag)
+    public void IsPageRegistered_WorkflowPages_ShouldReturnTrue(string pageTag)
     {
         // Arrange
         var service = NavigationService.Instance;
@@ -196,7 +196,7 @@ public sealed class NavigationServiceTests : IDisposable
         var isRegistered = service.IsPageRegistered(pageTag);
 
         // Assert
-        isRegistered.Should().BeTrue($"trading workflow page '{pageTag}' must be registered so it is reachable from primary navigation");
+        isRegistered.Should().BeTrue($"workflow page '{pageTag}' must be registered so it is reachable from primary navigation");
     }
 
     [Theory]
@@ -207,7 +207,7 @@ public sealed class NavigationServiceTests : IDisposable
     [InlineData("StrategyRuns")]
     [InlineData("OrderBook")]
     [InlineData("Watchlist")]
-    public void IsPageRegistered_ResearchSectionPages_ShouldReturnTrue(string pageTag)
+    public void IsPageRegistered_StrategySectionPages_ShouldReturnTrue(string pageTag)
     {
         // Arrange
         var service = NavigationService.Instance;
@@ -216,7 +216,7 @@ public sealed class NavigationServiceTests : IDisposable
         var isRegistered = service.IsPageRegistered(pageTag);
 
         // Assert
-        isRegistered.Should().BeTrue($"research section page '{pageTag}' must be registered and reachable");
+        isRegistered.Should().BeTrue($"strategy section page '{pageTag}' must be registered and reachable");
     }
 
     [Theory]
@@ -227,7 +227,7 @@ public sealed class NavigationServiceTests : IDisposable
     [InlineData("Storage")]
     [InlineData("DataExport")]
     [InlineData("PackageManager")]
-    public void IsPageRegistered_DataOpsSectionPages_ShouldReturnTrue(string pageTag)
+    public void IsPageRegistered_DataSectionPages_ShouldReturnTrue(string pageTag)
     {
         // Arrange
         var service = NavigationService.Instance;
@@ -236,7 +236,7 @@ public sealed class NavigationServiceTests : IDisposable
         var isRegistered = service.IsPageRegistered(pageTag);
 
         // Assert
-        isRegistered.Should().BeTrue($"data ops section page '{pageTag}' must be registered and reachable");
+        isRegistered.Should().BeTrue($"data section page '{pageTag}' must be registered and reachable");
     }
 
     [Theory]
@@ -245,7 +245,7 @@ public sealed class NavigationServiceTests : IDisposable
     [InlineData("Diagnostics")]
     [InlineData("Settings")]
     [InlineData("AdminMaintenance")]
-    public void IsPageRegistered_GovernanceSectionPages_ShouldReturnTrue(string pageTag)
+    public void IsPageRegistered_SettingsSectionPages_ShouldReturnTrue(string pageTag)
     {
         // Arrange
         var service = NavigationService.Instance;
@@ -254,7 +254,7 @@ public sealed class NavigationServiceTests : IDisposable
         var isRegistered = service.IsPageRegistered(pageTag);
 
         // Assert
-        isRegistered.Should().BeTrue($"governance section page '{pageTag}' must be registered and reachable");
+        isRegistered.Should().BeTrue($"settings section page '{pageTag}' must be registered and reachable");
     }
 
     [Fact]
@@ -279,7 +279,10 @@ public sealed class NavigationServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("ResearchWorkspace", "ResearchShell")]
+    [InlineData("ResearchWorkspace", "StrategyShell")]
+    [InlineData("ResearchShell", "StrategyShell")]
+    [InlineData("DataOperationsShell", "DataShell")]
+    [InlineData("GovernanceShell", "AccountingShell")]
     [InlineData("BacktestStudio", "Backtest")]
     [InlineData("RunBrowser", "StrategyRuns")]
     [InlineData("TradingWorkspace", "TradingShell")]

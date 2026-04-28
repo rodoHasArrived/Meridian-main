@@ -18,14 +18,4 @@ public partial class AnalysisExportPage : Page
     {
         _viewModel.Initialize();
     }
-
-    private void RunExport_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.RunExport();
-    }
-
-    private void SavePreset_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.SavePreset();
-    }
 }

@@ -56,8 +56,8 @@ public sealed class WorkspaceDeepPageChromeTests
     }
 
     [Theory]
-    [InlineData("ProviderHealth", "Provider Health", "Data Operations")]
-    [InlineData("Diagnostics", "Diagnostics", "Governance")]
+    [InlineData("ProviderHealth", "Provider health", "Data")]
+    [InlineData("Diagnostics", "Diagnostics", "Settings")]
     public void WorkspaceDeepPageHostPage_ShouldKeepStandaloneChromeCompactAtReviewViewport(
         string pageTag,
         string expectedTitle,

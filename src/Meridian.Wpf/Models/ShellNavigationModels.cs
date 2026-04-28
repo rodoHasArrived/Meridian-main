@@ -47,6 +47,11 @@ public sealed record WorkspaceShellDefinition(
     Type? StateProviderType = null,
     Type? ViewModelType = null);
 
+public sealed record WorkspaceCapabilityDescriptor(
+    WorkspaceShellDescriptor Workspace,
+    WorkspaceShellDefinition ShellDefinition,
+    IReadOnlyList<ShellPageDescriptor> Pages);
+
 public sealed record ShellPageDescriptor(
     string PageTag,
     Type PageType,

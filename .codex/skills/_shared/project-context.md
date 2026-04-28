@@ -13,15 +13,16 @@ repeating the same facts in every `SKILL.md`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one cohesive operator
-  experience across `Research`, `Trading`, `Data Operations`, and `Governance`.
+  experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+  `Settings`.
 - `src/Meridian.Wpf/` is the primary operator shell. `src/Meridian.Ui.Services/` and
   `src/Meridian.Ui.Shared/` provide the shared desktop-facing API and service layers that support
   the local workstation experience.
 - `src/Meridian.Ui/` still exists as a supporting web/API surface, but new operator workflow
   guidance should optimize for the desktop shell first.
-- Keep top-level operator navigation to four workspaces. Fund-operations, banking, portfolio, and
-  ledger expansions should appear as `Governance` routes, tabs, aliases, or command-palette
-  entries rather than brand-new root workspaces.
+- Keep top-level operator navigation to seven workspaces: `Trading`, `Portfolio`, `Accounting`,
+  `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
+  `Governance` names remain compatibility aliases, not visible root workspaces.
 
 ## Planning Anchors
 

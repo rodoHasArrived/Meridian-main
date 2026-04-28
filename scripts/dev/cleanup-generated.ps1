@@ -110,16 +110,77 @@ function New-Candidate {
     }
 }
 
+function Add-GeneratedArtifactChildren {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepoRoot,
+
+        [Parameter(Mandatory)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory)]
+        [string]$Reason
+    )
+
+    $artifactRoot = Join-Path $RepoRoot $RelativePath
+    if (-not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+        return
+    }
+
+    Get-ChildItem -LiteralPath $artifactRoot -Directory -Force -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            $Candidates.Add((New-Candidate -Path $_.FullName -Reason $Reason))
+        }
+}
+
+function Test-GeneratedArtifactContainer {
+    param(
+        [Parameter(Mandatory)]
+        [string]$RepoRoot,
+
+        [Parameter(Mandatory)]
+        [string]$FullPath
+    )
+
+    $relativePath = (Get-RelativeRepoPath -RepoRoot $RepoRoot -FullPath $FullPath) -replace '\\', '/'
+    return $relativePath -in @('artifacts/bin', 'artifacts/obj', 'artifacts/publish')
+}
+
 $repoRoot = Get-RepoRoot
 Set-Location -LiteralPath $repoRoot
 
 $candidateDirectories = New-Object System.Collections.Generic.List[object]
 
 Get-ChildItem -LiteralPath $repoRoot -Recurse -Directory -Force -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -in @('bin', 'obj', 'TestResults', 'BenchmarkDotNet.Artifacts') } |
+    Where-Object {
+        $_.Name -in @('bin', 'obj', 'TestResults', 'BenchmarkDotNet.Artifacts') -and
+        -not (Test-GeneratedArtifactContainer -RepoRoot $repoRoot -FullPath $_.FullName)
+    } |
     ForEach-Object {
         $candidateDirectories.Add((New-Candidate -Path $_.FullName -Reason "Generated .NET build/test output"))
     }
+
+Add-GeneratedArtifactChildren `
+    -Candidates $candidateDirectories `
+    -RepoRoot $repoRoot `
+    -RelativePath 'artifacts/bin' `
+    -Reason "Isolated MSBuild output"
+
+Add-GeneratedArtifactChildren `
+    -Candidates $candidateDirectories `
+    -RepoRoot $repoRoot `
+    -RelativePath 'artifacts/obj' `
+    -Reason "Isolated MSBuild intermediate output"
+
+Add-GeneratedArtifactChildren `
+    -Candidates $candidateDirectories `
+    -RepoRoot $repoRoot `
+    -RelativePath 'artifacts/publish' `
+    -Reason "Generated publish output"
 
 if ($IncludeTemp) {
     foreach ($name in @('temp')) {
@@ -241,6 +302,11 @@ Write-Host ""
 Write-Host "Deleting generated directories..."
 
 foreach ($entry in $removable) {
+    if (-not (Test-Path -LiteralPath $entry.Path -PathType Container)) {
+        Write-Host ("Skipped missing {0}" -f $entry.Path)
+        continue
+    }
+
     Remove-Item -LiteralPath $entry.Path -Recurse -Force
     Write-Host ("Deleted {0}" -f $entry.Path)
 }

@@ -18,6 +18,8 @@ namespace Meridian.Wpf.Tests.Support;
 
 internal sealed class MainPageUiAutomationFacade : IDisposable
 {
+    private static readonly Size TestViewport = new(1440, 960);
+
     private readonly string _runMatRootDirectory;
     private readonly ServiceProvider _serviceProvider;
     private bool _disposed;
@@ -51,6 +53,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
         Page = _serviceProvider.GetRequiredService<MainPage>();
         Page.ApplyTemplate();
+        MeasureAndArrangePage();
         UpdateLayout();
         RunMatUiAutomationFacade.InvokeMainPageLoaded(Page);
         UpdateLayout();
@@ -82,13 +85,25 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public ListBox RelatedWorkflowNavList => GetRequired<ListBox>("RelatedWorkflowNavList");
 
-    public Button ResearchWorkspaceButton => GetRequired<Button>("ResearchWorkspaceButton");
+    public Button StrategyWorkspaceButton => FindByAutomationId<Button>("WorkspaceStrategyButton");
 
-    public Button TradingWorkspaceButton => GetRequired<Button>("TradingWorkspaceButton");
+    public Button ResearchWorkspaceButton => StrategyWorkspaceButton;
 
-    public Button DataOperationsWorkspaceButton => GetRequired<Button>("DataOperationsWorkspaceButton");
+    public Button TradingWorkspaceButton => FindByAutomationId<Button>("WorkspaceTradingButton");
 
-    public Button GovernanceWorkspaceButton => GetRequired<Button>("GovernanceWorkspaceButton");
+    public Button PortfolioWorkspaceButton => FindByAutomationId<Button>("WorkspacePortfolioButton");
+
+    public Button AccountingWorkspaceButton => FindByAutomationId<Button>("WorkspaceAccountingButton");
+
+    public Button ReportingWorkspaceButton => FindByAutomationId<Button>("WorkspaceReportingButton");
+
+    public Button DataWorkspaceButton => FindByAutomationId<Button>("WorkspaceDataButton");
+
+    public Button DataOperationsWorkspaceButton => DataWorkspaceButton;
+
+    public Button SettingsWorkspaceButton => FindByAutomationId<Button>("WorkspaceSettingsButton");
+
+    public Button GovernanceWorkspaceButton => AccountingWorkspaceButton;
 
     public TextBlock RecentPagesEmptyText => GetRequired<TextBlock>("RecentPagesEmptyText");
 
@@ -355,6 +370,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
         for (var attempt = 0; attempt < 4; attempt++)
         {
+            MeasureAndArrangePage();
             Page.UpdateLayout();
             RunMatUiAutomationFacade.DrainDispatcher();
 
@@ -369,8 +385,17 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     private void FlushUi()
     {
+        MeasureAndArrangePage();
         Page.UpdateLayout();
         RunMatUiAutomationFacade.DrainDispatcher();
+    }
+
+    private void MeasureAndArrangePage()
+    {
+        Page.Width = TestViewport.Width;
+        Page.Height = TestViewport.Height;
+        Page.Measure(TestViewport);
+        Page.Arrange(new Rect(TestViewport));
     }
 
     private void EnsureNavigationBridge()

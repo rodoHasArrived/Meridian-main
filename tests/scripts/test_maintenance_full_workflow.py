@@ -5,6 +5,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAINTENANCE_SCRIPT = REPO_ROOT / "scripts" / "ai" / "maintenance-full.sh"
 FSHARP_TEST_PROJECT = REPO_ROOT / "tests" / "Meridian.FSharp.Tests" / "Meridian.FSharp.Tests.fsproj"
+CENTRAL_PACKAGES = REPO_ROOT / "Directory.Packages.props"
 
 
 class MaintenanceFullWorkflowTests(unittest.TestCase):
@@ -12,6 +13,7 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.script = MAINTENANCE_SCRIPT.read_text(encoding="utf-8")
         cls.fsharp_project = FSHARP_TEST_PROJECT.read_text(encoding="utf-8")
+        cls.central_packages = CENTRAL_PACKAGES.read_text(encoding="utf-8")
 
     def test_full_maintenance_does_not_apply_category_filter_to_entire_solution(self) -> None:
         self.assertNotIn("dotnet test Meridian.sln", self.script)
@@ -34,6 +36,11 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
         self.assertIn('<PackageReference Include="coverlet.collector">', self.fsharp_project)
         self.assertIn("<PrivateAssets>all</PrivateAssets>", self.fsharp_project)
         self.assertIn("<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>", self.fsharp_project)
+
+    def test_fsharp_xunit_v3_runtime_matches_visual_studio_adapter_line(self) -> None:
+        self.assertIn('<PackageVersion Include="xunit.v3" Version="3.2.2" />', self.central_packages)
+        self.assertIn('<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />', self.central_packages)
+        self.assertIn("<GenerateProgramFile>false</GenerateProgramFile>", self.fsharp_project)
 
 
 if __name__ == "__main__":

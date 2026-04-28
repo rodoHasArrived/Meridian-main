@@ -32,8 +32,7 @@
                     </StackPanel>
                 </StackPanel>
 
-                <Button Grid.Column="1" Click="Refresh_Click" Style="{StaticResource SecondaryButtonStyle}"
-                        IsEnabled="{Binding IsRefreshBusy, Converter={StaticResource InvertBool}}">
+                <Button Grid.Column="1" Command="{Binding RefreshAllCommand}" Style="{StaticResource SecondaryButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE72C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center" />
                         <TextBlock Text="Refresh All" VerticalAlignment="Center" />
@@ -58,7 +57,7 @@
                         <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <Button Grid.Column="2" Content="&#xE711;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                            Click="CloseInfoBar_Click" Background="Transparent" BorderThickness="0" Padding="8"
+                            Command="{Binding DismissStatusCommand}" Background="Transparent" BorderThickness="0" Padding="8"
                             Foreground="{StaticResource ConsoleTextMutedBrush}" />
                 </Grid>
             </Border>
@@ -148,14 +147,43 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
-                            <Button Content="Analyze Gaps" Click="AnalyzeGaps_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                            <Button Content="Repair Gaps" Click="RepairGaps_Click"
-                                    Style="{StaticResource GhostButtonStyle}" IsEnabled="{Binding CanRepairGaps}" />
+                            <Button Content="Analyze Gaps" Command="{Binding AnalyzeGapsCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                            <Button Content="Repair Gaps" Command="{Binding RequestRepairGapsCommand}"
+                                    Style="{StaticResource GhostButtonStyle}" />
                         </StackPanel>
                     </Grid>
 
                     <ProgressBar IsIndeterminate="True" Margin="0,0,0,16"
                                  Visibility="{Binding IsGapAnalysisBusy, Converter={StaticResource BoolToVisibility}}" />
+
+                    <Border AutomationProperties.Name="Advanced analytics repair confirmation"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource WarningColorBrush}" BorderThickness="1"
+                            CornerRadius="12" Padding="16" Margin="0,0,0,16"
+                            Visibility="{Binding IsRepairConfirmationVisible, Converter={StaticResource BoolToVisibility}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="20" Foreground="{StaticResource WarningColorBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding RepairConfirmationTitle}"
+                                           FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" />
+                                <TextBlock Text="{Binding RepairConfirmationDetail}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                                <Button Content="Cancel" Command="{Binding CancelRepairGapsCommand}"
+                                        Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                                <Button Content="Run Repair" Command="{Binding ConfirmRepairGapsCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
                     <Border Background="{StaticResource PremiumPanelBrush}"
                             BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
@@ -241,9 +269,14 @@
                                      Background="{StaticResource ConsoleBackgroundBrush}" Foreground="{StaticResource ConsoleTextBrush}" />
                             <DatePicker Margin="0,0,8,0"
                                         SelectedDate="{Binding CompareDate, Mode=TwoWay}" />
-                            <Button Content="Compare" Click="CompareProviders_Click" Style="{StaticResource SecondaryButtonStyle}" />
+                            <Button Content="Compare" Command="{Binding CompareProvidersCommand}" Style="{StaticResource SecondaryButtonStyle}" />
                         </StackPanel>
                     </Grid>
+
+                    <TextBlock AutomationProperties.Name="Advanced analytics comparison guidance"
+                               Text="{Binding CompareGuidanceText}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap"
+                               Margin="0,0,0,12" />
 
                     <ProgressBar IsIndeterminate="True" Margin="0,0,0,16"
                                  Visibility="{Binding IsComparisonBusy, Converter={StaticResource BoolToVisibility}}" />
@@ -415,7 +448,7 @@
                             <TextBlock Text="Symbol Quality Report" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <Button Grid.Column="1" Content="Generate Full Report" Click="GenerateReport_Click" Style="{StaticResource ConsoleButtonStyle}" />
+                        <Button Grid.Column="1" Content="Generate Full Report" Command="{Binding GenerateReportCommand}" Style="{StaticResource ConsoleButtonStyle}" />
                     </Grid>
 
                     <ListView ItemsSource="{Binding SymbolQualityItems}" MaxHeight="300" Background="Transparent" BorderThickness="0">

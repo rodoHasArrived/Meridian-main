@@ -58,7 +58,7 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ShowCommandPalette();
             facade.CommandPaletteResults.Items.Count.Should().BeGreaterThan(2);
-            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("ResearchShell");
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("StrategyShell");
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.TryHandleCommandPaletteDirectionalKey(Key.Down).Should().BeTrue();
 
@@ -67,7 +67,7 @@ public sealed class MainPageUiWorkflowTests
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.TryHandleCommandPaletteDirectionalKey(Key.Up).Should().BeTrue();
 
-            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("ResearchShell");
+            facade.ViewModel.SelectedCommandPalettePage?.PageTag.Should().Be("StrategyShell");
             facade.CommandPaletteResults.SelectedItem.Should().BeSameAs(facade.ViewModel.SelectedCommandPalettePage);
             facade.CommandPaletteTextBox.Text.Should().BeEmpty();
             facade.CommandPaletteSummaryText.Text.Should().Contain("pages across all workspaces");
@@ -123,37 +123,46 @@ public sealed class MainPageUiWorkflowTests
         {
             using var facade = new MainPageUiAutomationFacade();
 
-            AutomationProperties.GetAutomationId(facade.ResearchWorkspaceButton).Should().Be("WorkspaceResearchButton");
             AutomationProperties.GetAutomationId(facade.TradingWorkspaceButton).Should().Be("WorkspaceTradingButton");
-            AutomationProperties.GetAutomationId(facade.DataOperationsWorkspaceButton).Should().Be("WorkspaceDataOperationsButton");
-            AutomationProperties.GetAutomationId(facade.GovernanceWorkspaceButton).Should().Be("WorkspaceGovernanceButton");
+            AutomationProperties.GetAutomationId(facade.PortfolioWorkspaceButton).Should().Be("WorkspacePortfolioButton");
+            AutomationProperties.GetAutomationId(facade.AccountingWorkspaceButton).Should().Be("WorkspaceAccountingButton");
+            AutomationProperties.GetAutomationId(facade.ReportingWorkspaceButton).Should().Be("WorkspaceReportingButton");
+            AutomationProperties.GetAutomationId(facade.StrategyWorkspaceButton).Should().Be("WorkspaceStrategyButton");
+            AutomationProperties.GetAutomationId(facade.DataWorkspaceButton).Should().Be("WorkspaceDataButton");
+            AutomationProperties.GetAutomationId(facade.SettingsWorkspaceButton).Should().Be("WorkspaceSettingsButton");
 
-            facade.ResearchWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
             facade.TradingWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
-            facade.DataOperationsWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
-            facade.GovernanceWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.PortfolioWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.AccountingWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.ReportingWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.StrategyWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.DataWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.SettingsWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
 
-            ShellNavigationCatalog.GetWorkspace("research")?.HomePageTag.Should().Be("ResearchShell");
             ShellNavigationCatalog.GetWorkspace("trading")?.HomePageTag.Should().Be("TradingShell");
-            ShellNavigationCatalog.GetWorkspace("data-operations")?.HomePageTag.Should().Be("DataOperationsShell");
-            ShellNavigationCatalog.GetWorkspace("governance")?.HomePageTag.Should().Be("GovernanceShell");
+            ShellNavigationCatalog.GetWorkspace("portfolio")?.HomePageTag.Should().Be("PortfolioShell");
+            ShellNavigationCatalog.GetWorkspace("accounting")?.HomePageTag.Should().Be("AccountingShell");
+            ShellNavigationCatalog.GetWorkspace("reporting")?.HomePageTag.Should().Be("ReportingShell");
+            ShellNavigationCatalog.GetWorkspace("strategy")?.HomePageTag.Should().Be("StrategyShell");
+            ShellNavigationCatalog.GetWorkspace("data")?.HomePageTag.Should().Be("DataShell");
+            ShellNavigationCatalog.GetWorkspace("settings")?.HomePageTag.Should().Be("SettingsShell");
         });
     }
 
     [Fact]
-    public void MainPage_WorkspacePrimaryNavigationSelection_ShouldNavigateToSecurityMaster()
+    public void MainPage_WorkspaceSecondaryNavigationSelection_ShouldNavigateToSecurityMaster()
     {
         WpfTestThread.Run(() =>
         {
             using var facade = new MainPageUiAutomationFacade();
 
-            facade.Click(facade.GovernanceWorkspaceButton);
-            facade.SelectWorkspaceNavigationPage(facade.WorkspacePrimaryNavList, "SecurityMaster");
+            facade.Click(facade.DataWorkspaceButton);
+            facade.SelectWorkspaceNavigationPage(facade.WorkspaceSecondaryNavList, "SecurityMaster");
 
             facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
             facade.ShellAutomationStateText.Text.Should().Be("SecurityMaster");
-            facade.PageTitleText.Text.Should().Be("Security Master");
-            facade.WorkspacePrimaryNavList.SelectedValue.Should().Be("SecurityMaster");
+            facade.PageTitleText.Text.Should().Be("Security master");
+            facade.WorkspaceSecondaryNavList.SelectedValue.Should().Be("SecurityMaster");
         });
     }
 
@@ -164,12 +173,12 @@ public sealed class MainPageUiWorkflowTests
         {
             using var facade = new MainPageUiAutomationFacade();
 
-            facade.Click(facade.GovernanceWorkspaceButton);
-            facade.SelectWorkspaceNavigationPage(facade.WorkspacePrimaryNavList, "SecurityMaster");
-            facade.ClearWorkspaceNavigationSelection(facade.WorkspacePrimaryNavList);
+            facade.Click(facade.DataWorkspaceButton);
+            facade.SelectWorkspaceNavigationPage(facade.WorkspaceSecondaryNavList, "SecurityMaster");
+            facade.ClearWorkspaceNavigationSelection(facade.WorkspaceSecondaryNavList);
 
             facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
-            facade.PageTitleText.Text.Should().Be("Security Master");
+            facade.PageTitleText.Text.Should().Be("Security master");
         });
     }
 
@@ -312,17 +321,17 @@ public sealed class MainPageUiWorkflowTests
             using var facade = new MainPageUiAutomationFacade();
 
             facade.OpenCommandPalettePage("Backtest");
-            facade.Click(facade.GovernanceWorkspaceButton);
-            facade.SelectWorkspaceNavigationPage(facade.WorkspacePrimaryNavList, "SecurityMaster");
+            facade.Click(facade.DataWorkspaceButton);
+            facade.SelectWorkspaceNavigationPage(facade.WorkspaceSecondaryNavList, "SecurityMaster");
 
-            facade.ViewModel.CurrentWorkspace.Should().Be("governance");
-            facade.RecentPagesSummaryText.Text.Should().Be("1 recent governance workflow");
-            facade.ViewModel.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
+            facade.ViewModel.CurrentWorkspace.Should().Be("data");
+            facade.RecentPagesSummaryText.Text.Should().Be("1 recent data workflow");
+            facade.ViewModel.RecentPages.Select(page => page.PageTag).Should().Equal("DataShell");
 
-            facade.Click(facade.ResearchWorkspaceButton);
+            facade.Click(facade.StrategyWorkspaceButton);
 
-            facade.ViewModel.CurrentWorkspace.Should().Be("research");
-            facade.RecentPagesSummaryText.Text.Should().Be("1 recent research workflow");
+            facade.ViewModel.CurrentWorkspace.Should().Be("strategy");
+            facade.RecentPagesSummaryText.Text.Should().Be("1 recent strategy workflow");
             facade.ViewModel.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
         });
     }
@@ -335,23 +344,25 @@ public sealed class MainPageUiWorkflowTests
             var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-workflow-{Guid.NewGuid():N}.json"));
             using var facade = new MainPageUiAutomationFacade(fundContextService);
 
+            facade.ViewModel.RefreshPageCommand.Execute(null);
             await WaitForConditionAsync(() =>
                 facade.ViewModel.PrimaryWorkflowSummary is not null &&
-                facade.ViewModel.SecondaryWorkflowSummaries.Count == 3).ConfigureAwait(true);
+                facade.ViewModel.SecondaryWorkflowSummaries.Count == 6,
+                timeoutMs: 10000).ConfigureAwait(true);
 
             facade.Click(facade.TradingWorkspaceButton);
             await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
 
             facade.WorkflowSummaryStrip.Visibility.Should().Be(Visibility.Visible);
-            facade.ViewModel.WorkflowSummaries.Should().HaveCount(4);
+            facade.ViewModel.WorkflowSummaries.Should().HaveCount(7);
             facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
             facade.ViewModel.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("trading");
-            facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(3);
+            facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
             facade.ViewModel.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
             facade.PrimaryWorkflowActionButton.Content.Should().Be("Choose Context");
 
             facade.Click(facade.SecondaryWorkflowToggleButton);
-            facade.WorkflowSummaryItemsControl.Items.Count.Should().Be(3);
+            facade.WorkflowSummaryItemsControl.Items.Count.Should().Be(6);
 
             await fundContextService.UpsertProfileAsync(new FundProfileDetail(
                 FundProfileId: "alpha-fund",
@@ -367,7 +378,7 @@ public sealed class MainPageUiWorkflowTests
                 facade.ViewModel.PrimaryWorkflowSummary?.NextAction.Label == "Open Strategy Runs").ConfigureAwait(true);
 
             facade.ViewModel.PrimaryWorkflowSummary!.NextAction.Label.Should().Be("Open Strategy Runs");
-            facade.ViewModel.SecondaryWorkflowSummaries.Single(summary => summary.WorkspaceId == "governance").NextAction.Label.Should().Be("Open Governance Shell");
+            facade.ViewModel.SecondaryWorkflowSummaries.Single(summary => summary.WorkspaceId == "accounting").NextAction.Label.Should().Be("Open Accounting Shell");
         });
     }
 
@@ -378,7 +389,7 @@ public sealed class MainPageUiWorkflowTests
         {
             using var facade = new MainPageUiAutomationFacade();
 
-            await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary is not null).ConfigureAwait(true);
+            RunMatUiAutomationFacade.DrainDispatcher();
             facade.ViewModel.IsWorkspaceHomePageActive.Should().BeTrue();
             facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
             facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
@@ -387,10 +398,10 @@ public sealed class MainPageUiWorkflowTests
 
             await WaitForConditionAsync(() =>
                 facade.ViewModel.ShellContextVisibility == Visibility.Visible &&
-                string.Equals(facade.WorkspaceContextTitleText.Text, "Security Master", StringComparison.Ordinal)).ConfigureAwait(true);
+                string.Equals(facade.WorkspaceContextTitleText.Text, "Security master", StringComparison.Ordinal)).ConfigureAwait(true);
 
             facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Visible);
-            facade.WorkspaceContextTitleText.Text.Should().Be("Security Master");
+            facade.WorkspaceContextTitleText.Text.Should().Be("Security master");
             facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
             facade.WorkspaceContextAttentionBanner.Visibility.Should().Be(Visibility.Visible);
             facade.WorkspaceContextAttentionTitleText.Text.Should().NotBeNullOrWhiteSpace();
@@ -449,8 +460,10 @@ public sealed class MainPageUiWorkflowTests
                 operatorInboxClient.RequestCount > previousRequestCount &&
                 operatorInboxClient.LastFundAccountId == accountId).ConfigureAwait(true);
             await WaitForConditionAsync(() =>
-                facade.ViewModel.OperatorInboxReviewCount == 1 &&
-                facade.ViewModel.OperatorInboxTargetText == "AccountPortfolio").ConfigureAwait(true);
+                facade.ViewModel.OperatorInboxReviewCount == 1,
+                timeoutMs: 15000).ConfigureAwait(true);
+
+            facade.ViewModel.OperatorInboxTargetText.Should().Be("AccountPortfolio");
 
             facade.ViewModel.OperatorInboxButtonText.Should().Be("Queue (1)");
             facade.OperatorInboxButtonLabelText.Text.Should().Be("Queue (1)");
@@ -463,17 +476,17 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_GovernanceDeepLink_ShouldAnnounceWorkbenchTarget()
+    public void MainPage_AccountingDeepLink_ShouldAnnounceWorkbenchTarget()
     {
         WpfTestThread.Run(async () =>
         {
-            var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-governance-{Guid.NewGuid():N}.json"));
+            var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-accounting-{Guid.NewGuid():N}.json"));
             await fundContextService.UpsertProfileAsync(new FundProfileDetail(
                 FundProfileId: "alpha-fund",
                 DisplayName: "Alpha Fund",
                 LegalEntityName: "Alpha Fund LP",
                 BaseCurrency: "USD",
-                DefaultWorkspaceId: "governance",
+                DefaultWorkspaceId: "accounting",
                 DefaultLandingPageTag: "FundLedger",
                 DefaultLedgerScope: FundLedgerScope.Consolidated)).ConfigureAwait(true);
             await fundContextService.SelectFundProfileAsync("alpha-fund").ConfigureAwait(true);

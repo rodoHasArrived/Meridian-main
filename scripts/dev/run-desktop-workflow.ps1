@@ -79,25 +79,56 @@ function Get-ConfigBool {
     return $Fallback
 }
 
-function Find-MeridianWindow {
-    $root = [System.Windows.Automation.AutomationElement]::RootElement
-    $all = $root.FindAll(
-        [System.Windows.Automation.TreeScope]::Children,
-        [System.Windows.Automation.Condition]::TrueCondition
+function Get-MeridianWindowFromProcess {
+    param(
+        [System.Diagnostics.Process]$Process
     )
 
-    foreach ($window in $all) {
-        try {
-            if ($window.Current.Name -match 'Meridian') {
-                return $window
-            }
+    if ($null -eq $Process -or $Process.HasExited) {
+        return $null
+    }
+
+    try {
+        $Process.Refresh()
+        if ($Process.MainWindowHandle -ne [System.IntPtr]::Zero) {
+            return [System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)
         }
-        catch {
-            # Ignore transient UIA failures while windows are initializing.
-        }
+    }
+    catch {
+        # Ignore transient process/window state while WPF is navigating or starting.
     }
 
     return $null
+}
+
+function Find-MeridianWindow {
+    param(
+        [System.Diagnostics.Process]$Process
+    )
+
+    $processWindow = Get-MeridianWindowFromProcess -Process $Process
+    if ($null -ne $processWindow) {
+        return $processWindow
+    }
+
+    foreach ($candidateProcess in @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)) {
+        $processWindow = Get-MeridianWindowFromProcess -Process $candidateProcess
+        if ($null -ne $processWindow) {
+            return $processWindow
+        }
+    }
+
+    try {
+        $root = [System.Windows.Automation.AutomationElement]::RootElement
+        $nameCondition = New-Object System.Windows.Automation.PropertyCondition(
+            [System.Windows.Automation.AutomationElement]::NameProperty,
+            'Meridian')
+
+        return $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $nameCondition)
+    }
+    catch {
+        return $null
+    }
 }
 
 function Activate-MeridianWindow {
@@ -157,7 +188,7 @@ function Wait-MeridianWindow {
             throw "Meridian desktop exited before a window was detected (exit code $($Process.ExitCode))."
         }
 
-        $window = Find-MeridianWindow
+        $window = Find-MeridianWindow -Process $Process
         if ($null -ne $window) {
             return $window
         }
@@ -166,23 +197,37 @@ function Wait-MeridianWindow {
     throw "Meridian window did not appear within $TimeoutSec seconds."
 }
 
+function Find-DescendantByAutomationId {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window,
+
+        [Parameter(Mandatory = $true)]
+        [string]$AutomationId
+    )
+
+    $condition = New-Object System.Windows.Automation.PropertyCondition(
+        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+        $AutomationId
+    )
+
+    try {
+        return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+    }
+    catch {
+        # Transient UI Automation timeouts are expected while WPF pages load; callers poll until deadline.
+        return $null
+    }
+}
+
 function Get-ShellAutomationState {
     param(
         [Parameter(Mandatory = $true)]
         [System.Windows.Automation.AutomationElement]$Window
     )
 
-    $shellAutomationCond = New-Object System.Windows.Automation.PropertyCondition(
-        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
-        'ShellAutomationState'
-    )
-    $pageTitleCond = New-Object System.Windows.Automation.PropertyCondition(
-        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
-        'PageTitleText'
-    )
-
-    $shellAutomation = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $shellAutomationCond)
-    $pageTitle = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $pageTitleCond)
+    $shellAutomation = Find-DescendantByAutomationId -Window $Window -AutomationId 'ShellAutomationState'
+    $pageTitle = Find-DescendantByAutomationId -Window $Window -AutomationId 'PageTitleText'
 
     return [pscustomobject]@{
         Ready = ($null -ne $shellAutomation) -or ($null -ne $pageTitle)
@@ -200,12 +245,7 @@ function Find-AutomationElementById {
         [string]$AutomationId
     )
 
-    $condition = New-Object System.Windows.Automation.PropertyCondition(
-        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
-        $AutomationId
-    )
-
-    return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+    return Find-DescendantByAutomationId -Window $Window -AutomationId $AutomationId
 }
 
 function Find-ButtonByName {
@@ -321,7 +361,7 @@ function Ensure-EnteredOperatingContext {
             throw "Meridian desktop exited before operating context could be confirmed."
         }
 
-        $currentWindow = Find-MeridianWindow
+        $currentWindow = Find-MeridianWindow -Process $Process
         if ($null -eq $currentWindow) {
             return $null
         }
@@ -342,7 +382,7 @@ function Ensure-EnteredOperatingContext {
             throw "Meridian desktop exited before operating context could be selected."
         }
 
-        $currentWindow = Find-MeridianWindow
+        $currentWindow = Find-MeridianWindow -Process $Process
         if ($null -eq $currentWindow) {
             return $null
         }
@@ -352,7 +392,7 @@ function Ensure-EnteredOperatingContext {
 
     if ($enterButton -and -not (Test-AutomationElementEnabled -Element $enterButton)) {
         $seedButton = Wait-ForElement -Attempts 5 -DelayMilliseconds 250 -Finder {
-            $currentWindow = Find-MeridianWindow
+            $currentWindow = Find-MeridianWindow -Process $Process
             if ($null -eq $currentWindow) {
                 return $null
             }
@@ -367,7 +407,7 @@ function Ensure-EnteredOperatingContext {
         }
 
         $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
-            $currentWindow = Find-MeridianWindow
+            $currentWindow = Find-MeridianWindow -Process $Process
             if ($null -eq $currentWindow) {
                 return $null
             }
@@ -396,7 +436,7 @@ function Ensure-EnteredOperatingContext {
             throw "Meridian desktop exited before the workstation shell appeared."
         }
 
-        $currentWindow = Find-MeridianWindow
+        $currentWindow = Find-MeridianWindow -Process $Process
         if ($null -eq $currentWindow) {
             return $null
         }

@@ -537,232 +537,43 @@
                             <TextBlock Text="Workspaces"
                                        Style="{StaticResource SidebarShellSectionLabelStyle}"
                                        Margin="4,0,0,4"/>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <Button x:Name="ResearchWorkspaceButton"
-                                        Grid.Row="0" Grid.Column="0"
-                                        Command="{Binding NavigateToPageCommand}"
-                                        CommandParameter="ResearchShell"
-                                        Margin="0,0,4,4"
-                                        AutomationProperties.AutomationId="WorkspaceResearchButton"
-                                        AutomationProperties.Name="Research Workspace">
-                                    <Button.ToolTip>
-                                        <ToolTip Placement="Right"
-                                                 HasDropShadow="False">
-                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
-                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8"
-                                                    Padding="12">
-                                                <StackPanel>
-                                                    <TextBlock Text="Shared workflow groups"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Home"
-                                                               Margin="0,8,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Active Work"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Review / Alerts"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Support"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                </StackPanel>
-                                            </Border>
-                                        </ToolTip>
-                                    </Button.ToolTip>
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsResearchWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
-                                                    <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                    <StackPanel>
-                                        <TextBlock Text="Research" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Studio · Compare"
-                                                   Margin="0,2,0,0" FontSize="10"
-                                                   Opacity="0.75" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button x:Name="TradingWorkspaceButton"
-                                        Grid.Row="0" Grid.Column="1"
-                                        Command="{Binding NavigateToPageCommand}"
-                                        CommandParameter="TradingShell"
-                                        Margin="4,0,0,4"
-                                        AutomationProperties.AutomationId="WorkspaceTradingButton"
-                                        AutomationProperties.Name="Trading Workspace">
-                                    <Button.ToolTip>
-                                        <ToolTip Placement="Right"
-                                                 HasDropShadow="False">
-                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
-                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8"
-                                                    Padding="12">
-                                                <StackPanel>
-                                                    <TextBlock Text="Shared workflow groups"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Home"
-                                                               Margin="0,8,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Active Work"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Review / Alerts"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Support"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                </StackPanel>
-                                            </Border>
-                                        </ToolTip>
-                                    </Button.ToolTip>
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsTradingWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
-                                                    <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                    <StackPanel>
-                                        <TextBlock Text="Trading" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Live · Orders · Risk"
-                                                   Margin="0,2,0,0" FontSize="10"
-                                                   Opacity="0.75" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button x:Name="DataOperationsWorkspaceButton"
-                                        Grid.Row="1" Grid.Column="0"
-                                        Command="{Binding NavigateToPageCommand}"
-                                        CommandParameter="DataOperationsShell"
-                                        Margin="0,0,4,0"
-                                        AutomationProperties.AutomationId="WorkspaceDataOperationsButton"
-                                        AutomationProperties.Name="Data Operations Workspace">
-                                    <Button.ToolTip>
-                                        <ToolTip Placement="Right"
-                                                 HasDropShadow="False">
-                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
-                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8"
-                                                    Padding="12">
-                                                <StackPanel>
-                                                    <TextBlock Text="Shared workflow groups"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Home"
-                                                               Margin="0,8,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Active Work"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Review / Alerts"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Support"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                </StackPanel>
-                                            </Border>
-                                        </ToolTip>
-                                    </Button.ToolTip>
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsDataOperationsWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
-                                                    <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                    <StackPanel>
-                                        <TextBlock Text="Data Ops" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Providers · Jobs"
-                                                   Margin="0,2,0,0" FontSize="10"
-                                                   Opacity="0.75" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button x:Name="GovernanceWorkspaceButton"
-                                        Grid.Row="1" Grid.Column="1"
-                                        Command="{Binding NavigateToPageCommand}"
-                                        CommandParameter="GovernanceShell"
-                                        Margin="4,0,0,0"
-                                        AutomationProperties.AutomationId="WorkspaceGovernanceButton"
-                                        AutomationProperties.Name="Governance Workspace">
-                                    <Button.ToolTip>
-                                        <ToolTip Placement="Right"
-                                                 HasDropShadow="False">
-                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
-                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8"
-                                                    Padding="12">
-                                                <StackPanel>
-                                                    <TextBlock Text="Shared workflow groups"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Home"
-                                                               Margin="0,8,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Active Work"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Review / Alerts"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                    <TextBlock Text="Support"
-                                                               Margin="0,2,0,0"
-                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
-                                                </StackPanel>
-                                            </Border>
-                                        </ToolTip>
-                                    </Button.ToolTip>
-                                    <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsGovernanceWorkspaceActive}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
-                                                    <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                    <StackPanel>
-                                        <TextBlock Text="Governance" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Ledger · Audit · Controls"
-                                                   Margin="0,2,0,0" FontSize="10"
-                                                   Opacity="0.75" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Button>
-                            </Grid>
+                            <ItemsControl ItemsSource="{Binding WorkspaceTiles}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Width="94"
+                                                MinHeight="68"
+                                                Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding HomePageTag}"
+                                                Margin="0,0,4,4"
+                                                AutomationProperties.AutomationId="{Binding AutomationId}"
+                                                AutomationProperties.Name="{Binding AutomationName}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                                            <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
+                                                            <Setter Property="BorderThickness" Value="1" />
+                                                            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding TileSummary}"
+                                                           Margin="0,2,0,0" FontSize="10"
+                                                           Opacity="0.75" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </Border>
 

@@ -73,7 +73,6 @@ public sealed class WorkstationWorkflowSummaryService
 
         var workspaces = new WorkspaceWorkflowSummary[]
         {
-            BuildResearchSummary(candidateForPaper, activeResearchRun, researchCandidateSnapshot, researchRuns),
             BuildTradingSummary(
                 contextSelected,
                 candidateForPaper,
@@ -82,8 +81,12 @@ public sealed class WorkstationWorkflowSummaryService
                 tradingActiveSnapshot,
                 researchCandidateSnapshot,
                 relevantRuns),
-            BuildDataOperationsSummary(),
-            BuildGovernanceSummary(contextSelected, candidateForLive, latestGovernedRun, governanceSnapshot, governedRuns)
+            BuildPortfolioSummary(contextSelected),
+            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, governanceSnapshot, governedRuns),
+            BuildReportingSummary(contextSelected),
+            BuildStrategySummary(candidateForPaper, activeResearchRun, researchCandidateSnapshot, researchRuns),
+            BuildDataSummary(),
+            BuildSettingsSummary()
         };
 
         return new OperatorWorkflowHomeSummary(
@@ -98,7 +101,7 @@ public sealed class WorkstationWorkflowSummaryService
             Workspaces: workspaces);
     }
 
-    private WorkspaceWorkflowSummary BuildResearchSummary(
+    private WorkspaceWorkflowSummary BuildStrategySummary(
         StrategyRunSummary? candidateForPaper,
         StrategyRunSummary? activeResearchRun,
         WorkflowRunSnapshot? candidateSnapshot,
@@ -107,20 +110,20 @@ public sealed class WorkstationWorkflowSummaryService
         if (candidateForPaper is not null)
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "research",
-                WorkspaceTitle: "Research",
+                WorkspaceId: "strategy",
+                WorkspaceTitle: "Strategy",
                 StatusLabel: "Candidate for paper review",
                 StatusDetail: $"{candidateForPaper.StrategyName} is promotion-ready and should hand off into Trading review.",
                 StatusTone: "Warning",
                 NextAction: new WorkflowNextAction(
                     Label: "Send to Trading Review",
-                    Detail: "Open the trading workspace with the research handoff in view.",
+                    Detail: "Open the trading workspace with the strategy handoff in view.",
                     TargetPageTag: "TradingShell",
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "promotion-handoff",
                     label: "Trading review pending",
-                    detail: candidateForPaper.Promotion?.Reason ?? "Completed research runs still need an operator paper-review decision.",
+                    detail: candidateForPaper.Promotion?.Reason ?? "Completed strategy runs still need an operator paper-review decision.",
                     tone: "Warning",
                     isBlocking: true),
                 Evidence: BuildRunEvidence(candidateForPaper, candidateSnapshot));
@@ -129,20 +132,20 @@ public sealed class WorkstationWorkflowSummaryService
         if (activeResearchRun is not null)
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "research",
-                WorkspaceTitle: "Research",
-                StatusLabel: "Review active research run",
+                WorkspaceId: "strategy",
+                WorkspaceTitle: "Strategy",
+                StatusLabel: "Review active strategy run",
                 StatusDetail: $"{activeResearchRun.StrategyName} is still in motion and needs operator review before promotion can begin.",
                 StatusTone: "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Run",
-                    Detail: "Inspect active research evidence, metrics, and continuity.",
+                    Detail: "Inspect active strategy evidence, metrics, and continuity.",
                     TargetPageTag: "StrategyRuns",
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "run-in-progress",
                     label: activeResearchRun.Status == StrategyRunStatus.Paused ? "Run paused" : "Run still executing",
-                    detail: "Promotion review waits until the current research run is inspected or completed.",
+                    detail: "Promotion review waits until the current strategy run is inspected or completed.",
                     tone: "Info",
                     isBlocking: false),
                 Evidence:
@@ -154,24 +157,24 @@ public sealed class WorkstationWorkflowSummaryService
         }
 
         return new WorkspaceWorkflowSummary(
-            WorkspaceId: "research",
-            WorkspaceTitle: "Research",
-            StatusLabel: researchRuns.Count == 0 ? "Ready for a new research cycle" : "No review queue",
+            WorkspaceId: "strategy",
+            WorkspaceTitle: "Strategy",
+            StatusLabel: researchRuns.Count == 0 ? "Ready for a new strategy cycle" : "No review queue",
             StatusDetail: researchRuns.Count == 0
                 ? "No recorded backtests are available yet."
-                : "Recorded runs are available, but none currently require research handoff review.",
+                : "Recorded runs are available, but none currently require strategy handoff review.",
             StatusTone: "Success",
             NextAction: new WorkflowNextAction(
                 Label: "Start Backtest",
-                Detail: "Launch a new simulation from the research workspace.",
+                Detail: "Launch a new simulation from the strategy workspace.",
                 TargetPageTag: "Backtest",
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
-                code: researchRuns.Count == 0 ? "no-runs" : "no-research-review",
-                label: researchRuns.Count == 0 ? "No research runs recorded" : "No active research blocker",
+                code: researchRuns.Count == 0 ? "no-runs" : "no-strategy-review",
+                label: researchRuns.Count == 0 ? "No strategy runs recorded" : "No active strategy blocker",
                 detail: researchRuns.Count == 0
                     ? "Record the first backtest to create a review and promotion queue."
-                    : "Research can start a fresh run without a blocking handoff.",
+                    : "Strategy can start a fresh run without a blocking handoff.",
                 tone: researchRuns.Count == 0 ? "Neutral" : "Success",
                 isBlocking: researchRuns.Count == 0),
             Evidence:
@@ -221,11 +224,11 @@ public sealed class WorkstationWorkflowSummaryService
                 WorkspaceId: "trading",
                 WorkspaceTitle: "Trading",
                 StatusLabel: "Candidate awaiting paper review",
-                StatusDetail: $"{candidateForPaper.StrategyName} has cleared Research and is ready for a paper-trading review decision.",
+                StatusDetail: $"{candidateForPaper.StrategyName} has cleared Strategy and is ready for a paper-trading review decision.",
                 StatusTone: "Warning",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Candidate for Paper",
-                    Detail: "Open the trading cockpit to continue the Research to Trading handoff.",
+                    Detail: "Open the trading cockpit to continue the Strategy to Trading handoff.",
                     TargetPageTag: "TradingShell",
                     Tone: "Primary"),
                 PrimaryBlocker: BuildTradingBlocker(candidateForPaper, candidateResearchSnapshot),
@@ -238,7 +241,7 @@ public sealed class WorkstationWorkflowSummaryService
                 WorkspaceId: "trading",
                 WorkspaceTitle: "Trading",
                 StatusLabel: activeTradingRun.Mode == StrategyRunMode.Live ? "Active live cockpit" : "Active paper cockpit",
-                StatusDetail: $"{activeTradingRun.StrategyName} is active. Continue execution review and keep the governance handoff visible.",
+                StatusDetail: $"{activeTradingRun.StrategyName} is active. Continue execution review and keep the accounting handoff visible.",
                 StatusTone: activeTradingRun.Mode == StrategyRunMode.Live ? "Danger" : "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Open Active Cockpit",
@@ -254,18 +257,18 @@ public sealed class WorkstationWorkflowSummaryService
             return new WorkspaceWorkflowSummary(
                 WorkspaceId: "trading",
                 WorkspaceTitle: "Trading",
-                StatusLabel: "Candidate awaiting governance/live review",
-                StatusDetail: $"{candidateForLive.StrategyName} has completed paper trading and is waiting for governance review before live escalation.",
+                StatusLabel: "Candidate awaiting accounting/live review",
+                StatusDetail: $"{candidateForLive.StrategyName} has completed paper trading and is waiting for accounting review before live escalation.",
                 StatusTone: "Warning",
                 NextAction: new WorkflowNextAction(
-                    Label: "Open Governance Review",
-                    Detail: "Move the handoff forward into Governance.",
-                    TargetPageTag: "GovernanceShell",
+                    Label: "Open Accounting Review",
+                    Detail: "Move the handoff forward into Accounting.",
+                    TargetPageTag: "AccountingShell",
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
-                    code: "governance-review",
-                    label: "Governance review pending",
-                    detail: candidateForLive.Promotion?.Reason ?? "Paper runs still require governance review before a live decision.",
+                    code: "accounting-review",
+                    label: "Accounting review pending",
+                    detail: candidateForLive.Promotion?.Reason ?? "Paper runs still require accounting review before a live decision.",
                     tone: "Warning",
                     isBlocking: true),
                 Evidence:
@@ -299,7 +302,36 @@ public sealed class WorkstationWorkflowSummaryService
             ]);
     }
 
-    private WorkspaceWorkflowSummary BuildDataOperationsSummary()
+    private WorkspaceWorkflowSummary BuildPortfolioSummary(bool hasOperatingContext)
+    {
+        return new WorkspaceWorkflowSummary(
+            WorkspaceId: "portfolio",
+            WorkspaceTitle: "Portfolio",
+            StatusLabel: hasOperatingContext ? "Portfolio review available" : "Context recommended",
+            StatusDetail: hasOperatingContext
+                ? "Portfolio, account, fund, and import workflows are available for the active context."
+                : "Select an operating context before treating portfolio exposure and account review as complete.",
+            StatusTone: hasOperatingContext ? "Success" : "Neutral",
+            NextAction: new WorkflowNextAction(
+                Label: hasOperatingContext ? "Open Portfolio" : "Choose Context",
+                Detail: "Open portfolio review, accounts, and fund exposure workflows.",
+                TargetPageTag: "PortfolioShell",
+                Tone: "Primary"),
+            PrimaryBlocker: CreateBlocker(
+                code: hasOperatingContext ? "portfolio-ready" : "portfolio-context",
+                label: hasOperatingContext ? "No active portfolio blocker" : "No operating context selected",
+                detail: hasOperatingContext
+                    ? "Portfolio workflows are ready for review."
+                    : "Portfolio review is more useful once a fund or account context is selected.",
+                tone: hasOperatingContext ? "Success" : "Neutral",
+                isBlocking: false),
+            Evidence:
+            [
+                new WorkflowEvidenceBadge("Context", hasOperatingContext ? "Selected" : "Optional", hasOperatingContext ? "Success" : "Neutral")
+            ]);
+    }
+
+    private WorkspaceWorkflowSummary BuildDataSummary()
     {
         var providerMetrics = _configStore?.TryLoadProviderMetrics();
         if (providerMetrics is { Providers.Length: > 0 })
@@ -308,8 +340,8 @@ public sealed class WorkstationWorkflowSummaryService
             if (degradedProviders > 0)
             {
                 return new WorkspaceWorkflowSummary(
-                    WorkspaceId: "data-operations",
-                    WorkspaceTitle: "Data Operations",
+                    WorkspaceId: "data",
+                    WorkspaceTitle: "Data",
                     StatusLabel: "Provider degradation detected",
                     StatusDetail: $"{degradedProviders} provider connection(s) are degraded and should be reviewed before downstream workflows rely on the feed.",
                     StatusTone: "Warning",
@@ -336,8 +368,8 @@ public sealed class WorkstationWorkflowSummaryService
         if (backfill is not null && !backfill.Success)
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "data-operations",
-                WorkspaceTitle: "Data Operations",
+                WorkspaceId: "data",
+                WorkspaceTitle: "Data",
                 StatusLabel: "Backfill queue requires review",
                 StatusDetail: $"The latest backfill job for {backfill.Provider} did not complete successfully.",
                 StatusTone: "Warning",
@@ -360,19 +392,19 @@ public sealed class WorkstationWorkflowSummaryService
         }
 
         return new WorkspaceWorkflowSummary(
-            WorkspaceId: "data-operations",
-            WorkspaceTitle: "Data Operations",
+            WorkspaceId: "data",
+            WorkspaceTitle: "Data",
             StatusLabel: "Healthy queue overview",
             StatusDetail: "Providers and queue surfaces are available for normal operations review.",
             StatusTone: "Success",
             NextAction: new WorkflowNextAction(
                 Label: "Open Queue Overview",
                 Detail: "Inspect providers, storage, and backfill posture from the workspace home.",
-                TargetPageTag: "DataOperationsShell",
+                TargetPageTag: "DataShell",
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
-                code: "no-data-ops-blocker",
-                label: "No active data-operations blocker",
+                code: "no-data-blocker",
+                label: "No active data blocker",
                 detail: "The workstation does not currently show provider or backfill pressure.",
                 tone: "Success",
                 isBlocking: false),
@@ -382,7 +414,7 @@ public sealed class WorkstationWorkflowSummaryService
             ]);
     }
 
-    private WorkspaceWorkflowSummary BuildGovernanceSummary(
+    private WorkspaceWorkflowSummary BuildAccountingSummary(
         bool hasOperatingContext,
         StrategyRunSummary? candidateForLive,
         StrategyRunSummary? latestGovernedRun,
@@ -392,25 +424,25 @@ public sealed class WorkstationWorkflowSummaryService
         if (!hasOperatingContext)
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "governance",
-                WorkspaceTitle: "Governance",
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
                 StatusLabel: "Context required",
-                StatusDetail: "Governance queues stay locked until a fund-linked operating context is selected.",
+                StatusDetail: "Accounting queues stay locked until a fund-linked operating context is selected.",
                 StatusTone: "Warning",
                 NextAction: new WorkflowNextAction(
                     Label: "Choose Context",
-                    Detail: "Open the governance shell and unlock the lane summary.",
-                    TargetPageTag: "GovernanceShell",
+                    Detail: "Open the accounting shell and unlock the lane summary.",
+                    TargetPageTag: "AccountingShell",
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "choose-context",
                     label: "No operating context selected",
-                    detail: "Accounting, reconciliation, reporting, and audit review all scope to the active context.",
+                    detail: "Accounting, reconciliation, cash, banking, and audit review all scope to the active context.",
                     tone: "Warning",
                     isBlocking: true),
                 Evidence:
                 [
-                    new WorkflowEvidenceBadge("Governed runs", governedRuns.Count.ToString(), "Neutral")
+                    new WorkflowEvidenceBadge("Accounting runs", governedRuns.Count.ToString(), "Neutral")
                 ]);
         }
 
@@ -418,10 +450,10 @@ public sealed class WorkstationWorkflowSummaryService
         if (governanceRun is not null && governanceSnapshot?.OpenBreakCount > 0)
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "governance",
-                WorkspaceTitle: "Governance",
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
                 StatusLabel: "Reconciliation breaks require review",
-                StatusDetail: $"{governanceRun.StrategyName} has open reconciliation exceptions that block the governance handoff.",
+                StatusDetail: $"{governanceRun.StrategyName} has open reconciliation exceptions that block the accounting handoff.",
                 StatusTone: "Warning",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Reconciliation Breaks",
@@ -431,61 +463,61 @@ public sealed class WorkstationWorkflowSummaryService
                 PrimaryBlocker: CreateBlocker(
                     code: "reconciliation-breaks",
                     label: $"{governanceSnapshot.OpenBreakCount} open reconciliation break(s)",
-                    detail: "Governance cannot clear the workflow until breaks are reviewed.",
+                    detail: "Accounting cannot clear the workflow until breaks are reviewed.",
                     tone: "Warning",
                     isBlocking: true),
-                Evidence: BuildGovernanceEvidence(governanceRun, governanceSnapshot));
+                Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
         }
 
-        if (governanceRun is not null && HasGovernanceContinuityGap(governanceSnapshot))
+        if (governanceRun is not null && HasAccountingContinuityGap(governanceSnapshot))
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "governance",
-                WorkspaceTitle: "Governance",
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
                 StatusLabel: "Ledger continuity needs review",
-                StatusDetail: $"{governanceRun.StrategyName} needs a continuity check before governance can treat the handoff as review-ready.",
+                StatusDetail: $"{governanceRun.StrategyName} needs a continuity check before accounting can treat the handoff as review-ready.",
                 StatusTone: "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Ledger Continuity",
                     Detail: "Open trial-balance and continuity surfaces for the selected context.",
                     TargetPageTag: "FundTrialBalance",
                     Tone: "Primary"),
-                PrimaryBlocker: BuildGovernanceContinuityBlocker(governanceSnapshot),
-                Evidence: BuildGovernanceEvidence(governanceRun, governanceSnapshot));
+                PrimaryBlocker: BuildAccountingContinuityBlocker(governanceSnapshot),
+                Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
         }
 
         if (governanceRun is not null)
         {
             return new WorkspaceWorkflowSummary(
-                WorkspaceId: "governance",
-                WorkspaceTitle: "Governance",
-                StatusLabel: "Governance review ready",
-                StatusDetail: $"{governanceRun.StrategyName} has reached the governance lane with ledger and reconciliation posture available for review.",
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Accounting review ready",
+                StatusDetail: $"{governanceRun.StrategyName} has reached the accounting lane with ledger and reconciliation posture available for review.",
                 StatusTone: "Success",
                 NextAction: new WorkflowNextAction(
-                    Label: "Open Governance Shell",
-                    Detail: "Continue with accounting, reconciliation, reporting, and audit review.",
-                    TargetPageTag: "GovernanceShell",
+                    Label: "Open Accounting Shell",
+                    Detail: "Continue with ledger, reconciliation, cash, banking, and audit review.",
+                    TargetPageTag: "AccountingShell",
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
-                    code: "governance-ready",
-                    label: "No active governance blocker",
+                    code: "accounting-ready",
+                    label: "No active accounting blocker",
                     detail: "The current governed run is review-ready inside the shell.",
                     tone: "Success",
                     isBlocking: false),
-                Evidence: BuildGovernanceEvidence(governanceRun, governanceSnapshot));
+                Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
         }
 
         return new WorkspaceWorkflowSummary(
-            WorkspaceId: "governance",
-            WorkspaceTitle: "Governance",
+            WorkspaceId: "accounting",
+            WorkspaceTitle: "Accounting",
             StatusLabel: "Context selected",
-            StatusDetail: "Governance is unlocked, but no paper or live run has entered the review lane yet.",
+            StatusDetail: "Accounting is unlocked, but no paper or live run has entered the review lane yet.",
             StatusTone: "Neutral",
             NextAction: new WorkflowNextAction(
-                Label: "Open Governance Shell",
-                Detail: "Review the governance lanes for the active context.",
-                TargetPageTag: "GovernanceShell",
+                Label: "Open Accounting Shell",
+                Detail: "Review accounting lanes for the active context.",
+                TargetPageTag: "AccountingShell",
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: "no-governed-run",
@@ -495,7 +527,61 @@ public sealed class WorkstationWorkflowSummaryService
                 isBlocking: false),
             Evidence:
             [
-                new WorkflowEvidenceBadge("Governed runs", governedRuns.Count.ToString(), "Neutral")
+                    new WorkflowEvidenceBadge("Accounting runs", governedRuns.Count.ToString(), "Neutral")
+            ]);
+    }
+
+    private static WorkspaceWorkflowSummary BuildReportingSummary(bool hasOperatingContext)
+    {
+        return new WorkspaceWorkflowSummary(
+            WorkspaceId: "reporting",
+            WorkspaceTitle: "Reporting",
+            StatusLabel: hasOperatingContext ? "Reporting ready" : "Context recommended",
+            StatusDetail: hasOperatingContext
+                ? "Report packs, dashboards, exports, and presets are ready for the active context."
+                : "Select a context before treating fund report packs and exports as complete.",
+            StatusTone: hasOperatingContext ? "Success" : "Neutral",
+            NextAction: new WorkflowNextAction(
+                Label: "Open Reporting",
+                Detail: "Open report packs, dashboards, export, and preset workflows.",
+                TargetPageTag: "ReportingShell",
+                Tone: "Primary"),
+            PrimaryBlocker: CreateBlocker(
+                code: hasOperatingContext ? "reporting-ready" : "reporting-context",
+                label: hasOperatingContext ? "No active reporting blocker" : "No operating context selected",
+                detail: hasOperatingContext
+                    ? "Reporting workflows are available for output review."
+                    : "Reporting workflows can open now, but fund-specific output needs an active context.",
+                tone: hasOperatingContext ? "Success" : "Neutral",
+                isBlocking: false),
+            Evidence:
+            [
+                new WorkflowEvidenceBadge("Context", hasOperatingContext ? "Selected" : "Optional", hasOperatingContext ? "Success" : "Neutral")
+            ]);
+    }
+
+    private static WorkspaceWorkflowSummary BuildSettingsSummary()
+    {
+        return new WorkspaceWorkflowSummary(
+            WorkspaceId: "settings",
+            WorkspaceTitle: "Settings",
+            StatusLabel: "Workstation controls available",
+            StatusDetail: "Preferences, credentials, diagnostics, services, notifications, help, and setup are available.",
+            StatusTone: "Success",
+            NextAction: new WorkflowNextAction(
+                Label: "Open Settings",
+                Detail: "Open workstation configuration and support surfaces.",
+                TargetPageTag: "SettingsShell",
+                Tone: "Primary"),
+            PrimaryBlocker: CreateBlocker(
+                code: "settings-ready",
+                label: "No active settings blocker",
+                detail: "Configuration, diagnostics, support, and setup surfaces are available.",
+                tone: "Success",
+                isBlocking: false),
+            Evidence:
+            [
+                new WorkflowEvidenceBadge("Controls", "Available", "Success")
             ]);
     }
 
@@ -538,8 +624,8 @@ public sealed class WorkstationWorkflowSummaryService
         if (snapshot is null)
         {
             return CreateBlocker(
-                code: "research-handoff",
-                label: "Research handoff pending",
+                code: "strategy-handoff",
+                label: "Strategy handoff pending",
                 detail: "Open the trading shell to continue operator review.",
                 tone: "Warning",
                 isBlocking: true);
@@ -568,9 +654,9 @@ public sealed class WorkstationWorkflowSummaryService
         if (snapshot?.OpenBreakCount > 0)
         {
             return CreateBlocker(
-                code: "governance-escalation",
-                label: "Governance review is now blocking",
-                detail: $"{snapshot.OpenBreakCount} reconciliation break(s) need governance attention.",
+                code: "accounting-escalation",
+                label: "Accounting review is now blocking",
+                detail: $"{snapshot.OpenBreakCount} reconciliation break(s) need accounting attention.",
                 tone: "Warning",
                 isBlocking: true);
         }
@@ -583,14 +669,14 @@ public sealed class WorkstationWorkflowSummaryService
             isBlocking: false);
     }
 
-    private static WorkflowBlockerSummary BuildGovernanceContinuityBlocker(WorkflowRunSnapshot? snapshot)
+    private static WorkflowBlockerSummary BuildAccountingContinuityBlocker(WorkflowRunSnapshot? snapshot)
     {
         if (snapshot is null)
         {
             return CreateBlocker(
                 code: "continuity-pending",
                 label: "Continuity detail unavailable",
-                detail: "Governance still needs a ledger or reconciliation snapshot before continuing.",
+                detail: "Accounting still needs a ledger or reconciliation snapshot before continuing.",
                 tone: "Info",
                 isBlocking: true);
         }
@@ -610,7 +696,7 @@ public sealed class WorkstationWorkflowSummaryService
             return CreateBlocker(
                 code: "missing-reconciliation",
                 label: "Reconciliation run missing",
-                detail: "Governance should review a reconciliation result before treating the handoff as complete.",
+                detail: "Accounting should review a reconciliation result before treating the handoff as complete.",
                 tone: "Info",
                 isBlocking: true);
         }
@@ -628,12 +714,12 @@ public sealed class WorkstationWorkflowSummaryService
         return CreateBlocker(
             code: "continuity-review",
             label: "Continuity review recommended",
-            detail: "Review trial-balance posture before the governance handoff is treated as complete.",
+            detail: "Review trial-balance posture before the accounting handoff is treated as complete.",
             tone: "Info",
             isBlocking: false);
     }
 
-    private static bool HasGovernanceContinuityGap(WorkflowRunSnapshot? snapshot)
+    private static bool HasAccountingContinuityGap(WorkflowRunSnapshot? snapshot)
     {
         if (snapshot is null)
         {
@@ -656,7 +742,7 @@ public sealed class WorkstationWorkflowSummaryService
         ];
     }
 
-    private static IReadOnlyList<WorkflowEvidenceBadge> BuildGovernanceEvidence(
+    private static IReadOnlyList<WorkflowEvidenceBadge> BuildAccountingEvidence(
         StrategyRunSummary run,
         WorkflowRunSnapshot? snapshot)
     {

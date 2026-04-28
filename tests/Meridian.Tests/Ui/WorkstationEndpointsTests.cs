@@ -355,7 +355,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutContext_ShouldPrioritizeChooseContextForTradingAndGovernance()
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutContext_ShouldPrioritizeChooseContextForTradingAndAccounting()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var client = app.GetTestClient();
@@ -364,12 +364,12 @@ public sealed class WorkstationEndpointsTests
 
         GetWorkspace(summary, "trading").NextAction.Label.Should().Be("Choose Context");
         GetWorkspace(summary, "trading").NextAction.TargetPageTag.Should().Be("TradingShell");
-        GetWorkspace(summary, "governance").NextAction.Label.Should().Be("Choose Context");
-        GetWorkspace(summary, "governance").NextAction.TargetPageTag.Should().Be("GovernanceShell");
+        GetWorkspace(summary, "accounting").NextAction.Label.Should().Be("Choose Context");
+        GetWorkspace(summary, "accounting").NextAction.TargetPageTag.Should().Be("AccountingShell");
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectResearchToTradingHandoff()
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectStrategyToTradingHandoff()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -384,10 +384,10 @@ public sealed class WorkstationEndpointsTests
             client,
             "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
 
-        var research = GetWorkspace(summary, "research");
-        research.StatusLabel.Should().Be("Candidate for paper review");
-        research.NextAction.Label.Should().Be("Send to Trading Review");
-        research.NextAction.TargetPageTag.Should().Be("TradingShell");
+        var strategy = GetWorkspace(summary, "strategy");
+        strategy.StatusLabel.Should().Be("Candidate for paper review");
+        strategy.NextAction.Label.Should().Be("Send to Trading Review");
+        strategy.NextAction.TargetPageTag.Should().Be("TradingShell");
 
         var trading = GetWorkspace(summary, "trading");
         trading.StatusLabel.Should().Be("Candidate awaiting paper review");
@@ -396,7 +396,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WorkflowSummaryWithActivePaperRunAndNoBreaks_ShouldKeepTradingActiveAndGovernanceReady()
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithActivePaperRunAndNoBreaks_ShouldKeepTradingActiveAndAccountingReady()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -414,13 +414,13 @@ public sealed class WorkstationEndpointsTests
         trading.StatusLabel.Should().Be("Active paper cockpit");
         trading.NextAction.Label.Should().Be("Open Active Cockpit");
 
-        var governance = GetWorkspace(summary, "governance");
-        governance.StatusLabel.Should().Be("Governance review ready");
-        governance.NextAction.Label.Should().Be("Open Governance Shell");
+        var accounting = GetWorkspace(summary, "accounting");
+        accounting.StatusLabel.Should().Be("Accounting review ready");
+        accounting.NextAction.Label.Should().Be("Open Accounting Shell");
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateGovernanceNextAction()
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateAccountingNextAction()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -434,11 +434,11 @@ public sealed class WorkstationEndpointsTests
             client,
             "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
 
-        var governance = GetWorkspace(summary, "governance");
-        governance.StatusLabel.Should().Be("Reconciliation breaks require review");
-        governance.NextAction.Label.Should().Be("Review Reconciliation Breaks");
-        governance.NextAction.TargetPageTag.Should().Be("FundReconciliation");
-        governance.PrimaryBlocker.IsBlocking.Should().BeTrue();
+        var accounting = GetWorkspace(summary, "accounting");
+        accounting.StatusLabel.Should().Be("Reconciliation breaks require review");
+        accounting.NextAction.Label.Should().Be("Review Reconciliation Breaks");
+        accounting.NextAction.TargetPageTag.Should().Be("FundReconciliation");
+        accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
     }
 
     [Fact]
@@ -452,14 +452,22 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
         summary.Should().NotBeNull();
-        summary!.Workspaces.Should().HaveCount(4);
+        summary!.Workspaces.Should().HaveCount(7);
+        summary.Workspaces.Select(workspace => workspace.WorkspaceId).Should().BeEquivalentTo(
+            "trading",
+            "portfolio",
+            "accounting",
+            "reporting",
+            "strategy",
+            "data",
+            "settings");
         foreach (var workspace in summary.Workspaces)
         {
             workspace.NextAction.Should().NotBeNull();
             workspace.PrimaryBlocker.Should().NotBeNull();
             workspace.Evidence.Should().NotBeNull();
         }
-        GetWorkspace(summary, "research").NextAction.Label.Should().Be("Start Backtest");
+        GetWorkspace(summary, "strategy").NextAction.Label.Should().Be("Start Backtest");
     }
 
     [Fact]
@@ -660,6 +668,80 @@ public sealed class WorkstationEndpointsTests
             .GetString()
             .Should()
             .Be(session.SessionId);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldNotUseStalePromotionHistoryForLatestRun()
+    {
+        var promotionRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "promotion-history",
+            Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            RegisterPromotionServices(services, promotionRoot);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-stale-backtest",
+            strategyId: "stale-strategy",
+            strategyName: "Stale Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 22, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("MSFT")));
+
+        await app.Services.GetRequiredService<IPromotionRecordStore>().AppendAsync(new StrategyPromotionRecord(
+            PromotionId: "promotion-stale-backtest",
+            StrategyId: "stale-strategy",
+            StrategyName: "Stale Strategy",
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: "run-stale-backtest",
+            TargetRunId: "run-stale-paper",
+            QualifyingSharpe: 1.2d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: new DateTimeOffset(2026, 4, 22, 15, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "Older promotion was approved for a previous cockpit run.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            AuditReference: "audit-stale-promotion",
+            ApprovedBy: "ops.archive"));
+
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-current-backtest",
+            strategyId: "current-strategy",
+            strategyName: "Current Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 24, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.Promotion.Should().NotBeNull();
+        readiness.Promotion!.SourceRunId.Should().Be("run-current-backtest");
+        readiness.Promotion.ApprovalStatus.Should().BeNull();
+        readiness.Promotion.AuditReference.Should().Be("audit-run-current-backtest");
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.RunId == "run-current-backtest" &&
+            gate.AuditReference == "audit-run-current-backtest");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "promotion-trace-incomplete-run-current-backtest" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+            item.AuditReference == "audit-run-current-backtest");
     }
 
     [Fact]
@@ -2406,6 +2488,19 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<StrategyRunContinuityService>();
         services.AddSingleton<StrategyRunReviewPacketService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
+    }
+
+    private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
+    {
+        services.AddSingleton<BacktestToLivePromoter>();
+        services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
+            promotionRoot,
+            NullLogger<JsonlPromotionRecordStore>.Instance));
+        services.AddSingleton<PromotionService>(sp => new PromotionService(
+            sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<BacktestToLivePromoter>(),
+            sp.GetRequiredService<IPromotionRecordStore>(),
+            NullLogger<PromotionService>.Instance));
     }
 
     private static BrokeragePortfolioSyncService CreateFailedBrokerageSyncService(string root)

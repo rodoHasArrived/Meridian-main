@@ -107,22 +107,37 @@ public sealed class ResearchWorkspaceShellPageTests
     }
 
     [Fact]
-    public void ResearchWorkspaceShellPageSource_ShouldExposeDeskBriefingHero()
+    public void ResearchWorkspaceShellPageSource_ShouldBindDeskBriefingHeroToViewModel()
     {
         var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\ResearchWorkspaceShellPage.xaml.cs"));
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\ResearchWorkspaceShellPage.xaml"));
+        var service = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\ResearchWorkspaceShellPresentationService.cs"));
+        var models = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Models\ResearchWorkspaceShellPresentationModels.cs"));
+        var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\ResearchWorkspaceShellViewModel.cs"));
 
         xaml.Should().Contain("Research Desk Briefing");
         xaml.Should().Contain("ResearchHeroBadgeText");
         xaml.Should().Contain("ResearchHeroPrimaryActionButton");
         xaml.Should().Contain("ResearchHeroSecondaryActionButton");
         xaml.Should().Contain("Next Handoff");
+        xaml.Should().Contain("ShellContext=\"{Binding ShellContext}\"");
+        xaml.Should().Contain("CommandGroup=\"{Binding CommandGroup}\"");
+        xaml.Should().Contain("Text=\"{Binding ResearchWorkflowStatusText}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding BriefingInsights}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding RecentRuns}\"");
 
-        code.Should().Contain("internal readonly record struct ResearchDeskHeroState(");
-        code.Should().Contain("internal static ResearchDeskHeroState BuildDeskHeroState(");
         code.Should().Contain("OnResearchHeroPrimaryActionClick");
-        code.Should().Contain("ExecuteHeroAction");
-        code.Should().Contain("ApplyHeroTone(");
+        code.Should().Contain("OnViewModelActionRequested");
+        code.Should().Contain("ViewModel.ExecuteHeroPrimaryAction");
+        code.Should().NotContain("GetResearchSummaryAsync");
+        code.Should().NotContain("GetBriefingAsync");
+        code.Should().NotContain("PromotionService");
+
+        models.Should().Contain("internal readonly record struct ResearchDeskHeroState(");
+        service.Should().Contain("internal static ResearchDeskHeroState BuildDeskHeroState(");
+        service.Should().Contain("internal async Task<ResearchWorkspaceShellPresentationState> BuildAsync(");
+        viewModel.Should().Contain("public async Task RefreshAsync()");
+        viewModel.Should().Contain("public async Task OpenRunStudioAsync");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

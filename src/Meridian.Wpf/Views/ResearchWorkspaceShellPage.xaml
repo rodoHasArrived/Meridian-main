@@ -24,7 +24,8 @@
             <RowDefinition Height="*" MinHeight="200" />
         </Grid.RowDefinitions>
 
-        <views:WorkspaceShellContextStripControl x:Name="ContextStrip" />
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
+                                                 ShellContext="{Binding ShellContext}" />
 
         <ScrollViewer Grid.Row="1"
                       Margin="0,16,0,0"
@@ -54,7 +55,7 @@
                                                HorizontalAlignment="Center" />
                                 </Border>
                                 <StackPanel Margin="12,0,0,0">
-                                    <TextBlock Text="Research" Style="{StaticResource PageTitleStyle}" />
+                                    <TextBlock Text="Strategy" Style="{StaticResource PageTitleStyle}" />
                                     <TextBlock Text="Market briefing, run studio, and paper-promotion review"
                                                Style="{StaticResource CardDescriptionStyle}" />
                                 </StackPanel>
@@ -76,12 +77,12 @@
                                                FontSize="18"
                                                FontWeight="SemiBold"
                                                Foreground="White"
-                                               Text="No selected run" />
+                                               Text="{Binding ActiveRunNameText}" />
                                     <TextBlock x:Name="ActiveRunMetaText"
                                                Margin="0,4,0,0"
                                                FontSize="12"
                                                Foreground="#A8BED7"
-                                               Text="Start a backtest or choose a run from history." />
+                                               Text="{Binding ActiveRunMetaText}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -97,7 +98,7 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                HorizontalAlignment="Center" />
                                     <TextBlock x:Name="TotalRunsText"
-                                               Text="—"
+                                               Text="{Binding TotalRunsText}"
                                                Margin="0,4,0,0"
                                                FontSize="20"
                                                FontWeight="Bold"
@@ -118,7 +119,7 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                HorizontalAlignment="Center" />
                                     <TextBlock x:Name="PromotedText"
-                                               Text="—"
+                                               Text="{Binding PromotedText}"
                                                Margin="0,4,0,0"
                                                FontSize="20"
                                                FontWeight="Bold"
@@ -139,7 +140,7 @@
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                HorizontalAlignment="Center" />
                                     <TextBlock x:Name="PendingReviewText"
-                                               Text="—"
+                                               Text="{Binding PendingReviewText}"
                                                Margin="0,4,0,0"
                                                FontSize="20"
                                                FontWeight="Bold"
@@ -157,6 +158,7 @@
                 </Border>
 
                 <views:WorkspaceCommandBarControl x:Name="CommandBar"
+                                                  CommandGroup="{Binding CommandGroup}"
                                                   CommandInvoked="OnCommandBarCommandInvoked"
                                                   Margin="0,0,0,24" />
 
@@ -181,7 +183,7 @@
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               Text="New cycle" />
+                                               Text="{Binding ResearchHeroFocusText}" />
                                 </StackPanel>
 
                                 <Border x:Name="ResearchHeroBadgeBorder"
@@ -193,7 +195,7 @@
                                         BorderThickness="1"
                                         VerticalAlignment="Center">
                                     <TextBlock x:Name="ResearchHeroBadgeText"
-                                               Text="Focus"
+                                               Text="{Binding ResearchHeroBadgeText}"
                                                FontSize="11"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource InfoColorBrush}" />
@@ -205,15 +207,16 @@
                                        FontSize="18"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Ready for a new research cycle" />
+                                       Text="{Binding ResearchWorkflowStatusText}" />
                             <TextBlock x:Name="ResearchWorkflowDetailText"
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap"
-                                       Text="One next action should stay visible across the research workflow." />
+                                       Text="{Binding ResearchWorkflowDetailText}" />
 
                             <ItemsControl x:Name="ResearchWorkflowEvidenceItems"
+                                          ItemsSource="{Binding ResearchWorkflowEvidenceItems}"
                                           Margin="0,14,0,0">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -249,32 +252,33 @@
                                                FontSize="14"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                               Text="Launch the first run" />
+                                               Text="{Binding ResearchHeroActionTitleText}" />
                                     <TextBlock x:Name="ResearchHeroActionDetailText"
                                                Margin="0,6,0,0"
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                TextWrapping="Wrap"
-                                               Text="Use Backtest to create the first run, then keep symbols staged for follow-on analysis." />
+                                               Text="{Binding ResearchHeroActionDetailText}" />
 
                                     <WrapPanel Margin="0,14,0,0">
                                         <Button x:Name="ResearchHeroPrimaryActionButton"
-                                                Content="Start Backtest"
+                                                Content="{Binding ResearchHeroPrimaryActionText}"
                                                 Click="OnResearchHeroPrimaryActionClick"
                                                 Style="{StaticResource SecondaryButtonStyle}"
                                                 Margin="0,0,10,10" />
                                         <Button x:Name="ResearchHeroSecondaryActionButton"
-                                                Content="Open Watchlists"
+                                                Content="{Binding ResearchHeroSecondaryActionText}"
                                                 Click="OnResearchHeroSecondaryActionClick"
                                                 Style="{StaticResource GhostButtonStyle}"
-                                                Margin="0,0,10,10" />
+                                                Margin="0,0,10,10"
+                                                Visibility="{Binding ResearchHeroSecondaryActionVisibility}" />
                                     </WrapPanel>
 
                                     <TextBlock x:Name="ResearchWorkflowTargetText"
                                                Margin="0,2,0,0"
                                                FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               Text="Target page: Backtest" />
+                                               Text="{Binding ResearchWorkflowTargetText}" />
                                 </StackPanel>
                             </Border>
 
@@ -293,13 +297,13 @@
                                                FontSize="14"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                               Text="No research runs recorded" />
+                                               Text="{Binding ResearchWorkflowBlockerLabelText}" />
                                     <TextBlock x:Name="ResearchWorkflowBlockerDetailText"
                                                Margin="0,6,0,0"
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                TextWrapping="Wrap"
-                                               Text="Record the first backtest to create a review and promotion queue." />
+                                               Text="{Binding ResearchWorkflowBlockerDetailText}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -317,7 +321,7 @@
                             <StackPanel>
                                 <TextBlock Text="Market Briefing" Style="{StaticResource CardHeaderStyle}" />
                                 <TextBlock x:Name="BriefingSummaryText"
-                                           Text="Pinned research context, watchlists, saved comparisons, and workflow alerts."
+                                           Text="{Binding BriefingSummaryText}"
                                            Style="{StaticResource CardDescriptionStyle}"
                                            Margin="0,6,0,0" />
                             </StackPanel>
@@ -326,7 +330,7 @@
                                     Style="{StaticResource InfoBadgeInlineStyle}"
                                     VerticalAlignment="Center">
                                 <TextBlock x:Name="BriefingGeneratedText"
-                                           Text="Updated just now"
+                                           Text="{Binding BriefingGeneratedText}"
                                            FontSize="11"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource BadgeInfoForegroundBrush}" />
@@ -344,7 +348,8 @@
                                 <StackPanel>
                                     <TextBlock Text="Pinned Insights" Style="{StaticResource StudioPanelTitleStyle}" />
 
-                                    <ItemsControl x:Name="BriefingInsightsList">
+                                    <ItemsControl x:Name="BriefingInsightsList"
+                                                  ItemsSource="{Binding BriefingInsights}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -389,7 +394,7 @@
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                Text="Pinned insights will appear here once runs are available."
-                                               Visibility="Collapsed" />
+                                               Visibility="{Binding NoBriefingInsightsVisibility}" />
 
                                     <Rectangle Margin="0,16,0,14"
                                                Height="1"
@@ -407,7 +412,8 @@
                                                 Style="{StaticResource LinkButtonStyle}" />
                                     </Grid>
 
-                                    <ItemsControl x:Name="BriefingWatchlistsList">
+                                    <ItemsControl x:Name="BriefingWatchlistsList"
+                                                  ItemsSource="{Binding BriefingWatchlists}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -432,7 +438,7 @@
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                Text="Pinned watchlists will appear here."
-                                               Visibility="Collapsed" />
+                                               Visibility="{Binding NoBriefingWatchlistsVisibility}" />
                                 </StackPanel>
                             </Border>
 
@@ -440,7 +446,8 @@
                                 <StackPanel>
                                     <TextBlock Text="What Changed" Style="{StaticResource StudioPanelTitleStyle}" />
 
-                                    <ItemsControl x:Name="BriefingWhatChangedList">
+                                    <ItemsControl x:Name="BriefingWhatChangedList"
+                                                  ItemsSource="{Binding BriefingWhatChanged}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -480,7 +487,7 @@
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                Text="Recent workflow changes will appear here."
-                                               Visibility="Collapsed" />
+                                               Visibility="{Binding NoBriefingWhatChangedVisibility}" />
                                 </StackPanel>
                             </Border>
 
@@ -488,7 +495,8 @@
                                 <StackPanel>
                                     <TextBlock Text="Alerts" Style="{StaticResource StudioPanelTitleStyle}" />
 
-                                    <ItemsControl x:Name="BriefingAlertsList">
+                                    <ItemsControl x:Name="BriefingAlertsList"
+                                                  ItemsSource="{Binding BriefingAlerts}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -524,7 +532,7 @@
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                Text="Blocking alerts will appear here."
-                                               Visibility="Collapsed" />
+                                               Visibility="{Binding NoBriefingAlertsVisibility}" />
 
                                     <Rectangle Margin="0,16,0,14"
                                                Height="1"
@@ -542,7 +550,8 @@
                                                 Style="{StaticResource LinkButtonStyle}" />
                                     </Grid>
 
-                                    <ItemsControl x:Name="BriefingComparisonsList">
+                                    <ItemsControl x:Name="BriefingComparisonsList"
+                                                  ItemsSource="{Binding BriefingComparisons}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -582,7 +591,7 @@
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                Text="Saved comparisons will appear here once runs can be staged side by side."
-                                               Visibility="Collapsed" />
+                                               Visibility="{Binding NoBriefingComparisonsVisibility}" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -602,12 +611,12 @@
                             <TextBlock x:Name="ScenarioStrategyText"
                                        Margin="0,10,0,0"
                                        Style="{StaticResource StudioValueStyle}"
-                                       Text="No strategy selected" />
+                                       Text="{Binding ScenarioStrategyText}" />
                             <TextBlock x:Name="ScenarioCoverageText"
                                        Margin="0,8,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="No research session restored." />
+                                       Text="{Binding ScenarioCoverageText}" />
                             <Rectangle Margin="0,14,0,14"
                                        Height="1"
                                        Fill="{StaticResource ConsoleBorderBrush}" />
@@ -625,17 +634,17 @@
                             <TextBlock x:Name="RunStatusText"
                                        Margin="0,10,0,0"
                                        Style="{StaticResource StudioValueStyle}"
-                                       Text="Awaiting run selection" />
+                                       Text="{Binding RunStatusText}" />
                             <TextBlock x:Name="RunPerformanceText"
                                        Margin="0,8,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Compare runs, equity, and fills from a selected strategy run." />
+                                       Text="{Binding RunPerformanceText}" />
                             <TextBlock x:Name="RunCompareText"
                                        Margin="0,8,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Use the bottom history rail to select a run and load detail panels." />
+                                       Text="{Binding RunCompareText}" />
                             <Border Margin="0,16,0,0"
                                     Padding="14"
                                     CornerRadius="12"
@@ -660,7 +669,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Portfolio inspector opens here once a run is selected." />
+                                       Text="{Binding PortfolioPreviewText}" />
                             <TextBlock Text="Ledger"
                                        Margin="0,14,0,0"
                                        Style="{StaticResource StudioPanelTitleStyle}" />
@@ -668,7 +677,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Ledger inspector opens here once a run is selected." />
+                                       Text="{Binding LedgerPreviewText}" />
                             <TextBlock Text="Risk snapshot"
                                        Margin="0,14,0,0"
                                        Style="{StaticResource StudioPanelTitleStyle}" />
@@ -676,7 +685,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Risk preview becomes available after a completed run is selected." />
+                                       Text="{Binding RiskPreviewText}" />
                             <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Accounting Impact"
                                         Click="OpenAccountingImpact_Click"
@@ -715,7 +724,8 @@
                                         Style="{StaticResource LinkButtonStyle}" />
                             </Grid>
 
-                            <ItemsControl x:Name="RecentRunsList">
+                            <ItemsControl x:Name="RecentRunsList"
+                                          ItemsSource="{Binding RecentRuns}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -754,7 +764,7 @@
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                        Text="No strategy runs yet. Start a new backtest to see results here."
-                                       Visibility="Collapsed" />
+                                       Visibility="{Binding NoRunsVisibility}" />
                         </StackPanel>
                     </Border>
 
@@ -766,7 +776,7 @@
                                         Margin="10,0,0,0"
                                         VerticalAlignment="Center">
                                     <TextBlock x:Name="PromotionCountBadge"
-                                               Text="0"
+                                               Text="{Binding PromotionCountBadgeText}"
                                                FontSize="11"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource BadgeInfoForegroundBrush}" />
@@ -778,6 +788,7 @@
                                        Margin="0,0,0,12" />
 
                             <ItemsControl x:Name="PromotionCandidatesList"
+                                          ItemsSource="{Binding PromotionCandidates}"
                                           AutomationProperties.AutomationId="PromotionCandidatesList"
                                           AutomationProperties.Name="Promotion Candidates">
                                 <ItemsControl.ItemTemplate>
@@ -828,7 +839,7 @@
                                        Text="No promotion candidates. Complete a backtest run to see it here."
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       Visibility="Collapsed"
+                                       Visibility="{Binding NoPromotionsVisibility}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>

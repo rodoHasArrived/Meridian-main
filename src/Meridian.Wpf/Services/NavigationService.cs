@@ -235,6 +235,11 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         WorkspaceChromePresentationMode presentationMode)
     {
         var page = CreatePage(pageType);
+        if (page is IWorkspaceShellPageContextAware contextAware)
+        {
+            contextAware.ApplyWorkspaceShellPageTag(pageTag);
+        }
+
         ApplyNavigationParameter(page, parameter);
 
         if (page is not FrameworkElement element)
@@ -265,7 +270,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             return false;
         }
 
-        if (pageTag is "ResearchShell" or "TradingShell" or "DataOperationsShell" or "GovernanceShell")
+        if (ShellNavigationCatalog.IsWorkspaceShellPageTag(pageTag))
         {
             return false;
         }

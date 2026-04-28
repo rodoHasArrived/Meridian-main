@@ -516,9 +516,19 @@ public sealed class TradingOperatorReadinessService
             return entry.Message.Trim();
         }
 
-        if (string.Equals(entry.Action, "OrderSubmitted", StringComparison.OrdinalIgnoreCase))
+        var explicitReason =
+            GetMetadata(entry, "reason")
+            ?? GetMetadata(entry, "rationale")
+            ?? GetMetadata(entry, "approvalReason")
+            ?? GetMetadata(entry, "rejectionReason");
+        if (!string.IsNullOrWhiteSpace(explicitReason))
         {
-            return $"Order submitted with outcome {entry.Outcome}.";
+            return explicitReason.Trim();
+        }
+
+        if (string.Equals(entry.Category, "Order", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
         }
 
         var kind = GetMetadata(entry, "kind");
@@ -531,12 +541,10 @@ public sealed class TradingOperatorReadinessService
         StrategyRunDetail? latestRun,
         IReadOnlyList<StrategyPromotionRecord> promotionRecords)
     {
-        var record = promotionRecords.FirstOrDefault(candidate =>
-                latestRun is null ||
-                string.Equals(candidate.SourceRunId, latestRun.Summary.RunId, StringComparison.Ordinal) ||
-                string.Equals(candidate.TargetRunId, latestRun.Summary.RunId, StringComparison.Ordinal) ||
-                string.Equals(candidate.StrategyId, latestRun.Summary.StrategyId, StringComparison.Ordinal))
-            ?? promotionRecords.FirstOrDefault();
+        var record = latestRun is null
+            ? promotionRecords.FirstOrDefault()
+            : promotionRecords.FirstOrDefault(candidate =>
+                IsPromotionRecordLinkedToRun(candidate, latestRun.Summary.RunId));
 
         if (record is not null)
         {
@@ -570,6 +578,10 @@ public sealed class TradingOperatorReadinessService
                 ApprovedBy: promotion.ApprovedBy,
                 ApprovalChecklist: promotion.ApprovalChecklist);
     }
+
+    private static bool IsPromotionRecordLinkedToRun(StrategyPromotionRecord record, string runId) =>
+        string.Equals(record.SourceRunId, runId, StringComparison.Ordinal) ||
+        string.Equals(record.TargetRunId, runId, StringComparison.Ordinal);
 
     private static bool IsPromotionRecordTraceComplete(StrategyPromotionRecord record) =>
         !string.IsNullOrWhiteSpace(record.Decision) &&
