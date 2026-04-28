@@ -255,18 +255,27 @@ jobs:
           }
 
           $expectedFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
-          $managedDirectories = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+          $managedScopes = New-Object 'System.Collections.Generic.List[object]'
+          $managedScopeKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
 
           foreach ($definition in $selectedDefinitions) {
             $workflowName = [string]$definition.name
-            $workflowDir = if ($workflowName -eq 'screenshot-catalog') {
+            $isCatalogWorkflow = $workflowName -eq 'screenshot-catalog'
+            $workflowDir = if ($isCatalogWorkflow) {
               $outputRoot
             }
             else {
-              Join-Path (Join-Path $outputRoot 'manuals') $workflowName
+              Join-Path $outputRoot ("manuals/$workflowName")
             }
 
-            $null = $managedDirectories.Add((Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $workflowDir).FullName).Path)
+            $resolvedWorkflowDir = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $workflowDir).FullName).Path
+            $scopeKey = '{0}|{1}' -f $resolvedWorkflowDir, $isCatalogWorkflow
+            if ($managedScopeKeys.Add($scopeKey)) {
+              $managedScopes.Add([PSCustomObject]@{
+                Path = $resolvedWorkflowDir
+                Recurse = -not $isCatalogWorkflow
+              }) | Out-Null
+            }
 
             foreach ($step in @($definition.steps)) {
               $captureName = [string]$step.captureName
