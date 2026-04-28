@@ -646,7 +646,7 @@ public sealed class MainShellViewModelTests
 
             vm.OpenOperatorInboxCommand.Execute(null);
 
-            vm.CurrentPageTag.Should().Be("TradingShell");
+            vm.CurrentPageTag.Should().Be("FundAuditTrail");
         });
     }
 

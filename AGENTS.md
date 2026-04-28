@@ -205,6 +205,10 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.Wpf.csproj --configuration Release --full-wpf-build --isolation-key desktop-smoke
 ```
 
+`buildctl.py build --isolation-key ...` prunes stale isolated output directories older than 14 days
+from `artifacts/bin` and `artifacts/obj` before the build starts; use
+`--isolation-retention-days <days>` to tune the window or `0` to disable cleanup for a run.
+
 Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
 DTOs, execution-control evidence, acceptance gates, or operator work-item projection.
 Use `MapWorkstationEndpoints_OperatorInbox` for changes to the operator inbox endpoint, navigation

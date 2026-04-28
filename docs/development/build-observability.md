@@ -10,6 +10,9 @@ For runtime OTLP collector setup and trace visualization, see [otlp-trace-visual
 # Build with structured events + metrics
 make build
 
+# Build with isolated output for automation or concurrent local runs
+python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key automation-run
+
 # Run environment doctor
 make doctor
 
@@ -56,7 +59,7 @@ Artifacts are written to `.build-system/`:
 
 ## CLI Commands
 
-All commands are available via `make` or `python3 build-system/cli/buildctl.py`.
+All commands are available via `make` or `python3 build/python/cli/buildctl.py`.
 
 ```bash
 make doctor                  # Environment validation
@@ -71,6 +74,11 @@ make bisect GOOD=x BAD=y     # Automated build bisect
 make metrics                 # Build metrics
 make history                 # Build history summary
 ```
+
+When `buildctl.py build` runs with `--isolation-key`, it writes generated MSBuild output under
+`artifacts/bin/<key>/` and `artifacts/obj/<key>/` and prunes stale isolated output directories older
+than 14 days before starting the build. Override the age window with
+`--isolation-retention-days <days>` or set it to `0` for a run that must skip cleanup.
 
 ## Event Schema
 

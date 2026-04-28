@@ -21,12 +21,14 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <views:WorkspaceShellContextStripControl x:Name="ContextStrip" />
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
+                                                 ShellContext="{Binding ShellContext}" />
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
-                                          Grid.Row="1"
-                                          CommandInvoked="OnCommandBarCommandInvoked"
-                                          Margin="0,16,0,0" />
+                                           Grid.Row="1"
+                                           CommandGroup="{Binding CommandGroup}"
+                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                           Margin="0,16,0,0" />
 
         <ScrollViewer Grid.Row="2"
                       Margin="0,16,0,16"
@@ -59,17 +61,17 @@
                                                FontSize="11"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock x:Name="ActiveFundText"
-                                               Margin="0,6,0,0"
-                                               FontSize="18"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                               Text="No operating context selected" />
-                                    <TextBlock x:Name="ActiveFundDetailText"
-                                               Margin="0,4,0,0"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                               Text="Runs, allocations, and accounting posture scope to the active operating context." />
+                                     <TextBlock x:Name="ActiveFundText"
+                                                Margin="0,6,0,0"
+                                                FontSize="18"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                Text="{Binding ActiveFundText}" />
+                                     <TextBlock x:Name="ActiveFundDetailText"
+                                                Margin="0,4,0,0"
+                                                FontSize="12"
+                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                Text="{Binding ActiveFundDetailText}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -88,17 +90,17 @@
                                                FontSize="11"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock x:Name="TradingActiveRunText"
-                                               Margin="0,6,0,0"
-                                               FontSize="18"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                               Text="No active trading run" />
-                                    <TextBlock x:Name="TradingActiveRunMetaText"
-                                               Margin="0,4,0,0"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                               Text="Use Research to promote a run, or open a live/paper panel below." />
+                                     <TextBlock x:Name="TradingActiveRunText"
+                                                Margin="0,6,0,0"
+                                                FontSize="18"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                Text="{Binding TradingActiveRunText}" />
+                                     <TextBlock x:Name="TradingActiveRunMetaText"
+                                                Margin="0,4,0,0"
+                                                FontSize="12"
+                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                Text="{Binding TradingActiveRunMetaText}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -123,32 +125,32 @@
                                         Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
                                         BorderBrush="{StaticResource InfoColorBrush}"
                                         BorderThickness="1">
-                                    <TextBlock x:Name="TradingHeroBadgeText"
-                                               FontSize="11"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource InfoColorBrush}"
-                                               Text="Info" />
+                                     <TextBlock x:Name="TradingHeroBadgeText"
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource InfoColorBrush}"
+                                                Text="{Binding TradingHeroBadgeText}" />
                                 </Border>
                             </WrapPanel>
 
-                            <TextBlock x:Name="TradingHeroFocusText"
-                                       Margin="0,14,0,0"
-                                       FontSize="18"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Context handoff" />
-                            <TextBlock x:Name="TradingHeroSummaryText"
-                                       Margin="0,8,0,0"
-                                       FontSize="13"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       TextWrapping="Wrap"
-                                       Text="Choose the active desk scope before relying on trading posture." />
-                            <TextBlock x:Name="TradingHeroDetailText"
-                                       Margin="0,8,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       TextWrapping="Wrap"
-                                       Text="Replay evidence, controls, blotter posture, and governance-linked handoffs stay anchored to the active operating context." />
+                             <TextBlock x:Name="TradingHeroFocusText"
+                                        Margin="0,14,0,0"
+                                        FontSize="18"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                        Text="{Binding TradingHeroFocusText}" />
+                             <TextBlock x:Name="TradingHeroSummaryText"
+                                        Margin="0,8,0,0"
+                                        FontSize="13"
+                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                        TextWrapping="Wrap"
+                                        Text="{Binding TradingHeroSummaryText}" />
+                             <TextBlock x:Name="TradingHeroDetailText"
+                                        Margin="0,8,0,0"
+                                        FontSize="12"
+                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        Text="{Binding TradingHeroDetailText}" />
                         </StackPanel>
 
                         <Border Grid.Column="1"
@@ -163,37 +165,38 @@
                                            FontSize="11"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                <TextBlock x:Name="TradingHeroHandoffTitleText"
-                                           Margin="0,8,0,0"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                           Text="Choose context" />
-                                <TextBlock x:Name="TradingHeroHandoffDetailText"
-                                           Margin="0,6,0,0"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           TextWrapping="Wrap"
-                                           Text="Keep the scope explicit before moving into blotter, risk, or audit-first review." />
+                                 <TextBlock x:Name="TradingHeroHandoffTitleText"
+                                            Margin="0,8,0,0"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                            Text="{Binding TradingHeroHandoffTitleText}" />
+                                 <TextBlock x:Name="TradingHeroHandoffDetailText"
+                                            Margin="0,6,0,0"
+                                            FontSize="12"
+                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                            TextWrapping="Wrap"
+                                            Text="{Binding TradingHeroHandoffDetailText}" />
 
                                 <WrapPanel Margin="0,14,0,0">
-                                    <Button x:Name="TradingHeroPrimaryActionButton"
-                                            Content="Switch Context"
-                                            Click="OnTradingHeroPrimaryActionClick"
-                                            Style="{StaticResource SecondaryButtonStyle}"
-                                            Margin="0,0,10,10" />
-                                    <Button x:Name="TradingHeroSecondaryActionButton"
-                                            Content="Run Browser"
-                                            Click="OnTradingHeroSecondaryActionClick"
-                                            Style="{StaticResource GhostButtonStyle}"
-                                            Margin="0,0,10,10" />
+                                     <Button x:Name="TradingHeroPrimaryActionButton"
+                                             Content="{Binding TradingHeroPrimaryActionText}"
+                                             Click="OnTradingHeroPrimaryActionClick"
+                                             Style="{StaticResource SecondaryButtonStyle}"
+                                             Margin="0,0,10,10" />
+                                     <Button x:Name="TradingHeroSecondaryActionButton"
+                                             Content="{Binding TradingHeroSecondaryActionText}"
+                                             Click="OnTradingHeroSecondaryActionClick"
+                                             Style="{StaticResource GhostButtonStyle}"
+                                             Margin="0,0,10,10"
+                                             Visibility="{Binding TradingHeroSecondaryActionVisibility}" />
                                 </WrapPanel>
 
-                                <TextBlock x:Name="TradingHeroTargetText"
-                                           Margin="0,2,0,0"
-                                           FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Text="Target page: Context selector" />
+                                 <TextBlock x:Name="TradingHeroTargetText"
+                                            Margin="0,2,0,0"
+                                            FontSize="11"
+                                            Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                            Text="{Binding TradingHeroTargetText}" />
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -219,9 +222,10 @@
                                         Style="{StaticResource LinkButtonStyle}" />
                             </Grid>
 
-                            <ItemsControl x:Name="ActivePositionsList"
-                                          AutomationProperties.AutomationId="ActivePositionsList"
-                                          AutomationProperties.Name="Active Positions">
+                             <ItemsControl x:Name="ActivePositionsList"
+                                           ItemsSource="{Binding ActivePositions}"
+                                           AutomationProperties.AutomationId="ActivePositionsList"
+                                           AutomationProperties.Name="Active Positions">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -278,12 +282,12 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <TextBlock x:Name="NoPositionsText"
-                                       Margin="0,8,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       Text="No active positions. Start a paper or live run to see positions here."
-                                       Visibility="Collapsed" />
+                             <TextBlock x:Name="NoPositionsText"
+                                        Margin="0,8,0,0"
+                                        FontSize="12"
+                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                        Text="No active positions. Start a paper or live run to see positions here."
+                                        Visibility="{Binding NoPositionsVisibility}" />
                         </StackPanel>
                     </Border>
 
@@ -306,20 +310,20 @@
                                             Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
                                             BorderBrush="{StaticResource InfoColorBrush}"
                                             BorderThickness="1">
-                                        <TextBlock x:Name="TradingStatusBadgeText"
-                                                   FontSize="11"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource InfoColorBrush}"
-                                                   Text="Info" />
+                                         <TextBlock x:Name="TradingStatusBadgeText"
+                                                    FontSize="11"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource InfoColorBrush}"
+                                                    Text="{Binding TradingStatusBadgeText}" />
                                     </Border>
                                 </Grid>
 
-                                <TextBlock x:Name="TradingStatusSummaryText"
-                                           Margin="0,8,0,0"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           TextWrapping="Wrap"
-                                           Text="Role-first workflow guidance appears here for the active desk state." />
+                                 <TextBlock x:Name="TradingStatusSummaryText"
+                                            Margin="0,8,0,0"
+                                            FontSize="12"
+                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                            TextWrapping="Wrap"
+                                            Text="{Binding TradingStatusSummaryText}" />
 
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,14,0,10">
                                     <StackPanel>
@@ -335,18 +339,18 @@
                                                 BorderBrush="{StaticResource InfoColorBrush}"
                                                 BorderThickness="1"
                                                 HorizontalAlignment="Left">
-                                            <TextBlock x:Name="PromotionStatusLabelText"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource InfoColorBrush}"
-                                                       Text="Context required" />
+                                             <TextBlock x:Name="PromotionStatusLabelText"
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{StaticResource InfoColorBrush}"
+                                                        Text="{Binding PromotionStatusLabelText}" />
                                         </Border>
-                                        <TextBlock x:Name="PromotionStatusDetailText"
-                                                   Margin="0,8,0,0"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   TextWrapping="Wrap"
-                                                   Text="Trading review starts once an operating context and run handoff are both visible." />
+                                         <TextBlock x:Name="PromotionStatusDetailText"
+                                                    Margin="0,8,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                    TextWrapping="Wrap"
+                                                    Text="{Binding PromotionStatusDetailText}" />
                                     </StackPanel>
                                 </Border>
 
@@ -364,18 +368,18 @@
                                                 BorderBrush="{StaticResource InfoColorBrush}"
                                                 BorderThickness="1"
                                                 HorizontalAlignment="Left">
-                                            <TextBlock x:Name="AuditStatusLabelText"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource InfoColorBrush}"
-                                                       Text="No operating context selected" />
+                                             <TextBlock x:Name="AuditStatusLabelText"
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{StaticResource InfoColorBrush}"
+                                                        Text="{Binding AuditStatusLabelText}" />
                                         </Border>
-                                        <TextBlock x:Name="AuditStatusDetailText"
-                                                   Margin="0,8,0,0"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   TextWrapping="Wrap"
-                                                   Text="Paper review, live posture, and governance consequences scope to the active context." />
+                                         <TextBlock x:Name="AuditStatusDetailText"
+                                                    Margin="0,8,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                    TextWrapping="Wrap"
+                                                    Text="{Binding AuditStatusDetailText}" />
                                     </StackPanel>
                                 </Border>
 
@@ -393,27 +397,27 @@
                                                 BorderBrush="{StaticResource InfoColorBrush}"
                                                 BorderThickness="1"
                                                 HorizontalAlignment="Left">
-                                            <TextBlock x:Name="ValidationStatusLabelText"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource InfoColorBrush}"
-                                                       Text="Choose Context" />
+                                             <TextBlock x:Name="ValidationStatusLabelText"
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{StaticResource InfoColorBrush}"
+                                                        Text="{Binding ValidationStatusLabelText}" />
                                         </Border>
-                                        <TextBlock x:Name="ValidationStatusDetailText"
-                                                   Margin="0,8,0,0"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   TextWrapping="Wrap"
-                                                   Text="Open the correct existing page instead of leaving the desk state implicit." />
-                                        <TextBlock x:Name="TradingWorkflowTargetText"
-                                                   Margin="0,10,0,0"
-                                                   FontSize="11"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   Text="Target page: TradingShell" />
-                                        <Button x:Name="TradingWorkflowPrimaryButton"
-                                                Content="Choose Context"
-                                                Click="OpenWorkflowNextAction_Click"
-                                                Style="{StaticResource PrimaryButtonStyle}"
+                                         <TextBlock x:Name="ValidationStatusDetailText"
+                                                    Margin="0,8,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                    TextWrapping="Wrap"
+                                                    Text="{Binding ValidationStatusDetailText}" />
+                                         <TextBlock x:Name="TradingWorkflowTargetText"
+                                                    Margin="0,10,0,0"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                    Text="{Binding TradingWorkflowTargetText}" />
+                                         <Button x:Name="TradingWorkflowPrimaryButton"
+                                                 Content="{Binding TradingWorkflowPrimaryButtonText}"
+                                                 Click="OpenWorkflowNextAction_Click"
+                                                 Style="{StaticResource PrimaryButtonStyle}"
                                                 Margin="0,12,0,0"
                                                 HorizontalAlignment="Left" />
                                     </StackPanel>
@@ -428,43 +432,43 @@
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
                                         <StackPanel>
                                             <TextBlock Text="Drawdown" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="DrawdownText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="16"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource WarningColorBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="DrawdownText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="16"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource WarningColorBrush}"
+                                                        Text="{Binding DrawdownText}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
                                         <StackPanel>
                                             <TextBlock Text="Position Limit" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="PositionLimitText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="16"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="PositionLimitText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="16"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                        Text="{Binding PositionLimitText}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}">
                                         <StackPanel>
                                             <TextBlock Text="Order Rate" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="OrderRateText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="16"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="OrderRateText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="16"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                        Text="{Binding OrderRateText}" />
                                         </StackPanel>
                                     </Border>
                                 </UniformGrid>
 
-                                <TextBlock x:Name="DeskActionStatusText"
-                                           Margin="0,14,0,0"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           Text="Desk actions update here after a pause, stop, flatten, or alert acknowledgement." />
+                                 <TextBlock x:Name="DeskActionStatusText"
+                                            Margin="0,14,0,0"
+                                            FontSize="12"
+                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                            Text="{Binding DeskActionStatusText}" />
                             </StackPanel>
                         </Border>
 
@@ -475,55 +479,55 @@
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,10">
                                         <StackPanel>
                                             <TextBlock Text="Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="CapitalCashText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="18"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="CapitalCashText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="18"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                        Text="{Binding CapitalCashText}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
                                         <StackPanel>
                                             <TextBlock Text="Gross" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="CapitalGrossExposureText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="18"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="CapitalGrossExposureText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="18"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                        Text="{Binding CapitalGrossExposureText}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
                                         <StackPanel>
                                             <TextBlock Text="Net" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="CapitalNetExposureText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="18"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="CapitalNetExposureText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="18"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                        Text="{Binding CapitalNetExposureText}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}">
                                         <StackPanel>
                                             <TextBlock Text="Financing" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock x:Name="CapitalFinancingText"
-                                                       Margin="0,6,0,0"
-                                                       FontSize="18"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource WarningColorBrush}"
-                                                       Text="—" />
+                                             <TextBlock x:Name="CapitalFinancingText"
+                                                        Margin="0,6,0,0"
+                                                        FontSize="18"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource WarningColorBrush}"
+                                                        Text="{Binding CapitalFinancingText}" />
                                         </StackPanel>
                                     </Border>
                                 </UniformGrid>
 
-                                <TextBlock x:Name="CapitalControlsDetailText"
-                                           Margin="0,14,0,0"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           TextWrapping="Wrap"
-                                           Text="Select an operating context to unlock capital, financing, and reconciliation posture." />
+                                 <TextBlock x:Name="CapitalControlsDetailText"
+                                            Margin="0,14,0,0"
+                                            FontSize="12"
+                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                            TextWrapping="Wrap"
+                                            Text="{Binding CapitalControlsDetailText}" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -532,8 +536,8 @@
                 <UniformGrid Columns="3" Margin="0,0,0,20">
                     <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0">
                         <StackPanel>
-                            <TextBlock x:Name="PaperRunsText"
-                                       Text="—"
+                             <TextBlock x:Name="PaperRunsText"
+                                        Text="{Binding PaperRunsText}"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource InfoColorBrush}"
@@ -547,8 +551,8 @@
 
                     <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0">
                         <StackPanel>
-                            <TextBlock x:Name="LiveRunsText"
-                                       Text="—"
+                             <TextBlock x:Name="LiveRunsText"
+                                        Text="{Binding LiveRunsText}"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource SuccessColorBrush}"
@@ -562,8 +566,8 @@
 
                     <Border Style="{StaticResource WorkspaceKpiTileStyle}">
                         <StackPanel>
-                            <TextBlock x:Name="TotalEquityText"
-                                       Text="—"
+                             <TextBlock x:Name="TotalEquityText"
+                                        Text="{Binding TotalEquityText}"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -589,10 +593,10 @@
                         <Border Grid.Column="0" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
                             <StackPanel>
                                 <TextBlock Text="Strategies &amp; Watchlists" Style="{StaticResource StudioPanelTitleStyle}" />
-                                <TextBlock x:Name="WatchlistStatusText"
-                                           Margin="0,10,0,0"
-                                           Style="{StaticResource StudioValueStyle}"
-                                           Text="Watchlists and active strategies populate once paper or live runs are started." />
+                                 <TextBlock x:Name="WatchlistStatusText"
+                                            Margin="0,10,0,0"
+                                            Style="{StaticResource StudioValueStyle}"
+                                            Text="{Binding WatchlistStatusText}" />
                                 <Button Content="Open Portfolio"
                                         Click="OpenPortfolio_Click"
                                         Style="{StaticResource GhostButtonStyle}"
@@ -604,10 +608,10 @@
                         <Border Grid.Column="1" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
                             <StackPanel>
                                 <TextBlock Text="Market Core &amp; Accounting" Style="{StaticResource StudioPanelTitleStyle}" />
-                                <TextBlock x:Name="MarketCoreText"
-                                           Margin="0,10,0,0"
-                                           Style="{StaticResource StudioValueStyle}"
-                                           Text="Live data, order book, portfolio, and accounting consequences are ready to dock below." />
+                                 <TextBlock x:Name="MarketCoreText"
+                                            Margin="0,10,0,0"
+                                            Style="{StaticResource StudioValueStyle}"
+                                            Text="{Binding MarketCoreText}" />
                                 <WrapPanel Margin="0,14,0,0">
                                     <Button Content="Live Data"
                                             Click="OpenLiveData_Click"
@@ -627,10 +631,10 @@
                         <Border Grid.Column="2" Style="{StaticResource StudioPanelStyle}">
                             <StackPanel>
                                 <TextBlock Text="Risk, Alerts, Audit" Style="{StaticResource StudioPanelTitleStyle}" />
-                                <TextBlock x:Name="RiskRailText"
-                                           Margin="0,10,0,0"
-                                           Style="{StaticResource StudioValueStyle}"
-                                           Text="Risk, reconciliation, and audit surfaces become specific once an active run is selected." />
+                                 <TextBlock x:Name="RiskRailText"
+                                            Margin="0,10,0,0"
+                                            Style="{StaticResource StudioValueStyle}"
+                                            Text="{Binding RiskRailText}" />
                                 <WrapPanel Margin="0,14,0,0">
                                     <Button Content="Risk Rail"
                                             Click="OpenRiskRail_Click"

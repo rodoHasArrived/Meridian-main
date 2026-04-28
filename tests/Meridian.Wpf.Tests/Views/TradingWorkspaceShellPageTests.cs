@@ -810,14 +810,15 @@ public sealed class TradingWorkspaceShellPageTests
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldProjectConsistentDegradedStatusCard()
     {
-        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));
+        var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
 
-        code.Should().Contain("ApplyStatusCardPresentation(BuildDegradedStatusCardPresentation());");
-        code.Should().Contain("internal static TradingStatusCardPresentation BuildStatusCardPresentation(TradingWorkspaceSummary summary)");
-        code.Should().Contain("internal static TradingStatusCardPresentation BuildDegradedStatusCardPresentation()");
-        code.Should().Contain("Label = \"Promotion refresh degraded\"");
-        code.Should().Contain("Label = \"Audit refresh degraded\"");
-        code.Should().Contain("Label = \"Validation refresh degraded\"");
+        viewModelCode.Should().Contain("ApplyState(_presentationService.BuildDegradedState());");
+        serviceCode.Should().Contain("internal static TradingStatusCardPresentation BuildStatusCardPresentation(TradingWorkspaceSummary summary)");
+        serviceCode.Should().Contain("internal static TradingStatusCardPresentation BuildDegradedStatusCardPresentation()");
+        serviceCode.Should().Contain("Label = \"Promotion refresh degraded\"");
+        serviceCode.Should().Contain("Label = \"Audit refresh degraded\"");
+        serviceCode.Should().Contain("Label = \"Validation refresh degraded\"");
     }
 
     [Fact]
@@ -841,7 +842,8 @@ public sealed class TradingWorkspaceShellPageTests
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldReplaceGenericAwaitingRunsCopyWithWorkflowGuidance()
     {
-        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
+        var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
 
         xaml.Should().Contain("Workflow Status");
@@ -851,29 +853,32 @@ public sealed class TradingWorkspaceShellPageTests
         xaml.Should().Contain("TradingWorkflowPrimaryButton");
         xaml.Should().NotContain("Awaiting runs");
 
-        code.Should().Contain("GetTradingWorkflowSummaryAsync");
-        code.Should().Contain("ApplyWorkflowGuidance");
-        code.Should().Contain("OpenWorkflowNextAction_Click");
-        code.Should().Contain("Target page:");
+        serviceCode.Should().Contain("GetTradingWorkflowSummaryAsync");
+        serviceCode.Should().Contain("BuildWorkflowStatusCardPresentation");
+        serviceCode.Should().Contain("CreateWorkflowActionRequest");
+        serviceCode.Should().Contain("Target page:");
+        viewModelCode.Should().Contain("ExecuteWorkflowNextAction");
     }
 
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldConsumeSharedOperatorReadiness()
     {
-        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
 
-        code.Should().Contain("TradingOperatorReadinessService? operatorReadinessService = null");
-        code.Should().Contain("GetTradingOperatorReadinessAsync");
-        code.Should().Contain("ApplyOperatorReadiness(readiness);");
-        code.Should().Contain("DK1 trust gate");
-        code.Should().Contain("Paper session, controls, brokerage sync, and Security Master coverage");
-        code.Should().Contain("Brokerage sync evidence is unavailable.");
+        serviceCode.Should().Contain("TradingOperatorReadinessService? operatorReadinessService = null");
+        serviceCode.Should().Contain("GetTradingOperatorReadinessAsync");
+        serviceCode.Should().Contain("BuildOperatorReadinessStatusCardPresentation");
+        serviceCode.Should().Contain("DK1 trust gate");
+        serviceCode.Should().Contain("Paper session, controls, brokerage sync, and Security Master coverage");
+        serviceCode.Should().Contain("Brokerage sync evidence is unavailable.");
     }
 
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldExposeDeskBriefingHero()
     {
-        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var pageCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
+        var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
 
         xaml.Should().Contain("Desk Briefing");
@@ -882,11 +887,11 @@ public sealed class TradingWorkspaceShellPageTests
         xaml.Should().Contain("TradingHeroTargetText");
         xaml.IndexOf("Desk Briefing", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Active Positions", StringComparison.Ordinal));
 
-        code.Should().Contain("internal static TradingDeskHeroState BuildDeskHeroState(");
-        code.Should().Contain("internal static TradingDeskHeroState BuildDegradedDeskHeroState()");
-        code.Should().Contain("ApplyDeskHeroState(");
-        code.Should().Contain("OnTradingHeroPrimaryActionClick");
-        code.Should().Contain("ExecuteHeroAction");
+        serviceCode.Should().Contain("internal static TradingDeskHeroState BuildDeskHeroState(");
+        serviceCode.Should().Contain("internal static TradingDeskHeroState BuildDegradedDeskHeroState()");
+        viewModelCode.Should().Contain("ApplyDeskHero(");
+        pageCode.Should().Contain("OnTradingHeroPrimaryActionClick");
+        viewModelCode.Should().Contain("ExecuteHeroPrimaryAction");
     }
 
     [Fact]

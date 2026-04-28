@@ -28,14 +28,6 @@ public sealed class ResearchWorkspaceShellViewModel : WorkspaceShellViewModelBas
     }
 }
 
-public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
-{
-    public TradingWorkspaceShellViewModel()
-        : base(ShellNavigationCatalog.GetWorkspaceShell("trading")!)
-    {
-    }
-}
-
 public sealed class DataOperationsWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public DataOperationsWorkspaceShellViewModel()

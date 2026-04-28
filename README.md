@@ -123,7 +123,11 @@ Build safety note:
 
 - Prefer one solution or project build at a time when multiple entrypoints share the same referenced projects.
 - `python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` now restores once and builds with a single MSBuild node.
-- For automation or concurrent local runs, pass `--isolation-key <name>` so the build graph writes under `artifacts/bin/<name>/` and `artifacts/obj/<name>/` instead of shared project `bin/obj` folders.
+- For automation or concurrent local runs, pass `--isolation-key <name>` so the build graph
+  writes under `artifacts/bin/<name>/` and `artifacts/obj/<name>/` instead of shared project
+  `bin/obj` folders. `buildctl.py` prunes stale isolated output directories older than 14 days
+  before isolated builds; use `--isolation-retention-days <days>` to tune that window or `0` to
+  disable it for a run.
 
 ## Planning Source of Truth
 

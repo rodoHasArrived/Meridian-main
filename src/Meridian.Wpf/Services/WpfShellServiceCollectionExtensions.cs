@@ -11,6 +11,7 @@ public static class WpfShellServiceCollectionExtensions
 
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<Meridian.Wpf.Views.MainPage>();
+        services.AddTransient<TradingWorkspaceShellPresentationService>();
 
         foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
         {
