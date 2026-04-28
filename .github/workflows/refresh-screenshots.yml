@@ -182,22 +182,25 @@ jobs:
       - name: Merge downloaded PNGs into workspace
         run: |
           $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $normalizedOutputRoot = $outputRoot.Replace('\','/').Trim('/')
           New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 
           $pngs = Get-ChildItem -Path _artifacts -Recurse -Filter *.png -ErrorAction SilentlyContinue
           Write-Host "Downloaded PNG count: $($pngs.Count)"
 
           foreach ($png in $pngs) {
-            $rel = $png.FullName.Substring((Resolve-Path _artifacts).Path.Length).TrimStart('\\')
+            $artifactRoot = (Resolve-Path _artifacts).Path
+            $rel = $png.FullName.Substring($artifactRoot.Length).TrimStart('\\','/')
+            $relNormalized = $rel.Replace('\','/')
 
             # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
             # Find the first occurrence of the output root inside that path and copy from there.
-            $idx = $rel.ToLower().IndexOf($outputRoot.ToLower())
+            $idx = $relNormalized.ToLower().IndexOf($normalizedOutputRoot.ToLower())
             if ($idx -lt 0) {
               continue
             }
 
-            $subPath = $rel.Substring($idx + $outputRoot.Length).TrimStart('\\','/')
+            $subPath = $relNormalized.Substring($idx + $normalizedOutputRoot.Length).TrimStart('/')
             $dest = Join-Path $outputRoot $subPath
 
             New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
