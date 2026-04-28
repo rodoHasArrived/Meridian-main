@@ -41,6 +41,13 @@ on:
           - all
           - catalog
           - manuals
+      cleanup_mode:
+        description: 'Stale screenshot cleanup behavior in commit job.'
+        type: choice
+        default: dry-run
+        options:
+          - dry-run
+          - enforce
       output_root:
         description: 'Root directory for desktop screenshots.'
         type: string
@@ -297,6 +304,157 @@ jobs:
             Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
           }
 
+      - name: Prune stale screenshots (dry-run/enforce)
+        id: prune
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $selectedMode = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
+          $cleanupMode = "${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_mode || 'dry-run' }}"
+
+          Write-Host "Selected workflow mode: $selectedMode"
+          Write-Host "Cleanup mode: $cleanupMode"
+
+          $workflowConfigPath = 'scripts/dev/desktop-workflows.json'
+          if (-not (Test-Path -LiteralPath $workflowConfigPath)) {
+            throw "Workflow definition file not found: $workflowConfigPath"
+          }
+
+          $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
+          if ($null -eq $workflowConfig.workflows) {
+            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+          }
+
+          $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
+          if ($allDefinitions.Count -eq 0) {
+            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+          }
+
+          $selectedDefinitions = @()
+          switch ($selectedMode) {
+            'catalog' {
+              $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' })
+            }
+            'manuals' {
+              $selectedDefinitions = @($allDefinitions | Where-Object { [bool]$_.includeInManual })
+            }
+            default {
+              $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' -or [bool]$_.includeInManual })
+            }
+          }
+
+          if ($selectedDefinitions.Count -eq 0) {
+            throw "No workflows selected for mode '$selectedMode'."
+          }
+
+          $expectedFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+          $managedScopes = New-Object 'System.Collections.Generic.List[object]'
+          $managedScopeKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+          foreach ($definition in $selectedDefinitions) {
+            $workflowName = [string]$definition.name
+            $isCatalogWorkflow = $workflowName -eq 'screenshot-catalog'
+            $workflowDir = if ($isCatalogWorkflow) {
+              $outputRoot
+            }
+            else {
+              Join-Path $outputRoot ("manuals/$workflowName")
+            }
+
+            $resolvedWorkflowDir = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $workflowDir).FullName).Path
+            $scopeKey = '{0}|{1}' -f $resolvedWorkflowDir, $isCatalogWorkflow
+            if ($managedScopeKeys.Add($scopeKey)) {
+              $managedScopes.Add([PSCustomObject]@{
+                Path = $resolvedWorkflowDir
+                Recurse = -not $isCatalogWorkflow
+              }) | Out-Null
+            }
+
+            foreach ($step in @($definition.steps)) {
+              $captureName = [string]$step.captureName
+              if ([string]::IsNullOrWhiteSpace($captureName)) {
+                continue
+              }
+
+              $expectedPath = Join-Path $workflowDir "$captureName.png"
+              $normalizedExpectedPath = [System.IO.Path]::GetFullPath($expectedPath)
+              $null = $expectedFiles.Add($normalizedExpectedPath)
+            }
+          }
+
+          $candidates = New-Object System.Collections.Generic.List[string]
+          $manualsRoot = [System.IO.Path]::GetFullPath((Join-Path $outputRoot 'manuals'))
+          $manualsRootPrefix = $manualsRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+          foreach ($managedDir in $managedDirectories) {
+            if (-not (Test-Path -LiteralPath $managedDir)) {
+              continue
+            }
+
+            $normalizedManagedDir = [System.IO.Path]::GetFullPath($managedDir)
+            $scanRecursively = $normalizedManagedDir.Equals($manualsRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+              $normalizedManagedDir.StartsWith($manualsRootPrefix, [System.StringComparison]::OrdinalIgnoreCase)
+
+            if ($scanRecursively) {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -Recurse -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+            else {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+            foreach ($png in $pngs) {
+              $fullPath = [System.IO.Path]::GetFullPath($png.FullName)
+              if (-not $expectedFiles.Contains($fullPath)) {
+                $candidates.Add($fullPath)
+              }
+            }
+          }
+
+          $deleted = New-Object System.Collections.Generic.List[string]
+          if ($cleanupMode -eq 'enforce') {
+            foreach ($candidate in $candidates) {
+              Remove-Item -LiteralPath $candidate -Force
+              $deleted.Add($candidate)
+            }
+          }
+
+          Write-Host "Expected screenshot file count: $($expectedFiles.Count)"
+          Write-Host "Stale screenshot candidates: $($candidates.Count)"
+          if ($cleanupMode -eq 'enforce') {
+            Write-Host "Deleted stale screenshots: $($deleted.Count)"
+          }
+          else {
+            Write-Host 'Dry-run only: no screenshot files were deleted.'
+          }
+
+          $repoRoot = (Get-Location).Path
+          $toRelativePath = {
+            param([string]$absolutePath, [string]$basePath)
+            return [System.IO.Path]::GetRelativePath($basePath, $absolutePath).Replace('\\','/')
+          }
+
+          $candidateRelative = @($candidates | ForEach-Object { & $toRelativePath $_ $repoRoot })
+          $deletedRelative = @($deleted | ForEach-Object { & $toRelativePath $_ $repoRoot })
+
+          $pruneSummary = [ordered]@{
+            selectedMode = $selectedMode
+            cleanupMode = $cleanupMode
+            expectedCount = $expectedFiles.Count
+            staleCandidateCount = $candidates.Count
+            deletedCount = $deleted.Count
+            staleCandidates = $candidateRelative
+            deletedFiles = $deletedRelative
+          }
+
+          $pruneSummaryPath = '_artifacts/prune-summary.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path -Parent $pruneSummaryPath) | Out-Null
+          $pruneSummary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pruneSummaryPath -Encoding utf8
+
+          "selected_mode=$selectedMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "cleanup_mode=$cleanupMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "expected_count=$($expectedFiles.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "stale_count=$($candidates.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "deleted_count=$($deleted.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "prune_summary_path=$pruneSummaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
       - name: Validate screenshot outputs and workflow manifests
         id: validate_outputs
         run: |
@@ -464,12 +622,44 @@ jobs:
             "Output root: ``$outputRoot``"
             "PNG files found: **$pngCount**"
             "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
+            "Workflow mode: **${{ steps.prune.outputs.selected_mode }}**"
+            "Cleanup mode: **${{ steps.prune.outputs.cleanup_mode }}**"
+            "Expected files (selected mode): **${{ steps.prune.outputs.expected_count }}**"
+            "Stale candidates: **${{ steps.prune.outputs.stale_count }}**"
+            "Deleted files: **${{ steps.prune.outputs.deleted_count }}**"
             ''
             '### Environment'
             "Ref: ``${{ github.ref }}``"
             "SHA: ``${{ github.sha }}``"
             "Runner OS: ``${{ runner.os }}``"
           )
+
+          $summaryPath = '${{ steps.prune.outputs.prune_summary_path }}'
+          if ($summaryPath -and (Test-Path -LiteralPath $summaryPath)) {
+            $pruneSummary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+
+            $lines += ''
+            $lines += '### Deleted files'
+            if (@($pruneSummary.deletedFiles).Count -gt 0) {
+              foreach ($file in @($pruneSummary.deletedFiles)) {
+                $lines += "- ``$file``"
+              }
+            }
+            else {
+              $lines += '- _None_'
+            }
+
+            $lines += ''
+            $lines += '### Dry-run stale candidates'
+            if (@($pruneSummary.staleCandidates).Count -gt 0) {
+              foreach ($file in @($pruneSummary.staleCandidates)) {
+                $lines += "- ``$file``"
+              }
+            }
+            else {
+              $lines += '- _None_'
+            }
+          }
 
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
