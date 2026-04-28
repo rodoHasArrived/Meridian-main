@@ -144,7 +144,7 @@ Use these documents together when planning or implementing new work:
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
 - [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes
 <!-- readme-tree start -->
-```text
+```
 .
 ├── .artifacts
 │   └── link-repair-report.md
@@ -6723,6 +6723,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
+│       │   ├── ResearchWorkspaceShellPresentationModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.DataOperations.cs
 │       │   ├── ShellNavigationCatalog.Governance.cs
@@ -6790,6 +6791,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QuantScriptStorageJsonContext.cs
 │       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
+│       │   ├── ResearchWorkspaceShellPresentationService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -6891,6 +6893,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QualityArchiveViewModel.cs
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
+│       │   ├── ResearchWorkspaceShellViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
@@ -6910,6 +6913,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SymbolsPageViewModel.cs
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
+│       │   ├── TimeSeriesAlignmentViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
 │       │   ├── TradingWorkspaceShellViewModel.cs
 │       │   ├── WatchlistViewModel.cs
@@ -7102,6 +7106,7 @@ Use these documents together when planning or implementing new work:
 │           ├── WatchlistPage.xaml.cs
 │           ├── WelcomePage.xaml
 │           ├── WelcomePage.xaml.cs
+│           ├── WorkspaceCapabilityHomePage.cs
 │           ├── WorkspaceCommandBarControl.xaml
 │           ├── WorkspaceCommandBarControl.xaml.cs
 │           ├── WorkspaceDeepPageHostPage.xaml
@@ -7750,10 +7755,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── AdvancedAnalyticsViewModelTests.cs
 │   │   │   ├── AggregatePortfolioViewModelTests.cs
+│   │   │   ├── AnalysisExportViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
+│   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
@@ -7761,9 +7769,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
 │   │   │   ├── OrderBookViewModelTests.cs
+│   │   │   ├── PortfolioImportViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
+│   │   │   ├── ResearchWorkspaceShellViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
@@ -7772,6 +7782,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
 │   │   │   ├── TradingWorkspaceShellViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
@@ -7810,6 +7821,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── setup-verification.sh
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
@@ -7819,6 +7831,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-587 directories, 7086 files
+587 directories, 7098 files
 ```
 <!-- readme-tree end -->
