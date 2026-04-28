@@ -11,6 +11,24 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 
 ---
 
+
+## Folder Layout
+
+Diagram source/artifact triplets are organized by domain to reduce top-level sprawl:
+
+- `architecture/c4/`
+- `architecture/platform/`
+- `workflows/operations/`
+- `operations/`
+- `reference/`
+- `ui/`
+- `analytics/`
+- `uml/`
+
+The index below keeps basename references for readability; use the folders above to locate each diagram set.
+
+---
+
 ## Diagram Index
 
 | Diagram | Description | File |
