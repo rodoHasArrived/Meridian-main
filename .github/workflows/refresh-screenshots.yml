@@ -138,6 +138,15 @@ jobs:
             -Framework "${{ env.WPF_FRAMEWORK }}" `
             -ScreenshotDirectory "${{ matrix.workflow.output }}"
 
+
+      - name: Validate screenshot contract (catalog)
+        if: |
+          (github.event_name != 'workflow_dispatch' ||
+          inputs.workflows == 'all' ||
+          inputs.workflows == 'catalog') &&
+          matrix.workflow.name == 'screenshot-catalog'
+        run: python scripts/dev/validate-screenshot-contract.py
+
       - name: Upload WPF screenshot diagnostics
         if: always()
         uses: actions/upload-artifact@v7
@@ -206,6 +215,10 @@ jobs:
             New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
             Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
           }
+
+
+      - name: Validate screenshot contract before commit
+        run: python scripts/dev/validate-screenshot-contract.py
 
       - name: Detect screenshot changes
         id: detect_changes
