@@ -72,9 +72,6 @@ jobs:
     # Prevent recursive runs from the bot commit.
     if: github.actor != 'github-actions[bot]'
 
-    permissions:
-      contents: write
-
     defaults:
       run:
         shell: pwsh
@@ -141,6 +138,72 @@ jobs:
             -Framework "${{ env.WPF_FRAMEWORK }}" `
             -ScreenshotDirectory "${{ matrix.workflow.output }}"
 
+      - name: Upload WPF screenshot diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
+          path: |
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
+            artifacts/desktop-workflows/**/manifest.json
+            artifacts/desktop-workflows/**/logs/*.log
+            wpf-startup-stdout.log
+            wpf-startup-stderr.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  commit-screenshots:
+    name: Commit screenshots
+    runs-on: windows-latest
+    timeout-minutes: 20
+    needs: desktop-screenshots
+
+    # Prevent recursive runs from the bot commit.
+    if: github.actor != 'github-actions[bot]'
+
+    permissions:
+      contents: write
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download all screenshot artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: _artifacts
+
+      - name: Merge downloaded PNGs into workspace
+        run: |
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+
+          $pngs = Get-ChildItem -Path _artifacts -Recurse -Filter *.png -ErrorAction SilentlyContinue
+          Write-Host "Downloaded PNG count: $($pngs.Count)"
+
+          foreach ($png in $pngs) {
+            $rel = $png.FullName.Substring((Resolve-Path _artifacts).Path.Length).TrimStart('\\')
+
+            # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
+            # Find the first occurrence of the output root inside that path and copy from there.
+            $idx = $rel.ToLower().IndexOf($outputRoot.ToLower())
+            if ($idx -lt 0) {
+              continue
+            }
+
+            $subPath = $rel.Substring($idx + $outputRoot.Length).TrimStart('\\','/')
+            $dest = Join-Path $outputRoot $subPath
+
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
+            Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
+          }
+
       - name: Detect screenshot changes
         id: detect_changes
         run: |
@@ -157,32 +220,6 @@ jobs:
             Write-Host "No changes detected under $outputRoot"
           }
 
-      - name: Dump desktop workflow artifacts tree (on failure)
-        if: failure()
-        run: |
-          if (Test-Path 'artifacts') {
-            Get-ChildItem -Path 'artifacts' -Recurse -Force | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
-          }
-          else {
-            Write-Host "No 'artifacts' directory found."
-          }
-
-      - name: Upload WPF screenshot diagnostics
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
-          path: |
-            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
-            artifacts/desktop-workflows/**/manifest.json
-            artifacts/desktop-workflows/**/logs/*.log
-            wpf-startup-stdout.log
-            wpf-startup-stderr.log
-          if-no-files-found: warn
-          retention-days: 7
-
-      # NOTE: This workflow commits directly to main.
-      # Ensure your branch protection rules allow GitHub Actions to push.
       - name: Commit WPF desktop screenshots
         if: |
           steps.detect_changes.outputs.changed == 'true' &&
@@ -204,10 +241,9 @@ jobs:
           }
 
           $lines = @(
-            '## UI Screenshot Refresh'
+            '## UI Screenshot Refresh (commit job)'
             ''
-            "Workflow: **${{ matrix.workflow.name }}**"
-            "Output: ``${{ matrix.workflow.output }}``"
+            "Output root: ``$outputRoot``"
             "PNG files found: **$pngCount**"
             "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
             ''
