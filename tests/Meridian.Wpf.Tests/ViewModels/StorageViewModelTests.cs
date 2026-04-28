@@ -10,6 +10,91 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class StorageViewModelTests
 {
     [Fact]
+    public void BuildStoragePosture_WhenArchiveIsEmpty_ProjectsBackfillGuidance()
+    {
+        var posture = StorageViewModel.BuildStoragePosture(new StorageAnalytics
+        {
+            LastUpdated = new DateTime(2026, 3, 4, 12, 0, 0, DateTimeKind.Local),
+        });
+
+        posture.Title.Should().Be("Archive waiting for data");
+        posture.Detail.Should().Contain("Run backfill or collection");
+        posture.GrowthText.Should().Be("Daily growth: no recent files");
+        posture.CapacityHorizonText.Should().Be("Capacity horizon: not enough growth history");
+        posture.LastScanText.Should().StartWith("Last scan:");
+    }
+
+    [Fact]
+    public void BuildStoragePosture_WhenCapacityHorizonIsShort_ProjectsRetentionWarning()
+    {
+        var posture = StorageViewModel.BuildStoragePosture(new StorageAnalytics
+        {
+            TotalFileCount = 245,
+            DailyGrowthBytes = 1_048_576,
+            ProjectedDaysUntilFull = 3,
+            LastUpdated = new DateTime(2026, 3, 4, 12, 0, 0, DateTimeKind.Local),
+            SymbolBreakdown = new[]
+            {
+                new SymbolAnalyticsInfo { Symbol = "SPY" },
+            },
+        });
+
+        posture.Title.Should().Be("Storage capacity needs attention");
+        posture.Detail.Should().Contain("retention");
+        posture.GrowthText.Should().Be("Daily growth: 1.0 MB/day");
+        posture.CapacityHorizonText.Should().Be("Capacity horizon: 3 days");
+    }
+
+    [Fact]
+    public void BuildStoragePosture_WhenArchiveHasFilesWithoutRecentGrowth_ProjectsStableGuidance()
+    {
+        var posture = StorageViewModel.BuildStoragePosture(new StorageAnalytics
+        {
+            TotalFileCount = 12,
+            DailyGrowthBytes = 0,
+            LastUpdated = new DateTime(2026, 3, 4, 12, 0, 0, DateTimeKind.Local),
+        });
+
+        posture.Title.Should().Be("Archive is stable");
+        posture.Detail.Should().Contain("12 retained files");
+        posture.GrowthText.Should().Be("Daily growth: no recent files");
+    }
+
+    [Fact]
+    public void BuildStoragePosture_WhenGrowthIsTracked_ProjectsArchiveScope()
+    {
+        var posture = StorageViewModel.BuildStoragePosture(new StorageAnalytics
+        {
+            TotalFileCount = 1200,
+            DailyGrowthBytes = 2_097_152,
+            ProjectedDaysUntilFull = 120,
+            LastUpdated = new DateTime(2026, 3, 4, 12, 0, 0, DateTimeKind.Local),
+            SymbolBreakdown = new[]
+            {
+                new SymbolAnalyticsInfo { Symbol = "SPY" },
+                new SymbolAnalyticsInfo { Symbol = "AAPL" },
+            },
+        });
+
+        posture.Title.Should().Be("Storage growth is being tracked");
+        posture.Detail.Should().Contain("files across 2 symbols");
+        posture.GrowthText.Should().Be("Daily growth: 2.0 MB/day");
+        posture.CapacityHorizonText.Should().Be("Capacity horizon: 120 days");
+    }
+
+    [Fact]
+    public void BuildStoragePostureUnavailable_WhenScanFails_ProjectsRecoveryGuidance()
+    {
+        var posture = StorageViewModel.BuildStoragePostureUnavailable();
+
+        posture.Title.Should().Be("Storage metrics unavailable");
+        posture.Detail.Should().Contain("configured DataRoot");
+        posture.GrowthText.Should().Be("Daily growth: --");
+        posture.CapacityHorizonText.Should().Be("Capacity horizon: --");
+        posture.LastScanText.Should().Be("Last scan: failed");
+    }
+
+    [Fact]
     public void RefreshPreview_WhenLayoutChanges_ProjectsScopeAndPreviewGuidance()
     {
         var viewModel = CreateViewModel();
@@ -52,6 +137,14 @@ public sealed class StorageViewModelTests
         xaml.Should().Contain("{Binding PreviewActionText}");
         xaml.Should().Contain("StorageNamingConventionCombo");
         xaml.Should().Contain("StorageCompressionCombo");
+        xaml.Should().Contain("StorageArchivePostureCard");
+        xaml.Should().Contain("StoragePostureTitle");
+        xaml.Should().Contain("StoragePostureDetail");
+        xaml.Should().Contain("StorageGrowthText");
+        xaml.Should().Contain("StorageCapacityHorizonText");
+        xaml.Should().Contain("StorageLastScanText");
+        xaml.Should().Contain("{Binding StoragePostureTitle}");
+        xaml.Should().Contain("{Binding StorageCapacityHorizonText}");
     }
 
     private static StorageViewModel CreateViewModel() =>

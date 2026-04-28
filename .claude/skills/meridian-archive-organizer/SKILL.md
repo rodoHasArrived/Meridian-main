@@ -1,6 +1,14 @@
 ---
 name: meridian-archive-organizer
 description: Archive deprecated, superseded, historical, or misplaced Meridian code and documentation while keeping the repository structure organized. Use when Codex needs to decide whether a file should stay active or move into `archive/`, relocate outdated code or docs into the correct archive bucket, clean up folder sprawl, answer "where should this live?" for Meridian repository-structure work, or perform an evidence-backed archive/reference-trace pass with repeatable validation.
+license: See repository LICENSE
+compatibility: >
+  Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files, archive
+  placement references, and optional trace scripts when the host permits filesystem access.
+metadata:
+  owner: meridian-ai
+  version: "1.0"
+  spec: open-agent-skills-v1
 ---
 
 # Meridian Archive Organizer

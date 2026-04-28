@@ -1,8 +1,10 @@
 # Plans
 
-**Last Reviewed:** 2026-04-26
+**Last Reviewed:** 2026-04-28
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
+
+Current roadmap refresh note: the 2026-04-28 project delta is validation-support and support-surface hardening, not a wave-status change. The WPF screenshot-refresh workflow now supports scheduled/push/manual catalog and manual capture groups with diagnostics and one final screenshot commit; Storage now projects archive growth/capacity/last-scan posture; and the operator inbox now carries actionable latest-run review-packet blockers, while Waves 2-4 still require cockpit, shared-model, and governance acceptance evidence.
 
 ## Core Operator-Ready Path (Waves 1-4)
 

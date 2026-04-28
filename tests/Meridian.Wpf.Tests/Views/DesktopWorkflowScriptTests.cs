@@ -49,6 +49,67 @@ public sealed class DesktopWorkflowScriptTests
         captureIndex.Should().BeGreaterThan(activationIndex);
     }
 
+    [Fact]
+    public void RunDesktopWorkflowScript_ShouldEnterOperatingContextBeforeWaitingForShellReadiness()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain("function Ensure-EnteredOperatingContext");
+        script.Should().Contain("EnterWorkstationButton");
+        script.Should().Contain("Seed Sample Contexts");
+        script.Should().Contain("$manifest.run.operatingContextConfirmed = $operatingContextConfirmed");
+        script.Should().Contain("Operating context was not confirmed; screenshot workflow cannot continue before shell readiness.");
+        script.Should().Contain("Operating context confirmed.");
+
+        var contextIndex = script.IndexOf("Ensure-EnteredOperatingContext -Process $ownedProcess", StringComparison.Ordinal);
+        var startupIndex = script.IndexOf("$startupReadiness = Wait-ForStableShellPage", StringComparison.Ordinal);
+
+        contextIndex.Should().BeGreaterThan(0);
+        startupIndex.Should().BeGreaterThan(contextIndex);
+    }
+
+    [Fact]
+    public void RunDesktopWorkflowScript_ShouldPruneWorkflowArtifactsBeforeCreatingRunDirectory()
+    {
+        var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
+        var workflowScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        sharedBuildScript.Should().Contain("function Invoke-MeridianWorkflowArtifactRetention");
+        sharedBuildScript.Should().Contain("[int]$MaxAgeDays = 14");
+        sharedBuildScript.Should().Contain("[int]$RetainLatest = 10");
+
+        workflowScript.Should().Contain("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot");
+
+        var retentionIndex = workflowScript.IndexOf("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot", StringComparison.Ordinal);
+        var runDirectoryIndex = workflowScript.IndexOf("$runDirectory = Join-Path $resolvedOutputRoot", StringComparison.Ordinal);
+
+        retentionIndex.Should().BeGreaterThan(0);
+        runDirectoryIndex.Should().BeGreaterThan(retentionIndex);
+    }
+
+    [Fact]
+    public void FocusedValidationScripts_ShouldPruneWorkflowArtifactsBeforeCreatingSummaryDirectory()
+    {
+        foreach (var relativePath in new[]
+                 {
+                     @"scripts\dev\validate-position-blotter-route.ps1",
+                     @"scripts\dev\validate-operator-inbox-route.ps1"
+                 })
+        {
+            var script = File.ReadAllText(GetRepositoryFilePath(relativePath));
+
+            script.Should().Contain("$resolvedOutputRoot = Join-Path $repoRoot $OutputRoot");
+            script.Should().Contain("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot");
+            script.Should().Contain("$summaryDir = Join-Path $resolvedOutputRoot $runStamp");
+
+            var retentionIndex = script.IndexOf("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot", StringComparison.Ordinal);
+            var summaryIndex = script.IndexOf("$summaryDir = Join-Path $resolvedOutputRoot $runStamp", StringComparison.Ordinal);
+
+            retentionIndex.Should().BeGreaterThan(0);
+            summaryIndex.Should().BeGreaterThan(retentionIndex);
+        }
+    }
+
     private static string GetRepositoryFilePath(string relativePath)
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

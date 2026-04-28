@@ -1,6 +1,14 @@
 ---
 name: meridian-repo-navigation
 description: Orient an AI quickly inside the Meridian repository before deeper implementation work. Use when the task starts with "where should I look", "what subsystem owns this", "route me to the right files", or when a large-repo task needs fast grounding before specialist skills take over.
+license: See repository LICENSE
+compatibility: >
+  Portable Agent Skill package for Agent Skills-compatible hosts. Reads generated repo-navigation
+  references and optional MCP navigation resources when the host exposes them.
+metadata:
+  owner: meridian-ai
+  version: "1.0"
+  spec: open-agent-skills-v1
 ---
 
 # Meridian Repo Navigation

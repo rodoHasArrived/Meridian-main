@@ -221,6 +221,18 @@ Validates syntax of code examples in markdown files.
 python3 validate-examples.py --output example-validation.md
 ```
 
+### check-ai-inventory.py
+
+Detects catalog drift across AI assistant assets in `.codex/`, `.claude/`, `.github/`,
+`docs/ai/`, and MCP prompt/resource/tool surfaces.
+
+```bash
+python3 check-ai-inventory.py --summary
+python3 check-ai-inventory.py \
+  --output docs/status/ai-inventory-report.md \
+  --json-output docs/status/ai-inventory-report.json
+```
+
 ### generate-coverage.py
 
 Measures documentation coverage of code constructs.
@@ -287,6 +299,7 @@ These scripts are integrated into the `.github/workflows/documentation.yml` work
 5. **coverage-report** job - Runs generate-coverage.py
 6. **validate-examples** job - Runs validate-examples.py
 7. **generate-changelog** job - Runs generate-changelog.py
+8. **AI inventory check** - Runs check-ai-inventory.py through the local runner profiles
 
 New scripts can be added by following the patterns in the workflow file.
 

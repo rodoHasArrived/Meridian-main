@@ -22,7 +22,17 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     public string AccountId
     {
         get => _accountId;
-        private set => SetProperty(ref _accountId, value);
+        private set
+        {
+            if (SetProperty(ref _accountId, value))
+            {
+                _hasLoadedAccountSnapshot = false;
+                Positions.Clear();
+                OnPropertyChanged(nameof(CanRefreshAccount));
+                RefreshCommand.NotifyCanExecuteChanged();
+                UpdatePositionsPresentation();
+            }
+        }
     }
 
     private string _displayName = string.Empty;
@@ -97,6 +107,35 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _statusText, value);
     }
 
+    private bool _isRefreshing;
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        private set
+        {
+            if (SetProperty(ref _isRefreshing, value))
+            {
+                OnPropertyChanged(nameof(CanRefreshAccount));
+                RefreshCommand.NotifyCanExecuteChanged();
+                UpdatePositionsPresentation();
+            }
+        }
+    }
+
+    private string _positionsEmptyStateTitle = "Select an account to review positions";
+    public string PositionsEmptyStateTitle
+    {
+        get => _positionsEmptyStateTitle;
+        private set => SetProperty(ref _positionsEmptyStateTitle, value);
+    }
+
+    private string _positionsEmptyStateDetail = "Open Fund Accounts or a brokerage-sync work item to load account cash, exposure, and positions.";
+    public string PositionsEmptyStateDetail
+    {
+        get => _positionsEmptyStateDetail;
+        private set => SetProperty(ref _positionsEmptyStateDetail, value);
+    }
+
     private DateTimeOffset _asOf;
     public DateTimeOffset AsOf
     {
@@ -107,6 +146,16 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     // ── Positions grid ────────────────────────────────────────────────────────
 
     public ObservableCollection<AccountPositionRow> Positions { get; } = [];
+
+    private bool _hasLoadedAccountSnapshot;
+
+    public bool HasPositions => Positions.Count > 0;
+
+    public bool IsPositionsGridVisible => HasPositions;
+
+    public bool IsPositionsEmptyStateVisible => !HasPositions;
+
+    public bool CanRefreshAccount => CanRefreshAccountForState(AccountId, IsRefreshing);
 
     // ── Navigation parameter ──────────────────────────────────────────────────
 
@@ -134,7 +183,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     public AccountPortfolioViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        RefreshCommand = new AsyncRelayCommand(RefreshAsync);
+        RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => CanRefreshAccount);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) =>
@@ -158,6 +207,8 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
                 static t => { /* exceptions handled inside RefreshAsync */ },
                 TaskContinuationOptions.OnlyOnFaulted);
         };
+
+        UpdatePositionsPresentation();
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -195,44 +246,117 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
     private async Task RefreshAsync(CancellationToken ct = default)
     {
+        IsRefreshing = true;
         StatusText = "Refreshing…";
 
-        var snapshot = await _apiClient.GetAsync<AccountDetailDto>(
-            $"/api/execution/accounts/{Uri.EscapeDataString(AccountId)}", ct);
-
-        if (snapshot is null)
+        try
         {
-            StatusText = "Account data unavailable.";
-            return;
-        }
+            var snapshot = await _apiClient.GetAsync<AccountDetailDto>(
+                $"/api/execution/accounts/{Uri.EscapeDataString(AccountId)}", ct);
 
-        DisplayName = snapshot.DisplayName ?? AccountId;
-        Kind = snapshot.Kind ?? string.Empty;
-        Cash = snapshot.Cash;
-        LongMarketValue = snapshot.LongMarketValue;
-        ShortMarketValue = snapshot.ShortMarketValue;
-        GrossExposure = snapshot.GrossExposure;
-        NetExposure = snapshot.NetExposure;
-        UnrealisedPnl = snapshot.UnrealisedPnl;
-        RealisedPnl = snapshot.RealisedPnl;
-        AsOf = snapshot.AsOf;
-
-        Positions.Clear();
-        if (snapshot.Positions is { Count: > 0 })
-        {
-            foreach (var pos in snapshot.Positions)
+            if (snapshot is null)
             {
-                Positions.Add(new AccountPositionRow(
-                    Symbol: pos.Symbol ?? string.Empty,
-                    Quantity: pos.Quantity,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    AvgCost: pos.CostBasis,
-                    UnrealisedPnl: pos.UnrealisedPnl,
-                    RealisedPnl: pos.RealisedPnl));
+                _hasLoadedAccountSnapshot = false;
+                StatusText = "Account data unavailable.";
+                return;
             }
+
+            _hasLoadedAccountSnapshot = true;
+            DisplayName = snapshot.DisplayName ?? AccountId;
+            Kind = snapshot.Kind ?? string.Empty;
+            Cash = snapshot.Cash;
+            LongMarketValue = snapshot.LongMarketValue;
+            ShortMarketValue = snapshot.ShortMarketValue;
+            GrossExposure = snapshot.GrossExposure;
+            NetExposure = snapshot.NetExposure;
+            UnrealisedPnl = snapshot.UnrealisedPnl;
+            RealisedPnl = snapshot.RealisedPnl;
+            AsOf = snapshot.AsOf;
+
+            Positions.Clear();
+            if (snapshot.Positions is { Count: > 0 })
+            {
+                foreach (var pos in snapshot.Positions)
+                {
+                    Positions.Add(new AccountPositionRow(
+                        Symbol: pos.Symbol ?? string.Empty,
+                        Quantity: pos.Quantity,
+                        Side: pos.Quantity >= 0 ? "Long" : "Short",
+                        AvgCost: pos.CostBasis,
+                        UnrealisedPnl: pos.UnrealisedPnl,
+                        RealisedPnl: pos.RealisedPnl));
+                }
+            }
+
+            StatusText = $"Loaded {Positions.Count} position(s).";
+        }
+        finally
+        {
+            IsRefreshing = false;
+            UpdatePositionsPresentation();
+        }
+    }
+
+    public static bool CanRefreshAccountForState(string? accountId, bool isRefreshing) =>
+        !isRefreshing && !string.IsNullOrWhiteSpace(accountId);
+
+    public static AccountPositionsEmptyState BuildPositionsEmptyState(
+        bool isRefreshing,
+        bool hasLoadedAccountSnapshot,
+        bool hasAccountContext,
+        int positionCount)
+    {
+        if (positionCount > 0)
+        {
+            return new AccountPositionsEmptyState(
+                IsVisible: false,
+                Title: string.Empty,
+                Detail: string.Empty);
         }
 
-        StatusText = $"Loaded {Positions.Count} position(s).";
+        if (!hasAccountContext)
+        {
+            return new AccountPositionsEmptyState(
+                IsVisible: true,
+                Title: "Select an account to review positions",
+                Detail: "Open Fund Accounts or a brokerage-sync work item to load account cash, exposure, and positions.");
+        }
+
+        if (isRefreshing)
+        {
+            return new AccountPositionsEmptyState(
+                IsVisible: true,
+                Title: "Loading account positions",
+                Detail: "Waiting for the local workstation host to return this account's latest cash, exposure, and position snapshot.");
+        }
+
+        if (!hasLoadedAccountSnapshot)
+        {
+            return new AccountPositionsEmptyState(
+                IsVisible: true,
+                Title: "Account snapshot unavailable",
+                Detail: "Refresh after the local workstation host and brokerage sync are reachable; no current position rows were returned.");
+        }
+
+        return new AccountPositionsEmptyState(
+            IsVisible: true,
+            Title: "No open positions in this account",
+            Detail: "Cash and exposure are loaded, but this account has no current position rows. New fills will appear after the next brokerage sync.");
+    }
+
+    private void UpdatePositionsPresentation()
+    {
+        var state = BuildPositionsEmptyState(
+            IsRefreshing,
+            _hasLoadedAccountSnapshot,
+            !string.IsNullOrWhiteSpace(AccountId),
+            Positions.Count);
+
+        PositionsEmptyStateTitle = state.Title;
+        PositionsEmptyStateDetail = state.Detail;
+        OnPropertyChanged(nameof(HasPositions));
+        OnPropertyChanged(nameof(IsPositionsGridVisible));
+        OnPropertyChanged(nameof(IsPositionsEmptyStateVisible));
     }
 
     // ── Inner DTOs (local API projection) ─────────────────────────────────────
@@ -271,3 +395,5 @@ public sealed record AccountPositionRow(
     decimal AvgCost,
     decimal UnrealisedPnl,
     decimal RealisedPnl);
+
+public sealed record AccountPositionsEmptyState(bool IsVisible, string Title, string Detail);

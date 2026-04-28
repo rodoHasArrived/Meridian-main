@@ -142,6 +142,18 @@ public sealed class ConfigServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadConfigAsync_WhenFileIsEmpty_ShouldReturnNull()
+    {
+        ConfigService.DefaultPathResolver = () => _configPath;
+        await File.WriteAllTextAsync(_configPath, string.Empty);
+
+        var svc = new ConfigService();
+        var config = await svc.LoadConfigAsync();
+
+        config.Should().BeNull();
+    }
+
+    [Fact]
     public async Task LoadConfigAsync_WithSymbols_ShouldDeserializeSymbolArray()
     {
         var json = """

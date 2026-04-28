@@ -127,10 +127,34 @@ function Ensure-EnteredFundProfile {
   }
 
   $buttonType = [System.Windows.Automation.ControlType]::Button
+  $enterWorkstationIdCond = New-Object System.Windows.Automation.PropertyCondition(
+    [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+    'EnterWorkstationButton'
+  )
+  $enterWorkstationNameCond = New-Object System.Windows.Automation.AndCondition(
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::NameProperty,
+      'Enter Workstation'
+    )),
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+      $buttonType
+    ))
+  )
   $enterFundCond = New-Object System.Windows.Automation.AndCondition(
     (New-Object System.Windows.Automation.PropertyCondition(
       [System.Windows.Automation.AutomationElement]::NameProperty,
       'Enter Fund'
+    )),
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+      $buttonType
+    ))
+  )
+  $seedContextsCond = New-Object System.Windows.Automation.AndCondition(
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::NameProperty,
+      'Seed Sample Contexts'
     )),
     (New-Object System.Windows.Automation.PropertyCondition(
       [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
@@ -148,17 +172,36 @@ function Ensure-EnteredFundProfile {
     ))
   )
 
-  $enterFund = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+  function Find-EnterWorkstationButton {
     $currentWindow = Find-MeridianWindow
     if (-not $currentWindow) { return $null }
+
+    $button = $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $enterWorkstationIdCond)
+    if ($button) { return $button }
+
+    $button = $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $enterWorkstationNameCond)
+    if ($button) { return $button }
+
     return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $enterFundCond)
+  }
+
+  function Find-SeedSampleContextsButton {
+    $currentWindow = Find-MeridianWindow
+    if (-not $currentWindow) { return $null }
+
+    $button = $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $seedContextsCond)
+    if ($button) { return $button }
+
+    return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $seedProfilesCond)
+  }
+
+  $enterFund = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+    return Find-EnterWorkstationButton
   }
 
   if ($enterFund -and -not $enterFund.Current.IsEnabled) {
     $seedProfiles = Wait-ForElement -Attempts 5 -DelayMilliseconds 250 -Finder {
-      $currentWindow = Find-MeridianWindow
-      if (-not $currentWindow) { return $null }
-      return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $seedProfilesCond)
+      return Find-SeedSampleContextsButton
     }
 
     if ($seedProfiles) {
@@ -172,14 +215,12 @@ function Ensure-EnteredFundProfile {
     }
 
     $enterFund = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
-      $currentWindow = Find-MeridianWindow
-      if (-not $currentWindow) { return $null }
-      return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $enterFundCond)
+      return Find-EnterWorkstationButton
     }
   }
 
   if (-not $enterFund) {
-    Write-Warning 'Fund profile selection view did not expose an Enter Fund button.'
+    Write-Warning 'Fund profile selection view did not expose an Enter Workstation button.'
     return $false
   }
 

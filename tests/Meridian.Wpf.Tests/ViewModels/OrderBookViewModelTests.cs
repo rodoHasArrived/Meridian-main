@@ -1,10 +1,54 @@
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class OrderBookViewModelTests
 {
+    [Fact]
+    public void SelectorState_DefaultsAndUpdatesPostureFromViewModel()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var viewModel = CreateViewModel();
+
+            viewModel.DepthLevelOptions.Should().Equal(5, 10, 20, 50);
+            viewModel.SelectedDepthLevels.Should().Be(10);
+            viewModel.SelectedSymbol.Should().BeEmpty();
+
+            viewModel.SelectedDepthLevels = 20;
+            viewModel.SelectedSymbol = " AAPL ";
+
+            viewModel.SelectedSymbol.Should().Be("AAPL");
+            viewModel.SelectedDepthLevels.Should().Be(20);
+            viewModel.OrderFlowPostureTitle.Should().Be("Waiting for full depth");
+            viewModel.OrderFlowPostureScopeText.Should().Be("AAPL - 20 levels - 0 bid / 0 ask rows");
+            viewModel.OrderFlowPostureActionText.Should().Be("Check connection");
+        });
+    }
+
+    [Fact]
+    public void SelectedSymbol_WhenChanged_ClearsRetainedLadderAndTape()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var viewModel = CreateViewModel();
+            viewModel.Bids.Add(new OrderBookDisplayLevel { Price = "100.00", Size = "10", Total = "10" });
+            viewModel.Asks.Add(new OrderBookDisplayLevel { Price = "100.01", Size = "12", Total = "12" });
+            viewModel.RecentTrades.Add(new RecentTradeModel { Time = "09:30:00", Price = "100.00", Size = "10" });
+
+            viewModel.SelectedSymbol = "MSFT";
+
+            viewModel.Bids.Should().BeEmpty();
+            viewModel.Asks.Should().BeEmpty();
+            viewModel.RecentTrades.Should().BeEmpty();
+            viewModel.NoDataVisible.Should().BeTrue();
+            viewModel.NoTradesVisible.Should().BeTrue();
+        });
+    }
+
     [Fact]
     public void BuildOrderFlowPosture_WithoutSymbol_AsksOperatorToChooseSymbol()
     {
@@ -108,6 +152,8 @@ public sealed class OrderBookViewModelTests
     public void OrderBookPageSource_BindsOrderFlowPosture()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\OrderBookPage.xaml"));
+        var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\OrderBookPage.xaml.cs"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\OrderBookViewModel.cs"));
 
         xaml.Should().Contain("OrderBookPostureCard");
         xaml.Should().Contain("OrderBookPostureTitleText");
@@ -119,5 +165,25 @@ public sealed class OrderBookViewModelTests
         xaml.Should().Contain("{Binding OrderFlowPostureDetail}");
         xaml.Should().Contain("{Binding OrderFlowPostureScopeText}");
         xaml.Should().Contain("{Binding OrderFlowPostureActionText}");
+        xaml.Should().Contain("OrderBookSymbolSelector");
+        xaml.Should().Contain("OrderBookDepthSelector");
+        xaml.Should().Contain("ItemsSource=\"{Binding AvailableSymbols}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedSymbol, Mode=TwoWay}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding DepthLevelOptions}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedDepthLevels, Mode=TwoWay}\"");
+        xaml.Should().NotContain("SelectionChanged=\"Symbol_SelectionChanged\"");
+        xaml.Should().NotContain("SelectionChanged=\"Levels_SelectionChanged\"");
+        codeBehind.Should().NotContain("FirstSymbolAutoSelected");
+        codeBehind.Should().NotContain("Symbol_SelectionChanged");
+        codeBehind.Should().NotContain("Levels_SelectionChanged");
+        viewModel.Should().Contain("public string SelectedSymbol");
+        viewModel.Should().Contain("public int SelectedDepthLevels");
+        viewModel.Should().Contain("public IReadOnlyList<int> DepthLevelOptions");
     }
+
+    private static OrderBookViewModel CreateViewModel()
+        => new(
+            WpfServices.StatusService.Instance,
+            WpfServices.ConnectionService.Instance,
+            WpfServices.LoggingService.Instance);
 }

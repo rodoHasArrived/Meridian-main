@@ -229,7 +229,9 @@ public sealed class SecurityMasterViewModelTests
 
             viewModel.SearchQuery = "AAPL";
 
-            await viewModel.SearchAsync();
+            viewModel.SearchCommand.CanExecute(null).Should().BeTrue();
+
+            await viewModel.SearchCommand.ExecuteAsync(null);
 
             viewModel.StatusText.Should().Be("Security Master is not configured for this workstation.");
             viewModel.Results.Should().BeEmpty();
@@ -262,6 +264,7 @@ public sealed class SecurityMasterViewModelTests
 
             viewModel.HasSearchQuery.Should().BeTrue();
             viewModel.HasSearchResults.Should().BeTrue();
+            viewModel.SearchCommand.CanExecute(null).Should().BeTrue();
             viewModel.ClearSearchCommand.CanExecute(null).Should().BeTrue();
 
             viewModel.ClearSearchCommand.Execute(null);
@@ -271,7 +274,35 @@ public sealed class SecurityMasterViewModelTests
             viewModel.SelectedSecurity.Should().BeNull();
             viewModel.StatusText.Should().Be("Enter a query and press Search.");
             viewModel.IsSearchRecoveryVisible.Should().BeFalse();
+            viewModel.SearchCommand.CanExecute(null).Should().BeFalse();
             viewModel.ClearSearchCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void SearchCommand_ShouldTrackQueryAvailability()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            using var viewModel = CreateViewModel(
+                navigation,
+                new StubWorkstationSecurityMasterApiClient());
+
+            viewModel.SearchCommand.CanExecute(null).Should().BeFalse();
+
+            viewModel.SearchQuery = "msft";
+
+            viewModel.HasSearchQuery.Should().BeTrue();
+            viewModel.SearchCommand.CanExecute(null).Should().BeTrue();
+
+            viewModel.SearchQuery = " ";
+
+            viewModel.HasSearchQuery.Should().BeFalse();
+            viewModel.SearchCommand.CanExecute(null).Should().BeFalse();
         });
     }
 
@@ -282,12 +313,19 @@ public sealed class SecurityMasterViewModelTests
         var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
 
         xaml.Should().Contain("SecurityMasterClearSearchButton");
+        xaml.Should().Contain("SecurityMasterSearchButton");
         xaml.Should().Contain("SecurityMasterSearchRecoveryCard");
         xaml.Should().Contain("SecurityMasterSearchRecoveryClearButton");
+        xaml.Should().Contain("<KeyBinding Key=\"Enter\"");
+        xaml.Should().Contain("Command=\"{Binding SearchCommand}\"");
+        xaml.Should().NotContain("Search_Click");
+        xaml.Should().NotContain("SearchBox_KeyDown");
         xaml.Should().Contain("{Binding IsSearchRecoveryVisible");
         xaml.Should().Contain("{Binding SearchRecoveryTitle}");
         xaml.Should().Contain("{Binding SearchRecoveryDetail}");
         xaml.Should().Contain("{Binding ClearSearchCommand}");
+        viewModel.Should().Contain("SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);");
+        viewModel.Should().Contain("private bool CanSearch()");
         viewModel.Should().Contain("ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);");
         viewModel.Should().Contain("private void OnClearSearch()");
     }

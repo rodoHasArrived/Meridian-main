@@ -223,9 +223,13 @@
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
                              Margin="0,0,12,0"
-                             KeyDown="SearchBox_KeyDown"
                              VerticalAlignment="Center"
-                             AutomationProperties.AutomationId="SecurityMasterSearchBox" />
+                             AutomationProperties.AutomationId="SecurityMasterSearchBox">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter"
+                                        Command="{Binding SearchCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
 
                     <CheckBox Grid.Column="1"
                               Content="Active only"
@@ -242,7 +246,7 @@
 
                     <Button Grid.Column="3"
                             Content="Search"
-                            Click="Search_Click"
+                            Command="{Binding SearchCommand}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Margin="0,0,8,0"
                             AutomationProperties.AutomationId="SecurityMasterSearchButton" />

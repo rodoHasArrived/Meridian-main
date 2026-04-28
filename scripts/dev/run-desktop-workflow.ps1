@@ -191,6 +191,232 @@ function Get-ShellAutomationState {
     }
 }
 
+function Find-AutomationElementById {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window,
+
+        [Parameter(Mandatory = $true)]
+        [string]$AutomationId
+    )
+
+    $condition = New-Object System.Windows.Automation.PropertyCondition(
+        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+        $AutomationId
+    )
+
+    return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+}
+
+function Find-ButtonByName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Names
+    )
+
+    $buttonType = [System.Windows.Automation.ControlType]::Button
+    foreach ($name in $Names) {
+        $condition = New-Object System.Windows.Automation.AndCondition(
+            (New-Object System.Windows.Automation.PropertyCondition(
+                [System.Windows.Automation.AutomationElement]::NameProperty,
+                $name
+            )),
+            (New-Object System.Windows.Automation.PropertyCondition(
+                [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+                $buttonType
+            ))
+        )
+
+        $button = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+        if ($null -ne $button) {
+            return $button
+        }
+    }
+
+    return $null
+}
+
+function Get-OperatingContextEnterButton {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window
+    )
+
+    $button = Find-AutomationElementById -Window $Window -AutomationId 'EnterWorkstationButton'
+    if ($null -ne $button) {
+        return $button
+    }
+
+    return Find-ButtonByName -Window $Window -Names @('Enter Workstation', 'Enter Fund')
+}
+
+function Get-SeedSampleContextsButton {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window
+    )
+
+    return Find-ButtonByName -Window $Window -Names @('Seed Sample Contexts', 'Seed Sample Profiles')
+}
+
+function Invoke-AutomationButton {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Button,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
+
+    try {
+        $invoke = $Button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern) -as [System.Windows.Automation.InvokePattern]
+        if ($null -eq $invoke) {
+            Write-Warn "$Description button does not expose InvokePattern."
+            return $false
+        }
+
+        $invoke.Invoke()
+        return $true
+    }
+    catch {
+        Write-Warn "Failed to invoke $Description button: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Test-AutomationElementEnabled {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Element
+    )
+
+    try {
+        return $Element.Current.IsEnabled
+    }
+    catch {
+        return $false
+    }
+}
+
+function Test-ShellAutomationReady {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window
+    )
+
+    $state = Get-ShellAutomationState -Window $Window
+    return $state.Ready -and -not [string]::IsNullOrWhiteSpace($state.PageTag)
+}
+
+function Ensure-EnteredOperatingContext {
+    param(
+        [System.Diagnostics.Process]$Process
+    )
+
+    $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
+        if ($null -ne $Process -and $Process.HasExited) {
+            throw "Meridian desktop exited before operating context could be confirmed."
+        }
+
+        $currentWindow = Find-MeridianWindow
+        if ($null -eq $currentWindow) {
+            return $null
+        }
+
+        if (Test-ShellAutomationReady -Window $currentWindow) {
+            return $currentWindow
+        }
+
+        return $null
+    }
+
+    if ($shell) {
+        return $true
+    }
+
+    $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+        if ($null -ne $Process -and $Process.HasExited) {
+            throw "Meridian desktop exited before operating context could be selected."
+        }
+
+        $currentWindow = Find-MeridianWindow
+        if ($null -eq $currentWindow) {
+            return $null
+        }
+
+        return Get-OperatingContextEnterButton -Window $currentWindow
+    }
+
+    if ($enterButton -and -not (Test-AutomationElementEnabled -Element $enterButton)) {
+        $seedButton = Wait-ForElement -Attempts 5 -DelayMilliseconds 250 -Finder {
+            $currentWindow = Find-MeridianWindow
+            if ($null -eq $currentWindow) {
+                return $null
+            }
+
+            return Get-SeedSampleContextsButton -Window $currentWindow
+        }
+
+        if ($seedButton) {
+            if (Invoke-AutomationButton -Button $seedButton -Description 'seed sample contexts') {
+                Start-Sleep -Seconds 2
+            }
+        }
+
+        $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+            $currentWindow = Find-MeridianWindow
+            if ($null -eq $currentWindow) {
+                return $null
+            }
+
+            return Get-OperatingContextEnterButton -Window $currentWindow
+        }
+    }
+
+    if (-not $enterButton) {
+        Write-Warn 'Operating context selector did not expose an Enter Workstation button.'
+        return $false
+    }
+
+    if (-not (Test-AutomationElementEnabled -Element $enterButton)) {
+        Write-Warn 'Operating context selector did not enable Enter Workstation after seeding sample contexts.'
+        return $false
+    }
+
+    Activate-MeridianWindow | Out-Null
+    if (-not (Invoke-AutomationButton -Button $enterButton -Description 'enter workstation')) {
+        return $false
+    }
+
+    $shell = Wait-ForElement -Attempts 24 -DelayMilliseconds 500 -Finder {
+        if ($null -ne $Process -and $Process.HasExited) {
+            throw "Meridian desktop exited before the workstation shell appeared."
+        }
+
+        $currentWindow = Find-MeridianWindow
+        if ($null -eq $currentWindow) {
+            return $null
+        }
+
+        if (Test-ShellAutomationReady -Window $currentWindow) {
+            return $currentWindow
+        }
+
+        return $null
+    }
+
+    if (-not $shell) {
+        Write-Warn 'Workstation shell did not expose automation markers after entering the operating context.'
+        return $false
+    }
+
+    Start-Sleep -Seconds 1
+    return $true
+}
+
 function Wait-ForShellPage {
     param(
         [System.Diagnostics.Process]$Process,
@@ -420,6 +646,7 @@ $resolvedFramework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framewo
 $resolvedExeName = if ($PSBoundParameters.ContainsKey('ExeName')) { $ExeName } else { [string](Get-ConfigValue -Table $defaults -Key 'exeName' -Fallback 'Meridian.Desktop.exe') }
 $outputRootInput = if ($PSBoundParameters.ContainsKey('OutputRoot')) { $OutputRoot } else { [string](Get-ConfigValue -Table $defaults -Key 'outputRoot' -Fallback 'artifacts/desktop-workflows') }
 $resolvedOutputRoot = Resolve-RepoPath $outputRootInput
+Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot
 $buildIsolationKey = New-MeridianBuildIsolationKey -Prefix ("desktop-workflow-" + $Workflow)
 $resolvedScreenshotDirectory = if ($PSBoundParameters.ContainsKey('ScreenshotDirectory')) {
     Resolve-RepoPath $ScreenshotDirectory
@@ -550,6 +777,14 @@ try {
         $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
         Write-Ok 'Meridian window detected.'
     }
+
+    $operatingContextConfirmed = Ensure-EnteredOperatingContext -Process $ownedProcess
+    $manifest.run.operatingContextConfirmed = $operatingContextConfirmed
+    if (-not $operatingContextConfirmed) {
+        throw 'Operating context was not confirmed; screenshot workflow cannot continue before shell readiness. Check EnterWorkstationButton and Seed Sample Contexts automation.'
+    }
+
+    Write-Ok 'Operating context confirmed.'
 
     $startupReadiness = Wait-ForStableShellPage -Process $ownedProcess -TimeoutSec ([Math]::Max(30, $LaunchTimeoutSec)) -StableMs 1200
     $window = $startupReadiness.Window

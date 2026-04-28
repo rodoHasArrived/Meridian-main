@@ -79,6 +79,7 @@
         <!-- ─── Positions grid ─────────────────────────────────────────────── -->
         <DataGrid Grid.Row="2"
                   ItemsSource="{Binding Positions}"
+                  Visibility="{Binding IsPositionsGridVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserSortColumns="True"
@@ -98,6 +99,37 @@
                 <DataGridTextColumn Header="Real. P&amp;L"   Binding="{Binding RealisedPnl,   StringFormat=C2}" Width="100" />
             </DataGrid.Columns>
         </DataGrid>
+
+        <Border x:Name="AccountPositionsEmptyStatePanel"
+                Grid.Row="2"
+                Padding="28"
+                Background="{DynamicResource CardBackgroundBrush}"
+                CornerRadius="6"
+                Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        MaxWidth="460">
+                <TextBlock x:Name="AccountPositionsEmptyStateTitle"
+                           Text="{Binding PositionsEmptyStateTitle}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock x:Name="AccountPositionsEmptyStateDetail"
+                           Margin="0,8,0,16"
+                           Text="{Binding PositionsEmptyStateDetail}"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource SecondaryTextBrush}" />
+                <Button x:Name="AccountPositionsEmptyStateRefreshButton"
+                        Content="Refresh Account"
+                        Command="{Binding RefreshCommand}"
+                        IsEnabled="{Binding CanRefreshAccount}"
+                        HorizontalAlignment="Center"
+                        MinWidth="132" />
+            </StackPanel>
+        </Border>
 
         <!-- ─── Status bar ─────────────────────────────────────────────────── -->
         <TextBlock Grid.Row="3" Margin="0,8,0,0"

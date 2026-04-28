@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.3
-**Date:** 2026-04-27
+**Date:** 2026-04-28
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -251,7 +251,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
 - Main workstation shell is metadata-driven through `ShellNavigationCatalog`, with workspace home pages, primary/secondary/overflow navigation tiers, recent pages, command-palette search keywords, and related-workflow links.
 - Workspace home pages now act as shell-first operator launchpads (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) instead of a long page-directory entry model.
-- Desktop launch and workflow automation now normalize page/deep-link startup actions through `DesktopLaunchArguments`, forward secondary launch arguments to the primary instance through the single-instance named pipe, keep `ShellAutomationState` available as a hidden-but-present page marker, and split isolated restore/build arguments so shortcuts and screenshot/manual workflows target the same canonical workspace tags operators use without target-framework asset drift.
+- Desktop launch and workflow automation now normalize page/deep-link startup actions through `DesktopLaunchArguments`, forward secondary launch arguments to the primary instance through the single-instance named pipe, keep `ShellAutomationState` available as a hidden-but-present page marker, and split isolated restore/build arguments so shortcuts and screenshot/manual workflows target the same canonical workspace tags operators use without target-framework asset drift. The GitHub screenshot-refresh workflow now captures catalog/manual WPF workflows with scheduled, push, or manual dispatch inputs, uploads per-workflow diagnostics, and commits generated PNG updates once after the capture matrix. The shared operator inbox also includes actionable warning/critical run review-packet items from the latest runs alongside readiness and reconciliation work items.
 - Command palette (`Ctrl+K`), keyboard shortcuts, workspace-tile switching, and governance/fund-ops aliases keep low-frequency pages reachable without promoting them to top-level roots.
 - Workspace shell context strips now standardize scope, environment, freshness, review-state, alert, and currency cues across the four workstation shells; current shell orchestration can promote active operator-inbox review items into the critical context lane without replacing the shared readiness source.
 - Shell context attention banners now expand warning or danger badges into actionable detail with severity, owning workspace, signal source, and the expected next action.
@@ -263,7 +263,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 - `ResearchWorkspaceShellPage` now includes a research desk briefing hero that projects market briefing, selected-run posture, run-detail and portfolio drill-ins, and paper-promotion review handoffs from shared workstation run data.
 - `DataOperationsWorkspaceShellPage` now includes a data-operations desk briefing hero backed by `DataOperationsWorkspacePresentationBuilder`; it projects provider health, resumable backfills, storage health, collection sessions, export jobs, operational blockers, and next-handoff actions from shared service data.
 - `WatchlistPage` now includes watchlist posture guidance for saved list count, pinned list coverage, symbol coverage, visible search scope, pinned-first card ordering, pinned badges, and empty-state handoffs before an operator loads or imports symbol sets.
-- `StoragePage` now annotates the file-structure preview with selected root, naming convention, compression mode, preview guidance, stable automation IDs, and a normalized sample tree before an operator runs backfill, export, or packaging jobs.
+- `StoragePage` now opens with an archive-posture card for daily growth, capacity horizon, last metrics scan, empty archives, capacity pressure, stable growth, and scan failures, then annotates the file-structure preview with selected root, naming convention, compression mode, preview guidance, stable automation IDs, and a normalized sample tree before an operator runs backfill, export, or packaging jobs.
 - `ProviderHealthPage` now includes a provider-posture briefing that condenses stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage into one next handoff before the operator scans individual provider cards.
 - `SystemHealthPage` now includes a system triage briefing that condenses provider health, storage posture, disk pressure, and retained event severity into one next handoff before the operator scans diagnostics panels; provider and recent-event empty states distinguish pending scans from confirmed empty snapshots.
 - `NotificationCenterPage` now supports history recovery when search, unread-only, or severity filters hide retained notifications; `NotificationCenterViewModel` resets those filters against the already-loaded history window.
@@ -666,5 +666,5 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-04-27_
+_Last Updated: 2026-04-28_
 

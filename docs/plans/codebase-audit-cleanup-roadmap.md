@@ -1,6 +1,6 @@
 # Codebase Audit and Cleanup Roadmap
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-28
 **Status:** Active cleanup backlog
 **Purpose:** Current cleanup and maintainability roadmap grounded in the repository as it exists today
 
@@ -105,12 +105,12 @@ Do not run a massive mechanical cleanup sweep just to reduce counts. Prefer adja
 
 ### 5. Repository and documentation hygiene
 
-The repo structure is healthier than before, but it still needs ongoing maintenance.
+The repo structure is healthier than before, but it still needs ongoing maintenance. The generated 2026-04-28 documentation dashboard reports 89/100 health, and the generated coverage report shows 88.3% documented items; the largest practical gaps are endpoint and configuration documentation, not a new roadmap direction.
 
 Open work:
 
 - keep generated docs, status docs, and hand-maintained planning docs synchronized
-- continue consolidating overlapping CI workflows where ownership and purpose are clear
+- continue consolidating overlapping CI workflows where ownership and purpose are clear; the WPF screenshot-refresh lane now has scheduled/push/manual capture, least-privilege default permissions, diagnostic artifacts, and one final screenshot commit job, so future cleanup should preserve that ownership model
 - move newly historical documents to `archive/docs/` once they stop serving as active guidance
 - keep README/index/navigation docs aligned when planning documents are promoted or retired
 

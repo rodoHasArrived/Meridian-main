@@ -59,6 +59,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     public ObservableCollection<OrderBookDisplayLevel> Asks { get; } = new();
     public ObservableCollection<RecentTradeModel> RecentTrades { get; } = new();
     public ObservableCollection<string> AvailableSymbols { get; } = new();
+    public IReadOnlyList<int> DepthLevelOptions { get; } = [5, 10, 20, 50];
 
     // ── Connection status ─────────────────────────────────────────────────────────
 
@@ -140,18 +141,24 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     private GridLength _askBarWidth = new(0.5, GridUnitType.Star);
     public GridLength AskBarWidth { get => _askBarWidth; private set => SetProperty(ref _askBarWidth, value); }
 
-    // ── Symbol/level selection (called from code-behind event relays) ─────────────
+    // ── Symbol/level selection ───────────────────────────────────────────────────
 
     private string _selectedSymbol = string.Empty;
     private int _depthLevels = 10;
     private decimal? _spreadValue;
     private decimal? _imbalancePercent;
 
-    /// <summary>
-    /// Raised after the symbol list loads and the first symbol is auto-selected.
-    /// The code-behind should sync the ComboBox SelectedIndex in response.
-    /// </summary>
-    public event EventHandler? FirstSymbolAutoSelected;
+    public string SelectedSymbol
+    {
+        get => _selectedSymbol;
+        set => SetSymbol(value);
+    }
+
+    public int SelectedDepthLevels
+    {
+        get => _depthLevels;
+        set => SetDepthLevels(value);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────────
 
@@ -186,9 +193,14 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         _cts?.Cancel();
     }
 
-    public void SetSymbol(string symbol)
+    public void SetSymbol(string? symbol)
     {
-        _selectedSymbol = symbol;
+        var normalized = symbol?.Trim() ?? string.Empty;
+        if (!SetProperty(ref _selectedSymbol, normalized, nameof(SelectedSymbol)))
+        {
+            return;
+        }
+
         Bids.Clear();
         Asks.Clear();
         RecentTrades.Clear();
@@ -201,8 +213,11 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     public void SetDepthLevels(int levels)
     {
-        _depthLevels = Math.Max(1, levels);
-        UpdateOrderFlowPosture();
+        var normalized = Math.Max(1, levels);
+        if (SetProperty(ref _depthLevels, normalized, nameof(SelectedDepthLevels)))
+        {
+            UpdateOrderFlowPosture();
+        }
     }
 
     // ── Internal logic ────────────────────────────────────────────────────────────
@@ -247,10 +262,9 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             }
 
             // Auto-select the first symbol so the page shows data on load without a manual pick.
-            if (AvailableSymbols.Count > 0 && string.IsNullOrEmpty(_selectedSymbol))
+            if (AvailableSymbols.Count > 0 && string.IsNullOrEmpty(SelectedSymbol))
             {
-                SetSymbol(AvailableSymbols[0]);
-                FirstSymbolAutoSelected?.Invoke(this, EventArgs.Empty);
+                SelectedSymbol = AvailableSymbols[0];
             }
         }
         catch (OperationCanceledException)

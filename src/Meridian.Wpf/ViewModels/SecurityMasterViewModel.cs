@@ -976,6 +976,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand BackfillTradingParamsCommand { get; }
     public IAsyncRelayCommand ImportFromFileCommand { get; }
     public IRelayCommand CloseImportResultCommand { get; }
+    public IAsyncRelayCommand SearchCommand { get; }
     public IRelayCommand ClearSearchCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
@@ -1058,6 +1059,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
         ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
+        SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
         RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
@@ -1182,8 +1184,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SearchRecoveryTitle));
         RaisePropertyChanged(nameof(SearchRecoveryDetail));
         RaisePropertyChanged(nameof(SearchScopeText));
+        SearchCommand?.NotifyCanExecuteChanged();
         ClearSearchCommand?.NotifyCanExecuteChanged();
     }
+
+    private bool CanSearch()
+        => HasSearchQuery && !IsLoading;
 
     private bool CanClearSearch()
         => HasSearchQuery || HasSearchResults || HasSelectedSecurity || _hasSearchAttempted;

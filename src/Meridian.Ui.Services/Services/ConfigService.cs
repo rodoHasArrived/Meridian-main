@@ -55,6 +55,7 @@ public class ConfigService : IConfigService
             return config;
         }
         catch (IOException) { return null; }
+        catch (JsonException) { return null; }
         catch (UnauthorizedAccessException) { return null; }
     }
 

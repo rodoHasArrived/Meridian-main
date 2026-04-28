@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-28
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -58,12 +58,13 @@ Closed platform work:
 - WPF shell modernization: native Fluent theme (`ThemeMode="System"`, PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on Charting page (PR #522)
 - Zero-API-key startup: Synthetic provider default when no credentials are present (PR #513)
 - Route/health endpoint reliability: duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
-- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515)
+- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515), now hardened for scheduled/push/manual catalog and manual captures, diagnostics, and one post-matrix screenshot commit
 
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- current WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, Batch Backtest results empty guidance, Position Blotter selection review/action readiness, Notification Center history recovery, Trading Hours session briefing, OrderBook order-flow posture, Activity Log triage/export/clear state, Welcome readiness progress, Watchlist pinned-first staging, Fund Accounts balance-evidence posture, workspace queue tone styles, the workspace shell context strip, operator queue attention with Account Portfolio routing for brokerage-sync blockers, Trading desk briefing hero state selection, and Research desk briefing hero run/promotion handoffs; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- current WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, Batch Backtest results empty guidance, Position Blotter selection review/action readiness, Notification Center history recovery, Trading Hours session briefing, OrderBook order-flow posture, Activity Log triage/export/clear state, Welcome readiness progress, Storage archive posture and preview guidance, Watchlist pinned-first staging, Fund Accounts balance-evidence posture, workspace queue tone styles, the workspace shell context strip, operator queue attention with Account Portfolio and run review-packet routing for actionable blockers, Trading desk briefing hero state selection, and Research desk briefing hero run/promotion handoffs; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- WPF screenshot/manual evidence capture now runs through the hardened refresh workflow with selectable catalog/manual groups, diagnostic artifacts, and a single commit step; it supports validation and release evidence but does not close the active workflow gates
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
 - DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus a signed 2026-04-27 generated parity packet, validated evidence documents, validated explainability/calibration contracts, and packet-bound sign-off evidence; future operator sign-off must stay synchronized against fresh date-stamped packets across the validation script, provider matrix, runbook, sign-off template, and readiness dashboard whenever evidence changes
 - coordination services and lease/ownership primitives for future multi-instance work
@@ -99,8 +100,9 @@ Goal: harden the existing execution primitives, brokerage adapters, and wired wo
 Open work:
 
 - tighten the existing live positions, open orders, fills, P&L, and risk panels wired to `/api/execution/*` and the shared workstation readiness lane
-- expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, acceptance-gate status, overall readiness, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in workstation consumers
+- expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, acceptance-gate status, overall readiness, operator work items, actionable latest-run review-packet blockers, and execution-control state from the shared trading-readiness contract and operator-inbox aggregation with clearer acceptance criteria in workstation consumers
 - keep the WPF Trading desk briefing hero, OrderBook posture strip, and main-shell queue routing aligned with shared active-run, workflow-summary, replay/readiness, controls, trust-gate, depth/tape, and brokerage-sync inputs as supporting Wave 2 evidence
+- keep run review-packet inbox items bounded to actionable warning/critical latest-run blockers so the operator inbox improves triage without becoming a duplicate run-history surface
 - keep the WPF Research desk briefing hero aligned with shared selected-run, portfolio, ledger, and promotion-review inputs as supporting Wave 3 evidence
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)

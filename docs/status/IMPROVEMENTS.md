@@ -1,6 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-28
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
@@ -76,7 +76,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 - **Core improvement themes A-G are closed** for the current platform baseline.
 - **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
 - **Kernel migration parity program initiated:** blueprint and status tracking are now defined for fixture-driven C# ↔ F# boundary parity (`score`/`severity`/`reason`) with expected-divergence controls and CI gating for kernel-related PRs. Track rollout in [`docs/plans/kernel-parity-migration-blueprint.md`](../plans/kernel-parity-migration-blueprint.md) and live coverage in [`KERNEL_PARITY_STATUS.md`](KERNEL_PARITY_STATUS.md).
-- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the shell-first workstation baseline is now validated in code through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, Trading/Research/Data Operations desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Watchlist pinned-first staging, Fund Accounts balance-evidence briefing, route-aware operator queue attention, DI fixes, and registered-page sweep coverage.
+- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the shell-first workstation baseline is now validated in code through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, Trading/Research/Data Operations desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Watchlist pinned-first staging, Fund Accounts balance-evidence briefing, route-aware operator queue attention with actionable run review-packet items, DI fixes, registered-page sweep coverage, and hardened scheduled/manual WPF screenshot evidence capture.
 - **Recommended focus:** keep the closed Wave 1 trust gate synchronized around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; harden the existing paper-trading cockpit and shared operator-inbox handoffs (Wave 2); deepen workflow-native inspectors and page-body harmonization on top of the delivered shell host; and continue governance/fund-operations productization on top of the delivered Security Master and Fund Accounts baselines (K2).
 
 ### Backlog Inputs
@@ -1478,7 +1478,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-28
 **Maintainer:** Project Team
 **Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
 **Next Review:** Weekly engineering sync (or immediately after any status change)
@@ -1509,7 +1509,8 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - the Trading shell now keeps portfolio drill-ins inside the cockpit by routing operators to the active run portfolio when a run is selected and to the account portfolio when no active run is bound, reinforcing Wave 3 shared-model continuity without bouncing back to `Research`
 - the Trading shell now includes a desk briefing hero that derives focus, readiness tone, and next handoff from active-run, workflow-summary, and shared operator-readiness inputs instead of a separate shell-local readiness model
 - the Research shell now includes a desk briefing hero that derives focus, selected-run posture, run-detail / portfolio drill-ins, and paper-promotion handoff state from shared workstation run data instead of a separate shell-local research model
-- the current shell support slice also includes Trading Hours session-specific briefings, OrderBook order-flow posture, RunCashFlow empty-state guidance, Welcome readiness progress, Storage preview scope/guidance, actionable shell-context attention detail, Watchlist pinned-first staging, and Fund Accounts balance-evidence briefing as workflow-support evidence rather than separate readiness gates
+- the current shell support slice also includes Trading Hours session-specific briefings, OrderBook order-flow posture, RunCashFlow empty-state guidance, Welcome readiness progress, Storage archive posture plus preview scope/guidance, actionable shell-context attention detail, Watchlist pinned-first staging, run review-packet operator-inbox items, and Fund Accounts balance-evidence briefing as workflow-support evidence rather than separate readiness gates
+- WPF screenshot refresh now supports scheduled/push/manual catalog and manual capture groups, publishes diagnostic artifacts, and commits screenshot PNG changes once after the capture matrix; keep this in the validation-evidence lane rather than treating it as Wave 2-4 acceptance
 - RunCashFlow now shows selected-run, missing-run, no-event, and loaded cash-flow guidance from retained run summaries; keep this in the shared-run continuity lane rather than treating it as completed governance cash-flow modeling
 - the mixed `MainPageUiWorkflowTests` bundle is stable again through isolated workspace persistence in the automation facade and shell-contract assertions that avoid unrelated singleton drift
 - `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` now run under `NavigationServiceSerialCollection`, keeping the mixed shell bundle deterministic while still validating full registered-page reachability

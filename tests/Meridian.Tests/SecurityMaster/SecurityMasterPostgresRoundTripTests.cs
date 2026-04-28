@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.SecurityMaster;
 
+[Trait("Category", "Integration")]
 [Collection(nameof(SecurityMasterDatabaseCollection))]
 public sealed class SecurityMasterPostgresRoundTripTests
 {

@@ -35,6 +35,22 @@ public sealed class StorageViewModel : BindableBase
     private string _coldTierSizeText = "--";
     public string ColdTierSizeText { get => _coldTierSizeText; private set => SetProperty(ref _coldTierSizeText, value); }
 
+    // -- Archive posture properties ---------------------------------------------------
+    private string _storagePostureTitle = "Archive posture pending";
+    public string StoragePostureTitle { get => _storagePostureTitle; private set => SetProperty(ref _storagePostureTitle, value); }
+
+    private string _storagePostureDetail = "Open Storage to scan archive metrics and estimate capacity posture.";
+    public string StoragePostureDetail { get => _storagePostureDetail; private set => SetProperty(ref _storagePostureDetail, value); }
+
+    private string _storageGrowthText = "Daily growth: --";
+    public string StorageGrowthText { get => _storageGrowthText; private set => SetProperty(ref _storageGrowthText, value); }
+
+    private string _storageCapacityHorizonText = "Capacity horizon: --";
+    public string StorageCapacityHorizonText { get => _storageCapacityHorizonText; private set => SetProperty(ref _storageCapacityHorizonText, value); }
+
+    private string _storageLastScanText = "Last scan: --";
+    public string StorageLastScanText { get => _storageLastScanText; private set => SetProperty(ref _storageLastScanText, value); }
+
     // ── Preview properties ────────────────────────────────────────────────────────────
     private string _fileTreePreviewText = string.Empty;
     public string FileTreePreviewText { get => _fileTreePreviewText; private set => SetProperty(ref _fileTreePreviewText, value); }
@@ -78,10 +94,12 @@ public sealed class StorageViewModel : BindableBase
             HotTierSizeText = FormatHelpers.FormatBytes(analytics.TradeSizeBytes);
             WarmTierSizeText = FormatHelpers.FormatBytes(analytics.DepthSizeBytes);
             ColdTierSizeText = FormatHelpers.FormatBytes(analytics.HistoricalSizeBytes);
+            ApplyStoragePosture(BuildStoragePosture(analytics));
         }
         catch (Exception)
         {
-            // Leave placeholder "--" values on error
+            // Leave metric placeholders in place while making the posture failure explicit.
+            ApplyStoragePosture(BuildStoragePostureUnavailable());
         }
     }
 
@@ -131,4 +149,87 @@ public sealed class StorageViewModel : BindableBase
             "zstd" => "ZSTD",
             _ => "Gzip",
         };
+
+    public static StoragePosture BuildStoragePosture(StorageAnalytics analytics)
+    {
+        var growthText = analytics.DailyGrowthBytes > 0
+            ? $"Daily growth: {FormatHelpers.FormatBytes(analytics.DailyGrowthBytes)}/day"
+            : "Daily growth: no recent files";
+
+        var capacityText = analytics.ProjectedDaysUntilFull is int daysUntilFull
+            ? $"Capacity horizon: {FormatDaysUntilFull(daysUntilFull)}"
+            : "Capacity horizon: not enough growth history";
+
+        var scanText = analytics.LastUpdated is DateTime lastUpdated
+            ? $"Last scan: {lastUpdated.ToLocalTime():MMM d, h:mm tt}"
+            : "Last scan: not available";
+
+        if (analytics.TotalFileCount <= 0)
+        {
+            return new StoragePosture(
+                "Archive waiting for data",
+                "Run backfill or collection to start retaining market data under the configured DataRoot.",
+                growthText,
+                capacityText,
+                scanText);
+        }
+
+        if (analytics.ProjectedDaysUntilFull is <= 14)
+        {
+            return new StoragePosture(
+                "Storage capacity needs attention",
+                "Current growth could exhaust usable disk space soon; review retention, tiering, or packaging before the next large backfill.",
+                growthText,
+                capacityText,
+                scanText);
+        }
+
+        if (analytics.DailyGrowthBytes <= 0)
+        {
+            return new StoragePosture(
+                "Archive is stable",
+                $"No recent growth was detected across {analytics.TotalFileCount:N0} retained files; verify scheduled backfills if this archive should update daily.",
+                growthText,
+                capacityText,
+                scanText);
+        }
+
+        return new StoragePosture(
+            "Storage growth is being tracked",
+            $"Archive contains {analytics.TotalFileCount:N0} files across {analytics.SymbolBreakdown.Length:N0} symbols; keep retention and package jobs aligned with growth.",
+            growthText,
+            capacityText,
+            scanText);
+    }
+
+    public static StoragePosture BuildStoragePostureUnavailable() =>
+        new(
+            "Storage metrics unavailable",
+            "Storage analytics could not scan the configured DataRoot; verify the path and permissions before running archive jobs.",
+            "Daily growth: --",
+            "Capacity horizon: --",
+            "Last scan: failed");
+
+    private void ApplyStoragePosture(StoragePosture posture)
+    {
+        StoragePostureTitle = posture.Title;
+        StoragePostureDetail = posture.Detail;
+        StorageGrowthText = posture.GrowthText;
+        StorageCapacityHorizonText = posture.CapacityHorizonText;
+        StorageLastScanText = posture.LastScanText;
+    }
+
+    private static string FormatDaysUntilFull(int daysUntilFull) =>
+        daysUntilFull <= 0
+            ? "less than 1 day"
+            : daysUntilFull == 1
+                ? "1 day"
+                : $"{daysUntilFull:N0} days";
 }
+
+public sealed record StoragePosture(
+    string Title,
+    string Detail,
+    string GrowthText,
+    string CapacityHorizonText,
+    string LastScanText);

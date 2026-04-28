@@ -46,24 +46,24 @@
                 <!-- Symbol Selector -->
                 <TextBlock Text="Symbol:" Foreground="{StaticResource ConsoleTextMutedBrush}"
                            VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <ComboBox x:Name="SymbolComboBox" Width="120" SelectionChanged="Symbol_SelectionChanged"
+                <ComboBox Width="120"
                           ItemsSource="{Binding AvailableSymbols}"
+                          SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}"
                           Background="{DynamicResource ConsoleBackgroundMediumBrush}"
                           Foreground="{DynamicResource ConsoleTextBrush}"
-                          BorderThickness="1" Padding="8,4"/>
+                          BorderThickness="1" Padding="8,4"
+                          AutomationProperties.AutomationId="OrderBookSymbolSelector"/>
 
                 <!-- Depth Levels -->
                 <TextBlock Text="Levels:" Foreground="{StaticResource ConsoleTextMutedBrush}"
                            VerticalAlignment="Center" Margin="16,0,8,0"/>
-                <ComboBox x:Name="LevelsComboBox" Width="80" SelectionChanged="Levels_SelectionChanged"
+                <ComboBox Width="80"
+                          ItemsSource="{Binding DepthLevelOptions}"
+                          SelectedItem="{Binding SelectedDepthLevels, Mode=TwoWay}"
                           Background="{DynamicResource ConsoleBackgroundMediumBrush}"
                           Foreground="{DynamicResource ConsoleTextBrush}"
-                          BorderThickness="1" Padding="8,4">
-                    <ComboBoxItem Content="5"/>
-                    <ComboBoxItem Content="10" IsSelected="True"/>
-                    <ComboBoxItem Content="20"/>
-                    <ComboBoxItem Content="50"/>
-                </ComboBox>
+                          BorderThickness="1" Padding="8,4"
+                          AutomationProperties.AutomationId="OrderBookDepthSelector"/>
 
                 <!-- Connection Status -->
                 <Border CornerRadius="999" Padding="8,4" Margin="16,0,0,0"

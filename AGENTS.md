@@ -242,6 +242,7 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQu
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SingleInstanceServiceTests|FullyQualifiedName~DesktopWorkflowScriptTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
+pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0
@@ -346,9 +347,12 @@ TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but 
 `pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
 builds unless the Make target is restored.
 
-`.github/workflows/refresh-screenshots.yml` is a WPF-only screenshot lane. It builds and launches
-the desktop shell in fixture mode through `scripts/dev/capture-desktop-screenshots.ps1`; do not
-restore the removed `--ui` web-dashboard path for screenshot refreshes.
+`.github/workflows/refresh-screenshots.yml` is a WPF-only screenshot lane. It runs
+`screenshot-catalog` plus the `manual-*` workflows through
+`scripts/dev/run-desktop-workflow.ps1` in fixture mode; `workflow_dispatch` can choose `all`,
+`catalog`, or `manuals`, override `output_root`, and skip the final commit with `commit=false`.
+The workflow commits screenshots once in the follow-up `commit-screenshots` job; do not restore
+the removed `--ui` web-dashboard path for screenshot refreshes.
 
 ## Paper Trading Readiness
 

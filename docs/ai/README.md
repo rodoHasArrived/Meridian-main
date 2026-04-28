@@ -9,6 +9,7 @@ This document is the master index for AI guidance in the Meridian repository. It
 | Task | Start Here | Deep Dive |
 | --- | --- | --- |
 | Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
+| Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
@@ -44,7 +45,14 @@ The generated navigation artifacts are the canonical orientation surface:
 | File | Purpose |
 | --- | --- |
 | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Master project context, architecture, commands, and conventions |
+| [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic execution flow, safety rules, system inventory, and alignment checklist |
 | [`ai-known-errors.md`](ai-known-errors.md) | Canonical registry of recurring AI mistakes and prevention checklists |
+
+Validate AI catalog consistency with:
+
+```bash
+python3 build/scripts/docs/check-ai-inventory.py --summary
+```
 
 ### Tier 2: Navigation and Routing
 
@@ -92,20 +100,25 @@ Located mainly in `docs/ai/claude/`.
 
 | Topic | Canonical Source |
 | --- | --- |
+| Cross-provider AI workflow | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) |
 | Repo orientation | [`generated/repo-navigation.json`](generated/repo-navigation.json) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md) |
 | Codex skill catalog | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) |
 | Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
+| AI inventory drift checks | [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `build/scripts/docs/check-ai-inventory.py` |
 
 ### Adding a New AI Resource
 
 1. Put the file in the correct tool-owned directory when required.
 2. Update the corresponding navigation entry in `docs/ai/*/README.md`.
-3. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json) and [`generated/repo-navigation.md`](generated/repo-navigation.md) if routing truth changed.
-4. Cross-link related resources when the new file changes workflow or ownership.
+3. Update [`assistant-workflow-contract.md`](assistant-workflow-contract.md) when the new resource
+   adds or removes an AI system, provider, automation, or cross-provider rule.
+4. Run `python3 build/scripts/docs/check-ai-inventory.py --summary` and fix any catalog drift.
+5. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json) and [`generated/repo-navigation.md`](generated/repo-navigation.md) if routing truth changed.
+6. Cross-link related resources when the new file changes workflow or ownership.
 
 ---
 
-_Last Updated: 2026-03-31_
+_Last Updated: 2026-04-28_

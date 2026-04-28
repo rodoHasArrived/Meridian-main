@@ -191,8 +191,7 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
 
         clock.Advance(TimeSpan.FromSeconds(2));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None));
+        await WaitForRunPrunedAsync(engine, handle.EngineRunHandle, TimeSpan.FromSeconds(2));
     }
 
     [Fact]
@@ -271,6 +270,32 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
         public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
         public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
         public void OnFinished(IBacktestContext ctx) { }
+    }
+
+    private static async Task WaitForRunPrunedAsync(
+        MeridianNativeBacktestStudioEngine engine,
+        string runHandle,
+        TimeSpan timeout)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        InvalidOperationException? lastException = null;
+
+        while (sw.Elapsed < timeout)
+        {
+            try
+            {
+                await engine.GetStatusAsync(runHandle, CancellationToken.None);
+            }
+            catch (InvalidOperationException ex)
+            {
+                lastException = ex;
+                break;
+            }
+
+            await Task.Delay(1);
+        }
+
+        lastException.Should().NotBeNull($"run '{runHandle}' should be pruned after terminal TTL expires");
     }
 
     private sealed class BlockingCorporateActionAdjustmentService : ICorporateActionAdjustmentService

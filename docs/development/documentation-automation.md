@@ -194,6 +194,20 @@ Validates code examples (Python, JSON, bash, C#) found in markdown files.
 python3 build/scripts/docs/validate-examples.py --output docs/status/example-validation.md
 ```
 
+#### `check-ai-inventory.py`
+
+Scans AI assistant assets and fails when the catalog indexes drift from the tracked files. It
+covers `.codex/`, `.claude/`, `.github/agents`, `.github/prompts`, `.github/instructions`,
+AI-related GitHub Actions workflows, `docs/ai/`, and MCP prompt/resource/tool surfaces.
+
+```bash
+python3 build/scripts/docs/check-ai-inventory.py --summary
+
+python3 build/scripts/docs/check-ai-inventory.py \
+  --output docs/status/ai-inventory-report.md \
+  --json-output docs/status/ai-inventory-report.json
+```
+
 #### `generate-coverage.py`
 
 Measures documentation coverage of public APIs, providers, and configuration.
@@ -310,8 +324,8 @@ python3 build/scripts/docs/run-docs-automation.py \
 
 | Profile | Included Scripts | Best For |
 | -------- | ------------------ | ---------- |
-| `quick` | `scan-todos`, `validate-examples`, `repair-links` | Fast local verification before commits |
-| `core` _(default)_ | `scan-todos`, `generate-structure-docs`, `generate-health-dashboard`, `validate-examples`, `generate-coverage` | Day-to-day documentation maintenance |
+| `quick` | `scan-todos`, `validate-examples`, `repair-links`, `check-ai-inventory` | Fast local verification before commits |
+| `core` _(default)_ | `scan-todos`, `generate-structure-docs`, `generate-health-dashboard`, `validate-examples`, `check-ai-inventory`, `generate-coverage` | Day-to-day documentation maintenance |
 | `full` | All documented scripts, including changelog + rules engine | Scheduled runs and release prep |
 
 The runner exits non-zero if any script fails (unless `--continue-on-error` is set), making it CI-friendly for preflight checks and local automation.
@@ -343,6 +357,8 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/status/health-dashboard.md` | generate-health-dashboard.py | Health metrics |
 | `docs/status/link-repair-report.md` | repair-links.py | Broken link report |
 | `docs/status/example-validation.md` | validate-examples.py | Code example validation |
+| `docs/status/ai-inventory-report.md` | check-ai-inventory.py | AI assistant asset catalog drift report |
+| `docs/status/ai-inventory-report.json` | check-ai-inventory.py | Machine-readable AI inventory and drift findings |
 | `docs/status/coverage-report.md` | generate-coverage.py | Documentation coverage |
 | `docs/status/rules-report.md` | rules-engine.py | Rule validation results |
 | `docs/status/docs-automation-summary.md` | run-docs-automation.py | Human-readable automation run summary with status table and failure details |

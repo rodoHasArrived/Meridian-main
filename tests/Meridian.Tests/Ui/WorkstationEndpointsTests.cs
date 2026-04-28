@@ -826,6 +826,38 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeRunReviewPacketWorkItems()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runId = $"run-inbox-review-packet-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(runId));
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+        var reviewItem = inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview).Which;
+
+        reviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
+        reviewItem.Workspace.Should().Be("Trading");
+        reviewItem.RunId.Should().Be(runId);
+        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal));
+        reviewItem.TargetPageTag.Should().Be("TradingShell");
+        inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_WithFundAccountId_ShouldProjectBrokerageSyncWorkItem()
     {
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");

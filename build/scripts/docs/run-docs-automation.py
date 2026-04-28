@@ -66,6 +66,16 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "args": ["--output", "docs/status/example-validation.md"],
         "output": "docs/status/example-validation.md",
     },
+    "check-ai-inventory": {
+        "script": "check-ai-inventory.py",
+        "args": [
+            "--output",
+            "docs/status/ai-inventory-report.md",
+            "--json-output",
+            "docs/status/ai-inventory-report.json",
+        ],
+        "output": "docs/status/ai-inventory-report.md",
+    },
     "generate-coverage": {
         "script": "generate-coverage.py",
         "args": ["--output", "docs/status/coverage-report.md"],
@@ -109,12 +119,13 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
 }
 
 PROFILE_CONFIG: Dict[str, List[str]] = {
-    "quick": ["scan-todos", "validate-examples", "repair-links"],
+    "quick": ["scan-todos", "validate-examples", "repair-links", "check-ai-inventory"],
     "core": [
         "scan-todos",
         "generate-structure-docs",
         "generate-health-dashboard",
         "validate-examples",
+        "check-ai-inventory",
         "generate-coverage",
     ],
     "full": [
@@ -123,6 +134,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-health-dashboard",
         "repair-links",
         "validate-examples",
+        "check-ai-inventory",
         "generate-coverage",
         "generate-changelog",
         "rules-engine",

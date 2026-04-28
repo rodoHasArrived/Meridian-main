@@ -1,6 +1,14 @@
 ---
 name: meridian-roadmap-strategist
 description: Create, refresh, and reconcile Meridian roadmap, delivery-plan, opportunity-map, and target-state documents. Use when the user asks for a roadmap, roadmap update, phased plan, delivery waves, opportunity analysis, product-direction summary, remaining-work summary, or a clear statement of Meridian's intended finished product.
+license: See repository LICENSE
+compatibility: >
+  Portable Agent Skill package for Agent Skills-compatible hosts. Reads Meridian planning,
+  roadmap, status, and source-map references from the repository before writing conclusions.
+metadata:
+  owner: meridian-ai
+  version: "1.0"
+  spec: open-agent-skills-v1
 ---
 
 # Meridian Roadmap Strategist

@@ -142,15 +142,19 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 Operator work items emitted by the shared readiness service use stable, scoped `WorkItemId`
 values such as `paper-session-missing`, `paper-replay-missing-{sessionId}`,
 `dk1-operator-signoff-pending`, and `execution-evidence-incomplete`. This lets the WPF shell, retained web cockpit, and initial operator-inbox endpoint refresh the same blocker without creating a new random item on every poll.
-`GET /api/workstation/operator/inbox` now aggregates those readiness work items with open or
-in-review reconciliation breaks, adds workspace/page/route navigation hints, and is now consumed by
-the WPF main shell queue action. The shell resolves known target routes before target page tags, so
+`GET /api/workstation/operator/inbox` now aggregates those readiness work items with actionable
+warning/critical run review-packet work items from the latest runs plus open or in-review
+reconciliation breaks, adds workspace/page/route navigation hints, and is now consumed by the WPF
+main shell queue action. The review-packet merge is bounded to the latest six runs and only promotes
+items that already require operator attention, so ready runs do not flood the queue. The shell
+resolves known target routes before target page tags, so
 reconciliation work items open `FundReconciliation`, Security Master coverage opens
 `SecurityMaster`, brokerage-sync blockers open `AccountPortfolio`, and broad trading-readiness
 items stay in `TradingShell`. When the active WPF operating context is an account, the shell passes
 that account as `fundAccountId` so brokerage-sync and account-scoped readiness blockers remain
-visible in the same queue. Broader end-to-end queue acceptance remains a cockpit-hardening task
-rather than a completed workflow.
+visible in the same queue, while promotion-review packets route to
+`/api/workstation/runs/{runId}/review-packet`. Broader end-to-end queue acceptance remains a
+cockpit-hardening task rather than a completed workflow.
 The Trading WPF shell also passes the active account context into its readiness request, so the
 cockpit status card and shell queue use the same account-scoped brokerage-sync posture.
 The retained web cockpit also renders the readiness contract's operator work items and warnings
@@ -327,6 +331,8 @@ Rejection uses the same operator-review packet shape through `RejectPromotionReq
 - maintain `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
   - trading readiness joins session, replay, audit/control, promotion, and DK1 trust state
   - replay readiness becomes review-required when a session changes after its latest replay audit
+  - operator inbox includes readiness, actionable run review-packet, brokerage-sync, and
+    reconciliation break work items with stable navigation targets
 - maintain `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs`
   - promotion history survives service restart through the durable record store
   - approval record contains source run, target run, approver, reason, and audit reference

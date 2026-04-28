@@ -1498,6 +1498,7 @@ public static class WorkstationEndpoints
             .Select(AttachOperatorNavigation)
             .ToList();
 
+        await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
         await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
 
         var items = workItems
@@ -1523,6 +1524,66 @@ public static class WorkstationEndpoints
             ReviewCount: reviewCount,
             Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
     }
+
+    private static async Task AddRunReviewPacketWorkItemsAsync(
+        HttpContext context,
+        Guid? fundAccountId,
+        List<OperatorWorkItemDto> workItems,
+        DateTimeOffset asOf)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var reviewPacketService = context.RequestServices.GetService<StrategyRunReviewPacketService>();
+        if (readService is null || reviewPacketService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var runs = await readService
+                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
+                .ConfigureAwait(false);
+
+            foreach (var run in runs.Where(ShouldSurfaceRunReviewWorkItems))
+            {
+                var packet = await reviewPacketService
+                    .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (packet is null)
+                {
+                    continue;
+                }
+
+                workItems.AddRange(packet.WorkItems
+                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                    .Select(AttachOperatorNavigation));
+            }
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
+        }
+    }
+
+    private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
+        => run.Promotion?.RequiresReview == true ||
+           run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled;
+
+    private static OperatorWorkItemDto BuildRunReviewPacketUnavailableWorkItem(DateTimeOffset asOf)
+        => new(
+            WorkItemId: "run-review-packets-unavailable",
+            Kind: OperatorWorkItemKindDto.PromotionReview,
+            Label: "Run review packets unavailable",
+            Detail: "Trading readiness is still available, but run review-packet work items could not be loaded. Review run-read service health before accepting promotion queue coverage.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: asOf,
+            Workspace: "Trading",
+            TargetRoute: UiApiRoutes.WorkstationOperatorInbox,
+            TargetPageTag: "TradingShell");
 
     private static async Task AddReconciliationBreakWorkItemsAsync(
         HttpContext context,

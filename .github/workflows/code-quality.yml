@@ -96,22 +96,27 @@ jobs:
           BUILD_ISSUES=0
           WARNING_COUNT=0
           ERROR_COUNT=0
+          QUALITY_CANCELLED=0
 
-          if [ "${{ steps.format-check.outcome }}" != "success" ]; then
+          if [ "${{ steps.format-check.outcome }}" = "cancelled" ] || [ "${{ steps.build.outcome }}" = "cancelled" ]; then
+            QUALITY_CANCELLED=1
+          fi
+
+          if [ "$QUALITY_CANCELLED" -eq 0 ] && [ "${{ steps.format-check.outcome }}" != "success" ]; then
             FORMAT_ISSUES=1
           fi
 
-          if [ -f build-output.log ]; then
+          if [ "$QUALITY_CANCELLED" -eq 0 ] && [ -f build-output.log ]; then
             WARNING_COUNT=$(grep -cE "warning (CA|CS|IDE|SCS)" build-output.log || true)
             ERROR_COUNT=$(grep -cE " error (CA|CS|IDE|SCS)" build-output.log || true)
           fi
 
-          if [ "${{ steps.build.outcome }}" != "success" ] || [ "$WARNING_COUNT" -gt 0 ] || [ "$ERROR_COUNT" -gt 0 ]; then
+          if [ "$QUALITY_CANCELLED" -eq 0 ] && { [ "${{ steps.build.outcome }}" != "success" ] || [ "$WARNING_COUNT" -gt 0 ] || [ "$ERROR_COUNT" -gt 0 ]; }; then
             BUILD_ISSUES=1
           fi
 
           HAS_ISSUES=0
-          if [ "$FORMAT_ISSUES" -eq 1 ] || [ "$BUILD_ISSUES" -eq 1 ]; then
+          if [ "$QUALITY_CANCELLED" -eq 0 ] && { [ "$FORMAT_ISSUES" -eq 1 ] || [ "$BUILD_ISSUES" -eq 1 ]; }; then
             HAS_ISSUES=1
           fi
 
@@ -120,6 +125,7 @@ jobs:
             echo "build_issues=$BUILD_ISSUES"
             echo "warning_count=$WARNING_COUNT"
             echo "error_count=$ERROR_COUNT"
+            echo "quality_cancelled=$QUALITY_CANCELLED"
             echo "has_issues=$HAS_ISSUES"
           } >> "$GITHUB_OUTPUT"
 
@@ -128,15 +134,21 @@ jobs:
             echo "## Code Quality Report"
             echo ""
             echo "### Code Formatting"
-            if [ "${{ steps.format-check.outcome }}" = "success" ]; then
+            if [ "$QUALITY_CANCELLED" -eq 1 ]; then
+              echo "- Status: Canceled before a complete quality verdict; no code-quality issue opened"
+            elif [ "${{ steps.format-check.outcome }}" = "success" ]; then
               echo "- Status: Passed"
             else
               echo "- Status: Issues detected — run \`dotnet format\` locally to fix"
             fi
             echo ""
             echo "### Static Analysis"
-            echo "- Analyzer warnings: $WARNING_COUNT"
-            if [ -f build-output.log ]; then
+            if [ "$QUALITY_CANCELLED" -eq 1 ]; then
+              echo "- Status: Canceled before build analysis completed"
+            else
+              echo "- Analyzer warnings: $WARNING_COUNT"
+            fi
+            if [ "$QUALITY_CANCELLED" -eq 0 ] && [ -f build-output.log ]; then
               SECURITY_WARNINGS=$(grep -cE "warning SCS" build-output.log || true)
               if [ "$SECURITY_WARNINGS" -gt 0 ]; then
                 echo "- Security warnings: $SECURITY_WARNINGS"
@@ -149,7 +161,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload build log
-        if: always() && steps.analyze.outputs.has_issues == '1'
+        if: >-
+          always() &&
+          steps.analyze.outputs.has_issues == '1' &&
+          steps.analyze.outputs.quality_cancelled != '1'
         uses: actions/upload-artifact@v7
         with:
           name: build-output
@@ -159,7 +174,10 @@ jobs:
       # ─── AI Code Quality Analysis ──────────────────────────────────
       - name: Extract top warnings for AI
         id: warnings
-        if: always() && steps.analyze.outputs.has_issues == '1'
+        if: >-
+          always() &&
+          steps.analyze.outputs.has_issues == '1' &&
+          steps.analyze.outputs.quality_cancelled != '1'
         run: |
           TOP_WARNINGS=""
           if [ -f build-output.log ]; then
@@ -171,7 +189,10 @@ jobs:
 
       - name: AI code quality suggestions
         id: ai-quality
-        if: always() && steps.analyze.outputs.has_issues == '1'
+        if: >-
+          always() &&
+          steps.analyze.outputs.has_issues == '1' &&
+          steps.analyze.outputs.quality_cancelled != '1'
         continue-on-error: true
         uses: actions/ai-inference@v2
         with:
@@ -218,6 +239,7 @@ jobs:
         if: >-
           always() &&
           steps.analyze.outputs.has_issues == '1' &&
+          steps.analyze.outputs.quality_cancelled != '1' &&
           github.event_name != 'pull_request'
         uses: actions/github-script@v8
         with:
@@ -273,7 +295,7 @@ jobs:
             });
 
       - name: Fail workflow when quality issues exist
-        if: steps.analyze.outputs.has_issues == '1'
+        if: steps.analyze.outputs.has_issues == '1' && steps.analyze.outputs.quality_cancelled != '1'
         run: |
           echo "Code quality issues detected."
           exit 1

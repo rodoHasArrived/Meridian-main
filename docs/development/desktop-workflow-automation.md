@@ -57,13 +57,14 @@ Restore and build now share the same configuration, WPF build flags, and isolati
 Before any screenshot is saved, the runner now:
 
 1. brings Meridian back to the foreground,
-2. re-queries the live shell window,
-3. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
-4. fails the step if the requested page was not actually confirmed.
+2. enters the operating-context selector when fixture startup lands on that first-run surface and fails immediately if that selection cannot be confirmed,
+3. re-queries the live shell window,
+4. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
+5. fails the step if the requested page was not actually confirmed.
 
 Each run writes:
 
-- `manifest.json` with step timing, capture paths, and step notes
+- `manifest.json` with operating-context confirmation, step timing, capture paths, and step notes
 - `logs/stdout.log` and `logs/stderr.log` for startup diagnostics
 - per-step screenshots
 
