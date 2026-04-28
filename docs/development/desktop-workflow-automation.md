@@ -24,13 +24,16 @@ pwsh -File scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File scripts/dev/capture-desktop-screenshots.ps1
 ```
 
-Equivalent Make targets:
+## Supported command surface (authoritative)
 
-```bash
-make desktop-workflow
-make desktop-manual
-make desktop-screenshots
-```
+Desktop workflow automation is **PowerShell-script first**.
+
+- Supported: `pwsh -File scripts/dev/*.ps1` (or `pwsh ./scripts/dev/*.ps1`)
+- Not supported as canonical workflow entry points: `make desktop-workflow`, `make desktop-manual`, `make desktop-screenshots`
+
+For migration context and replacement mappings, see:
+
+- [Desktop command-surface migration note](./desktop-command-surface-migration.md)
 
 ## Available Workflows
 

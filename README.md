@@ -108,7 +108,9 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 ```bash
 make help           # List all task targets
 make build-quick    # Shared restore-once, sequential Debug build
-make desktop-run    # WPF desktop + local host (Windows)
+pwsh ./scripts/dev/run-desktop.ps1  # WPF desktop + local host (Windows)
+make desktop-build  # Build WPF desktop project
+make desktop-test   # Run WPF desktop tests
 make run            # Collector with config hot-reload (--mode desktop)
 make run-backfill   # Historical backfill
 make run-selftest   # Wiring self-test
@@ -116,6 +118,8 @@ make benchmark      # Full BenchmarkDotNet suite
 make bench-quick    # Quick bottleneck benchmarks (~10 min)
 make setup-dev      # One-shot local dev setup (hooks, config, restore, build)
 ```
+
+Desktop workflow automation (workflow runs, manual generation, screenshot capture) is PowerShell-script based; see [docs/development/desktop-command-surface-migration.md](docs/development/desktop-command-surface-migration.md).
 
 See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference including environment variables, configuration schema, and provider credential setup.
 

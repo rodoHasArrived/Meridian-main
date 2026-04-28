@@ -4,7 +4,7 @@
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows \
-        update-claude-md docs-all
+        update-claude-md docs-lint docs-all
 
 docs: gen-context verify-adrs ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
@@ -71,6 +71,9 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--claude-md CLAUDE.md \
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
+
+docs-lint: ## Validate documented make/pwsh command snippets resolve to real targets/scripts
+	@python3 build/scripts/docs/lint-command-snippets.py
 
 docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows verify-adrs ## Generate all documentation
 	@echo "$(GREEN)All documentation generated$(NC)"
