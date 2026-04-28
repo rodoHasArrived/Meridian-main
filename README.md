@@ -484,6 +484,7 @@ Use these documents together when planning or implementing new work:
 │       ├── makefile.yml
 │       ├── nightly.yml
 │       ├── pr-checks.yml
+│       ├── program-state-validation.yml
 │       ├── prompt-generation.yml
 │       ├── python-package-conda.yml
 │       ├── readme-tree.yml
@@ -500,7 +501,8 @@ Use these documents together when planning or implementing new work:
 │       ├── test-matrix.yml
 │       ├── ticker-data-collection.yml
 │       ├── update-diagrams.yml
-│       └── validate-workflows.yml
+│       ├── validate-workflows.yml
+│       └── workflow-docs-parity.yml
 ├── .gitignore
 ├── .gitleaks.toml
 ├── .globalconfig
@@ -780,6 +782,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── generate-metrics-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── generate-workflow-manifest.py
+│       │   ├── lint-command-snippets.py
 │       │   ├── repair-links.py
 │       │   ├── rules-engine.py
 │       │   ├── run-docs-automation.py
@@ -940,6 +944,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── adding-custom-rules.md
 │   │   ├── build-observability.md
 │   │   ├── central-package-management.md
+│   │   ├── desktop-command-surface-migration.md
 │   │   ├── desktop-testing-guide.md
 │   │   ├── desktop-workflow-automation.md
 │   │   ├── documentation-automation.md
@@ -4746,6 +4751,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
 │   │   ├── repository-structure.md
+│   │   ├── workflow-command-reference.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
 │   │   ├── README.md
@@ -4889,6 +4895,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 23-workstation-governance-security-master.png
 │   │   ├── README.md
 │   │   └── desktop
+│   │       ├── catalog.json
 │   │       ├── wpf-backfill.png
 │   │       ├── wpf-backtest.png
 │   │       ├── wpf-dashboard.png
@@ -4938,9 +4945,15 @@ Use these documents together when planning or implementing new work:
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
+│   │   ├── program-state-summary.json
+│   │   ├── program-state-summary.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── rules-report.md
-│   │   └── wave4-evidence-template.md
+│   │   ├── run-contract.schema.json
+│   │   ├── wave4-evidence-template.md
+│   │   ├── workflow-drift-report.md
+│   │   ├── workflow-manifest.json
+│   │   └── workflow-validation-summary.json
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
@@ -4997,9 +5010,13 @@ Use these documents together when planning or implementing new work:
 │   │   └── setup.sh
 │   ├── check_contract_compatibility_gate.py
 │   ├── check_program_state_consistency.py
+│   ├── check_workflow_docs_parity.py
 │   ├── compare_benchmarks.py
+│   ├── compare_run_contract.py
 │   ├── dev
 │   │   ├── SharedBuild.ps1
+│   │   ├── SharedCheckpoint.ps1
+│   │   ├── SharedPreflight.ps1
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── cleanup-generated.ps1
@@ -5011,16 +5028,19 @@ Use these documents together when planning or implementing new work:
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
 │   │   ├── validate-operator-inbox-route.ps1
-│   │   └── validate-position-blotter-route.ps1
+│   │   ├── validate-position-blotter-route.ps1
+│   │   └── validate-screenshot-contract.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── generate_contract_review_packet.py
+│   ├── generate_program_state_summary.py
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -7825,16 +7845,19 @@ Use these documents together when planning or implementing new work:
 │   │   ├── setup-verification.sh
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
+│   │   ├── test_compare_run_contract.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_maintenance_full_workflow.py
 │   │   └── test_prepare_dk1_operator_signoff.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-587 directories, 7098 files
+587 directories, 7121 files
 ```
 <!-- readme-tree end -->
