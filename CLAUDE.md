@@ -1001,7 +1001,13 @@ Meridian-main
 │   │   │   │   ├── strategy-lifecycle.png
 │   │   │   │   └── strategy-lifecycle.svg
 │   │   │   └── README.md
-│   │   └── README.md
+│   │   ├── README.md
+│   │   ├── ui-implementation-flow.dot
+│   │   ├── ui-implementation-flow.png
+│   │   ├── ui-implementation-flow.svg
+│   │   ├── ui-navigation-map.dot
+│   │   ├── ui-navigation-map.png
+│   │   └── ui-navigation-map.svg
 │   ├── docfx
 │   │   ├── api
 │   │   │   ├── .manifest
@@ -6805,6 +6811,7 @@ Meridian-main
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
+│       │   ├── ScheduleManagerViewModel.cs
 │       │   ├── SecurityConflictLaneModels.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
@@ -7668,13 +7675,18 @@ Meridian-main
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── AdvancedAnalyticsViewModelTests.cs
+│   │   │   ├── AgentViewModelTests.cs
 │   │   │   ├── AggregatePortfolioViewModelTests.cs
 │   │   │   ├── AnalysisExportViewModelTests.cs
+│   │   │   ├── AnalysisExportWizardViewModelTests.cs
+│   │   │   ├── BackfillViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── DataSamplingViewModelTests.cs
+│   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
@@ -7687,12 +7699,14 @@ Meridian-main
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── ResearchWorkspaceShellViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
+│   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StorageViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── SymbolsPageViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
 │   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
@@ -7743,8 +7757,12 @@ Meridian-main
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_maintenance_full_workflow.py
+│   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
-│   │   └── test_screenshot_diff_report.py
+│   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_screenshot_diff_report.py
+│   │   ├── test_setup_dotnet_cache_action.py
+│   │   └── test_shared_build_retention.py
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md
