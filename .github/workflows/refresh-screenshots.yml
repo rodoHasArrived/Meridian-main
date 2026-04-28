@@ -28,9 +28,26 @@ on:
       - 'src/Meridian.Ui.Shared/**'
       - 'src/Meridian.Wpf/**'
   workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit updated screenshots back to the repository.'
+        type: boolean
+        default: true
+      workflows:
+        description: 'Which screenshot workflows to run.'
+        type: choice
+        default: all
+        options:
+          - all
+          - catalog
+          - manuals
+      output_root:
+        description: 'Root directory for desktop screenshots.'
+        type: string
+        default: docs/screenshots/desktop
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: refresh-screenshots-${{ github.ref }}
@@ -45,7 +62,6 @@ env:
   WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
   WPF_CONFIGURATION: Release
   WPF_FRAMEWORK: net9.0-windows10.0.19041.0
-  WPF_SCREENSHOT_OUTPUT: docs/screenshots/desktop
 
 jobs:
   desktop-screenshots:
@@ -56,24 +72,49 @@ jobs:
     # Prevent recursive runs from the bot commit.
     if: github.actor != 'github-actions[bot]'
 
+    permissions:
+      contents: write
+
+    defaults:
+      run:
+        shell: pwsh
+
     strategy:
       fail-fast: false
       matrix:
         workflow:
           - name: screenshot-catalog
-            output: docs/screenshots/desktop
+            output: ${{ inputs.output_root || 'docs/screenshots/desktop' }}
+            group: catalog
           - name: manual-overview
-            output: docs/screenshots/desktop/manuals/manual-overview
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-overview
+            group: manuals
           - name: manual-data-operations
-            output: docs/screenshots/desktop/manuals/manual-data-operations
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-data-operations
+            group: manuals
           - name: manual-research-and-trading
-            output: docs/screenshots/desktop/manuals/manual-research-and-trading
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-research-and-trading
+            group: manuals
           - name: manual-governance
-            output: docs/screenshots/desktop/manuals/manual-governance
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-governance
+            group: manuals
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Environment diagnostics
+        run: |
+          Write-Host "Runner OS: $env:RUNNER_OS"
+          Write-Host "Ref: $env:GITHUB_REF"
+          Write-Host "SHA: $env:GITHUB_SHA"
+          Write-Host "Actor: $env:GITHUB_ACTOR"
+          Write-Host "Workflow selection input: '${{ inputs.workflows }}'"
+          Write-Host "Commit input: '${{ inputs.commit }}'"
+          Write-Host "Output root input: '${{ inputs.output_root }}'"
+          dotnet --info
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -82,11 +123,14 @@ jobs:
           cache-suffix: desktop-screenshots
 
       - name: Copy sample config
-        shell: pwsh
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
 
       - name: Capture ${{ matrix.workflow.name }} screenshots
-        shell: pwsh
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          inputs.workflows == 'all' ||
+          (inputs.workflows == 'catalog' && matrix.workflow.group == 'catalog') ||
+          (inputs.workflows == 'manuals' && matrix.workflow.group == 'manuals')
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
@@ -99,18 +143,28 @@ jobs:
 
       - name: Detect screenshot changes
         id: detect_changes
-        shell: pwsh
         run: |
-          $changed = git status --porcelain -- "${{ env.WPF_SCREENSHOT_OUTPUT }}" | Measure-Object | Select-Object -ExpandProperty Count
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $changed = git status --porcelain -- "$outputRoot" | Measure-Object | Select-Object -ExpandProperty Count
           if ($changed -gt 0) {
             "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             "changed_count=$changed" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-            Write-Host "Detected $changed changed file(s) under ${{ env.WPF_SCREENSHOT_OUTPUT }}"
+            Write-Host "Detected $changed changed file(s) under $outputRoot"
           }
           else {
             "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             "changed_count=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-            Write-Host "No changes detected under ${{ env.WPF_SCREENSHOT_OUTPUT }}"
+            Write-Host "No changes detected under $outputRoot"
+          }
+
+      - name: Dump desktop workflow artifacts tree (on failure)
+        if: failure()
+        run: |
+          if (Test-Path 'artifacts') {
+            Get-ChildItem -Path 'artifacts' -Recurse -Force | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
+          }
+          else {
+            Write-Host "No 'artifacts' directory found."
           }
 
       - name: Upload WPF screenshot diagnostics
@@ -119,7 +173,7 @@ jobs:
         with:
           name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
           path: |
-            docs/screenshots/desktop/**/*.png
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
             artifacts/desktop-workflows/**/manifest.json
             artifacts/desktop-workflows/**/logs/*.log
             wpf-startup-stdout.log
@@ -130,21 +184,23 @@ jobs:
       # NOTE: This workflow commits directly to main.
       # Ensure your branch protection rules allow GitHub Actions to push.
       - name: Commit WPF desktop screenshots
-        if: steps.detect_changes.outputs.changed == 'true'
+        if: |
+          steps.detect_changes.outputs.changed == 'true' &&
+          (github.event_name != 'workflow_dispatch' || inputs.commit == true)
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'docs(screenshots): refresh WPF desktop screenshots'
-          file_pattern: docs/screenshots/desktop/**/*.png
+          file_pattern: ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Write workflow summary
         if: always()
-        shell: pwsh
         run: |
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
           $pngCount = 0
-          if (Test-Path "${{ env.WPF_SCREENSHOT_OUTPUT }}") {
-            $pngCount = (Get-ChildItem -Path "${{ env.WPF_SCREENSHOT_OUTPUT }}" -Recurse -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+          if (Test-Path "$outputRoot") {
+            $pngCount = (Get-ChildItem -Path "$outputRoot" -Recurse -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
           }
 
           $lines = @(
@@ -154,6 +210,11 @@ jobs:
             "Output: ``${{ matrix.workflow.output }}``"
             "PNG files found: **$pngCount**"
             "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
+            ''
+            '### Environment'
+            "Ref: ``${{ github.ref }}``"
+            "SHA: ``${{ github.sha }}``"
+            "Runner OS: ``${{ runner.os }}``"
           )
 
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
