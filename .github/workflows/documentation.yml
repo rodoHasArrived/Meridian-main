@@ -875,6 +875,106 @@ jobs:
             echo "${{ steps.ai-doc-review.outputs.response }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
+
+      - name: Compare dashboard readiness deltas vs previous commit
+        id: dashboard-diff
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.before || '' }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          files = [
+              'docs/status/kernel-readiness-dashboard.md',
+              'docs/status/provider-validation-matrix.md',
+              'docs/status/production-status.md',
+              'docs/status/contract-compatibility-matrix.md',
+              'docs/status/workflow-drift-report.md',
+          ]
+
+          base = os.environ.get('BASE_SHA','').strip()
+          if not base:
+              try:
+                  base = subprocess.check_output(['git','rev-parse','HEAD^'], text=True).strip()
+              except Exception:
+                  base = ''
+
+          def read_at(ref: str, path: str) -> str:
+              if not ref:
+                  return ''
+              try:
+                  return subprocess.check_output(['git','show',f'{ref}:{path}'], text=True, stderr=subprocess.DEVNULL)
+              except Exception:
+                  return ''
+
+          status_tokens = ['Not Started','Planned','Early In Progress','In Progress','Ready for Operator Review','Ready for cadence monitoring','Ready','Blocked','At Risk','ReviewRequired']
+
+          def metrics(text: str) -> dict:
+              lowered = text.lower()
+              return {
+                  'blocked': len(re.findall(r'\bblocked\b', lowered)),
+                  'replay_mismatch': len(re.findall(r'replay[^\n]{0,80}(mismatch|diverg|stale)', lowered)),
+                  'governance_blocks': len(re.findall(r'(governance|approval|reconciliation|report-pack)[^\n]{0,80}(blocked|missing|stale|required)', lowered)),
+                  'contract_drift_alerts': len(re.findall(r'(contract|api)[^\n]{0,80}(drift|incompatib|alert|breaking)', lowered)),
+                  'readiness_states': {k: len(re.findall(re.escape(k.lower()), lowered)) for k in status_tokens},
+              }
+
+          current = ''
+          previous = ''
+          for f in files:
+              fp = Path(f)
+              if fp.exists():
+                  current += '\n' + fp.read_text(encoding='utf-8', errors='ignore')
+              previous += '\n' + read_at(base, f)
+
+          cur = metrics(current)
+          prev = metrics(previous)
+
+          def delta(k):
+              return cur[k] - prev[k]
+
+          readiness_transitions = sum(abs(cur['readiness_states'].get(k,0)-prev['readiness_states'].get(k,0)) for k in status_tokens)
+
+          diff = {
+              'baseline': base or 'none',
+              'readiness_stage_transitions': readiness_transitions,
+              'blocker_count_delta': delta('blocked'),
+              'replay_reliability_mismatch_delta': delta('replay_mismatch'),
+              'governance_approval_reconciliation_report_pack_blocking_delta': delta('governance_blocks'),
+              'api_contract_coverage_drift_alert_delta': delta('contract_drift_alerts'),
+              'current': cur,
+              'previous': prev,
+          }
+
+          Path('docs-dashboard-diff.json').write_text(json.dumps(diff, indent=2) + "\n", encoding='utf-8')
+
+          summary = Path(os.environ['GITHUB_STEP_SUMMARY'])
+          with summary.open('a', encoding='utf-8') as fh:
+              fh.write('\n## What changed since last run\n\n')
+              fh.write('| Signal | Delta |\n|---|---:|\n')
+              fh.write(f"| Readiness stage transitions | {diff['readiness_stage_transitions']} |\n")
+              fh.write(f"| Blocker count | {diff['blocker_count_delta']:+d} |\n")
+              fh.write(f"| Replay reliability/mismatch | {diff['replay_reliability_mismatch_delta']:+d} |\n")
+              fh.write(f"| Governance approval/reconciliation/report-pack blocking | {diff['governance_approval_reconciliation_report_pack_blocking_delta']:+d} |\n")
+              fh.write(f"| API contract coverage/drift alerts | {diff['api_contract_coverage_drift_alert_delta']:+d} |\n")
+
+          severe = diff['blocker_count_delta'] > 0 or diff['api_contract_coverage_drift_alert_delta'] > 0
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as out:
+              out.write(f"severe_regression={'true' if severe else 'false'}\n")
+          PY
+
+      - name: Fail on severe dashboard regressions
+        if: steps.dashboard-diff.outputs.severe_regression == 'true'
+        run: |
+          echo "Severe regression detected (new blockers or increased contract drift alerts)."
+          exit 1
+
       - name: Upload generated documentation snapshot
         if: always()
         uses: actions/upload-artifact@v7
@@ -884,6 +984,11 @@ jobs:
             docs/generated/*.md
             docs/status/health-dashboard.md
             docs-health.json
+            docs/status/program-state-summary.json
+            docs/status/workflow-manifest.json
+            docs/status/workflow-validation-summary.json
+            docs/status/docs-automation-summary.json
+            docs-dashboard-diff.json
           if-no-files-found: warn
           retention-days: 14
 
