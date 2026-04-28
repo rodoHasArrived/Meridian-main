@@ -737,16 +737,14 @@ function Test-StageOutputsValid {
 
 $catalogPath = Resolve-RepoPath $DefinitionPath
 $initialOutputRoot = if ($PSBoundParameters.ContainsKey('OutputRoot')) { Resolve-RepoPath $OutputRoot } else { Resolve-RepoPath 'artifacts/desktop-workflows' }
-$catalogPreflightArgs = @{
-    Scenario = 'desktop-workflow-catalog'
-    RequiredCommands = [string[]]@('dotnet')
-    RequiredPaths = [string[]]@($catalogPath)
-    WritableDirectories = [string[]]@($initialOutputRoot)
-    RequireWindows = $true
-    EmitJson = $true
-    AllowWarnings = $true
-}
-$catalogPreflight = Invoke-MeridianPreflight @catalogPreflightArgs
+$catalogPreflight = Invoke-MeridianPreflight `
+    -Scenario 'desktop-workflow-catalog' `
+    -RequiredCommands ([string[]]@('dotnet')) `
+    -RequiredPaths ([string[]]@([string]$catalogPath)) `
+    -WritableDirectories ([string[]]@([string]$initialOutputRoot)) `
+    -RequireWindows:$true `
+    -EmitJson:$true `
+    -AllowWarnings:$true
 
 if ($catalogPreflight.status -eq 'blocked') {
     throw "Preflight failed before workflow load. $(($catalogPreflight.blockingChecks | ConvertTo-Json -Depth 6 -Compress))"
