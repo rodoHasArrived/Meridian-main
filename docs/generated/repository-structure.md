@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-28 08:08:53 UTC. Do not edit manually.
+> Auto-generated on 2026-04-28 13:31:27 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -6504,6 +6504,7 @@ Meridian-main
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
+│       │   ├── ResearchWorkspaceShellPresentationModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.cs
 │       │   ├── ShellNavigationCatalog.DataOperations.cs
@@ -6570,6 +6571,7 @@ Meridian-main
 │       │   ├── QuantScriptStorageJsonContext.cs
 │       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
+│       │   ├── ResearchWorkspaceShellPresentationService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -6671,6 +6673,7 @@ Meridian-main
 │       │   ├── QualityArchiveViewModel.cs
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
+│       │   ├── ResearchWorkspaceShellViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
@@ -6690,6 +6693,7 @@ Meridian-main
 │       │   ├── SymbolsPageViewModel.cs
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
+│       │   ├── TimeSeriesAlignmentViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
 │       │   ├── TradingWorkspaceShellViewModel.cs
 │       │   ├── WatchlistViewModel.cs
@@ -6882,6 +6886,7 @@ Meridian-main
 │       │   ├── WatchlistPage.xaml.cs
 │       │   ├── WelcomePage.xaml
 │       │   ├── WelcomePage.xaml.cs
+│       │   ├── WorkspaceCapabilityHomePage.cs
 │       │   ├── WorkspaceCommandBarControl.xaml
 │       │   ├── WorkspaceCommandBarControl.xaml.cs
 │       │   ├── WorkspaceDeepPageHostPage.xaml
@@ -7534,10 +7539,13 @@ Meridian-main
 │   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── AdvancedAnalyticsViewModelTests.cs
 │   │   │   ├── AggregatePortfolioViewModelTests.cs
+│   │   │   ├── AnalysisExportViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
+│   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
@@ -7545,9 +7553,11 @@ Meridian-main
 │   │   │   ├── MessagingHubViewModelTests.cs
 │   │   │   ├── NotificationCenterViewModelTests.cs
 │   │   │   ├── OrderBookViewModelTests.cs
+│   │   │   ├── PortfolioImportViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
+│   │   │   ├── ResearchWorkspaceShellViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
@@ -7556,6 +7566,7 @@ Meridian-main
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
 │   │   │   ├── TradingWorkspaceShellViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
@@ -7596,6 +7607,7 @@ Meridian-main
 │   │   ├── setup-verification.sh
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
