@@ -211,6 +211,10 @@ The **Security master coverage** deep-link within the Governance workspace, show
 The following screenshots are captured from the WPF desktop application running in
 fixture mode (`MDC_FIXTURE_MODE=1`). They live under the `desktop/` subdirectory.
 
+The machine-readable contract for this table is `docs/screenshots/desktop/catalog.json`.
+Run `python3 scripts/dev/validate-screenshot-contract.py` to verify the desktop files,
+workflow capture names, and this README table stay in sync.
+
 `D13` reflects the current governance assurance-oriented Security Master workstation surface.
 
 | # | Page | File |

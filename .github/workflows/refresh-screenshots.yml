@@ -219,6 +219,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+
+      - name: Validate screenshot contract (catalog)
+        if: |
+          (github.event_name != 'workflow_dispatch' ||
+          inputs.workflows == 'all' ||
+          inputs.workflows == 'catalog') &&
+          matrix.workflow.name == 'screenshot-catalog'
+        run: python scripts/dev/validate-screenshot-contract.py
+
       - name: Upload WPF screenshot diagnostics
         if: always()
         uses: actions/upload-artifact@v7
