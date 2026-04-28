@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-28 21:43:36 UTC. Do not edit manually.
+> Auto-generated on 2026-04-28 22:07:09 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -563,12 +563,18 @@ Meridian-main
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── check-ai-inventory.py
 │       │   ├── create-todo-issues.py
+│       │   ├── dashboard_rendering.py
 │       │   ├── generate-ai-navigation.py
+│       │   ├── generate-api-contract-coverage-dashboard.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
+│       │   ├── generate-evidence-continuity-dashboard.py
+│       │   ├── generate-governance-readiness-dashboard.py
 │       │   ├── generate-health-dashboard.py
 │       │   ├── generate-metrics-dashboard.py
+│       │   ├── generate-paper-replay-reliability-dashboard.py
+│       │   ├── generate-pilot-readiness-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
 │       │   ├── generate-workflow-manifest.py
@@ -753,6 +759,78 @@ Meridian-main
 │   │   ├── ui-fixture-mode-guide.md
 │   │   └── wpf-implementation-notes.md
 │   ├── diagrams
+│   │   ├── analytics
+│   │   │   ├── backtesting-engine.dot
+│   │   │   ├── backtesting-engine.png
+│   │   │   ├── backtesting-engine.svg
+│   │   │   └── README.md
+│   │   ├── architecture
+│   │   │   ├── c4
+│   │   │   │   ├── c4-level1-context.dot
+│   │   │   │   ├── c4-level1-context.png
+│   │   │   │   ├── c4-level1-context.svg
+│   │   │   │   ├── c4-level2-containers.dot
+│   │   │   │   ├── c4-level2-containers.png
+│   │   │   │   ├── c4-level2-containers.svg
+│   │   │   │   ├── c4-level3-components.dot
+│   │   │   │   ├── c4-level3-components.png
+│   │   │   │   └── c4-level3-components.svg
+│   │   │   ├── platform
+│   │   │   │   ├── domain-event-model.dot
+│   │   │   │   ├── domain-event-model.png
+│   │   │   │   ├── domain-event-model.svg
+│   │   │   │   ├── fsharp-domain.dot
+│   │   │   │   ├── fsharp-domain.png
+│   │   │   │   ├── fsharp-domain.svg
+│   │   │   │   ├── mcp-server.dot
+│   │   │   │   ├── mcp-server.png
+│   │   │   │   ├── mcp-server.svg
+│   │   │   │   ├── project-dependencies.dot
+│   │   │   │   ├── project-dependencies.png
+│   │   │   │   ├── project-dependencies.svg
+│   │   │   │   ├── provider-architecture.dot
+│   │   │   │   ├── provider-architecture.png
+│   │   │   │   ├── provider-architecture.svg
+│   │   │   │   ├── runtime-hosts.dot
+│   │   │   │   ├── runtime-hosts.png
+│   │   │   │   ├── runtime-hosts.svg
+│   │   │   │   ├── storage-architecture.dot
+│   │   │   │   ├── storage-architecture.png
+│   │   │   │   ├── storage-architecture.svg
+│   │   │   │   ├── workstation-delivery.dot
+│   │   │   │   ├── workstation-delivery.png
+│   │   │   │   └── workstation-delivery.svg
+│   │   │   └── README.md
+│   │   ├── operations
+│   │   │   ├── data-quality-monitoring.dot
+│   │   │   ├── data-quality-monitoring.png
+│   │   │   ├── data-quality-monitoring.svg
+│   │   │   ├── deployment-options.dot
+│   │   │   ├── deployment-options.png
+│   │   │   ├── deployment-options.svg
+│   │   │   ├── README.md
+│   │   │   ├── resilience-patterns.dot
+│   │   │   ├── resilience-patterns.png
+│   │   │   └── resilience-patterns.svg
+│   │   ├── reference
+│   │   │   ├── cli-commands.dot
+│   │   │   ├── cli-commands.png
+│   │   │   ├── cli-commands.svg
+│   │   │   ├── configuration-management.dot
+│   │   │   ├── configuration-management.png
+│   │   │   ├── configuration-management.svg
+│   │   │   ├── README.md
+│   │   │   ├── symbol-search-resolution.dot
+│   │   │   ├── symbol-search-resolution.png
+│   │   │   └── symbol-search-resolution.svg
+│   │   ├── ui
+│   │   │   ├── README.md
+│   │   │   ├── ui-implementation-flow.dot
+│   │   │   ├── ui-implementation-flow.png
+│   │   │   ├── ui-implementation-flow.svg
+│   │   │   ├── ui-navigation-map.dot
+│   │   │   ├── ui-navigation-map.png
+│   │   │   └── ui-navigation-map.svg
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
@@ -822,91 +900,34 @@ Meridian-main
 │   │   │   ├── Use Case Diagram - Meridian.svg
 │   │   │   ├── use-case-diagram.png
 │   │   │   └── use-case-diagram.puml
-│   │   ├── backfill-workflow.dot
-│   │   ├── backfill-workflow.png
-│   │   ├── backfill-workflow.svg
-│   │   ├── backtesting-engine.dot
-│   │   ├── backtesting-engine.png
-│   │   ├── backtesting-engine.svg
-│   │   ├── c4-level1-context.dot
-│   │   ├── c4-level1-context.png
-│   │   ├── c4-level1-context.svg
-│   │   ├── c4-level2-containers.dot
-│   │   ├── c4-level2-containers.png
-│   │   ├── c4-level2-containers.svg
-│   │   ├── c4-level3-components.dot
-│   │   ├── c4-level3-components.png
-│   │   ├── c4-level3-components.svg
-│   │   ├── cli-commands.dot
-│   │   ├── cli-commands.png
-│   │   ├── cli-commands.svg
-│   │   ├── configuration-management.dot
-│   │   ├── configuration-management.png
-│   │   ├── configuration-management.svg
-│   │   ├── data-flow.dot
-│   │   ├── data-flow.png
-│   │   ├── data-flow.svg
-│   │   ├── data-quality-monitoring.dot
-│   │   ├── data-quality-monitoring.png
-│   │   ├── data-quality-monitoring.svg
-│   │   ├── deployment-options.dot
-│   │   ├── deployment-options.png
-│   │   ├── deployment-options.svg
-│   │   ├── domain-event-model.dot
-│   │   ├── domain-event-model.png
-│   │   ├── domain-event-model.svg
-│   │   ├── event-pipeline-sequence.dot
-│   │   ├── event-pipeline-sequence.png
-│   │   ├── event-pipeline-sequence.svg
-│   │   ├── execution-layer.dot
-│   │   ├── execution-layer.png
-│   │   ├── execution-layer.svg
-│   │   ├── fsharp-domain.dot
-│   │   ├── fsharp-domain.png
-│   │   ├── fsharp-domain.svg
-│   │   ├── fund-ops-reconciliation.dot
-│   │   ├── fund-ops-reconciliation.png
-│   │   ├── fund-ops-reconciliation.svg
-│   │   ├── mcp-server.dot
-│   │   ├── mcp-server.png
-│   │   ├── mcp-server.svg
-│   │   ├── onboarding-flow.dot
-│   │   ├── onboarding-flow.png
-│   │   ├── onboarding-flow.svg
-│   │   ├── project-dependencies.dot
-│   │   ├── project-dependencies.png
-│   │   ├── project-dependencies.svg
-│   │   ├── provider-architecture.dot
-│   │   ├── provider-architecture.png
-│   │   ├── provider-architecture.svg
-│   │   ├── README.md
-│   │   ├── resilience-patterns.dot
-│   │   ├── resilience-patterns.png
-│   │   ├── resilience-patterns.svg
-│   │   ├── runtime-hosts.dot
-│   │   ├── runtime-hosts.png
-│   │   ├── runtime-hosts.svg
-│   │   ├── security-master-lifecycle.dot
-│   │   ├── security-master-lifecycle.png
-│   │   ├── security-master-lifecycle.svg
-│   │   ├── storage-architecture.dot
-│   │   ├── storage-architecture.png
-│   │   ├── storage-architecture.svg
-│   │   ├── strategy-lifecycle.dot
-│   │   ├── strategy-lifecycle.png
-│   │   ├── strategy-lifecycle.svg
-│   │   ├── symbol-search-resolution.dot
-│   │   ├── symbol-search-resolution.png
-│   │   ├── symbol-search-resolution.svg
-│   │   ├── ui-implementation-flow.dot
-│   │   ├── ui-implementation-flow.png
-│   │   ├── ui-implementation-flow.svg
-│   │   ├── ui-navigation-map.dot
-│   │   ├── ui-navigation-map.png
-│   │   ├── ui-navigation-map.svg
-│   │   ├── workstation-delivery.dot
-│   │   ├── workstation-delivery.png
-│   │   └── workstation-delivery.svg
+│   │   ├── workflows
+│   │   │   ├── operations
+│   │   │   │   ├── backfill-workflow.dot
+│   │   │   │   ├── backfill-workflow.png
+│   │   │   │   ├── backfill-workflow.svg
+│   │   │   │   ├── data-flow.dot
+│   │   │   │   ├── data-flow.png
+│   │   │   │   ├── data-flow.svg
+│   │   │   │   ├── event-pipeline-sequence.dot
+│   │   │   │   ├── event-pipeline-sequence.png
+│   │   │   │   ├── event-pipeline-sequence.svg
+│   │   │   │   ├── execution-layer.dot
+│   │   │   │   ├── execution-layer.png
+│   │   │   │   ├── execution-layer.svg
+│   │   │   │   ├── fund-ops-reconciliation.dot
+│   │   │   │   ├── fund-ops-reconciliation.png
+│   │   │   │   ├── fund-ops-reconciliation.svg
+│   │   │   │   ├── onboarding-flow.dot
+│   │   │   │   ├── onboarding-flow.png
+│   │   │   │   ├── onboarding-flow.svg
+│   │   │   │   ├── security-master-lifecycle.dot
+│   │   │   │   ├── security-master-lifecycle.png
+│   │   │   │   ├── security-master-lifecycle.svg
+│   │   │   │   ├── strategy-lifecycle.dot
+│   │   │   │   ├── strategy-lifecycle.png
+│   │   │   │   └── strategy-lifecycle.svg
+│   │   │   └── README.md
+│   │   └── README.md
 │   ├── docfx
 │   │   ├── api
 │   │   │   ├── .manifest
