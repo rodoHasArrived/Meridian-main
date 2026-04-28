@@ -825,7 +825,10 @@ $checkpoint = Initialize-MeridianCheckpoint `
 
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $existingRunDirectory = if ($checkpoint.Data.metadata.ContainsKey('runDirectory')) { [string]$checkpoint.Data.metadata.runDirectory } else { '' }
-$runDirectory = if (-not [string]::IsNullOrWhiteSpace($existingRunDirectory)) { $existingRunDirectory } else { Join-Path $resolvedOutputRoot "$timestamp-$Workflow" }
+$runDirectory = Join-Path $resolvedOutputRoot "$timestamp-$Workflow"
+if (-not [string]::IsNullOrWhiteSpace($existingRunDirectory)) {
+    $runDirectory = $existingRunDirectory
+}
 $logDirectory = Join-Path $runDirectory 'logs'
 $screenshotDirectory = if ($null -ne $resolvedScreenshotDirectory) { $resolvedScreenshotDirectory } else { Join-Path $runDirectory 'screenshots' }
 $manifestPath = Join-Path $runDirectory 'manifest.json'
@@ -1178,6 +1181,12 @@ try {
                 Send-WindowKeys -Window $window -Keys $keys
             }
 
+            Start-Sleep -Milliseconds $stepWaitMs
+            $pageReadiness = Wait-ForShellPage -Process $ownedProcess -ExpectedPageTag $pageTag -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
+            $window = $pageReadiness.Window
+            $stepResult.observedPageTag = $pageReadiness.State.PageTag
+            $stepResult.observedPageTitle = $pageReadiness.State.PageTitle
+
             $captureRetry = Invoke-MeridianRetry `
                 -Name ("{0}/step-{1:D2}/{2}" -f $Workflow, $stepIndex, $captureName) `
                 -MaxAttempts 6 `
@@ -1239,8 +1248,9 @@ try {
 
                     Activate-MeridianWindow | Out-Null
                     if ($shouldCapture -and $null -ne $capturePath) {
+                        $savedPath = Save-WindowCapture -Window $readiness.window -Path $capturePath
                         return [pscustomobject]@{
-                            capturePath = (Save-WindowCapture -Window $readiness.window -Path $capturePath)
+                            capturePath = $savedPath
                             state = $readiness.state
                             window = $readiness.window
                         }

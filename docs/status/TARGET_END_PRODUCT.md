@@ -7,42 +7,57 @@
 
 ## Snapshot
 
-Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
+Meridian's target end state is a self-hosted trading workstation and fund-operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
-Data Operations establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, and operator-visible sign-off posture. Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
+`Data` establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, and operator-visible sign-off posture. `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting positions, account posture, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
+
+For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 
 ---
 
 ## Operator Workflow
 
-1. **Data Operations** establishes trusted provider coverage, backfill health, symbol readiness, checkpoint confidence, and export confidence.
-2. **Research** uses that trusted data to run, compare, and review strategy runs across engines and modes.
+1. **Data** establishes trusted provider coverage, backfill health, symbol readiness, checkpoint confidence, and export confidence.
+2. **Strategy** uses that trusted data to run, compare, and review strategy runs across engines and modes.
 3. **Trading** promotes approved runs into paper operation, manages orders and positions, and keeps replay, risk, and session history visible.
-4. **Governance** turns the same runs and positions into Security Master, portfolio, ledger, reconciliation, cash-flow, and governed reporting workflows.
+4. **Portfolio** and **Accounting** turn the same runs and positions into account posture, portfolio review, ledger, reconciliation, cash-flow, and sign-off workflows.
+5. **Reporting** packages the governed evidence into retained outputs.
 
-The finished product should feel like one lifecycle, not four isolated tools.
+The finished product should feel like one lifecycle, not isolated tools.
 
 ---
 
 ## Product Surfaces
 
-### Research
+### Data
 
-Research is where operators validate datasets, run experiments, compare results, inspect fills and attribution, and review promotion readiness.
+Data is where operators manage providers, symbols, backfills, data quality, storage health, and operational exports.
+
+### Strategy
+
+Strategy is where operators validate datasets, run experiments, compare results, inspect fills and attribution, and review promotion readiness.
 
 ### Trading
 
 Trading is where operators run paper workflows, manage sessions, review orders and fills, monitor positions and exposure through the blotter, and apply explicit promotion controls.
 
-### Data Operations
+### Portfolio
 
-Data Operations is where operators manage providers, symbols, backfills, data quality, storage health, and operational exports.
+Portfolio is where operators inspect account posture, positions, exposure, attribution, and balance evidence created by research and paper workflows.
 
-### Governance
+### Accounting
 
-Governance is where operators review Security Master coverage, fund-account queues and provider-routing posture, portfolio and ledger outcomes, reconciliation breaks, calibration-summary posture, cash-flow questions, multi-ledger views, and governed reporting outputs.
+Accounting is where operators review ledger outcomes, cash-flow questions, trial-balance posture, reconciliation breaks, calibration-summary posture, and sign-off casework.
+
+### Reporting
+
+Reporting is where operators preview, generate, approve, retain, and restate governed report packs built from shared evidence.
+
+### Settings
+
+Settings is where operators manage credentials, environment posture, storage roots, provider setup, and evidence paths that make the pilot workflow reproducible.
 
 ---
 
@@ -112,4 +127,4 @@ These improve Meridian's ceiling, but they are not required for the core end-sta
 
 ## One-Paragraph Narrative
 
-When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect account, portfolio, and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Research`, `Trading`, `Data Operations`, and `Governance` are separate workspaces, but they share one model of runs, instruments, account posture, portfolio state, and audit evidence.
+When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect account, portfolio, and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` are separate workspaces, but they share one model of runs, instruments, account posture, portfolio state, and audit evidence.

@@ -9,6 +9,7 @@ Use this with:
 
 - [`ROADMAP.md`](ROADMAP.md) for the canonical roadmap
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) for the short-horizon execution slice
+- [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) for the golden-path pilot workflow and scope filter
 - [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) for the prioritized opportunity framing
 - [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) for the compact product narrative
 - [`production-status.md`](production-status.md) for current readiness posture
@@ -45,6 +46,8 @@ Meridian already has strong platform foundations, meaningful workstation flows i
 7. **Optional advanced research / scale tracks**
 
 Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-27, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract, a date-stamped `dk1-pilot-parity-packet.*` evidence set, and a packet-bound sign-off file signed by the Data Operations, Provider Reliability, and Trading owners. Validation reports all four pilot samples ready, all four evidence documents validated, trust-rationale/calibration contracts validated, packet binding valid, and `operatorSignoff.validForDk1Exit=true`. Future DK1 reviews still need fresh date-stamped packets and matching packet-bound sign-off files when evidence changes. Shared interop readiness is **Ready for cadence monitoring** after the baseline `artifacts/contract-review/2026-04-27/contract-review-packet.*` packet and Shared Platform Interop owner approval locked the weekly Wednesday review cadence. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation/governance is now early in progress through a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and a calibration-summary endpoint that aggregates profile-level readiness and sign-off posture. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
+
+The golden-path pilot workflow now gives those waves one product filter: trusted data -> research run -> run comparison -> paper promotion -> paper session -> portfolio / ledger review -> reconciliation -> governed report pack. New work should strengthen that path, unblock a later stage, or explicitly reduce scope that distracts from it.
 
 ---
 
@@ -108,9 +111,9 @@ Delivery Kernel governance to avoid piecemeal adoption:
 
 ## Target End Product
 
-Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
+Meridian's target end state is a self-hosted trading workstation and fund-operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
-Data Operations establishes evidence-backed provider trust, Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
+`Data` establishes evidence-backed provider trust, `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting account, portfolio, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
 

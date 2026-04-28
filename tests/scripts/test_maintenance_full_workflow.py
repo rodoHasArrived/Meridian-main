@@ -6,6 +6,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MAINTENANCE_SCRIPT = REPO_ROOT / "scripts" / "ai" / "maintenance-full.sh"
 FSHARP_TEST_PROJECT = REPO_ROOT / "tests" / "Meridian.FSharp.Tests" / "Meridian.FSharp.Tests.fsproj"
 CENTRAL_PACKAGES = REPO_ROOT / "Directory.Packages.props"
+DOCS_MAKEFILE = REPO_ROOT / "make" / "docs.mk"
 
 
 class MaintenanceFullWorkflowTests(unittest.TestCase):
@@ -14,6 +15,25 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
         cls.script = MAINTENANCE_SCRIPT.read_text(encoding="utf-8")
         cls.fsharp_project = FSHARP_TEST_PROJECT.read_text(encoding="utf-8")
         cls.central_packages = CENTRAL_PACKAGES.read_text(encoding="utf-8")
+        cls.docs_makefile_lines = DOCS_MAKEFILE.read_text(encoding="utf-8").splitlines()
+
+    def test_docs_makefile_phony_declaration_includes_workflow_parity_target(self) -> None:
+        phony_start = next(
+            index
+            for index, line in enumerate(self.docs_makefile_lines)
+            if line.startswith(".PHONY:")
+        )
+        phony_lines: list[str] = []
+        for line in self.docs_makefile_lines[phony_start:]:
+            phony_lines.append(line.rstrip("\\").strip())
+            if not line.endswith("\\"):
+                break
+
+        declaration = " ".join(phony_lines)
+        next_line = self.docs_makefile_lines[phony_start + len(phony_lines)]
+
+        self.assertIn("check-workflow-docs-parity", declaration)
+        self.assertFalse(next_line.startswith((" ", "\t")), next_line)
 
     def test_full_maintenance_does_not_apply_category_filter_to_entire_solution(self) -> None:
         self.assertNotIn("dotnet test Meridian.sln", self.script)

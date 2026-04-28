@@ -150,6 +150,8 @@ Content Frame
 
 **Schedule Manager MVVM state** — `ScheduleManagerPage` now binds backfill, maintenance, template refresh, empty/error copy, and cron validation through `ScheduleManagerViewModel`. The page code-behind only wires construction and first-load initialization, while the view model owns command enablement and UTC next-run presentation without adding backend calls, timers, or persistence writes.
 
+**Admin Maintenance cleanup readiness** — `AdminMaintenancePage` now renders a cleanup readiness card with preview, execution, and confirmation actions bound through `AdminMaintenanceViewModel`. The view model owns preview scope, empty/error copy, destructive-action gating, inline confirmation state, and cleanup execution reset behavior while the page keeps cleanup rendering and layout concerns in XAML.
+
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Security Master search recovery** — `SecurityMasterPage` now exposes a bound `SearchCommand` for the search button and `Enter` key plus a bound `Clear Search` action in the search strip and in the results empty-state card. `SecurityMasterViewModel` tracks attempted searches, unavailable-runtime recovery, result count, query scope, and search-command availability locally so operators can run or reset a search without code-behind workflow logic.

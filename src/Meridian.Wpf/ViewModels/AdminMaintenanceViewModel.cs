@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -9,7 +10,7 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class AdminMaintenanceViewModel : BindableBase
 {
-    private readonly AdminMaintenanceServiceBase _adminService;
+    private readonly IAdminMaintenanceService _adminService;
 
     // ---- Schedule config ----
     private bool _scheduleEnabled;
@@ -33,9 +34,15 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private bool _isMaintenanceBusy;
 
     // ---- Cleanup ----
+    private bool _isCleanupBusy;
     private bool _isCleanupResultsVisible;
     private string _cleanupFilesText = "0";
     private string _cleanupSizeText = "0 B";
+    private bool _canExecuteCleanup;
+    private bool _isCleanupConfirmationVisible;
+    private string _cleanupReadinessTitle = "Preview cleanup before deleting files.";
+    private string _cleanupReadinessDetail = "Run a cleanup preview to stage temp files and empty directories before execution is enabled.";
+    private string _cleanupReadinessScope = "No cleanup preview loaded.";
 
     // ---- InfoBar ----
     private bool _isStatusVisible;
@@ -44,9 +51,15 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private string _statusTitle = string.Empty;
     private string _statusMessage = string.Empty;
 
-    public AdminMaintenanceViewModel(AdminMaintenanceServiceBase adminService)
+    public AdminMaintenanceViewModel(IAdminMaintenanceService adminService)
     {
         _adminService = adminService;
+        PreviewCleanupCommand = new AsyncRelayCommand(PreviewCleanupAsync, () => !IsCleanupBusy);
+        RequestExecuteCleanupCommand = new RelayCommand(RequestExecuteCleanup, () => CanExecuteCleanup && !IsCleanupBusy);
+        ConfirmExecuteCleanupCommand = new AsyncRelayCommand(ConfirmExecuteCleanupAsync, () =>
+            CanExecuteCleanup && IsCleanupConfirmationVisible && !IsCleanupBusy);
+        CancelExecuteCleanupCommand = new RelayCommand(CancelExecuteCleanup, () =>
+            IsCleanupConfirmationVisible && !IsCleanupBusy);
     }
 
     // ---- Collections ----
@@ -55,6 +68,13 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public ObservableCollection<RetentionPolicyDisplayItem> PolicyItems { get; } = new();
     public ObservableCollection<CleanupFileDisplayItem> CleanupItems { get; } = new();
     public ObservableCollection<MaintenanceHistoryItem> HistoryItems { get; } = new();
+
+    // ---- Commands ----
+
+    public IAsyncRelayCommand PreviewCleanupCommand { get; }
+    public IRelayCommand RequestExecuteCleanupCommand { get; }
+    public IAsyncRelayCommand ConfirmExecuteCleanupCommand { get; }
+    public IRelayCommand CancelExecuteCleanupCommand { get; }
 
     // ---- Schedule config properties ----
     public bool ScheduleEnabled
@@ -157,6 +177,21 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     }
 
     // ---- Cleanup properties ----
+    public bool IsCleanupBusy
+    {
+        get => _isCleanupBusy;
+        private set
+        {
+            if (SetProperty(ref _isCleanupBusy, value))
+            {
+                PreviewCleanupCommand.NotifyCanExecuteChanged();
+                RequestExecuteCleanupCommand.NotifyCanExecuteChanged();
+                ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+                CancelExecuteCleanupCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
     public bool IsCleanupResultsVisible
     {
         get => _isCleanupResultsVisible;
@@ -173,6 +208,50 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     {
         get => _cleanupSizeText;
         private set => SetProperty(ref _cleanupSizeText, value);
+    }
+
+    public bool CanExecuteCleanup
+    {
+        get => _canExecuteCleanup;
+        private set
+        {
+            if (SetProperty(ref _canExecuteCleanup, value))
+            {
+                RequestExecuteCleanupCommand.NotifyCanExecuteChanged();
+                ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsCleanupConfirmationVisible
+    {
+        get => _isCleanupConfirmationVisible;
+        private set
+        {
+            if (SetProperty(ref _isCleanupConfirmationVisible, value))
+            {
+                ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+                CancelExecuteCleanupCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public string CleanupReadinessTitle
+    {
+        get => _cleanupReadinessTitle;
+        private set => SetProperty(ref _cleanupReadinessTitle, value);
+    }
+
+    public string CleanupReadinessDetail
+    {
+        get => _cleanupReadinessDetail;
+        private set => SetProperty(ref _cleanupReadinessDetail, value);
+    }
+
+    public string CleanupReadinessScope
+    {
+        get => _cleanupReadinessScope;
+        private set => SetProperty(ref _cleanupReadinessScope, value);
     }
 
     // ---- InfoBar properties ----
@@ -536,6 +615,12 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
     public async Task PreviewCleanupAsync(CancellationToken ct = default)
     {
+        IsCleanupBusy = true;
+        IsCleanupConfirmationVisible = false;
+        CleanupReadinessTitle = "Scanning cleanup candidates";
+        CleanupReadinessDetail = "Checking temp files and empty directories before anything is deleted.";
+        CleanupReadinessScope = "Preview in progress.";
+
         try
         {
             var result = await _adminService.PreviewCleanupAsync(new CleanupOptions
@@ -560,20 +645,99 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                         Reason = f.Reason
                     });
                 }
+
+                CanExecuteCleanup = result.TotalFiles > 0;
+                if (CanExecuteCleanup)
+                {
+                    CleanupReadinessTitle = "Cleanup preview ready";
+                    CleanupReadinessDetail =
+                        $"{result.TotalFiles:N0} file(s) are staged for deletion. Review the list before executing cleanup.";
+                    CleanupReadinessScope = $"{result.TotalFiles:N0} file(s) staged | {FormatHelpers.FormatBytes(result.TotalBytes)} to free";
+                }
+                else
+                {
+                    CleanupReadinessTitle = "No cleanup files found";
+                    CleanupReadinessDetail = "The preview completed and found no temp files or empty directories to remove.";
+                    CleanupReadinessScope = "0 files staged.";
+                }
             }
             else
             {
+                ClearCleanupPreview();
+                CleanupReadinessTitle = "Cleanup preview failed";
+                CleanupReadinessDetail = result.Error ?? "Unknown error";
+                CleanupReadinessScope = "Preview failed.";
                 ShowError("Preview Failed", result.Error ?? "Unknown error");
             }
         }
         catch (Exception ex)
         {
+            ClearCleanupPreview();
+            CleanupReadinessTitle = "Cleanup preview failed";
+            CleanupReadinessDetail = ex.Message;
+            CleanupReadinessScope = "Preview failed.";
             ShowError("Preview Failed", ex.Message);
+        }
+        finally
+        {
+            IsCleanupBusy = false;
         }
     }
 
     public async Task ExecuteCleanupAsync(CancellationToken ct = default)
     {
+        if (!CanExecuteCleanup)
+        {
+            CleanupReadinessTitle = "Preview cleanup first";
+            CleanupReadinessDetail = "Run a cleanup preview and review staged files before executing cleanup.";
+            CleanupReadinessScope = "Execution blocked until preview has files.";
+            return;
+        }
+
+        await ExecuteCleanupCoreAsync(ct);
+    }
+
+    private void RequestExecuteCleanup()
+    {
+        if (!CanExecuteCleanup)
+        {
+            CleanupReadinessTitle = "Preview cleanup first";
+            CleanupReadinessDetail = "Run a cleanup preview and review staged files before executing cleanup.";
+            CleanupReadinessScope = "Execution blocked until preview has files.";
+            return;
+        }
+
+        IsCleanupConfirmationVisible = true;
+        CleanupReadinessTitle = "Confirm cleanup execution";
+        CleanupReadinessDetail =
+            $"{CleanupFilesText} file(s) are staged for permanent deletion. Confirm only after reviewing the file list.";
+        CleanupReadinessScope = $"{CleanupFilesText} file(s) staged | {CleanupSizeText} to free";
+    }
+
+    private async Task ConfirmExecuteCleanupAsync(CancellationToken ct = default)
+    {
+        if (!CanExecuteCleanup)
+            return;
+
+        await ExecuteCleanupCoreAsync(ct);
+    }
+
+    private void CancelExecuteCleanup()
+    {
+        IsCleanupConfirmationVisible = false;
+        CleanupReadinessTitle = "Cleanup preview ready";
+        CleanupReadinessDetail = "Execution was cancelled. Review the staged files or run a fresh preview.";
+        CleanupReadinessScope = $"{CleanupFilesText} file(s) staged | {CleanupSizeText} to free";
+    }
+
+    private async Task ExecuteCleanupCoreAsync(CancellationToken ct)
+    {
+        IsCleanupBusy = true;
+        IsCleanupConfirmationVisible = false;
+        CleanupReadinessTitle = "Executing cleanup";
+        CleanupReadinessDetail = "Deleting the staged cleanup files and refreshing the cleanup state.";
+        CleanupReadinessScope = $"{CleanupFilesText} file(s) staged | {CleanupSizeText} to free";
+
         try
         {
             var cleanupResult = await _adminService.ExecuteCleanupAsync(new CleanupOptions
@@ -585,17 +749,41 @@ public sealed class AdminMaintenanceViewModel : BindableBase
             if (cleanupResult.Success)
             {
                 ShowSuccess($"Cleanup complete. {cleanupResult.FilesDeleted} files deleted, {FormatHelpers.FormatBytes(cleanupResult.BytesFreed)} freed.");
-                IsCleanupResultsVisible = false;
+                ClearCleanupPreview();
+                CleanupReadinessTitle = "Cleanup complete";
+                CleanupReadinessDetail =
+                    $"{cleanupResult.FilesDeleted:N0} file(s) were deleted and {FormatHelpers.FormatBytes(cleanupResult.BytesFreed)} was freed.";
+                CleanupReadinessScope = "Run a new preview before the next cleanup.";
             }
             else
             {
+                CleanupReadinessTitle = "Cleanup failed";
+                CleanupReadinessDetail = cleanupResult.Error ?? "Unknown error";
+                CleanupReadinessScope = $"{CleanupFilesText} file(s) remain staged for retry.";
                 ShowError("Cleanup Failed", cleanupResult.Error ?? "Unknown error");
             }
         }
         catch (Exception ex)
         {
+            CleanupReadinessTitle = "Cleanup failed";
+            CleanupReadinessDetail = ex.Message;
+            CleanupReadinessScope = $"{CleanupFilesText} file(s) remain staged for retry.";
             ShowError("Cleanup Failed", ex.Message);
         }
+        finally
+        {
+            IsCleanupBusy = false;
+        }
+    }
+
+    private void ClearCleanupPreview()
+    {
+        CleanupItems.Clear();
+        CleanupFilesText = "0";
+        CleanupSizeText = "0 B";
+        IsCleanupResultsVisible = false;
+        CanExecuteCleanup = false;
+        IsCleanupConfirmationVisible = false;
     }
 
     // ---- History ----

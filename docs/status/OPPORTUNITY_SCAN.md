@@ -7,6 +7,8 @@ This document turns the current repository state into the next opportunity order
 
 Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
 
+Use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) as the golden-path productization filter for deciding whether a new opportunity strengthens the active pilot lifecycle or distracts from it.
+
 ---
 
 ## Snapshot
@@ -27,6 +29,14 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 
 ## Top Opportunities
 
+### 0. Make the Meridian pilot workflow the release filter
+
+- **Category:** workflow completion
+- **Gap:** The active docs already agree that Meridian has broad foundations and now needs coherence, operator trust, and governance continuity. The missing product discipline is one end-to-end scenario that every page, API, validation run, and report-pack output serves.
+- **User or operator value:** Operators and reviewers get one explainable lifecycle from trusted data through research, paper operation, accounting review, reconciliation, and governed output.
+- **Dependency it unlocks:** Cleaner scope control across provider/broker work, WPF surface decisions, generated readiness dashboards, evidence graph modeling, reconciliation casework, and report-pack productization.
+- **Placement:** Cross-wave release filter for Waves 2-4; it should shape the work below rather than become a separate wave.
+
 ### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
 - **Category:** workflow completion
@@ -38,7 +48,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 2. Make the shared run / portfolio / ledger model feel like one cross-workspace product
 
 - **Category:** workflow completion
-- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo, the Research desk briefing hero now routes selected runs into run-detail, portfolio, and paper-promotion review handoffs, StrategyRuns now recovers when filters hide retained runs without reloading the run store, the run review packet now returns stable route-aware work items, and QuantScript now shows local execution history with Research handoffs when a mirrored run exists. The product experience built on top of these seams is still uneven across `Research`, `Trading`, `Data Operations`, and `Governance`.
+- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo, the Research/Strategy desk briefing hero now routes selected runs into run-detail, portfolio, and paper-promotion review handoffs, StrategyRuns now recovers when filters hide retained runs without reloading the run store, the run review packet now returns stable route-aware work items, and QuantScript now shows local execution history with Research/Strategy handoffs when a mirrored run exists. The product experience built on top of these seams is still uneven across the visible `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting` path.
 - **Current support evidence:** RunCashFlow now explains selected-run, missing-run, no-event, and loaded cash-flow states from retained run summaries, so the cash-flow drill-in is no longer a blank grid when evidence is absent.
 - **User or operator value:** A single run-centered model makes attribution, fills, positions, ledger, cash-flow, and reconciliation easier to follow and trust.
 - **Dependency it unlocks:** Cleaner workstation continuity, less duplicated orchestration, and a more stable base for both WPF shell consolidation and governance productization.

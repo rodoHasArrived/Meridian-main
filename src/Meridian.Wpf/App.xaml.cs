@@ -280,6 +280,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.RunMatService>(_ => WpfServices.RunMatService.Instance);
         services.AddSingleton<ProviderManagementService>(_ => ProviderManagementService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
+        services.AddSingleton<IAdminMaintenanceService>(sp => sp.GetRequiredService<AdminMaintenanceServiceBase>());
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
         services.AddSingleton<SearchService>(_ => SearchService.Instance);
         services.AddSingleton<WpfServices.FundAccountReadService>();

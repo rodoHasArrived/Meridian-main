@@ -4,8 +4,6 @@
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
-        update-claude-md docs-all
-        gen-interfaces gen-structure gen-providers gen-workflows \
         update-claude-md docs-all check-workflow-docs-parity
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code

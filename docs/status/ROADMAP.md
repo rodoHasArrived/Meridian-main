@@ -10,7 +10,7 @@ The active roadmap therefore centers on four outcomes:
 
 - prove operator trust with evidence-backed provider, checkpoint, and replay validation
 - harden the paper-trading cockpit already visible in the workstation
-- make shared run / portfolio / ledger continuity the default integration path across `Research`, `Trading`, `Data Operations`, and `Governance`
+- make shared run / portfolio / ledger continuity the default integration path across `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting`
 - productize governance and fund-operations on top of the delivered Security Master baseline
 
 Use this document with:
@@ -22,6 +22,7 @@ Use this document with:
 - [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) - prioritized opportunity framing
 - [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) - concise end-state product summary
 - [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md) - shortest combined roadmap, opportunity, and target-state entry point
+- [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) - golden-path pilot workflow and productization filter
 - [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) - workstation target state
 - [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md) - governance target state
 - [`../plans/brokerage-portfolio-sync-blueprint.md`](../plans/brokerage-portfolio-sync-blueprint.md) - external brokerage and custodian account-sync design
@@ -52,7 +53,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 Meridian's platform foundations are already broad enough that roadmap priority should now come from operator value and readiness evidence, not from generalized platform sprawl. The repo already includes:
 
 - a strong ingestion and storage baseline with bounded channels, WAL durability, JSONL and Parquet sinks, replay, backfill scheduling, gap analysis, packaging, lineage, and export
-- shared workstation endpoints and a workstation model organized around `Research`, `Trading`, `Data Operations`, and `Governance`
+- shared workstation endpoints and a workstation model now expressed through the visible `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` workspaces
 - shared `StrategyRun`, portfolio, ledger, and reconciliation read paths in `src/Meridian.Strategies/Services/` and `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
 - execution, paper-trading, strategy lifecycle, and promotion seams, including wired `/api/execution/*`, `/api/promotion/*`, and `/api/strategies/*` surfaces
 - a WPF workstation baseline with run-centered pages, Security Master drill-ins, and desktop shell modernization already landed
@@ -92,8 +93,8 @@ For implementation detail and evidence, use:
 
 ### Execution and workflow foundations
 
-- The four-workspace model is present in both planning and implementation.
-- The workstation surfaces contain material workflows for `Research`, `Trading`, `Data Operations`, and `Governance` rather than only navigation and summary surfaces; WPF is the primary operator shell, while the retained web/API surface supports shared contracts, automation, and diagnostics.
+- The seven-workspace operator model is present in the current shell, with older four-workspace planning language retained only as compatibility grouping.
+- The workstation surfaces contain material workflows for the visible `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` workspaces rather than only navigation and summary surfaces; WPF is the primary operator shell, while the retained web/API surface supports shared contracts, automation, and diagnostics.
 - The Wave 2 cockpit now has a shared readiness seam through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, joining paper-session state, replay verification, execution controls, DK1 trust-gate packet posture, promotion status, brokerage sync, acceptance gates, overall readiness, work items, and warnings into one operator-facing contract. The shared `/api/workstation/operator/inbox` endpoint now aggregates those readiness work items with actionable warning/critical run review-packet items from the latest runs, open/in-review reconciliation breaks, and navigation targets, and the WPF shell queue button consumes that endpoint to show review counts, severity tone, account-scoped brokerage/readiness blockers when an account operating context is active, route-aware primary-item navigation into concrete workbenches such as `FundReconciliation` and run review packets, and shell-context attention when a review item is active without closing the end-to-end operator-inbox workflow. Promotion approvals also have a canonical `PromotionApprovalChecklist` for DK1 trust-packet, run-lineage, portfolio/ledger-continuity, risk-control, and live-override review requirements. This is useful acceptance infrastructure, not a completed cockpit claim.
 - The local Wave 2 replay-audit slice now strengthens that acceptance lane by recording replay consistency, compared fill/order/ledger counts, last-persisted timestamps, and primary mismatch reason into execution-audit metadata; the readiness gate also treats diverging active-session fill/order/ledger counts as stale replay coverage and drops back to review-required until replay verification is rerun. This improves restart and service-layer reconstruction evidence without closing the full cockpit-hardening gate.
 - WPF already has meaningful run-centered workstation pages on top of the broader desktop page inventory, including a Position Blotter selection-review rail that summarizes grouped exposure, long/short/gross quantities, unsupported rows, and batch-action eligibility before an operator flattens or upsizes selected execution rows.
@@ -132,9 +133,9 @@ For implementation detail and evidence, use:
 
 ## Target End Product
 
-Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
+Meridian's target end state is a self-hosted trading workstation and fund-operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
-Data Operations establishes evidence-backed provider trust, Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
+`Data` establishes evidence-backed provider trust, `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting account, portfolio, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
 
