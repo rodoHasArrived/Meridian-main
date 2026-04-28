@@ -5017,6 +5017,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── SharedBuild.ps1
 │   │   ├── SharedCheckpoint.ps1
 │   │   ├── SharedPreflight.ps1
+│   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── cleanup-generated.ps1
@@ -5034,11 +5035,21 @@ Use these documents together when planning or implementing new work:
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
+│   │   ├── screenshot-diff-config.json
+│   │   ├── screenshot_diff_report.py
 │   │   ├── shared
 │   │   │   └── retry.ps1
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
-│   │   └── validate-screenshot-contract.py
+│   │   ├── validate-screenshot-contract.py
+│   │   ├── validate-workflow-profile.ps1
+│   │   └── workflow-profiles
+│   │       ├── debug-startup.json
+│   │       ├── manual-data-operations.json
+│   │       ├── manual-governance.json
+│   │       ├── manual-overview.json
+│   │       ├── manual-research-and-trading.json
+│   │       └── screenshot-catalog.json
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── generate_contract_review_packet.py
@@ -7855,11 +7866,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_maintenance_full_workflow.py
-│   │   └── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   └── test_screenshot_diff_report.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-588 directories, 7122 files
+589 directories, 7133 files
 ```
 <!-- readme-tree end -->
