@@ -457,11 +457,23 @@ function Wait-ForShellPage {
     param(
         [System.Diagnostics.Process]$Process,
         [string]$ExpectedPageTag,
+        [string[]]$AcceptedPageTags = @(),
         [int]$TimeoutSec = 12
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
     $lastState = $null
+    $acceptableTags = @()
+
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
+        $acceptableTags += $ExpectedPageTag
+    }
+
+    if ($AcceptedPageTags) {
+        $acceptableTags += @($AcceptedPageTags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    }
+
+    $acceptableTags = @($acceptableTags | Select-Object -Unique)
 
     while ((Get-Date) -lt $deadline) {
         if ($null -ne $Process -and $Process.HasExited) {
@@ -472,9 +484,10 @@ function Wait-ForShellPage {
         $window = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
         $lastState = Get-ShellAutomationState -Window $window
 
-        if ($lastState.Ready -and (
-                [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
-                [string]::Equals($lastState.PageTag, $ExpectedPageTag, [System.StringComparison]::Ordinal))) {
+        $pageMatches = [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
+            ($acceptableTags -contains $lastState.PageTag)
+
+        if ($lastState.Ready -and $pageMatches) {
             return [pscustomobject]@{
                 Window = $window
                 State = $lastState
@@ -484,13 +497,15 @@ function Wait-ForShellPage {
         Start-Sleep -Milliseconds 350
     }
 
-    if ([string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
-        throw "Shell readiness markers were not confirmed before capture."
-    }
-
     $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
     $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
-    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
+        throw "Shell readiness markers were not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+    }
+
+    $acceptedSummary = if ($acceptableTags.Count -gt 0) { $acceptableTags -join "', '" } else { '' }
+    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Accepted page tags: '$acceptedSummary'. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
 }
 
 function Wait-ForStableShellPage {
@@ -891,6 +906,11 @@ try {
         $stepIndex += 1
         $title = [string](Get-ConfigValue -Table $step -Key 'title' -Fallback "Step $stepIndex")
         $pageTag = [string](Get-ConfigValue -Table $step -Key 'pageTag' -Fallback '')
+        $acceptedPageTags = @()
+        if ($step.Contains('acceptedPageTags')) {
+            $acceptedPageTags = @($step.acceptedPageTags)
+        }
+
         $notes = [string](Get-ConfigValue -Table $step -Key 'notes' -Fallback '')
         $keys = [string](Get-ConfigValue -Table $step -Key 'keys' -Fallback '')
         $launchArgs = @()
@@ -912,6 +932,7 @@ try {
             index = $stepIndex
             title = $title
             pageTag = $pageTag
+            acceptedPageTags = $acceptedPageTags
             notes = $notes
             keys = $keys
             launchArgs = $launchArgs
@@ -948,7 +969,11 @@ try {
             }
 
             Start-Sleep -Milliseconds $stepWaitMs
-            $pageReadiness = Wait-ForShellPage -Process $ownedProcess -ExpectedPageTag $pageTag -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
+            $pageReadiness = Wait-ForShellPage `
+                -Process $ownedProcess `
+                -ExpectedPageTag $pageTag `
+                -AcceptedPageTags $acceptedPageTags `
+                -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
             $window = $pageReadiness.Window
             $stepResult.observedPageTag = $pageReadiness.State.PageTag
             $stepResult.observedPageTitle = $pageReadiness.State.PageTitle
