@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **86**
+Total items: **87**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -70,14 +70,15 @@ Total items: **86**
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 514 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 160 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 167 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 320 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 332 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 60 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 179 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 56 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 294 | `NOTE` | ❌ | note: provider.note, |
-| `src/Meridian.Ui/dashboard/src/types.ts` | 422 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 183 | `NOTE` | ❌ | note: "Ready", |
+| `src/Meridian.Ui/dashboard/src/types.ts` | 431 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 56 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
