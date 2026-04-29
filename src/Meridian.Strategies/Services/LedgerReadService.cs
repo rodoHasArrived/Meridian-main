@@ -10,6 +10,7 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class LedgerReadService
 {
+    public const string LedgerSeam = "ledger";
     private readonly ISecurityReferenceLookup? _securityReferenceLookup;
 
     public LedgerReadService()
@@ -53,6 +54,24 @@ public sealed class LedgerReadService
             SecurityResolvedCount = resolvedCount,
             SecurityMissingCount = missingCount
         };
+    }
+
+    public IReadOnlyList<StrategyRunContinuityWarning> BuildContinuityWarnings(string runId, LedgerSummary? summary)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        if (summary is not null)
+        {
+            return Array.Empty<StrategyRunContinuityWarning>();
+        }
+
+        return
+        [
+            new StrategyRunContinuityWarning(
+                Code: "missing-ledger",
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run does not have a shared ledger summary yet.",
+                SourceSeam: LedgerSeam)
+        ];
     }
 
     private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry)

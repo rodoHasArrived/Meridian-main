@@ -8,6 +8,7 @@ namespace Meridian.Strategies.Services;
 public sealed class StrategyRunContinuityService
 {
     private const int ReconciliationTimingToleranceMinutes = 5;
+    private const int StaleRunWindowMinutes = 30;
 
     private readonly StrategyRunReadService _runReadService;
     private readonly CashFlowProjectionService _cashFlowProjectionService;
@@ -110,81 +111,167 @@ public sealed class StrategyRunContinuityService
             NextBucketNetFlow: nextBucket?.NetFlow);
     }
 
-    private static StrategyRunContinuityStatus BuildContinuityStatus(
+    private StrategyRunContinuityStatus BuildContinuityStatus(
         StrategyRunDetail run,
         RunCashFlowSummary? cashFlow,
         ReconciliationRunDetail? reconciliation)
     {
+        var promotion = run.Summary.Promotion;
+        var hasParent = !string.IsNullOrWhiteSpace(run.Summary.ParentRunId);
+        var promotionSource = promotion?.SourceRunId;
+        var promotionTarget = promotion?.TargetRunId;
+        var promotionState = promotion?.State ?? StrategyRunPromotionState.None;
         var hasPortfolio = run.Portfolio is not null;
         var hasLedger = run.Ledger is not null;
         var hasCashFlow = cashFlow is { TotalEntries: > 0 };
+        var hasFills = (run.Execution?.FillCount ?? run.Summary.FillCount) > 0;
         var hasReconciliation = reconciliation is not null;
+        var hasRun = run.Summary is not null;
+        var hasFills = run.Summary.FillCount > 0;
+        var runHealth = GetRunHealth(run);
+        var fillsHealth = hasFills ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
+        var portfolioHealth = hasPortfolio ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
+        var ledgerHealth = hasLedger ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
+        var cashFlowHealth = hasCashFlow ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
+        var reconciliationHealth = hasReconciliation ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
         var asOfDriftMinutes = CalculateAsOfDriftMinutes(run.Portfolio?.AsOf, run.Ledger?.AsOf);
         var openBreaks = reconciliation?.Summary.OpenBreakCount ?? 0;
         var securityCoverageIssues = reconciliation?.Summary.SecurityIssueCount
             ?? ((run.Portfolio?.SecurityMissingCount ?? 0) + (run.Ledger?.SecurityMissingCount ?? 0));
 
         var warnings = new List<StrategyRunContinuityWarning>();
-        if (!hasPortfolio)
-        {
-            warnings.Add(new StrategyRunContinuityWarning(
-                Code: "missing-portfolio",
-                Message: "Run does not have a shared portfolio summary yet."));
-        }
-
-        if (!hasLedger)
-        {
-            warnings.Add(new StrategyRunContinuityWarning(
-                Code: "missing-ledger",
-                Message: "Run does not have a shared ledger summary yet."));
-        }
+        warnings.AddRange(_runReadService.GetPortfolioContinuityWarnings(run));
+        warnings.AddRange(_runReadService.GetLedgerContinuityWarnings(run));
 
         if (!hasCashFlow)
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "missing-cash-flow",
-                Message: "Run has no recorded cash flows for cash-financing continuity."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run has no recorded cash flows for cash-financing continuity.",
+                SourceSeam: "cash-flow"));
+        }
+
+        if (!hasFills)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "missing-fills",
+                Message: "Run has no execution fills recorded for continuity review."));
         }
 
         if (!hasReconciliation)
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "missing-reconciliation",
-                Message: "Run has not been linked to a reconciliation result yet."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run has not been linked to a reconciliation result yet.",
+                SourceSeam: "reconciliation"));
+        }
+        if (!hasFills)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "missing-fills",
+                Severity: StrategyRunContinuityWarningSeverity.Info,
+                Message: "Run has no recorded fills yet.",
+                SourceSeam: "fills"));
         }
 
         if (asOfDriftMinutes > ReconciliationTimingToleranceMinutes)
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "as-of-drift",
-                Message: $"Portfolio and ledger timestamps drift by {asOfDriftMinutes} minutes."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: $"Portfolio and ledger timestamps drift by {asOfDriftMinutes} minutes.",
+                SourceSeam: "portfolio-ledger"));
         }
 
         if (openBreaks > 0)
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "open-reconciliation-breaks",
-                Message: $"Run has {openBreaks} open reconciliation break(s)."));
+                Severity: StrategyRunContinuityWarningSeverity.Critical,
+                Message: $"Run has {openBreaks} open reconciliation break(s).",
+                SourceSeam: "reconciliation"));
         }
 
         if (securityCoverageIssues > 0)
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "security-coverage",
-                Message: $"Run has {securityCoverageIssues} security coverage issue(s) across continuity surfaces."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: $"Run has {securityCoverageIssues} security coverage issue(s) across continuity surfaces.",
+                SourceSeam: "security-master"));
+        }
+
+        if (run.Summary.Promotion?.State is StrategyRunPromotionState.CandidateForLive && run.Summary.Mode is StrategyRunMode.Backtest)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-promotion-gap",
+                Message: "Run is promoted toward live operations from a backtest lineage; validate paper lineage continuity."));
+        if (hasParent
+            && !string.IsNullOrWhiteSpace(promotionSource)
+            && !string.Equals(run.Summary.ParentRunId, promotionSource, StringComparison.Ordinal))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-parent-source-mismatch",
+                Message: "Run has a parent link, but promotion source does not match the recorded parent run."));
+        }
+
+        if (!hasParent && !string.IsNullOrWhiteSpace(promotionSource))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-missing-parent-with-source",
+                Message: "Run has no parent link, but promotion source claims upstream ancestry."));
+        }
+
+        if ((promotionState is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive)
+            && string.IsNullOrWhiteSpace(promotionTarget))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "promotion-target-run-missing",
+                Message: "Promotion candidate is missing an expected target run identifier."));
+        }
+
+        var lineageInconsistent = promotionState switch
+        {
+            StrategyRunPromotionState.CandidateForPaper => hasParent,
+            StrategyRunPromotionState.CandidateForLive => !hasParent,
+            StrategyRunPromotionState.LiveManaged => !hasParent,
+            _ => false
+        };
+
+        if (lineageInconsistent)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "promotion-lineage-shape-inconsistent",
+                Message: $"Promotion state '{promotionState}' is inconsistent with the run lineage shape."));
         }
 
         return new StrategyRunContinuityStatus(
+            HasRun: hasRun,
+            RunHealth: runHealth,
+            HasFills: hasFills,
+            FillsHealth: fillsHealth,
             HasPortfolio: hasPortfolio,
+            PortfolioHealth: portfolioHealth,
             HasLedger: hasLedger,
+            LedgerHealth: ledgerHealth,
             HasCashFlow: hasCashFlow,
+            CashFlowHealth: cashFlowHealth,
+            HasFills: hasFills,
             HasReconciliation: hasReconciliation,
+            ReconciliationHealth: reconciliationHealth,
             AsOfDriftMinutes: asOfDriftMinutes,
             OpenReconciliationBreaks: openBreaks,
             SecurityCoverageIssueCount: securityCoverageIssues,
             HasWarnings: warnings.Count > 0,
             Warnings: warnings);
     }
+
+    private static StrategyRunContinuitySeamHealthStatus GetRunHealth(StrategyRunDetail run)
+        => DateTimeOffset.UtcNow - run.Summary.LastUpdatedAt > TimeSpan.FromMinutes(StaleRunWindowMinutes)
+            ? StrategyRunContinuitySeamHealthStatus.Stale
+            : StrategyRunContinuitySeamHealthStatus.Healthy;
 
     private static int CalculateAsOfDriftMinutes(DateTimeOffset? portfolioAsOf, DateTimeOffset? ledgerAsOf)
     {

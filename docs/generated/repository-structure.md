@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-29 15:23:50 UTC. Do not edit manually.
+> Auto-generated on 2026-04-29 20:36:30 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -7933,6 +7933,7 @@ Meridian-main
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
+├── NuGet.Config
 ├── package-lock.json
 ├── package.json
 └── README.md

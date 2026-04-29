@@ -9,6 +9,7 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class PortfolioReadService
 {
+    public const string PortfolioSeam = "portfolio";
     private readonly ISecurityReferenceLookup? _securityReferenceLookup;
 
     public PortfolioReadService()
@@ -50,6 +51,24 @@ public sealed class PortfolioReadService
             SecurityResolvedCount = resolvedCount,
             SecurityMissingCount = missingCount
         };
+    }
+
+    public IReadOnlyList<StrategyRunContinuityWarning> BuildContinuityWarnings(string runId, PortfolioSummary? summary)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        if (summary is not null)
+        {
+            return Array.Empty<StrategyRunContinuityWarning>();
+        }
+
+        return
+        [
+            new StrategyRunContinuityWarning(
+                Code: "missing-portfolio",
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run does not have a shared portfolio summary yet.",
+                SourceSeam: PortfolioSeam)
+        ];
     }
 
     private static PortfolioSummary? BuildBaseSummary(StrategyRunEntry entry)
