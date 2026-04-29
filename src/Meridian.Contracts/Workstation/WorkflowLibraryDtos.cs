@@ -36,3 +36,47 @@ public sealed record WorkflowActionDto(
     IReadOnlyList<string> RoutePrefixes,
     IReadOnlyList<string> RouteContains,
     IReadOnlyList<string> Aliases);
+
+/// <summary>
+/// Durable operator-saved workflow preset that can be launched from web or desktop shells.
+/// </summary>
+public sealed record WorkflowPresetDto(
+    string PresetId,
+    string Name,
+    string? Description,
+    string WorkflowId,
+    string WorkflowTitle,
+    string? ActionId,
+    string ActionLabel,
+    string WorkspaceId,
+    string WorkspaceTitle,
+    string TargetPageTag,
+    IReadOnlyList<string> Tags,
+    bool IsPinned,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    DateTimeOffset? LastUsedAt);
+
+/// <summary>
+/// Shared preset catalog projection for the workstation workflow library.
+/// </summary>
+public sealed record WorkflowPresetLibraryDto(
+    DateTimeOffset GeneratedAt,
+    IReadOnlyList<WorkflowPresetDto> Presets);
+
+/// <summary>
+/// Request to create or update an operator-saved workflow preset.
+/// </summary>
+public sealed record WorkflowPresetSaveRequest(
+    string? PresetId,
+    string Name,
+    string? Description,
+    string WorkflowId,
+    string? ActionId,
+    IReadOnlyList<string>? Tags,
+    bool IsPinned);
+
+/// <summary>
+/// Request to update a workflow preset's pinned state.
+/// </summary>
+public sealed record WorkflowPresetPinRequest(bool IsPinned);

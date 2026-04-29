@@ -220,18 +220,12 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       )}
 
-      <Dialog open={Boolean(vm.selectedRunDetail)}>
+      <Dialog open={Boolean(vm.selectedRunDetail)} onOpenChange={(open) => { if (!open) vm.closeRunDetail(); }}>
         {vm.selectedRunDetail && (
           <DialogContent
             aria-labelledby={vm.selectedRunDetail.dialogTitleId}
             aria-describedby={vm.selectedRunDetail.dialogDescriptionId}
             className="max-w-2xl"
-            onKeyDown={(event) => {
-              if (vm.closeRunDetailForKey(event.key)) {
-                event.preventDefault();
-                event.stopPropagation();
-              }
-            }}
           >
             <DialogHeader className="mb-5 flex flex-row items-start justify-between gap-4 space-y-0">
               <div className="min-w-0">

@@ -4,14 +4,18 @@ import {
   buildPromotionApprovalRequest,
   buildPromotionGateState,
   buildPromotionRejectionRequest,
+  buildTradingReadinessState,
   emptyOrderTicketForm,
   emptyPromotionGateForm,
+  formatReadinessStatusValue,
+  mapBrokerageSyncLevel,
+  mapReadinessStatusLevel,
   updateOrderTicketForm,
   validateOrderTicketForm,
   validatePromotionApproval,
   validatePromotionRejection
 } from "@/screens/trading-screen.view-model";
-import type { PromotionEvaluationResult } from "@/types";
+import type { PromotionEvaluationResult, TradingOperatorReadiness } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -27,6 +31,127 @@ const eligibleEvaluation: PromotionEvaluationResult = {
   found: true,
   ready: true
 };
+
+const blockedReadiness: TradingOperatorReadiness = {
+  asOf: "2026-04-26T16:05:00Z",
+  overallStatus: "Blocked",
+  readyForPaperOperation: false,
+  acceptanceGates: [],
+  activeSession: null,
+  sessions: [],
+  replay: null,
+  controls: {
+    circuitBreakerOpen: false,
+    circuitBreakerReason: null,
+    circuitBreakerChangedBy: null,
+    circuitBreakerChangedAt: null,
+    manualOverrideCount: 0,
+    symbolLimitCount: 0,
+    defaultMaxPositionSize: null
+  },
+  promotion: null,
+  trustGate: {
+    gateId: "dk1",
+    status: "ready-for-operator-review",
+    readyForOperatorReview: true,
+    operatorSignoffRequired: true,
+    operatorSignoffStatus: "pending",
+    generatedAt: "2026-04-26T15:00:00Z",
+    packetPath: "artifacts/provider-validation/_automation/2026-04-26/dk1-pilot-parity-packet.json",
+    sourceSummary: "wave1-validation-summary.json",
+    requiredSampleCount: 4,
+    readySampleCount: 4,
+    validatedEvidenceDocumentCount: 2,
+    requiredOwners: ["ops"],
+    blockers: [],
+    detail: "Awaiting owner sign-off.",
+    operatorSignoff: null
+  },
+  brokerageSync: {
+    fundAccountId: "fund-1",
+    providerId: "alpaca",
+    externalAccountId: "PA-404",
+    health: "Failed",
+    isLinked: true,
+    isStale: true,
+    lastAttemptedSyncAt: "2026-04-26T15:58:00Z",
+    lastSuccessfulSyncAt: null,
+    lastError: "Alpaca credentials are missing.",
+    positionCount: 0,
+    openOrderCount: 0,
+    fillCount: 0,
+    cashTransactionCount: 0,
+    securityMissingCount: 0,
+    warnings: ["Portfolio snapshot failed."]
+  },
+  workItems: [
+    {
+      workItemId: "brokerage-sync-failed-fund-1",
+      kind: "BrokerageSync",
+      label: "Brokerage sync failed",
+      detail: "Sync broker credentials before paper operation.",
+      tone: "Critical",
+      createdAt: "2026-04-26T16:05:00Z",
+      runId: null,
+      fundAccountId: "fund-1",
+      auditReference: null,
+      workspace: "Trading",
+      targetRoute: "/api/fund-accounts/fund-1/brokerage-sync",
+      targetPageTag: "AccountPortfolio"
+    }
+  ],
+  warnings: ["Portfolio snapshot failed."]
+};
+
+describe("trading readiness view model", () => {
+  it("derives contract summary rows, tones, and assistive labels", () => {
+    const state = buildTradingReadinessState({
+      readiness: blockedReadiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.summaryLabel).toBe("Trading readiness contract summary");
+    expect(state.summaryRows).toEqual([
+      expect.objectContaining({ id: "overall", label: "Overall", value: "Blocked", level: "atRisk", ariaLabel: "Overall readiness: Blocked" }),
+      expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
+      expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
+      expect.objectContaining({ id: "as-of", label: "As of", value: "2026-04-26T16:05:00Z", level: "review" })
+    ]);
+    expect(state.workItems).toHaveLength(1);
+    expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
+    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of 2026-04-26T16:05:00Z.");
+  });
+
+  it("derives refresh and error copy for readiness commands", () => {
+    const refreshing = buildTradingReadinessState({
+      readiness: blockedReadiness,
+      refreshing: true,
+      errorText: null
+    });
+
+    expect(refreshing.refreshButtonLabel).toBe("Refreshing...");
+    expect(refreshing.refreshAriaLabel).toBe("Refreshing trading readiness");
+    expect(refreshing.statusAnnouncement).toBe("Refreshing trading readiness.");
+
+    const failed = buildTradingReadinessState({
+      readiness: null,
+      refreshing: false,
+      errorText: "Network failed."
+    });
+
+    expect(failed.summaryRows).toEqual([]);
+    expect(failed.statusAnnouncement).toBe("Trading readiness refresh failed: Network failed.");
+  });
+
+  it("normalizes readiness and brokerage status levels", () => {
+    expect(formatReadinessStatusValue("ReviewRequired")).toBe("Review required");
+    expect(mapReadinessStatusLevel("Ready")).toBe("ready");
+    expect(mapReadinessStatusLevel("Blocked")).toBe("atRisk");
+    expect(mapBrokerageSyncLevel({ ...blockedReadiness.brokerageSync!, health: "Healthy", isStale: false })).toBe("ready");
+    expect(mapBrokerageSyncLevel(blockedReadiness.brokerageSync!)).toBe("atRisk");
+  });
+});
 
 describe("trading order ticket view model", () => {
   it("normalizes order input and clears price for market orders", () => {

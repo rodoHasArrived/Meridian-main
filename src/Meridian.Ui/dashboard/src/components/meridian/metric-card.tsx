@@ -1,21 +1,24 @@
 import { cn } from "@/lib/utils";
+import { buildMetricCardViewModel } from "@/components/meridian/metric-card.view-model";
 import type { MetricSnapshot } from "@/types";
 
-const toneClass: Record<MetricSnapshot["tone"], string> = {
-  default: "text-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
-};
+export function MetricCard(metric: MetricSnapshot) {
+  const vm = buildMetricCardViewModel(metric);
 
-export function MetricCard({ label, value, delta, tone }: MetricSnapshot) {
   return (
-    <div className="metric-tile">
+    <div
+      className="metric-tile"
+      role="group"
+      aria-label={vm.ariaLabel}
+      aria-describedby={vm.deltaId ?? vm.valueId}
+    >
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-        <span className={cn("font-mono text-[10px]", toneClass[tone])}>{delta}</span>
+        <p id={vm.labelId} className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{vm.label}</p>
+        {vm.delta && vm.deltaId && (
+          <span id={vm.deltaId} className={cn("font-mono text-[10px]", vm.toneClass)} aria-label={vm.deltaAriaLabel ?? undefined}>{vm.delta}</span>
+        )}
       </div>
-      <p className={cn("mt-2 font-mono text-[1.3125rem] font-medium leading-none", toneClass[tone])}>{value}</p>
+      <p id={vm.valueId} className={cn("mt-2 font-mono text-[1.3125rem] font-medium leading-none", vm.toneClass)}>{vm.value}</p>
     </div>
   );
 }

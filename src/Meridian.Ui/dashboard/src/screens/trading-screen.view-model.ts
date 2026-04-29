@@ -1,7 +1,215 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import type { OrderResult, OrderSubmitRequest, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord } from "@/types";
+import type {
+  OperatorWorkItem,
+  OrderResult,
+  OrderSubmitRequest,
+  PromotionDecisionResult,
+  PromotionEvaluationResult,
+  PromotionRecord,
+  TradingAcceptanceGateStatus,
+  TradingOperatorReadiness,
+  WorkstationBrokerageSyncStatus
+} from "@/types";
+
+export type AcceptanceLevel = "ready" | "review" | "atRisk";
+
+export interface TradingReadinessSummaryRow {
+  id: string;
+  label: string;
+  value: string;
+  level: AcceptanceLevel;
+  ariaLabel: string;
+}
+
+export interface TradingReadinessState {
+  readiness: TradingOperatorReadiness | null;
+  refreshing: boolean;
+  errorText: string | null;
+  workItems: OperatorWorkItem[];
+  warnings: string[];
+  summaryRows: TradingReadinessSummaryRow[];
+  summaryLabel: string;
+  refreshButtonLabel: string;
+  refreshAriaLabel: string;
+  statusAnnouncement: string;
+}
+
+export interface TradingReadinessViewModel extends TradingReadinessState {
+  refresh: () => Promise<void>;
+}
+
+export interface TradingReadinessServices {
+  getTradingReadiness: () => Promise<TradingOperatorReadiness | null>;
+}
+
+export interface BuildTradingReadinessStateOptions {
+  readiness: TradingOperatorReadiness | null;
+  refreshing: boolean;
+  errorText: string | null;
+}
+
+const defaultTradingReadinessServices: TradingReadinessServices = {
+  getTradingReadiness: () => workstationApi.getTradingReadiness()
+};
+
+export function useTradingReadinessViewModel({
+  initialReadiness,
+  services = defaultTradingReadinessServices
+}: {
+  initialReadiness: TradingOperatorReadiness | null;
+  services?: TradingReadinessServices;
+}): TradingReadinessViewModel {
+  const [readiness, setReadiness] = useState<TradingOperatorReadiness | null>(initialReadiness);
+  const [refreshing, setRefreshing] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  useEffect(() => {
+    setReadiness(initialReadiness);
+    setErrorText(null);
+  }, [initialReadiness]);
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    setErrorText(null);
+
+    try {
+      setReadiness(await services.getTradingReadiness());
+    } catch (err) {
+      setErrorText(toErrorMessage(err, "Failed to refresh trading readiness."));
+    } finally {
+      setRefreshing(false);
+    }
+  }, [services]);
+
+  const state = useMemo(
+    () => buildTradingReadinessState({ readiness, refreshing, errorText }),
+    [errorText, readiness, refreshing]
+  );
+
+  return {
+    ...state,
+    refresh
+  };
+}
+
+export function buildTradingReadinessState({
+  readiness,
+  refreshing,
+  errorText
+}: BuildTradingReadinessStateOptions): TradingReadinessState {
+  const summaryRows = readiness ? buildTradingReadinessSummaryRows(readiness) : [];
+
+  return {
+    readiness,
+    refreshing,
+    errorText,
+    workItems: readiness?.workItems ?? [],
+    warnings: readiness?.warnings ?? [],
+    summaryRows,
+    summaryLabel: "Trading readiness contract summary",
+    refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh readiness",
+    refreshAriaLabel: refreshing ? "Refreshing trading readiness" : "Refresh trading readiness",
+    statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText })
+  };
+}
+
+export function formatReadinessStatusValue(status: TradingAcceptanceGateStatus | string): string {
+  if (status === "ReviewRequired") {
+    return "Review required";
+  }
+
+  return status;
+}
+
+export function mapReadinessStatusLevel(status: TradingAcceptanceGateStatus | string): AcceptanceLevel {
+  if (status === "Ready") {
+    return "ready";
+  }
+
+  if (status === "Blocked") {
+    return "atRisk";
+  }
+
+  return "review";
+}
+
+export function mapBrokerageSyncLevel(status: WorkstationBrokerageSyncStatus): AcceptanceLevel {
+  if (status.health === "Healthy" && !status.isStale) {
+    return "ready";
+  }
+
+  if (status.health === "Failed" || status.health === "Degraded") {
+    return "atRisk";
+  }
+
+  return "review";
+}
+
+function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): TradingReadinessSummaryRow[] {
+  const overallValue = formatReadinessStatusValue(readiness.overallStatus);
+  const paperValue = readiness.readyForPaperOperation ? "Ready for paper" : "Not paper ready";
+  const brokerageValue = readiness.brokerageSync
+    ? formatBrokerageSyncValue(readiness.brokerageSync)
+    : "No account sync";
+
+  return [
+    {
+      id: "overall",
+      label: "Overall",
+      value: overallValue,
+      level: mapReadinessStatusLevel(readiness.overallStatus),
+      ariaLabel: `Overall readiness: ${overallValue}`
+    },
+    {
+      id: "paper",
+      label: "Paper",
+      value: paperValue,
+      level: readiness.readyForPaperOperation ? "ready" : "review",
+      ariaLabel: `Paper operation readiness: ${paperValue}`
+    },
+    {
+      id: "brokerage",
+      label: "Brokerage",
+      value: brokerageValue,
+      level: readiness.brokerageSync ? mapBrokerageSyncLevel(readiness.brokerageSync) : "review",
+      ariaLabel: `Brokerage sync: ${brokerageValue}`
+    },
+    {
+      id: "as-of",
+      label: "As of",
+      value: readiness.asOf,
+      level: "review",
+      ariaLabel: `Readiness snapshot timestamp: ${readiness.asOf}`
+    }
+  ];
+}
+
+function formatBrokerageSyncValue(status: WorkstationBrokerageSyncStatus): string {
+  const staleSuffix = status.isStale && status.health !== "Stale" ? " stale" : "";
+  return `${status.health}${staleSuffix}`;
+}
+
+function buildTradingReadinessAnnouncement({
+  readiness,
+  refreshing,
+  errorText
+}: BuildTradingReadinessStateOptions): string {
+  if (refreshing) {
+    return "Refreshing trading readiness.";
+  }
+
+  if (errorText) {
+    return `Trading readiness refresh failed: ${errorText}`;
+  }
+
+  if (readiness) {
+    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${readiness.asOf}.`;
+  }
+
+  return "";
+}
 
 export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
 export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "error";

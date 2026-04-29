@@ -22,6 +22,21 @@ The first provider is `BuiltInWorkflowDefinitionProvider`. It intentionally regi
 
 `WorkstationWorkflowSummaryService` now resolves next-action page targets through `IWorkflowActionCatalog` while preserving the existing fallback page tags. `MainPageViewModel` resolves operator-inbox targets through the same catalog before falling back to legacy route and kind mappings. The WPF `WorkflowLibraryPage` reads `WorkflowLibraryService` and launches the registered action target through `NavigationService`.
 
+## Saved Presets
+
+Workflow presets are the first durable user-customization layer on top of the workflow catalog. A preset binds an operator-owned name, description, tags, pinned state, and recent-use timestamp to an existing registered workflow and optional workflow action. Presets cannot target arbitrary pages; `WorkflowPresetService` validates every save request against the current `WorkflowRegistry` so saved entries continue to launch real Meridian surfaces.
+
+`FileWorkflowPresetStore` writes the preset snapshot under the resolved Meridian data root at `workstation/workflows/workflow-presets.json`. The store uses the shared `AtomicFileWriter` write-to-temp-then-rename pattern so browser or retained desktop hosts do not leave partial JSON snapshots after interruption. The shared workstation API exposes:
+
+- `GET /api/workstation/workflows/presets`
+- `POST /api/workstation/workflows/presets`
+- `PUT /api/workstation/workflows/presets/{presetId}`
+- `POST /api/workstation/workflows/presets/{presetId}/pin`
+- `POST /api/workstation/workflows/presets/{presetId}/used`
+- `DELETE /api/workstation/workflows/presets/{presetId}`
+
+The browser dashboard should use these endpoints for the Workflow Studio and command-palette preset integration instead of storing presets in local component state.
+
 ## Extension Rules
 
 - Add a workflow only when it launches real existing Meridian surfaces.
@@ -36,7 +51,7 @@ The model borrows broad, common patterns from trading and quant tools: reusable 
 
 ## Next Phases
 
-1. Persist user-saved workflow presets and recently used workflows.
-2. Add import/export for workflow definitions once the schema stabilizes.
-3. Let workflow definitions contribute command-palette entries without hard-coded shell edits.
+1. Add a browser Workflow Studio surface that loads `/api/workstation/workflows` plus `/api/workstation/workflows/presets`.
+2. Add import/export for saved workflow presets once the schema stabilizes.
+3. Let workflow definitions and saved presets contribute command-palette entries without hard-coded shell edits.
 4. Add workflow-specific validation summaries and audit history.

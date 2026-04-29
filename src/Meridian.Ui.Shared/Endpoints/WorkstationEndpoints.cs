@@ -96,6 +96,131 @@ public static class WorkstationEndpoints
         .WithName("GetWorkstationWorkflowLibrary")
         .Produces<WorkflowLibraryDto>(200);
 
+        group.MapGet("/workflows/presets", async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(library, jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowPresets")
+        .Produces<WorkflowPresetLibraryDto>(200)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets", async (WorkflowPresetSaveRequest request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("SaveWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPut("/workflows/presets/{presetId}", async (
+            string presetId,
+            WorkflowPresetSaveRequest request,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service
+                .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
+                .ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("UpdateWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets/{presetId}/pin", async (
+            string presetId,
+            WorkflowPresetPinRequest request,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.SetPinnedAsync(presetId, request.IsPinned, context.RequestAborted).ConfigureAwait(false);
+            if (result.NotFound)
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("PinWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets/{presetId}/used", async (string presetId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.MarkUsedAsync(presetId, context.RequestAborted).ConfigureAwait(false);
+            if (result.NotFound)
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("MarkWorkstationWorkflowPresetUsed")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapDelete("/workflows/presets/{presetId}", async (string presetId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var deleted = await service.DeleteAsync(presetId, context.RequestAborted).ConfigureAwait(false);
+            return deleted
+                ? Results.NoContent()
+                : Results.NotFound(new { error = $"Workflow preset '{presetId}' was not found." });
+        })
+        .WithName("DeleteWorkstationWorkflowPreset")
+        .Produces(204)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/trading", async (HttpContext context) =>
         {
             return await BuildTradingPayloadAsync(context).ConfigureAwait(false);

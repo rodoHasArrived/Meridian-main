@@ -192,7 +192,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
         </Card>
       </section>
 
-      <Dialog open={vm.dialogOpen}>
+      <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
         <DialogContent aria-labelledby="backfill-dialog-title" aria-describedby="backfill-dialog-description">
           <div className="flex items-start justify-between gap-4">
             <DialogHeader className="mb-0">

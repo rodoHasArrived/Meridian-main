@@ -321,7 +321,7 @@ jobs:
 
       - name: Install dashboard dependencies
         working-directory: ${{ env.WEB_DASHBOARD_DIR }}
-        run: npm ci
+        run: npm ci --include=optional
 
       - name: Build web dashboard
         working-directory: ${{ env.WEB_DASHBOARD_DIR }}

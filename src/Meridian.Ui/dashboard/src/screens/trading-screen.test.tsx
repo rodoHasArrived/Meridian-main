@@ -98,6 +98,7 @@ vi.mock("@/lib/api", async () => {
     getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
     getReplayStatus: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "running", speedMultiplier: 1, eventsProcessed: 3, totalEvents: 10, progressPercent: 30, startedAt: "2026-01-01" }),
+    getTradingReadiness: vi.fn().mockResolvedValue(null),
     pauseReplay: vi.fn().mockResolvedValue({}),
     resumeReplay: vi.fn().mockResolvedValue({}),
     stopReplay: vi.fn().mockResolvedValue({}),
@@ -144,10 +145,6 @@ const data: TradingWorkspaceResponse = {
   risk: { state: "Observe", summary: "Guardrails are active.", netExposure: "$120,000", grossExposure: "$150,000", var95: "$9,000", maxDrawdown: "-1.1%", buyingPowerUsed: "58%", activeGuardrails: ["Cap per single-name", "Throttle at 70%"] },
   brokerage: { provider: "Interactive Brokers", account: "DU1009034", environment: "paper", connection: "Connected", lastHeartbeat: "2s ago", orderIngress: "healthy", fillFeed: "healthy", notes: "Adapter is wired." }
 };
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
 
 const serverReadinessData: TradingWorkspaceResponse = {
   ...data,
@@ -273,6 +270,11 @@ const serverReadinessData: TradingWorkspaceResponse = {
   }
 };
 
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(api.getTradingReadiness).mockResolvedValue(serverReadinessData.readiness!);
+});
+
 describe("TradingScreen", () => {
   it("renders cockpit tables and wiring state", () => {
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
@@ -305,6 +307,10 @@ describe("TradingScreen", () => {
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={serverReadinessData} /></MemoryRouter>);
 
     expect(screen.getByText("2/5 ready")).toBeInTheDocument();
+    expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
+    expect(screen.getByText("Paper: Not paper ready")).toBeInTheDocument();
+    expect(screen.getByText("Brokerage: No account sync")).toBeInTheDocument();
+    expect(screen.getByText("As of: 2026-04-26T16:00:00Z")).toBeInTheDocument();
     expect(screen.getByText("Replay verified")).toBeInTheDocument();
     expect(screen.getByText("Blocked")).toBeInTheDocument();
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
@@ -314,6 +320,60 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Execution evidence incomplete")).toBeInTheDocument();
     expect(screen.getByText("OrderRejected is missing actor, scope, and rationale.")).toBeInTheDocument();
     expect(screen.getByText("Replay evidence is stale for sess-1.")).toBeInTheDocument();
+  });
+
+  it("refreshes shared readiness and surfaces account brokerage posture", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({
+      ...serverReadinessData.readiness!,
+      asOf: "2026-04-26T16:05:00Z",
+      overallStatus: "ReviewRequired",
+      brokerageSync: {
+        fundAccountId: "fund-1",
+        providerId: "alpaca",
+        externalAccountId: "PA-404",
+        health: "Failed",
+        isLinked: true,
+        isStale: true,
+        lastAttemptedSyncAt: "2026-04-26T15:58:00Z",
+        lastSuccessfulSyncAt: null,
+        lastError: "Alpaca credentials are missing.",
+        positionCount: 0,
+        openOrderCount: 0,
+        fillCount: 0,
+        cashTransactionCount: 0,
+        securityMissingCount: 0,
+        warnings: ["Portfolio snapshot failed."]
+      },
+      workItems: [
+        {
+          workItemId: "brokerage-sync-failed-fund-1",
+          kind: "BrokerageSync",
+          label: "Brokerage sync failed",
+          detail: "Sync broker credentials before paper operation.",
+          tone: "Critical",
+          createdAt: "2026-04-26T16:05:00Z",
+          runId: null,
+          fundAccountId: "fund-1",
+          auditReference: null,
+          workspace: "Trading",
+          targetRoute: "/api/fund-accounts/fund-1/brokerage-sync",
+          targetPageTag: "AccountPortfolio"
+        }
+      ],
+      warnings: ["Portfolio snapshot failed."]
+    });
+
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={serverReadinessData} /></MemoryRouter>);
+    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+
+    await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
+    expect(screen.getByText("Brokerage: Failed stale")).toBeInTheDocument();
+    expect(screen.getByText("As of: 2026-04-26T16:05:00Z")).toBeInTheDocument();
+    expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
+    expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio snapshot failed.")).toBeInTheDocument();
   });
 
   it("handles promotion happy path", async () => {
@@ -452,6 +512,7 @@ describe("TradingScreen", () => {
 
   it("shows replay verification and execution audit for the selected session", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce(null);
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
     await user.click(await screen.findByRole("button", { name: /verify replay/i }));

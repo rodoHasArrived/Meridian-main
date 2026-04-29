@@ -13,7 +13,17 @@ import {
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useOrderTicketViewModel, usePromotionGateViewModel, type PromotionOutcomeLevel } from "@/screens/trading-screen.view-model";
+import {
+  formatReadinessStatusValue,
+  mapReadinessStatusLevel,
+  useOrderTicketViewModel,
+  usePromotionGateViewModel,
+  useTradingReadinessViewModel,
+  type AcceptanceLevel,
+  type PromotionOutcomeLevel,
+  type TradingReadinessState,
+  type TradingReadinessSummaryRow
+} from "@/screens/trading-screen.view-model";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
@@ -47,8 +57,6 @@ const focusCopy: Record<string, { title: string; description: string }> = {
   }
 };
 
-type AcceptanceLevel = "ready" | "review" | "atRisk";
-
 interface CockpitAcceptanceItem {
   label: string;
   value: string;
@@ -81,18 +89,6 @@ const workItemTone: Record<string, string> = {
   Critical: "border-destructive/30 bg-destructive/10 text-destructive"
 };
 
-const readinessStatusValue: Record<string, string> = {
-  Ready: "Ready",
-  ReviewRequired: "Review required",
-  Blocked: "Blocked"
-};
-
-const readinessStatusLevel: Record<string, AcceptanceLevel> = {
-  Ready: "ready",
-  ReviewRequired: "review",
-  Blocked: "atRisk"
-};
-
 // --- Shared confirmation state for all write actions ---
 
 type ConfirmActionType =
@@ -116,8 +112,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
     if (pathname.includes("/risk")) return "risk";
     return "orders";
   }, [pathname]);
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
 
-  const orderTicket = useOrderTicketViewModel({ onOrderAccepted: refreshExecutionControls });
+  const orderTicket = useOrderTicketViewModel({
+    onOrderAccepted: async () => {
+      await Promise.all([
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
+    }
+  });
 
   // --- Shared confirmation dialog state ---
   const [confirm, setConfirm] = useState<ConfirmState>({
@@ -166,7 +170,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
           occurredAt: new Date().toISOString()
         };
       }
-      await refreshExecutionControls();
+      await Promise.all([
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
       setConfirm((prev) => ({ ...prev, busy: false, result }));
     } catch (err) {
       setConfirm((prev) => ({
@@ -247,6 +254,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setShowSessionForm(false);
       setNewSessionStrategyId("");
       setNewSessionCash("100000");
+      await tradingReadiness.refresh();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to create session.");
     } finally {
@@ -277,8 +285,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
           }
         };
       });
-      await refreshExecutionAudit();
-      await refreshExecutionControls();
+      await Promise.all([
+        refreshExecutionAudit(),
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
     }
@@ -306,8 +317,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSelectedSessionId(sessionId);
       setSelectedSessionDetail(detail);
       setSessionReplayVerification(verification);
-      await refreshExecutionAudit();
-      await refreshExecutionControls();
+      await Promise.all([
+        refreshExecutionAudit(),
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
@@ -357,7 +371,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   const cockpitAcceptance = buildCockpitAcceptance({
-    operatorReadiness: data.readiness ?? null,
+    operatorReadiness: tradingReadiness.readiness,
     sessions,
     selectedSessionDetail,
     sessionReplayVerification,
@@ -368,8 +382,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
     promotionApprovedBy: promotionGate.form.approvedBy,
     promotionApprovalReason: promotionGate.form.approvalReason
   });
-  const operatorWorkItems = data.readiness?.workItems ?? [];
-  const operatorWarnings = data.readiness?.warnings ?? [];
 
   return (
     <div className="space-y-8">
@@ -427,7 +439,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </Card>
       </section>
 
-      <AcceptanceStatusCard items={cockpitAcceptance} workItems={operatorWorkItems} warnings={operatorWarnings} />
+      <AcceptanceStatusCard
+        items={cockpitAcceptance}
+        readinessVm={tradingReadiness}
+      />
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
@@ -1445,20 +1460,18 @@ function buildCockpitAcceptance({
 function mapAcceptanceGate(gate: TradingAcceptanceGate): CockpitAcceptanceItem {
   return {
     label: gate.label,
-    value: readinessStatusValue[gate.status] ?? gate.status,
+    value: formatReadinessStatusValue(gate.status),
     detail: gate.detail,
-    level: readinessStatusLevel[gate.status] ?? "review"
+    level: mapReadinessStatusLevel(gate.status)
   };
 }
 
 function AcceptanceStatusCard({
   items,
-  workItems,
-  warnings
+  readinessVm
 }: {
   items: CockpitAcceptanceItem[];
-  workItems: OperatorWorkItem[];
-  warnings: string[];
+  readinessVm: TradingReadinessState & { refresh: () => Promise<void> };
 }) {
   const readyCount = items.filter((item) => item.level === "ready").length;
   const totalCount = items.length;
@@ -1479,22 +1492,56 @@ function AcceptanceStatusCard({
               Session, replay, audit, and promotion signals for the current paper workflow.
             </CardDescription>
           </div>
-          <span className={cn("rounded-sm border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
-            {readyCount}/{totalCount} ready
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => { void readinessVm.refresh(); }}
+              disabled={readinessVm.refreshing}
+              aria-label={readinessVm.refreshAriaLabel}
+            >
+              <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
+              {readinessVm.refreshButtonLabel}
+            </Button>
+            <span className={cn("rounded-sm border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
+              {readyCount}/{totalCount} ready
+            </span>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="sr-only" aria-live="polite">{readinessVm.statusAnnouncement}</div>
+        {readinessVm.summaryRows.length > 0 && (
+          <div className="grid gap-2 md:grid-cols-4" aria-label={readinessVm.summaryLabel}>
+            {readinessVm.summaryRows.map((row) => (
+              <ReadinessSummaryPill key={row.id} row={row} />
+            ))}
+          </div>
+        )}
+        {readinessVm.errorText && (
+          <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            {readinessVm.errorText}
+          </div>
+        )}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {items.map((item) => (
             <AcceptanceRow key={item.label} item={item} />
           ))}
         </div>
-        {(workItems.length > 0 || warnings.length > 0) && (
-          <OperatorWorkItemList workItems={workItems} warnings={warnings} />
+        {(readinessVm.workItems.length > 0 || readinessVm.warnings.length > 0) && (
+          <OperatorWorkItemList workItems={readinessVm.workItems} warnings={readinessVm.warnings} />
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
+  return (
+    <div className={cn("rounded-lg border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
+      <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
+    </div>
   );
 }
 
