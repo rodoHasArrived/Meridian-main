@@ -1,11 +1,11 @@
 > Auto-generated from canonical JSON payload.
-> Generated: 2026-04-29T14:45:38.807186+00:00
+> Generated: 2026-04-29T14:52:44.926716+00:00
 > Data sources: repo markdown (*.md), git commit metadata
 
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-29T14:45:38.801263+00:00
+> Last updated: 2026-04-29T14:52:44.920676+00:00
 
 ## Overall Health Score
 
