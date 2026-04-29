@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisExportWizardService
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExportProfiles
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataTypes
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 152
   assemblies:
   - Meridian.Ui.Services
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimateExportAsync
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 169
   assemblies:
   - Meridian.Ui.Services
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateQualityReportAsync
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 237
   assemblies:
   - Meridian.Ui.Services
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateLoaderCode
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 312
   assemblies:
   - Meridian.Ui.Services
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteExportAsync
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 499
   assemblies:
   - Meridian.Ui.Services

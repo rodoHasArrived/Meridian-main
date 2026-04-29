@@ -31,11 +31,9 @@ global using System.Windows.Controls;
 global using System.Windows.Input;
 global using System.Windows.Media;
 global using System.Windows.Threading;
-
-// Shared desktop collections and contracts
-global using Meridian.Ui.Services.Collections;
-global using Meridian.Ui.Services.Contracts;
-
 // CommunityToolkit.Mvvm — source generators and relay commands
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
+// Shared desktop collections and contracts
+global using Meridian.Ui.Services.Collections;
+global using Meridian.Ui.Services.Contracts;

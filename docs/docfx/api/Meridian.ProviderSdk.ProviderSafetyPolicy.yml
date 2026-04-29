@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSafetyPolicy
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 205
   assemblies:
   - Meridian.ProviderSdk
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 205
   assemblies:
   - Meridian.ProviderSdk
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capability
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 206
   assemblies:
   - Meridian.ProviderSdk
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 207
   assemblies:
   - Meridian.ProviderSdk
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireExplicitBinding
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 208
   assemblies:
   - Meridian.ProviderSdk
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireProductionReady
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 209
   assemblies:
   - Meridian.ProviderSdk
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedFailoverConnectionIds
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 210
   assemblies:
   - Meridian.ProviderSdk
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedProviderFamilies
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 211
   assemblies:
   - Meridian.ProviderSdk
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultFor
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 213
   assemblies:
   - Meridian.ProviderSdk

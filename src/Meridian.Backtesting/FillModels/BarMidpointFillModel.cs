@@ -117,7 +117,7 @@ internal sealed class BarMidpointFillModel(
 
     /// <summary>
     /// Computes how many shares can be filled this bar.
-    /// When <paramref name="maxParticipationRate"/> is zero the full remaining
+    /// When <c>maxParticipationRate</c> is zero the full remaining
     /// quantity is returned (unconstrained mode, backward-compatible).
     /// </summary>
     private long ComputeFillableQuantity(long remainingAbsolute, long barVolume)

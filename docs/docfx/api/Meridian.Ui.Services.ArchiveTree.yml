@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveTree
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 605
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 607
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 608
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 609
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSize
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 610
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Years
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 611
   assemblies:
   - Meridian.Ui.Services

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBApiVersionValidator
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
     startLine: 23
   assemblies:
   - Meridian.Infrastructure
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSupportedServerVersion
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxTestedServerVersion
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSupportedClientVersion
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateServerVersion
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildVersionRequirementsMessage
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
     startLine: 97
   assemblies:
   - Meridian.Infrastructure

@@ -42,25 +42,29 @@ public partial class ProviderPage : Page
 
     private async void ProviderToggle_Changed(object sender, RoutedEventArgs e)
     {
-        if (sender is not CheckBox { DataContext: ProviderSettingsViewModel vm }) return;
+        if (sender is not CheckBox { DataContext: ProviderSettingsViewModel vm })
+            return;
         await _viewModel.OnProviderToggleChangedAsync(vm);
     }
 
     private async void PriorityField_LostFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is not TextBox { DataContext: ProviderSettingsViewModel vm } textBox) return;
+        if (sender is not TextBox { DataContext: ProviderSettingsViewModel vm } textBox)
+            return;
         await _viewModel.OnPriorityLostFocusAsync(vm, textBox.Text);
     }
 
     private async void RateLimitField_LostFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is not TextBox { DataContext: ProviderSettingsViewModel vm }) return;
+        if (sender is not TextBox { DataContext: ProviderSettingsViewModel vm })
+            return;
         await _viewModel.OnRateLimitLostFocusAsync(vm);
     }
 
     private async void ResetProvider_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: string providerId } || string.IsNullOrEmpty(providerId)) return;
+        if (sender is not Button { Tag: string providerId } || string.IsNullOrEmpty(providerId))
+            return;
         await _viewModel.OnResetProviderAsync(providerId);
     }
 

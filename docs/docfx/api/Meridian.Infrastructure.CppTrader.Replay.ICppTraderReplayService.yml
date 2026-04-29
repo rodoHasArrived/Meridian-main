@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderReplayService
-    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
     startLine: 2
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateReplaySessionAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure.CppTrader

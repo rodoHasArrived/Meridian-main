@@ -38,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -292,7 +292,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -359,7 +359,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -429,7 +429,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 61
   assemblies:
   - Meridian.Infrastructure
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 66
   assemblies:
   - Meridian.Infrastructure
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -552,7 +552,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 129
   assemblies:
   - Meridian.Infrastructure
@@ -589,7 +589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 153
   assemblies:
   - Meridian.Infrastructure
@@ -635,7 +635,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 159
   assemblies:
   - Meridian.Infrastructure
@@ -681,7 +681,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalQuotesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 253
   assemblies:
   - Meridian.Infrastructure
@@ -725,7 +725,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalQuotesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 266
   assemblies:
   - Meridian.Infrastructure
@@ -769,7 +769,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalTradesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 370
   assemblies:
   - Meridian.Infrastructure
@@ -813,7 +813,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalTradesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 383
   assemblies:
   - Meridian.Infrastructure
@@ -857,7 +857,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalAuctionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 485
   assemblies:
   - Meridian.Infrastructure
@@ -899,7 +899,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalAuctionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 497
   assemblies:
   - Meridian.Infrastructure
@@ -941,7 +941,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs
     startLine: 639
   assemblies:
   - Meridian.Infrastructure

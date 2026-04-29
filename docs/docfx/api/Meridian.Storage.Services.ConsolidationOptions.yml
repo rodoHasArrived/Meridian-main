@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidationOptions
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 644
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 644
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strategy
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 645
   assemblies:
   - Meridian.Storage
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillGapsFromAlternates
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 646
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateCrossSource
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 647
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceTolerancePct
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 648
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeTolerancePct
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 649
   assemblies:
   - Meridian.Storage

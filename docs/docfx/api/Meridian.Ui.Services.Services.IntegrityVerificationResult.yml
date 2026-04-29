@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityVerificationResult
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 156
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 158
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 159
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 160
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recommendations
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 161
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckedAt
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 162
   assemblies:
   - Meridian.Ui.Services

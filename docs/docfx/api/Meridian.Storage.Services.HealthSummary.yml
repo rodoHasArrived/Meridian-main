@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthSummary
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 577
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 577
   assemblies:
   - Meridian.Storage
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 578
   assemblies:
   - Meridian.Storage
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 579
   assemblies:
   - Meridian.Storage
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyFiles
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 580
   assemblies:
   - Meridian.Storage
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningFiles
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 581
   assemblies:
   - Meridian.Storage
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedFiles
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 582
   assemblies:
   - Meridian.Storage
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedFiles
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 583
   assemblies:
   - Meridian.Storage

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDataPrompts
-    path: ../../src/Meridian.McpServer/Prompts/MarketDataPrompts.cs
+    path: src/Meridian.McpServer/Prompts/MarketDataPrompts.cs
     startLine: 10
   assemblies:
   - Meridian.McpServer
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillSetup
-    path: ../../src/Meridian.McpServer/Prompts/MarketDataPrompts.cs
+    path: src/Meridian.McpServer/Prompts/MarketDataPrompts.cs
     startLine: 16
   assemblies:
   - Meridian.McpServer
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConfiguration
-    path: ../../src/Meridian.McpServer/Prompts/MarketDataPrompts.cs
+    path: src/Meridian.McpServer/Prompts/MarketDataPrompts.cs
     startLine: 76
   assemblies:
   - Meridian.McpServer

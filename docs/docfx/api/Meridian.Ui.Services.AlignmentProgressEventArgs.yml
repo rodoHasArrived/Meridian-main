@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlignmentProgressEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 418
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 420
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentSymbol
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 421
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 422
   assemblies:
   - Meridian.Ui.Services

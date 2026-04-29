@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentPublishChangeDto
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangeType
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 146
   assemblies:
   - Meridian.Contracts
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NodeKind
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 147
   assemblies:
   - Meridian.Contracts
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetId
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 148
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 149
   assemblies:
   - Meridian.Contracts
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBreaking
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 150
   assemblies:
   - Meridian.Contracts

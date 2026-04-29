@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchService
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 7
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSuggestionsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services

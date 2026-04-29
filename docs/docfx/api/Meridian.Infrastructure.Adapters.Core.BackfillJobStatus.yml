@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 323
   assemblies:
   - Meridian.Infrastructure
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 326
   assemblies:
   - Meridian.Infrastructure
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 329
   assemblies:
   - Meridian.Infrastructure
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paused
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 332
   assemblies:
   - Meridian.Infrastructure
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimited
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 335
   assemblies:
   - Meridian.Infrastructure
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 338
   assemblies:
   - Meridian.Infrastructure
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 341
   assemblies:
   - Meridian.Infrastructure
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 344
   assemblies:
   - Meridian.Infrastructure

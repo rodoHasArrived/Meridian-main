@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectorModeRunner
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
     startLine: 42
   assemblies:
   - Meridian.Application

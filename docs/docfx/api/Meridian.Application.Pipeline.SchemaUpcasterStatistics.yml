@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaUpcasterStatistics
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 170
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 170
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAttempts
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 171
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Successful
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 172
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 173
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisteredUpcasters
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 174
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentSchemaVersion
-    path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
+    path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
     startLine: 175
   assemblies:
   - Meridian.Application

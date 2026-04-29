@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivityItem
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 531
   assemblies:
   - Meridian.Ui.Services
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 533
   assemblies:
   - Meridian.Ui.Services
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 534
   assemblies:
   - Meridian.Ui.Services
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 535
   assemblies:
   - Meridian.Ui.Services
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 536
   assemblies:
   - Meridian.Ui.Services
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 537
   assemblies:
   - Meridian.Ui.Services
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 538
   assemblies:
   - Meridian.Ui.Services
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 539
   assemblies:
   - Meridian.Ui.Services
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 540
   assemblies:
   - Meridian.Ui.Services
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 545
   assemblies:
   - Meridian.Ui.Services
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ColorCategory
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 585
   assemblies:
   - Meridian.Ui.Services
@@ -359,7 +359,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativeTime
-    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
     startLine: 606
   assemblies:
   - Meridian.Ui.Services

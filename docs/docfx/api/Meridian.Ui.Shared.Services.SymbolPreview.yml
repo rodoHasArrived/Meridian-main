@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPreview
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Shared
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Shared
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Shared
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Shared
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedBars
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Shared
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExistingData
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Shared
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WouldOverwrite
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Shared

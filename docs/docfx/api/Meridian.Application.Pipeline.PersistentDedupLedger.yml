@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistentDedupLedger
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalChecked
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuplicates
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 55
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDuplicateAsync
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 145
   assemblies:
   - Meridian.Application
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 474
   assemblies:
   - Meridian.Application
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompactAsync
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 493
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
     startLine: 545
   assemblies:
   - Meridian.Application

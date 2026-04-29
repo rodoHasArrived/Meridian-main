@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MmfSearchQuery
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundFamily
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 73
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSweepEligible
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 74
   assemblies:
   - Meridian.Contracts
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasLiquidityFee
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidityState
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 76
   assemblies:
   - Meridian.Contracts
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxWamDays
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 77
   assemblies:
   - Meridian.Contracts
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveOnly
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skip
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 79
   assemblies:
   - Meridian.Contracts
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Take
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts

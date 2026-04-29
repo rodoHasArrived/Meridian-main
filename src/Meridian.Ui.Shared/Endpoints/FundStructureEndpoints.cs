@@ -6,6 +6,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -18,7 +19,8 @@ public static class FundStructureEndpoints
         group.MapPost("/organizations", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateOrganizationRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -36,7 +38,8 @@ public static class FundStructureEndpoints
         group.MapPost("/businesses", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateBusinessRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -54,7 +57,8 @@ public static class FundStructureEndpoints
         group.MapPost("/clients", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateClientRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -72,7 +76,8 @@ public static class FundStructureEndpoints
         group.MapPost("/funds", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateFundRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -90,7 +95,8 @@ public static class FundStructureEndpoints
         group.MapPost("/sleeves", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateSleeveRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -108,7 +114,8 @@ public static class FundStructureEndpoints
         group.MapPost("/vehicles", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateVehicleRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -126,7 +133,8 @@ public static class FundStructureEndpoints
         group.MapPost("/entities", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateLegalEntityRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -144,7 +152,8 @@ public static class FundStructureEndpoints
         group.MapPost("/investment-portfolios", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateInvestmentPortfolioRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -162,7 +171,8 @@ public static class FundStructureEndpoints
         group.MapPost("/links", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<LinkFundStructureNodesRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -180,12 +190,19 @@ public static class FundStructureEndpoints
         group.MapPost("/assignments", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<AssignFundStructureNodeRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
             {
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            request = NormalizeLedgerGroupAssignmentRequest(request, out var assignmentReferenceError);
+            if (assignmentReferenceError is not null)
+            {
+                return Results.Problem(assignmentReferenceError, statusCode: StatusCodes.Status400BadRequest);
             }
 
             var result = await service.AssignNodeAsync(request, context.RequestAborted).ConfigureAwait(false);
@@ -198,7 +215,8 @@ public static class FundStructureEndpoints
         group.MapGet("/graph", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new OrganizationStructureQuery(
@@ -218,7 +236,8 @@ public static class FundStructureEndpoints
         group.MapGet("/legacy-graph", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new FundStructureQuery(
@@ -237,7 +256,8 @@ public static class FundStructureEndpoints
         group.MapGet("/businesses/{businessId:guid}/advisory-view", async (Guid businessId, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new AdvisoryStructureQuery(
@@ -258,7 +278,8 @@ public static class FundStructureEndpoints
         group.MapGet("/businesses/{businessId:guid}/fund-view", async (Guid businessId, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new FundOperatingStructureQuery(
@@ -281,7 +302,8 @@ public static class FundStructureEndpoints
         group.MapGet("/accounting-view", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new AccountingStructureQuery(
@@ -305,7 +327,8 @@ public static class FundStructureEndpoints
         group.MapGet("/cash-flow-view", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var scopeKind = ParseCashFlowScopeKind(q["scopeKind"]);
@@ -314,6 +337,12 @@ public static class FundStructureEndpoints
                 return Results.Problem(
                     "scopeKind is required and must be a valid governance cash-flow scope.",
                     statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var ledgerGroupId = ParseLedgerGroupId(q["ledgerGroupId"], out var ledgerGroupParseError);
+            if (ledgerGroupParseError is not null)
+            {
+                return Results.Problem(ledgerGroupParseError, statusCode: StatusCodes.Status400BadRequest);
             }
 
             var query = new GovernanceCashFlowQuery(
@@ -326,7 +355,7 @@ public static class FundStructureEndpoints
                 VehicleId: ParseGuid(q["vehicleId"]),
                 InvestmentPortfolioId: ParseGuid(q["investmentPortfolioId"]),
                 AccountId: ParseGuid(q["accountId"]),
-                LedgerGroupId: ParseLedgerGroupId(q["ledgerGroupId"]),
+                LedgerGroupId: ledgerGroupId,
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]),
                 Currency: q["currency"].FirstOrDefault(),
@@ -364,7 +393,8 @@ public static class FundStructureEndpoints
                 AsOf: ParseDateTimeOffset(q["asOf"]),
                 Currency: q["currency"].FirstOrDefault(),
                 ScopeKind: ParseFundLedgerScope(q["scopeKind"]) ?? FundLedgerScope.Consolidated,
-                ScopeId: q["scopeId"].FirstOrDefault());
+                ScopeId: q["scopeId"].FirstOrDefault(),
+                SelectedLedgerIds: ParseSelectedLedgerIds(q["selectedLedgerIds"], q["selectedLedgerId"]));
 
             var result = await service.GetWorkspaceAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -395,6 +425,87 @@ public static class FundStructureEndpoints
         .WithName("PreviewFundReportPack")
         .Produces<FundReportPackPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/report-packs", async (JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            FundReportPackGenerateRequestDto? request;
+            try
+            {
+                request = JsonSerializer.Deserialize<FundReportPackGenerateRequestDto>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem(
+                    $"Report-pack request is invalid JSON. {ex.Message}",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (!TryValidateReportPackGenerateRequest(request, out var validationError))
+            {
+                return Results.Problem(validationError, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var result = await service.GenerateReportPackAsync(request!, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("GenerateFundReportPack")
+        .Produces<FundReportPackSnapshotDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/report-packs", async (HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var q = context.Request.Query;
+            var fundProfileId = q["fundProfileId"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                return Results.Problem(
+                    "fundProfileId is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var limit = ParseInt(q["limit"], 20);
+            var result = await service
+                .GetReportPackHistoryAsync(fundProfileId, limit, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundReportPackHistory")
+        .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var result = await service.GetReportPackAsync(reportId, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundReportPack")
+        .Produces<FundReportPackSnapshotDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
     }
 
     private static IFundStructureService? ResolveService(HttpContext context) =>
@@ -427,8 +538,108 @@ public static class FundStructureEndpoints
     private static FundLedgerScope? ParseFundLedgerScope(string? value) =>
         Enum.TryParse<FundLedgerScope>(value, ignoreCase: true, out var parsed) ? parsed : null;
 
-    private static LedgerGroupId? ParseLedgerGroupId(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : new LedgerGroupId(value);
+    private static LedgerGroupId? ParseLedgerGroupId(StringValues values, out string? error)
+    {
+        error = null;
+        if (StringValues.IsNullOrEmpty(values))
+        {
+            return null;
+        }
+
+        var raw = values.ToString();
+        if (!LedgerGroupId.TryCreate(raw, out var parsed))
+        {
+            error = $"ledgerGroupId is invalid. {LedgerGroupId.ValidationMessage}";
+            return null;
+        }
+
+        return parsed;
+    }
+
+    private static IReadOnlyList<string>? ParseSelectedLedgerIds(params StringValues[] valueSets)
+    {
+        var parsed = valueSets
+            .SelectMany(static values => values)
+            .Where(static value => value is not null)
+            .SelectMany(static value => value!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
+    }
+
+    private static bool TryValidateReportPackGenerateRequest(
+        FundReportPackGenerateRequestDto? request,
+        out string error)
+    {
+        if (request is null)
+        {
+            error = "A request body is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FundProfileId))
+        {
+            error = "fundProfileId is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.AuditActor))
+        {
+            error = "auditActor is required.";
+            return false;
+        }
+
+        if (request.Formats is { Count: 0 })
+        {
+            error = "At least one report-pack artifact format is required.";
+            return false;
+        }
+
+        if (request.Formats is not null
+            && request.Formats.Any(static format => !Enum.IsDefined(format)))
+        {
+            error = "One or more report-pack artifact formats are unsupported.";
+            return false;
+        }
+
+        if (request.ExpectedSchemaVersion is { } expectedSchemaVersion
+            && expectedSchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
+        {
+            error = $"expectedSchemaVersion must be {GovernanceReportPackContract.CurrentSchemaVersion}.";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
+    }
+
+    private static AssignFundStructureNodeRequest NormalizeLedgerGroupAssignmentRequest(
+        AssignFundStructureNodeRequest request,
+        out string? error)
+    {
+        error = null;
+        if (!LedgerGroupingRules.IsLedgerGroupAssignmentType(request.AssignmentType))
+        {
+            return request;
+        }
+
+        try
+        {
+            return request with
+            {
+                AssignmentReference = LedgerGroupingRules.NormalizeAssignmentReference(
+                    request.AssignmentType,
+                    request.AssignmentReference)
+            };
+        }
+        catch (FormatException)
+        {
+            error = $"assignmentReference is invalid for '{LedgerGroupingRules.LedgerGroupAssignmentType}'. {LedgerGroupId.ValidationMessage}";
+            return request;
+        }
+    }
 
     private static int ParseInt(string? value, int defaultValue) =>
         int.TryParse(value, out var parsed) ? parsed : defaultValue;

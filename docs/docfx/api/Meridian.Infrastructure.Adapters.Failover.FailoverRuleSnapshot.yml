@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverRuleSnapshot
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 496
   assemblies:
   - Meridian.Infrastructure
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 496
   assemblies:
   - Meridian.Infrastructure
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 497
   assemblies:
   - Meridian.Infrastructure
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 498
   assemblies:
   - Meridian.Infrastructure
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupProviderIds
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 499
   assemblies:
   - Meridian.Infrastructure
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentActiveProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 500
   assemblies:
   - Meridian.Infrastructure
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInFailoverState
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 501
   assemblies:
   - Meridian.Infrastructure
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFailoverTime
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 502
   assemblies:
   - Meridian.Infrastructure
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverCount
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 503
   assemblies:
   - Meridian.Infrastructure
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverThreshold
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 504
   assemblies:
   - Meridian.Infrastructure
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoveryThreshold
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 505
   assemblies:
   - Meridian.Infrastructure

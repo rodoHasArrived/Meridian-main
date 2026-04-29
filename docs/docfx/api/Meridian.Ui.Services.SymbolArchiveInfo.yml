@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolArchiveInfo
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 593
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 595
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 596
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstDate
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 597
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastDate
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 598
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDays
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 599
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 600
   assemblies:
   - Meridian.Ui.Services
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 601
   assemblies:
   - Meridian.Ui.Services
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Files
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 602
   assemblies:
   - Meridian.Ui.Services

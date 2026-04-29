@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsProviderStatus
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 325
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 325
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 326
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 327
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 328
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFallback
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 329
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 330
   assemblies:
   - Meridian.Application

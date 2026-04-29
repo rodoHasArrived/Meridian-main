@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTemplate
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimit
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 15
   assemblies:
   - Meridian.Infrastructure
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToInfo
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure

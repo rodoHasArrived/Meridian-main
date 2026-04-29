@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceStatus
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 283
   assemblies:
   - Meridian.ProviderSdk
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uninitialized
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 286
   assemblies:
   - Meridian.ProviderSdk
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initializing
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 289
   assemblies:
   - Meridian.ProviderSdk
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 292
   assemblies:
   - Meridian.ProviderSdk
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disconnected
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 295
   assemblies:
   - Meridian.ProviderSdk
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconnecting
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 298
   assemblies:
   - Meridian.ProviderSdk
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationError
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 301
   assemblies:
   - Meridian.ProviderSdk
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimited
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 304
   assemblies:
   - Meridian.ProviderSdk
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unavailable
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 307
   assemblies:
   - Meridian.ProviderSdk
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disabled
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 310
   assemblies:
   - Meridian.ProviderSdk

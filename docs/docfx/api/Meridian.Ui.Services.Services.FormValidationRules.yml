@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormValidationRules
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateRequired
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbol
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbolList
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 51
   assemblies:
   - Meridian.Ui.Services
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateDateRange
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 82
   assemblies:
   - Meridian.Ui.Services
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateDateRange
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 103
   assemblies:
   - Meridian.Ui.Services
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateApiKey
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 120
   assemblies:
   - Meridian.Ui.Services
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateUrl
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 137
   assemblies:
   - Meridian.Ui.Services
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatePort
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 153
   assemblies:
   - Meridian.Ui.Services
@@ -384,7 +384,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateFilePath
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 169
   assemblies:
   - Meridian.Ui.Services
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateNumericRange
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 192
   assemblies:
   - Meridian.Ui.Services

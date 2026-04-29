@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCertificationDto
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 123
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 123
   assemblies:
   - Meridian.Contracts
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 124
   assemblies:
   - Meridian.Contracts
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 125
   assemblies:
   - Meridian.Contracts
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunAt
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 126
   assemblies:
   - Meridian.Contracts
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiresAt
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 127
   assemblies:
   - Meridian.Contracts
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProductionReady
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 128
   assemblies:
   - Meridian.Contracts
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checks
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 129
   assemblies:
   - Meridian.Contracts
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 130
   assemblies:
   - Meridian.Contracts

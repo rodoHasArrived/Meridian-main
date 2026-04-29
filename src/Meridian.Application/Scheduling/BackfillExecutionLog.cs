@@ -106,6 +106,26 @@ public sealed class BackfillExecutionLog
     /// Per-symbol results.
     /// </summary>
     public ConcurrentDictionary<string, SymbolExecutionResult> SymbolResults { get; init; } = new();
+
+    /// <summary>
+    /// Auto-remediation trigger reason when execution was system-triggered.
+    /// </summary>
+    public string? AutoRemediationTriggerReason { get; set; }
+
+    /// <summary>
+    /// Attempt count for the same auto-remediation idempotency key.
+    /// </summary>
+    public int AutoRemediationAttemptCount { get; set; }
+
+    /// <summary>
+    /// Last known remediation outcome used by observability surfaces.
+    /// </summary>
+    public string? AutoRemediationLastOutcome { get; set; }
+
+    /// <summary>
+    /// Idempotency key (symbol+range+provider) used to suppress duplicates.
+    /// </summary>
+    public string? AutoRemediationIdempotencyKey { get; set; }
 }
 
 /// <summary>
@@ -126,7 +146,10 @@ public enum ExecutionTrigger : byte
     Retry,
 
     /// <summary>System startup catch-up.</summary>
-    CatchUp
+    CatchUp,
+
+    /// <summary>Triggered automatically by quality/gap remediation policy.</summary>
+    AutoRemediation
 }
 
 /// <summary>

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMmfLiquidityService
-    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLiquidityStateAsync
-    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFamilyProjectionAsync
-    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByFamilyAsync
-    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllLiquidFundsAsync
-    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
     startLine: 33
   assemblies:
   - Meridian.Application

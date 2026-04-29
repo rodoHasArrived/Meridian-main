@@ -11,9 +11,14 @@ public static partial class ShellNavigationCatalog
     private static readonly Lazy<IReadOnlyList<WorkspaceShellDefinition>> WorkspaceShellsValue =
         new(BuildWorkspaceShells);
 
+    private static readonly Lazy<IReadOnlyList<WorkspaceCapabilityDescriptor>> WorkspaceCapabilitiesValue =
+        new(BuildWorkspaceCapabilities);
+
     public static IReadOnlyList<ShellPageDescriptor> Pages => PagesValue.Value;
 
     public static IReadOnlyList<WorkspaceShellDefinition> WorkspaceShells => WorkspaceShellsValue.Value;
+
+    public static IReadOnlyList<WorkspaceCapabilityDescriptor> WorkspaceCapabilities => WorkspaceCapabilitiesValue.Value;
 
     private static readonly Lazy<IReadOnlyDictionary<string, WorkspaceShellDescriptor>> WorkspacesById =
         new(BuildWorkspaceLookup);
@@ -25,22 +30,10 @@ public static partial class ShellNavigationCatalog
         new(BuildPageLookup);
 
     private static IReadOnlyList<ShellPageDescriptor> BuildPages()
-        =>
-        [
-            .. ResearchPages,
-            .. TradingPages,
-            .. DataOperationsPages,
-            .. GovernancePages
-        ];
+        => WorkspaceCapabilities.SelectMany(static capability => capability.Pages).ToArray();
 
     private static IReadOnlyList<WorkspaceShellDefinition> BuildWorkspaceShells()
-        =>
-        [
-            ResearchWorkspaceShellDefinition,
-            TradingWorkspaceShellDefinition,
-            DataOperationsWorkspaceShellDefinition,
-            GovernanceWorkspaceShellDefinition
-        ];
+        => WorkspaceCapabilities.Select(static capability => capability.ShellDefinition).ToArray();
 
     private static IReadOnlyDictionary<string, WorkspaceShellDescriptor> BuildWorkspaceLookup()
     {
@@ -48,7 +41,8 @@ public static partial class ShellNavigationCatalog
         return Workspaces.ToDictionary(static workspace => workspace.Id, StringComparer.OrdinalIgnoreCase);
     }
 
-    public static WorkspaceShellDescriptor GetDefaultWorkspace() => Workspaces[0];
+    public static WorkspaceShellDescriptor GetDefaultWorkspace()
+        => GetWorkspace("strategy") ?? Workspaces[0];
 
     public static WorkspaceShellDescriptor? GetWorkspace(string? workspaceId)
     {
@@ -88,6 +82,13 @@ public static partial class ShellNavigationCatalog
 
     public static string GetCanonicalPageTag(string? pageTag)
         => GetPage(pageTag)?.PageTag ?? pageTag?.Trim() ?? string.Empty;
+
+    public static bool IsWorkspaceShellPageTag(string? pageTag)
+    {
+        var canonicalPageTag = GetCanonicalPageTag(pageTag);
+        return !string.IsNullOrWhiteSpace(canonicalPageTag) &&
+               Workspaces.Any(workspace => string.Equals(workspace.HomePageTag, canonicalPageTag, StringComparison.OrdinalIgnoreCase));
+    }
 
     public static IReadOnlyCollection<string> GetRegisteredPageTags() => PagesByTag.Value.Keys.ToArray();
 

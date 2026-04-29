@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayFilesResponse
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 379
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Files
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 381
   assemblies:
   - Meridian.Ui.Services

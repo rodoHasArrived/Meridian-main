@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexConstituentsResponse
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 447
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexName
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 449
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 450
   assemblies:
   - Meridian.Ui.Services

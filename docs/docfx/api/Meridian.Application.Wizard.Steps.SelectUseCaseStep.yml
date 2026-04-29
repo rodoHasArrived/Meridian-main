@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectUseCaseStep
-    path: ../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
+    path: src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepId
-    path: ../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
+    path: src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
+    path: src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
+    path: src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs
     startLine: 22
   assemblies:
   - Meridian.Application

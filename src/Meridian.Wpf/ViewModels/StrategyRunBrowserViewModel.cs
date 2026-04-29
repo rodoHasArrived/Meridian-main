@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -15,6 +16,29 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     private readonly NavigationService _navigationService;
     private readonly WorkspaceService _workspaceService;
     private readonly List<StrategyRunSummary> _allRuns = new();
+    private object? _parameter;
+    private StrategyRunsNavigationContext? _navigationContext;
+    private bool _isInitialized;
+
+    public object? Parameter
+    {
+        get => _parameter;
+        set
+        {
+            if (!SetProperty(ref _parameter, value))
+                return;
+
+            _navigationContext = value switch
+            {
+                StrategyRunsNavigationContext context => context,
+                string strategyId when !string.IsNullOrWhiteSpace(strategyId) => new StrategyRunsNavigationContext(StrategyId: strategyId),
+                _ => null
+            };
+
+            if (_isInitialized)
+                _ = RefreshAsync();
+        }
+    }
 
     public ObservableCollection<StrategyRunSummary> Runs { get; } = [];
     public IReadOnlyList<string> ModeFilters { get; } = ["All", "Backtest", "Paper", "Live"];
@@ -29,6 +53,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             {
                 RaisePropertyChanged(nameof(CanOpenSelectedRun));
                 RaisePropertyChanged(nameof(CanCompareRuns));
+                RaiseComparisonPickerStateChanged();
                 NotifyCommandsChanged();
             }
         }
@@ -47,6 +72,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             if (SetProperty(ref _comparisonRun, value))
             {
                 RaisePropertyChanged(nameof(CanCompareRuns));
+                RaiseComparisonPickerStateChanged();
                 NotifyCommandsChanged();
             }
         }
@@ -149,6 +175,63 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         private set => SetProperty(ref _statusText, value);
     }
 
+    public bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(SearchText) ||
+        !string.Equals(SelectedModeFilter, "All", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsEmptyStateVisible => Runs.Count == 0;
+
+    public bool HasFilterRecoveryAction =>
+        _allRuns.Count > 0 &&
+        Runs.Count == 0 &&
+        HasActiveFilters;
+
+    public string RunScopeText
+    {
+        get
+        {
+            if (_allRuns.Count == 0)
+                return "No recorded runs";
+
+            if (Runs.Count == _allRuns.Count)
+                return FormatRunCount(_allRuns.Count, "recorded");
+
+            return $"{Runs.Count} visible of {FormatRunCount(_allRuns.Count, "recorded")}";
+        }
+    }
+
+    public string EmptyStateTitle
+    {
+        get
+        {
+            if (_allRuns.Count == 0)
+                return "No strategy runs recorded yet";
+
+            if (HasActiveFilters)
+                return "No strategy runs match the current filters";
+
+            return "No strategy runs to display";
+        }
+    }
+
+    public string EmptyStateDetail
+    {
+        get
+        {
+            if (_allRuns.Count == 0)
+            {
+                return !string.IsNullOrWhiteSpace(_navigationContext?.StrategyId)
+                    ? $"Complete a backtest or paper session for {_navigationContext.StrategyId} to populate this browser."
+                    : "Complete a backtest or paper session to populate this browser.";
+            }
+
+            if (HasActiveFilters)
+                return $"Reset filters to show {FormatRunCount(_allRuns.Count, "recorded")}.";
+
+            return "Refresh the browser after recording runs.";
+        }
+    }
+
     public bool CanOpenSelectedRun => SelectedRun is not null;
 
     /// <summary><c>true</c> when two distinct runs are selected and ready to compare.</summary>
@@ -157,12 +240,44 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         ComparisonRun is not null &&
         !string.Equals(SelectedRun.RunId, ComparisonRun.RunId, StringComparison.Ordinal);
 
+    public bool CanChooseComparisonRun =>
+        SelectedRun is not null &&
+        Runs.Any(run => !string.Equals(run.RunId, SelectedRun.RunId, StringComparison.Ordinal));
+
+    public string ComparisonGuidanceText
+    {
+        get
+        {
+            if (Runs.Count == 0)
+            {
+                return _allRuns.Count > 0
+                    ? "Reset filters to choose comparison runs from the recorded library."
+                    : "Record at least two strategy runs before comparing results.";
+            }
+
+            if (SelectedRun is null)
+                return "Select a primary run before choosing a comparison.";
+
+            if (!CanChooseComparisonRun)
+                return "Only one visible run is available. Adjust filters or record another run before comparing.";
+
+            if (ComparisonRun is null)
+                return $"Choose a second run to compare with {SelectedRun.StrategyName}.";
+
+            if (string.Equals(SelectedRun.RunId, ComparisonRun.RunId, StringComparison.Ordinal))
+                return "Choose a different run than the selected primary run.";
+
+            return $"Ready to compare {SelectedRun.StrategyName} against {ComparisonRun.StrategyName}.";
+        }
+    }
+
     public IAsyncRelayCommand RefreshCommand { get; }
     public IRelayCommand OpenDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
     public IAsyncRelayCommand CompareRunsCommand { get; }
     public IRelayCommand ClearComparisonCommand { get; }
+    public IRelayCommand ClearRunFiltersCommand { get; }
 
     internal StrategyRunBrowserViewModel(
         StrategyRunWorkspaceService runService,
@@ -179,10 +294,12 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => CanOpenSelectedRun);
         CompareRunsCommand = new AsyncRelayCommand(ExecuteCompareAsync, () => CanCompareRuns);
         ClearComparisonCommand = new RelayCommand(ClearComparison);
+        ClearRunFiltersCommand = new RelayCommand(ClearRunFilters, () => HasActiveFilters);
     }
 
     public async Task InitializeAsync(CancellationToken ct = default)
     {
+        _isInitialized = true;
         SearchText = _workspaceService.GetPageFilterState("StrategyRuns", "SearchText") ?? string.Empty;
         SelectedModeFilter = _workspaceService.GetPageFilterState("StrategyRuns", "ModeFilter") ?? "All";
         await RefreshAsync(ct);
@@ -190,12 +307,13 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
 
     public async Task RefreshAsync(CancellationToken ct = default)
     {
-        var runs = await _runService.GetRunsAsync(null, ct);
+        var runs = await _runService.GetRunsAsync(_navigationContext?.StrategyId, ct);
 
         _allRuns.Clear();
         _allRuns.AddRange(runs);
 
         ApplyFilters();
+        await ApplyNavigationContextAsync(ct);
     }
 
     private void ApplyFilters()
@@ -224,13 +342,54 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             Runs.Add(run);
         }
 
-        SelectedRun = Runs.FirstOrDefault();
+        if (SelectedRun is null || !Runs.Any(run => string.Equals(run.RunId, SelectedRun.RunId, StringComparison.Ordinal)))
+        {
+            SelectedRun = Runs.FirstOrDefault();
+        }
+
+        if (ComparisonRun is not null && !Runs.Any(run => string.Equals(run.RunId, ComparisonRun.RunId, StringComparison.Ordinal)))
+        {
+            ComparisonRun = null;
+        }
         StatusText = Runs.Count switch
         {
             0 when _allRuns.Count == 0 => "No recorded strategy runs yet. Complete a backtest to populate this browser.",
             0 => "No strategy runs match the current filters.",
+            _ when !string.IsNullOrWhiteSpace(_navigationContext?.StrategyId)
+                => $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded for {_navigationContext!.StrategyId}.",
             _ => $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded."
         };
+
+        RaiseRunPresentationChanged();
+    }
+
+    private async Task ApplyNavigationContextAsync(CancellationToken ct)
+    {
+        if (_navigationContext is null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(_navigationContext.PrimaryRunId))
+        {
+            SelectedRun = Runs.FirstOrDefault(run =>
+                string.Equals(run.RunId, _navigationContext.PrimaryRunId, StringComparison.Ordinal));
+        }
+        else
+        {
+            SelectedRun ??= Runs.FirstOrDefault();
+        }
+
+        if (!string.IsNullOrWhiteSpace(_navigationContext.ComparisonRunId))
+        {
+            ComparisonRun = Runs.FirstOrDefault(run =>
+                string.Equals(run.RunId, _navigationContext.ComparisonRunId, StringComparison.Ordinal));
+        }
+        else if (ComparisonRun is not null && !Runs.Any(run => string.Equals(run.RunId, ComparisonRun.RunId, StringComparison.Ordinal)))
+        {
+            ComparisonRun = null;
+        }
+
+        if (_navigationContext.AutoCompare && CanCompareRuns)
+            await ExecuteCompareAsync(ct);
     }
 
     private async Task ExecuteCompareAsync(CancellationToken ct = default)
@@ -259,6 +418,12 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         StatusText = Runs.Count > 0
             ? $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded."
             : StatusText;
+    }
+
+    private void ClearRunFilters()
+    {
+        SearchText = string.Empty;
+        SelectedModeFilter = "All";
     }
 
     private void OpenDetail()
@@ -292,4 +457,25 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         OpenLedgerCommand.NotifyCanExecuteChanged();
         (CompareRunsCommand as AsyncRelayCommand)?.NotifyCanExecuteChanged();
     }
+
+    private void RaiseRunPresentationChanged()
+    {
+        RaisePropertyChanged(nameof(HasActiveFilters));
+        RaisePropertyChanged(nameof(IsEmptyStateVisible));
+        RaisePropertyChanged(nameof(HasFilterRecoveryAction));
+        RaisePropertyChanged(nameof(RunScopeText));
+        RaisePropertyChanged(nameof(EmptyStateTitle));
+        RaisePropertyChanged(nameof(EmptyStateDetail));
+        RaiseComparisonPickerStateChanged();
+        ClearRunFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RaiseComparisonPickerStateChanged()
+    {
+        RaisePropertyChanged(nameof(CanChooseComparisonRun));
+        RaisePropertyChanged(nameof(ComparisonGuidanceText));
+    }
+
+    private static string FormatRunCount(int count, string qualifier) =>
+        $"{count} {qualifier} run{(count == 1 ? string.Empty : "s")}";
 }

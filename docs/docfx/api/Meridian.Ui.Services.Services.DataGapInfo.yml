@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGapInfo
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartDate
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 151
   assemblies:
   - Meridian.Ui.Services
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndDate
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 152
   assemblies:
   - Meridian.Ui.Services
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingBars
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 153
   assemblies:
   - Meridian.Ui.Services

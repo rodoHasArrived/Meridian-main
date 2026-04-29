@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedSamplesResponse
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 522
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Samples
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 524
   assemblies:
   - Meridian.Ui.Services

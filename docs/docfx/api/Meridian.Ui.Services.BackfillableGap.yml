@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillableGap
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 739
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 741
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 742
   assemblies:
   - Meridian.Ui.Services
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapType
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 743
   assemblies:
   - Meridian.Ui.Services
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanBackfill
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 744
   assemblies:
   - Meridian.Ui.Services
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedEvents
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 745
   assemblies:
   - Meridian.Ui.Services
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartDate
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 748
   assemblies:
   - Meridian.Ui.Services
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndDate
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 751
   assemblies:
   - Meridian.Ui.Services
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 754
   assemblies:
   - Meridian.Ui.Services
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualEvents
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 757
   assemblies:
   - Meridian.Ui.Services
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanRepair
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 760
   assemblies:
   - Meridian.Ui.Services

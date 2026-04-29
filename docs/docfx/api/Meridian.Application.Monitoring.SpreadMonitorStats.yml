@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadMonitorStats
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 401
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 401
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalQuotesProcessed
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 402
   assemblies:
   - Meridian.Application
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalWideSpreadEvents
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 403
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStats
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 404
   assemblies:
   - Meridian.Application

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertibleEquityTermsDto
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 158
   assemblies:
   - Meridian.Contracts
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Classification
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 159
   assemblies:
   - Meridian.Contracts
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSecurityId
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 160
   assemblies:
   - Meridian.Contracts
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConversionRatio
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 161
   assemblies:
   - Meridian.Contracts
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConversionPrice
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 162
   assemblies:
   - Meridian.Contracts
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConversionStartDate
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 163
   assemblies:
   - Meridian.Contracts
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConversionEndDate
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 164
   assemblies:
   - Meridian.Contracts
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 165
   assemblies:
   - Meridian.Contracts

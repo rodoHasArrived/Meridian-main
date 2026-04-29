@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TourStepEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 544
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TourId
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 546
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepIndex
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 547
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSteps
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 548
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Step
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 549
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFirst
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 550
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLast
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 551
   assemblies:
   - Meridian.Ui.Services

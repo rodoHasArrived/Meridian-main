@@ -1,19 +1,21 @@
 # Provider Registry
 
-> This file is auto-generated. Do not edit manually.
-> Auto-generated on 2026-04-20 04:11:08 UTC. Do not edit manually.
+> Auto-generated on 2026-04-26 04:47:12 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
 | `src/Meridian/Integrations/Lean/MeridianDataProvider.cs` |
+| `src/Meridian.Application/Commands/ProviderCalibrationCommand.cs` |
 | `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` |
 | `src/Meridian.Application/Composition/Features/ProviderRoutingFeatureRegistration.cs` |
 | `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` |
 | `src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs` |
 | `src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs` |
+| `src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs` |
 | `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs` |
 | `src/Meridian.Application/Monitoring/ProviderLatencyService.cs` |
 | `src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs` |
+| `src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs` |
 | `src/Meridian.Application/ProviderRouting/ProviderBindingService.cs` |
 | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` |
 | `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs` |
@@ -54,8 +56,10 @@
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/EdgarReferenceDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |

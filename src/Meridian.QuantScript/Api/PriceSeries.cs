@@ -2,7 +2,7 @@ namespace Meridian.QuantScript.Api;
 
 /// <summary>
 /// An ordered, immutable OHLCV price series for a single symbol.
-/// Produced by <see cref="DataProxy.Prices"/> and consumed by returns/indicator extensions.
+/// Produced by <c>DataProxy.Prices</c> and consumed by returns/indicator extensions.
 /// </summary>
 public sealed class PriceSeries
 {

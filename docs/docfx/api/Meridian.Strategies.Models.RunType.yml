@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunType
-    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    path: src/Meridian.Strategies/Models/RunType.cs
     startLine: 3
   assemblies:
   - Meridian.Strategies
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backtest
-    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    path: src/Meridian.Strategies/Models/RunType.cs
     startLine: 6
   assemblies:
   - Meridian.Strategies
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paper
-    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    path: src/Meridian.Strategies/Models/RunType.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Live
-    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    path: src/Meridian.Strategies/Models/RunType.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies

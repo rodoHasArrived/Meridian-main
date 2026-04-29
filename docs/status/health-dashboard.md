@@ -1,7 +1,11 @@
+> Auto-generated from canonical JSON payload.
+> Generated: 2026-04-29T14:52:44.926716+00:00
+> Data sources: repo markdown (*.md), git commit metadata
+
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-21T20:52:15.052980+00:00
+> Last updated: 2026-04-29T14:52:44.920676+00:00
 
 ## Overall Health Score
 
@@ -14,13 +18,13 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 403 |
-| Total lines | 140,235 |
-| Average file size (lines) | 348.0 |
-| Orphaned files | 128 |
+| Total documentation files | 420 |
+| Total lines | 147,399 |
+| Average file size (lines) | 350.9 |
+| Orphaned files | 117 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 184 |
+| TODO/FIXME markers | 219 |
 | **Health score** | **89/100** |
 
 ### Score Breakdown
@@ -40,10 +44,16 @@
 These files are not linked from any other Markdown file in the repository:
 
 - `.artifacts/link-repair-report.md`
+- `.claude/agents/meridian-archive-organizer.md`
 - `.claude/agents/meridian-blueprint.md`
 - `.claude/agents/meridian-cleanup.md`
 - `.claude/agents/meridian-docs.md`
 - `.claude/agents/meridian-navigation.md`
+- `.claude/agents/meridian-repo-navigation.md`
+- `.claude/agents/meridian-roadmap-strategist.md`
+- `.claude/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/generated/repository-structure.md`
+- `.claude/skills/meridian-archive-organizer/references/archive-placement-guide.md`
+- `.claude/skills/meridian-archive-organizer/references/evaluation-harness.md`
 - `.claude/skills/meridian-blueprint/references/blueprint-patterns.md`
 - `.claude/skills/meridian-blueprint/references/pipeline-position.md`
 - `.claude/skills/meridian-brainstorm/SKILL.md`
@@ -53,13 +63,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-code-review/references/architecture.md`
 - `.claude/skills/meridian-code-review/references/schemas.md`
 - `.claude/skills/meridian-implementation-assurance/references/documentation-routing.md`
-- `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
-- `.claude/skills/meridian-provider-builder/SKILL.md`
-- `.claude/skills/meridian-simulated-user-panel/SKILL.md`
-- `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
-- ... and 108 more
+- ... and 97 more
 
 ## Trend
 
@@ -67,7 +71,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-21 | 89 | 403 | 128 | 0 |
+| 2026-04-29 | 89 | 420 | 117 | 0 |
 
 ---
 

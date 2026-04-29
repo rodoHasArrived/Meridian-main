@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITradeEventPublisher
-    path: ../../src/Meridian.Execution/Events/ITradeEventPublisher.cs
+    path: src/Meridian.Execution/Events/ITradeEventPublisher.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Publish
-    path: ../../src/Meridian.Execution/Events/ITradeEventPublisher.cs
+    path: src/Meridian.Execution/Events/ITradeEventPublisher.cs
     startLine: 14
   assemblies:
   - Meridian.Execution

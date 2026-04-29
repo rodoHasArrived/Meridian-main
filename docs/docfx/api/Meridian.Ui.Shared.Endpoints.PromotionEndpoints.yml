@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapPromotionEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared

@@ -62,22 +62,28 @@ public sealed class QuoteFloatViewModel : BindableBase, IDisposable
 
     private async System.Threading.Tasks.Task PollQuoteAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         try
         {
             var response = await _httpClient.GetAsync(
                 $"{_baseUrl}/api/live/{Uri.EscapeDataString(_symbol)}/quote");
 
-            if (!response.IsSuccessStatusCode) return;
+            if (!response.IsSuccessStatusCode)
+                return;
 
             var json = await response.Content.ReadAsStringAsync();
             var quote = JsonSerializer.Deserialize<JsonElement>(json);
 
             decimal bid = 0, ask = 0, last = 0;
-            if (quote.TryGetProperty("bid", out var b)) bid = b.GetDecimal();
-            if (quote.TryGetProperty("ask", out var a)) ask = a.GetDecimal();
-            if (quote.TryGetProperty("last", out var l)) last = l.GetDecimal();
-            else if (bid > 0 && ask > 0) last = (bid + ask) / 2m;
+            if (quote.TryGetProperty("bid", out var b))
+                bid = b.GetDecimal();
+            if (quote.TryGetProperty("ask", out var a))
+                ask = a.GetDecimal();
+            if (quote.TryGetProperty("last", out var l))
+                last = l.GetDecimal();
+            else if (bid > 0 && ask > 0)
+                last = (bid + ask) / 2m;
 
             BidPrice = bid;
             AskPrice = ask;
@@ -104,7 +110,8 @@ public sealed class QuoteFloatViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         _pollTimer.Stop();
         _httpClient.Dispose();

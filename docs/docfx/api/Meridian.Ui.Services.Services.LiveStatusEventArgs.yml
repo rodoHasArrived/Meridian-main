@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveStatusEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 97
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 99
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 100
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsStale
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 101
   assemblies:
   - Meridian.Ui.Services

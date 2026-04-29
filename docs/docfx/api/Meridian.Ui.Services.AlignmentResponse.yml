@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlignmentResponse
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 561
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 563
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 564
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSourceRecords
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 565
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlignedRecords
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 566
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 567
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 568
   assemblies:
   - Meridian.Ui.Services
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationSeconds
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 569
   assemblies:
   - Meridian.Ui.Services
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 570
   assemblies:
   - Meridian.Ui.Services

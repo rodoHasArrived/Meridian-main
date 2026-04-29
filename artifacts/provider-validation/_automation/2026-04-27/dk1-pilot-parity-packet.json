@@ -1,0 +1,297 @@
+{
+  "generatedAtUtc": "04/27/2026 04:31:34",
+  "dateStamp": "2026-04-27",
+  "sourceSummary": "artifacts/provider-validation/_automation/2026-04-27/wave1-validation-summary.json",
+  "sourceResult": "passed",
+  "status": "ready-for-operator-review",
+  "requiredPilotSamples": [
+    {
+      "id": "DK1-ALPACA-QUOTE-GOLDEN",
+      "provider": "Alpaca",
+      "requiredStep": "Alpaca core provider confidence",
+      "requiredEvidenceAnchors": [
+        "tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json",
+        "AlpacaQuotePipelineGoldenTests"
+      ]
+    },
+    {
+      "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+      "provider": "Alpaca",
+      "requiredStep": "Alpaca core provider confidence",
+      "requiredEvidenceAnchors": [
+        "AlpacaMessageParsingTests",
+        "AlpacaQuoteRoutingTests",
+        "AlpacaCredentialAndReconnectTests"
+      ]
+    },
+    {
+      "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+      "provider": "Robinhood",
+      "requiredStep": "Robinhood supported surface",
+      "requiredEvidenceAnchors": [
+        "RobinhoodMarketDataClientTests",
+        "RobinhoodBrokerageGatewayTests",
+        "artifacts/provider-validation/robinhood/2026-04-09/manifest.json"
+      ]
+    },
+    {
+      "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+      "provider": "Yahoo",
+      "requiredStep": "Yahoo historical-only core provider",
+      "requiredEvidenceAnchors": [
+        "YahooFinanceHistoricalDataProviderTests",
+        "YahooFinanceIntradayContractTests"
+      ]
+    }
+  ],
+  "sampleReview": {
+    "requiredCount": 4,
+    "observedCount": 4,
+    "missingSampleIds": [],
+    "duplicateSampleIds": [],
+    "samples": [
+      {
+        "id": "DK1-ALPACA-QUOTE-GOLDEN",
+        "provider": "Alpaca",
+        "requiredStep": "Alpaca core provider confidence",
+        "stepStatus": "passed",
+        "observed": true,
+        "status": "ready",
+        "missingRequirements": [],
+        "evidenceAnchors": [
+          "tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json",
+          "AlpacaQuotePipelineGoldenTests"
+        ],
+        "acceptanceCheck": "Parser, canonical publisher, and JSONL sink output match the committed golden subset."
+      },
+      {
+        "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+        "provider": "Alpaca",
+        "requiredStep": "Alpaca core provider confidence",
+        "stepStatus": "passed",
+        "observed": true,
+        "status": "ready",
+        "missingRequirements": [],
+        "evidenceAnchors": [
+          "AlpacaMessageParsingTests",
+          "AlpacaQuoteRoutingTests",
+          "AlpacaCredentialAndReconnectTests"
+        ],
+        "acceptanceCheck": "Trade and quote edge cases preserve symbol separation, timestamp handling, duplicate suppression, routing, and reconnect behavior."
+      },
+      {
+        "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+        "provider": "Robinhood",
+        "requiredStep": "Robinhood supported surface",
+        "stepStatus": "passed",
+        "observed": true,
+        "status": "ready",
+        "missingRequirements": [],
+        "evidenceAnchors": [
+          "RobinhoodMarketDataClientTests",
+          "RobinhoodBrokerageGatewayTests",
+          "artifacts/provider-validation/robinhood/2026-04-09/manifest.json"
+        ],
+        "acceptanceCheck": "Offline polling, symbol search, historical bars, and execution seam tests pass; runtime evidence remains explicitly bounded."
+      },
+      {
+        "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+        "provider": "Yahoo",
+        "requiredStep": "Yahoo historical-only core provider",
+        "stepStatus": "passed",
+        "observed": true,
+        "status": "ready",
+        "missingRequirements": [],
+        "evidenceAnchors": [
+          "YahooFinanceHistoricalDataProviderTests",
+          "YahooFinanceIntradayContractTests"
+        ],
+        "acceptanceCheck": "Daily, adjusted daily, and intraday aggregate fixtures deserialize into stable historical/fallback bars without implying live-provider readiness."
+      }
+    ]
+  },
+  "trustRationaleContract": {
+    "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+    "requiredPayloadFields": [
+      "signalSource",
+      "reasonCode",
+      "recommendedAction"
+    ],
+    "requiredReasonCodes": [
+      "HEALTHY_BASELINE",
+      "PROVIDER_STREAM_DEGRADED",
+      "RECONNECT_INSTABILITY",
+      "ERROR_RATE_SPIKE",
+      "LATENCY_REGRESSION",
+      "PARITY_DRIFT_DETECTED",
+      "DATA_COMPLETENESS_GAP",
+      "CALIBRATION_STALE"
+    ],
+    "status": "validated",
+    "missingRequirements": null
+  },
+  "baselineThresholdContract": {
+    "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+    "requiredMetrics": [
+      "Composite trust score",
+      "Connection stability score",
+      "Error-rate score",
+      "Latency score",
+      "Reconnect score"
+    ],
+    "fpFnReviewRequired": true,
+    "status": "validated",
+    "missingRequirements": null
+  },
+  "evidenceDocuments": [
+    {
+      "name": "DK1 pilot parity runbook",
+      "gate": "parity",
+      "path": "docs/status/dk1-pilot-parity-runbook.md",
+      "exists": true,
+      "status": "validated",
+      "missingRequirements": []
+    },
+    {
+      "name": "DK1 trust rationale mapping",
+      "gate": "explainability",
+      "path": "docs/status/dk1-trust-rationale-mapping.md",
+      "exists": true,
+      "status": "validated",
+      "missingRequirements": []
+    },
+    {
+      "name": "DK1 baseline trust thresholds",
+      "gate": "calibration",
+      "path": "docs/status/dk1-baseline-trust-thresholds.md",
+      "exists": true,
+      "status": "validated",
+      "missingRequirements": []
+    },
+    {
+      "name": "Provider validation matrix",
+      "gate": "parity",
+      "path": "docs/status/provider-validation-matrix.md",
+      "exists": true,
+      "status": "validated",
+      "missingRequirements": []
+    }
+  ],
+  "operatorSignoff": {
+    "requiredOwners": [
+      "Data Operations",
+      "Provider Reliability",
+      "Trading"
+    ],
+    "status": "signed",
+    "requiredBeforeDk1Exit": true,
+    "signedOwners": [
+      "Data Operations",
+      "Provider Reliability",
+      "Trading"
+    ],
+    "missingOwners": [],
+    "completedAtUtc": "2026-04-27T11:28:01.0000000+00:00",
+    "sourcePath": "artifacts/provider-validation/_automation/2026-04-27/dk1-operator-signoff.json",
+    "validForDk1Exit": true,
+    "packetBindingStatus": "valid",
+    "packetBindingMissingRequirements": [],
+    "packetReview": {
+      "path": "artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json",
+      "status": "ready-for-operator-review",
+      "generatedAtUtc": "04/27/2026 04:31:34",
+      "sourceSummary": "artifacts/provider-validation/_automation/2026-04-27/wave1-validation-summary.json",
+      "sourceResult": "passed",
+      "requiredSampleCount": 4,
+      "readySampleCount": 4,
+      "evidenceDocumentCount": 4,
+      "validatedEvidenceDocumentCount": 4,
+      "trustRationaleContractStatus": "validated",
+      "baselineThresholdContractStatus": "validated",
+      "validForOperatorReview": true,
+      "blockers": [],
+      "samples": [
+        {
+          "id": "DK1-ALPACA-QUOTE-GOLDEN",
+          "status": "ready",
+          "missingRequirements": []
+        },
+        {
+          "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+          "status": "ready",
+          "missingRequirements": []
+        },
+        {
+          "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+          "status": "ready",
+          "missingRequirements": []
+        },
+        {
+          "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+          "status": "ready",
+          "missingRequirements": []
+        }
+      ],
+      "evidenceDocuments": [
+        {
+          "name": "DK1 pilot parity runbook",
+          "gate": "parity",
+          "status": "validated",
+          "path": "docs/status/dk1-pilot-parity-runbook.md",
+          "missingRequirements": []
+        },
+        {
+          "name": "DK1 trust rationale mapping",
+          "gate": "explainability",
+          "status": "validated",
+          "path": "docs/status/dk1-trust-rationale-mapping.md",
+          "missingRequirements": []
+        },
+        {
+          "name": "DK1 baseline trust thresholds",
+          "gate": "calibration",
+          "status": "validated",
+          "path": "docs/status/dk1-baseline-trust-thresholds.md",
+          "missingRequirements": []
+        },
+        {
+          "name": "Provider validation matrix",
+          "gate": "parity",
+          "status": "validated",
+          "path": "docs/status/provider-validation-matrix.md",
+          "missingRequirements": []
+        }
+      ]
+    },
+    "approvals": [
+      {
+        "owner": "Data Operations",
+        "signedBy": "RODO",
+        "signedAtUtc": "2026-04-27T11:28:01.0000000+00:00",
+        "decision": "approved",
+        "rationale": "Reviewed the 2026-04-27 Wave 1 validation summary and DK1 pilot sample set; active provider evidence and deferred-provider scope are accepted.",
+        "status": "valid",
+        "missingRequirements": []
+      },
+      {
+        "owner": "Provider Reliability",
+        "signedBy": "RODO",
+        "signedAtUtc": "2026-04-27T11:28:01.0000000+00:00",
+        "decision": "approved",
+        "rationale": "Reviewed validated trust-rationale and baseline-threshold contracts; Robinhood bounded-runtime caveat remains explicit and accepted.",
+        "status": "valid",
+        "missingRequirements": []
+      },
+      {
+        "owner": "Trading",
+        "signedBy": "RODO",
+        "signedAtUtc": "2026-04-27T11:28:01.0000000+00:00",
+        "decision": "approved",
+        "rationale": "Reviewed DK1 trust-gate packet for downstream cockpit readiness; approval is limited to provider-trust gate handoff and does not claim live readiness.",
+        "status": "valid",
+        "missingRequirements": []
+      }
+    ]
+  },
+  "blockers": []
+}

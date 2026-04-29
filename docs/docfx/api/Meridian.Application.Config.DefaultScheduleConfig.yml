@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultScheduleConfig
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 99
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 99
   assemblies:
   - Meridian.Core
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 100
   assemblies:
   - Meridian.Core
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Preset
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 101
   assemblies:
   - Meridian.Core
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronExpression
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 102
   assemblies:
   - Meridian.Core
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 103
   assemblies:
   - Meridian.Core
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookbackDays
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 104
   assemblies:
   - Meridian.Core
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 105
   assemblies:
   - Meridian.Core

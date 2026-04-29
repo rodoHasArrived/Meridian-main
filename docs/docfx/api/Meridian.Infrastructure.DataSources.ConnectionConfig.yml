@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionConfig
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 319
   assemblies:
   - Meridian.Infrastructure
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 324
   assemblies:
   - Meridian.Infrastructure
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Host
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 329
   assemblies:
   - Meridian.Infrastructure
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Port
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 334
   assemblies:
   - Meridian.Infrastructure
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsePaper
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 339
   assemblies:
   - Meridian.Infrastructure
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableWebSocket
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 344
   assemblies:
   - Meridian.Infrastructure
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeoutSeconds
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 349
   assemblies:
   - Meridian.Infrastructure
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KeepAliveSeconds
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 354
   assemblies:
   - Meridian.Infrastructure

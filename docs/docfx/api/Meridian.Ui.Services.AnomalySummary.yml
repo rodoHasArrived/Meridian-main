@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalySummary
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 257
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NegativePrices
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 259
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FutureTimestamps
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 260
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceGaps
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 261
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrder
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 262
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceSpikes
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 263
   assemblies:
   - Meridian.Ui.Services
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeSpikes
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 264
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleQuotes
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 265
   assemblies:
   - Meridian.Ui.Services

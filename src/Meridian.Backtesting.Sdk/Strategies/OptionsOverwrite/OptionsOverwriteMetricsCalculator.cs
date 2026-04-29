@@ -182,9 +182,11 @@ public static class OptionsOverwriteMetricsCalculator
 
         foreach (decimal e in equityArray)
         {
-            if (e > peak) peak = e;
+            if (e > peak)
+                peak = e;
             double dd = peak > 0 ? (double)((peak - e) / peak) : 0.0;
-            if (dd > maxDd) maxDd = dd;
+            if (dd > maxDd)
+                maxDd = dd;
         }
         return maxDd;
     }
@@ -203,8 +205,10 @@ public static class OptionsOverwriteMetricsCalculator
 
         for (int i = 0; i < n; i++)
         {
-            if (benchReturns[i] > 0) { upS.Add(stratReturns[i]); upB.Add(benchReturns[i]); }
-            else if (benchReturns[i] < 0) { dnS.Add(stratReturns[i]); dnB.Add(benchReturns[i]); }
+            if (benchReturns[i] > 0)
+            { upS.Add(stratReturns[i]); upB.Add(benchReturns[i]); }
+            else if (benchReturns[i] < 0)
+            { dnS.Add(stratReturns[i]); dnB.Add(benchReturns[i]); }
         }
 
         double upCapture = upB.Count > 0 && upB.Average() != 0
@@ -272,11 +276,13 @@ public static class OptionsOverwriteMetricsCalculator
     private static double Skewness(double[] returns)
     {
         int n = returns.Length;
-        if (n < 3) return 0.0;
+        if (n < 3)
+            return 0.0;
 
         double mean = returns.Average();
         double std = Math.Sqrt(returns.Sum(r => (r - mean) * (r - mean)) / (n - 1));
-        if (std < 1e-12) return 0.0;
+        if (std < 1e-12)
+            return 0.0;
 
         double m3 = returns.Sum(r => Math.Pow(r - mean, 3)) / n;
         return m3 / Math.Pow(std, 3);
@@ -285,11 +291,13 @@ public static class OptionsOverwriteMetricsCalculator
     private static double ExcessKurtosis(double[] returns)
     {
         int n = returns.Length;
-        if (n < 4) return 0.0;
+        if (n < 4)
+            return 0.0;
 
         double mean = returns.Average();
         double std = Math.Sqrt(returns.Sum(r => (r - mean) * (r - mean)) / (n - 1));
-        if (std < 1e-12) return 0.0;
+        if (std < 1e-12)
+            return 0.0;
 
         double m4 = returns.Sum(r => Math.Pow(r - mean, 4)) / n;
         return m4 / Math.Pow(std, 4) - 3.0;

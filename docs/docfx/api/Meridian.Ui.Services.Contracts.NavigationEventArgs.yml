@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigationEventArgs
-    path: ../../src/Meridian.Ui.Services/Contracts/NavigationTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/NavigationTypes.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PageTag
-    path: ../../src/Meridian.Ui.Services/Contracts/NavigationTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/NavigationTypes.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameter
-    path: ../../src/Meridian.Ui.Services/Contracts/NavigationTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/NavigationTypes.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services

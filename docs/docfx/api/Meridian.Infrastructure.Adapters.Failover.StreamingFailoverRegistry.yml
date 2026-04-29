@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFailoverRegistry
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Service
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailable
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure

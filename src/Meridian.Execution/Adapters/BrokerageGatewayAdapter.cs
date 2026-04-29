@@ -72,9 +72,9 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
         if (request.Quantity <= 0)
             return Task.FromResult(new OrderValidationResult(false, "Order quantity must be positive."));
 
-        if (request.Type is SdkOrderType.Limit or SdkOrderType.StopLimit &&
+        if (request.Type is SdkOrderType.Limit or SdkOrderType.StopLimit or SdkOrderType.LimitOnOpen or SdkOrderType.LimitOnClose &&
             (!request.LimitPrice.HasValue || request.LimitPrice <= 0))
-            return Task.FromResult(new OrderValidationResult(false, "Limit/stop-limit orders require a positive limit price."));
+            return Task.FromResult(new OrderValidationResult(false, "Limit-style orders require a positive limit price."));
 
         if (request.Type is SdkOrderType.StopMarket or SdkOrderType.StopLimit &&
             (!request.StopPrice.HasValue || request.StopPrice <= 0))

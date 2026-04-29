@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoNavigationTools
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 9
   assemblies:
   - Meridian.McpServer
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 24
   assemblies:
   - Meridian.McpServer
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindSubsystem
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 30
   assemblies:
   - Meridian.McpServer
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RouteTask
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 45
   assemblies:
   - Meridian.McpServer
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindEntrypoints
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 60
   assemblies:
   - Meridian.McpServer
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindRelatedProjects
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 92
   assemblies:
   - Meridian.McpServer
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindAuthoritativeDocs
-    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
     startLine: 102
   assemblies:
   - Meridian.McpServer

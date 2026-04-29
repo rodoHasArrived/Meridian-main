@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSafetyMode
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 31
   assemblies:
   - Meridian.ProviderSdk
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthAwareFailover
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 34
   assemblies:
   - Meridian.ProviderSdk
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoAutomaticFailover
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 35
   assemblies:
   - Meridian.ProviderSdk
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SameInstitutionOnly
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 36
   assemblies:
   - Meridian.ProviderSdk
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualApprovalRequired
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 37
   assemblies:
   - Meridian.ProviderSdk
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResearchOnly
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 38
   assemblies:
   - Meridian.ProviderSdk

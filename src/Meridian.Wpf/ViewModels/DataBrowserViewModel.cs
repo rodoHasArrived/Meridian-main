@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -23,7 +24,10 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     private string _validationSummary = string.Empty;
     private string _sortField = "TimestampDesc";
     private string _filteredCountText = "0 records";
+    private string _selectedTimePeriodKey = DataBrowserTimePeriodOption.AllTimeKey;
     private bool _allRowsSelected;
+    private bool _suppressFilterRefresh;
+    private bool _isApplyingTimePeriod;
 
     public DataBrowserViewModel()
     {
@@ -31,6 +35,17 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         DataTypes = new ObservableCollection<string> { "All", "Trades", "Quotes", "Depth" };
         Venues = new ObservableCollection<string> { "All", "NYSE", "NASDAQ", "ARCA", "SMART" };
         PageSizes = new ObservableCollection<int> { 25, 50, 100, 250 };
+        TimePeriods = new ObservableCollection<DataBrowserTimePeriodOption>
+        {
+            new(DataBrowserTimePeriodOption.AllTimeKey, "All Time", null),
+            new("1D", "1 Day", 1),
+            new("1W", "1 Week", 7),
+            new("1M", "1 Month", 30),
+            new("3M", "3 Months", 90),
+            new("1Y", "1 Year", 365),
+            new(DataBrowserTimePeriodOption.CustomKey, "Custom Range", null)
+        };
+        ResetFiltersCommand = new RelayCommand(ResetFilters, () => HasActiveFilters);
     }
 
     public ObservableCollection<string> DataTypes { get; }
@@ -38,6 +53,8 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     public ObservableCollection<string> Venues { get; }
 
     public ObservableCollection<int> PageSizes { get; }
+
+    public ObservableCollection<DataBrowserTimePeriodOption> TimePeriods { get; }
 
     public ObservableCollection<DataBrowserRecord> PagedRecords => _pagedRecords;
 
@@ -53,19 +70,61 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         private set => SetProperty(ref _filteredCountText, value);
     }
 
-    /// <summary>Number of active non-default filters (DataType, Venue, date range).</summary>
+    /// <summary>Number of active non-default filters (search, DataType, Venue, date range).</summary>
     public int ActiveFilterCount
     {
         get
         {
             var count = 0;
-            if (!string.Equals(SelectedDataType, "All", StringComparison.OrdinalIgnoreCase)) count++;
-            if (!string.Equals(SelectedVenue, "All", StringComparison.OrdinalIgnoreCase)) count++;
-            if (FromDate.HasValue) count++;
-            if (ToDate.HasValue) count++;
+            if (!string.IsNullOrWhiteSpace(SymbolFilter))
+                count++;
+            if (!string.Equals(SelectedDataType, "All", StringComparison.OrdinalIgnoreCase))
+                count++;
+            if (!string.Equals(SelectedVenue, "All", StringComparison.OrdinalIgnoreCase))
+                count++;
+            if (FromDate.HasValue || ToDate.HasValue)
+                count++;
             return count;
         }
     }
+
+    public bool HasRows => _pagedRecords.Count > 0;
+
+    public bool HasActiveFilters => ActiveFilterCount > 0;
+
+    public bool HasFilterRecoveryAction => !HasRows && _allRecords.Count > 0 && HasActiveFilters;
+
+    public string EmptyStateTitle => HasFilterRecoveryAction
+        ? "No records match the current filters"
+        : "No market data loaded";
+
+    public string EmptyStateDetail => HasFilterRecoveryAction
+        ? "Reset filters to return to the retained market-data window."
+        : "Run a backfill or import a package to populate the browser.";
+
+    public string SelectedTimePeriodKey
+    {
+        get => _selectedTimePeriodKey;
+        set
+        {
+            var normalized = NormalizeTimePeriodKey(value);
+            if (SetProperty(ref _selectedTimePeriodKey, normalized))
+            {
+                ApplySelectedTimePeriod();
+                RaisePropertyChanged(nameof(TimePeriodScopeText));
+            }
+        }
+    }
+
+    public string TimePeriodScopeText => SelectedTimePeriodKey switch
+    {
+        DataBrowserTimePeriodOption.AllTimeKey => "All retained records",
+        DataBrowserTimePeriodOption.CustomKey => FormatCustomDateRange(),
+        _ => TimePeriods.FirstOrDefault(period => string.Equals(period.Key, SelectedTimePeriodKey, StringComparison.Ordinal))?.Label
+            ?? "All retained records"
+    };
+
+    public IRelayCommand ResetFiltersCommand { get; }
 
     /// <summary>Select/deselect all visible rows.</summary>
     public bool AllRowsSelected
@@ -86,7 +145,13 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     public string SymbolFilter
     {
         get => _symbolFilter;
-        set => SetProperty(ref _symbolFilter, value);
+        set
+        {
+            if (SetProperty(ref _symbolFilter, value ?? string.Empty))
+            {
+                RefreshAfterFilterChange();
+            }
+        }
     }
 
     public string SelectedDataType
@@ -95,7 +160,9 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         set
         {
             if (SetProperty(ref _selectedDataType, value))
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+            {
+                RefreshAfterFilterChange();
+            }
         }
     }
 
@@ -105,7 +172,9 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         set
         {
             if (SetProperty(ref _selectedVenue, value))
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+            {
+                RefreshAfterFilterChange();
+            }
         }
     }
 
@@ -116,8 +185,8 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _fromDate, value))
             {
-                UpdateValidationSummary();
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+                MarkCustomTimePeriodIfManual();
+                RefreshAfterFilterChange();
             }
         }
     }
@@ -129,8 +198,8 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _toDate, value))
             {
-                UpdateValidationSummary();
-                RaisePropertyChanged(nameof(ActiveFilterCount));
+                MarkCustomTimePeriodIfManual();
+                RefreshAfterFilterChange();
             }
         }
     }
@@ -235,6 +304,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         RaisePropertyChanged(nameof(CanGoPrevious));
         RaisePropertyChanged(nameof(CanGoNext));
         UpdateValidationSummary();
+        RaiseFilterStateChanged();
     }
 
     public void GoToPreviousPage()
@@ -261,12 +331,22 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
 
     public void ResetFilters()
     {
-        SymbolFilter = string.Empty;
-        SelectedDataType = "All";
-        SelectedVenue = "All";
-        FromDate = null;
-        ToDate = null;
-        _currentPage = 1;
+        _suppressFilterRefresh = true;
+        try
+        {
+            SymbolFilter = string.Empty;
+            SelectedDataType = "All";
+            SelectedVenue = "All";
+            SetSelectedTimePeriodKeySilently(DataBrowserTimePeriodOption.AllTimeKey);
+            FromDate = null;
+            ToDate = null;
+            _currentPage = 1;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+        }
+
         RefreshResults();
     }
 
@@ -278,7 +358,8 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             FileName = $"data-browser-export-{DateTime.Now:yyyyMMdd-HHmmss}.csv"
         };
 
-        if (dialog.ShowDialog() != true) return;
+        if (dialog.ShowDialog() != true)
+            return;
 
         var sb = new StringBuilder();
         sb.AppendLine("Timestamp,Symbol,DataType,Venue,Price,Size");
@@ -294,6 +375,104 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     {
         ValidationSummary = this[nameof(FromDate)];
     }
+
+    private void RefreshAfterFilterChange()
+    {
+        _currentPage = 1;
+
+        if (_suppressFilterRefresh)
+        {
+            RaiseFilterStateChanged();
+            return;
+        }
+
+        RefreshResults();
+    }
+
+    private void RaiseFilterStateChanged()
+    {
+        RaisePropertyChanged(nameof(ActiveFilterCount));
+        RaisePropertyChanged(nameof(HasRows));
+        RaisePropertyChanged(nameof(HasActiveFilters));
+        RaisePropertyChanged(nameof(HasFilterRecoveryAction));
+        RaisePropertyChanged(nameof(EmptyStateTitle));
+        RaisePropertyChanged(nameof(EmptyStateDetail));
+        RaisePropertyChanged(nameof(TimePeriodScopeText));
+        ResetFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private void ApplySelectedTimePeriod()
+    {
+        if (string.Equals(SelectedTimePeriodKey, DataBrowserTimePeriodOption.CustomKey, StringComparison.Ordinal))
+        {
+            RefreshResults();
+            return;
+        }
+
+        var selected = TimePeriods.FirstOrDefault(period =>
+            string.Equals(period.Key, SelectedTimePeriodKey, StringComparison.Ordinal));
+
+        _isApplyingTimePeriod = true;
+        _suppressFilterRefresh = true;
+        try
+        {
+            FromDate = selected?.Days is int days ? DateTime.Today.AddDays(-days) : null;
+            ToDate = null;
+            _currentPage = 1;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+            _isApplyingTimePeriod = false;
+        }
+
+        RefreshResults();
+    }
+
+    private void MarkCustomTimePeriodIfManual()
+    {
+        if (_isApplyingTimePeriod || _suppressFilterRefresh)
+        {
+            return;
+        }
+
+        SetSelectedTimePeriodKeySilently(FromDate.HasValue || ToDate.HasValue
+            ? DataBrowserTimePeriodOption.CustomKey
+            : DataBrowserTimePeriodOption.AllTimeKey);
+    }
+
+    private void SetSelectedTimePeriodKeySilently(string key)
+    {
+        var normalized = NormalizeTimePeriodKey(key);
+        if (string.Equals(_selectedTimePeriodKey, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _selectedTimePeriodKey = normalized;
+        RaisePropertyChanged(nameof(SelectedTimePeriodKey));
+        RaisePropertyChanged(nameof(TimePeriodScopeText));
+    }
+
+    private string FormatCustomDateRange()
+    {
+        if (FromDate.HasValue && ToDate.HasValue)
+        {
+            return $"{FromDate.Value:MMM d} to {ToDate.Value:MMM d}";
+        }
+
+        if (FromDate.HasValue)
+        {
+            return $"From {FromDate.Value:MMM d}";
+        }
+
+        return ToDate.HasValue ? $"Through {ToDate.Value:MMM d}" : "Custom date range";
+    }
+
+    private string NormalizeTimePeriodKey(string? key) =>
+        TimePeriods.Any(period => string.Equals(period.Key, key, StringComparison.Ordinal))
+            ? key!
+            : DataBrowserTimePeriodOption.AllTimeKey;
 
     private static List<DataBrowserRecord> BuildSampleData()
     {
@@ -352,4 +531,10 @@ public sealed class DataBrowserRecord
         "Depth" => DepthBrush,
         _ => QuoteBrush
     };
+}
+
+public sealed record DataBrowserTimePeriodOption(string Key, string Label, int? Days)
+{
+    public const string AllTimeKey = "AllTime";
+    public const string CustomKey = "Custom";
 }

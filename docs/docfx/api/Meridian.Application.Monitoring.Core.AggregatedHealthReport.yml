@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregatedHealthReport
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 103
   assemblies:
   - Meridian.Core
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 103
   assemblies:
   - Meridian.Core
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallSeverity
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 104
   assemblies:
   - Meridian.Core
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckedAt
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 105
   assemblies:
   - Meridian.Core
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuration
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 106
   assemblies:
   - Meridian.Core
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 107
   assemblies:
   - Meridian.Core
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyComponents
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 112
   assemblies:
   - Meridian.Core
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DegradedComponents
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 118
   assemblies:
   - Meridian.Core
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyComponents
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 124
   assemblies:
   - Meridian.Core
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOperational
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 130
   assemblies:
   - Meridian.Core

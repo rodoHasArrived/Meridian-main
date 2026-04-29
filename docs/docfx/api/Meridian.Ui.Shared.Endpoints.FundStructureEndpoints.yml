@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundStructureEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Shared
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapFundStructureEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Shared

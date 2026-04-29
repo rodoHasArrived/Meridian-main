@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionBlotterSnapshotResponse
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBrokerBacked
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLive
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusMessage
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts

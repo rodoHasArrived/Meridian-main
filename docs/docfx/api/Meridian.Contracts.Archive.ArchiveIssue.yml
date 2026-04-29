@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveIssue
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 109
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 111
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 114
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 117
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 120
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedFiles
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 123
   assemblies:
   - Meridian.Contracts
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 126
   assemblies:
   - Meridian.Contracts
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuggestedAction
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 129
   assemblies:
   - Meridian.Contracts
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedAt
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 132
   assemblies:
   - Meridian.Contracts
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvedAt
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 135
   assemblies:
   - Meridian.Contracts
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAutoFixable
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 138
   assemblies:
   - Meridian.Contracts

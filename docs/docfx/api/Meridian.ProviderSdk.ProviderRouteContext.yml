@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRouteContext
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 188
   assemblies:
   - Meridian.ProviderSdk
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 188
   assemblies:
   - Meridian.ProviderSdk
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capability
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 189
   assemblies:
   - Meridian.ProviderSdk
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Workspace
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 190
   assemblies:
   - Meridian.ProviderSdk
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 191
   assemblies:
   - Meridian.ProviderSdk
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityId
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 192
   assemblies:
   - Meridian.ProviderSdk
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveId
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 193
   assemblies:
   - Meridian.ProviderSdk
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleId
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 194
   assemblies:
   - Meridian.ProviderSdk
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 195
   assemblies:
   - Meridian.ProviderSdk
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 196
   assemblies:
   - Meridian.ProviderSdk
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 197
   assemblies:
   - Meridian.ProviderSdk
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Market
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 198
   assemblies:
   - Meridian.ProviderSdk
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 199
   assemblies:
   - Meridian.ProviderSdk
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireProductionReady
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 200
   assemblies:
   - Meridian.ProviderSdk

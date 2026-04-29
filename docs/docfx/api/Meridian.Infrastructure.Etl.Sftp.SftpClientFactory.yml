@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SftpClientFactory
-    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
     startLine: 74
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
     startLine: 76
   assemblies:
   - Meridian.Infrastructure

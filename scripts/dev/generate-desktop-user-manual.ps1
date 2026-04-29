@@ -6,7 +6,10 @@ param(
     [string]$OutputPath = 'artifacts/desktop-manuals/desktop-user-manual.md',
     [string]$ScreenshotRoot = 'artifacts/desktop-manuals/screenshots',
     [string]$WorkflowRunRoot = 'artifacts/desktop-manual-runs',
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [string]$CheckpointPath = '',
+    [string[]]$ForceCheckpointStep = @(),
+    [switch]$AllowCheckpointInputMismatch
 )
 
 Set-StrictMode -Version Latest
@@ -14,6 +17,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
+. (Join-Path $PSScriptRoot 'SharedCheckpoint.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
@@ -72,11 +76,34 @@ $resolvedWorkflowRunRoot = Resolve-RepoPath $WorkflowRunRoot
 $outputDirectory = Split-Path -Parent $resolvedOutputPath
 
 New-Item -ItemType Directory -Force -Path $outputDirectory, $resolvedScreenshotRoot, $resolvedWorkflowRunRoot | Out-Null
+if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
+    $CheckpointPath = Join-Path $resolvedWorkflowRunRoot 'desktop-user-manual.checkpoint.json'
+}
+$checkpoint = Initialize-MeridianCheckpoint `
+    -Workflow 'generate-desktop-user-manual' `
+    -CheckpointPath $CheckpointPath `
+    -InputObject ([ordered]@{
+        workflows = @($selectedWorkflows | ForEach-Object { [string]$_.name })
+        definitionPath = $catalogPath
+        outputPath = $resolvedOutputPath
+        screenshotRoot = $resolvedScreenshotRoot
+        workflowRunRoot = $resolvedWorkflowRunRoot
+        skipBuild = [bool]$SkipBuild
+    }) `
+    -ForceStep $ForceCheckpointStep `
+    -AllowInputMismatch:$AllowCheckpointInputMismatch
 
 $runSummaries = @()
 $buildSkipped = $SkipBuild
 
 foreach ($definition in $selectedWorkflows) {
+    $checkpointStepId = "capture-$($definition.name)"
+    if (-not (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId $checkpointStepId)) {
+        Write-Info "Skipping workflow '$($definition.name)' capture (checkpoint resume)."
+        continue
+    }
+
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Description "Capture workflow $($definition.name) for manual."
     Write-Info "Capturing workflow '$($definition.name)' for the user manual..."
 
     $runnerArguments = @{
@@ -124,6 +151,7 @@ foreach ($definition in $selectedWorkflows) {
         screenshotDirectory = $workflowScreenshotDirectory
         steps = $publishedSteps
     }
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($workflowScreenshotDirectory, $runResult.manifestPath)
 }
 
 $generatedAt = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss zzz')
@@ -168,7 +196,11 @@ foreach ($workflowSummary in $runSummaries) {
     }
 }
 
-$manualLines | Set-Content -LiteralPath $resolvedOutputPath -Encoding utf8
+if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'write-manual') {
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId 'write-manual' -Description 'Write desktop user manual markdown.'
+    $manualLines | Set-Content -LiteralPath $resolvedOutputPath -Encoding utf8
+    Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'write-manual' -ArtifactPointers @($resolvedOutputPath)
+}
 
 Write-Ok "User manual written to $resolvedOutputPath"
 Write-Ok "Manual screenshots written to $resolvedScreenshotRoot"

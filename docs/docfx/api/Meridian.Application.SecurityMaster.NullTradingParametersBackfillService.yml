@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NullTradingParametersBackfillService
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 166
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillAllAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 168
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTickerAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 170
   assemblies:
   - Meridian.Application

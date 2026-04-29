@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderLifecycleManager
-    path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
+    path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
+    path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
     startLine: 19
   assemblies:
   - Meridian.Execution
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
+    path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
     startLine: 29
   assemblies:
   - Meridian.Execution
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
-    path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
+    path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
     startLine: 44
   assemblies:
   - Meridian.Execution
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllOrders
-    path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
+    path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
     startLine: 53
   assemblies:
   - Meridian.Execution
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
+    path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
     startLine: 85
   assemblies:
   - Meridian.Execution

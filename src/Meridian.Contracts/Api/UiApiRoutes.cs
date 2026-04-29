@@ -310,6 +310,10 @@ public static class UiApiRoutes
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
+    public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
+    public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
+    public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
+    public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
@@ -430,8 +434,11 @@ public static class UiApiRoutes
     public const string ExecutionCapabilities = "/api/execution/capabilities";
     public const string ExecutionAudit = "/api/execution/audit";
     public const string ExecutionControls = "/api/execution/controls";
-    public const string ExecutionManualOverrides = "/api/execution/controls/manual-overrides";
-    public const string ExecutionManualOverrideClear = "/api/execution/controls/manual-overrides/{overrideId}/clear";
+    public const string ExecutionControlsCircuitBreaker = "/api/execution/controls/circuit-breaker";
+    public const string ExecutionControlsManualOverrides = "/api/execution/controls/manual-overrides";
+    public const string ExecutionControlsManualOverrideClear = "/api/execution/controls/manual-overrides/{overrideId}/clear";
+    public static readonly string ExecutionManualOverrides = ExecutionControlsManualOverrides;
+    public static readonly string ExecutionManualOverrideClear = ExecutionControlsManualOverrideClear;
     public const string ExecutionSessions = "/api/execution/sessions";
     public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
@@ -457,20 +464,35 @@ public static class UiApiRoutes
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
+    public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
+    public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
     public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
+    public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
     public const string WorkstationSecurityMasterIdentity = "/api/workstation/security-master/securities/{securityId:guid}/identity";
+    public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
+    public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
+    public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
+    public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
+
+    // Fund account brokerage read-side sync endpoints
+    public const string FundAccountBrokerageSyncAccounts = "/api/fund-accounts/brokerage-sync/accounts";
+    public const string FundAccountBrokerageSyncStatus = "/api/fund-accounts/{accountId}/brokerage-sync/status";
+    public const string FundAccountBrokerageSyncRun = "/api/fund-accounts/{accountId}/brokerage-sync/run";
+    public const string FundAccountBrokerageSyncPositions = "/api/fund-accounts/{accountId}/brokerage-sync/positions";
+    public const string FundAccountBrokerageSyncActivity = "/api/fund-accounts/{accountId}/brokerage-sync/activity";
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";

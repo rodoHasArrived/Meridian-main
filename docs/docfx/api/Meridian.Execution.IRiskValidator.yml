@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IRiskValidator
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 10
   assemblies:
   - Meridian.Execution

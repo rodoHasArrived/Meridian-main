@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -114,7 +115,7 @@ public sealed class SecurityMasterReferenceLookupTests
             AssetClass: "",
             Status: SecurityStatusDto.Active,
             DisplayName: "",
-            Currency: null,
+            Currency: null!,
             CommonTerms: JsonSerializer.SerializeToElement(new { }),
             AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
             Identifiers: identifiers,

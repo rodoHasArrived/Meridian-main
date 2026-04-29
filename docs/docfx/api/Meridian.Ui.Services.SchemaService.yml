@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaService
-    path: ../../src/Meridian.Ui.Services/Services/SchemaService.cs
+    path: src/Meridian.Ui.Services/Services/SchemaService.cs
     startLine: 7
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/SchemaService.cs
+    path: src/Meridian.Ui.Services/Services/SchemaService.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services

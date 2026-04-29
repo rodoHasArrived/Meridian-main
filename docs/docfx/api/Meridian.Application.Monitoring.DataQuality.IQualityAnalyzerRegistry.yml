@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IQualityAnalyzerRegistry
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 281
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 289
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 297
   assemblies:
   - Meridian.Application
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 304
   assemblies:
   - Meridian.Application
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllMetadata
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 310
   assemblies:
   - Meridian.Application
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByCategory
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 317
   assemblies:
   - Meridian.Application

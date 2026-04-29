@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderReasonCodes
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 536
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencySpike
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 538
   assemblies:
   - Meridian.Application
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapBurst
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 539
   assemblies:
   - Meridian.Application
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceDuplicate
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 540
   assemblies:
   - Meridian.Application
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverride
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 541
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionUnstable
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 542
   assemblies:
   - Meridian.Application
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorRateElevated
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 543
   assemblies:
   - Meridian.Application
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectBurst
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 544
   assemblies:
   - Meridian.Application

@@ -33,7 +33,8 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
 
     public async Task<DataDictionary> GetDataDictionaryAsync(CancellationToken ct = default)
     {
-        if (_dataDictionary != null) return _dataDictionary;
+        if (_dataDictionary != null)
+            return _dataDictionary;
         _dataDictionary = await LoadOrCreateDataDictionaryAsync();
         return _dataDictionary;
     }
@@ -89,7 +90,8 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
             {
                 var json = await File.ReadAllTextAsync(dictionaryPath);
                 var dictionary = JsonSerializer.Deserialize<DataDictionary>(json, DesktopJsonOptions.Compact);
-                if (dictionary != null) return dictionary;
+                if (dictionary != null)
+                    return dictionary;
             }
             catch (Exception)
             {

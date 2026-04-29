@@ -47,12 +47,15 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         var configDirectory = Path.Combine(repositoryRoot, "config");
         Directory.CreateDirectory(configDirectory);
 
-        var expectedPath = Path.Combine(configDirectory, "appsettings.json");
-        File.WriteAllText(expectedPath, "{}");
+        File.WriteAllText(Path.Combine(configDirectory, "appsettings.json"), "{}");
 
         var nestedWorkingDirectory = Path.Combine(repositoryRoot, "src", "Meridian.Ui");
         Directory.CreateDirectory(nestedWorkingDirectory);
         Environment.CurrentDirectory = nestedWorkingDirectory;
+        var expectedPath = Path.Combine(
+            Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "..")),
+            "config",
+            "appsettings.json");
 
         var resolved = SharedStartupHelpers.ResolveConfigPath(CliArguments.Parse([]));
 

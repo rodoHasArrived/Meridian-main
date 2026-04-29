@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBackfillScheduleRequest
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 205
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 207
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 208
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronExpression
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 209
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 210
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 211
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Granularity
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 212
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookbackDays
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 213
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 214
   assemblies:
   - Meridian.Ui.Services
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 215
   assemblies:
   - Meridian.Ui.Services
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 216
   assemblies:
   - Meridian.Ui.Services

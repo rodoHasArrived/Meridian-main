@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTraceContext
-    path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
+    path: src/Meridian.Application/Tracing/EventTraceContext.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
+    path: src/Meridian.Application/Tracing/EventTraceContext.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParentContext
-    path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
+    path: src/Meridian.Application/Tracing/EventTraceContext.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrelationId
-    path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
+    path: src/Meridian.Application/Tracing/EventTraceContext.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasParent
-    path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
+    path: src/Meridian.Application/Tracing/EventTraceContext.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureCurrent
-    path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
+    path: src/Meridian.Application/Tracing/EventTraceContext.cs
     startLine: 14
   assemblies:
   - Meridian.Application

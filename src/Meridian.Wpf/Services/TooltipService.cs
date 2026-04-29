@@ -30,8 +30,10 @@ public sealed class TooltipService
 
     public bool ShouldShowTip(string tipKey)
     {
-        if (_dismissedTips.Contains(tipKey)) return false;
-        if (_shownTips.Contains(tipKey)) return false;
+        if (_dismissedTips.Contains(tipKey))
+            return false;
+        if (_shownTips.Contains(tipKey))
+            return false;
         _shownTips.Add(tipKey);
         return true;
     }

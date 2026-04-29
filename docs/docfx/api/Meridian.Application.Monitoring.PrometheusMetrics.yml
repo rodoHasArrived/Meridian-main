@@ -15,8 +15,11 @@ items:
   - Meridian.Application.Monitoring.PrometheusMetrics.RecordWalRecovery(System.Int64,System.Double)
   - Meridian.Application.Monitoring.PrometheusMetrics.Registry
   - Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean)
+  - Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean,System.Boolean)
   - Meridian.Application.Monitoring.PrometheusMetrics.SetKernelDriftScore(System.String,System.String,System.Double)
+  - Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile(System.String,System.String,System.Double)
   - Meridian.Application.Monitoring.PrometheusMetrics.SetKernelReasonCoverage(System.String,System.Double)
+  - Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute(System.String,System.Double)
   - Meridian.Application.Monitoring.PrometheusMetrics.SetMaxSymbolLabels(System.Int32)
   - Meridian.Application.Monitoring.PrometheusMetrics.UpdateCanonicalizationMetrics(Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot,System.Int32)
   - Meridian.Application.Monitoring.PrometheusMetrics.UpdateFromSnapshot
@@ -35,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrometheusMetrics
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -95,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetMaxSymbolLabels
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -132,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdmitSymbol
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
     startLine: 51
   assemblies:
   - Meridian.Application
@@ -169,8 +172,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFromSnapshot
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 408
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 423
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -200,8 +203,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateValidationMetrics
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 479
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 494
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -231,8 +234,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordTrade
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 493
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 508
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -274,8 +277,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordProcessingLatency
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 504
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 519
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -308,8 +311,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordKernelExecution
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 512
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 527
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -344,8 +347,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordKernelDeterminismCheck
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 522
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 537
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -380,8 +383,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetKernelReasonCoverage
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 531
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 546
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -416,8 +419,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetKernelDriftScore
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 540
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 555
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -437,6 +440,80 @@ items:
   nameWithType.vb: PrometheusMetrics.SetKernelDriftScore(String, String, Double)
   fullName.vb: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelDriftScore(String, String, Double)
   name.vb: SetKernelDriftScore(String, String, Double)
+- uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute(System.String,System.Double)
+  commentId: M:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute(System.String,System.Double)
+  id: SetKernelThroughputPerMinute(System.String,System.Double)
+  parent: Meridian.Application.Monitoring.PrometheusMetrics
+  langs:
+  - csharp
+  - vb
+  name: SetKernelThroughputPerMinute(string, double)
+  nameWithType: PrometheusMetrics.SetKernelThroughputPerMinute(string, double)
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute(string, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetKernelThroughputPerMinute
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 565
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Sets rolling one-minute kernel throughput for a domain.
+  example: []
+  syntax:
+    content: public static void SetKernelThroughputPerMinute(string domain, double throughputPerMinute)
+    parameters:
+    - id: domain
+      type: System.String
+    - id: throughputPerMinute
+      type: System.Double
+    content.vb: Public Shared Sub SetKernelThroughputPerMinute(domain As String, throughputPerMinute As Double)
+  overload: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute*
+  nameWithType.vb: PrometheusMetrics.SetKernelThroughputPerMinute(String, Double)
+  fullName.vb: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute(String, Double)
+  name.vb: SetKernelThroughputPerMinute(String, Double)
+- uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile(System.String,System.String,System.Double)
+  commentId: M:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile(System.String,System.String,System.Double)
+  id: SetKernelLatencyPercentile(System.String,System.String,System.Double)
+  parent: Meridian.Application.Monitoring.PrometheusMetrics
+  langs:
+  - csharp
+  - vb
+  name: SetKernelLatencyPercentile(string, string, double)
+  nameWithType: PrometheusMetrics.SetKernelLatencyPercentile(string, string, double)
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile(string, string, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetKernelLatencyPercentile
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 574
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Sets a calculated latency percentile for a kernel domain.
+  example: []
+  syntax:
+    content: public static void SetKernelLatencyPercentile(string domain, string percentile, double latencyMilliseconds)
+    parameters:
+    - id: domain
+      type: System.String
+    - id: percentile
+      type: System.String
+    - id: latencyMilliseconds
+      type: System.Double
+    content.vb: Public Shared Sub SetKernelLatencyPercentile(domain As String, percentile As String, latencyMilliseconds As Double)
+  overload: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile*
+  nameWithType.vb: PrometheusMetrics.SetKernelLatencyPercentile(String, String, Double)
+  fullName.vb: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile(String, String, Double)
+  name.vb: SetKernelLatencyPercentile(String, String, Double)
 - uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean)
   commentId: M:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean)
   id: SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean)
@@ -454,8 +531,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetKernelCriticalSeverityRate
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 550
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 584
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -475,6 +552,49 @@ items:
   nameWithType.vb: PrometheusMetrics.SetKernelCriticalSeverityRate(String, Double, Boolean)
   fullName.vb: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(String, Double, Boolean)
   name.vb: SetKernelCriticalSeverityRate(String, Double, Boolean)
+- uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean,System.Boolean)
+  id: SetKernelCriticalSeverityRate(System.String,System.Double,System.Boolean,System.Boolean)
+  parent: Meridian.Application.Monitoring.PrometheusMetrics
+  langs:
+  - csharp
+  - vb
+  name: SetKernelCriticalSeverityRate(string, double, bool, bool)
+  nameWithType: PrometheusMetrics.SetKernelCriticalSeverityRate(string, double, bool, bool)
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(string, double, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetKernelCriticalSeverityRate
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 591
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Sets current critical severity rate for a domain, tracks whether the jump alert is active,
+
+    and optionally records a newly triggered alert.
+  example: []
+  syntax:
+    content: public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool jumpAlertActive, bool raiseJumpAlert)
+    parameters:
+    - id: domain
+      type: System.String
+    - id: criticalRate
+      type: System.Double
+    - id: jumpAlertActive
+      type: System.Boolean
+    - id: raiseJumpAlert
+      type: System.Boolean
+    content.vb: Public Shared Sub SetKernelCriticalSeverityRate(domain As String, criticalRate As Double, jumpAlertActive As Boolean, raiseJumpAlert As Boolean)
+  overload: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate*
+  nameWithType.vb: PrometheusMetrics.SetKernelCriticalSeverityRate(String, Double, Boolean, Boolean)
+  fullName.vb: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate(String, Double, Boolean, Boolean)
+  name.vb: SetKernelCriticalSeverityRate(String, Double, Boolean, Boolean)
 - uid: Meridian.Application.Monitoring.PrometheusMetrics.UpdateSlaMetrics(Meridian.Application.Monitoring.DataQuality.SlaStatusSnapshot)
   commentId: M:Meridian.Application.Monitoring.PrometheusMetrics.UpdateSlaMetrics(Meridian.Application.Monitoring.DataQuality.SlaStatusSnapshot)
   id: UpdateSlaMetrics(Meridian.Application.Monitoring.DataQuality.SlaStatusSnapshot)
@@ -492,8 +612,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSlaMetrics
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 563
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 609
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -523,8 +643,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordReconnectionAttempt
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 587
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 633
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -561,8 +681,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordWalRecovery
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 596
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 642
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -597,8 +717,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSlaFreshness
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 605
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 651
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -633,8 +753,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCanonicalizationMetrics
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 615
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 661
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -672,8 +792,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Registry
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 637
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 683
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -1079,6 +1199,18 @@ references:
   name: SetKernelDriftScore
   nameWithType: PrometheusMetrics.SetKernelDriftScore
   fullName: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelDriftScore
+- uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute*
+  commentId: Overload:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute
+  href: Meridian.Application.Monitoring.PrometheusMetrics.html#Meridian_Application_Monitoring_PrometheusMetrics_SetKernelThroughputPerMinute_System_String_System_Double_
+  name: SetKernelThroughputPerMinute
+  nameWithType: PrometheusMetrics.SetKernelThroughputPerMinute
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelThroughputPerMinute
+- uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile*
+  commentId: Overload:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile
+  href: Meridian.Application.Monitoring.PrometheusMetrics.html#Meridian_Application_Monitoring_PrometheusMetrics_SetKernelLatencyPercentile_System_String_System_String_System_Double_
+  name: SetKernelLatencyPercentile
+  nameWithType: PrometheusMetrics.SetKernelLatencyPercentile
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelLatencyPercentile
 - uid: Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate*
   commentId: Overload:Meridian.Application.Monitoring.PrometheusMetrics.SetKernelCriticalSeverityRate
   href: Meridian.Application.Monitoring.PrometheusMetrics.html#Meridian_Application_Monitoring_PrometheusMetrics_SetKernelCriticalSeverityRate_System_String_System_Double_System_Boolean_

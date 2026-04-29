@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestProgressEvent
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressFraction
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 4
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentDate
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsProcessed
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveMetrics
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk

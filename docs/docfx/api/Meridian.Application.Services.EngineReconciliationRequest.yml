@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineReconciliationRequest
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 207
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 207
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioId
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 208
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 209
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioPositions
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 210
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerBalances
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 211
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityIdentifiers
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 212
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmountTolerance
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 213
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxAsOfDriftMinutes
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 214
   assemblies:
   - Meridian.Application

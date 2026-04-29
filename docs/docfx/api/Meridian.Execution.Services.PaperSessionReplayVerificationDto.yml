@@ -5,14 +5,20 @@ items:
   id: PaperSessionReplayVerificationDto
   parent: Meridian.Execution.Services
   children:
-  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.DateTimeOffset)
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Int32,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.DateTimeOffset,System.String)
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.CurrentPortfolio
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.IsConsistent
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.MismatchReasons
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.ReplayPortfolio
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.ReplaySource
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.Summary
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.Symbols
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId
   - Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt
   langs:
   - csharp
@@ -27,8 +33,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionReplayVerificationDto
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 586
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 680
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -51,16 +57,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.DateTimeOffset)
-  commentId: M:Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.DateTimeOffset)
-  id: '#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.DateTimeOffset)'
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Int32,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Int32,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.DateTimeOffset,System.String)
+  id: '#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Int32,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.DateTimeOffset,System.String)'
   parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
   langs:
   - csharp
   - vb
-  name: PaperSessionReplayVerificationDto(PaperSessionSummaryDto, IReadOnlyList<string>, string, bool, IReadOnlyList<string>, ExecutionPortfolioSnapshotDto?, ExecutionPortfolioSnapshotDto, DateTimeOffset)
-  nameWithType: PaperSessionReplayVerificationDto.PaperSessionReplayVerificationDto(PaperSessionSummaryDto, IReadOnlyList<string>, string, bool, IReadOnlyList<string>, ExecutionPortfolioSnapshotDto?, ExecutionPortfolioSnapshotDto, DateTimeOffset)
-  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.PaperSessionReplayVerificationDto(Meridian.Execution.Services.PaperSessionSummaryDto, System.Collections.Generic.IReadOnlyList<string>, string, bool, System.Collections.Generic.IReadOnlyList<string>, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto?, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, System.DateTimeOffset)
+  name: PaperSessionReplayVerificationDto(PaperSessionSummaryDto, IReadOnlyList<string>, string, bool, IReadOnlyList<string>, ExecutionPortfolioSnapshotDto?, ExecutionPortfolioSnapshotDto, int, int, int, DateTimeOffset?, DateTimeOffset?, DateTimeOffset, string?)
+  nameWithType: PaperSessionReplayVerificationDto.PaperSessionReplayVerificationDto(PaperSessionSummaryDto, IReadOnlyList<string>, string, bool, IReadOnlyList<string>, ExecutionPortfolioSnapshotDto?, ExecutionPortfolioSnapshotDto, int, int, int, DateTimeOffset?, DateTimeOffset?, DateTimeOffset, string?)
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.PaperSessionReplayVerificationDto(Meridian.Execution.Services.PaperSessionSummaryDto, System.Collections.Generic.IReadOnlyList<string>, string, bool, System.Collections.Generic.IReadOnlyList<string>, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto?, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, int, int, int, System.DateTimeOffset?, System.DateTimeOffset?, System.DateTimeOffset, string?)
   type: Constructor
   source:
     remote:
@@ -68,8 +74,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 586
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 680
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -79,7 +85,7 @@ items:
     currently tracked portfolio snapshot.
   example: []
   syntax:
-    content: public PaperSessionReplayVerificationDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, string ReplaySource, bool IsConsistent, IReadOnlyList<string> MismatchReasons, ExecutionPortfolioSnapshotDto? CurrentPortfolio, ExecutionPortfolioSnapshotDto ReplayPortfolio, DateTimeOffset VerifiedAt)
+    content: public PaperSessionReplayVerificationDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, string ReplaySource, bool IsConsistent, IReadOnlyList<string> MismatchReasons, ExecutionPortfolioSnapshotDto? CurrentPortfolio, ExecutionPortfolioSnapshotDto ReplayPortfolio, int ComparedFillCount, int ComparedOrderCount, int ComparedLedgerEntryCount, DateTimeOffset? LastPersistedFillAt, DateTimeOffset? LastPersistedOrderUpdateAt, DateTimeOffset VerifiedAt, string? VerificationAuditId)
     parameters:
     - id: Summary
       type: Meridian.Execution.Services.PaperSessionSummaryDto
@@ -95,13 +101,25 @@ items:
       type: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
     - id: ReplayPortfolio
       type: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
+    - id: ComparedFillCount
+      type: System.Int32
+    - id: ComparedOrderCount
+      type: System.Int32
+    - id: ComparedLedgerEntryCount
+      type: System.Int32
+    - id: LastPersistedFillAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastPersistedOrderUpdateAt
+      type: System.Nullable{System.DateTimeOffset}
     - id: VerifiedAt
       type: System.DateTimeOffset
-    content.vb: Public Sub New(Summary As PaperSessionSummaryDto, Symbols As IReadOnlyList(Of String), ReplaySource As String, IsConsistent As Boolean, MismatchReasons As IReadOnlyList(Of String), CurrentPortfolio As ExecutionPortfolioSnapshotDto, ReplayPortfolio As ExecutionPortfolioSnapshotDto, VerifiedAt As DateTimeOffset)
+    - id: VerificationAuditId
+      type: System.String
+    content.vb: Public Sub New(Summary As PaperSessionSummaryDto, Symbols As IReadOnlyList(Of String), ReplaySource As String, IsConsistent As Boolean, MismatchReasons As IReadOnlyList(Of String), CurrentPortfolio As ExecutionPortfolioSnapshotDto, ReplayPortfolio As ExecutionPortfolioSnapshotDto, ComparedFillCount As Integer, ComparedOrderCount As Integer, ComparedLedgerEntryCount As Integer, LastPersistedFillAt As DateTimeOffset?, LastPersistedOrderUpdateAt As DateTimeOffset?, VerifiedAt As DateTimeOffset, VerificationAuditId As String)
   overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor*
-  nameWithType.vb: PaperSessionReplayVerificationDto.New(PaperSessionSummaryDto, IReadOnlyList(Of String), String, Boolean, IReadOnlyList(Of String), ExecutionPortfolioSnapshotDto, ExecutionPortfolioSnapshotDto, DateTimeOffset)
-  fullName.vb: Meridian.Execution.Services.PaperSessionReplayVerificationDto.New(Meridian.Execution.Services.PaperSessionSummaryDto, System.Collections.Generic.IReadOnlyList(Of String), String, Boolean, System.Collections.Generic.IReadOnlyList(Of String), Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, System.DateTimeOffset)
-  name.vb: New(PaperSessionSummaryDto, IReadOnlyList(Of String), String, Boolean, IReadOnlyList(Of String), ExecutionPortfolioSnapshotDto, ExecutionPortfolioSnapshotDto, DateTimeOffset)
+  nameWithType.vb: PaperSessionReplayVerificationDto.New(PaperSessionSummaryDto, IReadOnlyList(Of String), String, Boolean, IReadOnlyList(Of String), ExecutionPortfolioSnapshotDto, ExecutionPortfolioSnapshotDto, Integer, Integer, Integer, DateTimeOffset?, DateTimeOffset?, DateTimeOffset, String)
+  fullName.vb: Meridian.Execution.Services.PaperSessionReplayVerificationDto.New(Meridian.Execution.Services.PaperSessionSummaryDto, System.Collections.Generic.IReadOnlyList(Of String), String, Boolean, System.Collections.Generic.IReadOnlyList(Of String), Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, Integer, Integer, Integer, System.DateTimeOffset?, System.DateTimeOffset?, System.DateTimeOffset, String)
+  name.vb: New(PaperSessionSummaryDto, IReadOnlyList(Of String), String, Boolean, IReadOnlyList(Of String), ExecutionPortfolioSnapshotDto, ExecutionPortfolioSnapshotDto, Integer, Integer, Integer, DateTimeOffset?, DateTimeOffset?, DateTimeOffset, String)
 - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.Summary
   commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.Summary
   id: Summary
@@ -119,8 +137,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 587
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 681
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -148,8 +166,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 588
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 682
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -177,8 +195,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaySource
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 589
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 683
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -206,8 +224,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConsistent
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 590
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 684
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -235,8 +253,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MismatchReasons
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 591
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 685
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -264,8 +282,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentPortfolio
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 592
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 686
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -293,8 +311,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayPortfolio
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 593
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 687
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -305,6 +323,151 @@ items:
       type: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
     content.vb: Public Property ReplayPortfolio As ExecutionPortfolioSnapshotDto
   overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ReplayPortfolio*
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount
+  commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount
+  id: ComparedFillCount
+  parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  langs:
+  - csharp
+  - vb
+  name: ComparedFillCount
+  nameWithType: PaperSessionReplayVerificationDto.ComparedFillCount
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComparedFillCount
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 688
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public int ComparedFillCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ComparedFillCount As Integer
+  overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount*
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount
+  commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount
+  id: ComparedOrderCount
+  parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  langs:
+  - csharp
+  - vb
+  name: ComparedOrderCount
+  nameWithType: PaperSessionReplayVerificationDto.ComparedOrderCount
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComparedOrderCount
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 689
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public int ComparedOrderCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ComparedOrderCount As Integer
+  overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount*
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  id: ComparedLedgerEntryCount
+  parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  langs:
+  - csharp
+  - vb
+  name: ComparedLedgerEntryCount
+  nameWithType: PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComparedLedgerEntryCount
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 690
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public int ComparedLedgerEntryCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ComparedLedgerEntryCount As Integer
+  overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount*
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt
+  commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt
+  id: LastPersistedFillAt
+  parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  langs:
+  - csharp
+  - vb
+  name: LastPersistedFillAt
+  nameWithType: PaperSessionReplayVerificationDto.LastPersistedFillAt
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPersistedFillAt
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 691
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset? LastPersistedFillAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastPersistedFillAt As DateTimeOffset?
+  overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt*
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
+  commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
+  id: LastPersistedOrderUpdateAt
+  parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  langs:
+  - csharp
+  - vb
+  name: LastPersistedOrderUpdateAt
+  nameWithType: PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPersistedOrderUpdateAt
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 692
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset? LastPersistedOrderUpdateAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastPersistedOrderUpdateAt As DateTimeOffset?
+  overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt*
 - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt
   commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt
   id: VerifiedAt
@@ -322,8 +485,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifiedAt
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 594
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 693
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -334,6 +497,35 @@ items:
       type: System.DateTimeOffset
     content.vb: Public Property VerifiedAt As DateTimeOffset
   overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt*
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId
+  commentId: P:Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId
+  id: VerificationAuditId
+  parent: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  langs:
+  - csharp
+  - vb
+  name: VerificationAuditId
+  nameWithType: PaperSessionReplayVerificationDto.VerificationAuditId
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerificationAuditId
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 694
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? VerificationAuditId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property VerificationAuditId As String
+  overload: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId*
 references:
 - uid: Meridian.Execution.Services
   commentId: N:Meridian.Execution.Services
@@ -641,7 +833,7 @@ references:
   - name: )
 - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor*
   commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.#ctor
-  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto__ctor_Meridian_Execution_Services_PaperSessionSummaryDto_System_Collections_Generic_IReadOnlyList_System_String__System_String_System_Boolean_System_Collections_Generic_IReadOnlyList_System_String__Meridian_Execution_Services_ExecutionPortfolioSnapshotDto_Meridian_Execution_Services_ExecutionPortfolioSnapshotDto_System_DateTimeOffset_
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto__ctor_Meridian_Execution_Services_PaperSessionSummaryDto_System_Collections_Generic_IReadOnlyList_System_String__System_String_System_Boolean_System_Collections_Generic_IReadOnlyList_System_String__Meridian_Execution_Services_ExecutionPortfolioSnapshotDto_Meridian_Execution_Services_ExecutionPortfolioSnapshotDto_System_Int32_System_Int32_System_Int32_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_DateTimeOffset_System_String_
   name: PaperSessionReplayVerificationDto
   nameWithType: PaperSessionReplayVerificationDto.PaperSessionReplayVerificationDto
   fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.PaperSessionReplayVerificationDto
@@ -719,6 +911,37 @@ references:
   name: ExecutionPortfolioSnapshotDto
   nameWithType: ExecutionPortfolioSnapshotDto
   fullName: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
 - uid: System.DateTimeOffset
   commentId: T:System.DateTimeOffset
   parent: System
@@ -792,6 +1015,34 @@ references:
     name: Generic
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
 - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.Summary*
   commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.Summary
   href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_Summary
@@ -834,9 +1085,45 @@ references:
   name: ReplayPortfolio
   nameWithType: PaperSessionReplayVerificationDto.ReplayPortfolio
   fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ReplayPortfolio
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_ComparedFillCount
+  name: ComparedFillCount
+  nameWithType: PaperSessionReplayVerificationDto.ComparedFillCount
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedFillCount
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_ComparedOrderCount
+  name: ComparedOrderCount
+  nameWithType: PaperSessionReplayVerificationDto.ComparedOrderCount
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedOrderCount
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_ComparedLedgerEntryCount
+  name: ComparedLedgerEntryCount
+  nameWithType: PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.ComparedLedgerEntryCount
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_LastPersistedFillAt
+  name: LastPersistedFillAt
+  nameWithType: PaperSessionReplayVerificationDto.LastPersistedFillAt
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedFillAt
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_LastPersistedOrderUpdateAt
+  name: LastPersistedOrderUpdateAt
+  nameWithType: PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.LastPersistedOrderUpdateAt
 - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt*
   commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt
   href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_VerifiedAt
   name: VerifiedAt
   nameWithType: PaperSessionReplayVerificationDto.VerifiedAt
   fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerifiedAt
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html#Meridian_Execution_Services_PaperSessionReplayVerificationDto_VerificationAuditId
+  name: VerificationAuditId
+  nameWithType: PaperSessionReplayVerificationDto.VerificationAuditId
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto.VerificationAuditId

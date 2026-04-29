@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAccountPortfolio
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 21
   assemblies:
   - Meridian.Execution
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 27
   assemblies:
   - Meridian.Execution
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarginCollateral
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 33
   assemblies:
   - Meridian.Execution
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginType
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 39
   assemblies:
   - Meridian.Execution
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuyingPower
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 49
   assemblies:
   - Meridian.Execution
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 57
   assemblies:
   - Meridian.Execution
@@ -358,7 +358,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 60
   assemblies:
   - Meridian.Execution
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 63
   assemblies:
   - Meridian.Execution
@@ -420,7 +420,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMarketValue
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 66
   assemblies:
   - Meridian.Execution
@@ -451,7 +451,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarketValue
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 69
   assemblies:
   - Meridian.Execution
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeSnapshot
-    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
     startLine: 75
   assemblies:
   - Meridian.Execution

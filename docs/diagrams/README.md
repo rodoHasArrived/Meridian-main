@@ -2,12 +2,30 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-04-09
+**Reviewed:** 2026-04-21
 
 This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. It is the single home for all visual assets:
 
 - **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider and storage architecture (files in this directory)
 - **UML diagrams** — Sequence, state, activity, timing, and communication diagrams in [`uml/`](uml/README.md)
+
+---
+
+
+## Folder Layout
+
+Diagram source/artifact triplets are organized by domain to reduce top-level sprawl:
+
+- `architecture/c4/`
+- `architecture/platform/`
+- `workflows/operations/`
+- `operations/`
+- `reference/`
+- `ui/`
+- `analytics/`
+- `uml/`
+
+The index below keeps basename references for readability; use the folders above to locate each diagram set.
 
 ---
 
@@ -28,8 +46,8 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 | **CLI Commands** | All CLI flags and commands reference | `cli-commands.dot` |
 | **Project Dependencies** | Project layer dependencies and test coverage | `project-dependencies.dot` |
 | **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | `runtime-hosts.dot` |
-| **Workstation Delivery** | How WPF and the retained desktop-local API seams converge on shared run, portfolio, ledger, and security-reference services | `workstation-delivery.dot` |
-| **Security Master Lifecycle** | Import, event storage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
+| **Workstation Delivery** | How WPF shells, governance review surfaces, and the retained desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services | `workstation-delivery.dot` |
+| **Security Master Lifecycle** | Import, ingest status, grouped conflict triage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
 | **Fund Ops & Reconciliation** | Governance workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
@@ -217,10 +235,11 @@ Shows the currently runnable Meridian hosts and the shared startup path behind `
 
 Shows how Meridian now delivers workstation features across the desktop shell and retained local API seams:
 
-- **Desktop surface**: `ResearchWorkspaceShellPage`, `TradingWorkspaceShellPage`, `GovernanceWorkspaceShellPage`
-- **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*` and `/api/strategies/*` routes
-- **Shared read models**: `StrategyRunWorkspaceService`, `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, `CashFlowProjectionService`
+- **Desktop surface**: `ResearchWorkspaceShellPage`, `TradingWorkspaceShellPage`, `GovernanceWorkspaceShellPage`, and `SecurityMasterPage` with its grouped conflict queue and action inspector
+- **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*`, `/api/strategies/*`, and `/api/security-master/*` routes
+- **Shared read models**: `StrategyRunWorkspaceService`, `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, and `CashFlowProjectionService`
 - **Security enrichment**: `SecurityMasterSecurityReferenceLookup` → `ISecurityMasterQueryService`
+- **Governance handoffs**: shared reconciliation break-queue review and cash-flow drill-ins stay visible from the same workstation shell
 - **Purpose**: makes the current workstation convergence visible without having to infer it from separate WPF, API, and strategy-service folders
 
 ### Security Master Lifecycle
@@ -228,6 +247,7 @@ Shows how Meridian now delivers workstation features across the desktop shell an
 Shows the current Security Master path from ingest to workstation consumption:
 
 - **Import path**: `SecurityMasterCsvParser` + `SecurityMasterImportService` + `SecurityMasterService`
+- **Workflow posture**: `SecurityMasterOperatorWorkflowClient`, `SecurityMasterConflictService`, and `SecurityMasterIngestStatusService` expose grouped conflict triage plus active/last-completed import status
 - **Persistence**: `PostgresSecurityMasterEventStore`, `PostgresSecurityMasterSnapshotStore`, `PostgresSecurityMasterStore`
 - **Projection path**: `SecurityMasterAggregateRebuilder`, `SecurityMasterProjectionService`, `SecurityMasterProjectionWarmupService`, `SecurityMasterProjectionCache`
 - **Consumers**: `SecurityMasterQueryService`, `SecurityMasterSecurityReferenceLookup`, WPF Security Master pages, and workstation/query endpoints
@@ -523,4 +543,4 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 _Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
 
-_Last Updated: 2026-04-09_
+_Last Updated: 2026-04-21_

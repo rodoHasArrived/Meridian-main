@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationalScheduler
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWithinTradingHours
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 63
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWithinMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanExecuteAsync
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 88
   assemblies:
   - Meridian.Application
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindNextAvailableSlotAsync
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 158
   assemblies:
   - Meridian.Application
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentTradingSession
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 189
   assemblies:
   - Meridian.Application
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextTradingSession
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 201
   assemblies:
   - Meridian.Application
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 222
   assemblies:
   - Meridian.Application
@@ -374,7 +374,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 235
   assemblies:
   - Meridian.Application
@@ -407,7 +407,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 248
   assemblies:
   - Meridian.Application
@@ -441,7 +441,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
     startLine: 259
   assemblies:
   - Meridian.Application

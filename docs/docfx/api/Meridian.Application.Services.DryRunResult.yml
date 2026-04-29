@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRunResult
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 536
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallSuccess
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 538
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 539
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 540
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationMs
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 541
   assemblies:
   - Meridian.Application
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Options
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 542
   assemblies:
   - Meridian.Application
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 544
   assemblies:
   - Meridian.Application
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileSystemValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 545
   assemblies:
   - Meridian.Application
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 546
   assemblies:
   - Meridian.Application
@@ -298,7 +298,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 547
   assemblies:
   - Meridian.Application
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 548
   assemblies:
   - Meridian.Application
@@ -356,7 +356,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResourceValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 549
   assemblies:
   - Meridian.Application
@@ -385,7 +385,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialAuthValidation
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 550
   assemblies:
   - Meridian.Application

@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEventMetrics
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdates
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBars
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -306,7 +306,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DropRate
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncPublished
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncDropped
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -387,7 +387,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncIntegrity
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncTrades
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -439,7 +439,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncDepthUpdates
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -465,7 +465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncQuotes
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -491,7 +491,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncHistoricalBars
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -517,7 +517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -549,7 +549,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -575,7 +575,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    path: src/Meridian.Application/Monitoring/IEventMetrics.cs
     startLine: 32
   assemblies:
   - Meridian.Application

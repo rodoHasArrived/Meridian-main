@@ -37,9 +37,9 @@
                 <DataTemplate>
                     <TextBlock Text="{Binding Price}"
                                Width="52"
-                               FontFamily="Consolas"
+                               FontFamily="{StaticResource MeridianDataFontFamily}"
                                FontSize="9"
-                               Foreground="#99FFFFFF"
+                               Foreground="{StaticResource ChartAxisLabelBrush}"
                                TextAlignment="Right" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

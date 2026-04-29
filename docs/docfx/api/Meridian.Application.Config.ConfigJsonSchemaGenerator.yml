@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigJsonSchemaGenerator
-    path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
+    path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSchema
-    path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
+    path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSchemaJson
-    path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
+    path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
     startLine: 61
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteSchema
-    path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
+    path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
     startLine: 67
   assemblies:
   - Meridian.Application

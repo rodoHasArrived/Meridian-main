@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FriendlyErrorFormatter
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 153
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 176
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayError
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 198
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetShortMessage
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 233
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllErrorCodes
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 242
   assemblies:
   - Meridian.Application
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayErrorCodeReference
-    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
     startLine: 252
   assemblies:
   - Meridian.Application

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageResult
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 783
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 785
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 786
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 787
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 788
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionRatio
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 789
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 790
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 791
   assemblies:
   - Meridian.Ui.Services

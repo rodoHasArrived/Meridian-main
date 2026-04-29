@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotificationHistoryItem
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tag
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRead
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services

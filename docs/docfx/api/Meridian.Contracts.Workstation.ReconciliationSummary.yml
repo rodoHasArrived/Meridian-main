@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationSummary
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 174
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 174
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunCount
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 175
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenBreakCount
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 176
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BreakAmountTotal
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 177
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentRuns
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 178
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityCoverageIssueCount
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 179
   assemblies:
   - Meridian.Contracts

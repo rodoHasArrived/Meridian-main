@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConversionSummary
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 358
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesConverted
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 360
   assemblies:
   - Meridian.Storage
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsConverted
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 361
   assemblies:
   - Meridian.Storage
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesSaved
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 362
   assemblies:
   - Meridian.Storage
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedAlreadyConverted
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 363
   assemblies:
   - Meridian.Storage
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedEmpty
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 364
   assemblies:
   - Meridian.Storage
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 365
   assemblies:
   - Meridian.Storage

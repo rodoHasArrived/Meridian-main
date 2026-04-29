@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Component state matrix</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .state-demo-stack { display: grid; gap: 8px; }
+  .state-demo-input { height: 28px; padding: 0 9px; border-radius: var(--radius-sm); background: hsl(var(--background)); border: 1px solid currentColor; font-family: var(--font-mono); font-size: 11px; color: currentColor; }
+  .state-demo-button { height: 27px; padding: 0 10px; border-radius: var(--radius-sm); border: 1px solid currentColor; background: transparent; color: currentColor; font-family: var(--font-mono); font-size: 10.5px; }
+  .state-demo-entity { padding: 8px 10px; border-radius: var(--radius-sm); background: hsl(var(--background)); border: 1px solid currentColor; }
+  .state-demo-entity .k { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); }
+  .state-demo-entity .v { margin-top: 4px; font-family: var(--font-mono); font-size: 11px; color: hsl(var(--foreground)); }
+</style>
+</head>
+<body>
+  <main class="state-matrix-shell">
+    <header class="state-matrix-head">
+      <div>
+        <div class="state-matrix-sub">Design tokens · state coverage</div>
+        <h1>Component state matrix</h1>
+      </div>
+      <div class="state-matrix-sub">13 states · badges · banners · controls · rows · evidence</div>
+    </header>
+
+    <section class="state-matrix-grid" aria-label="Component state matrix">
+      <div class="state-matrix-cell header">State</div>
+      <div class="state-matrix-cell header">Badge · toolbar · input</div>
+      <div class="state-matrix-cell header">Banner · KPI tile</div>
+      <div class="state-matrix-cell header">Nav · table row · entity field</div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Healthy</div><div class="state-matrix-use">Completed, reconciled, online, within risk limits.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-healthy"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Healthy</span><span class="state-matrix-chip">Provider sync</span><input class="state-demo-input" value="5 / 5 online" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-healthy"><div class="state-matrix-banner"><b>All systems healthy</b>Provider sync completed · 14:02:37</div><div class="state-matrix-kpi"><span class="k">Net P&amp;L</span><span class="v">+$12,430</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-healthy"><div class="state-matrix-row"><span class="bar"></span><span>Storage healthy</span><span class="mono">OK</span></div><div class="operator-nav-item active"><span>●</span><span>Portfolio</span><span class="status">OK</span></div><div class="state-demo-entity"><div class="k">Account</div><div class="v">acct-1024</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Observe</div><div class="state-matrix-use">Caution, elevated latency, partial evidence, human review.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-warn"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Observe</span><span class="state-matrix-chip">Latency elevated</span><input class="state-demo-input" value="182ms" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-warn"><div class="state-matrix-banner"><b>System degraded</b>Prefetch summaries did not load</div><div class="state-matrix-kpi"><span class="k">Queue depth</span><span class="v">14</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-warn"><div class="state-matrix-row"><span class="bar"></span><span>Brokerage sync delayed</span><span class="mono">OBS</span></div><button class="state-demo-button">Review</button><div class="state-demo-entity"><div class="k">Owner</div><div class="v">Ops review</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Critical</div><div class="state-matrix-use">Offline, rejected, blocked, destructive, or circuit-breaker open.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-danger"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Critical</span><span class="state-matrix-chip">Breaker open</span><input class="state-demo-input" value="ORDER BLOCKED" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-danger"><div class="state-matrix-banner"><b>Execution layer unreachable</b>Order routing is blocked</div><div class="state-matrix-kpi"><span class="k">Rejected</span><span class="v">3</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-danger"><div class="state-matrix-row"><span class="bar"></span><span>Risk guardrail failed</span><span class="mono">STOP</span></div><button class="state-demo-button">Open incident</button><div class="state-demo-entity"><div class="k">Failure</div><div class="v">risk-rule-07</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Paper</div><div class="state-matrix-use">Paper session, simulation, replay, non-live execution.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-paper"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Paper</span><span class="state-matrix-chip">Session active</span><input class="state-demo-input" value="sess-0e431" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-paper"><div class="state-matrix-banner"><b>Paper environment active</b>$100,000 initial cash</div><div class="state-matrix-kpi"><span class="k">Cash</span><span class="v">$98,240</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-paper"><div class="state-matrix-row"><span class="bar"></span><span>Replay verified</span><span class="mono">PAPER</span></div><button class="state-demo-button">Verify replay</button><div class="state-demo-entity"><div class="k">Mode</div><div class="v">paper</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Research</div><div class="state-matrix-use">Backtest, analysis, model run, non-promoted strategy evidence.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-research"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Research</span><span class="state-matrix-chip">Backtest run</span><input class="state-demo-input" value="MRD-ALPHA-02" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-research"><div class="state-matrix-banner"><b>Research environment</b>Run browser evidence loaded</div><div class="state-matrix-kpi"><span class="k">Sharpe</span><span class="v">1.84</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-research"><div class="state-matrix-row"><span class="bar"></span><span>Strategy comparison</span><span class="mono">RUN</span></div><button class="state-demo-button">Compare</button><div class="state-demo-entity"><div class="k">Run ID</div><div class="v">run-1842</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Pending</div><div class="state-matrix-use">Queued, submitted, awaiting review, asynchronous operation active.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-pending"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Pending</span><span class="state-matrix-chip">Review queued</span><input class="state-demo-input" value="4 pending" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-pending"><div class="state-matrix-banner"><b>Replay verification in progress</b>Comparing 2,184 fills</div><div class="state-matrix-kpi"><span class="k">Queue</span><span class="v">4</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-pending"><div class="state-matrix-row"><span class="bar"></span><span>Backfill queued</span><span class="mono">WAIT</span></div><button class="state-demo-button">Open queue</button><div class="state-demo-entity"><div class="k">Task</div><div class="v">task-1440</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Inactive</div><div class="state-matrix-use">No active session, optional surface, muted secondary state.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-muted"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Inactive</span><span class="state-matrix-chip">No session</span><input class="state-demo-input" value="—" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-muted"><div class="state-matrix-banner"><b>No active sessions</b>Create one above to begin</div><div class="state-matrix-kpi"><span class="k">Active runs</span><span class="v">0</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-muted"><div class="state-matrix-row"><span class="bar"></span><span>Provider offline</span><span class="mono">—</span></div><button class="state-demo-button">Enable</button><div class="state-demo-entity"><div class="k">Status</div><div class="v">inactive</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Empty</div><div class="state-matrix-use">No records for the selected scope; action should recover the flow.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-muted"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Empty</span><span class="state-matrix-chip">No rows</span><input class="state-demo-input" value="0 records" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-muted"><div class="state-matrix-banner"><b>No exceptions found</b>Change filters or refresh the queue</div><div class="state-matrix-kpi"><span class="k">Records</span><span class="v">0</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-muted"><div class="state-matrix-row"><span class="bar"></span><span>No selected break</span><span class="mono">EMPTY</span></div><button class="state-demo-button">Clear filters</button><div class="state-demo-entity"><div class="k">Evidence</div><div class="v">none</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Loading</div><div class="state-matrix-use">Data is being fetched; keep surface dimensions stable.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-pending"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Loading</span><span class="state-matrix-chip">Refreshing</span><input class="state-demo-input" value="Loading…" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-pending"><div class="state-matrix-banner"><b>Loading activity feed</b>Provider evidence requested</div><div class="state-matrix-kpi"><span class="k">Rows</span><span class="v">…</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-pending"><div class="state-matrix-row"><span class="bar"></span><span>Refreshing table</span><span class="mono">LOAD</span></div><button class="state-demo-button">Cancel</button><div class="state-demo-entity"><div class="k">Request</div><div class="v">req-5801</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Disabled</div><div class="state-matrix-use">Unavailable because prerequisites are missing or action is blocked.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-disabled"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Disabled</span><span class="state-matrix-chip">Action blocked</span><input class="state-demo-input" value="requires owner" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-disabled"><div class="state-matrix-banner"><b>Owner required</b>Assign a reviewer before promotion</div><div class="state-matrix-kpi"><span class="k">Ready</span><span class="v">0 / 3</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-disabled"><div class="state-matrix-row"><span class="bar"></span><span>Promotion unavailable</span><span class="mono">LOCK</span></div><button class="state-demo-button" disabled>Promote</button><div class="state-demo-entity"><div class="k">Blocker</div><div class="v">missing sign-off</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Selected</div><div class="state-matrix-use">Active row, nav route, selected record, or current inspector context.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-selected"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Selected</span><span class="state-matrix-chip">Current row</span><input class="state-demo-input" value="T326117E183" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-selected"><div class="state-matrix-banner"><b>Selected detail</b>Inspector reflects this row</div><div class="state-matrix-kpi"><span class="k">Row</span><span class="v">1</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-selected"><div class="state-matrix-row"><span class="bar"></span><span>Trade selected</span><span class="mono">OPEN</span></div><button class="state-demo-button">Inspect</button><div class="state-demo-entity"><div class="k">Transaction</div><div class="v">T326117E183</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Stale</div><div class="state-matrix-use">Evidence is no longer current; rerun verification before accepting.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-stale"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Stale</span><span class="state-matrix-chip">Replay old</span><input class="state-demo-input" value="14:02:37" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-stale"><div class="state-matrix-banner"><b>Replay evidence stale</b>Counts changed since verification</div><div class="state-matrix-kpi"><span class="k">Age</span><span class="v">42m</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-stale"><div class="state-matrix-row"><span class="bar"></span><span>Verification required</span><span class="mono">STALE</span></div><button class="state-demo-button">Rerun</button><div class="state-demo-entity"><div class="k">Audit</div><div class="v">audit-0184</div></div></div></div>
+
+      <div class="state-matrix-cell state-matrix-state"><div class="state-matrix-name">Error</div><div class="state-matrix-use">Recoverable failure with reason and next action.</div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-error"><span class="state-matrix-badge"><span class="state-matrix-dot"></span>Error</span><span class="state-matrix-chip">Load failed</span><input class="state-demo-input" value="HTTP 503" readonly></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-error"><div class="state-matrix-banner"><b>Evaluation failed</b>Provider returned HTTP 503</div><div class="state-matrix-kpi"><span class="k">Retries</span><span class="v">2</span></div></div></div>
+      <div class="state-matrix-cell"><div class="state-demo-stack state-error"><div class="state-matrix-row"><span class="bar"></span><span>Packet generation failed</span><span class="mono">ERR</span></div><button class="state-demo-button">Retry</button><div class="state-demo-entity"><div class="k">Reason</div><div class="v">timeout</div></div></div></div>
+    </section>
+  </main>
+</body>
+</html>

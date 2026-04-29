@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCreationResult
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 464
   assemblies:
   - Meridian.Infrastructure
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 466
   assemblies:
   - Meridian.Infrastructure
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 467
   assemblies:
   - Meridian.Infrastructure
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 469
   assemblies:
   - Meridian.Infrastructure
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasBackfillProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 472
   assemblies:
   - Meridian.Infrastructure
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasSymbolSearchProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 473
   assemblies:
   - Meridian.Infrastructure

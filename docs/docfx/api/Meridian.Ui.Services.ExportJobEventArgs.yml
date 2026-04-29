@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportJobEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 753
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Job
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 755
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Run
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 756
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 758
   assemblies:
   - Meridian.Ui.Services

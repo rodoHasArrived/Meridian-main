@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityMonitoringConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 400
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 402
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapAnalyzerConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 403
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrorConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 404
   assemblies:
   - Meridian.Application
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 405
   assemblies:
   - Meridian.Application
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 406
   assemblies:
   - Meridian.Application
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossProviderConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 407
   assemblies:
   - Meridian.Application
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportOutputDirectory
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 408
   assemblies:
   - Meridian.Application
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
     startLine: 410
   assemblies:
   - Meridian.Application

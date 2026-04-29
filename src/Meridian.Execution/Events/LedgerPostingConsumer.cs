@@ -40,7 +40,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(logger);
-        if (channelCapacity <= 0) throw new ArgumentOutOfRangeException(nameof(channelCapacity));
+        if (channelCapacity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(channelCapacity));
 
         _ledger = ledger;
         _logger = logger;
@@ -87,7 +88,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         {
             // Drain timed out — force-cancel the background task.
             await _cts.CancelAsync().ConfigureAwait(false);
-            try { await _processingTask.ConfigureAwait(false); }
+            try
+            { await _processingTask.ConfigureAwait(false); }
             catch (OperationCanceledException) { }
         }
 

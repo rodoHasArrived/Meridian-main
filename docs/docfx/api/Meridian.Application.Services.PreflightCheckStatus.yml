@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightCheckStatus
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 817
   assemblies:
   - Meridian.Application
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Passed
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 819
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 820
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 821
   assemblies:
   - Meridian.Application

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrorConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 494
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapThreshold
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 499
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantGapSize
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 504
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetThreshold
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 509
   assemblies:
   - Meridian.Application
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxErrorsPerSymbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 514
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 519
   assemblies:
   - Meridian.Application
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
     startLine: 521
   assemblies:
   - Meridian.Application

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPaperSessionStore
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 60
   assemblies:
   - Meridian.Execution
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSessionMetadataAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 63
   assemblies:
   - Meridian.Execution
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendFillAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 66
   assemblies:
   - Meridian.Execution
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendOrderUpdateAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 69
   assemblies:
   - Meridian.Execution
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveLedgerJournalAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 75
   assemblies:
   - Meridian.Execution
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAllSessionsAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 81
   assemblies:
   - Meridian.Execution
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFillsAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 84
   assemblies:
   - Meridian.Execution
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadOrderHistoryAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 87
   assemblies:
   - Meridian.Execution
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadLedgerJournalAsync
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 93
   assemblies:
   - Meridian.Execution

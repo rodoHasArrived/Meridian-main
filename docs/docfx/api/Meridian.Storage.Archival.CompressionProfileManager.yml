@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionProfileManager
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProfileForContext
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 31
   assemblies:
   - Meridian.Storage
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetSymbolOverride
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 61
   assemblies:
   - Meridian.Storage
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterProfile
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 70
   assemblies:
   - Meridian.Storage
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProfiles
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 79
   assemblies:
   - Meridian.Storage
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressAsync
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 84
   assemblies:
   - Meridian.Storage
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DecompressAsync
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 126
   assemblies:
   - Meridian.Storage
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BenchmarkAsync
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 152
   assemblies:
   - Meridian.Storage
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBuiltInProfiles
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 223
   assemblies:
   - Meridian.Storage

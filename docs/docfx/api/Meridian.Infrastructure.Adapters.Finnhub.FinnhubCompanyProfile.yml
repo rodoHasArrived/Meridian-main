@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinnhubCompanyProfile
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 485
   assemblies:
   - Meridian.Infrastructure
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 487
   assemblies:
   - Meridian.Infrastructure
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 490
   assemblies:
   - Meridian.Infrastructure
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 493
   assemblies:
   - Meridian.Infrastructure
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Industry
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 496
   assemblies:
   - Meridian.Infrastructure
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IpoDate
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 499
   assemblies:
   - Meridian.Infrastructure
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogoUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 502
   assemblies:
   - Meridian.Infrastructure
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCap
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 505
   assemblies:
   - Meridian.Infrastructure
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 508
   assemblies:
   - Meridian.Infrastructure
@@ -396,7 +396,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Phone
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 511
   assemblies:
   - Meridian.Infrastructure
@@ -437,7 +437,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharesOutstanding
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 514
   assemblies:
   - Meridian.Infrastructure
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ticker
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 517
   assemblies:
   - Meridian.Infrastructure
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
     startLine: 520
   assemblies:
   - Meridian.Infrastructure

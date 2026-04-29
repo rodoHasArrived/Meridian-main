@@ -285,7 +285,8 @@ public sealed class ContextMenuService
 
         if (customActions != null && customActions.Any())
         {
-            if (menu.Items.Count > 0) menu.Items.Add(CreateSeparator());
+            if (menu.Items.Count > 0)
+                menu.Items.Add(CreateSeparator());
             foreach (var (text, icon, action) in customActions)
                 menu.Items.Add(CreateMenuItem(text, icon,
                     async (s, e) => await action(item), tag: item));
@@ -293,21 +294,24 @@ public sealed class ContextMenuService
 
         if (onRefresh != null)
         {
-            if (menu.Items.Count > 0) menu.Items.Add(CreateSeparator());
+            if (menu.Items.Count > 0)
+                menu.Items.Add(CreateSeparator());
             menu.Items.Add(CreateMenuItem("Refresh", "\uE72C",
                 async (s, e) => await onRefresh(item), Key.F5, tag: item));
         }
 
         if (onCopy != null)
         {
-            if (menu.Items.Count > 0) menu.Items.Add(CreateSeparator());
+            if (menu.Items.Count > 0)
+                menu.Items.Add(CreateSeparator());
             menu.Items.Add(CreateMenuItem("Copy", "\uE8C8",
                 async (s, e) => await onCopy(item), Key.C, ModifierKeys.Control, tag: item));
         }
 
         if (onDelete != null)
         {
-            if (menu.Items.Count > 0) menu.Items.Add(CreateSeparator());
+            if (menu.Items.Count > 0)
+                menu.Items.Add(CreateSeparator());
             menu.Items.Add(CreateMenuItem("Delete", "\uE74D",
                 async (s, e) => await onDelete(item), Key.Delete, tag: item));
         }
@@ -402,7 +406,8 @@ public sealed class ContextMenuService
 
         if (onDeleteSelected != null)
         {
-            if (menu.Items.Count > 0) menu.Items.Add(CreateSeparator());
+            if (menu.Items.Count > 0)
+                menu.Items.Add(CreateSeparator());
             menu.Items.Add(CreateMenuItem($"Delete Selected ({selectedCount})", "\uE74D",
                 async (s, e) => await onDeleteSelected(), Key.Delete, ModifierKeys.Shift));
         }
@@ -441,9 +446,12 @@ public sealed class ContextMenuService
     private static string FormatGesture(Key key, ModifierKeys modifiers)
     {
         var parts = new List<string>();
-        if (modifiers.HasFlag(ModifierKeys.Control)) parts.Add("Ctrl");
-        if (modifiers.HasFlag(ModifierKeys.Shift)) parts.Add("Shift");
-        if (modifiers.HasFlag(ModifierKeys.Alt)) parts.Add("Alt");
+        if (modifiers.HasFlag(ModifierKeys.Control))
+            parts.Add("Ctrl");
+        if (modifiers.HasFlag(ModifierKeys.Shift))
+            parts.Add("Shift");
+        if (modifiers.HasFlag(ModifierKeys.Alt))
+            parts.Add("Alt");
         parts.Add(key.ToString());
         return string.Join("+", parts);
     }

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigValidatorCli
-    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    path: src/Meridian.Application/Config/ConfigValidatorCli.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    path: src/Meridian.Application/Config/ConfigValidatorCli.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
-    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    path: src/Meridian.Application/Config/ConfigValidatorCli.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateJson
-    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    path: src/Meridian.Application/Config/ConfigValidatorCli.cs
     startLine: 136
   assemblies:
   - Meridian.Application

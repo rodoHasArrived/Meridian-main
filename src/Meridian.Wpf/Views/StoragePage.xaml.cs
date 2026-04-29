@@ -32,16 +32,17 @@ public partial class StoragePage : Page
 
     private void StorageConfig_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (_viewModel == null) return;
+        if (_viewModel == null)
+            return;
         RefreshFileTreePreview();
     }
 
     /// <summary>Reads current control values and delegates preview generation to the ViewModel.</summary>
     private void RefreshFileTreePreview()
     {
-        var naming      = GetSelectedTag(NamingConventionCombo) ?? "BySymbol";
-        var compression = GetSelectedTag(CompressionCombo)      ?? "gzip";
-        var rootPath    = DataDirectoryBox.Text;
+        var naming = GetSelectedTag(NamingConventionCombo) ?? "BySymbol";
+        var compression = GetSelectedTag(CompressionCombo) ?? "gzip";
+        var rootPath = DataDirectoryBox.Text;
 
         _viewModel.RefreshPreview(rootPath, naming, compression);
     }

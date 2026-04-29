@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderBehaviorBuilder
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 67
   assemblies:
   - Meridian.Infrastructure
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 83
   assemblies:
   - Meridian.Infrastructure
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 108
   assemblies:
   - Meridian.Infrastructure
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithRateLimit
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 127
   assemblies:
   - Meridian.Infrastructure
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithDailyBars
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 150
   assemblies:
   - Meridian.Infrastructure
@@ -420,7 +420,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAdjustedDailyBars
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 165
   assemblies:
   - Meridian.Infrastructure
@@ -465,7 +465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAvailabilityCheck
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 178
   assemblies:
   - Meridian.Infrastructure
@@ -506,7 +506,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Build
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
     startLine: 196
   assemblies:
   - Meridian.Infrastructure

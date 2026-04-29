@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceRegistry
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 69
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 77
   assemblies:
   - Meridian.Application
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 105
   assemblies:
   - Meridian.Application
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByCategory
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 115
   assemblies:
   - Meridian.Application
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 124
   assemblies:
   - Meridian.Application
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 133
   assemblies:
   - Meridian.Application
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 140
   assemblies:
   - Meridian.Application
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 163
   assemblies:
   - Meridian.Application

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaxLotSelectors
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fifo
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lifo
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hifo
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
     startLine: 20
   assemblies:
   - Meridian.Execution
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpecificId
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
     startLine: 28
   assemblies:
   - Meridian.Execution

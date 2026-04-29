@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBTickByTickTypes
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 378
   assemblies:
   - Meridian.Infrastructure
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Last
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 381
   assemblies:
   - Meridian.Infrastructure
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllLast
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 384
   assemblies:
   - Meridian.Infrastructure
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidAsk
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 387
   assemblies:
   - Meridian.Infrastructure
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPoint
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 390
   assemblies:
   - Meridian.Infrastructure

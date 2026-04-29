@@ -30,7 +30,7 @@ public sealed class PlotRenderBehaviorTests
                 .Should().Contain(typeName => typeName.Contains("Candlestick", StringComparison.Ordinal));
 
             plot.Plot.Axes.Bottom.TickGenerator.GetType().Name
-                .Should().Contain("DateTime", StringComparison.Ordinal);
+                .Should().Contain("DateTime");
         });
     }
 
@@ -53,10 +53,10 @@ public sealed class PlotRenderBehaviorTests
             PlotRenderBehavior.SetRequest(plot, request);
 
             plot.Plot.Axes.Bottom.TickGenerator.GetType().Name
-                .Should().Contain("NumericManual", StringComparison.Ordinal);
+                .Should().Contain("NumericManual");
 
             plot.Plot.Axes.Left.TickGenerator.GetType().Name
-                .Should().Contain("NumericManual", StringComparison.Ordinal);
+                .Should().Contain("NumericManual");
         });
     }
 
@@ -88,7 +88,7 @@ public sealed class PlotRenderBehaviorTests
                 Console.SetOut(originalOut);
             }
 
-            writer.ToString().Should().Contain("Invalid plot request", StringComparison.Ordinal);
+            writer.ToString().Should().Contain("Invalid plot request");
             plot.Plot.GetPlottables().Should().BeEmpty();
         });
     }

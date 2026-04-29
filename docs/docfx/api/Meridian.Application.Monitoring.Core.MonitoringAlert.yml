@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MonitoringAlert
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 64
   assemblies:
   - Meridian.Core
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 64
   assemblies:
   - Meridian.Core
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 65
   assemblies:
   - Meridian.Core
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 66
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 67
   assemblies:
   - Meridian.Core
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 68
   assemblies:
   - Meridian.Core
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 70
   assemblies:
   - Meridian.Core
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 71
   assemblies:
   - Meridian.Core
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 72
   assemblies:
   - Meridian.Core
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exception
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 73
   assemblies:
   - Meridian.Core
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 78
   assemblies:
   - Meridian.Core
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 86
   assemblies:
   - Meridian.Core
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 94
   assemblies:
   - Meridian.Core
@@ -542,7 +542,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 102
   assemblies:
   - Meridian.Core

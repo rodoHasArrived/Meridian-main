@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThroughputAnalysisResponse
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 407
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentThroughput
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 409
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageThroughput
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 410
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeakThroughput
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 411
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsProcessed
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 412
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeline
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 413
   assemblies:
   - Meridian.Ui.Services

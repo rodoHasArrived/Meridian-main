@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoveredCallOverwriteStrategy
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 31
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 38
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 41
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Params
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 44
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedTrades
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 50
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenPositions
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 56
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 61
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -300,7 +300,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 100
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 120
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTrade
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 129
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnQuote
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 132
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBar
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 135
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderBook
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 154
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -517,7 +517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderFill
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 157
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -552,7 +552,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDayEnd
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 160
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -590,7 +590,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnFinished
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
     startLine: 182
   assemblies:
   - Meridian.Backtesting.Sdk

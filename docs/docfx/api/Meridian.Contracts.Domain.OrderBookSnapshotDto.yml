@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBookSnapshotDto
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 192
   assemblies:
   - Meridian.Contracts
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bids
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 204
   assemblies:
   - Meridian.Contracts
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Asks
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 210
   assemblies:
   - Meridian.Contracts
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 216
   assemblies:
   - Meridian.Contracts
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MicroPrice
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 222
   assemblies:
   - Meridian.Contracts
@@ -321,7 +321,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imbalance
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 228
   assemblies:
   - Meridian.Contracts
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketState
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 234
   assemblies:
   - Meridian.Contracts
@@ -407,7 +407,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 240
   assemblies:
   - Meridian.Contracts

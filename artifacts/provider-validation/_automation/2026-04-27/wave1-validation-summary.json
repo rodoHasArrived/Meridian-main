@@ -1,0 +1,222 @@
+{
+  "generatedAtUtc": "2026-04-27T04:43:54.8126943Z",
+  "dateStamp": "2026-04-27",
+  "configuration": "Release",
+  "repoRoot": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main",
+  "scope": "Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof",
+  "result": "passed",
+  "activeProviderRows": [
+    {
+      "name": "Alpaca",
+      "posture": "repo-closed",
+      "lane": "core provider confidence",
+      "offlineEvidence": [
+        "AlpacaBrokerageGatewayTests",
+        "AlpacaCorporateActionProviderTests",
+        "AlpacaCredentialAndReconnectTests",
+        "AlpacaMessageParsingTests",
+        "AlpacaQuotePipelineGoldenTests",
+        "AlpacaQuoteRoutingTests",
+        "ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam"
+      ],
+      "runtimeEvidence": [],
+      "notes": [
+        "Active Wave 1 core provider row.",
+        "Closed by checked-in provider and stable execution seam tests."
+      ]
+    },
+    {
+      "name": "Robinhood",
+      "posture": "bounded",
+      "lane": "supported surface",
+      "offlineEvidence": [
+        "RobinhoodBrokerageGatewayTests",
+        "RobinhoodMarketDataClientTests",
+        "RobinhoodHistoricalDataProviderTests",
+        "RobinhoodSymbolSearchProviderTests",
+        "ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam"
+      ],
+      "runtimeEvidence": [
+        "artifacts/provider-validation/robinhood/2026-04-09/auth-session/summary.md",
+        "artifacts/provider-validation/robinhood/2026-04-09/quote-polling/summary.md",
+        "artifacts/provider-validation/robinhood/2026-04-09/order-submit-cancel/summary.md",
+        "artifacts/provider-validation/robinhood/2026-04-09/throttling-reconnect/summary.md"
+      ],
+      "notes": [
+        "Only active provider row that remains runtime-bounded.",
+        "Confidence is polling-oriented and execution-adjacent, not websocket-validated."
+      ]
+    },
+    {
+      "name": "Yahoo",
+      "posture": "repo-closed",
+      "lane": "historical and fallback confidence",
+      "offlineEvidence": [
+        "YahooFinanceHistoricalDataProviderTests",
+        "YahooFinanceIntradayContractTests"
+      ],
+      "runtimeEvidence": [],
+      "notes": [
+        "Active historical-only core provider row.",
+        "Not part of Meridian's live runtime-provider claim for Wave 1."
+      ]
+    }
+  ],
+  "pilotReplaySampleSet": [
+    {
+      "id": "DK1-ALPACA-QUOTE-GOLDEN",
+      "provider": "Alpaca",
+      "lane": "repo-closed quote pipeline parity",
+      "sampleUniverse": [
+        "AAPL"
+      ],
+      "sampleWindow": "2026-03-19T14:30:00Z",
+      "evidenceAnchors": [
+        "tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json",
+        "AlpacaQuotePipelineGoldenTests"
+      ],
+      "automationStep": "Alpaca core provider confidence",
+      "acceptanceCheck": "Parser, canonical publisher, and JSONL sink output match the committed golden subset."
+    },
+    {
+      "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+      "provider": "Alpaca",
+      "lane": "repo-closed trade and quote parser coverage",
+      "sampleUniverse": [
+        "AAPL",
+        "MSFT",
+        "QQQ",
+        "SPY"
+      ],
+      "sampleWindow": "2024-06-15 parser fixture window",
+      "evidenceAnchors": [
+        "AlpacaMessageParsingTests",
+        "AlpacaQuoteRoutingTests",
+        "AlpacaCredentialAndReconnectTests"
+      ],
+      "automationStep": "Alpaca core provider confidence",
+      "acceptanceCheck": "Trade and quote edge cases preserve symbol separation, timestamp handling, duplicate suppression, routing, and reconnect behavior."
+    },
+    {
+      "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+      "provider": "Robinhood",
+      "lane": "bounded polling and brokerage surface",
+      "sampleUniverse": [
+        "AAPL",
+        "MSFT"
+      ],
+      "sampleWindow": "2026-04-09 bounded runtime packet plus offline polling fixtures",
+      "evidenceAnchors": [
+        "RobinhoodMarketDataClientTests",
+        "RobinhoodBrokerageGatewayTests",
+        "artifacts/provider-validation/robinhood/2026-04-09/manifest.json"
+      ],
+      "automationStep": "Robinhood supported surface",
+      "acceptanceCheck": "Offline polling, symbol search, historical bars, and execution seam tests pass; runtime evidence remains explicitly bounded."
+    },
+    {
+      "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+      "provider": "Yahoo",
+      "lane": "repo-closed historical-only fallback",
+      "sampleUniverse": [
+        "AAPL",
+        "SPY"
+      ],
+      "sampleWindow": "2024-01-01 through 2024-01-02 daily fixtures and 2024-01-02 intraday session fixtures",
+      "evidenceAnchors": [
+        "YahooFinanceHistoricalDataProviderTests",
+        "YahooFinanceIntradayContractTests"
+      ],
+      "automationStep": "Yahoo historical-only core provider",
+      "acceptanceCheck": "Daily, adjusted daily, and intraday aggregate fixtures deserialize into stable historical/fallback bars without implying live-provider readiness."
+    }
+  ],
+  "crossCuttingClosures": [
+    {
+      "name": "Checkpoint reliability",
+      "posture": "repo-closed",
+      "evidence": [
+        "BackfillStatusStoreTests",
+        "ParallelBackfillServiceTests",
+        "GapBackfillServiceTests",
+        "CheckpointEndpointTests"
+      ]
+    },
+    {
+      "name": "Parquet L2 flush behavior",
+      "posture": "repo-closed",
+      "evidence": [
+        "ParquetStorageSinkTests",
+        "ParquetConversionServiceTests"
+      ]
+    }
+  ],
+  "deferredProviders": [
+    "Polygon",
+    "Interactive Brokers",
+    "NYSE",
+    "StockSharp"
+  ],
+  "steps": [
+    {
+      "name": "Meridian.Tests build",
+      "kind": "build",
+      "status": "passed",
+      "exitCode": 0,
+      "durationSeconds": 240.52,
+      "command": "dotnet build tests/Meridian.Tests/Meridian.Tests.csproj -c Release --nologo --verbosity minimal /p:EnableWindowsTargeting=true -maxcpucount:1",
+      "logPath": "artifacts/provider-validation/_automation/2026-04-27/meridian-tests-build.log",
+      "tail": "  Meridian.Ledger -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ledger\\bin\\Release\\net9.0\\Meridian.Ledger.dll\r\n  Meridian.Backtesting.Sdk -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting.Sdk\\bin\\Release\\net9.0\\Meridian.Backtesting.Sdk.dll\r\n  Meridian.FSharp -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp\\bin\\Release\\net9.0\\Meridian.FSharp.dll\r\n  Meridian.FSharp.DirectLending.Aggregates -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.DirectLending.Aggregates\\bin\\Release\\net9.0\\Meridian.FSharp.DirectLending.Aggregates.dll\r\n  Meridian.Application -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Application\\bin\\Release\\net9.0\\Meridian.Application.dll\r\n  Meridian.Execution -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Execution\\bin\\Release\\net9.0\\Meridian.Execution.dll\r\n  Meridian.Infrastructure.CppTrader -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Infrastructure.CppTrader\\bin\\Release\\net9.0\\Meridian.Infrastructure.CppTrader.dll\r\n  Meridian.FSharp.Trading -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.FSharp.Trading\\bin\\Release\\net9.0\\Meridian.FSharp.Trading.dll\r\n  Meridian.Strategies -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Strategies\\bin\\Release\\net9.0\\Meridian.Strategies.dll\r\n  Meridian.Ui.Shared -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Ui.Shared\\bin\\Release\\net9.0\\Meridian.Ui.Shared.dll\r\n  Meridian -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian\\bin\\Release\\net9.0\\Meridian.dll\r\n  Meridian.Backtesting -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Backtesting\\bin\\Release\\net9.0\\Meridian.Backtesting.dll\r\n  Meridian.Risk -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Risk\\bin\\Release\\net9.0\\Meridian.Risk.dll\r\n  Meridian.Tests -> C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\tests\\Meridian.Tests\\bin\\Release\\net9.0\\Meridian.Tests.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:03:58.78"
+    },
+    {
+      "name": "Alpaca core provider confidence",
+      "kind": "test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationSeconds": 16.75,
+      "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --nologo --verbosity minimal /p:EnableWindowsTargeting=true -maxcpucount:1 --filter FullyQualifiedName~AlpacaBrokerageGatewayTests|FullyQualifiedName~AlpacaCorporateActionProviderTests|FullyQualifiedName~AlpacaCredentialAndReconnectTests|FullyQualifiedName~AlpacaMessageParsingTests|FullyQualifiedName~AlpacaQuotePipelineGoldenTests|FullyQualifiedName~AlpacaQuoteRoutingTests|FullyQualifiedName~AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam",
+      "logPath": "artifacts/provider-validation/_automation/2026-04-27/alpaca-core-provider-confidence.log",
+      "tail": "Test run for C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\tests\\Meridian.Tests\\bin\\Release\\net9.0\\Meridian.Tests.dll (.NETCoreApp,Version=v9.0)\r\nA total of 1 test files matched the specified pattern.\r\n\r\nPassed!  - Failed:     0, Passed:    58, Skipped:     0, Total:    58, Duration: 2 s - Meridian.Tests.dll (net9.0)"
+    },
+    {
+      "name": "Robinhood supported surface",
+      "kind": "test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationSeconds": 9.41,
+      "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --nologo --verbosity minimal /p:EnableWindowsTargeting=true -maxcpucount:1 --filter FullyQualifiedName~RobinhoodBrokerageGatewayTests|FullyQualifiedName~RobinhoodMarketDataClientTests|FullyQualifiedName~RobinhoodHistoricalDataProviderTests|FullyQualifiedName~RobinhoodSymbolSearchProviderTests|FullyQualifiedName~RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam",
+      "logPath": "artifacts/provider-validation/_automation/2026-04-27/robinhood-supported-surface.log",
+      "tail": "Test run for C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\tests\\Meridian.Tests\\bin\\Release\\net9.0\\Meridian.Tests.dll (.NETCoreApp,Version=v9.0)\r\nA total of 1 test files matched the specified pattern.\r\n\r\nPassed!  - Failed:     0, Passed:    44, Skipped:     0, Total:    44, Duration: 3 s - Meridian.Tests.dll (net9.0)"
+    },
+    {
+      "name": "Yahoo historical-only core provider",
+      "kind": "test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationSeconds": 6.73,
+      "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --nologo --verbosity minimal /p:EnableWindowsTargeting=true -maxcpucount:1 --filter FullyQualifiedName~YahooFinanceHistoricalDataProviderTests|FullyQualifiedName~YahooFinanceIntradayContractTests",
+      "logPath": "artifacts/provider-validation/_automation/2026-04-27/yahoo-historical-only-core-provider.log",
+      "tail": "Test run for C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\tests\\Meridian.Tests\\bin\\Release\\net9.0\\Meridian.Tests.dll (.NETCoreApp,Version=v9.0)\r\nA total of 1 test files matched the specified pattern.\r\n\r\nPassed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 622 ms - Meridian.Tests.dll (net9.0)"
+    },
+    {
+      "name": "Checkpoint reliability and gap handling",
+      "kind": "test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationSeconds": 9.58,
+      "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --nologo --verbosity minimal /p:EnableWindowsTargeting=true -maxcpucount:1 --filter FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~CheckpointEndpointTests",
+      "logPath": "artifacts/provider-validation/_automation/2026-04-27/checkpoint-reliability-and-gap-handling.log",
+      "tail": "Test run for C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\tests\\Meridian.Tests\\bin\\Release\\net9.0\\Meridian.Tests.dll (.NETCoreApp,Version=v9.0)\r\nA total of 1 test files matched the specified pattern.\r\n\r\nPassed!  - Failed:     0, Passed:    80, Skipped:     0, Total:    80, Duration: 4 s - Meridian.Tests.dll (net9.0)"
+    },
+    {
+      "name": "Parquet sink and conversion",
+      "kind": "test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationSeconds": 7.33,
+      "command": "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --nologo --verbosity minimal /p:EnableWindowsTargeting=true -maxcpucount:1 --filter FullyQualifiedName~ParquetStorageSinkTests|FullyQualifiedName~ParquetConversionServiceTests",
+      "logPath": "artifacts/provider-validation/_automation/2026-04-27/parquet-sink-and-conversion.log",
+      "tail": "Test run for C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\tests\\Meridian.Tests\\bin\\Release\\net9.0\\Meridian.Tests.dll (.NETCoreApp,Version=v9.0)\r\nA total of 1 test files matched the specified pattern.\r\n\r\nPassed!  - Failed:     0, Passed:    15, Skipped:     0, Total:    15, Duration: 1 s - Meridian.Tests.dll (net9.0)"
+    }
+  ]
+}

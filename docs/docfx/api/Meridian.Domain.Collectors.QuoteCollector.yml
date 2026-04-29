@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteCollector
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 13
   assemblies:
   - Meridian.Domain
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 20
   assemblies:
   - Meridian.Domain
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnQuote
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 28
   assemblies:
   - Meridian.Domain
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 40
   assemblies:
   - Meridian.Domain
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upsert
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 43
   assemblies:
   - Meridian.Domain
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRemove
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 61
   assemblies:
   - Meridian.Domain
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
-    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    path: src/Meridian.Domain/Collectors/QuoteCollector.cs
     startLine: 76
   assemblies:
   - Meridian.Domain

@@ -42,7 +42,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunEntry
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 10
   assemblies:
   - Meridian.Strategies
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 11
   assemblies:
   - Meridian.Strategies
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunType
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 13
   assemblies:
   - Meridian.Strategies
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 14
   assemblies:
   - Meridian.Strategies
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndedAt
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 16
   assemblies:
   - Meridian.Strategies
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatasetReference
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 17
   assemblies:
   - Meridian.Strategies
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeedReference
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 18
   assemblies:
   - Meridian.Strategies
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioId
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 19
   assemblies:
   - Meridian.Strategies
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReference
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 20
   assemblies:
   - Meridian.Strategies
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditReference
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 21
   assemblies:
   - Meridian.Strategies
@@ -502,7 +502,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 22
   assemblies:
   - Meridian.Strategies
@@ -531,7 +531,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterSet
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 23
   assemblies:
   - Meridian.Strategies
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TerminalStatus
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 24
   assemblies:
   - Meridian.Strategies
@@ -589,7 +589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParentRunId
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 25
   assemblies:
   - Meridian.Strategies
@@ -618,7 +618,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 26
   assemblies:
   - Meridian.Strategies
@@ -647,7 +647,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundDisplayName
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 27
   assemblies:
   - Meridian.Strategies
@@ -676,7 +676,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 30
   assemblies:
   - Meridian.Strategies
@@ -716,7 +716,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 50
   assemblies:
   - Meridian.Strategies
@@ -766,7 +766,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 75
   assemblies:
   - Meridian.Strategies
@@ -802,7 +802,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 79
   assemblies:
   - Meridian.Strategies
@@ -832,7 +832,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancel
-    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
     startLine: 83
   assemblies:
   - Meridian.Strategies

@@ -40,6 +40,46 @@
                         <TextBlock Text="Quick Export" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
                     </StackPanel>
 
+                    <Border AutomationProperties.AutomationId="DataExportReadinessCard"
+                            Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock AutomationProperties.AutomationId="DataExportReadinessTitle"
+                                           Text="{Binding ExportReadinessTitle}"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock AutomationProperties.AutomationId="DataExportReadinessDetail"
+                                           Text="{Binding ExportReadinessDetail}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                                <TextBlock AutomationProperties.AutomationId="DataExportScopeText"
+                                           Text="{Binding ExportScopeText}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="1"
+                                       AutomationProperties.AutomationId="DataExportSelectedSymbolCount"
+                                       Text="{Binding SelectedSymbolCountText}"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Top"
+                                       Margin="16,2,0,0" />
+                        </Grid>
+                    </Border>
+
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -125,6 +165,7 @@
 
                         <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button x:Name="ExportButton"
+                                    AutomationProperties.AutomationId="DataExportRunButton"
                                     Content="Export Data"
                                     Style="{StaticResource AccentButtonStyle}"
                                     Command="{Binding ExportDataCommand}" />
@@ -132,6 +173,9 @@
                                          Width="120"
                                          Height="8"
                                          Margin="12,8,0,0"
+                                         Minimum="0"
+                                         Maximum="100"
+                                         Value="{Binding ExportProgressValue, Mode=OneWay}"
                                          Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </StackPanel>
                     </Grid>
@@ -253,8 +297,42 @@
                     <CheckBox x:Name="EnableScheduledExportsToggle"
                               Content="Enable Scheduled Exports"
                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                              Checked="EnableScheduledExportsToggle_Changed"
-                              Unchecked="EnableScheduledExportsToggle_Changed" />
+                              IsChecked="{Binding IsScheduleEnabled, Mode=TwoWay}" />
+
+                    <Border AutomationProperties.AutomationId="DataExportScheduleReadinessCard"
+                            Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,12,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock AutomationProperties.AutomationId="DataExportScheduleReadinessTitle"
+                                           Text="{Binding ScheduleReadinessTitle}"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock AutomationProperties.AutomationId="DataExportScheduleReadinessDetail"
+                                           Text="{Binding ScheduleReadinessDetail}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="1"
+                                       AutomationProperties.AutomationId="DataExportScheduleScopeText"
+                                       Text="{Binding ScheduleScopeText}"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Top"
+                                       Margin="16,2,0,0" />
+                        </Grid>
+                    </Border>
 
                     <Grid x:Name="ScheduledExportsPanel"
                     IsEnabled="{Binding IsScheduleEnabled}"
@@ -289,7 +367,9 @@
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Destination Path" Style="{StaticResource FormLabelStyle}" />
-                            <TextBox x:Name="ExportDestinationBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox x:Name="ExportDestinationBox"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding ScheduleDestinationPath, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </Grid>
 
@@ -307,6 +387,14 @@
                                       Margin="0,8,0,0" />
                         </StackPanel>
                     </Expander>
+
+                    <Button x:Name="ConfigureScheduledExportButton"
+                            AutomationProperties.AutomationId="DataExportConfigureScheduleButton"
+                            Content="Save Schedule"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Command="{Binding ConfigureScheduledExportCommand}"
+                            HorizontalAlignment="Left"
+                            Margin="0,12,0,0" />
                 </StackPanel>
             </Border>
 

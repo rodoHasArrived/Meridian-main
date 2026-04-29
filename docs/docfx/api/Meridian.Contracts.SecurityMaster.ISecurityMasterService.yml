@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterService
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAsync
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendPreferredEquityTermsAsync
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendConvertibleEquityTermsAsync
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateAsync
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAliasAsync
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts

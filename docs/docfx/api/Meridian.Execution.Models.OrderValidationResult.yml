@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderValidationResult
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 22
   assemblies:
   - Meridian.Execution
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 22
   assemblies:
   - Meridian.Execution
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 23
   assemblies:
   - Meridian.Execution
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHints
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 25
   assemblies:
   - Meridian.Execution

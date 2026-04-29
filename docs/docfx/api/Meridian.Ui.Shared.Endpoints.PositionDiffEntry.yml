@@ -25,8 +25,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionDiffEntry
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3061
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3091
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -63,8 +63,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3061
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3091
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -107,8 +107,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3062
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3092
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -136,8 +136,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseQuantity
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3063
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3093
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -165,8 +165,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetQuantity
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3064
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3094
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -194,8 +194,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BasePnl
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3065
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3095
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -223,8 +223,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetPnl
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3066
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3096
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -252,8 +252,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangeType
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 3067
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3097
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderRateThrottle
-    path: ../../src/Meridian.Risk/Rules/OrderRateThrottle.cs
+    path: src/Meridian.Risk/Rules/OrderRateThrottle.cs
     startLine: 10
   assemblies:
   - Meridian.Risk
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Risk/Rules/OrderRateThrottle.cs
+    path: src/Meridian.Risk/Rules/OrderRateThrottle.cs
     startLine: 16
   assemblies:
   - Meridian.Risk
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleName
-    path: ../../src/Meridian.Risk/Rules/OrderRateThrottle.cs
+    path: src/Meridian.Risk/Rules/OrderRateThrottle.cs
     startLine: 23
   assemblies:
   - Meridian.Risk
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateAsync
-    path: ../../src/Meridian.Risk/Rules/OrderRateThrottle.cs
+    path: src/Meridian.Risk/Rules/OrderRateThrottle.cs
     startLine: 26
   assemblies:
   - Meridian.Risk

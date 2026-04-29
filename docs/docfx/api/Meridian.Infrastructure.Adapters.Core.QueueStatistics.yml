@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueStatistics
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 495
   assemblies:
   - Meridian.Infrastructure
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingRequests
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 497
   assemblies:
   - Meridian.Infrastructure
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InFlightRequests
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 498
   assemblies:
   - Meridian.Infrastructure
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveByProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 499
   assemblies:
   - Meridian.Infrastructure
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CooldownsByProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 500
   assemblies:
   - Meridian.Infrastructure

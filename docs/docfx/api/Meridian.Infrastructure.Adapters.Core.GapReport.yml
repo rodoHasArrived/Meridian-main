@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapReport
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 78
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 78
   assemblies:
   - Meridian.Infrastructure
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 79
   assemblies:
   - Meridian.Infrastructure
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RangeStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RangeEnd
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 81
   assemblies:
   - Meridian.Infrastructure
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gaps
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalTradingDays
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 83
   assemblies:
   - Meridian.Infrastructure
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailableDays
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 84
   assemblies:
   - Meridian.Infrastructure
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoveragePercent
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 85
   assemblies:
   - Meridian.Infrastructure
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourcesAnalyzed
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 86
   assemblies:
   - Meridian.Infrastructure
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzedAt
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 87
   assemblies:
   - Meridian.Infrastructure

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionStyle
-    path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+    path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: American
-    path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+    path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: European
-    path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+    path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts

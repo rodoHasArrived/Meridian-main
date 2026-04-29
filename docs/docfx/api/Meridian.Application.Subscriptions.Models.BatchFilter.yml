@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchFilter
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 129
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 129
   assemblies:
   - Meridian.Core
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPattern
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 130
   assemblies:
   - Meridian.Core
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasTradeSubscription
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 131
   assemblies:
   - Meridian.Core
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasDepthSubscription
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 132
   assemblies:
   - Meridian.Core
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InWatchlists
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 133
   assemblies:
   - Meridian.Core
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 134
   assemblies:
   - Meridian.Core
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 135
   assemblies:
   - Meridian.Core

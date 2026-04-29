@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SinkHealthState
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Degraded
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 19
   assemblies:
   - Meridian.Storage

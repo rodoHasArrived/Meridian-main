@@ -1,0 +1,28 @@
+{
+  "templates": [
+    {
+      "id": "hello-spy",
+      "title": "Hello SPY",
+      "description": "Load recent SPY bars with the async data API and print a quick summary.",
+      "documentKind": 1,
+      "contentFile": "hello-spy.csx",
+      "category": "Getting Started"
+    },
+    {
+      "id": "sma-scan",
+      "title": "Indicator Template",
+      "description": "Compute a simple moving-average spread from async price data.",
+      "documentKind": 1,
+      "contentFile": "indicator-sma.csx",
+      "category": "Indicators"
+    },
+    {
+      "id": "single-symbol-backtest",
+      "title": "Backtest Template",
+      "description": "Run a simple single-symbol backtest through the async Backtest API.",
+      "documentKind": 1,
+      "contentFile": "single-symbol-backtest.csx",
+      "category": "Backtests"
+    }
+  ]
+}

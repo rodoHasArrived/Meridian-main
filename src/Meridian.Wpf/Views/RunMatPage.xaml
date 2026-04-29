@@ -6,6 +6,10 @@
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="RunMat Lab"
       AutomationProperties.AutomationId="RunMatPage">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
     <Grid Margin="24"
           AutomationProperties.AutomationId="RunMatPageLayout"
           AutomationProperties.Name="RunMat Page Layout">
@@ -196,9 +200,24 @@
                 AutomationProperties.Name="RunMat Output Panel">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Text="Run Output" Style="{StaticResource CardHeaderStyle}"
-                               AutomationProperties.AutomationId="RunMatOutputTitle"
-                               AutomationProperties.Name="RunMat Output Title" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="Run Output"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   AutomationProperties.AutomationId="RunMatOutputTitle"
+                                   AutomationProperties.Name="RunMat Output Title" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding OutputLineCountText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   AutomationProperties.AutomationId="RunMatOutputLineCountText"
+                                   AutomationProperties.Name="RunMat Output Line Count" />
+                    </Grid>
                     <TextBlock Text="{Binding ServiceStatus}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,12" TextWrapping="Wrap"
                                AutomationProperties.AutomationId="RunMatServiceStatus"
                                AutomationProperties.Name="RunMat Service Status" />
@@ -227,24 +246,53 @@
                     </Border>
                 </StackPanel>
 
-                <ListBox x:Name="OutputLinesListBox"
-                         ItemsSource="{Binding OutputLines}"
-                         Background="{StaticResource PremiumPanelBrush}"
-                         BorderBrush="{StaticResource ConsoleBorderBrush}"
-                         BorderThickness="1"
-                         AutomationProperties.AutomationId="RunMatOutputList"
-                         AutomationProperties.Name="RunMat Output Lines">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border Padding="8,6">
-                                <TextBlock TextWrapping="Wrap">
-                                    <Run Text="{Binding TimestampUtc, StringFormat='[{0:HH:mm:ss}] '}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <Run Text="{Binding Text}" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                </TextBlock>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Grid>
+                    <ListBox x:Name="OutputLinesListBox"
+                             ItemsSource="{Binding OutputLines}"
+                             Background="{StaticResource PremiumPanelBrush}"
+                             BorderBrush="{StaticResource ConsoleBorderBrush}"
+                             BorderThickness="1"
+                             AutomationProperties.AutomationId="RunMatOutputList"
+                             AutomationProperties.Name="RunMat Output Lines">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="8,6">
+                                    <TextBlock TextWrapping="Wrap">
+                                        <Run Text="{Binding TimestampUtc, StringFormat='[{0:HH:mm:ss}] '}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <Run Text="{Binding Text}" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                MaxWidth="280"
+                                Margin="18"
+                                Visibility="{Binding IsOutputEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="RunMatOutputEmptyStatePanel"
+                                AutomationProperties.Name="{Binding OutputEmptyStateTitle}">
+                        <TextBlock Text="&#xE943;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="34"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,12" />
+                        <TextBlock Text="{Binding OutputEmptyStateTitle}"
+                                   Style="{StaticResource EmptyStateTitleStyle}"
+                                   TextAlignment="Center"
+                                   AutomationProperties.AutomationId="RunMatOutputEmptyStateTitle"
+                                   AutomationProperties.Name="RunMat Output Empty State Title" />
+                        <TextBlock Text="{Binding OutputEmptyStateDetail}"
+                                   Style="{StaticResource EmptyStateDescriptionStyle}"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0"
+                                   AutomationProperties.AutomationId="RunMatOutputEmptyStateDetail"
+                                   AutomationProperties.Name="RunMat Output Empty State Detail" />
+                    </StackPanel>
+                </Grid>
             </DockPanel>
         </Border>
     </Grid>

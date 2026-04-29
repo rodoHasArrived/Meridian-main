@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDataResources
-    path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
+    path: src/Meridian.McpServer/Resources/MarketDataResources.cs
     startLine: 7
   assemblies:
   - Meridian.McpServer
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
+    path: src/Meridian.McpServer/Resources/MarketDataResources.cs
     startLine: 25
   assemblies:
   - Meridian.McpServer
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalog
-    path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
+    path: src/Meridian.McpServer/Resources/MarketDataResources.cs
     startLine: 38
   assemblies:
   - Meridian.McpServer
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageCatalog
-    path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
+    path: src/Meridian.McpServer/Resources/MarketDataResources.cs
     startLine: 57
   assemblies:
   - Meridian.McpServer
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveConfiguration
-    path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
+    path: src/Meridian.McpServer/Resources/MarketDataResources.cs
     startLine: 93
   assemblies:
   - Meridian.McpServer

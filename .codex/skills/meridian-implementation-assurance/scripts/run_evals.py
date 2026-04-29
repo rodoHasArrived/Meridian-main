@@ -352,9 +352,9 @@ def print_result(r: CaseResult) -> None:
     if r.token_usage:
         print(f"  Tokens  : in={r.token_usage.get('input_tokens', 0)} out={r.token_usage.get('output_tokens', 0)}")
     for msg in r.passed:
-        print(f"  ✓  {msg}")
+        print(f"  {_console_marker('✓', '+')}  {msg}")
     for msg in r.failed:
-        print(f"  ✗  {msg}")
+        print(f"  {_console_marker('✗', 'x')}  {msg}")
     for msg in r.skipped:
         print(f"  ~  {msg}")
 
@@ -369,10 +369,27 @@ def print_summary(results: list[CaseResult], regressions: list[str]) -> None:
     if regressions:
         print("\nREGRESSION WARNINGS:")
         for w in regressions:
-            print(f"  ⚠  {w}")
+            print(f"  {_console_marker('⚠', '!')}  {w}")
     else:
         print("  No regressions vs baseline.")
     print("="*60)
+
+
+def _console_marker(symbol: str, fallback: str) -> str:
+    encoding = sys.stdout.encoding or "utf-8"
+    try:
+        symbol.encode(encoding)
+    except UnicodeEncodeError:
+        return fallback
+    return symbol
+
+
+def print_dry_run_summary(cases: list[EvalCase], should_trigger: int, should_not: int) -> None:
+    print("\n--- Dry Run Setup Validation ---")
+    print(f"  Eval cases: {len(cases)}")
+    print(f"  Prompts CSV: {should_trigger} should-trigger, {should_not} should-not-trigger")
+    for case in cases:
+        print(f"  eval-{case.id}: Scenario {case.scenario} - {case.description}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -400,6 +417,29 @@ def main() -> int:
         print(f"[dry-run] Validating {len(cases)} eval case(s) without calling codex exec.", file=sys.stderr)
         st, sn = validate_prompts_csv()
         print(f"[dry-run] Prompts CSV: {st} should-trigger, {sn} should-not-trigger", file=sys.stderr)
+        if args.json:
+            print(json.dumps(
+                {
+                    "dry_run": True,
+                    "eval_count": len(cases),
+                    "prompts_csv": {
+                        "should_trigger": st,
+                        "should_not_trigger": sn,
+                    },
+                    "cases": [
+                        {
+                            "eval_id": case.id,
+                            "scenario": case.scenario,
+                            "description": case.description,
+                        }
+                        for case in cases
+                    ],
+                },
+                indent=2,
+            ))
+        else:
+            print_dry_run_summary(cases, st, sn)
+        return 0
 
     results = []
     for case in cases:

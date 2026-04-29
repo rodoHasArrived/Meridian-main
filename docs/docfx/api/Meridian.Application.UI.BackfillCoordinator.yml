@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCoordinator
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DescribeProviders
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 63
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateRequest
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 80
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadLast
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 86
   assemblies:
   - Meridian.Application
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 91
   assemblies:
   - Meridian.Application
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolCheckpoints
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 97
   assemblies:
   - Meridian.Application
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolBarCounts
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 108
   assemblies:
   - Meridian.Application
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProgress
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 118
   assemblies:
   - Meridian.Application
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderHealthAsync
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 133
   assemblies:
   - Meridian.Application
@@ -374,7 +374,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAsync
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 170
   assemblies:
   - Meridian.Application
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 181
   assemblies:
   - Meridian.Application
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Http/BackfillCoordinator.cs
+    path: src/Meridian.Application/Http/BackfillCoordinator.cs
     startLine: 394
   assemblies:
   - Meridian.Application

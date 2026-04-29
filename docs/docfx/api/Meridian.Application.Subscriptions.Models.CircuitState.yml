@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitState
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 175
   assemblies:
   - Meridian.Core
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Closed
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 178
   assemblies:
   - Meridian.Core
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 181
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HalfOpen
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 184
   assemblies:
   - Meridian.Core

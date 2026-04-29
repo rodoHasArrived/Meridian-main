@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Domain.Collectors;
+using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -121,5 +122,11 @@ public sealed class AlpacaProviderModule : IProviderModule
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger);
         });
+        services.AddSingleton<IBrokerageAccountCatalog>(sp =>
+            sp.GetRequiredService<AlpacaBrokerageGateway>());
+        services.AddSingleton<IBrokeragePortfolioSync>(sp =>
+            sp.GetRequiredService<AlpacaBrokerageGateway>());
+        services.AddSingleton<IBrokerageActivitySync>(sp =>
+            sp.GetRequiredService<AlpacaBrokerageGateway>());
     }
 }

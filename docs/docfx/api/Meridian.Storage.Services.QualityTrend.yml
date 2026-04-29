@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityTrend
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 662
   assemblies:
   - Meridian.Storage
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 662
   assemblies:
   - Meridian.Storage
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 663
   assemblies:
   - Meridian.Storage
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentScore
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 664
   assemblies:
   - Meridian.Storage
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousScore
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 665
   assemblies:
   - Meridian.Storage
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrendDirection
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 666
   assemblies:
   - Meridian.Storage
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DegradingDimensions
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 667
   assemblies:
   - Meridian.Storage
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImprovingDimensions
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 668
   assemblies:
   - Meridian.Storage
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreHistory
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 669
   assemblies:
   - Meridian.Storage
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreValues
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 670
   assemblies:
   - Meridian.Storage

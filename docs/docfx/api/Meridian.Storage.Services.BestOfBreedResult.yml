@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BestOfBreedResult
-    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    path: src/Meridian.Storage/Services/DataQualityScoringService.cs
     startLine: 474
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    path: src/Meridian.Storage/Services/DataQualityScoringService.cs
     startLine: 474
   assemblies:
   - Meridian.Storage
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    path: src/Meridian.Storage/Services/DataQualityScoringService.cs
     startLine: 475
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    path: src/Meridian.Storage/Services/DataQualityScoringService.cs
     startLine: 476
   assemblies:
   - Meridian.Storage
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Best
-    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    path: src/Meridian.Storage/Services/DataQualityScoringService.cs
     startLine: 477
   assemblies:
   - Meridian.Storage
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Candidates
-    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    path: src/Meridian.Storage/Services/DataQualityScoringService.cs
     startLine: 478
   assemblies:
   - Meridian.Storage

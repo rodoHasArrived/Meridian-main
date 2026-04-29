@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFigiSymbolResolver
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSymbolAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 129
   assemblies:
   - Meridian.Infrastructure
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 152
   assemblies:
   - Meridian.Infrastructure
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
     startLine: 198
   assemblies:
   - Meridian.Infrastructure

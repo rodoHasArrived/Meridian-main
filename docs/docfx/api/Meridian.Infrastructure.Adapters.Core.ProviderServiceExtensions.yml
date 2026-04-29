@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderServiceExtensions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddProviderServices
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeProvidersAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 71
   assemblies:
   - Meridian.Infrastructure
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterBackfillProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolSearchProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 114
   assemblies:
   - Meridian.Infrastructure
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrCreateCompositeBackfillProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 140
   assemblies:
   - Meridian.Infrastructure

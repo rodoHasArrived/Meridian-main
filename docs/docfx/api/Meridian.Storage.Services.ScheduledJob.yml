@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledJob
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 675
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 675
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 676
   assemblies:
   - Meridian.Storage
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Job
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 677
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledStart
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 678
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 679
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 680
   assemblies:
   - Meridian.Storage

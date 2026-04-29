@@ -18,7 +18,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventPayload
-    path: ../../src/Meridian.Domain/Events/MarketEventPayload.cs
+    path: src/Meridian.Domain/Events/MarketEventPayload.cs
     startLine: 11
   assemblies:
   - Meridian.Domain

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IOfflineTrackingPersistenceService
-    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
     startLine: 6
   assemblies:
   - Meridian.Ui.Services
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveOfflineDataAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadOfflineDataAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteOfflineDataAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasOfflineDataAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services

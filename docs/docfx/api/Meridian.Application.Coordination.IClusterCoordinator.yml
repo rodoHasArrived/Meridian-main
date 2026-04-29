@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IClusterCoordinator
-    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLeader
-    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
-    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryBecomeLeaderAsync
-    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepDownAsync
-    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeadershipChanged
-    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
     startLine: 39
   assemblies:
   - Meridian.Application

@@ -454,6 +454,83 @@ public sealed class StrategyRunReadServiceTests
         summary.Should().BeNull();
     }
 
+
+    [Theory]
+    [InlineData("scope-backtest", RunType.Backtest, "acct-backtest", "entity-backtest", "sleeve-backtest", "vehicle-backtest")]
+    [InlineData("scope-paper", RunType.Paper, "acct-paper", "entity-paper", "sleeve-paper", "vehicle-paper")]
+    [InlineData("scope-live", RunType.Live, "acct-live", "entity-live", "sleeve-live", "vehicle-live")]
+    public async Task GetRunDetailAsync_BacktestPaperLive_PopulatesScopedPortfolioAndLedgerFields(
+        string runId,
+        RunType runType,
+        string accountScopeId,
+        string entityScopeId,
+        string sleeveScopeId,
+        string vehicleScopeId)
+    {
+        var store = new StrategyRunStore();
+        var baseRun = BuildCompletedRun(
+            runId: runId,
+            strategyId: "scope-strategy",
+            strategyName: "Scoped Strategy",
+            finalEquity: 125_000m,
+            netPnl: 25_000m,
+            totalReturn: 0.25m,
+            realizedPnl: 9_000m,
+            unrealizedPnl: 16_000m,
+            fillCount: 2,
+            sharpeRatio: 1.42,
+            maxDrawdown: 5_500m);
+
+        var run = baseRun with
+        {
+            RunType = runType,
+            Engine = runType switch
+            {
+                RunType.Backtest => "MeridianNative",
+                RunType.Paper => "BrokerPaper",
+                _ => "BrokerLive"
+            },
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = accountScopeId,
+                ["accountScopeDisplayName"] = $"{accountScopeId}-display",
+                ["entityScopeId"] = entityScopeId,
+                ["entityScopeDisplayName"] = $"{entityScopeId}-display",
+                ["sleeveScopeId"] = sleeveScopeId,
+                ["sleeveScopeDisplayName"] = $"{sleeveScopeId}-display",
+                ["vehicleScopeId"] = vehicleScopeId,
+                ["vehicleScopeDisplayName"] = $"{vehicleScopeId}-display"
+            }
+        };
+
+        await store.RecordRunAsync(run);
+
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+
+        var detail = await service.GetRunDetailAsync(runId);
+
+        detail.Should().NotBeNull();
+        detail!.Summary.Mode.Should().Be(runType switch
+        {
+            RunType.Backtest => StrategyRunMode.Backtest,
+            RunType.Paper => StrategyRunMode.Paper,
+            _ => StrategyRunMode.Live
+        });
+        detail.Portfolio.Should().NotBeNull();
+        detail.Portfolio!.AccountScopeId.Should().Be(accountScopeId);
+        detail.Portfolio.EntityScopeId.Should().Be(entityScopeId);
+        detail.Portfolio.SleeveScopeId.Should().Be(sleeveScopeId);
+        detail.Portfolio.VehicleScopeId.Should().Be(vehicleScopeId);
+        detail.Portfolio.Positions.Should().OnlyContain(position => position.AccountScopeId == accountScopeId);
+
+        detail.Ledger.Should().NotBeNull();
+        detail.Ledger!.AccountScopeId.Should().Be(accountScopeId);
+        detail.Ledger.EntityScopeId.Should().Be(entityScopeId);
+        detail.Ledger.SleeveScopeId.Should().Be(sleeveScopeId);
+        detail.Ledger.VehicleScopeId.Should().Be(vehicleScopeId);
+        detail.Ledger.TrialBalance.Should().OnlyContain(line => line.EntityScopeId == entityScopeId);
+    }
+
     private static StrategyRunEntry BuildCompletedRun(
         string runId,
         string strategyId,
@@ -733,6 +810,51 @@ public sealed class StrategyRunReadServiceTests
             r.Mode.Should().Be(StrategyRunMode.Paper);
             r.StrategyId.Should().Be("strategy-1");
         });
+    }
+
+    [Fact]
+    public async Task GetRunsAsync_WithHistoryQuery_OrdersByLastUpdatedAndAppliesLimit()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "completed-older",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 8, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            Engine: "MeridianNative"));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "completed-newer",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 12, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            Engine: "MeridianNative"));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "running-latest",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 13, 0, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null,
+            Engine: "BrokerPaper"));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var runs = await service.GetRunsAsync(new StrategyRunHistoryQuery(
+            Modes: [StrategyRunMode.Backtest, StrategyRunMode.Paper],
+            StrategyId: "strategy-1",
+            Limit: 2));
+
+        runs.Select(static run => run.RunId).Should().Equal("running-latest", "completed-newer");
     }
 
     [Fact]

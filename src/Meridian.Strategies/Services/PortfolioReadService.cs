@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 
@@ -30,12 +31,8 @@ public sealed class PortfolioReadService
             return summary;
         }
 
-        var lookup = await ResolveSecuritiesAsync(
-                summary.Positions
-                    .Select(static position => position.Symbol)
-                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol)),
-                ct)
-            .ConfigureAwait(false);
+        var lookupRequests = BuildLookupRequests(entry, summary);
+        var lookup = await ResolveSecuritiesAsync(lookupRequests, ct).ConfigureAwait(false);
 
         var positions = summary.Positions
             .Select(position => position with
@@ -66,15 +63,25 @@ public sealed class PortfolioReadService
             return null;
         }
 
+        var scope = StrategyRunScopeMetadataResolver.Resolve(entry);
+
         var positions = latestSnapshot.Positions.Values
             .OrderBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
-            .Select(static position => new PortfolioPositionSummary(
+            .Select(position => new PortfolioPositionSummary(
                 Symbol: position.Symbol,
                 Quantity: position.Quantity,
                 AverageCostBasis: position.AverageCostBasis,
                 RealizedPnl: position.RealizedPnl,
                 UnrealizedPnl: position.UnrealizedPnl,
-                IsShort: position.IsShort))
+                IsShort: position.IsShort,
+                AccountScopeId: scope.AccountId,
+                AccountScopeDisplayName: scope.AccountDisplayName,
+                EntityScopeId: scope.EntityId,
+                EntityScopeDisplayName: scope.EntityDisplayName,
+                SleeveScopeId: scope.SleeveId,
+                SleeveScopeDisplayName: scope.SleeveDisplayName,
+                VehicleScopeId: scope.VehicleId,
+                VehicleScopeDisplayName: scope.VehicleDisplayName))
             .ToArray();
 
         var longMarketValue = latestSnapshot.LongMarketValue;
@@ -99,11 +106,63 @@ public sealed class PortfolioReadService
             UnrealizedPnl: unrealizedPnl,
             Commissions: result.Metrics.TotalCommissions,
             Financing: financing,
-            Positions: positions);
+            Positions: positions,
+            AccountScopeId: scope.AccountId,
+            AccountScopeDisplayName: scope.AccountDisplayName,
+            EntityScopeId: scope.EntityId,
+            EntityScopeDisplayName: scope.EntityDisplayName,
+            SleeveScopeId: scope.SleeveId,
+            SleeveScopeDisplayName: scope.SleeveDisplayName,
+            VehicleScopeId: scope.VehicleId,
+            VehicleScopeDisplayName: scope.VehicleDisplayName);
+    }
+
+    private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(
+        StrategyRunEntry entry,
+        PortfolioSummary summary)
+    {
+        var symbolsToSecurityId = entry.Metrics?.Ledger?.Journal
+            .Where(static item => !string.IsNullOrWhiteSpace(item.Metadata.Symbol))
+            .GroupBy(
+                static item => item.Metadata.Symbol!,
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group =>
+                {
+                    var candidates = group
+                        .Select(static entry => entry.Metadata.SecurityId)
+                        .Where(static id => id.HasValue)
+                        .Select(static id => id!.Value)
+                        .Distinct()
+                        .ToArray();
+                    return candidates.Length == 1 ? candidates[0] : (Guid?)null;
+                },
+                StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, Guid?>(StringComparer.OrdinalIgnoreCase);
+
+        return summary.Positions
+            .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
+            .GroupBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                group =>
+                {
+                    var symbol = group.Key;
+                    var resolvedSecurityId = symbolsToSecurityId.GetValueOrDefault(symbol);
+                    var source = resolvedSecurityId is null ? "portfolio-position-symbol" : "ledger-metadata-security-id";
+                    return new SecurityReferenceLookupRequest(
+                        SecurityId: resolvedSecurityId,
+                        IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                        IdentifierValue: symbol,
+                        Symbol: symbol,
+                        Source: source);
+                },
+                StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(
-        IEnumerable<string> symbols,
+        IReadOnlyDictionary<string, SecurityReferenceLookupRequest> requests,
         CancellationToken ct)
     {
         var lookup = new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
@@ -112,11 +171,19 @@ public sealed class PortfolioReadService
             return lookup;
         }
 
-        foreach (var symbol in symbols.Distinct(StringComparer.OrdinalIgnoreCase))
+        foreach (var (symbol, request) in requests)
         {
-            lookup[symbol] = await _securityReferenceLookup
-                .GetBySymbolAsync(symbol, ct)
-                .ConfigureAwait(false);
+            var resolved = await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false)
+                ?? await _securityReferenceLookup.GetBySymbolAsync(symbol, ct).ConfigureAwait(false);
+
+            lookup[symbol] = resolved is null
+                ? null
+                : resolved with
+                {
+                    LookupSource = request.Source,
+                    LookupPath = resolved.LookupPath ?? (request.SecurityId is null ? "symbol" : "security-id"),
+                    IsInferredMatch = request.SecurityId is null && string.IsNullOrWhiteSpace(request.IdentifierValue)
+                };
         }
 
         return lookup;

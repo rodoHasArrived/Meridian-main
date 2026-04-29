@@ -3,26 +3,29 @@ import {
   AlertCircle,
   ArrowRight,
   BarChart3,
+  BriefcaseBusiness,
   CheckCircle2,
   Database,
+  FileText,
   FlaskConical,
   Globe,
   LineChart,
   Radio,
   RefreshCcw,
+  Settings,
   Shield,
   TrendingUp,
   XCircle
 } from "lucide-react";
-import { useState } from "react";
+import type { ElementType } from "react";
 import { Link } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSystemStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { SessionInfo, SystemEventRecord, SystemOverviewResponse } from "@/types";
+import { useOverviewStatusViewModel, type OverviewFallbackStatId } from "@/screens/overview-screen.view-model";
+import type { SessionInfo, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 interface OverviewScreenProps {
   data: SystemOverviewResponse | null;
@@ -31,19 +34,16 @@ interface OverviewScreenProps {
 
 const systemStatusConfig = {
   Healthy: {
-    label: "All Systems Healthy",
     icon: CheckCircle2,
     className: "text-success",
     bannerClass: "border-success/30 bg-success/5"
   },
   Degraded: {
-    label: "System Degraded",
     icon: AlertCircle,
     className: "text-warning",
     bannerClass: "border-warning/30 bg-warning/5"
   },
   Offline: {
-    label: "System Offline",
     icon: XCircle,
     className: "text-danger",
     bannerClass: "border-danger/30 bg-danger/5"
@@ -51,9 +51,9 @@ const systemStatusConfig = {
 } as const;
 
 const storageHealthConfig = {
-  Healthy: { label: "Healthy", className: "text-success" },
-  Warning: { label: "Warning", className: "text-warning" },
-  Critical: { label: "Critical", className: "text-danger" }
+  Healthy: { className: "text-success" },
+  Warning: { className: "text-warning" },
+  Critical: { className: "text-danger" }
 } as const;
 
 const eventTypeConfig = {
@@ -62,60 +62,28 @@ const eventTypeConfig = {
   error: { icon: XCircle, className: "text-danger" }
 } as const;
 
-const workspaceLinks = [
-  {
-    key: "research",
-    label: "Research",
-    description: "Backtests, run comparisons, and experiment tracking.",
-    href: "/",
-    icon: FlaskConical,
-    accent: "text-blue-400"
-  },
-  {
-    key: "trading",
-    label: "Trading",
-    description: "Paper operations cockpit, positions, and blotter.",
-    href: "/trading",
-    icon: TrendingUp,
-    accent: "text-green-400"
-  },
-  {
-    key: "data-operations",
-    label: "Data Operations",
-    description: "Providers, backfills, symbols, and quality monitoring.",
-    href: "/data-operations",
-    icon: Database,
-    accent: "text-purple-400"
-  },
-  {
-    key: "governance",
-    label: "Governance",
-    description: "Ledger, reconciliation, and security master.",
-    href: "/governance",
-    icon: Shield,
-    accent: "text-orange-400"
-  }
-] as const;
+const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: string }> = {
+  trading: { icon: TrendingUp, accent: "text-success" },
+  portfolio: { icon: BriefcaseBusiness, accent: "text-paper" },
+  accounting: { icon: Shield, accent: "text-warning" },
+  reporting: { icon: FileText, accent: "text-primary" },
+  strategy: { icon: FlaskConical, accent: "text-primary" },
+  data: { icon: Database, accent: "text-live" },
+  settings: { icon: Settings, accent: "text-muted-foreground" }
+};
+
+const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
+  providers: Globe,
+  runs: LineChart,
+  symbols: BarChart3,
+  backfills: Activity
+};
 
 export function OverviewScreen({ data, session }: OverviewScreenProps) {
-  const [refreshing, setRefreshing] = useState(false);
-  const [liveData, setLiveData] = useState<SystemOverviewResponse | null>(data);
-
-  const current = liveData ?? data;
+  const vm = useOverviewStatusViewModel(data);
+  const current = vm.current;
   const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
   const StatusIcon = statusConfig?.icon ?? Radio;
-
-  async function handleRefresh() {
-    setRefreshing(true);
-    try {
-      const fresh = await getSystemStatus();
-      setLiveData(fresh);
-    } catch {
-      // silently ignore — stale data remains visible
-    } finally {
-      setRefreshing(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -129,70 +97,57 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         <StatusIcon className={cn("size-5 shrink-0", statusConfig?.className)} />
         <div className="flex-1">
           <p className={cn("text-sm font-medium", statusConfig?.className)}>
-            {statusConfig?.label ?? "Connecting to system…"}
+            {vm.statusLabel}
           </p>
-          {current && (
+          {current && vm.providerSummary && vm.storageLabel && vm.lastHeartbeatLabel && (
             <p className="text-xs text-muted-foreground mt-0.5">
-              {current.providersOnline} of {current.providersTotal} providers online
+              {vm.providerSummary}
               {" · "}
               Storage: <span className={storageHealthConfig[current.storageHealth].className}>
-                {storageHealthConfig[current.storageHealth].label}
+                {vm.storageLabel}
               </span>
               {" · "}
-              Last heartbeat: {new Date(current.lastHeartbeatUtc).toLocaleTimeString()}
+              Last heartbeat: {vm.lastHeartbeatLabel}
             </p>
           )}
         </div>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => { void handleRefresh(); }}
-          disabled={refreshing}
+          onClick={() => { void vm.refresh(); }}
+          disabled={vm.refreshing}
+          aria-label={vm.refreshAriaLabel}
           className="shrink-0"
         >
-          <RefreshCcw className={cn("size-4 mr-1.5", refreshing && "animate-spin")} />
-          {refreshing ? "Refreshing…" : "Refresh"}
+          <RefreshCcw className={cn("size-4 mr-1.5", vm.refreshing && "animate-spin")} />
+          {vm.refreshButtonLabel}
         </Button>
       </div>
+      <span className="sr-only" aria-live="polite">{vm.refreshAnnouncement}</span>
+      {vm.refreshErrorText && (
+        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {vm.refreshErrorText}
+        </div>
+      )}
 
       {/* Metrics grid */}
-      {current?.metrics && current.metrics.length > 0 ? (
+      {vm.hasMetrics ? (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {current.metrics.map((metric) => (
+          {vm.metrics.map((metric) => (
             <MetricCard key={metric.id} {...metric} />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard
-            icon={Globe}
-            label="Providers Online"
-            value={current ? `${current.providersOnline} / ${current.providersTotal}` : "—"}
-            tone={
-              !current ? "default"
-              : current.providersOnline === current.providersTotal ? "success"
-              : current.providersOnline === 0 ? "danger"
-              : "warning"
-            }
-          />
-          <StatCard
-            icon={LineChart}
-            label="Active Runs"
-            value={current ? String(current.activeRuns) : "—"}
-            tone={current && current.activeRuns > 0 ? "success" : "default"}
-          />
-          <StatCard
-            icon={BarChart3}
-            label="Monitored Symbols"
-            value={current ? String(current.symbolsMonitored) : "—"}
-            tone="default"
-          />
-          <StatCard
-            icon={Activity}
-            label="Active Backfills"
-            value={current ? String(current.activeBackfills) : "—"}
-            tone={current && current.activeBackfills > 0 ? "warning" : "default"}
-          />
+          {vm.fallbackStats.map((stat) => (
+            <StatCard
+              key={stat.id}
+              icon={fallbackStatIcons[stat.id]}
+              label={stat.label}
+              value={stat.value}
+              tone={stat.tone}
+            />
+          ))}
         </div>
       )}
 
@@ -205,15 +160,15 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
             <CardDescription>Latest system events across all workspaces.</CardDescription>
           </CardHeader>
           <CardContent>
-            {current?.recentEvents && current.recentEvents.length > 0 ? (
+            {vm.hasEvents ? (
               <ul className="space-y-2">
-                {current.recentEvents.map((event) => (
+                {vm.events.map((event) => (
                   <EventRow key={event.id} event={event} />
                 ))}
               </ul>
             ) : (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                {current ? "No recent events." : "Loading activity feed…"}
+                {vm.activityEmptyText}
               </p>
             )}
           </CardContent>
@@ -223,23 +178,26 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Workspaces</CardTitle>
-            <CardDescription>Navigate to any workspace.</CardDescription>
+            <CardDescription>{vm.workspaceSummary}</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {workspaceLinks.map((ws) => {
-                const Icon = ws.icon;
+              {vm.workspaceLinks.map((ws) => {
+                const iconConfig = workspaceIconConfig[ws.id];
+                const Icon = iconConfig.icon;
                 return (
-                  <li key={ws.key}>
+                  <li key={ws.id}>
                     <Link
                       to={ws.href}
-                      className="flex items-center gap-3 rounded-md p-2.5 transition-colors hover:bg-muted/50 group"
+                      aria-label={ws.ariaLabel}
+                      className="group flex items-center gap-3 rounded-md border border-transparent p-2.5 transition-colors hover:border-border/70 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                      <Icon className={cn("size-4 shrink-0", ws.accent)} />
+                      <Icon className={cn("size-4 shrink-0", iconConfig.accent)} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium leading-none">{ws.label}</p>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">{ws.description}</p>
                       </div>
+                      <Badge variant={ws.badgeVariant} className="hidden shrink-0 md:inline-flex">{ws.status}</Badge>
                       <ArrowRight className="size-3.5 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground transition-colors" />
                     </Link>
                   </li>
@@ -288,7 +246,7 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
 // --- Sub-components ---
 
 interface StatCardProps {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   value: string;
   tone: "default" | "success" | "warning" | "danger";

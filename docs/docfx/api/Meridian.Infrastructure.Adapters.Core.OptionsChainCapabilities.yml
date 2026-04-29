@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsChainCapabilities
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 90
   assemblies:
   - Meridian.ProviderSdk
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsGreeks
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 93
   assemblies:
   - Meridian.ProviderSdk
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOpenInterest
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 96
   assemblies:
   - Meridian.ProviderSdk
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsImpliedVolatility
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 99
   assemblies:
   - Meridian.ProviderSdk
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIndexOptions
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 102
   assemblies:
   - Meridian.ProviderSdk
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistorical
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 105
   assemblies:
   - Meridian.ProviderSdk
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 108
   assemblies:
   - Meridian.ProviderSdk
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedInstrumentTypes
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 111
   assemblies:
   - Meridian.ProviderSdk
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Basic
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 115
   assemblies:
   - Meridian.ProviderSdk
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullFeatured
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 126
   assemblies:
   - Meridian.ProviderSdk

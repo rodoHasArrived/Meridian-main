@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFamilyAdapterExtensions
-    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
     startLine: 57
   assemblies:
   - Meridian.ProviderSdk
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveCapabilityAsync
-    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
     startLine: 59
   assemblies:
   - Meridian.ProviderSdk

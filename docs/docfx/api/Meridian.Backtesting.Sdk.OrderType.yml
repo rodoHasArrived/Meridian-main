@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderType
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Market
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Limit
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopMarket
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopLimit
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk

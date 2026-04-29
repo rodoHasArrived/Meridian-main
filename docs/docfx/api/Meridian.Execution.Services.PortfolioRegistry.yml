@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioRegistry
-    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    path: src/Meridian.Execution/Services/PortfolioRegistry.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    path: src/Meridian.Execution/Services/PortfolioRegistry.cs
     startLine: 20
   assemblies:
   - Meridian.Execution
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deregister
-    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    path: src/Meridian.Execution/Services/PortfolioRegistry.cs
     startLine: 31
   assemblies:
   - Meridian.Execution
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    path: src/Meridian.Execution/Services/PortfolioRegistry.cs
     startLine: 40
   assemblies:
   - Meridian.Execution
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
-    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    path: src/Meridian.Execution/Services/PortfolioRegistry.cs
     startLine: 47
   assemblies:
   - Meridian.Execution
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    path: src/Meridian.Execution/Services/PortfolioRegistry.cs
     startLine: 51
   assemblies:
   - Meridian.Execution

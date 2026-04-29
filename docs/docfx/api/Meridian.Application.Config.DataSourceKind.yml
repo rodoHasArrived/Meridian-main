@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceKind
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    path: src/Meridian.Core/Config/DataSourceKind.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IB
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    path: src/Meridian.Core/Config/DataSourceKind.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    path: src/Meridian.Core/Config/DataSourceKind.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    path: src/Meridian.Core/Config/DataSourceKind.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSE
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    path: src/Meridian.Core/Config/DataSourceKind.cs
     startLine: 17
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Synthetic
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    path: src/Meridian.Core/Config/DataSourceKind.cs
     startLine: 20
   assemblies:
   - Meridian.Core

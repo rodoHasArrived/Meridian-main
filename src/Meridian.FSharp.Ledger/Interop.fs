@@ -57,6 +57,7 @@ type PortfolioLedgerCheckResultDto = {
     HasActualAmount: bool
     Variance: decimal
     Reason: string
+    Severity: string
     ExpectedAsOf: DateTimeOffset
     ActualAsOf: DateTimeOffset
     HasExpectedAsOf: bool
@@ -118,6 +119,7 @@ type CanonicalBreakClassificationDto = {
     BreakClass: string
     PrimaryReasonCode: string
     ReasonCodes: string array
+    Severity: string
     IsFallback: bool
 }
 
@@ -216,6 +218,7 @@ type LedgerInterop private () =
                 HasActualAmount = result.HasActualAmount
                 Variance = result.Variance
                 Reason = result.Reason
+                Severity = result.Severity
                 ExpectedAsOf = result.ExpectedAsOf
                 ActualAsOf = result.ActualAsOf
                 HasExpectedAsOf = result.HasExpectedAsOf
@@ -286,6 +289,7 @@ type LedgerInterop private () =
             BreakClass = CanonicalBreakClass.asString classification.BreakClass
             PrimaryReasonCode = BreakReasonCode.asString classification.PrimaryReasonCode
             ReasonCodes = classification.ReasonCodes |> List.map BreakReasonCode.asString |> List.toArray
+            Severity = BreakSeverity.asString classification.Severity
             IsFallback = classification.IsFallback
         }
 

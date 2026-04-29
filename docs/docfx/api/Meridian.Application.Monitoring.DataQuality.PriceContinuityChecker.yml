@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceContinuityChecker
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDiscontinuity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckPrice
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckBar
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckQuote
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 111
   assemblies:
   - Meridian.Application
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 130
   assemblies:
   - Meridian.Application
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 151
   assemblies:
   - Meridian.Application
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTopDiscontinuitySymbols
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 160
   assemblies:
   - Meridian.Application
@@ -369,7 +369,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 172
   assemblies:
   - Meridian.Application
@@ -405,7 +405,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAll
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 181
   assemblies:
   - Meridian.Application
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 245
   assemblies:
   - Meridian.Application

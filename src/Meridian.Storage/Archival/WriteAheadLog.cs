@@ -151,22 +151,28 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// <summary>
     /// Append a record to the WAL.
     /// </summary>
-    public async Task<WalRecord> AppendAsync<T>(T data, string recordType, CancellationToken ct = default)
+    public Task<WalRecord> AppendAsync<T>(T data, string recordType, CancellationToken ct = default)
     {
-        await _writeLock.WaitAsync(ct);
+        ArgumentException.ThrowIfNullOrWhiteSpace(recordType);
+        ct.ThrowIfCancellationRequested();
+
+        var payload = JsonSerializer.Serialize(data, MarketDataJsonContext.HighPerformanceOptions);
+        return AppendSerializedPayloadAsync(payload, recordType, ct);
+    }
+
+    private async Task<WalRecord> AppendSerializedPayloadAsync(string payload, string recordType, CancellationToken ct)
+    {
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             // Check if we need to rotate the WAL file
             if (ShouldRotate())
             {
-                await RotateWalFileAsync(ct);
+                await RotateWalFileAsync(ct).ConfigureAwait(false);
             }
 
             var sequence = ++_currentSequence;
             var timestamp = DateTime.UtcNow;
-
-            // Serialize the data using centralized high-performance options
-            var payload = JsonSerializer.Serialize(data, MarketDataJsonContext.HighPerformanceOptions);
 
             // Create record with checksum
             var record = new WalRecord
@@ -179,7 +185,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
             };
 
             // Write to WAL
-            await WriteRecordAsync(record, ct);
+            await WriteRecordAsync(record, ct).ConfigureAwait(false);
 
             _uncommittedRecords++;
 
@@ -188,7 +194,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 (_options.SyncMode == WalSyncMode.BatchedSync && _uncommittedRecords >= _options.SyncBatchSize) ||
                 (DateTime.UtcNow - _lastFlushTime) >= _options.MaxFlushDelay)
             {
-                await FlushInternalAsync(ct);
+                await FlushInternalAsync(ct).ConfigureAwait(false);
             }
 
             return record;

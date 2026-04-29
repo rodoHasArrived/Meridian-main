@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SloDefinition
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 324
   assemblies:
   - Meridian.Application
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 327
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subsystem
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 330
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 333
   assemblies:
   - Meridian.Application
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 336
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetricName
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 339
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetValue
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 342
   assemblies:
   - Meridian.Application
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalThreshold
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 345
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unit
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 348
   assemblies:
   - Meridian.Application
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeasurementWindow
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 351
   assemblies:
   - Meridian.Application
@@ -347,7 +347,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorBudgetPercent
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 354
   assemblies:
   - Meridian.Application
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorBudgetWindow
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 357
   assemblies:
   - Meridian.Application
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertRuleName
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 360
   assemblies:
   - Meridian.Application
@@ -440,7 +440,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunbookSection
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 363
   assemblies:
   - Meridian.Application
@@ -471,7 +471,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SloDocSection
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 366
   assemblies:
   - Meridian.Application

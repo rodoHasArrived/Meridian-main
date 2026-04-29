@@ -45,7 +45,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDirectLendingOperationsStore
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCashTransactionsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 18
   assemblies:
   - Meridian.Storage
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPaymentAllocationsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFeeBalancesAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveProjectionRunAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 24
   assemblies:
   - Meridian.Storage
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProjectionRunsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 26
   assemblies:
   - Meridian.Storage
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProjectedCashFlowsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 28
   assemblies:
   - Meridian.Storage
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveJournalEntryAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalEntriesAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 32
   assemblies:
   - Meridian.Storage
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalEntryAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 34
   assemblies:
   - Meridian.Storage
@@ -374,7 +374,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkJournalPostedAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 36
   assemblies:
   - Meridian.Storage
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveReconciliationRunAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 38
   assemblies:
   - Meridian.Storage
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationRunsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 44
   assemblies:
   - Meridian.Storage
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationResultsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 46
   assemblies:
   - Meridian.Storage
@@ -515,7 +515,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationExceptionsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 48
   assemblies:
   - Meridian.Storage
@@ -546,7 +546,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveReconciliationExceptionAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 50
   assemblies:
   - Meridian.Storage
@@ -586,7 +586,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveServicerBatchAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 52
   assemblies:
   - Meridian.Storage
@@ -626,7 +626,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicerBatchAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 58
   assemblies:
   - Meridian.Storage
@@ -659,7 +659,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicerPositionLinesAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 60
   assemblies:
   - Meridian.Storage
@@ -692,7 +692,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicerTransactionLinesAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 62
   assemblies:
   - Meridian.Storage
@@ -725,7 +725,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPendingOutboxMessagesAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 64
   assemblies:
   - Meridian.Storage
@@ -761,7 +761,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkOutboxProcessedAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 66
   assemblies:
   - Meridian.Storage
@@ -794,7 +794,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkOutboxFailedAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 68
   assemblies:
   - Meridian.Storage
@@ -832,7 +832,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLoanIdsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 70
   assemblies:
   - Meridian.Storage
@@ -863,7 +863,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestEventPositionAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 72
   assemblies:
   - Meridian.Storage
@@ -894,7 +894,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLoanIdsSinceEventPositionAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 74
   assemblies:
   - Meridian.Storage
@@ -930,7 +930,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCheckpointsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 76
   assemblies:
   - Meridian.Storage
@@ -961,7 +961,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertCheckpointAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 78
   assemblies:
   - Meridian.Storage

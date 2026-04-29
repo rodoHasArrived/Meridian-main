@@ -5,6 +5,7 @@ items:
   id: Meridian.Strategies.Interfaces
   children:
   - Meridian.Strategies.Interfaces.ILiveStrategy
+  - Meridian.Strategies.Interfaces.IPromotionRecordStore
   - Meridian.Strategies.Interfaces.IStrategyLifecycle
   - Meridian.Strategies.Interfaces.IStrategyRepository
   langs:
@@ -24,6 +25,13 @@ references:
   name: ILiveStrategy
   nameWithType: ILiveStrategy
   fullName: Meridian.Strategies.Interfaces.ILiveStrategy
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  commentId: T:Meridian.Strategies.Interfaces.IPromotionRecordStore
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html
+  name: IPromotionRecordStore
+  nameWithType: IPromotionRecordStore
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore
 - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle
   commentId: T:Meridian.Strategies.Interfaces.IStrategyLifecycle
   parent: Meridian.Strategies.Interfaces

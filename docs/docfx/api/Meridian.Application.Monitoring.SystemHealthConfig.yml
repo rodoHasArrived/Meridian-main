@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SystemHealthConfig
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 292
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningDiskSpaceGb
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 297
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalDiskSpaceGb
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 302
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningMemoryMb
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 307
   assemblies:
   - Meridian.Application
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalMemoryMb
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 312
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 317
   assemblies:
   - Meridian.Application
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 319
   assemblies:
   - Meridian.Application

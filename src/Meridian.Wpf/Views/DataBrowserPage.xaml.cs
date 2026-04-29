@@ -32,6 +32,7 @@ public partial class DataBrowserPage : Page
         ws.UpdatePageFilterState(PageTag, "SelectedVenue", _viewModel.SelectedVenue);
         ws.UpdatePageFilterState(PageTag, "SortField", _viewModel.SortField);
         ws.UpdatePageFilterState(PageTag, "PageSize", _viewModel.PageSize.ToString());
+        ws.UpdatePageFilterState(PageTag, "SelectedTimePeriodKey", _viewModel.SelectedTimePeriodKey);
         ws.UpdatePageFilterState(PageTag, "FromDate", _viewModel.FromDate?.ToString("yyyy-MM-dd"));
         ws.UpdatePageFilterState(PageTag, "ToDate", _viewModel.ToDate?.ToString("yyyy-MM-dd"));
     }
@@ -59,11 +60,22 @@ public partial class DataBrowserPage : Page
         if (int.TryParse(ws.GetPageFilterState(PageTag, "PageSize"), out var pageSize) && pageSize > 0)
             _viewModel.PageSize = pageSize;
 
+        var selectedTimePeriodKey = ws.GetPageFilterState(PageTag, "SelectedTimePeriodKey");
+        if (!string.IsNullOrWhiteSpace(selectedTimePeriodKey) &&
+            !string.Equals(selectedTimePeriodKey, DataBrowserTimePeriodOption.CustomKey, StringComparison.Ordinal))
+        {
+            _viewModel.SelectedTimePeriodKey = selectedTimePeriodKey;
+            return;
+        }
+
         if (DateTime.TryParse(ws.GetPageFilterState(PageTag, "FromDate"), out var fromDate))
             _viewModel.FromDate = fromDate;
 
         if (DateTime.TryParse(ws.GetPageFilterState(PageTag, "ToDate"), out var toDate))
             _viewModel.ToDate = toDate;
+
+        if (string.Equals(selectedTimePeriodKey, DataBrowserTimePeriodOption.CustomKey, StringComparison.Ordinal))
+            _viewModel.SelectedTimePeriodKey = DataBrowserTimePeriodOption.CustomKey;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -75,11 +87,6 @@ public partial class DataBrowserPage : Page
     private void ApplyFilters_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.RefreshResults();
-    }
-
-    private void ResetFilters_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ResetFilters();
     }
 
     private void PreviousPage_Click(object sender, RoutedEventArgs e)
@@ -126,7 +133,8 @@ public partial class DataBrowserPage : Page
 
     private void CopyJson_Click(object sender, RoutedEventArgs e)
     {
-        if (ResultsGrid.SelectedItem is not DataBrowserRecord record) return;
+        if (ResultsGrid.SelectedItem is not DataBrowserRecord record)
+            return;
 
         var json = JsonSerializer.Serialize(new
         {

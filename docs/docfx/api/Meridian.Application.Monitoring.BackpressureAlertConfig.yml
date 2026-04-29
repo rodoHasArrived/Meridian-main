@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackpressureAlertConfig
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 267
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 272
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningUtilizationPercent
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 277
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalUtilizationPercent
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 282
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningDropRatePercent
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 287
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalDropRatePercent
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 292
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveChecksBeforeAlert
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 297
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningAlertIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 302
   assemblies:
   - Meridian.Application
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalAlertIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 307
   assemblies:
   - Meridian.Application
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendWebhookOnResolved
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 312
   assemblies:
   - Meridian.Application
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 314
   assemblies:
   - Meridian.Application

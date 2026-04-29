@@ -1,28 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 300" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" role="img" aria-labelledby="title desc">
   <title id="title">Meridian wordmark</title>
-  <desc id="desc">Meridian wordmark paired with the brand symbol and an operator-platform descriptor.</desc>
-  <defs>
-    <linearGradient id="signal" x1="84" y1="206" x2="196" y2="118" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1A6BB5"/>
-      <stop offset="0.55" stop-color="#0EA5E9"/>
-      <stop offset="1" stop-color="#16A34A"/>
-    </linearGradient>
-    <linearGradient id="beam" x1="140" y1="64" x2="140" y2="220" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#60A5FA"/>
-      <stop offset="0.55" stop-color="#67E8F9"/>
-      <stop offset="1" stop-color="#86EFAC"/>
-    </linearGradient>
-  </defs>
+  <desc id="desc">Meridian mark followed by a monospace wordmark and product descriptor.</desc>
 
-  <g transform="translate(12 0)">
-    <circle cx="140" cy="150" r="92" fill="none" stroke="#0F1B28" stroke-opacity="0.08" stroke-width="18"/>
-    <path d="M140 64V220" fill="none" stroke="url(#beam)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M84 198L112 150L144 178L196 116" fill="none" stroke="url(#signal)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M82 212C108 192 166 192 194 212" fill="none" stroke="#1A6BB5" stroke-opacity="0.28" stroke-width="10" stroke-linecap="round"/>
-    <circle cx="140" cy="58" r="12" fill="#84F3B6"/>
-    <circle cx="140" cy="58" r="20" fill="none" stroke="#84F3B6" stroke-opacity="0.24" stroke-width="6"/>
+
+  <g transform="translate(16 16) scale(0.5)">
+    <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"></circle>
+    <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+    <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+    <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10" stroke-linecap="square"></line>
+    <circle cx="128" cy="128" r="8" fill="#2AB2D4"></circle>
   </g>
 
-  <text x="292" y="138" fill="#0F172A" font-size="88" font-weight="700" letter-spacing="12" font-family="Segoe UI Variable Display, Segoe UI, Arial, sans-serif">MERIDIAN</text>
-  <text x="296" y="190" fill="#475569" font-size="28" font-weight="600" letter-spacing="6" font-family="Segoe UI Variable Text, Segoe UI, Arial, sans-serif">RESEARCH / TRADING / DATA OPS / GOVERNANCE</text>
+
+  <text x="160" y="82" font-family="&#39;Space Grotesk&#39;, &#39;IBM Plex Sans&#39;, system-ui, sans-serif" font-weight="600" font-size="42" letter-spacing="4" fill="#DEE6EF">MERIDIAN</text>
+
+
+  <line x1="160" y1="98" x2="464" y2="98" stroke="#1F344C" stroke-width="1"></line>
+
+
+  <text x="160" y="122" font-family="&#39;IBM Plex Mono&#39;, ui-monospace, monospace" font-weight="400" font-size="12" letter-spacing="3" fill="#7C8A9B">RESEARCH · TRADING · DATA OPS · GOVERNANCE</text>
 </svg>

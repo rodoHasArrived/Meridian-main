@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPortfolioState
-    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    path: src/Meridian.Execution/Models/IPortfolioState.cs
     startLine: 8
   assemblies:
   - Meridian.Execution
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    path: src/Meridian.Execution/Models/IPortfolioState.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
-    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    path: src/Meridian.Execution/Models/IPortfolioState.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    path: src/Meridian.Execution/Models/IPortfolioState.cs
     startLine: 17
   assemblies:
   - Meridian.Execution
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
-    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    path: src/Meridian.Execution/Models/IPortfolioState.cs
     startLine: 20
   assemblies:
   - Meridian.Execution
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
-    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    path: src/Meridian.Execution/Models/IPortfolioState.cs
     startLine: 28
   assemblies:
   - Meridian.Execution

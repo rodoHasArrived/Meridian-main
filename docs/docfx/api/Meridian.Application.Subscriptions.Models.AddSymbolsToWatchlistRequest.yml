@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolsToWatchlistRequest
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistId
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 70
   assemblies:
   - Meridian.Core
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 71
   assemblies:
   - Meridian.Core
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeImmediately
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 72
   assemblies:
   - Meridian.Core

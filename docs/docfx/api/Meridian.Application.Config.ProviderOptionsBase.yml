@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderOptionsBase
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 284
   assemblies:
   - Meridian.Core
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 284
   assemblies:
   - Meridian.Core
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 285
   assemblies:
   - Meridian.Core
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 290
   assemblies:
   - Meridian.Core
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SectionName
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 293
   assemblies:
   - Meridian.Core

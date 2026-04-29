@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityAnomalyAcknowledgeRequest
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyId
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts

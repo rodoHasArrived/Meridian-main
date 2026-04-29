@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterImportService
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 41
   assemblies:
   - Meridian.Application

@@ -1,5 +1,6 @@
 using Meridian.Application.ResultTypes;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
@@ -13,6 +14,7 @@ namespace Meridian.Application.Commands;
 ///   --security-master-ingest ./securities.csv
 ///   --security-master-ingest ./securities.json
 ///   --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]
+///   --security-master-ingest --provider edgar [--scope all-filers] [--include-xbrl] [--include-filing-documents] [--cik CIK] [--max-filers N] [--dry-run]
 /// Requires MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to be configured.
 /// </summary>
 internal sealed class SecurityMasterCommands : ICliCommand
@@ -21,6 +23,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
     // startup (e.g. the env var is absent). The full DI host wires the real service.
     private readonly ISecurityMasterImportService? _importService;
     private readonly ISecurityMasterService? _securityMasterService;
+    private readonly IEdgarIngestOrchestrator? _edgarIngestOrchestrator;
     private readonly Serilog.ILogger _log;
 
     private const int ProgressReportInterval = 10;
@@ -28,11 +31,13 @@ internal sealed class SecurityMasterCommands : ICliCommand
     public SecurityMasterCommands(
         ISecurityMasterImportService? importService,
         Serilog.ILogger log,
-        ISecurityMasterService? securityMasterService = null)
+        ISecurityMasterService? securityMasterService = null,
+        IEdgarIngestOrchestrator? edgarIngestOrchestrator = null)
     {
         _importService = importService;
         _log = log;
         _securityMasterService = securityMasterService;
+        _edgarIngestOrchestrator = edgarIngestOrchestrator;
     }
 
     public bool CanHandle(string[] args)
@@ -40,6 +45,12 @@ internal sealed class SecurityMasterCommands : ICliCommand
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
+        var provider = CliArguments.GetValue(args, "--provider");
+        if (string.Equals(provider, "polygon", StringComparison.OrdinalIgnoreCase))
+            return await ExecutePolygonIngestAsync(args, ct).ConfigureAwait(false);
+        if (string.Equals(provider, "edgar", StringComparison.OrdinalIgnoreCase))
+            return await ExecuteEdgarIngestAsync(args, ct).ConfigureAwait(false);
+
         if (_importService is null)
         {
             Console.Error.WriteLine("Security Master is not configured.");
@@ -48,13 +59,64 @@ internal sealed class SecurityMasterCommands : ICliCommand
             return CliResult.Fail(ErrorCode.ConfigurationInvalid);
         }
 
-        // --- Polygon provider ingest path ---
-        var provider = CliArguments.GetValue(args, "--provider");
-        if (string.Equals(provider, "polygon", StringComparison.OrdinalIgnoreCase))
-            return await ExecutePolygonIngestAsync(args, ct).ConfigureAwait(false);
-
         // --- File-based ingest path ---
         return await ExecuteFileIngestAsync(args, ct).ConfigureAwait(false);
+    }
+
+    private async Task<CliResult> ExecuteEdgarIngestAsync(string[] args, CancellationToken ct)
+    {
+        if (_edgarIngestOrchestrator is null)
+        {
+            Console.Error.WriteLine("EDGAR ingest service is not available.");
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
+        }
+
+        var maxFilersValue = CliArguments.GetValue(args, "--max-filers");
+        int? maxFilers = int.TryParse(maxFilersValue, out var parsedMaxFilers) && parsedMaxFilers > 0
+            ? parsedMaxFilers
+            : null;
+
+        var request = new EdgarIngestRequest(
+            Scope: CliArguments.GetValue(args, "--scope") ?? "all-filers",
+            IncludeXbrl: args.Any(a => a.Equals("--include-xbrl", StringComparison.OrdinalIgnoreCase)),
+            Cik: CliArguments.GetValue(args, "--cik"),
+            MaxFilers: maxFilers,
+            DryRun: args.Any(a => a.Equals("--dry-run", StringComparison.OrdinalIgnoreCase)),
+            IncludeFilingDocuments: args.Any(a => a.Equals("--include-filing-documents", StringComparison.OrdinalIgnoreCase)));
+
+        Console.WriteLine(
+            $"Running EDGAR ingest (scope={request.Scope}, cik={request.Cik ?? "all"}, includeXbrl={request.IncludeXbrl}, includeFilingDocuments={request.IncludeFilingDocuments}, dryRun={request.DryRun})...");
+
+        var result = await _edgarIngestOrchestrator.IngestAsync(request, ct).ConfigureAwait(false);
+
+        Console.WriteLine();
+        Console.WriteLine("EDGAR ingest complete:");
+        Console.WriteLine($"  Filers processed       : {result.FilersProcessed}");
+        Console.WriteLine($"  Ticker associations    : {result.TickerAssociationsStored}");
+        Console.WriteLine($"  Fact partitions stored : {result.FactsStored}");
+        Console.WriteLine($"  Security data stored   : {result.SecurityDataStored}");
+        Console.WriteLine($"  Securities created     : {result.SecuritiesCreated}");
+        Console.WriteLine($"  Securities amended     : {result.SecuritiesAmended}");
+        Console.WriteLine($"  Securities skipped     : {result.SecuritiesSkipped}");
+        Console.WriteLine($"  Conflicts detected     : {result.ConflictsDetected}");
+
+        if (result.Errors.Count > 0)
+        {
+            Console.WriteLine($"  Errors ({result.Errors.Count}):");
+            foreach (var error in result.Errors.Take(20))
+                Console.WriteLine($"    - {error}");
+            if (result.Errors.Count > 20)
+                Console.WriteLine($"    ... and {result.Errors.Count - 20} more");
+        }
+
+        _log.Information(
+            "EDGAR ingest completed: {Created} created, {Amended} amended, {Skipped} skipped, {Errors} errors",
+            result.SecuritiesCreated,
+            result.SecuritiesAmended,
+            result.SecuritiesSkipped,
+            result.Errors.Count);
+
+        return result.Errors.Count == 0 ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
     }
 
     private async Task<CliResult> ExecutePolygonIngestAsync(string[] args, CancellationToken ct)
@@ -139,6 +201,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
         {
             Console.Error.WriteLine("Usage: --security-master-ingest <file.csv|file.json>");
             Console.Error.WriteLine("       --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]");
+            Console.Error.WriteLine("       --security-master-ingest --provider edgar [--scope all-filers] [--include-xbrl] [--include-filing-documents] [--cik CIK] [--max-filers N] [--dry-run]");
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
         }
 

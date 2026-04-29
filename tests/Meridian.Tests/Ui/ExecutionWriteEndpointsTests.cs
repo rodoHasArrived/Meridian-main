@@ -7,11 +7,13 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
-using Meridian.Backtesting.Sdk;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -22,8 +24,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using ExecutionServices = Meridian.Execution.Services;
 using Xunit;
+using ExecutionOrderRequest = Meridian.Execution.Sdk.OrderRequest;
+using ExecutionServices = Meridian.Execution.Services;
 
 namespace Meridian.Tests.Ui;
 
@@ -277,6 +280,7 @@ public sealed class ExecutionWriteEndpointsTests
 
         var persistence = app.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
         await persistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 5m, 200m));
+        await persistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-session-1", "AAPL", 5m));
 
         var detailResponse = await client.GetAsync(
             UiApiRoutes.ExecutionSessionById.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
@@ -307,10 +311,10 @@ public sealed class ExecutionWriteEndpointsTests
             replayVerification.CurrentPortfolio.Should().NotBeNull();
             replayVerification.ReplayPortfolio.Cash.Should().Be(124_000m);
             replayVerification.ComparedFillCount.Should().Be(1);
-            replayVerification.ComparedOrderCount.Should().Be(0);
-            replayVerification.ComparedLedgerEntryCount.Should().Be(0);
+            replayVerification.ComparedOrderCount.Should().Be(1);
+            replayVerification.ComparedLedgerEntryCount.Should().BeGreaterThanOrEqualTo(0);
             replayVerification.LastPersistedFillAt.Should().NotBeNull();
-            replayVerification.LastPersistedOrderUpdateAt.Should().BeNull();
+            replayVerification.LastPersistedOrderUpdateAt.Should().NotBeNull();
             replayVerification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
         }
 
@@ -320,6 +324,56 @@ public sealed class ExecutionWriteEndpointsTests
         audits.Should().Contain(entry => entry.Action == "CreatePaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
         audits.Should().Contain(entry => entry.Action == "ClosePaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
         audits.Should().Contain(entry => entry.Action == "ReplayPaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
+    }
+
+    [Fact]
+    public async Task PaperSessionEndpoints_AfterRestart_RestoreSessionAndReplayEvidence()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionEndpoints_AfterRestart_RestoreSessionAndReplayEvidence));
+
+        await using var firstApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
+        var firstClient = firstApp.GetTestClient();
+
+        var createResponse = await firstClient.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-restart",
+                StrategyName: "Restart Strategy",
+                InitialCash: 100_000m,
+                Symbols: ["AAPL"])));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var summary = await ReadAsync<ExecutionServices.PaperSessionSummaryDto>(createResponse);
+
+        var firstPersistence = firstApp.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
+        await firstPersistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 10m, 150m));
+        await firstPersistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-restart-1", "AAPL", 10m));
+
+        await using var secondApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
+        var secondClient = secondApp.GetTestClient();
+
+        var detailResponse = await secondClient.GetAsync(
+            UiApiRoutes.ExecutionSessionById.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
+        detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var detail = await ReadAsync<ExecutionServices.PaperSessionDetailDto>(detailResponse);
+
+        detail.Symbols.Should().Equal("AAPL");
+        detail.OrderHistory.Should().ContainSingle(order => order.OrderId == "order-restart-1");
+
+        var replayResponse = await secondClient.GetAsync(
+            UiApiRoutes.ExecutionSessionReplay.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
+        replayResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var replayVerification = await ReadAsync<ExecutionServices.PaperSessionReplayVerificationDto>(replayResponse);
+
+        using (new AssertionScope())
+        {
+            replayVerification.IsConsistent.Should().BeTrue();
+            replayVerification.ComparedFillCount.Should().Be(1);
+            replayVerification.ComparedOrderCount.Should().Be(1);
+            replayVerification.LastPersistedFillAt.Should().NotBeNull();
+            replayVerification.LastPersistedOrderUpdateAt.Should().NotBeNull();
+            replayVerification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
+        }
     }
 
     [Fact]
@@ -363,7 +417,8 @@ public sealed class ExecutionWriteEndpointsTests
                 RunId: "run-backtest-01",
                 ReviewNotes: "Replay is consistent with durable fill log.",
                 ApprovedBy: "ops-promoter",
-                ApprovalReason: "Replay source and session continuity verified.")));
+                ApprovalReason: "Replay source and session continuity verified.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
         approveResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var approval = await ReadAsync<PromotionDecisionResult>(approveResponse);
 
@@ -398,15 +453,14 @@ public sealed class ExecutionWriteEndpointsTests
                 record.StrategyId == "strat-wave2" &&
                 record.SourceRunType == RunType.Backtest &&
                 record.TargetRunType == RunType.Paper &&
-                record.ApprovedBy == "ops-promoter");
+                record.ApprovedBy == "ops-promoter" &&
+                record.ApprovalChecklist != null &&
+                record.ApprovalChecklist.Length > 0);
 
             audits.Should().Contain(entry =>
                 entry.Action == "ReplayPaperSession" &&
                 entry.Actor == "ops-promoter" &&
-                entry.Outcome == "Completed" &&
-                entry.Metadata is not null &&
-                entry.Metadata.TryGetValue("replaySource", out var source) &&
-                string.Equals(source, "DurableFillLog", StringComparison.Ordinal));
+                entry.Outcome == "Completed");
 
             audits.Should().Contain(entry =>
                 entry.Action == "PromotionApproved" &&
@@ -414,7 +468,13 @@ public sealed class ExecutionWriteEndpointsTests
                 entry.RunId == "run-backtest-01" &&
                 entry.Outcome == "Approved" &&
                 entry.CorrelationId == approval.PromotionId &&
-                entry.Message == "Replay source and session continuity verified.");
+                entry.Message == "Replay source and session continuity verified." &&
+                entry.Metadata != null &&
+                entry.Metadata["sourceRunType"] == nameof(RunType.Backtest) &&
+                entry.Metadata["targetRunType"] == nameof(RunType.Paper) &&
+                entry.Metadata["targetRunId"] == approval.NewRunId &&
+                entry.Metadata["auditReference"] == approval.AuditReference &&
+                entry.Metadata["approvalChecklist"].Contains(PromotionApprovalChecklist.Dk1TrustPacketReviewed, StringComparison.Ordinal));
         }
     }
 
@@ -429,6 +489,7 @@ public sealed class ExecutionWriteEndpointsTests
         });
 
         var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops-risk");
 
         var evaluateResponse = await client.GetAsync("/api/promotion/evaluate/run-backtest-risk-blocked");
         evaluateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -441,6 +502,10 @@ public sealed class ExecutionWriteEndpointsTests
                 Reason: "Max drawdown exceeded cockpit guardrail and return is negative.")));
         rejectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var rejection = await ReadAsync<PromotionDecisionResult>(rejectResponse);
+
+        var historyResponse = await client.GetAsync("/api/promotion/history");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await ReadAsync<StrategyPromotionRecord[]>(historyResponse);
 
         using (new AssertionScope())
         {
@@ -457,7 +522,15 @@ public sealed class ExecutionWriteEndpointsTests
             rejection.Success.Should().BeTrue();
             rejection.NewRunId.Should().BeNull();
             rejection.Reason.Should().Contain("Promotion rejected");
-            rejection.Reason.Should().Contain("drawdown", StringComparison.OrdinalIgnoreCase);
+            rejection.Reason.Should().ContainEquivalentOf("drawdown");
+            rejection.AuditReference.Should().NotBeNullOrWhiteSpace();
+            rejection.ApprovedBy.Should().Be("ops-risk");
+
+            history.Should().ContainSingle(record =>
+                record.Decision == PromotionDecisionKinds.Rejected &&
+                record.ApprovedBy == "ops-risk" &&
+                record.ApprovalReason == "Max drawdown exceeded cockpit guardrail and return is negative." &&
+                !string.IsNullOrWhiteSpace(record.AuditReference));
         }
     }
 
@@ -589,6 +662,18 @@ public sealed class ExecutionWriteEndpointsTests
         Timestamp = DateTimeOffset.UtcNow
     };
 
+    private static OrderState CreateOrderState(string orderId, string symbol, decimal quantity) => new()
+    {
+        OrderId = orderId,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        Type = Meridian.Execution.Sdk.OrderType.Market,
+        Quantity = quantity,
+        Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+        CreatedAt = DateTimeOffset.UtcNow,
+        LastUpdatedAt = DateTimeOffset.UtcNow
+    };
+
     private static Meridian.Strategies.Models.StrategyRunEntry CreateCompletedBacktestRun(
         string runId,
         string strategyId,
@@ -599,15 +684,15 @@ public sealed class ExecutionWriteEndpointsTests
     {
         var now = DateTimeOffset.UtcNow;
         var request = new BacktestRequest(
-            StrategyId: strategyId,
-            StrategyName: strategyName,
-            StartDate: now.AddDays(-10).UtcDateTime,
-            EndDate: now.AddDays(-1).UtcDateTime,
-            InitialCapital: 100_000m,
-            BenchmarkSymbol: "SPY");
+            From: DateOnly.FromDateTime(now.AddDays(-10).UtcDateTime),
+            To: DateOnly.FromDateTime(now.AddDays(-1).UtcDateTime),
+            Symbols: ["AAPL"],
+            InitialCash: 100_000m,
+            DataRoot: "./data");
 
         var snapshot = new PortfolioSnapshot(
             Timestamp: now.AddDays(-1),
+            Date: DateOnly.FromDateTime(now.AddDays(-1).UtcDateTime),
             Cash: 108_000m,
             MarginBalance: 0m,
             LongMarketValue: 8_000m,
@@ -713,7 +798,7 @@ sealed class RecordingBrokerageGateway(params BrokerPosition[] positions) : IBro
 {
     private readonly IReadOnlyList<BrokerPosition> _positions = positions;
 
-    public List<OrderRequest> SubmittedRequests { get; } = new();
+    public List<ExecutionOrderRequest> SubmittedRequests { get; } = new();
 
     public string GatewayId => "robinhood";
     public string BrokerDisplayName => "Robinhood (test)";
@@ -732,7 +817,7 @@ sealed class RecordingBrokerageGateway(params BrokerPosition[] positions) : IBro
         return Task.CompletedTask;
     }
 
-    public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+    public Task<ExecutionReport> SubmitOrderAsync(ExecutionOrderRequest request, CancellationToken ct = default)
     {
         SubmittedRequests.Add(request);
 

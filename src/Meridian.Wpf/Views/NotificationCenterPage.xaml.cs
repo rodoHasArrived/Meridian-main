@@ -14,7 +14,7 @@ namespace Meridian.Wpf.Views;
 /// <summary>
 /// Notification Center page for viewing and managing all application notifications.
 /// Code-behind handles only: DI wiring, alert group card building (uses FindResource),
-/// playbook display, snooze/suppress actions, and checkbox filter events.
+/// playbook display, and snooze/suppress actions.
 /// </summary>
 public partial class NotificationCenterPage : Page
 {
@@ -381,7 +381,8 @@ public partial class NotificationCenterPage : Page
             return;
 
         var parts = tagValue.Split('|', 2);
-        if (parts.Length < 2) return;
+        if (parts.Length < 2)
+            return;
 
         _alertService.AddSuppressionRule(parts[0], parts[1], TimeSpan.FromHours(24));
         _notificationService.ShowNotification(
@@ -403,47 +404,12 @@ public partial class NotificationCenterPage : Page
         _viewModel.ClearAll();
     }
 
-    private bool _suppressFilterEvents;
-    private void FilterChanged(object sender, RoutedEventArgs e)
+    private void MarkRead_Click(object sender, RoutedEventArgs e)
     {
-        if (FilterAllCheck is null ||
-            FilterErrorsCheck is null ||
-            FilterWarningsCheck is null ||
-            FilterInfoCheck is null ||
-            FilterSuccessCheck is null)
+        if (sender is Button { Tag: NotificationItem item })
         {
-            return;
+            _viewModel.MarkRead(item);
         }
-
-        if (_suppressFilterEvents) return;
-
-        if (sender == FilterAllCheck)
-        {
-            var isChecked = FilterAllCheck.IsChecked == true;
-            _suppressFilterEvents = true;
-            FilterErrorsCheck.IsChecked = isChecked;
-            FilterWarningsCheck.IsChecked = isChecked;
-            FilterInfoCheck.IsChecked = isChecked;
-            FilterSuccessCheck.IsChecked = isChecked;
-            _suppressFilterEvents = false;
-        }
-        else
-        {
-            _suppressFilterEvents = true;
-            var allChecked = FilterErrorsCheck.IsChecked == true
-                && FilterWarningsCheck.IsChecked == true
-                && FilterInfoCheck.IsChecked == true
-                && FilterSuccessCheck.IsChecked == true;
-            FilterAllCheck.IsChecked = allChecked;
-            _suppressFilterEvents = false;
-        }
-
-        _viewModel.ApplyCheckboxFilters(
-            FilterErrorsCheck.IsChecked == true,
-            FilterWarningsCheck.IsChecked == true,
-            FilterInfoCheck.IsChecked == true,
-            FilterSuccessCheck.IsChecked == true);
-        _viewModel.UpdateCounters();
     }
 
     private static string FormatTimestamp(DateTime timestamp)

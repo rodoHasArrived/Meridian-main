@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBConnectionManager
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBConnectionManager.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure

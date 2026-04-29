@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginAccountType
-    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    path: src/Meridian.Execution/Margin/MarginAccountType.cs
     startLine: 5
   assemblies:
   - Meridian.Execution
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    path: src/Meridian.Execution/Margin/MarginAccountType.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegT
-    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    path: src/Meridian.Execution/Margin/MarginAccountType.cs
     startLine: 17
   assemblies:
   - Meridian.Execution
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioMargin
-    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    path: src/Meridian.Execution/Margin/MarginAccountType.cs
     startLine: 23
   assemblies:
   - Meridian.Execution

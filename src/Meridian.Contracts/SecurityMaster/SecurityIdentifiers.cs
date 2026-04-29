@@ -25,7 +25,9 @@ public enum SecurityIdentifierKind
     /// <summary>Meridian-stable ticker that survives corporate actions (Bloomberg PermTicker convention).</summary>
     PermTicker,
     /// <summary>Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds.</summary>
-    Ric
+    Ric,
+    /// <summary>SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.</summary>
+    Cik
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityAliasScope>))]

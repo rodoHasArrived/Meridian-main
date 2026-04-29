@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMapping
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 533
   assemblies:
   - Meridian.Ui.Services
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbol
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 538
   assemblies:
   - Meridian.Ui.Services
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 543
   assemblies:
   - Meridian.Ui.Services
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 548
   assemblies:
   - Meridian.Ui.Services
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryExchange
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 553
   assemblies:
   - Meridian.Ui.Services
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 558
   assemblies:
   - Meridian.Ui.Services
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 563
   assemblies:
   - Meridian.Ui.Services
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Isin
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 568
   assemblies:
   - Meridian.Ui.Services
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cusip
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 573
   assemblies:
   - Meridian.Ui.Services
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSymbols
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 580
   assemblies:
   - Meridian.Ui.Services
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 585
   assemblies:
   - Meridian.Ui.Services
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCustomMapping
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 590
   assemblies:
   - Meridian.Ui.Services
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 595
   assemblies:
   - Meridian.Ui.Services
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 600
   assemblies:
   - Meridian.Ui.Services

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlStagedFile
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 268
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalPath
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 270
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StagedPath
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 273
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileName
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 276
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumSha256
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 279
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 282
   assemblies:
   - Meridian.Contracts

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Program
-    path: ../../src/Meridian/Program.cs
+    path: src/Meridian/Program.cs
     startLine: 12
   assemblies:
   - Meridian
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Main
-    path: ../../src/Meridian/Program.cs
+    path: src/Meridian/Program.cs
     startLine: 6
   assemblies:
   - Meridian

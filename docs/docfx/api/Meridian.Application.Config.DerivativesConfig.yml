@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DerivativesConfig
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Underlyings
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDaysToExpiration
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrikeRange
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureGreeks
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureChainSnapshots
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChainSnapshotIntervalSeconds
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureOpenInterest
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 13
   assemblies:
   - Meridian.Core
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpirationFilter
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOptions
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 15
   assemblies:
   - Meridian.Core

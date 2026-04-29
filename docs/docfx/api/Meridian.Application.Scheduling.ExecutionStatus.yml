@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionStatus
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 134
   assemblies:
   - Meridian.Application
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 137
   assemblies:
   - Meridian.Application
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 140
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 143
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartialSuccess
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 146
   assemblies:
   - Meridian.Application
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 149
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 152
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skipped
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 155
   assemblies:
   - Meridian.Application

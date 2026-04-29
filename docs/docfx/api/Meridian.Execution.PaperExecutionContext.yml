@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperExecutionContext
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 31
   assemblies:
   - Meridian.Execution
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gateway
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 46
   assemblies:
   - Meridian.Execution
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 49
   assemblies:
   - Meridian.Execution
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 52
   assemblies:
   - Meridian.Execution
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 55
   assemblies:
   - Meridian.Execution
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTime
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 58
   assemblies:
   - Meridian.Execution
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 61
   assemblies:
   - Meridian.Execution
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tick
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 67
   assemblies:
   - Meridian.Execution
@@ -367,7 +367,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyCorporateActionsAsync
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 85
   assemblies:
   - Meridian.Execution
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyFill
-    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    path: src/Meridian.Execution/PaperExecutionContext.cs
     startLine: 95
   assemblies:
   - Meridian.Execution

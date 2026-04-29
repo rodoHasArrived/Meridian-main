@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceOptions
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 496
   assemblies:
   - Meridian.Infrastructure
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 496
   assemblies:
   - Meridian.Infrastructure
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 497
   assemblies:
   - Meridian.Infrastructure
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryPolicy
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 503
   assemblies:
   - Meridian.Infrastructure
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimits
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 504
   assemblies:
   - Meridian.Infrastructure
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheck
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 505
   assemblies:
   - Meridian.Infrastructure
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 510
   assemblies:
   - Meridian.Infrastructure

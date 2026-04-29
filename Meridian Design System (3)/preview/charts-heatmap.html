@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Charts: Heatmap</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
+  .card { background: #0B1520; border: 1px solid #2A4566; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2A4566; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .title b { color: #FFF; margin-right: 10px; }
+  .scale { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; }
+  .scale .bar { display: inline-block; width: 140px; height: 6px; background: linear-gradient(90deg, #DE5878 0%, #1F344C 50%, #26BF86 100%); border-radius: 1px; }
+  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+  .cell { aspect-ratio: 1.6 / 1; border-radius: 3px; display: flex; flex-direction: column; justify-content: space-between; padding: 6px 7px; font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; color: #FFF; }
+  .cell .s { font-size: 10px; font-weight: 500; }
+  .cell .p { font-size: 10px; opacity: 0.85; text-align: right; }
+</style>
+</head>
+<body class="bg-app">
+<div class="card">
+  <div class="head">
+    <div class="title"><b>S&amp;P 500 · SECTOR HEATMAP</b>today · size = weight · color = 1D %</div>
+    <div class="scale"><span>−3%</span><span class="bar"></span><span>+3%</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+  const data = [
+    ["NVDA", 4.20],["MSFT", 1.12],["AAPL", 0.84],["GOOGL", 2.05],["AMZN", 1.78],
+    ["META", 1.24],["TSLA", -2.41],["BRK.B", 0.38],["AVGO", 3.15],["LLY", 0.92],
+    ["JPM", -0.42],["V", 0.56],["WMT", 0.18],["XOM", -1.85],["UNH", -0.25],
+    ["MA", 0.72],["PG", 0.12],["JNJ", -0.28],["HD", 0.48],["COST", 1.35],
+    ["ORCL", 0.88],["BAC", -0.92],["CVX", -1.42],["KO", -0.05],["MRK", 0.22],
+    ["ADBE", 1.68],["CRM", 2.18],["PEP", -0.18],["NFLX", 1.95],["TMO", -0.62],
+    ["CSCO", 0.32],["ACN", 0.45],["ABT", 0.08],["MCD", -0.22],["TXN", 1.58],
+    ["INTC", -2.85],["AMD", 2.85],["PFE", -0.82],["IBM", 0.62],["GS", 0.38]
+  ];
+  const grid = document.getElementById('grid');
+  data.forEach(([sym, pct]) => {
+    const clamp = Math.max(-3, Math.min(3, pct)) / 3;
+    let bg, fg = "#FFF";
+    if (clamp >= 0) {
+      const t = clamp;
+      bg = `rgba(38, 191, 134, ${0.15 + t*0.7})`;
+    } else {
+      const t = -clamp;
+      bg = `rgba(222, 88, 120, ${0.15 + t*0.7})`;
+    }
+    if (Math.abs(clamp) < 0.1) bg = "#1F344C";
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.style.background = bg;
+    cell.innerHTML = `<span class="s">${sym}</span><span class="p">${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%</span>`;
+    grid.appendChild(cell);
+  });
+</script>
+</body>
+</html>

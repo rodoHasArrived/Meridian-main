@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanResultsArtifactSectionsDto
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 73
   assemblies:
   - Meridian.Contracts
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasAlgorithmConfiguration
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasParameters
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasStatistics
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 81
   assemblies:
   - Meridian.Contracts
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasRuntimeStatistics
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCharts
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasOrders
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -309,7 +309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasClosedTrades
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 93
   assemblies:
   - Meridian.Contracts

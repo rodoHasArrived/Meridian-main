@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionPosition
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 21
   assemblies:
   - Meridian.Execution
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 43
   assemblies:
   - Meridian.Execution
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contracts
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 46
   assemblies:
   - Meridian.Execution
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 49
   assemblies:
   - Meridian.Execution
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkPrice
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 52
   assemblies:
   - Meridian.Execution
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 55
   assemblies:
   - Meridian.Execution
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 59
   assemblies:
   - Meridian.Execution
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 62
   assemblies:
   - Meridian.Execution
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 65
   assemblies:
   - Meridian.Execution
@@ -391,7 +391,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Greeks
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 70
   assemblies:
   - Meridian.Execution
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInTheMoney
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 75
   assemblies:
   - Meridian.Execution
@@ -458,7 +458,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMark
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 80
   assemblies:
   - Meridian.Execution
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAdditionalRealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 86
   assemblies:
   - Meridian.Execution
@@ -532,7 +532,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntrinsicValue
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 92
   assemblies:
   - Meridian.Execution
@@ -568,7 +568,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeValue
-    path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
+    path: src/Meridian.Execution/Derivatives/OptionPosition.cs
     startLine: 98
   assemblies:
   - Meridian.Execution

@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataQueryResult
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 379
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 381
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 382
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 383
   assemblies:
   - Meridian.Application
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 384
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 385
   assemblies:
   - Meridian.Application
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataType
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 386
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRecords
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 387
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 388
   assemblies:
   - Meridian.Application
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 389
   assemblies:
   - Meridian.Application
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryTimeMs
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 390
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Records
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 391
   assemblies:
   - Meridian.Application

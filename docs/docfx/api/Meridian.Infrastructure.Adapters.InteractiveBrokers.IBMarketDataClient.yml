@@ -36,7 +36,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSimulation
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 62
   assemblies:
   - Meridian.Infrastructure
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 65
   assemblies:
   - Meridian.Infrastructure
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 78
   assemblies:
   - Meridian.Infrastructure
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 86
   assemblies:
   - Meridian.Infrastructure
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -511,7 +511,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 101
   assemblies:
   - Meridian.Infrastructure
@@ -545,7 +545,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 102
   assemblies:
   - Meridian.Infrastructure
@@ -579,7 +579,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 104
   assemblies:
   - Meridian.Infrastructure
@@ -614,7 +614,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 105
   assemblies:
   - Meridian.Infrastructure
@@ -650,7 +650,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 107
   assemblies:
   - Meridian.Infrastructure
@@ -685,7 +685,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 108
   assemblies:
   - Meridian.Infrastructure
@@ -721,7 +721,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
     startLine: 110
   assemblies:
   - Meridian.Infrastructure

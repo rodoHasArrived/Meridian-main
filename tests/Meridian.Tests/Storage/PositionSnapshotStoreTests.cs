@@ -57,9 +57,9 @@ public sealed class PositionSnapshotStoreTests : IDisposable
     [Fact]
     public async Task GetLatestSnapshot_MultipleWrites_ReturnsNewest()
     {
-        var first  = BuildSnapshot("run-1", "acc-1", cash: 10_000m, minutesAgo: 5);
+        var first = BuildSnapshot("run-1", "acc-1", cash: 10_000m, minutesAgo: 5);
         var second = BuildSnapshot("run-1", "acc-1", cash: 20_000m, minutesAgo: 2);
-        var third  = BuildSnapshot("run-1", "acc-1", cash: 30_000m, minutesAgo: 0);
+        var third = BuildSnapshot("run-1", "acc-1", cash: 30_000m, minutesAgo: 0);
 
         await _store.SaveSnapshotAsync(first);
         await _store.SaveSnapshotAsync(second);

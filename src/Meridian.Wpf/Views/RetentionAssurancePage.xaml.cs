@@ -102,10 +102,14 @@ public partial class RetentionAssurancePage : Page
             var config = _retentionService.Configuration;
             config.Guardrails ??= new RetentionGuardrails();
 
-            if (int.TryParse(MinTickDaysBox.Text, out var minTick)) config.Guardrails.MinTickDataDays = minTick;
-            if (int.TryParse(MinBarDaysBox.Text, out var minBar)) config.Guardrails.MinBarDataDays = minBar;
-            if (int.TryParse(MinQuoteDaysBox.Text, out var minQuote)) config.Guardrails.MinQuoteDataDays = minQuote;
-            if (int.TryParse(MaxDailyDeletesBox.Text, out var maxDeletes)) config.Guardrails.MaxDailyDeletedFiles = maxDeletes;
+            if (int.TryParse(MinTickDaysBox.Text, out var minTick))
+                config.Guardrails.MinTickDataDays = minTick;
+            if (int.TryParse(MinBarDaysBox.Text, out var minBar))
+                config.Guardrails.MinBarDataDays = minBar;
+            if (int.TryParse(MinQuoteDaysBox.Text, out var minQuote))
+                config.Guardrails.MinQuoteDataDays = minQuote;
+            if (int.TryParse(MaxDailyDeletesBox.Text, out var maxDeletes))
+                config.Guardrails.MaxDailyDeletedFiles = maxDeletes;
             config.Guardrails.RequireChecksumVerification = RequireChecksumCheck.IsChecked == true;
             config.Guardrails.RequireDryRunPreview = RequireDryRunCheck.IsChecked == true;
             config.Guardrails.AllowDeleteDuringTradingHours = AllowTradingHoursCheck.IsChecked == true;
@@ -223,7 +227,8 @@ public partial class RetentionAssurancePage : Page
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (confirm != MessageBoxResult.Yes) return;
+        if (confirm != MessageBoxResult.Yes)
+            return;
 
         ExecuteCleanupButton.IsEnabled = false;
         ShowStatus("Executing cleanup...", true);

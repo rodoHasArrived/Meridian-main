@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBrokerageGateway
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 8
   assemblies:
   - Meridian.Execution.Sdk
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 11
   assemblies:
   - Meridian.Execution.Sdk
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 14
   assemblies:
   - Meridian.Execution.Sdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 17
   assemblies:
   - Meridian.Execution.Sdk
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 20
   assemblies:
   - Meridian.Execution.Sdk
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 23
   assemblies:
   - Meridian.Execution.Sdk
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 29
   assemblies:
   - Meridian.Execution.Sdk

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityTestService
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestAllAsync
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplaySummary
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 152
   assemblies:
   - Meridian.Application
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 509
   assemblies:
   - Meridian.Application

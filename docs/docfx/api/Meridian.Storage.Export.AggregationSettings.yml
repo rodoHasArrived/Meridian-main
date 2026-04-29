@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregationSettings
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 106
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 111
   assemblies:
   - Meridian.Storage
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceAggregation
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 117
   assemblies:
   - Meridian.Storage
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeAggregation
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 123
   assemblies:
   - Meridian.Storage
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapHandling
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 129
   assemblies:
   - Meridian.Storage
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxGapIntervals
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 135
   assemblies:
   - Meridian.Storage
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkFilledGaps
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 141
   assemblies:
   - Meridian.Storage

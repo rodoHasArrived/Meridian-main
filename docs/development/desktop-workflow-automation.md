@@ -9,7 +9,7 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 - `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
 - `scripts/dev/desktop-workflows.json` is the catalog of named workflows and per-step notes.
 
-The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states.
+The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states. In the desktop shell this is presented as neutral demo data, not as an operational warning.
 
 ## Quick Commands
 
@@ -24,18 +24,21 @@ pwsh -File scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File scripts/dev/capture-desktop-screenshots.ps1
 ```
 
-Equivalent Make targets:
+## Supported command surface (authoritative)
 
-```bash
-make desktop-workflow
-make desktop-manual
-make desktop-screenshots
-```
+Desktop workflow automation is **PowerShell-script first**.
+
+- Supported: `pwsh -File scripts/dev/*.ps1` (or `pwsh ./scripts/dev/*.ps1`)
+- Not supported as canonical workflow entry points: `make desktop-workflow`, `make desktop-manual`, `make desktop-screenshots`
+
+For migration context and replacement mappings, see:
+
+- [Desktop command-surface migration note](./desktop-command-surface-migration.md)
 
 ## Available Workflows
 
 | Workflow | Purpose | Output |
-|---|---|---|
+| --- | --- | --- |
 | `debug-startup` | Fast startup and diagnostics sweep for debugging | `artifacts/desktop-workflows/<timestamp>-debug-startup/` |
 | `screenshot-catalog` | Refresh the existing WPF screenshot set used by docs | `docs/screenshots/desktop/` when run through `capture-desktop-screenshots.ps1` |
 | `manual-overview` | Shell and workspace overview for operators | Included in the generated user manual |
@@ -52,9 +55,28 @@ make desktop-screenshots
 
 That keeps navigation aligned with Meridian's own startup and deep-link handling instead of relying on brittle screen coordinates.
 
+Restore and build now share the same configuration, WPF build flags, and isolation key before the runner uses `build --no-restore`. The restore step lets each project restore its declared target framework so shared `net9.0` libraries get matching assets, while the build step pins the desktop shell to `net9.0-windows10.0.19041.0`. When `-SkipBuild` is supplied, the runner uses the standard project output path so CI jobs can download prebuilt WPF binaries into `src/Meridian.Wpf/bin/...` and launch them without creating a new isolated output key.
+
+Before any screenshot is saved, the runner now:
+
+1. brings Meridian back to the foreground,
+2. enters the operating-context selector when fixture startup lands on that first-run surface and fails immediately if that selection cannot be confirmed,
+3. re-queries the live shell window,
+4. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
+5. fails the step if the requested page was not actually confirmed.
+
+The runner resolves the Meridian window from the owned `Meridian.Desktop` process handle first and
+only falls back to narrow title-based UI Automation lookup. Avoid broad root-window scans in this
+script; they can time out on headless CI runners while heavy pages are loading. Descendant lookups
+for shell readiness markers are timeout-tolerant and return "not ready yet" so the existing polling
+loop can continue through transient WPF navigation delays. Workflow definitions should use the
+canonical shell tags currently emitted by WPF automation: `StrategyShell`, `DataShell`, and
+`AccountingShell`. The runner still accepts compatibility workspace tags such as `ResearchShell`,
+`DataOperationsShell`, and `GovernanceShell` for older local workflow files.
+
 Each run writes:
 
-- `manifest.json` with step timing, capture paths, and step notes
+- `manifest.json` with operating-context confirmation, step timing, capture paths, and step notes
 - `logs/stdout.log` and `logs/stderr.log` for startup diagnostics
 - per-step screenshots
 
@@ -89,6 +111,7 @@ For a specialized operator-facing smoke pass that validates Robinhood setup and 
 - It uses the bundled seed at `scripts/dev/fixtures/robinhood-options-smoke.seed.json` instead of relying on whatever happens to be in `%LocalAppData%\Meridian`.
 - It starts the primary desktop shell without `--page` arguments, waits for the operating context to restore, and only then uses forwarded `--page=<PageTag>` launches as a retry path.
 - Run artifacts now land under `artifacts/desktop-workflows/robinhood-options-smoke/`, including seeded session JSON, post-run workspace snapshots, screenshots, and UI automation dumps for failures.
+
 ## Adding a New Workflow
 
 Add a new entry to `scripts/dev/desktop-workflows.json`:
@@ -102,10 +125,10 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
   "includeInManual": true,
   "steps": [
     {
-      "title": "Dashboard",
-      "pageTag": "Dashboard",
-      "captureName": "01-dashboard",
-      "notes": "Explain why this page matters."
+      "title": "Strategy Workspace",
+      "pageTag": "StrategyShell",
+      "captureName": "01-strategy-workspace",
+      "notes": "Explain why this workspace matters."
     }
   ]
 }
@@ -114,7 +137,7 @@ Add a new entry to `scripts/dev/desktop-workflows.json`:
 Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
-- `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`
+- `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use canonical shell tags such as `StrategyShell`, `TradingShell`, `DataShell`, or `AccountingShell`; compatibility aliases remain accepted for existing workflows
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot
@@ -127,3 +150,25 @@ Supported step fields:
 - The runner will refuse to hijack an already-running `Meridian.Desktop` session unless `-ReuseExistingApp` is supplied.
 - The scripts assume Windows and the full WPF build target.
 - Manual screenshots are copied out of the per-run artifacts so each generated manual is self-contained.
+
+## Screenshot diff classes and approval flow
+
+`refresh-screenshots.yml` now classifies changed screenshots into:
+
+- `blocking-regression` (major layout/structure loss, missing route/component evidence, missing current image, deleted baseline image, or threshold breach),
+- `review-needed` (moderate visual delta that needs a human decision),
+- `non-blocking-noise` (small anti-aliasing/theme variance, or a brand-new screenshot file with
+  no prior baseline).
+
+Thresholds, pixel tolerance, and per-image mask rectangles are versioned in:
+
+- `scripts/dev/screenshot-diff-config.json`
+
+The workflow publishes a `screenshot-diff-report` artifact with per-image category labels plus baseline/current/diff thumbnails.
+
+Default CI behavior gates only on `blocking-regression`. `review-needed` does not fail the job by default, but auto-commit is withheld unless an explicit workflow-dispatch approval is supplied:
+
+- `approve_review_needed=true`
+- `review_approval_note=<required audit rationale>`
+
+Approval actor/reason are recorded in the generated diff summary so baseline updates remain intentional and auditable.

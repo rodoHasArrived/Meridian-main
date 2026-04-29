@@ -180,9 +180,12 @@ public sealed class ProviderDegradationCalibrationRunner
                     alerts += window.AlertVolumeObserved > 0 ? window.AlertVolumeObserved : 1;
                 }
 
-                if (predicted && actual) tp++;
-                else if (predicted && !actual) fp++;
-                else if (!predicted && actual) fn++;
+                if (predicted && actual)
+                    tp++;
+                else if (predicted && !actual)
+                    fp++;
+                else if (!predicted && actual)
+                    fn++;
             }
 
             var precision = tp + fp == 0 ? 1.0 : (double)tp / (tp + fp);

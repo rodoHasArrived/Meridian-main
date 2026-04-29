@@ -4,8 +4,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Meridian.Wpf.Services;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Services;
 using WpfNotificationService = Meridian.Wpf.Services.NotificationService;
 
 namespace Meridian.Wpf.Views;

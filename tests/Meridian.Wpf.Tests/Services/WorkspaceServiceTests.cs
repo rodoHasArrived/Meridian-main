@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Models;
 using Meridian.Ui.Services;
@@ -56,14 +57,21 @@ public sealed class WorkspaceServiceTests : IDisposable
     {
         var svc = CreateService();
         svc.Workspaces.Should().NotBeEmpty();
-        svc.Workspaces.Count.Should().BeGreaterThanOrEqualTo(4);
+        svc.Workspaces.Where(w => w.IsBuiltIn).Select(w => w.Id).Should().ContainInOrder(
+            "trading",
+            "portfolio",
+            "accounting",
+            "reporting",
+            "strategy",
+            "data",
+            "settings");
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainResearch()
+    public void DefaultWorkspaces_ShouldContainStrategy()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Research");
+        svc.Workspaces.Should().Contain(w => w.Name == "Strategy");
     }
 
     [Fact]
@@ -74,43 +82,65 @@ public sealed class WorkspaceServiceTests : IDisposable
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainDataOperations()
+    public void DefaultWorkspaces_ShouldContainPortfolio()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Data Operations");
+        svc.Workspaces.Should().Contain(w => w.Name == "Portfolio");
     }
 
     [Fact]
-    public void DefaultWorkspaces_ShouldContainGovernance()
+    public void DefaultWorkspaces_ShouldContainAccounting()
     {
         var svc = CreateService();
-        svc.Workspaces.Should().Contain(w => w.Name == "Governance");
+        svc.Workspaces.Should().Contain(w => w.Name == "Accounting");
     }
 
     [Fact]
-    public void ResearchWorkspace_ShouldContainRunMatPage()
+    public void DefaultWorkspaces_ShouldContainReportingDataAndSettings()
     {
         var svc = CreateService();
-        var workspace = svc.Workspaces.First(w => w.Name == "Research");
+        svc.Workspaces.Should().Contain(w => w.Name == "Reporting");
+        svc.Workspaces.Should().Contain(w => w.Name == "Data");
+        svc.Workspaces.Should().Contain(w => w.Name == "Settings");
+    }
+
+    [Fact]
+    public void StrategyWorkspace_ShouldContainRunMatPage()
+    {
+        var svc = CreateService();
+        var workspace = svc.Workspaces.First(w => w.Name == "Strategy");
         workspace.Pages.Should().Contain(page => page.PageTag == "RunMat");
     }
 
     [Fact]
-    public void ResearchWorkspace_ShouldContainStrategyRunsPage()
+    public void StrategyWorkspace_ShouldContainStrategyRunsPage()
     {
         var svc = CreateService();
-        var workspace = svc.Workspaces.First(w => w.Name == "Research");
+        var workspace = svc.Workspaces.First(w => w.Name == "Strategy");
         workspace.Pages.Should().Contain(page => page.PageTag == "StrategyRuns");
     }
 
     [Fact]
-    public void TradingWorkspace_ShouldContainPortfolioAndLedgerDrillIns()
+    public void TradingWorkspace_ShouldContainTradingDrillIns()
     {
         var svc = CreateService();
         var workspace = svc.Workspaces.First(w => w.Name == "Trading");
-        workspace.Pages.Should().Contain(page => page.PageTag == "StrategyRuns");
-        workspace.Pages.Should().Contain(page => page.PageTag == "RunPortfolio");
-        workspace.Pages.Should().Contain(page => page.PageTag == "RunLedger");
+        workspace.Pages.Should().Contain(page => page.PageTag == "OrderBook");
+        workspace.Pages.Should().Contain(page => page.PageTag == "PositionBlotter");
+        workspace.Pages.Should().Contain(page => page.PageTag == "RunRisk");
+    }
+
+    [Fact]
+    public void PortfolioAndAccountingWorkspaces_ShouldContainFundDrillIns()
+    {
+        var svc = CreateService();
+        var portfolio = svc.Workspaces.First(w => w.Name == "Portfolio");
+        var accounting = svc.Workspaces.First(w => w.Name == "Accounting");
+
+        portfolio.Pages.Should().Contain(page => page.PageTag == "RunPortfolio");
+        portfolio.Pages.Should().Contain(page => page.PageTag == "FundAccounts");
+        accounting.Pages.Should().Contain(page => page.PageTag == "RunLedger");
+        accounting.Pages.Should().Contain(page => page.PageTag == "FundLedger");
     }
 
     [Fact]
@@ -118,7 +148,7 @@ public sealed class WorkspaceServiceTests : IDisposable
     {
         var svc = CreateService();
         var builtIn = svc.Workspaces.Where(w => w.IsBuiltIn).ToList();
-        builtIn.Count.Should().BeGreaterThanOrEqualTo(4);
+        builtIn.Count.Should().Be(7);
     }
 
     [Fact]
@@ -330,14 +360,14 @@ public sealed class WorkspaceServiceTests : IDisposable
         var retrieved = svc.GetLastSessionState();
         retrieved.Should().NotBeNull();
         retrieved!.OpenPages.Should().NotBeEmpty();
-        retrieved.ActiveWorkspaceId.Should().Be("research");
+        retrieved.ActiveWorkspaceId.Should().Be("strategy");
         retrieved.ActivePageTag.Should().Be("StrategyRuns");
         retrieved.SavedAt.Should().BeOnOrAfter(DateTime.UtcNow.AddSeconds(-5));
 
-        var research = svc.Workspaces.First(w => w.Id == "research");
-        research.SessionSnapshot.Should().NotBeNull();
-        research.LastActivePageTag.Should().Be("StrategyRuns");
-        research.Context.Should().ContainKey("focus");
+        var strategy = svc.Workspaces.First(w => w.Id == "strategy");
+        strategy.SessionSnapshot.Should().NotBeNull();
+        strategy.LastActivePageTag.Should().Be("StrategyRuns");
+        strategy.Context.Should().ContainKey("focus");
     }
 
     [Fact]
@@ -354,16 +384,16 @@ public sealed class WorkspaceServiceTests : IDisposable
         });
 
         svc.ActiveWorkspace.Should().NotBeNull();
-        svc.ActiveWorkspace!.Id.Should().Be("data-operations");
+        svc.ActiveWorkspace!.Id.Should().Be("data");
 
         var restored = svc.GetLastSessionState();
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored!.ActiveWorkspaceId.Should().Be("data");
         restored.ActivePageTag.Should().Be("DataOperationsShell");
 
-        svc.Workspaces.First(w => w.Id == "data-operations").SessionSnapshot.Should().NotBeNull();
-        svc.Workspaces.First(w => w.Id == "data-operations").SessionSnapshot!.ActivePageTag.Should().Be("DataOperationsShell");
-        svc.Workspaces.First(w => w.Id == "governance").LastActivePageTag.Should().NotBe("DataOperationsShell");
+        svc.Workspaces.First(w => w.Id == "data").SessionSnapshot.Should().NotBeNull();
+        svc.Workspaces.First(w => w.Id == "data").SessionSnapshot!.ActivePageTag.Should().Be("DataOperationsShell");
+        svc.Workspaces.First(w => w.Id == "accounting").LastActivePageTag.Should().NotBe("DataOperationsShell");
     }
 
     [Fact]
@@ -382,7 +412,7 @@ public sealed class WorkspaceServiceTests : IDisposable
             WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
 
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored!.ActiveWorkspaceId.Should().Be("data");
         restored.ActivePageTag.Should().Be("AddProviderWizard");
         svc.LastSelectedOperatingContextKey.Should().Be("Fund:alpha-credit");
     }
@@ -402,7 +432,7 @@ public sealed class WorkspaceServiceTests : IDisposable
         var restored = svc.GetLastSessionState("alpha-credit");
 
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored!.ActiveWorkspaceId.Should().Be("data");
         restored.ActivePageTag.Should().Be("Options");
     }
 
@@ -429,9 +459,71 @@ public sealed class WorkspaceServiceTests : IDisposable
             WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
 
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored!.ActiveWorkspaceId.Should().Be("data");
         restored.ActivePageTag.Should().Be("AddProviderWizard");
         restored.OpenPages.Should().ContainSingle(page => page.PageTag == "AddProviderWizard");
+    }
+
+    [Fact]
+    public void LoadWorkspacesAsync_ShouldMigrateLegacyBuiltInWorkspaceIds()
+    {
+        var settingsFilePath = CreateTestSettingsFilePath();
+        Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
+        File.WriteAllText(settingsFilePath, """
+        {
+            "workspaces": [
+                { "id": "research", "name": "Research", "category": 0, "isBuiltIn": true, "pages": [] },
+                { "id": "trading", "name": "Trading", "category": 1, "isBuiltIn": true, "pages": [] },
+                { "id": "data-operations", "name": "Data Operations", "category": 2, "isBuiltIn": true, "pages": [] },
+                { "id": "governance", "name": "Governance", "category": 3, "isBuiltIn": true, "pages": [] }
+            ],
+            "activeWorkspaceId": "research",
+            "lastSession": {
+                "activeWorkspaceId": "research",
+                "activePageTag": "StrategyRuns",
+                "recentPages": [ "StrategyRuns" ]
+            },
+            "sessionsByFundProfileId": {
+                "Fund:alpha-credit": {
+                    "activeWorkspaceId": "data-operations",
+                    "activePageTag": "AddProviderWizard",
+                    "recentPages": [ "AddProviderWizard" ]
+                }
+            },
+            "workspaceLayouts": {},
+            "dockLayouts": {}
+        }
+        """);
+
+        var svc = CreateService(settingsFilePath, resetPersistedState: false);
+
+        svc.Workspaces.Select(workspace => workspace.Id).Should().Contain([
+            "trading",
+            "portfolio",
+            "accounting",
+            "reporting",
+            "strategy",
+            "data",
+            "settings"
+        ]);
+        svc.Workspaces.Select(workspace => workspace.Id).Should().NotContain([
+            "research",
+            "data-operations",
+            "governance"
+        ]);
+        svc.ActiveWorkspace.Should().NotBeNull();
+        svc.ActiveWorkspace!.Id.Should().Be("strategy");
+
+        var restored = svc.GetLastSessionState();
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("strategy");
+        restored.ActivePageTag.Should().Be("StrategyRuns");
+
+        var scoped = svc.GetLastSessionStateForContext(
+            WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
+        scoped.Should().NotBeNull();
+        scoped!.ActiveWorkspaceId.Should().Be("data");
+        scoped.ActivePageTag.Should().Be("AddProviderWizard");
     }
 
     [Fact]
@@ -454,7 +546,7 @@ public sealed class WorkspaceServiceTests : IDisposable
 
         var restored = svc.GetLastSessionState();
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored!.ActiveWorkspaceId.Should().Be("data");
         restored.ActivePageTag.Should().Be("AddProviderWizard");
     }
 
@@ -462,21 +554,21 @@ public sealed class WorkspaceServiceTests : IDisposable
     public async Task ActivateWorkspaceAsync_ShouldIgnoreSnapshotFromDifferentWorkspace()
     {
         var svc = CreateService();
-        var governance = svc.Workspaces.First(w => w.Id == "governance");
-        governance.LastActivePageTag = "DataOperationsShell";
-        governance.SessionSnapshot = new SessionState
+        var accounting = svc.Workspaces.First(w => w.Id == "accounting");
+        accounting.LastActivePageTag = "DataOperationsShell";
+        accounting.SessionSnapshot = new SessionState
         {
-            ActiveWorkspaceId = "governance",
+            ActiveWorkspaceId = "accounting",
             ActivePageTag = "DataOperationsShell",
             RecentPages = new List<string> { "DataOperationsShell" }
         };
 
-        await svc.ActivateWorkspaceAsync("governance");
+        await svc.ActivateWorkspaceAsync("accounting");
 
         var restored = svc.GetLastSessionState();
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("governance");
-        restored.ActivePageTag.Should().Be("DataQuality");
+        restored!.ActiveWorkspaceId.Should().Be("accounting");
+        restored.ActivePageTag.Should().Be("AccountingShell");
     }
 
     [Fact]
@@ -564,7 +656,7 @@ public sealed class WorkspaceServiceTests : IDisposable
     public async Task CaptureCurrentStateAsync_ShouldCreateWorkspace()
     {
         var svc = CreateService();
-        await svc.ActivateWorkspaceAsync("governance");
+        await svc.ActivateWorkspaceAsync("accounting");
         var name = "CapturedState-" + Guid.NewGuid().ToString("N")[..8];
 
         var workspace = await svc.CaptureCurrentStateAsync(name, "Captured");
@@ -583,34 +675,34 @@ public sealed class WorkspaceServiceTests : IDisposable
     {
         var svc = CreateService();
 
-        await svc.ActivateWorkspaceAsync("research");
+        await svc.ActivateWorkspaceAsync("strategy");
         await svc.SaveSessionStateAsync(new SessionState
         {
-            ActiveWorkspaceId = "research",
+            ActiveWorkspaceId = "strategy",
             ActivePageTag = "StrategyRuns",
             OpenPages = new List<WorkspacePage> { new() { PageTag = "StrategyRuns", Title = "Strategy Runs" } },
-            ActiveFilters = new Dictionary<string, string> { ["research.filter"] = "momentum" },
+            ActiveFilters = new Dictionary<string, string> { ["strategy.filter"] = "momentum" },
             RecentPages = new List<string> { "StrategyRuns", "Dashboard" }
         });
 
-        await svc.ActivateWorkspaceAsync("governance");
+        await svc.ActivateWorkspaceAsync("settings");
         await svc.SaveSessionStateAsync(new SessionState
         {
-            ActiveWorkspaceId = "governance",
+            ActiveWorkspaceId = "settings",
             ActivePageTag = "Diagnostics",
             OpenPages = new List<WorkspacePage> { new() { PageTag = "Diagnostics", Title = "Diagnostics" } },
-            ActiveFilters = new Dictionary<string, string> { ["governance.filter"] = "open-breaks" },
-            RecentPages = new List<string> { "Diagnostics", "DataQuality" }
+            ActiveFilters = new Dictionary<string, string> { ["settings.filter"] = "open-breaks" },
+            RecentPages = new List<string> { "Diagnostics", "SystemHealth" }
         });
 
-        await svc.ActivateWorkspaceAsync("research");
+        await svc.ActivateWorkspaceAsync("strategy");
 
         var restored = svc.GetLastSessionState();
         restored.Should().NotBeNull();
-        restored!.ActiveWorkspaceId.Should().Be("research");
+        restored!.ActiveWorkspaceId.Should().Be("strategy");
         restored.ActivePageTag.Should().Be("StrategyRuns");
-        restored.ActiveFilters.Should().ContainKey("research.filter");
-        restored.ActiveFilters.Should().NotContainKey("governance.filter");
+        restored.ActiveFilters.Should().ContainKey("strategy.filter");
+        restored.ActiveFilters.Should().NotContainKey("settings.filter");
     }
 
     [Fact]
@@ -619,8 +711,8 @@ public sealed class WorkspaceServiceTests : IDisposable
         var svc = CreateService();
         var layout = new WorkstationLayoutState
         {
-            LayoutId = "research-studio",
-            DisplayName = "Research Studio",
+            LayoutId = "strategy-studio",
+            DisplayName = "Strategy Studio",
             ActivePaneId = "pane-2",
             DockLayoutXml = "<layout />",
             Panes =
@@ -647,16 +739,81 @@ public sealed class WorkspaceServiceTests : IDisposable
             ]
         };
 
-        await svc.SaveWorkspaceLayoutStateAsync("research", layout, "alpha-credit");
+        await svc.SaveWorkspaceLayoutStateAsync("strategy", layout, "alpha-credit");
 
-        var restored = await svc.GetWorkspaceLayoutStateAsync("research", "alpha-credit");
+        var restored = await svc.GetWorkspaceLayoutStateAsync("strategy", "alpha-credit");
         restored.Should().NotBeNull();
-        restored!.LayoutId.Should().Be("research-studio");
+        restored!.LayoutId.Should().Be("strategy-studio");
         restored.Panes.Should().HaveCount(2);
         restored.Panes.Should().ContainSingle(pane => pane.PageTag == "StrategyRuns" && pane.DockZone == "left");
 
-        var otherFund = await svc.GetWorkspaceLayoutStateAsync("research", "beta-macro");
+        var otherFund = await svc.GetWorkspaceLayoutStateAsync("strategy", "beta-macro");
         otherFund.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDockLayoutAsync_WithLegacyWorkspaceId_ShouldWriteCanonicalKey()
+    {
+        var settingsFilePath = CreateTestSettingsFilePath();
+        var svc = CreateService(settingsFilePath);
+
+        await svc.SaveDockLayoutAsync("research", "<layout canonical=\"true\" />");
+
+        (await svc.GetDockLayoutAsync("strategy")).Should().Be("<layout canonical=\"true\" />");
+        (await svc.GetDockLayoutAsync("research")).Should().Be("<layout canonical=\"true\" />");
+
+        using var json = JsonDocument.Parse(File.ReadAllText(settingsFilePath));
+        var dockLayouts = json.RootElement.GetProperty("dockLayouts");
+        dockLayouts.TryGetProperty("strategy", out _).Should().BeTrue();
+        dockLayouts.TryGetProperty("research", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LoadWorkspacesAsync_ShouldReadLegacyDockAndLayoutKeysAsFallback()
+    {
+        var settingsFilePath = CreateTestSettingsFilePath();
+        Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
+        File.WriteAllText(settingsFilePath, """
+        {
+            "workspaces": [],
+            "sessionsByFundProfileId": {},
+            "workspaceLayouts": {
+                "governance::Fund:alpha-credit": {
+                    "layoutId": "legacy-accounting-review",
+                    "displayName": "Legacy Accounting Review",
+                    "dockLayoutXml": "<layout legacy=\"accounting\" />",
+                    "panes": [
+                        {
+                            "paneId": "ledger",
+                            "pageTag": "FundLedger",
+                            "title": "Fund Ledger",
+                            "dockZone": "document",
+                            "order": 0
+                        }
+                    ]
+                }
+            },
+            "dockLayouts": {
+                "research": "<layout legacy=\"strategy\" />"
+            }
+        }
+        """);
+
+        var svc = CreateService(settingsFilePath, resetPersistedState: false);
+
+        (await svc.GetDockLayoutAsync("strategy")).Should().Be("<layout legacy=\"strategy\" />");
+        (await svc.GetDockLayoutAsync("research")).Should().Be("<layout legacy=\"strategy\" />");
+
+        var restored = await svc.GetWorkspaceLayoutStateForContextAsync("accounting", "Fund:alpha-credit");
+        restored.Should().NotBeNull();
+        restored!.LayoutId.Should().Be("legacy-accounting-review");
+        restored.Panes.Should().ContainSingle(pane => pane.PageTag == "FundLedger");
+
+        using var json = JsonDocument.Parse(File.ReadAllText(settingsFilePath));
+        var dockLayouts = json.RootElement.GetProperty("dockLayouts");
+        var workspaceLayouts = json.RootElement.GetProperty("workspaceLayouts");
+        dockLayouts.TryGetProperty("strategy", out _).Should().BeTrue();
+        workspaceLayouts.TryGetProperty("accounting::Fund:alpha-credit", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -665,7 +822,7 @@ public sealed class WorkspaceServiceTests : IDisposable
         var svc = CreateService();
         var layout = new WorkstationLayoutState
         {
-            LayoutId = "governance-accounting-review",
+            LayoutId = "accounting-review",
             DisplayName = "Accounting Review",
             OperatingContextKey = "Fund:alpha-credit",
             WindowMode = BoundedWindowMode.WorkbenchPreset,
@@ -692,9 +849,9 @@ public sealed class WorkspaceServiceTests : IDisposable
             ]
         };
 
-        await svc.SaveWorkspaceLayoutStateForContextAsync("governance", layout, "Fund:alpha-credit");
+        await svc.SaveWorkspaceLayoutStateForContextAsync("accounting", layout, "Fund:alpha-credit");
 
-        var restored = await svc.GetWorkspaceLayoutStateForContextAsync("governance", "Fund:alpha-credit");
+        var restored = await svc.GetWorkspaceLayoutStateForContextAsync("accounting", "Fund:alpha-credit");
 
         restored.Should().NotBeNull();
         restored!.OperatingContextKey.Should().Be("Fund:alpha-credit");

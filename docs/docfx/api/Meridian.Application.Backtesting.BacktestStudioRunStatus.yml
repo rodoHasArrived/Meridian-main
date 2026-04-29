@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestStudioRunStatus
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedCompletionAt
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 37
   assemblies:
   - Meridian.Application

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBookSide
-    path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+    path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bid
-    path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+    path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ask
-    path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+    path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts

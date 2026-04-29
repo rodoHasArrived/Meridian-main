@@ -72,6 +72,9 @@ public sealed class StrategyRunContinuityServiceTests
         continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
             .Should()
             .Contain("security-coverage");
+        continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .NotContain(["missing-reconciliation", "as-of-drift", "open-reconciliation-breaks"]);
     }
 
     [Fact]

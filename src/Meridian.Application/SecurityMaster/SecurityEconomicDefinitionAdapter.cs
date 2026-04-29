@@ -191,11 +191,16 @@ internal static class SecurityEconomicDefinitionAdapter
     {
         if (cat.IsOtherVotingRights)
             return ((VotingRightsCat.OtherVotingRights)cat).Item;
-        if (cat.IsFullVoting) return "FullVoting";
-        if (cat.IsLimitedVoting) return "LimitedVoting";
-        if (cat.IsNonVoting) return "NonVoting";
-        if (cat.IsDualClass) return "DualClass";
-        if (cat.IsSuperVoting) return "SuperVoting";
+        if (cat.IsFullVoting)
+            return "FullVoting";
+        if (cat.IsLimitedVoting)
+            return "LimitedVoting";
+        if (cat.IsNonVoting)
+            return "NonVoting";
+        if (cat.IsDualClass)
+            return "DualClass";
+        if (cat.IsSuperVoting)
+            return "SuperVoting";
         throw new InvalidOperationException($"Unsupported {nameof(VotingRightsCat)} case encountered during serialization.");
     }
 }

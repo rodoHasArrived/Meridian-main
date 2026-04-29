@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageProfile
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 7
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Research
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 9
   assemblies:
   - Meridian.Storage
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowLatency
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Archival
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 11
   assemblies:
   - Meridian.Storage

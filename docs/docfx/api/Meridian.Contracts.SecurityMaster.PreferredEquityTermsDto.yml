@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreferredEquityTermsDto
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 139
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 139
   assemblies:
   - Meridian.Contracts
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 140
   assemblies:
   - Meridian.Contracts
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Classification
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 141
   assemblies:
   - Meridian.Contracts
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendRate
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 142
   assemblies:
   - Meridian.Contracts
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendType
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 143
   assemblies:
   - Meridian.Contracts
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCumulative
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 144
   assemblies:
   - Meridian.Contracts
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RedemptionPrice
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RedemptionDate
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 146
   assemblies:
   - Meridian.Contracts
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallableDate
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 147
   assemblies:
   - Meridian.Contracts
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParticipatesInCommonDividends
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 148
   assemblies:
   - Meridian.Contracts
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdditionalDividendThreshold
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 149
   assemblies:
   - Meridian.Contracts
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidationPreferenceKind
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 150
   assemblies:
   - Meridian.Contracts
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidationPreferenceMultiple
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 151
   assemblies:
   - Meridian.Contracts
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 152
   assemblies:
   - Meridian.Contracts

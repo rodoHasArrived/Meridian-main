@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandPaletteService
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandExecuted
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandsChanged
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Services
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Search
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Services
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Execute
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 70
   assemblies:
   - Meridian.Ui.Services
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterCommand
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllCommands
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 111
   assemblies:
   - Meridian.Ui.Services
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterContextualProvider
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 116
   assemblies:
   - Meridian.Ui.Services
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterContextualProvider
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 125
   assemblies:
   - Meridian.Ui.Services
@@ -358,7 +358,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetActiveContext
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 140
   assemblies:
   - Meridian.Ui.Services
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearActiveContext
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services

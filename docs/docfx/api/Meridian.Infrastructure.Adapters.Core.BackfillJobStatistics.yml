@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobStatistics
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 292
   assemblies:
   - Meridian.Infrastructure
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBarsRetrieved
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 294
   assemblies:
   - Meridian.Infrastructure
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesDownloaded
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 295
   assemblies:
   - Meridian.Infrastructure
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRequestsMade
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 296
   assemblies:
   - Meridian.Infrastructure
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessfulRequests
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 297
   assemblies:
   - Meridian.Infrastructure
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedRequests
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 298
   assemblies:
   - Meridian.Infrastructure
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedRequests
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 299
   assemblies:
   - Meridian.Infrastructure
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 300
   assemblies:
   - Meridian.Infrastructure
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 301
   assemblies:
   - Meridian.Infrastructure
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalWaitTime
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 302
   assemblies:
   - Meridian.Infrastructure
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsByProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 303
   assemblies:
   - Meridian.Infrastructure
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsByProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 304
   assemblies:
   - Meridian.Infrastructure

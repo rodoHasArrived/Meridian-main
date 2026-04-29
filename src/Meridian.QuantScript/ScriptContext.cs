@@ -4,7 +4,7 @@ namespace Meridian.QuantScript;
 
 /// <summary>
 /// Provides ambient script context for the currently-executing script run.
-/// <see cref="ScriptRunner"/> sets <see cref="PlotQueue"/> before calling <c>RunAsync</c>
+/// <c>ScriptRunner</c> sets <see cref="PlotQueue"/> before calling <c>RunAsync</c>
 /// so that <see cref="Api.ReturnSeries.Plot"/> and <see cref="Api.PortfolioResult.PlotHeatmap"/>
 /// can enqueue chart requests without needing an injected dependency.
 /// </summary>

@@ -36,7 +36,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoordinationSnapshot
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 2
   assemblies:
   - Meridian.Application
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeldLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeaderLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConflictCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeoverCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -391,7 +391,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewalFailureCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -420,7 +420,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedLeaseCount
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeldLeases
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -507,7 +507,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedResources
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -536,7 +536,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedLeaseFiles
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -565,7 +565,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapturedAtUtc
-    path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
+    path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
     startLine: 21
   assemblies:
   - Meridian.Application

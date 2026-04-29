@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverRecoveredEvent
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 487
   assemblies:
   - Meridian.Infrastructure
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 487
   assemblies:
   - Meridian.Infrastructure
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 488
   assemblies:
   - Meridian.Infrastructure
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 489
   assemblies:
   - Meridian.Infrastructure
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 490
   assemblies:
   - Meridian.Infrastructure
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 491
   assemblies:
   - Meridian.Infrastructure

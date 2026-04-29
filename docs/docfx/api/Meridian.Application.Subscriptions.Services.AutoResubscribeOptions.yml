@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoResubscribeOptions
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 487
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSeverityForResubscribe
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 493
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCooldown
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 500
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinResubscribeInterval
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 507
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerThreshold
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 513
   assemblies:
   - Meridian.Application
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerDuration
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 519
   assemblies:
   - Meridian.Application
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCircuitBreakerThreshold
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 525
   assemblies:
   - Meridian.Application
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCircuitBreakerDuration
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 531
   assemblies:
   - Meridian.Application

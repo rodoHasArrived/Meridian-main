@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStatusService
-    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
-    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusWithResponseAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawTradeEvent
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampTicks
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolHash
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 29
   assemblies:
   - Meridian.Core
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 35
   assemblies:
   - Meridian.Core
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aggressor
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 42
   assemblies:
   - Meridian.Core
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sequence
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 45
   assemblies:
   - Meridian.Core
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
     startLine: 56
   assemblies:
   - Meridian.Core

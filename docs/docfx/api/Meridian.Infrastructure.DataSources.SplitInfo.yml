@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitInfo
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 190
   assemblies:
   - Meridian.ProviderSdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 190
   assemblies:
   - Meridian.ProviderSdk
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 191
   assemblies:
   - Meridian.ProviderSdk
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExDate
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 192
   assemblies:
   - Meridian.ProviderSdk
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitFrom
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 193
   assemblies:
   - Meridian.ProviderSdk
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitTo
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 194
   assemblies:
   - Meridian.ProviderSdk
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 195
   assemblies:
   - Meridian.ProviderSdk
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitRatio
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 201
   assemblies:
   - Meridian.ProviderSdk

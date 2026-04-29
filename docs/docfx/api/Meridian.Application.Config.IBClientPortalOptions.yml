@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBClientPortalOptions
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 171
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 171
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 175
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 180
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowSelfSignedCertificates
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 185
   assemblies:
   - Meridian.Core

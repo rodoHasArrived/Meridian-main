@@ -131,7 +131,8 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
             await _pollCts.CancelAsync().ConfigureAwait(false);
             if (_pollTask is not null)
             {
-                try { await _pollTask.ConfigureAwait(false); }
+                try
+                { await _pollTask.ConfigureAwait(false); }
                 catch (OperationCanceledException) { }
             }
             _pollCts.Dispose();

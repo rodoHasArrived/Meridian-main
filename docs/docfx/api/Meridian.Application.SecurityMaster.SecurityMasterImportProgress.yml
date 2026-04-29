@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterImportProgress
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Total
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Processed
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imported
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
     startLine: 25
   assemblies:
   - Meridian.Application

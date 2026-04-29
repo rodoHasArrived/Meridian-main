@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataDateRange
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 410
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 412
   assemblies:
   - Meridian.Application
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 413
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EarliestDate
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 414
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatestDate
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 415
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 416
   assemblies:
   - Meridian.Application

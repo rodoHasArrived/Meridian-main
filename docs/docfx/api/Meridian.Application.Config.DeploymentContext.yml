@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeploymentContext
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpPort
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotReloadEnabled
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentName
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeResolutionError
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 47
   assemblies:
   - Meridian.Application
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDocker
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOneShotCommand
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Command
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 62
   assemblies:
   - Meridian.Application
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresHttpServer
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunsCollector
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 73
   assemblies:
   - Meridian.Application
@@ -425,7 +425,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShowStartupSummary
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -456,7 +456,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresGracefulShutdown
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 83
   assemblies:
   - Meridian.Application
@@ -487,7 +487,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeDescription
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 88
   assemblies:
   - Meridian.Application
@@ -518,7 +518,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromArgs
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 100
   assemblies:
   - Meridian.Application
@@ -556,7 +556,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForCommand
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -594,7 +594,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForDesktop
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 138
   assemblies:
   - Meridian.Application

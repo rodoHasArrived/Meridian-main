@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BboQuote
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 142
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 144
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 145
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 146
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 147
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 148
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadBps
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 150
   assemblies:
   - Meridian.Ui.Services
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 151
   assemblies:
   - Meridian.Ui.Services
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 152
   assemblies:
   - Meridian.Ui.Services

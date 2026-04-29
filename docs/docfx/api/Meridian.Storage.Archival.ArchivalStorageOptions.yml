@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivalStorageOptions
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 261
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalOptions
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 266
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushThreshold
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 271
   assemblies:
   - Meridian.Storage
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFlushDelay
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 276
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackgroundFlushInterval
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 281
   assemblies:
   - Meridian.Storage
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoTruncateWal
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 286
   assemblies:
   - Meridian.Storage

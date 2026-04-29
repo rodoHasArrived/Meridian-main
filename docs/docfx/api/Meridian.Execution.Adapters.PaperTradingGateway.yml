@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperTradingGateway
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 34
   assemblies:
   - Meridian.Execution
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 37
   assemblies:
   - Meridian.Execution
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 40
   assemblies:
   - Meridian.Execution
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 76
   assemblies:
   - Meridian.Execution
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitAsync
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 87
   assemblies:
   - Meridian.Execution
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 123
   assemblies:
   - Meridian.Execution
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAsync
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 169
   assemblies:
   - Meridian.Execution
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamOrderUpdatesAsync
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 202
   assemblies:
   - Meridian.Execution
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
+    path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
     startLine: 302
   assemblies:
   - Meridian.Execution

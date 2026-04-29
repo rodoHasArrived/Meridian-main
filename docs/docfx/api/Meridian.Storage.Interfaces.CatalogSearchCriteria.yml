@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogSearchCriteria
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 321
   assemblies:
   - Meridian.Storage
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 326
   assemblies:
   - Meridian.Storage
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 331
   assemblies:
   - Meridian.Storage
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 336
   assemblies:
   - Meridian.Storage
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartDate
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 341
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndDate
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 346
   assemblies:
   - Meridian.Storage
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSizeBytes
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 351
   assemblies:
   - Meridian.Storage
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSizeBytes
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 356
   assemblies:
   - Meridian.Storage
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PathPattern
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 361
   assemblies:
   - Meridian.Storage
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaVersion
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 366
   assemblies:
   - Meridian.Storage

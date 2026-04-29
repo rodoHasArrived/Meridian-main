@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioPositionInput
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 204
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 204
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 204
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketValue
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 204
   assemblies:
   - Meridian.Application

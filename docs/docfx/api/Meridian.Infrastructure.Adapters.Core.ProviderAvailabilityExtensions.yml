@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderAvailabilityExtensions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 188
   assemblies:
   - Meridian.Infrastructure
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailabilitySummaryAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 196
   assemblies:
   - Meridian.Infrastructure

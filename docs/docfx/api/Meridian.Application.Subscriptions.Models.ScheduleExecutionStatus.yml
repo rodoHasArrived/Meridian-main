@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleExecutionStatus
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 65
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 65
   assemblies:
   - Meridian.Core
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleId
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 66
   assemblies:
   - Meridian.Core
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRun
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 67
   assemblies:
   - Meridian.Core
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextRun
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 68
   assemblies:
   - Meridian.Core
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunSuccess
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 70
   assemblies:
   - Meridian.Core
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAffected
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 71
   assemblies:
   - Meridian.Core

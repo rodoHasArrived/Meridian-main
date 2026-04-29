@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPrompts
-    path: ../../src/Meridian.Mcp/Prompts/ProviderPrompts.cs
+    path: src/Meridian.Mcp/Prompts/ProviderPrompts.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Prompts/ProviderPrompts.cs
+    path: src/Meridian.Mcp/Prompts/ProviderPrompts.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImplementProvider
-    path: ../../src/Meridian.Mcp/Prompts/ProviderPrompts.cs
+    path: src/Meridian.Mcp/Prompts/ProviderPrompts.cs
     startLine: 5
   assemblies:
   - mdc-mcp

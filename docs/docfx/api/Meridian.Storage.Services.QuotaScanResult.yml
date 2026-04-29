@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuotaScanResult
-    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
     startLine: 372
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
     startLine: 372
   assemblies:
   - Meridian.Storage
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScannedAtUtc
-    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
     startLine: 373
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesScanned
-    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
     startLine: 374
   assemblies:
   - Meridian.Storage
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
     startLine: 375
   assemblies:
   - Meridian.Storage
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Violations
-    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
     startLine: 376
   assemblies:
   - Meridian.Storage

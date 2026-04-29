@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonOptionsChainProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -329,7 +329,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure
@@ -454,7 +454,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 156
   assemblies:
   - Meridian.Infrastructure
@@ -500,7 +500,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainSnapshotAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 211
   assemblies:
   - Meridian.Infrastructure
@@ -552,7 +552,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionQuoteAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 262
   assemblies:
   - Meridian.Infrastructure
@@ -592,7 +592,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCredentialsConfigured
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
     startLine: 313
   assemblies:
   - Meridian.Infrastructure

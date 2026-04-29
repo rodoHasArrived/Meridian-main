@@ -46,7 +46,8 @@ public partial class ProviderHealthPage : Page
 
     private void ProviderDetails_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not string providerId) return;
+        if (sender is not Button btn || btn.Tag is not string providerId)
+            return;
         var details = _viewModel.GetProviderDetails(providerId);
         if (!string.IsNullOrEmpty(details))
             MessageBox.Show(details, "Provider Details", MessageBoxButton.OK, MessageBoxImage.Information);

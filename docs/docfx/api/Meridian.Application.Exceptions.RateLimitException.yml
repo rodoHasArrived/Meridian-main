@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitException
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryAfter
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingRequests
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestLimit
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 15
   assemblies:
   - Meridian.Core
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/RateLimitException.cs
+    path: src/Meridian.Core/Exceptions/RateLimitException.cs
     startLine: 29
   assemblies:
   - Meridian.Core

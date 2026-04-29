@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierStatistics
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 407
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 407
   assemblies:
   - Meridian.Storage
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 408
   assemblies:
   - Meridian.Storage
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierInfo
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 409
   assemblies:
   - Meridian.Storage

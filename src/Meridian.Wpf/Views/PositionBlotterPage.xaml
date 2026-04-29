@@ -30,7 +30,7 @@
         </Style>
 
         <Style x:Key="NumericCellTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
+            <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
             <Setter Property="TextAlignment" Value="Right" />
@@ -204,7 +204,7 @@
                               VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
+                            <WrapPanel />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -286,14 +286,24 @@
                         <TextBlock Grid.Column="2" Text="Group" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                         <TextBlock Grid.Column="3" Text="Product Description" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                         <TextBlock Grid.Column="4" Text="Trade ID" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                        <TextBlock Grid.Column="5" Text="Unit Price" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
-                        <TextBlock Grid.Column="6" Text="Qty" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="5" Text="Unit Price" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="6" Text="Qty" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
                         <TextBlock Grid.Column="7" Text="Side" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                        <TextBlock Grid.Column="8" Text="Unreal. PnL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="8" Text="Unreal. PnL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
                         <TextBlock Grid.Column="9" Text="Status" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer.Style>
+                            <Style TargetType="ScrollViewer">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRows}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ScrollViewer.Style>
                         <ItemsControl ItemsSource="{Binding Groups}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type models:BlotterGroup}">
@@ -412,75 +422,70 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+
+                    <Border x:Name="PositionBlotterEmptyState"
+                            Grid.Row="1"
+                            AutomationProperties.AutomationId="PositionBlotterEmptyState"
+                            AutomationProperties.Name="Position Blotter Empty State">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource WorkspaceEmptyStateCardStyle}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRows}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    MaxWidth="520">
+                            <Border Width="64"
+                                    Height="64"
+                                    CornerRadius="20"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                    BorderThickness="1"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="&#xE721;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="28"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="{Binding EmptyStateTitle}"
+                                       Margin="0,18,0,0"
+                                       FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding EmptyStateDetail}"
+                                       Margin="0,12,0,0"
+                                       FontSize="13"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center" />
+                            <WrapPanel HorizontalAlignment="Center" Margin="0,20,0,0">
+                                <Button Content="Reset Filters"
+                                        Command="{Binding ClearFiltersCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="PositionBlotterResetFiltersButton"
+                                        ToolTip="Clear preset, chip, and search filters"
+                                        Margin="0,0,10,0" />
+                                <Button Content="Refresh"
+                                        Command="{Binding RefreshCommand}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        AutomationProperties.AutomationId="PositionBlotterEmptyStateRefreshButton" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 
             <StackPanel Grid.Column="2">
-                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
-                        AutomationProperties.AutomationId="PositionBlotterSelectionInspector">
-                    <StackPanel>
-                        <TextBlock Text="Selection Posture" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Text="{Binding SelectionSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
-
-                        <UniformGrid Columns="2" Margin="0,0,0,8">
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SelectedPositionCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Selected positions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SelectedGroupCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Selected groups" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SelectedNetQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
-                                    <TextBlock Text="Net quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SelectedUnrealisedPnlText}" Style="{StaticResource NumericMetricTextStyle}" Foreground="{Binding SelectedUnrealisedPnlBrush}" />
-                                    <TextBlock Text="Unrealised PnL" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
-                        AutomationProperties.AutomationId="PositionBlotterFilterInspector">
-                    <StackPanel>
-                        <TextBlock Text="Filter &amp; Freshness" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Text="{Binding FilterSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,8" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding SnapshotSourceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
-
-                        <UniformGrid Columns="3">
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding MinMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Min mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding MaxMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Max mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding TradeTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Trade time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-                    </StackPanel>
-                </Border>
-
                 <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
                         AutomationProperties.AutomationId="PositionBlotterActionInspector">
                     <StackPanel>
@@ -503,6 +508,167 @@
                                    Margin="0,12,0,0"
                                    TextWrapping="Wrap" />
                     </StackPanel>
+                </Border>
+
+                <Border x:Name="PositionBlotterSelectionReviewRail"
+                        Style="{StaticResource WorkspaceInspectorCardStyle}"
+                        AutomationProperties.AutomationId="PositionBlotterSelectionInspector">
+                    <StackPanel>
+                        <TextBlock Text="Selected Position Review" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding SelectionSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
+
+                        <UniformGrid Columns="2" Margin="0,0,0,8">
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedPositionCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Selected positions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedGroupCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Selected groups" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedLongQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Long quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedShortQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Short quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedNetQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Net quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedGrossQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Gross quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedUnrealisedPnlText}" Style="{StaticResource NumericMetricTextStyle}" Foreground="{Binding SelectedUnrealisedPnlBrush}" />
+                                    <TextBlock Text="Unrealised PnL" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding UnsupportedActionCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                    <TextBlock Text="Review-only rows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,4,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Action eligibility" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding SelectedActionEligibilityText}"
+                                           Margin="0,6,0,0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Selected Preview"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Margin="0,0,0,8" />
+
+                        <ScrollViewer MaxHeight="190"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="SelectedPositionPreviewList"
+                                          ItemsSource="{Binding SelectedPositionPreviews}"
+                                          AutomationProperties.AutomationId="SelectedPositionPreviewList"
+                                          AutomationProperties.Name="Selected Position Preview List">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models:BlotterSelectionPreview}">
+                                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Group}"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <TextBlock Text="{Binding ProductDescription}"
+                                                               Margin="0,3,0,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding EligibilityLabel}"
+                                                               Margin="0,5,0,0"
+                                                               FontSize="10"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource InfoColorBrush}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1"
+                                                            Margin="10,0,0,0"
+                                                            HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding QuantityText}"
+                                                               Style="{StaticResource NumericCellTextStyle}" />
+                                                    <TextBlock Text="{Binding UnrealisedPnlText}"
+                                                               Margin="0,4,0,0"
+                                                               Style="{StaticResource NumericCellTextStyle}"
+                                                               Foreground="{Binding PnlBrush}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                        AutomationProperties.AutomationId="PositionBlotterFilterInspector">
+                    <Expander Header="Filter &amp; Freshness"
+                              IsExpanded="False"
+                              Foreground="{StaticResource ConsoleTextPrimaryBrush}">
+                        <StackPanel Margin="0,12,0,0">
+                            <TextBlock Text="{Binding FilterSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,8" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SnapshotSourceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
+
+                            <UniformGrid Columns="3">
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding MinMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Min mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding MaxMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Max mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding TradeTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Trade time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Expander>
                 </Border>
             </StackPanel>
         </Grid>

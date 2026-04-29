@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportJobProgressEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 765
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Job
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 767
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 768
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 769
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentFile
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 770
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 771
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 773
   assemblies:
   - Meridian.Ui.Services

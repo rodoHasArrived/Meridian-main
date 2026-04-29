@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoordinationMode
-    path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
+    path: src/Meridian.Core/Config/CoordinationConfig.cs
     startLine: 4
   assemblies:
   - Meridian.Core
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SingleInstance
-    path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
+    path: src/Meridian.Core/Config/CoordinationConfig.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedStorage
-    path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
+    path: src/Meridian.Core/Config/CoordinationConfig.cs
     startLine: 8
   assemblies:
   - Meridian.Core

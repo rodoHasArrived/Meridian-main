@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchService
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 51
   assemblies:
   - Meridian.Application
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 85
   assemblies:
   - Meridian.Application
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 130
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 261
   assemblies:
   - Meridian.Application
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupFigiAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 353
   assemblies:
   - Meridian.Application
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchFigiAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 373
   assemblies:
   - Meridian.Application
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearCache
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 446
   assemblies:
   - Meridian.Application
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 453
   assemblies:
   - Meridian.Application

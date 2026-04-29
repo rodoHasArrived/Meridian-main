@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalRecord
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 924
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sequence
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 926
   assemblies:
   - Meridian.Storage
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 927
   assemblies:
   - Meridian.Storage
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordType
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 928
   assemblies:
   - Meridian.Storage
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Payload
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 929
   assemblies:
   - Meridian.Storage
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checksum
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 930
   assemblies:
   - Meridian.Storage
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeserializePayload
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 932
   assemblies:
   - Meridian.Storage

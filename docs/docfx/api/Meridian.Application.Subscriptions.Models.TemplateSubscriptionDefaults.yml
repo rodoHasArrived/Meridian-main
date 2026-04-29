@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplateSubscriptionDefaults
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 27
   assemblies:
   - Meridian.Core
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 29
   assemblies:
   - Meridian.Core

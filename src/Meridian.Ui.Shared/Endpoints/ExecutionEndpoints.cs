@@ -127,7 +127,18 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var result = await oms.PlaceOrderAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var actor = ResolveActor(context);
+            string? correlationId = null;
+            request.Metadata?.TryGetValue("correlationId", out correlationId);
+            var normalizedRequest = request with
+            {
+                Metadata = MergeMetadata(
+                    request.Metadata,
+                    ("actor", actor),
+                    ("correlationId", string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId))
+            };
+
+            var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
             return result.Success
                 ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
@@ -272,7 +283,7 @@ public static class ExecutionEndpoints
 
             var actor = ResolveActor(context);
             var snapshot = await controls
-                .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, context.RequestAborted)
+                .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, request.CorrelationId, context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(snapshot, jsonOptions);
         })
@@ -288,21 +299,29 @@ public static class ExecutionEndpoints
                 return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var actor = ResolveActor(context);
-            await controls.CreateManualOverrideAsync(
-                new ManualOverrideRequest(
-                    Kind: request.Kind,
-                    Reason: request.Reason,
-                    CreatedBy: actor,
-                    Symbol: request.Symbol,
-                    StrategyId: request.StrategyId,
-                    RunId: request.RunId,
-                    ExpiresAt: request.ExpiresAt),
-                context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(controls.GetSnapshot(), jsonOptions);
+            try
+            {
+                var overrideEntry = await controls.CreateManualOverrideAsync(
+                    new ManualOverrideRequest(
+                        Kind: request.Kind,
+                        Reason: request.Reason,
+                        CreatedBy: ResolveActor(context),
+                        Symbol: request.Symbol,
+                        StrategyId: request.StrategyId,
+                        RunId: request.RunId,
+                        ExpiresAt: request.ExpiresAt,
+                        CorrelationId: request.CorrelationId),
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(overrideEntry, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         })
         .WithName("CreateExecutionManualOverride")
-        .Produces<ExecutionControlSnapshot>(200)
+        .Produces<ExecutionManualOverride>(201)
+        .Produces(400)
         .Produces(503);
 
         group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
@@ -313,39 +332,53 @@ public static class ExecutionEndpoints
                 return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var actor = ResolveActor(context);
-            var cleared = await controls
-                .ClearManualOverrideAsync(overrideId, actor, request.Reason, context.RequestAborted)
-                .ConfigureAwait(false);
-            return cleared
-                ? Results.Json(controls.GetSnapshot(), jsonOptions)
-                : Results.NotFound();
+            var cleared = await controls.ClearManualOverrideAsync(
+                overrideId,
+                ResolveActor(context),
+                request.Reason,
+                request.CorrelationId,
+                context.RequestAborted).ConfigureAwait(false);
+
+            if (!cleared)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(
+                new TradingActionResult(
+                    ActionId: request.CorrelationId ?? GenerateActionId(),
+                    Status: "Completed",
+                    Message: $"Manual override {overrideId} cleared.",
+                    OccurredAt: DateTimeOffset.UtcNow),
+                jsonOptions);
         })
         .WithName("ClearExecutionManualOverride")
-        .Produces<ExecutionControlSnapshot>(200)
+        .Produces<TradingActionResult>(200)
         .Produces(404)
         .Produces(503);
 
         // --- Session management ---
 
-        group.MapGet("/sessions", (HttpContext context) =>
+        group.MapGet("/sessions", async (HttpContext context) =>
         {
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
                 return Results.Json(Array.Empty<PaperSessionSummaryDto>(), jsonOptions);
 
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
             var sessions = persistence.GetSessions();
             return Results.Json(sessions, jsonOptions);
         })
         .WithName("GetExecutionSessions")
         .Produces<IReadOnlyList<PaperSessionSummaryDto>>(200);
 
-        group.MapGet("/sessions/{sessionId}", (string sessionId, HttpContext context) =>
+        group.MapGet("/sessions/{sessionId}", async (string sessionId, HttpContext context) =>
         {
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
                 return Results.NotFound();
 
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
             var session = persistence.GetSession(sessionId);
             return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
         })
@@ -396,6 +429,7 @@ public static class ExecutionEndpoints
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
             var actionId = GenerateActionId();
             var existingSession = persistence.GetSession(sessionId);
             var closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
@@ -440,6 +474,7 @@ public static class ExecutionEndpoints
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
             var actionId = GenerateActionId();
             var verification = await persistence.VerifyReplayAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
             if (verification is null)
@@ -458,24 +493,36 @@ public static class ExecutionEndpoints
                 return Results.NotFound();
             }
 
-            await RecordOperatorAuditAsync(
+            var primaryMismatchReason = verification.MismatchReasons.FirstOrDefault();
+            var auditEntry = await RecordOperatorAuditAsync(
                 context,
                 actionId,
                 action: "ReplayPaperSession",
                 outcome: verification.IsConsistent ? "Completed" : "AttentionRequired",
                 message: verification.IsConsistent
                     ? $"Replay matched current state for paper session {sessionId}."
-                    : $"Replay mismatch detected for paper session {sessionId}.",
+                    : $"Replay mismatch detected for paper session {sessionId}: {primaryMismatchReason ?? "see mismatch count"}.",
                 metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["sessionId"] = sessionId,
                     ["strategyId"] = verification.Summary.StrategyId,
                     ["isConsistent"] = verification.IsConsistent.ToString(),
                     ["replaySource"] = verification.ReplaySource,
-                    ["mismatchCount"] = verification.MismatchReasons.Count.ToString()
+                    ["mismatchCount"] = verification.MismatchReasons.Count.ToString(),
+                    ["comparedFillCount"] = verification.ComparedFillCount.ToString(),
+                    ["comparedOrderCount"] = verification.ComparedOrderCount.ToString(),
+                    ["comparedLedgerEntryCount"] = verification.ComparedLedgerEntryCount.ToString(),
+                    ["lastPersistedFillAt"] = verification.LastPersistedFillAt?.ToString("O") ?? string.Empty,
+                    ["lastPersistedOrderUpdateAt"] = verification.LastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
+                    ["primaryMismatchReason"] = primaryMismatchReason ?? string.Empty
                 }).ConfigureAwait(false);
 
-            return Results.Json(verification, jsonOptions);
+            return Results.Json(
+                verification with
+                {
+                    VerificationAuditId = auditEntry?.AuditId
+                },
+                jsonOptions);
         })
         .WithName("ReplayExecutionSession")
         .Produces<PaperSessionReplayVerificationDto>(200)
@@ -535,7 +582,8 @@ public static class ExecutionEndpoints
             if (portfolio is IMultiAccountPortfolioState multi)
             {
                 var account = multi.GetAccount(accountId);
-                if (account is null) return Results.NotFound();
+                if (account is null)
+                    return Results.NotFound();
                 return Results.Json(account.Positions.Values.ToArray(), jsonOptions);
             }
 
@@ -1067,7 +1115,8 @@ public sealed record TradingActionResult(
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(
     bool IsOpen,
-    string? Reason = null);
+    string? Reason = null,
+    string? CorrelationId = null);
 
 /// <summary>Request to create an execution manual override.</summary>
 public sealed record CreateExecutionManualOverrideRequest(
@@ -1076,7 +1125,25 @@ public sealed record CreateExecutionManualOverrideRequest(
     string? Symbol = null,
     string? StrategyId = null,
     string? RunId = null,
-    DateTimeOffset? ExpiresAt = null);
+    DateTimeOffset? ExpiresAt = null,
+    string? CorrelationId = null);
 
 /// <summary>Request to clear an existing execution manual override.</summary>
-public sealed record ClearExecutionManualOverrideRequest(string? Reason = null);
+public sealed record ClearExecutionManualOverrideRequest(
+    string? Reason = null,
+    string? CorrelationId = null);
+
+/// <summary>Legacy request alias preserved for older callers.</summary>
+public sealed record CreateManualOverrideCommandRequest(
+    string Kind,
+    string Reason,
+    string? Symbol = null,
+    string? StrategyId = null,
+    string? RunId = null,
+    DateTimeOffset? ExpiresAt = null,
+    string? CorrelationId = null);
+
+/// <summary>Legacy request alias preserved for older callers.</summary>
+public sealed record ClearManualOverrideCommandRequest(
+    string? Reason = null,
+    string? CorrelationId = null);

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMaintenanceExecutionHistory
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 5
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordExecutionAsync
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateExecutionAsync
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecution
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentExecutions
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionsForSchedule
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFailedExecutions
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 35
   assemblies:
   - Meridian.Storage
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionsByTimeRange
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 40
   assemblies:
   - Meridian.Storage
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScheduleSummary
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 45
   assemblies:
   - Meridian.Storage
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 50
   assemblies:
   - Meridian.Storage
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CleanupOldRecordsAsync
-    path: ../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
+    path: src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs
     startLine: 55
   assemblies:
   - Meridian.Storage

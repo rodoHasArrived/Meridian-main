@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverAwareMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 73
   assemblies:
   - Meridian.Infrastructure
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 93
   assemblies:
   - Meridian.Infrastructure
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 99
   assemblies:
   - Meridian.Infrastructure
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 121
   assemblies:
   - Meridian.Infrastructure
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 141
   assemblies:
   - Meridian.Infrastructure
@@ -397,7 +397,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 163
   assemblies:
   - Meridian.Infrastructure
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 184
   assemblies:
   - Meridian.Infrastructure
@@ -466,7 +466,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 185
   assemblies:
   - Meridian.Infrastructure
@@ -499,7 +499,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 186
   assemblies:
   - Meridian.Infrastructure
@@ -532,7 +532,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 187
   assemblies:
   - Meridian.Infrastructure
@@ -565,7 +565,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 188
   assemblies:
   - Meridian.Infrastructure
@@ -598,7 +598,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 194
   assemblies:
   - Meridian.Infrastructure
@@ -634,7 +634,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs
     startLine: 218
   assemblies:
   - Meridian.Infrastructure

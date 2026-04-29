@@ -85,7 +85,7 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
   - Formatting verification
   - Analyzer-enabled build with documentation output
   - Summarized results in workflow summary
-  - Creates Copilot task issues for quality problems
+  - Creates Copilot task issues for completed quality verdicts with actionable problems, while superseded/canceled runs report cancellation without opening issues
   - **AI**: Code quality suggestions with priority fixes, quick wins, and suppression candidates
 
 #### 7. **Security Scan** (`security.yml`) *(consolidated)*
@@ -108,6 +108,7 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
 - **Features**:
   - Linux tests on PRs
   - Windows/macOS tests on pushes to `main`
+  - PostgreSQL/Testcontainers suites are marked `Category=Integration` and run in the dedicated PostgreSQL job, while cross-platform unit lanes use `Category!=Integration`
   - Coverage uploaded to Codecov
 
 #### 9. **Nightly Testing** (`nightly.yml`)
@@ -115,6 +116,7 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
 - **Purpose**: Comprehensive cross-platform testing
 - **Features**:
   - Tests on Ubuntu, Windows, macOS
+  - Reuses the non-integration test filter so Docker-backed PostgreSQL suites stay out of cross-platform unit lanes
   - Runs benchmark suite
   - Integration self-tests
   - Creates issue on failure

@@ -551,7 +551,8 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
         var logsPath = Path.Combine(Environment.CurrentDirectory, DefaultLogsPath);
         if (!Directory.Exists(logsPath))
         {
-            try { Directory.CreateDirectory(logsPath); }
+            try
+            { Directory.CreateDirectory(logsPath); }
             catch (Exception ex)
             {
                 DiagnosticOutput = $"Could not create logs folder: {ex.Message}";
@@ -596,16 +597,21 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
             return (false, string.Empty);
 
         var sb = new StringBuilder();
-        if (hasAlpaca) sb.Append("Alpaca ");
-        if (hasPolygon) sb.Append("Polygon ");
+        if (hasAlpaca)
+            sb.Append("Alpaca ");
+        if (hasPolygon)
+            sb.Append("Polygon ");
         return (true, sb.ToString().Trim());
     }
 
     private static string FormatBytes(long bytes)
     {
-        if (bytes < 1024) return $"{bytes} B";
-        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
-        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+        if (bytes < 1024)
+            return $"{bytes} B";
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024)
+            return $"{bytes / (1024.0 * 1024):F1} MB";
         return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
     }
 

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderStatusService
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure.CppTrader

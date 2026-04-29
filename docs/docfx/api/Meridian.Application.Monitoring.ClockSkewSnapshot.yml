@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClockSkewSnapshot
-    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
     startLine: 110
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
     startLine: 110
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSkewMs
-    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
     startLine: 111
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleCount
-    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
     startLine: 112
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSkewMs
-    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
     startLine: 113
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSkewMs
-    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
     startLine: 114
   assemblies:
   - Meridian.Application

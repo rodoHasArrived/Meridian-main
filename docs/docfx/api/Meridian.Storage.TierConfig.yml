@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierConfig
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 355
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 358
   assemblies:
   - Meridian.Storage
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 361
   assemblies:
   - Meridian.Storage
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxAgeDays
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 364
   assemblies:
   - Meridian.Storage
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSizeGb
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 367
   assemblies:
   - Meridian.Storage
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 370
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compression
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 373
   assemblies:
   - Meridian.Storage
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageClass
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 376
   assemblies:
   - Meridian.Storage

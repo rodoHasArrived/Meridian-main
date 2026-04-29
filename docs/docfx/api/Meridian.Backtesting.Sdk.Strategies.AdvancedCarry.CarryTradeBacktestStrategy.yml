@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CarryTradeBacktestStrategy
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 20
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 48
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 68
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 86
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBar
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 95
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTrade
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 131
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnQuote
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 134
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderBook
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 137
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderFill
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 140
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDayEnd
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 143
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnFinished
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
     startLine: 191
   assemblies:
   - Meridian.Backtesting.Sdk

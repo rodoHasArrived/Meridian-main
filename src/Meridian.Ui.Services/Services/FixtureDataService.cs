@@ -27,12 +27,12 @@ public sealed class FixtureDataService
     /// <summary>Returns a human-readable label for the given scenario.</summary>
     public static string GetScenarioLabel(FixtureScenario scenario) => scenario switch
     {
-        FixtureScenario.Connected    => "Connected",
+        FixtureScenario.Connected => "Connected",
         FixtureScenario.Disconnected => "Disconnected",
-        FixtureScenario.Degraded     => "Degraded",
-        FixtureScenario.Error        => "Error",
-        FixtureScenario.Loading      => "Loading",
-        _                            => scenario.ToString()
+        FixtureScenario.Degraded => "Degraded",
+        FixtureScenario.Error => "Error",
+        FixtureScenario.Loading => "Loading",
+        _ => scenario.ToString()
     };
 
     /// <summary>

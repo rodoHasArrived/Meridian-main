@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalRepairResult
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1036
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1036
   assemblies:
   - Meridian.Storage
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRecords
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1037
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidRecords
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1038
   assemblies:
   - Meridian.Storage
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedRecords
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1039
   assemblies:
   - Meridian.Storage
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairedFiles
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1040
   assemblies:
   - Meridian.Storage

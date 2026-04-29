@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundOperationsWorkspaceReadService
-    path: ../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
+    path: src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
+    path: src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Shared
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWorkspaceAsync
-    path: ../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
+    path: src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Shared
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewReportPackAsync
-    path: ../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
+    path: src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
     startLine: 128
   assemblies:
   - Meridian.Ui.Shared

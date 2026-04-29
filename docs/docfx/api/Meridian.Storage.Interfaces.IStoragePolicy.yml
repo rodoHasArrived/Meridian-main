@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStoragePolicy
-    path: ../../src/Meridian.Storage/Interfaces/IStoragePolicy.cs
+    path: src/Meridian.Storage/Interfaces/IStoragePolicy.cs
     startLine: 4
   assemblies:
   - Meridian.Storage
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPath
-    path: ../../src/Meridian.Storage/Interfaces/IStoragePolicy.cs
+    path: src/Meridian.Storage/Interfaces/IStoragePolicy.cs
     startLine: 6
   assemblies:
   - Meridian.Storage

@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasValidCredentials
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 99
   assemblies:
   - Meridian.Infrastructure
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 108
   assemblies:
   - Meridian.Infrastructure
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 113
   assemblies:
   - Meridian.Infrastructure
@@ -353,7 +353,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseDelayed
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 118
   assemblies:
   - Meridian.Infrastructure
@@ -384,7 +384,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 122
   assemblies:
   - Meridian.Infrastructure
@@ -416,7 +416,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 125
   assemblies:
   - Meridian.Infrastructure
@@ -448,7 +448,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 128
   assemblies:
   - Meridian.Infrastructure
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 131
   assemblies:
   - Meridian.Infrastructure
@@ -512,7 +512,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 134
   assemblies:
   - Meridian.Infrastructure
@@ -544,7 +544,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 146
   assemblies:
   - Meridian.Infrastructure
@@ -574,7 +574,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 152
   assemblies:
   - Meridian.Infrastructure
@@ -604,7 +604,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 160
   assemblies:
   - Meridian.Infrastructure
@@ -634,7 +634,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildWebSocketUri
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 168
   assemblies:
   - Meridian.Infrastructure
@@ -665,7 +665,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticateAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 187
   assemblies:
   - Meridian.Infrastructure
@@ -712,7 +712,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleMessageAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 269
   assemblies:
   - Meridian.Infrastructure
@@ -753,7 +753,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 279
   assemblies:
   - Meridian.Infrastructure
@@ -791,7 +791,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 321
   assemblies:
   - Meridian.Infrastructure
@@ -828,7 +828,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 332
   assemblies:
   - Meridian.Infrastructure
@@ -862,7 +862,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 363
   assemblies:
   - Meridian.Infrastructure
@@ -897,7 +897,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 381
   assemblies:
   - Meridian.Infrastructure
@@ -931,7 +931,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 411
   assemblies:
   - Meridian.Infrastructure
@@ -966,7 +966,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeAggregates
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 433
   assemblies:
   - Meridian.Infrastructure
@@ -1001,7 +1001,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeAggregates
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 465
   assemblies:
   - Meridian.Infrastructure
@@ -1035,7 +1035,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionCount
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 483
   assemblies:
   - Meridian.Infrastructure
@@ -1066,7 +1066,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedTradeSymbols
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 486
   assemblies:
   - Meridian.Infrastructure
@@ -1097,7 +1097,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedQuoteSymbols
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 489
   assemblies:
   - Meridian.Infrastructure
@@ -1128,7 +1128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedAggregateSymbols
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
     startLine: 492
   assemblies:
   - Meridian.Infrastructure

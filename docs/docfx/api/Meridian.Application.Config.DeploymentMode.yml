@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeploymentMode
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 263
   assemblies:
   - Meridian.Application
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Headless
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 269
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Desktop
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    path: src/Meridian.Application/Config/DeploymentContext.cs
     startLine: 275
   assemblies:
   - Meridian.Application

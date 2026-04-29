@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IConnectionHealthMonitor
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnConnectionLost
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnConnectionRecovered
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnHeartbeatMissed
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterConnection
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterConnection
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHeartbeat
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 41
   assemblies:
   - Meridian.Core
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordDataReceived
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 46
   assemblies:
   - Meridian.Core

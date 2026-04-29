@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterRebuildOrchestrator
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
     startLine: 39
   assemblies:
   - Meridian.Application

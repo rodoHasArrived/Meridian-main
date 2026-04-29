@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealthData
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 456
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 458
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 459
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 460
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 461
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 462
   assemblies:
   - Meridian.Ui.Services
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 463
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Breakdown
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 464
   assemblies:
   - Meridian.Ui.Services

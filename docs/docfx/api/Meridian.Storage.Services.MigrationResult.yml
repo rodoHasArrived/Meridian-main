@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationResult
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 373
   assemblies:
   - Meridian.Storage
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 373
   assemblies:
   - Meridian.Storage
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 374
   assemblies:
   - Meridian.Storage
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 375
   assemblies:
   - Meridian.Storage
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesFailed
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 376
   assemblies:
   - Meridian.Storage
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesProcessed
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 377
   assemblies:
   - Meridian.Storage
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesSaved
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 378
   assemblies:
   - Meridian.Storage
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 379
   assemblies:
   - Meridian.Storage
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 380
   assemblies:
   - Meridian.Storage

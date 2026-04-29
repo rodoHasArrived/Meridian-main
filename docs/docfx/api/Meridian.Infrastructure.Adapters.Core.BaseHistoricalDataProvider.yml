@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 35
   assemblies:
   - Meridian.Infrastructure
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Http
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimiter
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Log
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResiliencePipeline
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disposed
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 65
   assemblies:
   - Meridian.Infrastructure
@@ -368,7 +368,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 70
   assemblies:
   - Meridian.Infrastructure
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -432,7 +432,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 79
   assemblies:
   - Meridian.Infrastructure
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -504,7 +504,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 81
   assemblies:
   - Meridian.Infrastructure
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -576,7 +576,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -620,7 +620,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -654,7 +654,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 106
   assemblies:
   - Meridian.Infrastructure
@@ -688,7 +688,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 112
   assemblies:
   - Meridian.Infrastructure
@@ -722,7 +722,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 118
   assemblies:
   - Meridian.Infrastructure
@@ -756,7 +756,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsQuotes
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 124
   assemblies:
   - Meridian.Infrastructure
@@ -790,7 +790,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 130
   assemblies:
   - Meridian.Infrastructure
@@ -824,7 +824,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAuctions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 136
   assemblies:
   - Meridian.Infrastructure
@@ -858,7 +858,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 142
   assemblies:
   - Meridian.Infrastructure
@@ -892,7 +892,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnRateLimitHit
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 150
   assemblies:
   - Meridian.Infrastructure
@@ -926,7 +926,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RaiseRateLimitHit
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 155
   assemblies:
   - Meridian.Infrastructure
@@ -957,7 +957,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 167
   assemblies:
   - Meridian.Infrastructure
@@ -998,7 +998,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 204
   assemblies:
   - Meridian.Infrastructure
@@ -1037,7 +1037,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbols
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 212
   assemblies:
   - Meridian.Infrastructure
@@ -1073,7 +1073,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WaitForRateLimitSlotAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 222
   assemblies:
   - Meridian.Infrastructure
@@ -1106,7 +1106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRateLimitHit
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 231
   assemblies:
   - Meridian.Infrastructure
@@ -1137,7 +1137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitInfo
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 241
   assemblies:
   - Meridian.Infrastructure
@@ -1169,7 +1169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteGetAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 273
   assemblies:
   - Meridian.Infrastructure
@@ -1216,7 +1216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteGetAndReadAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 298
   assemblies:
   - Meridian.Infrastructure
@@ -1270,7 +1270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleHttpResponseAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 339
   assemblies:
   - Meridian.Infrastructure
@@ -1322,7 +1322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleHttpResponse
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 364
   assemblies:
   - Meridian.Infrastructure
@@ -1363,7 +1363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeserializeResponse
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 409
   assemblies:
   - Meridian.Infrastructure
@@ -1403,7 +1403,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThrowIfDisposed
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 433
   assemblies:
   - Meridian.Infrastructure
@@ -1431,7 +1431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 441
   assemblies:
   - Meridian.Infrastructure
@@ -1465,7 +1465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbols
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 450
   assemblies:
   - Meridian.Infrastructure
@@ -1499,7 +1499,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidOhlc
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 462
   assemblies:
   - Meridian.Infrastructure
@@ -1541,7 +1541,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOhlc
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 470
   assemblies:
   - Meridian.Infrastructure
@@ -1587,7 +1587,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 486
   assemblies:
   - Meridian.Infrastructure
@@ -1634,7 +1634,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 498
   assemblies:
   - Meridian.Infrastructure
@@ -1672,7 +1672,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 507
   assemblies:
   - Meridian.Infrastructure
@@ -1719,7 +1719,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 521
   assemblies:
   - Meridian.Infrastructure
@@ -1749,7 +1749,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
     startLine: 527
   assemblies:
   - Meridian.Infrastructure

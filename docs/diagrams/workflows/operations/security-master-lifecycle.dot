@@ -1,0 +1,139 @@
+// Security Master Lifecycle Diagram
+// Meridian v1.8.x
+// Last Updated: 2026-04-21
+//
+// This diagram shows the current Security Master flow across import, ingest
+// status, conflict triage, projections, cache warmup, and workstation/query
+// consumers.
+
+digraph SecurityMasterLifecycle {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  labelloc="t";
+  label="Meridian - Security Master Lifecycle\nImport, ingest status, conflict triage, and workstation consumers | v1.8.x";
+
+  subgraph cluster_inputs {
+    label="Inputs and Entry Paths";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    WPF_PAGE [fillcolor="#805ad5", fontcolor="white",
+              label="SecurityMasterPage\nsearch / detail /\ngrouped conflict triage"];
+    WORKFLOW_CLIENT [fillcolor="#c4b5fd",
+                     label="SecurityMasterOperatorWorkflowClient\ningest posture / grouped queue\nresolve + dismiss actions"];
+    API_ENDPOINTS [fillcolor="#c4b5fd",
+                   label="Security Master endpoints\n/api/security-master/*\n/api/workstation/security-master/*"];
+    CSV_PARSER [fillcolor="#fbd38d",
+                label="SecurityMasterCsvParser\nCSV -> CreateSecurityRequest"];
+    IMPORT_SERVICE [fillcolor="#fbd38d",
+                    label="SecurityMasterImportService\nCSV / JSON bulk import\nsession snapshots + conflict counts"];
+    CORPORATE_ACTIONS [fillcolor="#fbd38d",
+                       label="PolygonCorporateActionFetcher\ncorporate action ingestion"];
+  }
+
+  subgraph cluster_core {
+    label="Application and Projection Layer";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    SECURITY_SERVICE [fillcolor="#93c5fd",
+                      label="SecurityMasterService\ncreate / update / deactivate"];
+    CONFLICT_SERVICE [fillcolor="#bfdbfe",
+                      label="SecurityMasterConflictService\ndetect / queue / resolve\nprovider conflicts"];
+    INGEST_STATUS_SERVICE [fillcolor="#bfdbfe",
+                           label="SecurityMasterIngestStatusService\nactive import + last completed\nsession snapshot"];
+    AGGREGATE_REBUILDER [fillcolor="#bfdbfe",
+                         label="SecurityMasterAggregateRebuilder\nreplay security streams"];
+    PROJECTION_SERVICE [fillcolor="#bfdbfe",
+                        label="SecurityMasterProjectionService\nBuildWarmSetAsync / WarmAsync"];
+    WARMUP_SERVICE [fillcolor="#bfdbfe",
+                    label="SecurityMasterProjectionWarmupService\nstartup cache warmup"];
+    QUERY_SERVICE [fillcolor="#93c5fd",
+                   label="SecurityMasterQueryService\nsearch, history, identity,\neconomic definition"];
+    PROJECTION_CACHE [fillcolor="#d1fae5",
+                      label="SecurityMasterProjectionCache\nwarm in-memory projection set"];
+    SEED_SERVICE [fillcolor="#d1fae5",
+                  label="SecurityMasterCanonicalSymbolSeedService\nseed canonical-symbol cache"];
+    LOOKUP [fillcolor="#d1fae5",
+            label="SecurityMasterSecurityReferenceLookup\nportfolio / ledger enrichment"];
+    CONFLICT_QUEUE [shape=note, fillcolor="#feebc8",
+                    label="Open conflict queue +\nresolution state live in-memory\ntoday"];
+    NULL_FALLBACKS [shape=note, fillcolor="#feebc8",
+                    label="NullSecurityMaster* fallbacks\nkeep APIs routable when Postgres\nsecurity-master config is absent"];
+  }
+
+  subgraph cluster_storage {
+    label="Persistence";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fff5f5";
+
+    EVENT_STORE [shape=cylinder, fillcolor="#fc8181", fontcolor="white",
+                 label="PostgresSecurityMasterEventStore\nappend + stream replay"];
+    SNAPSHOT_STORE [shape=cylinder, fillcolor="#fecaca",
+                    label="PostgresSecurityMasterSnapshotStore\nperiodic aggregate snapshots"];
+    PROJECTION_STORE [shape=cylinder, fillcolor="#fecaca",
+                      label="PostgresSecurityMasterStore\nprojection records + lookups"];
+  }
+
+  WPF_PAGE -> WORKFLOW_CLIENT [style=dashed, color="#2b6cb0",
+                               label="poll posture / grouped queue"];
+  WPF_PAGE -> IMPORT_SERVICE [label="bulk import"];
+  WPF_PAGE -> QUERY_SERVICE [style=dashed, color="#2b6cb0",
+                             label="detail / history /\ntrading params"];
+  API_ENDPOINTS -> IMPORT_SERVICE [label="import requests"];
+  WORKFLOW_CLIENT -> API_ENDPOINTS [label="HTTP status + resolve"];
+  API_ENDPOINTS -> CONFLICT_SERVICE [label="open queue / resolve"];
+  API_ENDPOINTS -> INGEST_STATUS_SERVICE [label="ingest status"];
+  IMPORT_SERVICE -> CSV_PARSER [label="parse CSV"];
+  IMPORT_SERVICE -> SECURITY_SERVICE [label="create / update"];
+  IMPORT_SERVICE -> CONFLICT_SERVICE [style=dashed, color="#ed8936",
+                                      label="record conflicts + counts"];
+
+  WPF_PAGE -> SECURITY_SERVICE [label="create / edit"];
+  API_ENDPOINTS -> QUERY_SERVICE [label="query detail/history"];
+
+  SECURITY_SERVICE -> EVENT_STORE [label="append events"];
+  SECURITY_SERVICE -> SNAPSHOT_STORE [style=dashed, color="#c53030",
+                                      label="snapshot cadence"];
+  CONFLICT_SERVICE -> PROJECTION_STORE [style=dashed, color="#ed8936",
+                                        label="scan projection identifiers"];
+  CONFLICT_SERVICE -> CONFLICT_QUEUE [style=dashed, color="#ed8936",
+                                      label="track open queue"];
+  INGEST_STATUS_SERVICE -> IMPORT_SERVICE [style=dashed, color="#718096",
+                                           label="active + completed snapshots"];
+  CORPORATE_ACTIONS -> EVENT_STORE [label="append corp actions"];
+
+  WARMUP_SERVICE -> PROJECTION_SERVICE [label="startup warm"];
+  PROJECTION_SERVICE -> PROJECTION_STORE [label="load seed records"];
+  PROJECTION_SERVICE -> AGGREGATE_REBUILDER [label="rebuild economics"];
+  AGGREGATE_REBUILDER -> EVENT_STORE [label="replay stream"];
+  AGGREGATE_REBUILDER -> SNAPSHOT_STORE [style=dashed, color="#c53030",
+                                         label="use snapshots"];
+  PROJECTION_SERVICE -> PROJECTION_CACHE [label="ReplaceAll"];
+  SEED_SERVICE -> PROJECTION_CACHE [label="canonical symbol seed"];
+
+  QUERY_SERVICE -> PROJECTION_CACHE [label="warm reads"];
+  QUERY_SERVICE -> PROJECTION_STORE [label="history / fallback reads"];
+  LOOKUP -> QUERY_SERVICE [label="security reference resolution"];
+
+  API_ENDPOINTS -> NULL_FALLBACKS [style=dashed, color="#718096",
+                                   label="not configured"];
+
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG_INPUT [fillcolor="#fbd38d", label="Import / ingest path"];
+    LEG_CORE [fillcolor="#93c5fd", label="Core service"];
+    LEG_CACHE [fillcolor="#d1fae5", label="Projection / cache consumer"];
+    LEG_STORE [shape=cylinder, fillcolor="#fecaca", label="Persistent store"];
+  }
+}

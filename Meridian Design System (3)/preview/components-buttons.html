@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
+  .group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 6px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; border: 1px solid transparent; cursor: pointer; font-family: var(--font-sans); }
+  .btn-primary { background: #2AB2D4; color: #05101B; }
+  .btn-secondary { background: #162334; color: var(--fg); border-color: #1F344C; }
+  .btn-outline { background: transparent; color: var(--fg); border-color: #1F344C; }
+  .btn-ghost { background: transparent; color: var(--fg-muted); }
+  .btn-destructive { background: rgba(222, 88, 120, 0.08); color: #DE5878; border-color: rgba(222, 88, 120, 0.30); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="label">Default</div>
+  <div class="group">
+    <button class="btn btn-primary">Submit Order</button>
+    <button class="btn btn-secondary">Refresh</button>
+    <button class="btn btn-outline">New Order</button>
+    <button class="btn btn-ghost">Cancel</button>
+    <button class="btn btn-destructive">Cancel All</button>
+  </div>
+  <div class="label">Small</div>
+  <div class="group">
+    <button class="btn btn-primary btn-sm">Submit</button>
+    <button class="btn btn-outline btn-sm">Verify Replay</button>
+    <button class="btn btn-ghost btn-sm">Close</button>
+  </div>
+</body>
+</html>

@@ -1,8 +1,8 @@
 using System.Windows.Media;
 using Meridian.Ui.Services;
-using Palette = Meridian.Ui.Services.Services.ColorPalette;
 using ColorPalette = Meridian.Ui.Services.Services.ColorPalette;
 using IntegritySeverity = Meridian.Ui.Services.IntegritySeverity;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.Services;
 
@@ -12,7 +12,12 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public static class BrushRegistry
 {
-    private static SolidColorBrush FromArgb(ColorPalette.ArgbColor c) => new(Color.FromArgb(c.A, c.R, c.G, c.B));
+    private static SolidColorBrush FromArgb(ColorPalette.ArgbColor c)
+    {
+        SolidColorBrush brush = new(Color.FromArgb(c.A, c.R, c.G, c.B));
+        brush.Freeze();
+        return brush;
+    }
 
 
     public static readonly SolidColorBrush Success = FromArgb(Palette.Success);
@@ -30,6 +35,11 @@ public static class BrushRegistry
     public static readonly SolidColorBrush ChartTertiary = FromArgb(Palette.ChartTertiary);
     public static readonly SolidColorBrush ChartPositive = FromArgb(Palette.ChartPositive);
     public static readonly SolidColorBrush ChartNegative = FromArgb(Palette.ChartNegative);
+    public static readonly SolidColorBrush ChartBackground = FromArgb(Palette.ChartBackground);
+    public static readonly SolidColorBrush ChartDataBackground = FromArgb(Palette.ChartDataBackground);
+    public static readonly SolidColorBrush ChartGrid = FromArgb(Palette.ChartGrid);
+    public static readonly SolidColorBrush ChartAxis = FromArgb(Palette.ChartAxis);
+    public static readonly SolidColorBrush ChartBorder = FromArgb(Palette.ChartBorder);
 
 
 

@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 74
   assemblies:
   - Meridian.Infrastructure
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 77
   assemblies:
   - Meridian.Infrastructure
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 83
   assemblies:
   - Meridian.Infrastructure
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 86
   assemblies:
   - Meridian.Infrastructure
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 101
   assemblies:
   - Meridian.Infrastructure
@@ -448,7 +448,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 108
   assemblies:
   - Meridian.Infrastructure
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildWebSocketUri
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 118
   assemblies:
   - Meridian.Infrastructure
@@ -509,7 +509,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticateAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 132
   assemblies:
   - Meridian.Infrastructure
@@ -550,7 +550,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleMessageAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 140
   assemblies:
   - Meridian.Infrastructure
@@ -591,7 +591,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 176
   assemblies:
   - Meridian.Infrastructure
@@ -629,7 +629,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 198
   assemblies:
   - Meridian.Infrastructure
@@ -663,7 +663,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 212
   assemblies:
   - Meridian.Infrastructure
@@ -698,7 +698,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 223
   assemblies:
   - Meridian.Infrastructure
@@ -732,7 +732,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
     startLine: 242
   assemblies:
   - Meridian.Infrastructure

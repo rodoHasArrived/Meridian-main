@@ -19,6 +19,9 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     private bool _includeSummary = true;
     private string _validationSummary = string.Empty;
     private string _statusMessage = string.Empty;
+    private string _exportReadinessTitle = string.Empty;
+    private string _exportReadinessDetail = string.Empty;
+    private string _recentExportsStateText = string.Empty;
 
     public AnalysisExportViewModel()
     {
@@ -34,6 +37,18 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
             new("Latency Drift")
         };
         RecentExports = new ObservableCollection<ExportSummary>();
+        RecentExports.CollectionChanged += (_, _) => UpdateRecentExportsState();
+
+        foreach (var metric in Metrics)
+        {
+            metric.PropertyChanged += OnMetricPropertyChanged;
+        }
+
+        RunExportCommand = new RelayCommand(RunExport, CanRunExport);
+        SavePresetCommand = new RelayCommand(SavePreset);
+
+        UpdateExportReadiness();
+        UpdateRecentExportsState();
     }
 
     public ObservableCollection<string> Formats { get; }
@@ -44,6 +59,10 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
 
     public ObservableCollection<ExportSummary> RecentExports { get; }
 
+    public IRelayCommand RunExportCommand { get; }
+
+    public IRelayCommand SavePresetCommand { get; }
+
     public string ExportName
     {
         get => _exportName;
@@ -51,7 +70,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _exportName, value))
             {
-                UpdateValidationSummary();
+                RefreshExportReadiness();
             }
         }
     }
@@ -59,7 +78,13 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     public string SelectedFormat
     {
         get => _selectedFormat;
-        set => SetProperty(ref _selectedFormat, value);
+        set
+        {
+            if (SetProperty(ref _selectedFormat, value))
+            {
+                RefreshExportReadiness();
+            }
+        }
     }
 
     public string Destination
@@ -69,7 +94,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _destination, value))
             {
-                UpdateValidationSummary();
+                RefreshExportReadiness();
             }
         }
     }
@@ -82,6 +107,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
             if (SetProperty(ref _symbolFilter, value))
             {
                 UpdateSelectedSymbols();
+                UpdateExportReadiness();
             }
         }
     }
@@ -93,7 +119,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _fromDate, value))
             {
-                UpdateValidationSummary();
+                RefreshExportReadiness();
             }
         }
     }
@@ -105,7 +131,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _toDate, value))
             {
-                UpdateValidationSummary();
+                RefreshExportReadiness();
             }
         }
     }
@@ -132,6 +158,24 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     {
         get => _statusMessage;
         private set => SetProperty(ref _statusMessage, value);
+    }
+
+    public string ExportReadinessTitle
+    {
+        get => _exportReadinessTitle;
+        private set => SetProperty(ref _exportReadinessTitle, value);
+    }
+
+    public string ExportReadinessDetail
+    {
+        get => _exportReadinessDetail;
+        private set => SetProperty(ref _exportReadinessDetail, value);
+    }
+
+    public string RecentExportsStateText
+    {
+        get => _recentExportsStateText;
+        private set => SetProperty(ref _recentExportsStateText, value);
     }
 
     public string Error => string.Empty;
@@ -174,7 +218,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     public void RunExport()
     {
         UpdateValidationSummary();
-        if (!string.IsNullOrEmpty(ValidationSummary))
+        if (!string.IsNullOrWhiteSpace(ValidationSummary))
         {
             StatusMessage = "Resolve validation errors before running the export.";
             return;
@@ -184,6 +228,8 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             ValidationSummary = "Select at least one metric for the export.";
             StatusMessage = "Select metrics to proceed.";
+            UpdateExportReadiness();
+            RunExportCommand.NotifyCanExecuteChanged();
             return;
         }
 
@@ -197,11 +243,17 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         });
 
         StatusMessage = $"Export \"{exportName}\" queued successfully.";
+        RefreshExportReadiness();
     }
 
     public void SavePreset()
     {
         StatusMessage = "Export preset saved for quick reuse.";
+    }
+
+    public bool CanRunExport()
+    {
+        return !GetFieldValidationErrors().Any() && Metrics.Any(metric => metric.IsSelected);
     }
 
     private void UpdateSelectedSymbols()
@@ -220,16 +272,75 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         }
     }
 
+    private void OnMetricPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MetricOption.IsSelected))
+        {
+            RefreshExportReadiness();
+        }
+    }
+
+    private void RefreshExportReadiness()
+    {
+        UpdateValidationSummary();
+        UpdateExportReadiness();
+        RunExportCommand.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateExportReadiness()
+    {
+        var fieldErrors = GetFieldValidationErrors().ToArray();
+        var selectedMetricCount = Metrics.Count(metric => metric.IsSelected);
+        if (fieldErrors.Length > 0 || selectedMetricCount == 0)
+        {
+            ExportReadinessTitle = "Export setup incomplete";
+
+            var missing = fieldErrors
+                .Select(error => error.TrimEnd('.'))
+                .ToList();
+
+            if (selectedMetricCount == 0)
+            {
+                missing.Add("Select at least one metric");
+            }
+
+            ExportReadinessDetail = string.Join(" ", missing.Select(error => $"{error}."));
+            return;
+        }
+
+        var symbolScope = SelectedSymbols.Count == 0
+            ? "all eligible symbols"
+            : $"{SelectedSymbols.Count} selected symbol{(SelectedSymbols.Count == 1 ? string.Empty : "s")}";
+        var dateScope = FromDate.HasValue || ToDate.HasValue
+            ? $"{FromDate?.ToString("MMM dd, yyyy") ?? "start"} to {ToDate?.ToString("MMM dd, yyyy") ?? "latest"}"
+            : "the full retained window";
+
+        ExportReadinessTitle = "Export ready";
+        ExportReadinessDetail =
+            $"{SelectedFormat} export will include {selectedMetricCount} metric{(selectedMetricCount == 1 ? string.Empty : "s")} for {symbolScope} across {dateScope}.";
+    }
+
+    private void UpdateRecentExportsState()
+    {
+        RecentExportsStateText = RecentExports.Count == 0
+            ? "No exports have been queued in this session yet."
+            : $"{RecentExports.Count} export{(RecentExports.Count == 1 ? string.Empty : "s")} retained for this session.";
+    }
+
     private void UpdateValidationSummary()
     {
-        var errors = new[]
-        {
-            this[nameof(ExportName)],
-            this[nameof(Destination)],
-            this[nameof(ToDate)]
-        };
+        ValidationSummary = string.Join(" ", GetFieldValidationErrors());
+    }
 
-        ValidationSummary = string.Join(" ", errors.Where(error => !string.IsNullOrWhiteSpace(error)));
+    private IEnumerable<string> GetFieldValidationErrors()
+    {
+        return new[]
+            {
+                this[nameof(ExportName)],
+                this[nameof(Destination)],
+                this[nameof(ToDate)]
+            }
+            .Where(error => !string.IsNullOrWhiteSpace(error));
     }
 }
 

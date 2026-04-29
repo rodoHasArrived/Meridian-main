@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KernelWeightGovernanceWorkflowService
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 316
   assemblies:
   - Meridian.Application
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluatePromotion
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 325
   assemblies:
   - Meridian.Application

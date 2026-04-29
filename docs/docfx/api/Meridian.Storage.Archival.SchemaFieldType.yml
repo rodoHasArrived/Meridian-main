@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaFieldType
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 590
   assemblies:
   - Meridian.Storage
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: String
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 592
   assemblies:
   - Meridian.Storage
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integer
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 593
   assemblies:
   - Meridian.Storage
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Decimal
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 594
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Boolean
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 595
   assemblies:
   - Meridian.Storage
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateTime
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 596
   assemblies:
   - Meridian.Storage
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Array
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 597
   assemblies:
   - Meridian.Storage
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Object
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 598
   assemblies:
   - Meridian.Storage

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisQualityReportGenerator
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateReportAsync
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportReportAsync
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 61
   assemblies:
   - Meridian.Storage

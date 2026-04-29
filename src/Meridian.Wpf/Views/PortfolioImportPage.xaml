@@ -3,7 +3,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
-      Loaded="OnPageLoaded"
       AutomationProperties.Name="Portfolio Import">
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -39,6 +38,27 @@
                         <TextBlock Text="Import from File" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,4" />
                         <TextBlock Text="CSV, Excel, or text files with symbol lists." Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" Margin="0,0,0,16" />
 
+                        <Border AutomationProperties.AutomationId="PortfolioImportFileReadiness"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock AutomationProperties.AutomationId="PortfolioImportFileReadinessTitle"
+                                           Text="{Binding FileImportGuidanceTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextBrush}" />
+                                <TextBlock AutomationProperties.AutomationId="PortfolioImportFileReadinessText"
+                                           Text="{Binding FileImportGuidanceText}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
                         <TextBlock Text="File Format" Style="{StaticResource FormLabelStyle}" />
                         <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding SelectedFileFormat}"
                                   Style="{StaticResource FormComboBoxStyle}" Margin="0,0,0,8">
@@ -58,7 +78,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding FilePath}" Style="{StaticResource FormTextBoxStyle}" IsReadOnly="True" />
-                            <Button Grid.Column="1" Content="Browse..." Click="BrowseFile_Click" Style="{StaticResource FormButtonStyle}" Margin="8,0,0,0" />
+                            <Button Grid.Column="1"
+                                    Content="Browse..."
+                                    Command="{Binding BrowseFileCommand}"
+                                    Style="{StaticResource FormButtonStyle}"
+                                    Margin="8,0,0,0" />
                         </Grid>
 
                         <CheckBox x:Name="ValidateSymbolsCheck" Content="Validate symbols before import" IsChecked="True"
@@ -67,7 +91,10 @@
                                   Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,0,12" />
 
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Import" Click="ImportFile_Click" Style="{StaticResource FormButtonStyle}" />
+                            <Button Content="Import"
+                                    Command="{Binding ImportFileCommand}"
+                                    Style="{StaticResource FormButtonStyle}"
+                                    AutomationProperties.AutomationId="PortfolioImportFileButton" />
                             <TextBlock Text="{Binding ImportStatus}" VerticalAlignment="Center" Margin="12,0,0,0"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
                         </StackPanel>
@@ -80,21 +107,41 @@
                         <TextBlock Text="Quick Index Import" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,4" />
                         <TextBlock Text="Add all constituents of a major index." Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" Margin="0,0,0,16" />
 
-                        <Button Content="S&amp;P 500 (SPY constituents)" Click="ImportIndex_Click" Tag="sp500"
-                                Style="{StaticResource FormButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8"
-                                IsEnabled="{Binding IsIndexImporting, Converter={StaticResource InvertBoolConverter}}" />
-                        <Button Content="NASDAQ-100 (QQQ constituents)" Click="ImportIndex_Click" Tag="nasdaq100"
-                                Style="{StaticResource FormButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8"
-                                IsEnabled="{Binding IsIndexImporting, Converter={StaticResource InvertBoolConverter}}" />
-                        <Button Content="Dow Jones 30 (DIA constituents)" Click="ImportIndex_Click" Tag="djia"
-                                Style="{StaticResource FormButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8"
-                                IsEnabled="{Binding IsIndexImporting, Converter={StaticResource InvertBoolConverter}}" />
-                        <Button Content="Russell 2000 (IWM constituents)" Click="ImportIndex_Click" Tag="russell2000"
-                                Style="{StaticResource FormButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8"
-                                IsEnabled="{Binding IsIndexImporting, Converter={StaticResource InvertBoolConverter}}" />
-                        <Button Content="S&amp;P MidCap 400" Click="ImportIndex_Click" Tag="sp400"
-                                Style="{StaticResource FormButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8"
-                                IsEnabled="{Binding IsIndexImporting, Converter={StaticResource InvertBoolConverter}}" />
+                        <Button Content="S&amp;P 500 (SPY constituents)"
+                                Command="{Binding ImportIndexCommand}"
+                                CommandParameter="sp500"
+                                Style="{StaticResource FormButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8"
+                                AutomationProperties.AutomationId="PortfolioImportSp500Button" />
+                        <Button Content="NASDAQ-100 (QQQ constituents)"
+                                Command="{Binding ImportIndexCommand}"
+                                CommandParameter="nasdaq100"
+                                Style="{StaticResource FormButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8"
+                                AutomationProperties.AutomationId="PortfolioImportNasdaq100Button" />
+                        <Button Content="Dow Jones 30 (DIA constituents)"
+                                Command="{Binding ImportIndexCommand}"
+                                CommandParameter="djia"
+                                Style="{StaticResource FormButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8"
+                                AutomationProperties.AutomationId="PortfolioImportDjiaButton" />
+                        <Button Content="Russell 2000 (IWM constituents)"
+                                Command="{Binding ImportIndexCommand}"
+                                CommandParameter="russell2000"
+                                Style="{StaticResource FormButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8"
+                                AutomationProperties.AutomationId="PortfolioImportRussell2000Button" />
+                        <Button Content="S&amp;P MidCap 400"
+                                Command="{Binding ImportIndexCommand}"
+                                CommandParameter="sp400"
+                                Style="{StaticResource FormButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8"
+                                AutomationProperties.AutomationId="PortfolioImportSp400Button" />
 
                         <TextBlock Text="{Binding IndexImportStatus}" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" Margin="0,8,0,0" />
                     </StackPanel>
@@ -111,8 +158,32 @@
                              Style="{StaticResource FormTextBoxStyle}" Height="80"
                              AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12" />
 
+                    <Border AutomationProperties.AutomationId="PortfolioImportManualReadiness"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock AutomationProperties.AutomationId="PortfolioImportManualCount"
+                                       Text="{Binding ManualSymbolCountText}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextBrush}" />
+                            <TextBlock AutomationProperties.AutomationId="PortfolioImportManualGuidance"
+                                       Text="{Binding ManualEntryGuidanceText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="Add Symbols" Click="AddManualSymbols_Click" Style="{StaticResource FormButtonStyle}" />
+                        <Button Content="Add Symbols"
+                                Command="{Binding AddManualSymbolsCommand}"
+                                Style="{StaticResource FormButtonStyle}"
+                                AutomationProperties.AutomationId="PortfolioImportManualAddButton" />
                         <TextBlock Text="{Binding ManualImportStatus}" VerticalAlignment="Center" Margin="12,0,0,0"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="12" />
                     </StackPanel>

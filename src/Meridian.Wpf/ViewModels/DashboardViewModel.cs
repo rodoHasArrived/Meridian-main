@@ -76,6 +76,13 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     public ObservableCollection<SymbolPerformanceItem> SymbolPerformanceItems { get; } = new();
     public ObservableCollection<SymbolFreshnessItem> SymbolFreshnessItems { get; } = new();
     public ObservableCollection<IntegrityEventItem> IntegrityEventItems { get; } = new();
+    public ObservableCollection<DashboardOperationsMetricItem> OperationsMetrics { get; } = new();
+    public ObservableCollection<DashboardDataQualityCategoryItem> DataQualityCategories { get; } = new();
+    public ObservableCollection<DashboardUpcomingMaturityItem> UpcomingMaturities { get; } = new();
+    public ObservableCollection<DashboardHoldingSnapshotItem> HoldingsSnapshotItems { get; } = new();
+    public ObservableCollection<DashboardServiceStatusItem> PortfolioDataServiceStatuses { get; } = new();
+
+    public string HoldingsSnapshotCountText => $"{HoldingsSnapshotItems.Count:N0} holdings";
 
     // ── Metric-card properties ────────────────────────────────────────────────────
 
@@ -312,7 +319,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     public IRelayCommand QuickAddSymbolCommand { get; }
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
-    public string PageTitle => "Dashboard";
+    public string PageTitle => "Research Operations";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -378,18 +385,19 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         AcknowledgeIntegrityEventCommand = new RelayCommand<int>(AcknowledgeIntegrityEvent);
         ViewAllIntegrityEventsCommand = new RelayCommand(() => _navigationService.NavigateTo("DataQuality"));
         ExportIntegrityReportCommand = new RelayCommand(() =>
-            _notificationService.NotifyInfo("Report queued", "Integrity report export started."));
+            _notificationService.NotifyInfo("Report queued", "Data-quality report export started."));
         QuickAddSymbolCommand = new RelayCommand(ExecuteQuickAddSymbol);
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", RefreshStatusCommand, "\uE72C", "Refresh all data", IsPrimary: true));
-        Actions.Add(new ActionEntry("View Logs", ViewLogsCommand, "\uE8FD", "View activity log"));
-        Actions.Add(new ActionEntry("Data Quality", ViewAllIntegrityEventsCommand, "\uE73E", "View data quality metrics"));
+        Actions.Add(new ActionEntry("Refresh", RefreshStatusCommand, "\uE72C", "Refresh holdings and quality status", IsPrimary: true));
+        Actions.Add(new ActionEntry("Activity Log", ViewLogsCommand, "\uE8FD", "View activity log"));
+        Actions.Add(new ActionEntry("Quality Worklist", ViewAllIntegrityEventsCommand, "\uE73E", "Open data-quality worklist"));
 
         // Observe collection changes to keep empty-state flags up to date.
         ActivityItems.CollectionChanged += (_, _) => IsNoActivityVisible = ActivityItems.Count == 0;
         IntegrityEventItems.CollectionChanged += (_, _) => IsNoIntegrityEventsVisible = IntegrityEventItems.Count == 0;
+        HoldingsSnapshotItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HoldingsSnapshotCountText));
 
         // Subscribe to service events.
         _messagingService.MessageReceived += OnMessageReceived;
@@ -405,7 +413,99 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _staleCheckTimer.Tick += OnStaleCheckTimerTick;
         _activityPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
         _activityPollTimer.Tick += OnActivityPollTimerTick;
+
+        SeedOperationalDashboardData();
     }
+
+    private void SeedOperationalDashboardData()
+    {
+        var mutedBrush = _secondaryTextBrush;
+        var purpleBrush = (Brush)System.Windows.Application.Current.Resources["AccentPurpleBrush"];
+        var cyanBrush = (Brush)System.Windows.Application.Current.Resources["AccentCyanBrush"];
+        var successBackground = (Brush)System.Windows.Application.Current.Resources["BadgeSuccessBackgroundBrush"];
+        var successBorder = (Brush)System.Windows.Application.Current.Resources["BadgeSuccessBorderBrush"];
+        var warningBackground = (Brush)System.Windows.Application.Current.Resources["BadgeWarningBackgroundBrush"];
+        var warningBorder = (Brush)System.Windows.Application.Current.Resources["BadgeWarningBorderBrush"];
+        var dangerBackground = (Brush)System.Windows.Application.Current.Resources["BadgeDangerBackgroundBrush"];
+        var dangerBorder = (Brush)System.Windows.Application.Current.Resources["BadgeDangerBorderBrush"];
+        var infoBackground = (Brush)System.Windows.Application.Current.Resources["BadgeInfoBackgroundBrush"];
+        var infoBorder = (Brush)System.Windows.Application.Current.Resources["BadgeInfoBorderBrush"];
+
+        OperationsMetrics.Clear();
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Holdings in Scope", Value = "24,816", Detail = "+128 validated this month", AccentBrush = _infoBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Quality Exceptions", Value = "37", Detail = "12 high priority", AccentBrush = _warningBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Ratings Gaps", Value = "14", Detail = "NAIC/S&P/Moody's mapping", AccentBrush = purpleBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Latest Custodian File", Value = "7:42 AM", Detail = "12,480 holdings processed", AccentBrush = cyanBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Holdings Reconciled", Value = "98.7%", Detail = "Across current portfolio", AccentBrush = _successBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Stale Valuations", Value = "22", Detail = "Older than pricing tolerance", AccentBrush = mutedBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Filing Data Gaps", Value = "9", Detail = "NAIC fields required", AccentBrush = _errorBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Maturity Watch", Value = "46", Detail = "Next 90 days", AccentBrush = _infoBrush });
+
+        DataQualityCategories.Clear();
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Security master", Count = "12", Detail = "Identifier, issuer, or terms exceptions", Completion = 93, StatusBrush = _warningBrush });
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Ratings coverage", Count = "14", Detail = "NAIC/S&P/Moody's/Fitch mappings pending", Completion = 88, StatusBrush = purpleBrush });
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Valuation freshness", Count = "22", Detail = "Prices older than tolerance", Completion = 91, StatusBrush = mutedBrush });
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Ledger export readiness", Count = "3", Detail = "Fields blocked from downstream export", Completion = 98, StatusBrush = _successBrush });
+
+        UpcomingMaturities.Clear();
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "US Treasury", MaturityDate = "2026-05-15", ParValue = "$18.2M", Status = "Cash ready", StatusBrush = _successBrush });
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "Federal Home Loan Bank", MaturityDate = "2026-06-03", ParValue = "$9.8M", Status = "Ops review", StatusBrush = _warningBrush });
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "JP Morgan Chase", MaturityDate = "2026-06-18", ParValue = "$7.5M", Status = "Cash ready", StatusBrush = _successBrush });
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "FNMA Pool", MaturityDate = "2026-07-01", ParValue = "$6.4M", Status = "Term gap", StatusBrush = _errorBrush });
+
+        HoldingsSnapshotItems.Clear();
+        HoldingsSnapshotItems.Add(CreateHolding("91282CJN2", "US Treasury", "Treasury Note", "Bond", "AA+ / Aaa", "4.125%", "2028-01-31", "$32.0M", "$31.7M", "$32.4M", "+$0.7M", _successBrush, "Current", successBackground, successBorder, _successBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("3130ATUC9", "Federal Home Loan Bank", "Callable Agency Note", "Agency", "AA+ / Aaa", "5.000%", "2029-06-14", "$18.5M", "$18.6M", "$18.2M", "-$0.4M", _errorBrush, "Needs review", warningBackground, warningBorder, _warningBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("46647PBB1", "JP Morgan Chase", "Senior Unsecured Note", "Corporate", "A- / A1", "4.950%", "2030-07-22", "$11.0M", "$10.8M", "$11.3M", "+$0.5M", _successBrush, "Current", successBackground, successBorder, _successBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("02007LAB3", "Ally Auto Receivables", "Auto Loan ABS 2024-A A3", "ABS", "AAA / Aaa", "5.310%", "2029-11-15", "$8.6M", "$8.5M", "$8.5M", "+$0.0M", _successBrush, "New lot", infoBackground, infoBorder, cyanBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("61747YFG5", "Morgan Stanley", "Subordinated Note", "Corporate", "BBB+ / A3", "4.210%", "2034-04-20", "$7.2M", "$7.1M", "$6.9M", "-$0.2M", _errorBrush, "Stale price", warningBackground, warningBorder, _warningBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("17327CAN3", "Citigroup", "Fixed-to-Float Note", "Corporate", "BBB / Baa1", "6.270%", "2036-02-13", "$6.8M", "$6.7M", "$6.6M", "-$0.1M", _errorBrush, "Current", successBackground, successBorder, _successBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("3622ABCD4", "GNMA Pool", "Mortgage Pass-Through", "MBS", "AA+ / Aaa", "3.500%", "2042-09-20", "$5.9M", "$5.6M", "$5.4M", "-$0.2M", _errorBrush, "Data gap", dangerBackground, dangerBorder, _errorBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("78467VAF9", "SPDR S&P 500 ETF", "Common ETF Holding", "Equity", "N/A", "--", "--", "$4.2M", "$4.0M", "$4.5M", "+$0.5M", _successBrush, "Locked", infoBackground, infoBorder, purpleBrush));
+
+        PortfolioDataServiceStatuses.Clear();
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Pricing coverage", State = "current", StatusBrush = _successBrush });
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Security master", State = "clear", StatusBrush = _successBrush });
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Ledger export", State = "ready", StatusBrush = _successBrush });
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Reference data", State = "synced", StatusBrush = _infoBrush });
+    }
+
+    private static DashboardHoldingSnapshotItem CreateHolding(
+        string cusip,
+        string issuer,
+        string description,
+        string assetClass,
+        string rating,
+        string coupon,
+        string maturity,
+        string parValue,
+        string bookValue,
+        string marketValue,
+        string valuationDelta,
+        Brush valuationDeltaBrush,
+        string dataStatus,
+        Brush dataStatusBackground,
+        Brush dataStatusBorderBrush,
+        Brush dataStatusForeground) =>
+        new()
+        {
+            Cusip = cusip,
+            Issuer = issuer,
+            Description = description,
+            AssetClass = assetClass,
+            Rating = rating,
+            Coupon = coupon,
+            Maturity = maturity,
+            ParValue = parValue,
+            BookValue = bookValue,
+            MarketValue = marketValue,
+            ValuationDelta = valuationDelta,
+            ValuationDeltaBrush = valuationDeltaBrush,
+            DataStatus = dataStatus,
+            DataStatusBackground = dataStatusBackground,
+            DataStatusBorderBrush = dataStatusBorderBrush,
+            DataStatusForeground = dataStatusForeground
+        };
 
     // ── Lifecycle (called by the Page) ────────────────────────────────────────────
 
@@ -851,12 +951,14 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private static PointCollection BuildSparkline(List<double> history, double height)
     {
         var points = new PointCollection();
-        if (history.Count < 2) return points;
+        if (history.Count < 2)
+            return points;
 
         var max = history.Max();
         var min = history.Min();
         var range = max - min;
-        if (range < 0.001) range = 1;
+        if (range < 0.001)
+            range = 1;
 
         var step = 200.0 / (history.Count - 1); // width assumed ~200px in the card canvas
         for (var i = 0; i < history.Count; i++)
@@ -876,12 +978,14 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private static PointCollection BuildSparklineFill(List<double> history, double height)
     {
         var points = new PointCollection();
-        if (history.Count < 2) return points;
+        if (history.Count < 2)
+            return points;
 
         var max = history.Max();
         var min = history.Min();
         var range = max - min;
-        if (range < 0.001) range = 1;
+        if (range < 0.001)
+            range = 1;
 
         var step = 200.0 / (history.Count - 1);
 
@@ -921,9 +1025,9 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         // Refresh Status command
         var refreshCommand = RefreshStatusCommand;
         commands.Add(new CommandEntry(
-            "Refresh Dashboard",
-            "Refresh all dashboard metrics and status",
-            "Dashboard",
+            "Refresh Research Operations",
+            "Refresh holdings, data-quality, and service status",
+            "Research Operations",
             refreshCommand,
             "F5"));
 
@@ -932,18 +1036,18 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         {
             var startCommand = StartCollectorCommand;
             commands.Add(new CommandEntry(
-                "Start Data Collector",
-                "Start collecting market data from enabled providers",
-                "Dashboard",
+                "Start Data Collection",
+                "Start provider collection for holdings and quality checks",
+                "Research Operations",
                 startCommand));
         }
         else
         {
             var stopCommand = StopCollectorCommand;
             commands.Add(new CommandEntry(
-                "Stop Data Collector",
-                "Stop the data collector",
-                "Dashboard",
+                "Stop Data Collection",
+                "Stop provider collection",
+                "Research Operations",
                 stopCommand));
         }
 
@@ -952,8 +1056,8 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
             _navigationService.NavigateTo("ProviderHealth"));
         commands.Add(new CommandEntry(
             "View Provider Health",
-            "Open provider status and health monitoring",
-            "Dashboard",
+            "Open provider coverage and health checks",
+            "Research Operations",
             healthCommand));
 
         // View Data Quality command
@@ -961,8 +1065,8 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
             _navigationService.NavigateTo("DataQuality"));
         commands.Add(new CommandEntry(
             "View Data Quality",
-            "Open data quality metrics and alerts",
-            "Dashboard",
+            "Open data-quality worklist",
+            "Research Operations",
             qualityCommand));
 
         // View Activity Log command
@@ -970,15 +1074,15 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         commands.Add(new CommandEntry(
             "View Activity Log",
             "View recent activity and events",
-            "Dashboard",
+            "Research Operations",
             logCommand));
 
         // Run Backfill command
         var backfillCommand = RunBackfillCommand;
         commands.Add(new CommandEntry(
             "Run Backfill",
-            "Start a backfill operation for missing data",
-            "Dashboard",
+            "Queue backfill for missing holdings data",
+            "Research Operations",
             backfillCommand));
 
         return commands.AsReadOnly();

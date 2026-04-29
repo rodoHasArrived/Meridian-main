@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanBacktestResultsResponseDto
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestId
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlgorithmName
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 51
   assemblies:
   - Meridian.Contracts

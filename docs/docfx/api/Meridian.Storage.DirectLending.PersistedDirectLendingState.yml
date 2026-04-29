@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistedDirectLendingState
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 53
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 53
   assemblies:
   - Meridian.Storage
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoanId
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 54
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregateVersion
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 55
   assemblies:
   - Meridian.Storage
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contract
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 56
   assemblies:
   - Meridian.Storage
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Servicing
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 57
   assemblies:
   - Meridian.Storage

@@ -17,6 +17,7 @@ This directory contains reusable prompt templates for AI assistants (Claude, Cop
 | [configure-deployment.prompt.yml](configure-deployment.prompt.yml) | Deployment configuration help | Setting up environments |
 | [add-export-format.prompt.yml](add-export-format.prompt.yml) | Export format implementation | Adding new export types |
 | [wpf-debug-improve.prompt.yml](wpf-debug-improve.prompt.yml) | WPF debugging and improvement guide | Fixing or completing WPF UI work |
+| [wpf-design-system-screen-impact.prompt.yml](wpf-design-system-screen-impact.prompt.yml) | WPF design-system screen impact map | Finding and updating the screens needed for a target page |
 | [simulate-user-panel.prompt.yml](simulate-user-panel.prompt.yml) | Generic manifest-driven user-panel review | Running any simulated-user-panel mode from a review manifest |
 | [simulate-user-panel-design-partner.prompt.yml](simulate-user-panel-design-partner.prompt.yml) | Product-shaping critique for early ideas and surfaces | Roadmap review, owner feedback, and design-partner critique |
 | [simulate-user-panel-release-gate.prompt.yml](simulate-user-panel-release-gate.prompt.yml) | Near-ship release gate for workflows and screens | Calling ship blockers, caveats, and trust gaps |
@@ -70,6 +71,7 @@ messages:
 - **New export format**: `add-export-format.prompt.yml`
 - **Write tests**: `write-unit-tests.prompt.yml`
 - **Code review**: `code-review.prompt.yml`
+- **WPF design-system page routing**: `wpf-design-system-screen-impact.prompt.yml`
 - **Simulated user testing**: `simulate-user-panel.prompt.yml`
 - **Design-partner critique**: `simulate-user-panel-design-partner.prompt.yml`
 - **Release gate**: `simulate-user-panel-release-gate.prompt.yml`

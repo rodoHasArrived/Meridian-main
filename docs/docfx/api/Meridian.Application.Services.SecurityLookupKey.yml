@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityLookupKey
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 198
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 198
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifierKind
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 199
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifierValue
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 200
   assemblies:
   - Meridian.Application
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 201
   assemblies:
   - Meridian.Application

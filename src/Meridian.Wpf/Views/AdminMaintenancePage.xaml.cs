@@ -16,7 +16,7 @@ public partial class AdminMaintenancePage : Page
 {
     private readonly AdminMaintenanceViewModel _viewModel;
 
-    public AdminMaintenancePage(AdminMaintenanceServiceBase adminService)
+    public AdminMaintenancePage(IAdminMaintenanceService adminService)
     {
         InitializeComponent();
         _viewModel = new AdminMaintenanceViewModel(adminService);
@@ -42,12 +42,6 @@ public partial class AdminMaintenancePage : Page
     {
         if (_viewModel.IsInitialized)
             await _viewModel.SaveScheduleAsync();
-    }
-
-    private async void SaveSchedule_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.SaveScheduleAsync();
-        _viewModel.ShowSuccess("Schedule saved successfully.");
     }
 
     private async void RunMaintenance_Click(object sender, RoutedEventArgs e)
@@ -125,25 +119,6 @@ public partial class AdminMaintenancePage : Page
 
     // ---- Cleanup ----
 
-    private async void PreviewCleanup_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.PreviewCleanupAsync();
-    }
-
-    private async void ExecuteCleanup_Click(object sender, RoutedEventArgs e)
-    {
-        var result = MessageBox.Show(
-            "This will permanently delete the listed files. Continue?",
-            "Execute Cleanup",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result == MessageBoxResult.Yes)
-        {
-            await _viewModel.ExecuteCleanupAsync();
-        }
-    }
-
     // ---- InfoBar ----
 
     private void CloseInfoBar_Click(object sender, RoutedEventArgs e)
@@ -151,4 +126,3 @@ public partial class AdminMaintenancePage : Page
         _viewModel.DismissStatus();
     }
 }
-

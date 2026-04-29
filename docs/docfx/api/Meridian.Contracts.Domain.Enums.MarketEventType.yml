@@ -43,7 +43,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventType
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: L2Snapshot
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BboQuote
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trade
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderFlow
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Heartbeat
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatus
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 40
   assemblies:
   - Meridian.Contracts
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBar
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 50
   assemblies:
   - Meridian.Contracts
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalQuote
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalTrade
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalAuction
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 65
   assemblies:
   - Meridian.Contracts
@@ -406,7 +406,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregateBar
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 70
   assemblies:
   - Meridian.Contracts
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quote
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -462,7 +462,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Depth
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -490,7 +490,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionQuote
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 85
   assemblies:
   - Meridian.Contracts
@@ -518,7 +518,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionTrade
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -546,7 +546,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionGreeks
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 95
   assemblies:
   - Meridian.Contracts
@@ -574,7 +574,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionChain
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 100
   assemblies:
   - Meridian.Contracts
@@ -602,7 +602,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterest
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 105
   assemblies:
   - Meridian.Contracts
@@ -630,7 +630,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderAdd
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 110
   assemblies:
   - Meridian.Contracts
@@ -658,7 +658,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderModify
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 115
   assemblies:
   - Meridian.Contracts
@@ -686,7 +686,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderCancel
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 120
   assemblies:
   - Meridian.Contracts
@@ -714,7 +714,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderExecute
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 125
   assemblies:
   - Meridian.Contracts
@@ -742,7 +742,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderReplace
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
     startLine: 130
   assemblies:
   - Meridian.Contracts

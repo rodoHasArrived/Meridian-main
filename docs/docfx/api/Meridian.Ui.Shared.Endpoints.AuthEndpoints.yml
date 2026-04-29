@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapAuthEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Shared

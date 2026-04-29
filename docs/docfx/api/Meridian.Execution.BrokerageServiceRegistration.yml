@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageServiceRegistration
-    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    path: src/Meridian.Execution/BrokerageServiceRegistration.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddBrokerageExecution
-    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    path: src/Meridian.Execution/BrokerageServiceRegistration.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddBrokerageGateway
-    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    path: src/Meridian.Execution/BrokerageServiceRegistration.cs
     startLine: 100
   assemblies:
   - Meridian.Execution
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddBrokerageGateway
-    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    path: src/Meridian.Execution/BrokerageServiceRegistration.cs
     startLine: 121
   assemblies:
   - Meridian.Execution

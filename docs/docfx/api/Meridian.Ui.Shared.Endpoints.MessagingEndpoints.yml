@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessagingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapMessagingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Shared

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RolePermissions
-    path: ../../src/Meridian.Contracts/Auth/RolePermissions.cs
+    path: src/Meridian.Contracts/Auth/RolePermissions.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: For
-    path: ../../src/Meridian.Contracts/Auth/RolePermissions.cs
+    path: src/Meridian.Contracts/Auth/RolePermissions.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasPermission
-    path: ../../src/Meridian.Contracts/Auth/RolePermissions.cs
+    path: src/Meridian.Contracts/Auth/RolePermissions.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts

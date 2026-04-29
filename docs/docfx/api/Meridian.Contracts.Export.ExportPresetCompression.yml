@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPresetCompression
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 253
   assemblies:
   - Meridian.Contracts
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 256
   assemblies:
   - Meridian.Contracts
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gzip
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 258
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snappy
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 260
   assemblies:
   - Meridian.Contracts
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Zstd
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 262
   assemblies:
   - Meridian.Contracts
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lz4
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 264
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Zip
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 266
   assemblies:
   - Meridian.Contracts

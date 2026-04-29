@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IThemeService
-    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTheme
-    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThemeChanged
-    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTheme
-    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Services
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSystemTheme
-    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services

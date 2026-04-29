@@ -17,6 +17,8 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 {
+    private const int MaxSelectionPreviewRows = 6;
+
     private static readonly Brush SelectionPositiveBrush =
         new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50));
 
@@ -70,6 +72,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     public ObservableCollection<BlotterFilterChip> ActiveFilterChips { get; } = [];
 
+    public ObservableCollection<BlotterSelectionPreview> SelectedPositionPreviews { get; } = [];
+
     // ── Groups (the main grid data) ──────────────────────────────────────────
 
     public ObservableCollection<BlotterGroup> Groups { get; } = [];
@@ -109,7 +113,13 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     public int RowCount
     {
         get => _rowCount;
-        private set => SetProperty(ref _rowCount, value);
+        private set
+        {
+            if (SetProperty(ref _rowCount, value))
+            {
+                RaisePropertyChanged(nameof(HasRows));
+            }
+        }
     }
 
     private int _groupCount;
@@ -160,6 +170,41 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _selectedUnrealisedPnlBrush, value);
     }
 
+    private string _selectedLongQuantityText = "0";
+    public string SelectedLongQuantityText
+    {
+        get => _selectedLongQuantityText;
+        private set => SetProperty(ref _selectedLongQuantityText, value);
+    }
+
+    private string _selectedShortQuantityText = "0";
+    public string SelectedShortQuantityText
+    {
+        get => _selectedShortQuantityText;
+        private set => SetProperty(ref _selectedShortQuantityText, value);
+    }
+
+    private string _selectedGrossQuantityText = "0";
+    public string SelectedGrossQuantityText
+    {
+        get => _selectedGrossQuantityText;
+        private set => SetProperty(ref _selectedGrossQuantityText, value);
+    }
+
+    private int _unsupportedActionCount;
+    public int UnsupportedActionCount
+    {
+        get => _unsupportedActionCount;
+        private set => SetProperty(ref _unsupportedActionCount, value);
+    }
+
+    private string _selectedActionEligibilityText = "Select positions to inspect batch-action eligibility.";
+    public string SelectedActionEligibilityText
+    {
+        get => _selectedActionEligibilityText;
+        private set => SetProperty(ref _selectedActionEligibilityText, value);
+    }
+
     private string _selectionSummaryText = "Select positions to inspect exposure and batch-action readiness.";
     public string SelectionSummaryText
     {
@@ -188,7 +233,38 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _snapshotSourceText, value);
     }
 
+    private bool _hasActiveFilters;
+    public bool HasActiveFilters
+    {
+        get => _hasActiveFilters;
+        private set
+        {
+            if (SetProperty(ref _hasActiveFilters, value))
+            {
+                ClearFiltersCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    private string _emptyStateTitle = "No positions loaded yet.";
+    public string EmptyStateTitle
+    {
+        get => _emptyStateTitle;
+        private set => SetProperty(ref _emptyStateTitle, value);
+    }
+
+    private string _emptyStateDetail = "Start a paper or live run, import positions, or refresh the blotter to load execution rows.";
+    public string EmptyStateDetail
+    {
+        get => _emptyStateDetail;
+        private set => SetProperty(ref _emptyStateDetail, value);
+    }
+
+    public bool HasRows => RowCount > 0;
+
     public bool HasSelectedPositions => SelectedPositionCount > 0;
+
+    public bool HasSelectedPositionPreviews => SelectedPositionPreviews.Count > 0;
 
     private string _minMktTimeText = "—";
     public string MinMktTimeText
@@ -217,6 +293,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand UpsizeCommand { get; }
     public IAsyncRelayCommand TerminateCommand { get; }
     public IRelayCommand RemoveFilterChipCommand { get; }
+    public IRelayCommand ClearFiltersCommand { get; }
     public IRelayCommand<BlotterGroup> ToggleGroupCommand { get; }
 
     // ── Constructor ───────────────────────────────────────────────────────────
@@ -232,9 +309,11 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         UpsizeCommand = new AsyncRelayCommand(ExecuteUpsizeAsync, HasUpsizeableEntries);
         TerminateCommand = new AsyncRelayCommand(ExecuteTerminateAsync, HasClosableEntries);
         RemoveFilterChipCommand = new RelayCommand<BlotterFilterChip>(RemoveFilterChip);
+        ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
         ToggleGroupCommand = new RelayCommand<BlotterGroup>(g =>
         {
-            if (g is not null) g.IsExpanded = !g.IsExpanded;
+            if (g is not null)
+                g.IsExpanded = !g.IsExpanded;
         });
 
         _refreshTimer = new DispatcherTimer
@@ -270,6 +349,29 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     {
         await RefreshAsync(ct);
         _refreshTimer.Start();
+    }
+
+    internal void LoadEntriesForTests(IEnumerable<BlotterEntry> entries, string snapshotSource = "test fixture")
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        UnsubscribeEntrySelectionChanged();
+        _allEntries.Clear();
+        _allEntries.AddRange(entries);
+
+        _lastSnapshotSource = snapshotSource;
+        _lastSnapshotStatus = _allEntries.Count == 0
+            ? "No positions loaded."
+            : $"{_allEntries.Count} test position(s) loaded.";
+
+        ActiveFilterChips.Clear();
+        _selectedPreset = "All";
+        RaisePropertyChanged(nameof(SelectedPreset));
+        _filterSearchText = string.Empty;
+        RaisePropertyChanged(nameof(FilterSearchText));
+
+        ApplyFilters();
+        TradeTimeText = DateTime.Now.ToString("HH:mm:ss");
     }
 
     public void Dispose()
@@ -415,7 +517,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     private void RemoveFilterChip(BlotterFilterChip? chip)
     {
-        if (chip is null) return;
+        if (chip is null)
+            return;
         ActiveFilterChips.Remove(chip);
 
         // Reset preset dropdown when expiry chip is removed
@@ -424,6 +527,22 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             _selectedPreset = "All";
             RaisePropertyChanged(nameof(SelectedPreset));
         }
+
+        ApplyFilters();
+    }
+
+    private void ClearFilters()
+    {
+        if (!HasActiveFilters)
+        {
+            return;
+        }
+
+        ActiveFilterChips.Clear();
+        _selectedPreset = "All";
+        RaisePropertyChanged(nameof(SelectedPreset));
+        _filterSearchText = string.Empty;
+        RaisePropertyChanged(nameof(FilterSearchText));
 
         ApplyFilters();
     }
@@ -487,10 +606,35 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         StatusText = RowCount switch
         {
-            0 when _allEntries.Count == 0 => _lastSnapshotStatus,
-            0 => "No positions match the current filters.",
+            0 when _allEntries.Count == 0 => string.Equals(_lastSnapshotStatus, "No positions loaded.", StringComparison.Ordinal)
+                ? "No positions are loaded yet. Start a paper or live run, or import positions to unlock the blotter."
+                : _lastSnapshotStatus,
+            0 => "No positions match the current filters. Clear or relax the filter set to restore the blotter.",
             _ => $"{RowCount} row{(RowCount == 1 ? string.Empty : "s")} across {GroupCount} group{(GroupCount == 1 ? string.Empty : "s")} displayed from {_lastSnapshotSource}."
         };
+
+        if (RowCount > 0)
+        {
+            EmptyStateTitle = "Positions loaded.";
+            EmptyStateDetail = StatusText;
+        }
+        else if (_allEntries.Count == 0)
+        {
+            EmptyStateTitle = "No positions loaded yet.";
+            EmptyStateDetail = string.Equals(_lastSnapshotStatus, "No positions loaded.", StringComparison.Ordinal)
+                ? "Start a paper or live run, import positions, or refresh the blotter to load execution rows."
+                : _lastSnapshotStatus;
+        }
+        else if (HasActiveFilters)
+        {
+            EmptyStateTitle = "No positions match current filters.";
+            EmptyStateDetail = "Reset the preset, filter chips, and search text to restore the hidden blotter rows.";
+        }
+        else
+        {
+            EmptyStateTitle = "No displayed positions.";
+            EmptyStateDetail = _lastSnapshotStatus;
+        }
     }
 
     private void UpdateFilterSummary()
@@ -511,6 +655,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             parts.Add($"Search \"{FilterSearchText.Trim()}\"");
         }
 
+        HasActiveFilters = parts.Count > 0;
+
         FilterSummaryText = parts.Count == 0
             ? "All positions in current blotter scope."
             : string.Join(" • ", parts);
@@ -529,31 +675,50 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         var selectedGroups = Groups.Count(group => group.Entries.Any(entry => entry.IsSelected));
         var netQuantity = selectedEntries.Sum(entry => entry.Quantity);
+        var longQuantity = selectedEntries
+            .Where(entry => entry.Quantity > 0)
+            .Sum(entry => entry.Quantity);
+        var shortQuantity = selectedEntries
+            .Where(entry => entry.Quantity < 0)
+            .Sum(entry => entry.Quantity);
+        var grossQuantity = selectedEntries.Sum(entry => Math.Abs(entry.Quantity));
         var totalPnl = selectedEntries.Sum(entry => entry.UnrealisedPnl);
         var closableCount = selectedEntries.Count(entry => entry.SupportsClose);
         var upsizeableCount = selectedEntries.Count(entry => entry.SupportsUpsize);
+        var unsupportedCount = selectedEntries.Count(entry => !entry.SupportsClose && !entry.SupportsUpsize);
 
         SelectedPositionCount = selectedEntries.Count;
         SelectedGroupCount = selectedGroups;
         SelectedNetQuantityText = netQuantity.ToString("+#,0.####;-#,0.####;0");
+        SelectedLongQuantityText = FormatSignedQuantity(longQuantity);
+        SelectedShortQuantityText = FormatSignedQuantity(shortQuantity);
+        SelectedGrossQuantityText = grossQuantity.ToString("#,0.####");
         SelectedUnrealisedPnlText = totalPnl.ToString("+#,0.00;-#,0.00;0.00");
+        UnsupportedActionCount = unsupportedCount;
+        SelectedActionEligibilityText = BuildActionEligibilityText(
+            selectedEntries.Count,
+            closableCount,
+            upsizeableCount,
+            unsupportedCount);
         SelectedUnrealisedPnlBrush = selectedEntries.Count == 0
             ? SelectionNeutralBrush
             : totalPnl >= 0
                 ? SelectionPositiveBrush
                 : SelectionNegativeBrush;
+        RefreshSelectedPositionPreviews(selectedEntries);
 
         SelectionSummaryText = selectedEntries.Count switch
         {
-            0 => "Select positions to inspect exposure, grouped risk, and batch-action readiness.",
+            0 => "Select one or more positions to unlock grouped exposure review and batch actions.",
             1 => $"1 position selected in {selectedGroups} group for trade management review.",
             _ => $"{selectedEntries.Count} positions selected across {selectedGroups} groups."
         };
 
         SelectionActionStateText = selectedEntries.Count switch
         {
-            0 => "Upsize and terminate stay disabled until a supported position is selected.",
-            _ => $"Close available on {closableCount} row{(closableCount == 1 ? string.Empty : "s")} • upsize available on {upsizeableCount} row{(upsizeableCount == 1 ? string.Empty : "s")}."
+            0 => "Increase Selected Size and Flatten Selected Positions unlock only after you choose supported rows.",
+            _ when closableCount == 0 && upsizeableCount == 0 => "The current selection is review-only. Choose supported execution rows to unlock batch actions.",
+            _ => $"Flatten available on {closableCount} row{(closableCount == 1 ? string.Empty : "s")} • increase size available on {upsizeableCount} row{(upsizeableCount == 1 ? string.Empty : "s")}."
         };
 
         var shouldSelectAll = Groups.Count > 0 && Groups.All(group => group.Entries.All(entry => entry.IsSelected));
@@ -563,6 +728,69 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsAllSelected));
         }
     }
+
+    private void RefreshSelectedPositionPreviews(IReadOnlyList<BlotterEntry> selectedEntries)
+    {
+        SelectedPositionPreviews.Clear();
+
+        foreach (var entry in selectedEntries.Take(MaxSelectionPreviewRows))
+        {
+            SelectedPositionPreviews.Add(new BlotterSelectionPreview(
+                entry.Group,
+                entry.ProductDescription,
+                entry.QuantityText,
+                entry.UnrealisedPnlText,
+                entry.PnlBrush,
+                ResolveEligibilityLabel(entry),
+                ResolveEligibilityTone(entry)));
+        }
+
+        var remainingCount = selectedEntries.Count - MaxSelectionPreviewRows;
+        if (remainingCount > 0)
+        {
+            SelectedPositionPreviews.Add(new BlotterSelectionPreview(
+                $"+{remainingCount} more",
+                "Additional selected positions",
+                string.Empty,
+                string.Empty,
+                SelectionNeutralBrush,
+                "Open rows to review",
+                WorkspaceTone.Neutral));
+        }
+
+        RaisePropertyChanged(nameof(HasSelectedPositionPreviews));
+    }
+
+    private static string FormatSignedQuantity(decimal quantity) =>
+        quantity.ToString("+#,0.####;-#,0.####;0");
+
+    private static string BuildActionEligibilityText(
+        int selectedCount,
+        int closableCount,
+        int upsizeableCount,
+        int unsupportedCount)
+    {
+        if (selectedCount == 0)
+        {
+            return "Select positions to inspect batch-action eligibility.";
+        }
+
+        return $"Flatten: {closableCount} | Upsize: {upsizeableCount} | Review-only: {unsupportedCount}";
+    }
+
+    private static string ResolveEligibilityLabel(BlotterEntry entry) =>
+        (entry.SupportsClose, entry.SupportsUpsize) switch
+        {
+            (true, true) => "Flatten + upsize",
+            (true, false) => "Flatten",
+            (false, true) => "Upsize",
+            _ => "Review only"
+        };
+
+    private static string ResolveEligibilityTone(BlotterEntry entry) =>
+        (entry.SupportsClose || entry.SupportsUpsize)
+            ? WorkspaceTone.Success
+            : WorkspaceTone.Warning;
 
     // ── Expiry filter helpers ─────────────────────────────────────────────────
 
@@ -587,7 +815,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     {
         // Parse "10–17Sep25" style range; fall back to returning all if parse fails.
         var separatorIdx = chipValue.IndexOf('–');
-        if (separatorIdx < 0) return entries;
+        if (separatorIdx < 0)
+            return entries;
 
         var from = DateOnly.FromDateTime(DateTime.Today);
         if (DateOnly.TryParseExact(

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistItem
-    path: ../../src/Meridian.Ui.Services/Services/WatchlistService.cs
+    path: src/Meridian.Ui.Services/Services/WatchlistService.cs
     startLine: 112
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/WatchlistService.cs
+    path: src/Meridian.Ui.Services/Services/WatchlistService.cs
     startLine: 114
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Ui.Services/Services/WatchlistService.cs
+    path: src/Meridian.Ui.Services/Services/WatchlistService.cs
     startLine: 115
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Ui.Services/Services/WatchlistService.cs
+    path: src/Meridian.Ui.Services/Services/WatchlistService.cs
     startLine: 116
   assemblies:
   - Meridian.Ui.Services

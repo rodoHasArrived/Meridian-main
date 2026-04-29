@@ -84,6 +84,8 @@ public sealed class PaperSessionPersistenceService
                 Portfolio = portfolio,
                 ReconstructedLedger = reconstructedLedger,
             };
+            foreach (var fill in fills)
+                session.FillHistory.Add(fill);
             foreach (var order in orders)
                 session.OrderHistory.Add(order);
 
@@ -123,6 +125,7 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
+            await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
         }
 
         _logger.LogInformation(
@@ -152,10 +155,9 @@ public sealed class PaperSessionPersistenceService
             var ledger = session.Portfolio?.Ledger;
             if (ledger is not null && ledger.JournalEntryCount > 0)
             {
-                var dtos = SerializeLedgerJournal(ledger, sessionId);
                 try
                 {
-                    await _store.SaveLedgerJournalAsync(sessionId, dtos, ct).ConfigureAwait(false);
+                    await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
                     _logger.LogInformation(
                         "Persisted {Count} ledger entries for paper session {SessionId}",
                         ledger.JournalEntryCount, sessionId);
@@ -208,7 +210,13 @@ public sealed class PaperSessionPersistenceService
             Summary: ToSummary(session),
             Symbols: session.Symbols.ToArray(),
             Portfolio: portfolioSnapshot,
-            OrderHistory: session.OrderHistory.ToArray());
+            OrderHistory: session.OrderHistory.ToArray(),
+            FillCount: session.FillHistory.Count,
+            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
+            LastFillAt: session.FillHistory.Count > 0
+                ? session.FillHistory.Max(static fill => fill.Timestamp)
+                : null,
+            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory));
     }
 
     /// <summary>Returns the portfolio state for a live session, or null.</summary>
@@ -265,11 +273,17 @@ public sealed class PaperSessionPersistenceService
         if (_sessions.TryGetValue(sessionId, out var session) && session.IsActive)
         {
             session.Portfolio?.ApplyFill(fill);
+            session.FillHistory.Add(fill);
         }
 
         if (_store is not null)
         {
             await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
+
+            if (_sessions.TryGetValue(sessionId, out var persistedSession))
+            {
+                await PersistSessionLedgerAsync(persistedSession, ct).ConfigureAwait(false);
+            }
         }
     }
 
@@ -296,12 +310,18 @@ public sealed class PaperSessionPersistenceService
         // Load session metadata to get initial cash.
         var allRecords = await _store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
         var meta = allRecords.FirstOrDefault(r => r.SessionId == sessionId);
-        if (meta is null)
-            return null;
+        var initialCash = meta?.InitialCash;
+        if (!initialCash.HasValue)
+        {
+            if (!_sessions.TryGetValue(sessionId, out var activeSession))
+                return null;
+
+            initialCash = activeSession.InitialCash;
+        }
 
         // Replay fills through a fresh portfolio.
         var fills = await _store.LoadFillsAsync(sessionId, ct).ConfigureAwait(false);
-        var portfolio = new PaperTradingPortfolio(meta.InitialCash);
+        var portfolio = new PaperTradingPortfolio(initialCash.Value);
         foreach (var fill in fills)
             portfolio.ApplyFill(fill);
 
@@ -349,11 +369,15 @@ public sealed class PaperSessionPersistenceService
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
         var comparedFillCount = persistedFills.Count;
         var comparedOrderCount = _store is null
-            ? detail.OrderHistory.Count
+            ? detail.OrderHistory?.Count ?? 0
             : persistedOrders.Count;
         var comparedLedgerEntryCount = _store is null
-            ? detail.Portfolio?.Ledger.JournalEntryCount ?? detail.ReconstructedLedger?.JournalEntryCount ?? 0
+            ? 0
             : persistedLedgerEntries.Count;
+        var persistedLedgerLineCount = persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
+        var currentLedger = GetLedger(sessionId);
+        var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
+        var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
         var lastPersistedFillAt = persistedFills.Count > 0
             ? persistedFills.Max(fill => fill.Timestamp)
             : (DateTimeOffset?)null;
@@ -364,12 +388,23 @@ public sealed class PaperSessionPersistenceService
                 .DefaultIfEmpty(persistedOrders.Max(order => order.CreatedAt))
                 .Max()
             : (DateTimeOffset?)null;
+        if (_store is not null)
+        {
+            CompareOrderHistory(detail.OrderHistory, persistedOrders, mismatchReasons);
+            CompareLedgerJournal(currentLedger, persistedLedgerEntries, mismatchReasons);
+        }
+
         var verificationAudit = await RecordVerificationAuditAsync(
             detail,
             mismatchReasons,
             comparedFillCount,
             comparedOrderCount,
             comparedLedgerEntryCount,
+            currentLedgerEntryCount,
+            currentLedgerLineCount,
+            persistedLedgerLineCount,
+            lastPersistedFillAt,
+            lastPersistedOrderUpdateAt,
             replayPortfolio,
             ct).ConfigureAwait(false);
 
@@ -396,6 +431,11 @@ public sealed class PaperSessionPersistenceService
         int comparedFillCount,
         int comparedOrderCount,
         int comparedLedgerEntryCount,
+        int currentLedgerEntryCount,
+        int currentLedgerLineCount,
+        int persistedLedgerLineCount,
+        DateTimeOffset? lastPersistedFillAt,
+        DateTimeOffset? lastPersistedOrderUpdateAt,
         ExecutionPortfolioSnapshotDto replayPortfolio,
         CancellationToken ct)
     {
@@ -409,10 +449,17 @@ public sealed class PaperSessionPersistenceService
             ["sessionId"] = detail.Summary.SessionId,
             ["strategyId"] = detail.Summary.StrategyId,
             ["replaySource"] = _store is null ? "InMemoryFallback" : "DurableFillLog",
+            ["isConsistent"] = (mismatchReasons.Count == 0).ToString(),
             ["comparedFillCount"] = comparedFillCount.ToString(),
             ["comparedOrderCount"] = comparedOrderCount.ToString(),
             ["comparedLedgerEntryCount"] = comparedLedgerEntryCount.ToString(),
-            ["mismatchCount"] = mismatchReasons.Count.ToString()
+            ["currentLedgerEntryCount"] = currentLedgerEntryCount.ToString(),
+            ["currentLedgerLineCount"] = currentLedgerLineCount.ToString(),
+            ["persistedLedgerLineCount"] = persistedLedgerLineCount.ToString(),
+            ["lastPersistedFillAt"] = lastPersistedFillAt?.ToString("O") ?? string.Empty,
+            ["lastPersistedOrderUpdateAt"] = lastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
+            ["mismatchCount"] = mismatchReasons.Count.ToString(),
+            ["primaryMismatchReason"] = mismatchReasons.FirstOrDefault() ?? string.Empty
         };
 
         return await _auditTrail.RecordAsync(
@@ -421,7 +468,9 @@ public sealed class PaperSessionPersistenceService
             outcome: mismatchReasons.Count == 0 ? "Completed" : "AttentionRequired",
             actor: "PaperSessionPersistenceService",
             correlationId: detail.Summary.SessionId,
-            message: $"Replay verification completed for {detail.Summary.SessionId} (cash {replayPortfolio.Cash}).",
+            message: mismatchReasons.Count == 0
+                ? $"Replay verification completed for {detail.Summary.SessionId} (cash {replayPortfolio.Cash})."
+                : $"Replay verification mismatch for {detail.Summary.SessionId}: {mismatchReasons[0]}",
             metadata: metadata,
             ct: ct).ConfigureAwait(false);
     }
@@ -464,6 +513,23 @@ public sealed class PaperSessionPersistenceService
         }
 
         return dtos;
+    }
+
+    private async Task PersistSessionLedgerAsync(PaperSession session, CancellationToken ct)
+    {
+        if (_store is null)
+        {
+            return;
+        }
+
+        var ledger = session.Portfolio?.Ledger;
+        if (ledger is null || ledger.JournalEntryCount == 0)
+        {
+            return;
+        }
+
+        var dtos = SerializeLedgerJournal(ledger, session.SessionId);
+        await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
     }
 
     private static Meridian.Ledger.Ledger? ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)
@@ -528,7 +594,7 @@ public sealed class PaperSessionPersistenceService
         IsActive: session.IsActive,
         Symbols: session.Symbols);
 
-    private static IReadOnlyList<string> ComparePortfolios(
+    private static List<string> ComparePortfolios(
         ExecutionPortfolioSnapshotDto? current,
         ExecutionPortfolioSnapshotDto replay)
     {
@@ -596,12 +662,168 @@ public sealed class PaperSessionPersistenceService
         string label,
         decimal current,
         decimal replay,
-        ICollection<string> mismatchReasons)
+        List<string> mismatchReasons)
     {
         if (current != replay)
         {
             mismatchReasons.Add($"{label} differs: current={current:G29}, replay={replay:G29}.");
         }
+    }
+
+    private static void CompareOrderHistory(
+        IReadOnlyList<OrderState>? currentOrders,
+        IReadOnlyList<OrderState> persistedOrders,
+        List<string> mismatchReasons)
+    {
+        var currentCount = currentOrders?.Count ?? 0;
+        if (currentCount != persistedOrders.Count)
+        {
+            mismatchReasons.Add(
+                $"Persisted order history count differs: current={currentCount}, persisted={persistedOrders.Count}.");
+        }
+
+        if (currentOrders is null || currentOrders.Count == 0 || persistedOrders.Count == 0)
+        {
+            return;
+        }
+
+        var currentById = currentOrders
+            .GroupBy(static order => order.OrderId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Last(),
+                StringComparer.OrdinalIgnoreCase);
+        var persistedById = persistedOrders
+            .GroupBy(static order => order.OrderId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Last(),
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var orderId in currentById.Keys.Except(persistedById.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            mismatchReasons.Add($"Persisted order history is missing order {orderId}.");
+        }
+
+        foreach (var orderId in persistedById.Keys.Except(currentById.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            mismatchReasons.Add($"Persisted order history contains unexpected order {orderId}.");
+        }
+
+        foreach (var orderId in currentById.Keys.Intersect(persistedById.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            var current = currentById[orderId];
+            var persisted = persistedById[orderId];
+            if (current.Status != persisted.Status)
+            {
+                mismatchReasons.Add(
+                    $"Order {orderId} status differs: current={current.Status}, persisted={persisted.Status}.");
+            }
+
+            if (current.FilledQuantity != persisted.FilledQuantity)
+            {
+                mismatchReasons.Add(
+                    $"Order {orderId} filled quantity differs: current={current.FilledQuantity:G29}, persisted={persisted.FilledQuantity:G29}.");
+            }
+        }
+    }
+
+    private static void CompareLedgerJournal(
+        IReadOnlyLedger? currentLedger,
+        IReadOnlyList<PersistedJournalEntryDto> persistedLedgerEntries,
+        List<string> mismatchReasons)
+    {
+        if (currentLedger is null)
+        {
+            if (persistedLedgerEntries.Count > 0)
+            {
+                mismatchReasons.Add(
+                    $"Current session ledger is unavailable while {persistedLedgerEntries.Count} persisted journal entr{(persistedLedgerEntries.Count == 1 ? "y exists" : "ies exist")}.");
+            }
+
+            return;
+        }
+
+        if (currentLedger.JournalEntryCount != persistedLedgerEntries.Count)
+        {
+            mismatchReasons.Add(
+                $"Persisted ledger journal count differs: current={currentLedger.JournalEntryCount}, persisted={persistedLedgerEntries.Count}.");
+        }
+
+        var persistedLineCount = persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
+        if (currentLedger.TotalLedgerEntryCount != persistedLineCount)
+        {
+            mismatchReasons.Add(
+                $"Persisted ledger line count differs: current={currentLedger.TotalLedgerEntryCount}, persisted={persistedLineCount}.");
+        }
+
+        CompareTrialBalance(currentLedger.TrialBalance(), BuildPersistedTrialBalance(persistedLedgerEntries), mismatchReasons);
+    }
+
+    private static IReadOnlyDictionary<LedgerAccount, decimal> BuildPersistedTrialBalance(
+        IReadOnlyList<PersistedJournalEntryDto> persistedLedgerEntries)
+    {
+        var balances = new Dictionary<LedgerAccount, decimal>();
+        foreach (var line in persistedLedgerEntries.SelectMany(static entry => entry.Lines))
+        {
+            var accountType = Enum.TryParse<LedgerAccountType>(line.Account.AccountType, out var parsedAccountType)
+                ? parsedAccountType
+                : LedgerAccountType.Asset;
+            var account = new LedgerAccount(
+                line.Account.Name,
+                accountType,
+                line.Account.Symbol,
+                line.Account.FinancialAccountId);
+            balances.TryGetValue(account, out var balance);
+            balances[account] = balance + CalculateNormalBalanceDelta(accountType, line.Debit, line.Credit);
+        }
+
+        return balances;
+    }
+
+    private static void CompareTrialBalance(
+        IReadOnlyDictionary<LedgerAccount, decimal> current,
+        IReadOnlyDictionary<LedgerAccount, decimal> persisted,
+        List<string> mismatchReasons)
+    {
+        foreach (var account in current.Keys.Except(persisted.Keys))
+        {
+            mismatchReasons.Add($"Persisted ledger trial balance is missing account {account}.");
+        }
+
+        foreach (var account in persisted.Keys.Except(current.Keys))
+        {
+            mismatchReasons.Add($"Persisted ledger trial balance contains unexpected account {account}.");
+        }
+
+        foreach (var account in current.Keys.Intersect(persisted.Keys))
+        {
+            if (current[account] != persisted[account])
+            {
+                mismatchReasons.Add(
+                    $"Ledger balance for {account} differs: current={current[account]:G29}, persisted={persisted[account]:G29}.");
+            }
+        }
+    }
+
+    private static decimal CalculateNormalBalanceDelta(
+        LedgerAccountType accountType,
+        decimal debit,
+        decimal credit)
+        => accountType is LedgerAccountType.Asset or LedgerAccountType.Expense
+            ? debit - credit
+            : credit - debit;
+
+    private static DateTimeOffset? ResolveLastOrderUpdatedAt(IReadOnlyList<OrderState> orderHistory)
+    {
+        if (orderHistory.Count == 0)
+        {
+            return null;
+        }
+
+        return orderHistory
+            .Select(static order => order.LastUpdatedAt ?? order.CreatedAt)
+            .Max();
     }
 
     private sealed class PaperSession
@@ -616,6 +838,7 @@ public sealed class PaperSessionPersistenceService
         public List<string> Symbols { get; init; } = [];
         public PaperTradingPortfolio? Portfolio { get; init; }
         public List<OrderState> OrderHistory { get; } = [];
+        public List<ExecutionReport> FillHistory { get; } = [];
 
         /// <summary>
         /// Ledger reconstructed from persisted JSONL entries on load (closed sessions only).
@@ -650,7 +873,11 @@ public sealed record PaperSessionDetailDto(
     PaperSessionSummaryDto Summary,
     IReadOnlyList<string> Symbols,
     ExecutionPortfolioSnapshotDto? Portfolio,
-    IReadOnlyList<OrderState>? OrderHistory);
+    IReadOnlyList<OrderState>? OrderHistory,
+    int FillCount,
+    int LedgerEntryCount,
+    DateTimeOffset? LastFillAt,
+    DateTimeOffset? LastOrderUpdatedAt);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(

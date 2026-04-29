@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyBucket
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 409
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 409
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowerBoundMs
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 410
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpperBoundMs
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 411
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 412
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentage
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 413
   assemblies:
   - Meridian.Application

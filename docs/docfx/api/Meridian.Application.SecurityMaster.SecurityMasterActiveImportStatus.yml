@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterActiveImportStatus
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileExtension
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Total
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Processed
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imported
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skipped
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAtUtc
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAtUtc
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 20
   assemblies:
   - Meridian.Application

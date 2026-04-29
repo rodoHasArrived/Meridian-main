@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillConfig
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 22
   assemblies:
   - Meridian.Core
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Granularity
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 27
   assemblies:
   - Meridian.Core
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableFallback
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreferAdjustedPrices
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 29
   assemblies:
   - Meridian.Core
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableSymbolResolution
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 30
   assemblies:
   - Meridian.Core
@@ -432,7 +432,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -463,7 +463,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableRateLimitRotation
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -494,7 +494,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitRotationThreshold
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -525,7 +525,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipExistingData
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 34
   assemblies:
   - Meridian.Core
@@ -556,7 +556,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillGapsOnly
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 35
   assemblies:
   - Meridian.Core
@@ -587,7 +587,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Jobs
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -618,7 +618,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 37
   assemblies:
   - Meridian.Core

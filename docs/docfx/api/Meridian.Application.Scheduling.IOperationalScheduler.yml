@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IOperationalScheduler
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 137
   assemblies:
   - Meridian.Application
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanExecuteAsync
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 147
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindNextAvailableSlotAsync
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 159
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWithinTradingHours
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWithinMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 172
   assemblies:
   - Meridian.Application
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentTradingSession
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 178
   assemblies:
   - Meridian.Application
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextTradingSession
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 184
   assemblies:
   - Meridian.Application
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 190
   assemblies:
   - Meridian.Application
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 196
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 202
   assemblies:
   - Meridian.Application
@@ -387,7 +387,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveMaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 208
   assemblies:
   - Meridian.Application

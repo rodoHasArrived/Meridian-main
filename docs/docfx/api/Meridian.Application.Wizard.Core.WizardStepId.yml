@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardStepId
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectProviders
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialGuidance
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectUseCase
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureDataSource
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateCredentials
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureSymbols
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureStorage
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureBackfill
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewConfiguration
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfiguration
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
     startLine: 18
   assemblies:
   - Meridian.Application

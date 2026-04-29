@@ -1,0 +1,74 @@
+import unittest
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+MAINTENANCE_SCRIPT = REPO_ROOT / "scripts" / "ai" / "maintenance-full.sh"
+FSHARP_TEST_PROJECT = REPO_ROOT / "tests" / "Meridian.FSharp.Tests" / "Meridian.FSharp.Tests.fsproj"
+CENTRAL_PACKAGES = REPO_ROOT / "Directory.Packages.props"
+DOCS_MAKEFILE = REPO_ROOT / "make" / "docs.mk"
+
+
+class MaintenanceFullWorkflowTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.script = MAINTENANCE_SCRIPT.read_text(encoding="utf-8")
+        cls.fsharp_project = FSHARP_TEST_PROJECT.read_text(encoding="utf-8")
+        cls.central_packages = CENTRAL_PACKAGES.read_text(encoding="utf-8")
+        cls.docs_makefile_lines = DOCS_MAKEFILE.read_text(encoding="utf-8").splitlines()
+
+    def test_docs_makefile_phony_declaration_includes_workflow_parity_target(self) -> None:
+        phony_start = next(
+            index
+            for index, line in enumerate(self.docs_makefile_lines)
+            if line.startswith(".PHONY:")
+        )
+        phony_lines: list[str] = []
+        for line in self.docs_makefile_lines[phony_start:]:
+            phony_lines.append(line.rstrip("\\").strip())
+            if not line.endswith("\\"):
+                break
+
+        declaration = " ".join(phony_lines)
+        next_line = self.docs_makefile_lines[phony_start + len(phony_lines)]
+
+        self.assertIn("check-workflow-docs-parity", declaration)
+        self.assertFalse(next_line.startswith((" ", "\t")), next_line)
+
+    def test_full_maintenance_does_not_apply_category_filter_to_entire_solution(self) -> None:
+        self.assertNotIn("dotnet test Meridian.sln", self.script)
+        self.assertNotIn('Meridian.sln -c Release --no-build --nologo --filter "Category!=Integration"', self.script)
+
+    def test_fsharp_maintenance_lane_runs_project_without_category_filter(self) -> None:
+        line = next(
+            line for line in self.script.splitlines()
+            if 'run_step "dotnet-test-fsharp"' in line
+        )
+
+        self.assertIn("tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", line)
+        self.assertNotIn("--filter", line)
+
+    def test_fsharp_maintenance_lane_matches_ci_discovery_arguments(self) -> None:
+        self.assertIn('fsharp_test_args=(', self.script)
+        self.assertIn('--logger "trx;LogFileName=test-results-fsharp.trx"', self.script)
+        self.assertIn("--results-directory .ai/test-results", self.script)
+        self.assertIn('--collect "XPlat Code Coverage"', self.script)
+        self.assertIn("--blame-hang-timeout 60s", self.script)
+
+    def test_wpf_tests_are_left_to_desktop_validation_lane(self) -> None:
+        self.assertIn('record_step "dotnet-test-wpf" "skipped"', self.script)
+        self.assertIn("desktop validation lane", self.script)
+
+    def test_fsharp_test_project_declares_coverage_collector(self) -> None:
+        self.assertIn('<PackageReference Include="coverlet.collector">', self.fsharp_project)
+        self.assertIn("<PrivateAssets>all</PrivateAssets>", self.fsharp_project)
+        self.assertIn("<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>", self.fsharp_project)
+
+    def test_fsharp_xunit_v3_runtime_matches_visual_studio_adapter_line(self) -> None:
+        self.assertIn('<PackageVersion Include="xunit.v3" Version="3.2.2" />', self.central_packages)
+        self.assertIn('<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />', self.central_packages)
+        self.assertIn("<GenerateProgramFile>false</GenerateProgramFile>", self.fsharp_project)
+
+
+if __name__ == "__main__":
+    unittest.main()

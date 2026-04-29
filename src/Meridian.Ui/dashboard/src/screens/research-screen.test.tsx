@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResearchScreen } from "@/screens/research-screen";
 import * as api from "@/lib/api";
+import { afterEach } from "vitest";
 import type { PromotionRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: ResearchWorkspaceResponse = {
@@ -42,19 +43,37 @@ const twoRuns: ResearchWorkspaceResponse = {
 };
 
 describe("ResearchScreen", () => {
+  afterEach(() => {
+    restoreApiSpy(api.compareRuns);
+    restoreApiSpy(api.diffRuns);
+    restoreApiSpy(api.getPromotionHistory);
+  });
+
   it("opens a detail dialog with run notes when the Open button is clicked", async () => {
     const user = userEvent.setup();
     render(<ResearchScreen data={twoRuns} />);
 
-    // Both runs are rendered; click the button next to the paper run
     await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    // The dialog notes for whichever row is first in sorted order should be visible
-    expect(
-      screen.queryByText("Primary paper candidate.") ??
-      screen.queryByText("Completed backtest run.")
-    ).toBeTruthy();
+    const dialog = screen.getByRole("dialog", { name: "Mean Reversion FX" });
+    expect(dialog).toHaveAccessibleDescription("Mean Reversion FX is Running in PAPER mode.");
+    expect(screen.getByText("Primary paper candidate.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Selected strategy run evidence")).toBeInTheDocument();
+    expect(screen.getByText("run-1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close Mean Reversion FX run detail" })).toBeInTheDocument();
+  });
+
+  it("closes the run detail dialog with Escape", async () => {
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
+
+    const closeButton = screen.getByRole("button", { name: "Close Mean Reversion FX run detail" });
+    closeButton.focus();
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog", { name: "Mean Reversion FX" })).not.toBeInTheDocument();
   });
 
   it("shows paper mode badge", () => {
@@ -63,16 +82,29 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("PAPER")).toBeInTheDocument();
   });
 
-  it("shows compare and diff buttons after two runs are checked", async () => {
+  it("renders an empty run-library row when no strategy runs are available", () => {
+    render(<ResearchScreen data={{ ...twoRuns, runs: [] }} />);
+
+    expect(screen.getByText("No strategy runs available. Start a backtest or paper session, then refresh Strategy."))
+      .toBeInTheDocument();
+    expect(screen.getByText("Strategy runs available for compare, diff, and detail review.")).toBeInTheDocument();
+  });
+
+  it("keeps compare and diff disabled until two runs are checked", async () => {
     const user = userEvent.setup();
     render(<ResearchScreen data={twoRuns} />);
+
+    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeDisabled();
+    expect(screen.getByText("No runs selected")).toBeInTheDocument();
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeEnabled();
+    expect(screen.getByText("Mean Reversion FX vs Index Momentum")).toBeInTheDocument();
   });
 
   it("calls compareRuns API and renders a comparison table cell", async () => {
@@ -111,6 +143,73 @@ describe("ResearchScreen", () => {
       expect(cells.some((el) => el.closest("td") !== null)).toBe(true);
     });
     expect(api.compareRuns).toHaveBeenCalledOnce();
+  });
+
+  it("renders empty comparison guidance when compare returns no rows", async () => {
+    vi.spyOn(api, "compareRuns").mockResolvedValue([]);
+
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("No comparison rows returned for the selected pair.").length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it("renders unavailable placeholders for missing comparison values", async () => {
+    const comparisonRows: RunComparisonRow[] = [
+      {
+        runId: "run-1",
+        strategyName: "Carry Alpha",
+        mode: "paper",
+        engine: "MeridianNative",
+        status: "Running",
+        netPnl: 3200,
+        totalReturn: 0.042,
+        finalEquity: null,
+        maxDrawdown: -0.018,
+        sharpeRatio: null,
+        fillCount: Number.NaN,
+        lastUpdatedAt: "2026-03-26T10:00:00Z",
+        promotionState: "CandidateForPaper",
+        hasLedger: false,
+        hasAuditTrail: false
+      }
+    ];
+    vi.spyOn(api, "compareRuns").mockResolvedValue(comparisonRows);
+
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Unavailable").length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it("shows an error banner when compare fails", async () => {
+    vi.spyOn(api, "compareRuns").mockRejectedValue(new Error("Compare service unavailable"));
+
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Compare service unavailable");
+    });
   });
 
   it("loads and displays run diff panel when Diff is clicked", async () => {
@@ -152,6 +251,45 @@ describe("ResearchScreen", () => {
     expect(api.diffRuns).toHaveBeenCalledOnce();
   });
 
+  it("renders empty diff and unavailable parameter states", async () => {
+    const diff: RunDiff = {
+      baseRunId: "run-1",
+      targetRunId: "run-2",
+      baseStrategyName: "Mean Reversion FX",
+      targetStrategyName: "Index Momentum",
+      addedPositions: [],
+      removedPositions: [],
+      modifiedPositions: [],
+      parameterChanges: [{ key: "lookback", baseValue: null, targetValue: null }],
+      metrics: {
+        netPnlDelta: 0,
+        totalReturnDelta: 0,
+        fillCountDelta: 0,
+        baseNetPnl: null,
+        targetNetPnl: null,
+        baseTotalReturn: null,
+        targetTotalReturn: null
+      }
+    };
+    vi.spyOn(api, "diffRuns").mockResolvedValue(diff);
+
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("No position changes returned for this diff.")).toBeInTheDocument();
+    });
+    expect(screen.getAllByText((_, element) =>
+      element?.tagName.toLowerCase() === "li" &&
+      element.textContent === "lookback: Unavailable -> Unavailable"
+    ).length).toBe(1);
+  });
+
   it("loads and displays promotion history when history button is clicked", async () => {
     const history: PromotionRecord[] = [
       {
@@ -179,4 +317,22 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("1.820")).toBeInTheDocument();
     expect(api.getPromotionHistory).toHaveBeenCalledOnce();
   });
+
+  it("renders empty promotion-history guidance when history returns no rows", async () => {
+    vi.spyOn(api, "getPromotionHistory").mockResolvedValue([]);
+
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("button", { name: /promotion history/i }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("No promotion history records returned.").length).toBeGreaterThanOrEqual(2);
+    });
+  });
 });
+
+function restoreApiSpy(fn: unknown) {
+  const spy = fn as { mockRestore?: () => void };
+  spy.mockRestore?.();
+}

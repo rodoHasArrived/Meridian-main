@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SloSubsystem
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 311
   assemblies:
   - Meridian.Application
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ingestion
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 313
   assemblies:
   - Meridian.Application
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataCompleteness
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 314
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Availability
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 315
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataFreshness
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 316
   assemblies:
   - Meridian.Application
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Storage
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 317
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConnectivity
-    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
     startLine: 318
   assemblies:
   - Meridian.Application

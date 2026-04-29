@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessStatus
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 763
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 765
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinorGaps
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 766
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantGaps
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 767
   assemblies:
   - Meridian.Ui.Services
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MajorIssues
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 768
   assemblies:
   - Meridian.Ui.Services
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NonTradingDay
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 769
   assemblies:
   - Meridian.Ui.Services

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronExpressionParser
-    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextOccurrence
-    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDescription
-    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
     startLine: 40
   assemblies:
   - Meridian.Core
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryParse
-    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
     startLine: 51
   assemblies:
   - Meridian.Core

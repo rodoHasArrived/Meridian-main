@@ -7,13 +7,14 @@ This document is the master index for AI guidance in the Meridian repository. It
 ## Quick Start
 
 | Task | Start Here | Deep Dive |
-|------|-----------|-----------|
+| --- | --- | --- |
 | Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
+| Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
-| Codex repo-local skills | [`.codex/skills/README.md`](../../.codex/skills/README.md) | [`.codex/skills/`](../../.codex/skills/) |
+| Codex repo-local skills | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---
@@ -30,7 +31,7 @@ For large-repo tasks, assistants should orient in this order:
 The generated navigation artifacts are the canonical orientation surface:
 
 | Artifact | Purpose |
-|----------|---------|
+| --- | --- |
 | [`generated/repo-navigation.json`](generated/repo-navigation.json) | Machine-readable repo map for MCP tools/resources and other AI surfaces |
 | [`generated/repo-navigation.md`](generated/repo-navigation.md) | Human-readable digest of subsystems, routes, symbols, and dependency highlights |
 | [`navigation/README.md`](navigation/README.md) | Hand-authored routing workflow and usage guidance |
@@ -42,14 +43,26 @@ The generated navigation artifacts are the canonical orientation surface:
 ### Tier 1: Root Context
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Master project context, architecture, commands, and conventions |
+| [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic execution flow, safety rules, system inventory, and alignment checklist |
 | [`ai-known-errors.md`](ai-known-errors.md) | Canonical registry of recurring AI mistakes and prevention checklists |
+
+Validate AI catalog consistency with:
+
+```bash
+python3 build/scripts/docs/check-ai-inventory.py --summary
+```
+
+The checker inventories root assistant entrypoints, Codex and Claude configuration, Copilot
+instructions, agents, skills, prompts, AI workflow files, `docs/ai/`, MCP prompt/resource/tool
+surfaces, and stale canonical GitHub documentation links. Its Markdown and JSON reports are safe to
+share because they use a portable repository identity instead of local absolute paths.
 
 ### Tier 2: Navigation and Routing
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | [`navigation/README.md`](navigation/README.md) | How assistants should orient and route work across Meridian |
 | [`generated/repo-navigation.md`](generated/repo-navigation.md) | Generated subsystem, route, symbol, and dependency digest |
 | [`generated/repo-navigation.json`](generated/repo-navigation.json) | Canonical machine-readable navigation dataset |
@@ -59,7 +72,7 @@ The generated navigation artifacts are the canonical orientation surface:
 Located mainly in `docs/ai/claude/`.
 
 | File | Domain |
-|------|--------|
+| --- | --- |
 | [`claude/CLAUDE.providers.md`](claude/CLAUDE.providers.md) | Provider implementation |
 | [`claude/CLAUDE.storage.md`](claude/CLAUDE.storage.md) | Storage system |
 | [`claude/CLAUDE.fsharp.md`](claude/CLAUDE.fsharp.md) | F# interop |
@@ -70,16 +83,16 @@ Located mainly in `docs/ai/claude/`.
 ### Tier 4: Agents, Skills, and Prompts
 
 | Resource | Purpose |
-|----------|---------|
+| --- | --- |
 | [`agents/README.md`](agents/README.md) | GitHub and Claude agent overview, including navigation agents |
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
-| [`.codex/skills/README.md`](../../.codex/skills/README.md) | Codex repo-local skill catalog |
+| [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skill catalog |
 
 ### Tier 5: Auto-Applied Instructions
 
 | Resource | Purpose |
-|----------|---------|
+| --- | --- |
 | [`instructions/README.md`](instructions/README.md) | Index for path-specific instruction files |
 | [`.github/instructions/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/instructions) | Auto-applied Copilot instruction files |
 | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) | Repository-wide Copilot guidance |
@@ -91,21 +104,26 @@ Located mainly in `docs/ai/claude/`.
 ### Canonical Sources
 
 | Topic | Canonical Source |
-|-------|------------------|
+| --- | --- |
+| Cross-provider AI workflow | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) |
 | Repo orientation | [`generated/repo-navigation.json`](generated/repo-navigation.json) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md) |
-| Codex skill catalog | [`.codex/skills/README.md`](../../.codex/skills/README.md) |
+| Codex skill catalog | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) |
 | Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
+| AI inventory drift checks | [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `build/scripts/docs/check-ai-inventory.py` |
 
 ### Adding a New AI Resource
 
 1. Put the file in the correct tool-owned directory when required.
 2. Update the corresponding navigation entry in `docs/ai/*/README.md`.
-3. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json) and [`generated/repo-navigation.md`](generated/repo-navigation.md) if routing truth changed.
-4. Cross-link related resources when the new file changes workflow or ownership.
+3. Update [`assistant-workflow-contract.md`](assistant-workflow-contract.md) when the new resource
+   adds or removes an AI system, provider, automation, or cross-provider rule.
+4. Run `python3 build/scripts/docs/check-ai-inventory.py --summary` and fix any catalog drift.
+5. Regenerate [`generated/repo-navigation.json`](generated/repo-navigation.json) and [`generated/repo-navigation.md`](generated/repo-navigation.md) if routing truth changed.
+6. Cross-link related resources when the new file changes workflow or ownership.
 
 ---
 
-*Last Updated: 2026-03-31*
+_Last Updated: 2026-04-29_

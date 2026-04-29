@@ -23,6 +23,13 @@ public partial class WorkspaceCommandBarControl : UserControl
             typeof(WorkspaceCommandBarControl),
             new PropertyMetadata(new WorkspaceCommandGroup(), OnCommandGroupChanged));
 
+    public static readonly DependencyProperty IsCompactSurfaceProperty =
+        DependencyProperty.Register(
+            nameof(IsCompactSurface),
+            typeof(bool),
+            typeof(WorkspaceCommandBarControl),
+            new PropertyMetadata(false));
+
     public WorkspaceCommandBarControl()
     {
         InitializeComponent();
@@ -35,6 +42,12 @@ public partial class WorkspaceCommandBarControl : UserControl
     {
         get => (WorkspaceCommandGroup)GetValue(CommandGroupProperty);
         set => SetValue(CommandGroupProperty, value);
+    }
+
+    public bool IsCompactSurface
+    {
+        get => (bool)GetValue(IsCompactSurfaceProperty);
+        set => SetValue(IsCompactSurfaceProperty, value);
     }
 
     private void OnPrimaryCommandClick(object sender, RoutedEventArgs e)

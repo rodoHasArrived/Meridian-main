@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImportService
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseCsvAsync
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseJsonAsync
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAsSubscriptionsAsync
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 151
   assemblies:
   - Meridian.Ui.Services
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportToWatchlistAsync
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 202
   assemblies:
   - Meridian.Ui.Services
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIndexConstituentsAsync
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 232
   assemblies:
   - Meridian.Ui.Services
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 255
   assemblies:
   - Meridian.Ui.Services

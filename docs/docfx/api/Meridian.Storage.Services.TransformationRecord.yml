@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransformationRecord
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 312
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 312
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 313
   assemblies:
   - Meridian.Storage
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 314
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 315
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Algorithm
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 316
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 317
   assemblies:
   - Meridian.Storage

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DerivativeKind
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 5
   assemblies:
   - Meridian.Execution
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Option
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 8
   assemblies:
   - Meridian.Execution
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Future
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 14
   assemblies:
   - Meridian.Execution

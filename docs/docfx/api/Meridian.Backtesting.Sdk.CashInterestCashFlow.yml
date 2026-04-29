@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashInterestCashFlow
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 57
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 57
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualRate
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 60
   assemblies:
   - Meridian.Backtesting.Sdk

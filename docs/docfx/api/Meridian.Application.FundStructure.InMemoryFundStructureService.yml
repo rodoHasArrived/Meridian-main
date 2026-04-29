@@ -38,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InMemoryFundStructureService
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 47
   assemblies:
   - Meridian.Application
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateOrganizationAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 92
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBusinessAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateClientAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 164
   assemblies:
   - Meridian.Application
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFundAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 204
   assemblies:
   - Meridian.Application
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSleeveAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 256
   assemblies:
   - Meridian.Application
@@ -399,7 +399,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateVehicleAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 296
   assemblies:
   - Meridian.Application
@@ -435,7 +435,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateLegalEntityAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 344
   assemblies:
   - Meridian.Application
@@ -471,7 +471,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateInvestmentPortfolioAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 375
   assemblies:
   - Meridian.Application
@@ -507,7 +507,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LinkNodesAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 498
   assemblies:
   - Meridian.Application
@@ -543,7 +543,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssignNodeAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 557
   assemblies:
   - Meridian.Application
@@ -579,7 +579,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrganizationStructureAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 601
   assemblies:
   - Meridian.Application
@@ -615,7 +615,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundStructureGraphAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 652
   assemblies:
   - Meridian.Application
@@ -651,7 +651,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdvisoryViewAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 738
   assemblies:
   - Meridian.Application
@@ -687,7 +687,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundOperatingViewAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 834
   assemblies:
   - Meridian.Application
@@ -723,7 +723,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountingViewAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 987
   assemblies:
   - Meridian.Application
@@ -759,7 +759,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCashFlowViewAsync
-    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
     startLine: 1089
   assemblies:
   - Meridian.Application

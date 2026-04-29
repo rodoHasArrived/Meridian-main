@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivalStorageService
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 34
   assemblies:
   - Meridian.Storage
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 49
   assemblies:
   - Meridian.Storage
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 66
   assemblies:
   - Meridian.Storage
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 90
   assemblies:
   - Meridian.Storage
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStats
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 210
   assemblies:
   - Meridian.Storage
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 218
   assemblies:
   - Meridian.Storage

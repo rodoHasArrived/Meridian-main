@@ -4,9 +4,11 @@ using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
@@ -16,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -26,8 +29,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class UiEndpoints
 {
     /// <summary>
-     /// Registers all shared services required by UI endpoints using the centralized composition root.
-     /// Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality.
+    /// Registers all shared services required by UI endpoints using the centralized composition root.
+    /// Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
@@ -103,20 +106,57 @@ public static class UiEndpoints
     private static void RegisterStrategyWorkstationServices(IServiceCollection services)
     {
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton(PromotionRecordStoreOptions.Default);
+        services.TryAddSingleton<IPromotionRecordStore>(sp =>
+            new JsonlPromotionRecordStore(
+                sp.GetRequiredService<PromotionRecordStoreOptions>(),
+                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
+        services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
+        services.TryAddSingleton<Dk1TrustGateReadinessService>();
+        services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<StrategyRunReviewPacketService>();
+        services.TryAddSingleton<BacktestToLivePromoter>();
+        services.TryAddSingleton<PromotionService>();
+        services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
+        services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
+            var dataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "workstation");
+            return new FileGovernanceReportPackRepository(dataDir, logger);
+        });
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
 
         // Reconciliation services — required by /api/workstation/reconciliation/* endpoints.
         // InMemoryReconciliationRunRepository is the default; a persistent implementation can
         // override it by registering before AddUiSharedServices is called (TryAdd semantics).
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
+        services.TryAddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
+        services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
+        services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
+        services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
+        services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileReconciliationBreakQueueRepository>>();
+            var dataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "workstation");
+            return new FileReconciliationBreakQueueRepository(dataDir, logger);
+        });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
     }
@@ -216,6 +256,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
         app.MapCredentialEndpoints(jsonOptions);
@@ -332,6 +373,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
         app.MapCredentialEndpoints(jsonOptions);
@@ -376,8 +418,8 @@ public static class UiEndpoints
     }
 
     /// <summary>
-     /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
-     /// </summary>
+    /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
+    /// </summary>
     public const string MutationRateLimitPolicy = "mutation";
 
     /// <summary>

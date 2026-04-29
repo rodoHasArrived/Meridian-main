@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityClassificationSummaryDto
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubType
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryIdentifierKind
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryIdentifierValue
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts

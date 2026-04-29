@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventBuffer
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: _lock
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 19
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: _active
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: _count
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 32
   assemblies:
   - Meridian.Storage
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 47
   assemblies:
   - Meridian.Storage
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 61
   assemblies:
   - Meridian.Storage
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEmpty
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 64
   assemblies:
   - Meridian.Storage
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShouldFlush
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 70
   assemblies:
   - Meridian.Storage
@@ -347,7 +347,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 76
   assemblies:
   - Meridian.Storage
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddRange
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 94
   assemblies:
   - Meridian.Storage
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrainAll
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 123
   assemblies:
   - Meridian.Storage
@@ -463,7 +463,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Drain
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 169
   assemblies:
   - Meridian.Storage
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeekAll
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 191
   assemblies:
   - Meridian.Storage
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 202
   assemblies:
   - Meridian.Storage
@@ -570,7 +570,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 211
   assemblies:
   - Meridian.Storage

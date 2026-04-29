@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalendarDayData
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 518
   assemblies:
   - Meridian.Ui.Services
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 520
   assemblies:
   - Meridian.Ui.Services
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DayOfWeek
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 521
   assemblies:
   - Meridian.Ui.Services
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWeekend
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 522
   assemblies:
   - Meridian.Ui.Services
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHoliday
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 523
   assemblies:
   - Meridian.Ui.Services
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTradingDay
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 524
   assemblies:
   - Meridian.Ui.Services
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 525
   assemblies:
   - Meridian.Ui.Services
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 526
   assemblies:
   - Meridian.Ui.Services
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 527
   assemblies:
   - Meridian.Ui.Services
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 528
   assemblies:
   - Meridian.Ui.Services
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasGaps
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 529
   assemblies:
   - Meridian.Ui.Services
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapCount
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 530
   assemblies:
   - Meridian.Ui.Services
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessLevel
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 531
   assemblies:
   - Meridian.Ui.Services
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolBreakdown
-    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
     startLine: 532
   assemblies:
   - Meridian.Ui.Services

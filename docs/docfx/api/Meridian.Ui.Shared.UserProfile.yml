@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UserProfile
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 108
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 108
   assemblies:
   - Meridian.Ui.Shared
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Username
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 108
   assemblies:
   - Meridian.Ui.Shared
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Role
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 108
   assemblies:
   - Meridian.Ui.Shared
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Permissions
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 111
   assemblies:
   - Meridian.Ui.Shared

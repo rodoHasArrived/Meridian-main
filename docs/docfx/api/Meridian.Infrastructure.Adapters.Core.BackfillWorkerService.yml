@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillWorkerService
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBarWritten
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnRunningStateChanged
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRunning
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressTracker
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 69
   assemblies:
   - Meridian.Infrastructure
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 109
   assemblies:
   - Meridian.Infrastructure
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 125
   assemblies:
   - Meridian.Infrastructure
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 673
   assemblies:
   - Meridian.Infrastructure

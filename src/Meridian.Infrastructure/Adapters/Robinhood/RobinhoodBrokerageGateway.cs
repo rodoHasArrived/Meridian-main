@@ -127,6 +127,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        RejectSessionScopedOrderType(request.Type);
 
         _logger.LogInformation(
             "Robinhood submitting order: {Side} {Quantity} {Symbol} @ {Type}",
@@ -915,8 +916,20 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         OrderType.Limit => "limit",
         OrderType.StopMarket => "stop",
         OrderType.StopLimit => "stop_limit",
-        _ => "market"
+        OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose
+            => throw new NotSupportedException(
+                $"Robinhood order mapping does not preserve the {type} session timing qualifier."),
+        _ => throw new NotSupportedException($"Robinhood order mapping does not support {type}.")
     };
+
+    private static void RejectSessionScopedOrderType(OrderType type)
+    {
+        if (type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        {
+            throw new NotSupportedException(
+                $"Robinhood gateway does not currently preserve the {type} session timing qualifier.");
+        }
+    }
 
     private static string MapTimeInForce(TimeInForce tif) => tif switch
     {

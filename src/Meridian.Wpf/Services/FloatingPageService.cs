@@ -48,7 +48,8 @@ public sealed class FloatingPageService
         Func<string, FrameworkElement> pageCreator,
         string? pageTitle = null)
     {
-        if (string.IsNullOrWhiteSpace(pageTag)) return;
+        if (string.IsNullOrWhiteSpace(pageTag))
+            return;
 
         if (_openWindows.TryGetValue(pageTag, out var existing))
         {
@@ -131,10 +132,12 @@ public sealed class FloatingPageService
     {
         try
         {
-            if (!File.Exists(PositionsFilePath)) return;
+            if (!File.Exists(PositionsFilePath))
+                return;
             var json = File.ReadAllText(PositionsFilePath);
             var loaded = JsonSerializer.Deserialize<Dictionary<string, double[]>>(json);
-            if (loaded is null) return;
+            if (loaded is null)
+                return;
             foreach (var (key, value) in loaded)
                 _savedPositions[key] = value;
         }

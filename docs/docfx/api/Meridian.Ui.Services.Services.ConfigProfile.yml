@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigProfile
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBuiltIn
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services

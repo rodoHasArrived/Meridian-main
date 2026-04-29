@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationJobType
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Full
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Incremental
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Selective
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts

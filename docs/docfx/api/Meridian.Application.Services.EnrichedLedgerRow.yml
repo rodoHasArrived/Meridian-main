@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnrichedLedgerRow
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 132
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 132
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountName
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 133
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountType
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 134
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 135
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 136
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 137
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 138
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetBalance
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 139
   assemblies:
   - Meridian.Application

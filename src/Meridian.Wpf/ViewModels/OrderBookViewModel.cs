@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -23,6 +24,20 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class OrderBookViewModel : BindableBase, IDisposable
 {
     private static readonly Random _random = new();
+    private static readonly SolidColorBrush BidBrush = ToBrush(Palette.ChartPositive);
+    private static readonly SolidColorBrush AskBrush = ToBrush(Palette.ChartNegative);
+    private static readonly SolidColorBrush ReconnectingBrush = ToBrush(Palette.Warning);
+    private static readonly SolidColorBrush DisconnectedBrush = ToBrush(Palette.Inactive);
+
+    private static Color ToWpfColor(Palette.ArgbColor color)
+        => Color.FromArgb(color.A, color.R, color.G, color.B);
+
+    private static SolidColorBrush ToBrush(Palette.ArgbColor color)
+    {
+        SolidColorBrush brush = new(ToWpfColor(color));
+        brush.Freeze();
+        return brush;
+    }
 
     private readonly HttpClient _httpClient = new();
     private readonly WpfServices.StatusService _statusService;
@@ -44,6 +59,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     public ObservableCollection<OrderBookDisplayLevel> Asks { get; } = new();
     public ObservableCollection<RecentTradeModel> RecentTrades { get; } = new();
     public ObservableCollection<string> AvailableSymbols { get; } = new();
+    public IReadOnlyList<int> DepthLevelOptions { get; } = [5, 10, 20, 50];
 
     // ── Connection status ─────────────────────────────────────────────────────────
 
@@ -54,12 +70,26 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _connectionStatusText, value);
     }
 
-    private SolidColorBrush _connectionIndicatorFill = new(Color.FromRgb(139, 148, 158));
+    private SolidColorBrush _connectionIndicatorFill = DisconnectedBrush;
     public SolidColorBrush ConnectionIndicatorFill
     {
         get => _connectionIndicatorFill;
         private set => SetProperty(ref _connectionIndicatorFill, value);
     }
+
+    // ── Order-flow posture ───────────────────────────────────────────────────────
+
+    private string _orderFlowPostureTitle = "Select a symbol";
+    public string OrderFlowPostureTitle { get => _orderFlowPostureTitle; private set => SetProperty(ref _orderFlowPostureTitle, value); }
+
+    private string _orderFlowPostureDetail = "Choose a symbol to load the depth ladder, spread posture, and recent trade tape.";
+    public string OrderFlowPostureDetail { get => _orderFlowPostureDetail; private set => SetProperty(ref _orderFlowPostureDetail, value); }
+
+    private string _orderFlowPostureScopeText = "No symbol selected";
+    public string OrderFlowPostureScopeText { get => _orderFlowPostureScopeText; private set => SetProperty(ref _orderFlowPostureScopeText, value); }
+
+    private string _orderFlowPostureActionText = "Choose symbol";
+    public string OrderFlowPostureActionText { get => _orderFlowPostureActionText; private set => SetProperty(ref _orderFlowPostureActionText, value); }
 
     // ── Visibility flags ──────────────────────────────────────────────────────────
 
@@ -111,16 +141,24 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     private GridLength _askBarWidth = new(0.5, GridUnitType.Star);
     public GridLength AskBarWidth { get => _askBarWidth; private set => SetProperty(ref _askBarWidth, value); }
 
-    // ── Symbol/level selection (called from code-behind event relays) ─────────────
+    // ── Symbol/level selection ───────────────────────────────────────────────────
 
     private string _selectedSymbol = string.Empty;
     private int _depthLevels = 10;
+    private decimal? _spreadValue;
+    private decimal? _imbalancePercent;
 
-    /// <summary>
-    /// Raised after the symbol list loads and the first symbol is auto-selected.
-    /// The code-behind should sync the ComboBox SelectedIndex in response.
-    /// </summary>
-    public event EventHandler? FirstSymbolAutoSelected;
+    public string SelectedSymbol
+    {
+        get => _selectedSymbol;
+        set => SetSymbol(value);
+    }
+
+    public int SelectedDepthLevels
+    {
+        get => _depthLevels;
+        set => SetDepthLevels(value);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────────
 
@@ -155,19 +193,31 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         _cts?.Cancel();
     }
 
-    public void SetSymbol(string symbol)
+    public void SetSymbol(string? symbol)
     {
-        _selectedSymbol = symbol;
+        var normalized = symbol?.Trim() ?? string.Empty;
+        if (!SetProperty(ref _selectedSymbol, normalized, nameof(SelectedSymbol)))
+        {
+            return;
+        }
+
         Bids.Clear();
         Asks.Clear();
         RecentTrades.Clear();
         NoDataVisible = true;
         NoTradesVisible = true;
+        _spreadValue = null;
+        _imbalancePercent = null;
+        UpdateOrderFlowPosture();
     }
 
     public void SetDepthLevels(int levels)
     {
-        _depthLevels = levels;
+        var normalized = Math.Max(1, levels);
+        if (SetProperty(ref _depthLevels, normalized, nameof(SelectedDepthLevels)))
+        {
+            UpdateOrderFlowPosture();
+        }
     }
 
     // ── Internal logic ────────────────────────────────────────────────────────────
@@ -186,12 +236,14 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             _ => "Disconnected"
         };
 
-        ConnectionIndicatorFill = new SolidColorBrush(state switch
+        ConnectionIndicatorFill = state switch
         {
-            ConnectionState.Connected => Color.FromRgb(63, 185, 80),
-            ConnectionState.Reconnecting => Color.FromRgb(255, 193, 7),
-            _ => Color.FromRgb(139, 148, 158)
-        });
+            ConnectionState.Connected => BidBrush,
+            ConnectionState.Reconnecting => ReconnectingBrush,
+            _ => DisconnectedBrush
+        };
+
+        UpdateOrderFlowPosture();
     }
 
     private async Task LoadSymbolsAsync(CancellationToken ct = default)
@@ -210,10 +262,9 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             }
 
             // Auto-select the first symbol so the page shows data on load without a manual pick.
-            if (AvailableSymbols.Count > 0 && string.IsNullOrEmpty(_selectedSymbol))
+            if (AvailableSymbols.Count > 0 && string.IsNullOrEmpty(SelectedSymbol))
             {
-                SetSymbol(AvailableSymbols[0]);
-                FirstSymbolAutoSelected?.Invoke(this, EventArgs.Empty);
+                SelectedSymbol = AvailableSymbols[0];
             }
         }
         catch (OperationCanceledException)
@@ -291,7 +342,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                     RawTotal = runningTotal,
                     Total = FormatSize((int)runningTotal)
                 });
-                if (size > maxSize) maxSize = size;
+                if (size > maxSize)
+                    maxSize = size;
             }
         }
 
@@ -313,7 +365,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                     RawTotal = runningTotal,
                     Total = FormatSize((int)runningTotal)
                 });
-                if (size > maxSize) maxSize = size;
+                if (size > maxSize)
+                    maxSize = size;
             }
         }
 
@@ -324,10 +377,12 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
 
         Bids.Clear();
-        foreach (var bid in newBids) Bids.Add(bid);
+        foreach (var bid in newBids)
+            Bids.Add(bid);
 
         Asks.Clear();
-        foreach (var ask in newAsks.OrderByDescending(a => a.RawPrice)) Asks.Add(ask);
+        foreach (var ask in newAsks.OrderByDescending(a => a.RawPrice))
+            Asks.Add(ask);
 
         UpdateStatistics(newBids, newAsks);
     }
@@ -355,8 +410,10 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             var askSize = random.Next(100, 5000);
             bidTotal += bidSize;
             askTotal += askSize;
-            if (bidSize > maxSize) maxSize = bidSize;
-            if (askSize > maxSize) maxSize = askSize;
+            if (bidSize > maxSize)
+                maxSize = bidSize;
+            if (askSize > maxSize)
+                maxSize = askSize;
 
             bidList.Add(new OrderBookDisplayLevel
             {
@@ -386,10 +443,12 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
 
         Bids.Clear();
-        foreach (var bid in bidList) Bids.Add(bid);
+        foreach (var bid in bidList)
+            Bids.Add(bid);
 
         Asks.Clear();
-        foreach (var ask in askList.OrderByDescending(a => a.RawPrice)) Asks.Add(ask);
+        foreach (var ask in askList.OrderByDescending(a => a.RawPrice))
+            Asks.Add(ask);
 
         UpdateStatistics(bidList, askList);
         NoDataVisible = false;
@@ -409,9 +468,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                 Time = DateTime.Now.AddSeconds(-i * _random.Next(1, 5)).ToString("HH:mm:ss"),
                 Price = price.ToString("F2"),
                 Size = FormatSize(_random.Next(10, 1000)),
-                PriceColor = new SolidColorBrush(isBuy
-                    ? Color.FromRgb(63, 185, 80)
-                    : Color.FromRgb(244, 67, 54))
+                PriceColor = isBuy ? BidBrush : AskBrush
             });
         }
 
@@ -429,6 +486,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     {
         if (bids.Count == 0 || asks.Count == 0)
         {
+            _spreadValue = null;
+            _imbalancePercent = null;
             BestBidText = "--";
             BestAskText = "--";
             MidPriceText = "--";
@@ -439,6 +498,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             ImbalanceText = "--";
             CumulativeDeltaText = "--";
             Heatmap.UpdateFromSnapshot(bids, asks); // clears heatmap when data is absent
+            UpdateOrderFlowPosture();
             return;
         }
 
@@ -451,6 +511,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         var askVolume = asks.Sum(a => (decimal)a.RawSize);
         var totalVolume = bidVolume + askVolume;
         var imbalance = totalVolume > 0 ? (bidVolume - askVolume) / totalVolume * 100 : 0;
+        _spreadValue = spread;
+        _imbalancePercent = imbalance;
 
         BestBidText = bestBid.ToString("F2");
         BestAskText = bestAsk.ToString("F2");
@@ -468,6 +530,97 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         // Push the same snapshot to the depth heatmap.
         // bids are sorted descending (best bid first); asks ascending (best ask first).
         Heatmap.UpdateFromSnapshot(bids, asks);
+        UpdateOrderFlowPosture();
+    }
+
+    private void UpdateOrderFlowPosture()
+    {
+        var state = BuildOrderFlowPosture(
+            _selectedSymbol,
+            _depthLevels,
+            ConnectionStatusText,
+            Bids.Count,
+            Asks.Count,
+            RecentTrades.Count,
+            _spreadValue,
+            _imbalancePercent,
+            CumulativeDeltaText);
+
+        OrderFlowPostureTitle = state.Title;
+        OrderFlowPostureDetail = state.Detail;
+        OrderFlowPostureScopeText = state.ScopeText;
+        OrderFlowPostureActionText = state.ActionText;
+    }
+
+    internal static OrderBookPosture BuildOrderFlowPosture(
+        string? selectedSymbol,
+        int depthLevels,
+        string? connectionStatus,
+        int bidCount,
+        int askCount,
+        int recentTradeCount,
+        decimal? spread,
+        decimal? imbalancePercent,
+        string? cumulativeDeltaText)
+    {
+        var symbol = selectedSymbol?.Trim() ?? string.Empty;
+        var normalizedLevels = Math.Max(1, depthLevels);
+        var normalizedBidCount = Math.Max(0, bidCount);
+        var normalizedAskCount = Math.Max(0, askCount);
+        var normalizedTradeCount = Math.Max(0, recentTradeCount);
+        var connection = string.IsNullOrWhiteSpace(connectionStatus) ? "Disconnected" : connectionStatus.Trim();
+
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return new OrderBookPosture(
+                "Select a symbol",
+                "Choose a symbol to load the depth ladder, spread posture, and recent trade tape.",
+                $"No symbol - {normalizedLevels} levels",
+                "Choose symbol");
+        }
+
+        var scope = $"{symbol} - {normalizedLevels} levels - {normalizedBidCount} bid / {normalizedAskCount} ask rows";
+        if (normalizedBidCount == 0 || normalizedAskCount == 0)
+        {
+            var connected = string.Equals(connection, "Connected", StringComparison.OrdinalIgnoreCase);
+            return new OrderBookPosture(
+                "Waiting for full depth",
+                connected
+                    ? $"No complete bid/ask snapshot is visible for {symbol}. Verify the depth feed or wait for the next refresh."
+                    : $"{connection} - no complete bid/ask snapshot is visible for {symbol}.",
+                scope,
+                connected ? "Verify depth feed" : "Check connection");
+        }
+
+        if (normalizedTradeCount == 0)
+        {
+            return new OrderBookPosture(
+                "Depth live, tape pending",
+                $"{normalizedBidCount + normalizedAskCount} ladder rows are visible for {symbol}, but the recent trade tape is empty. Confirm trade permissions before using cumulative delta.",
+                scope,
+                "Verify trade tape");
+        }
+
+        var spreadText = spread.HasValue ? spread.Value.ToString("F2") : "--";
+        var deltaText = string.IsNullOrWhiteSpace(cumulativeDeltaText) ? "--" : cumulativeDeltaText.Trim();
+        var imbalance = imbalancePercent.GetValueOrDefault();
+        var absoluteImbalance = Math.Abs(imbalance);
+
+        if (absoluteImbalance >= 20)
+        {
+            var side = imbalance > 0 ? "Bid-side" : "Ask-side";
+            return new OrderBookPosture(
+                $"{side} pressure building",
+                $"{side} depth is leading by {absoluteImbalance:F1}% with a {spreadText} spread and {deltaText} cumulative delta.",
+                scope,
+                "Monitor liquidity wall");
+        }
+
+        return new OrderBookPosture(
+            "Order flow ready",
+            $"Depth, spread, and trade tape are live for {symbol}; spread is {spreadText} and imbalance is {imbalance:+0.0;-0.0;0.0}%.",
+            scope,
+            "Monitor heatmap and tape");
     }
 
     /// <summary>
@@ -476,7 +629,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     /// </summary>
     private static void ApplyHighlighting(List<OrderBookDisplayLevel> levels)
     {
-        if (levels.Count == 0) return;
+        if (levels.Count == 0)
+            return;
         double avg = levels.Average(l => (double)l.RawSize);
         double threshold = avg * 2.0;
         foreach (var level in levels)
@@ -510,17 +664,17 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                         var side = trade.TryGetProperty("side", out var sd) ? sd.GetString() ?? "" : "";
                         var isBuy = side.Equals("buy", StringComparison.OrdinalIgnoreCase);
 
-                        if (isBuy) buyVolume += size;
-                        else sellVolume += size;
+                        if (isBuy)
+                            buyVolume += size;
+                        else
+                            sellVolume += size;
 
                         RecentTrades.Add(new RecentTradeModel
                         {
                             Time = timestamp.ToString("HH:mm:ss"),
                             Price = price.ToString("F2"),
                             Size = FormatSize(size),
-                            PriceColor = new SolidColorBrush(isBuy
-                                ? Color.FromRgb(63, 185, 80)
-                                : Color.FromRgb(244, 67, 54))
+                            PriceColor = isBuy ? BidBrush : AskBrush
                         });
                     }
 
@@ -539,12 +693,18 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         {
             // Ignore trade fetch errors — non-critical
         }
+        finally
+        {
+            UpdateOrderFlowPosture();
+        }
     }
 
     private static string FormatSize(int size)
     {
-        if (size >= 1000000) return $"{size / 1000000.0:F1}M";
-        if (size >= 1000) return $"{size / 1000.0:F1}K";
+        if (size >= 1000000)
+            return $"{size / 1000000.0:F1}M";
+        if (size >= 1000)
+            return $"{size / 1000.0:F1}K";
         return size.ToString("N0");
     }
 
@@ -555,3 +715,9 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         _httpClient.Dispose();
     }
 }
+
+public sealed record OrderBookPosture(
+    string Title,
+    string Detail,
+    string ScopeText,
+    string ActionText);

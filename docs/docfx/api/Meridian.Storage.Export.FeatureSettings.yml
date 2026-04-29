@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureSettings
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 208
   assemblies:
   - Meridian.Storage
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeReturns
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 213
   assemblies:
   - Meridian.Storage
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReturnHorizons
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 219
   assemblies:
   - Meridian.Storage
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseLogReturns
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 225
   assemblies:
   - Meridian.Storage
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeRollingStats
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 231
   assemblies:
   - Meridian.Storage
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RollingWindows
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 237
   assemblies:
   - Meridian.Storage
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeTechnicalIndicators
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 243
   assemblies:
   - Meridian.Storage
@@ -321,7 +321,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TechnicalIndicators
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 249
   assemblies:
   - Meridian.Storage
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeMicrostructure
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 255
   assemblies:
   - Meridian.Storage
@@ -407,7 +407,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normalization
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 261
   assemblies:
   - Meridian.Storage

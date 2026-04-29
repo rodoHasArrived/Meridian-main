@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistOperationResult
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 87
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 87
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 88
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistId
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 89
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAffected
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 90
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 91
   assemblies:
   - Meridian.Core
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
     startLine: 92
   assemblies:
   - Meridian.Core

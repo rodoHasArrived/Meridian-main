@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IOptionsChainProvider
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 11
   assemblies:
   - Meridian.ProviderSdk
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 21
   assemblies:
   - Meridian.ProviderSdk
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 32
   assemblies:
   - Meridian.ProviderSdk
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainSnapshotAsync
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 48
   assemblies:
   - Meridian.ProviderSdk
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionQuoteAsync
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 60
   assemblies:
   - Meridian.ProviderSdk
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
     startLine: 67
   assemblies:
   - Meridian.ProviderSdk

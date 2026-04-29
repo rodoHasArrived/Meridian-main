@@ -38,7 +38,7 @@ Prefer this structure unless the user asks for something narrower:
 
 - Reuse existing contracts before proposing new ones.
 - Keep provider, storage, execution, and UI responsibilities in their current layers.
-- For workflow-centric UI changes, align with the Research, Trading, Data Operations, and Governance workspaces from `docs/plans/trading-workstation-migration-blueprint.md`.
+- For workflow-centric UI changes, align visible operator navigation with `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; treat legacy WPF `Research`, `Data Operations`, and `Governance` names as compatibility aliases.
 - For WPF work, keep code-behind minimal and put behavior in `BindableBase` view models or services.
 - For pipeline or storage work, mention WAL, channel policy, and JSON source generation when relevant.
 - For provider or execution changes, cite the concrete contracts being extended.

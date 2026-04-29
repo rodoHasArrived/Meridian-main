@@ -25,8 +25,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionAccountSnapshot
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 977
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1068
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -63,8 +63,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 977
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1068
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -107,8 +107,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 978
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1069
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -136,8 +136,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 979
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1070
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -165,8 +165,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 980
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1071
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -194,8 +194,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 981
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1072
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -223,8 +223,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionCount
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 982
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1073
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -252,8 +252,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 983
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1074
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

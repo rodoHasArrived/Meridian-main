@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianQuoteData
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 16
   assemblies:
   - Meridian
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 31
   assemblies:
   - Meridian
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 34
   assemblies:
   - Meridian
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 37
   assemblies:
   - Meridian
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 40
   assemblies:
   - Meridian
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 43
   assemblies:
   - Meridian
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 46
   assemblies:
   - Meridian
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 49
   assemblies:
   - Meridian
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidExchange
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 52
   assemblies:
   - Meridian
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskExchange
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 55
   assemblies:
   - Meridian
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSource
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 60
   assemblies:
   - Meridian
@@ -416,7 +416,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reader
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 80
   assemblies:
   - Meridian
@@ -459,7 +459,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clone
-    path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
+    path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
     startLine: 138
   assemblies:
   - Meridian

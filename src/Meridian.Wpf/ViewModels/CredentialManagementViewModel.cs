@@ -214,13 +214,15 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private void BeginEdit()
     {
-        if (SelectedCredential is null) return;
+        if (SelectedCredential is null)
+            return;
         EditFields.Clear();
         IsTestResultVisible = false;
 
         var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-        if (provider is null) return;
+        if (provider is null)
+            return;
 
         EditPanelTitle = SelectedCredential.HasCredentials
             ? $"Edit credentials — {SelectedCredential.DisplayName}"
@@ -262,7 +264,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task SaveCredentialAsync()
     {
-        if (SelectedCredential is null) return;
+        if (SelectedCredential is null)
+            return;
 
         var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
@@ -278,7 +281,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         {
             foreach (var field in EditFields)
             {
-                if (string.IsNullOrEmpty(field.EnvVarName)) continue;
+                if (string.IsNullOrEmpty(field.EnvVarName))
+                    continue;
                 Environment.SetEnvironmentVariable(field.EnvVarName, field.Value, EnvironmentVariableTarget.User);
             }
 
@@ -313,31 +317,31 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         switch (providerId)
         {
             case "alpaca":
-            {
-                var keyId = EditFields.FirstOrDefault(f =>
-                    f.EnvVarName.Contains("KEYID", StringComparison.OrdinalIgnoreCase) ||
-                    f.EnvVarName.Contains("KEY_ID", StringComparison.OrdinalIgnoreCase))?.Value;
-                var secret = EditFields.FirstOrDefault(f =>
-                    f.EnvVarName.Contains("SECRET", StringComparison.OrdinalIgnoreCase))?.Value;
-                if (!string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secret))
-                    _credentialService.SaveAlpacaCredentials(keyId, secret);
-                break;
-            }
+                {
+                    var keyId = EditFields.FirstOrDefault(f =>
+                        f.EnvVarName.Contains("KEYID", StringComparison.OrdinalIgnoreCase) ||
+                        f.EnvVarName.Contains("KEY_ID", StringComparison.OrdinalIgnoreCase))?.Value;
+                    var secret = EditFields.FirstOrDefault(f =>
+                        f.EnvVarName.Contains("SECRET", StringComparison.OrdinalIgnoreCase))?.Value;
+                    if (!string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secret))
+                        _credentialService.SaveAlpacaCredentials(keyId, secret);
+                    break;
+                }
             case "nasdaq":
             case "nasdaqdatalink":
-            {
-                var key = EditFields.FirstOrDefault()?.Value;
-                if (!string.IsNullOrWhiteSpace(key))
-                    _credentialService.SaveNasdaqApiKey(key);
-                break;
-            }
+                {
+                    var key = EditFields.FirstOrDefault()?.Value;
+                    if (!string.IsNullOrWhiteSpace(key))
+                        _credentialService.SaveNasdaqApiKey(key);
+                    break;
+                }
             default:
-            {
-                var key = EditFields.FirstOrDefault()?.Value;
-                if (!string.IsNullOrWhiteSpace(key))
-                    _credentialService.SaveApiKey($"Meridian.{providerId}", key);
-                break;
-            }
+                {
+                    var key = EditFields.FirstOrDefault()?.Value;
+                    if (!string.IsNullOrWhiteSpace(key))
+                        _credentialService.SaveApiKey($"Meridian.{providerId}", key);
+                    break;
+                }
         }
     }
 
@@ -350,7 +354,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task RemoveCredentialAsync()
     {
-        if (SelectedCredential is null) return;
+        if (SelectedCredential is null)
+            return;
         IsBusy = true;
         try
         {
@@ -410,7 +415,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task TestSelectedCredentialAsync()
     {
-        if (SelectedCredential is null) return;
+        if (SelectedCredential is null)
+            return;
 
         SelectedCredential.IsTesting = true;
         IsTestResultVisible = true;

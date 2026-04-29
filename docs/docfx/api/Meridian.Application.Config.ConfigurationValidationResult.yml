@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationValidationResult
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 76
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 76
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 77
   assemblies:
   - Meridian.Core
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 78
   assemblies:
   - Meridian.Core
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 79
   assemblies:
   - Meridian.Core

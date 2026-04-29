@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlaState
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 84
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 87
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Violation
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 91
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoData
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 93
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutsideMarketHours
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 95
   assemblies:
   - Meridian.Application

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerAccount
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 8
   assemblies:
   - Meridian.Ledger
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 8
   assemblies:
   - Meridian.Ledger
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 9
   assemblies:
   - Meridian.Ledger
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountType
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 10
   assemblies:
   - Meridian.Ledger
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 11
   assemblies:
   - Meridian.Ledger
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountId
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 12
   assemblies:
   - Meridian.Ledger
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Ledger/LedgerAccount.cs
+    path: src/Meridian.Ledger/LedgerAccount.cs
     startLine: 15
   assemblies:
   - Meridian.Ledger

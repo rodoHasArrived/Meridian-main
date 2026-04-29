@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArgbColor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: A
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: R
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: G
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: B
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services

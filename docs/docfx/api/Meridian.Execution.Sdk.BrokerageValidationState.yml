@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageValidationState
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 105
   assemblies:
   - Meridian.Execution.Sdk
@@ -45,7 +45,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Required
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 107
   assemblies:
   - Meridian.Execution.Sdk
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gap
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 108
   assemblies:
   - Meridian.Execution.Sdk

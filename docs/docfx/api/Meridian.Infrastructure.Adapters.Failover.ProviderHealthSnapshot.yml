@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealthSnapshot
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 510
   assemblies:
   - Meridian.Infrastructure
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 510
   assemblies:
   - Meridian.Infrastructure
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 511
   assemblies:
   - Meridian.Infrastructure
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveFailures
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 512
   assemblies:
   - Meridian.Infrastructure
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveSuccesses
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 513
   assemblies:
   - Meridian.Infrastructure
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFailureTime
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 514
   assemblies:
   - Meridian.Infrastructure
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSuccessTime
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 515
   assemblies:
   - Meridian.Infrastructure
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyMs
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 516
   assemblies:
   - Meridian.Infrastructure
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentIssues
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 517
   assemblies:
   - Meridian.Infrastructure

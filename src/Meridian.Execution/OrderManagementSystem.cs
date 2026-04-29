@@ -22,9 +22,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
+    private readonly PaperSessionPersistenceService? _sessionPersistence;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly SemaphoreSlim _gatewayConnectionLock = new(1, 1);
+    private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
     private int _orderSequence;
 
     public OrderManagementSystem(
@@ -34,7 +36,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ISecurityMasterGate? securityMasterGate = null,
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
-        Meridian.Execution.Models.IPortfolioState? portfolioState = null)
+        Meridian.Execution.Models.IPortfolioState? portfolioState = null,
+        PaperSessionPersistenceService? sessionPersistence = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -43,6 +46,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _operatorControls = operatorControls;
         _auditTrail = auditTrail;
         _portfolioState = portfolioState;
+        _sessionPersistence = sessionPersistence;
         // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
         var executionPolicy = new EventPipelinePolicy(
             Capacity: 1000,
@@ -65,9 +69,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         string? actor = null;
         string? correlationId = null;
         string? runId = null;
+        string? sessionId = null;
         request.Metadata?.TryGetValue("actor", out actor);
         request.Metadata?.TryGetValue("correlationId", out correlationId);
         request.Metadata?.TryGetValue("runId", out runId);
+        request.Metadata?.TryGetValue("sessionId", out sessionId);
 
         // Operator controls gate — rejects orders when circuit breaker is open (unless bypassed)
         if (_operatorControls is not null)
@@ -95,11 +101,16 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         Message: controlDecision.RejectReason), ct).ConfigureAwait(false);
                 }
 
+                var rejectedState = CreateRejectedState(orderId, request, controlDecision.RejectReason);
+                _orders[orderId] = rejectedState;
+                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+
                 return new OrderResult
                 {
                     Success = false,
                     OrderId = orderId,
-                    ErrorMessage = controlDecision.RejectReason
+                    ErrorMessage = controlDecision.RejectReason,
+                    OrderState = rejectedState
                 };
             }
         }
@@ -130,11 +141,16 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         Message: gateResult.Reason), ct).ConfigureAwait(false);
                 }
 
+                var rejectedState = CreateRejectedState(orderId, request, gateResult.Reason);
+                _orders[orderId] = rejectedState;
+                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+
                 return new OrderResult
                 {
                     Success = false,
                     OrderId = orderId,
-                    ErrorMessage = gateResult.Reason
+                    ErrorMessage = gateResult.Reason,
+                    OrderState = rejectedState
                 };
             }
         }
@@ -165,11 +181,16 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         Message: riskResult.RejectReason), ct).ConfigureAwait(false);
                 }
 
+                var rejectedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+                _orders[orderId] = rejectedState;
+                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+
                 return new OrderResult
                 {
                     Success = false,
                     OrderId = orderId,
-                    ErrorMessage = riskResult.RejectReason
+                    ErrorMessage = riskResult.RejectReason,
+                    OrderState = rejectedState
                 };
             }
         }
@@ -189,6 +210,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         };
 
         _orders[orderId] = orderState;
+        if (!string.IsNullOrWhiteSpace(sessionId))
+        {
+            _orderSessionIds[orderId] = sessionId;
+        }
 
         try
         {
@@ -202,6 +227,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, request.Symbol, request.Side, request.Quantity, updatedState.Status);
+
+            await RecordSessionOrderUpdateAsync(sessionId, updatedState, ct).ConfigureAwait(false);
 
             // Record submitted order in the audit trail when connected
             if (_auditTrail is not null)
@@ -229,6 +256,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                     paperPortfolio.ApplyFill(report);
                 }
 
+                await RecordSessionFillAsync(sessionId, report, ct).ConfigureAwait(false);
                 _executionChannel.Writer.TryWrite(report);
             }
 
@@ -244,13 +272,37 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, request.Symbol);
 
-            _orders[orderId] = orderState with { Status = OrderStatus.Rejected };
+            var rejectedState = orderState with
+            {
+                Status = OrderStatus.Rejected,
+                LastUpdatedAt = DateTimeOffset.UtcNow
+            };
+            _orders[orderId] = rejectedState;
+            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+
+            if (_auditTrail is not null)
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                    AuditId: Guid.NewGuid().ToString("N"),
+                    Category: "Order",
+                    Action: "OrderRejected",
+                    Outcome: "Rejected",
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Actor: actor,
+                    BrokerName: brokerName,
+                    OrderId: orderId,
+                    RunId: runId,
+                    Symbol: request.Symbol,
+                    CorrelationId: correlationId,
+                    Message: ex.Message), ct).ConfigureAwait(false);
+            }
 
             return new OrderResult
             {
                 Success = false,
                 OrderId = orderId,
-                ErrorMessage = ex.Message
+                ErrorMessage = ex.Message,
+                OrderState = rejectedState
             };
         }
     }
@@ -283,6 +335,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
+        await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
 
         return new OrderResult
         {
@@ -309,6 +362,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
+        await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
 
         return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
     }
@@ -457,6 +511,58 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             LastUpdatedAt = report.Timestamp
         };
     }
+
+    private static OrderState CreateRejectedState(
+        string orderId,
+        OrderRequest request,
+        string? reason)
+    {
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = request.Symbol,
+            Side = request.Side,
+            Type = request.Type,
+            Quantity = request.Quantity,
+            LimitPrice = request.LimitPrice,
+            StopPrice = request.StopPrice,
+            Status = OrderStatus.Rejected,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            StrategyId = request.StrategyId,
+            AverageFillPrice = null,
+            FilledQuantity = 0m
+        };
+    }
+
+    private async Task RecordSessionOrderUpdateAsync(
+        string? sessionId,
+        OrderState orderState,
+        CancellationToken ct)
+    {
+        if (_sessionPersistence is null || string.IsNullOrWhiteSpace(sessionId))
+        {
+            return;
+        }
+
+        await _sessionPersistence.RecordOrderUpdateAsync(sessionId, orderState, ct).ConfigureAwait(false);
+    }
+
+    private async Task RecordSessionFillAsync(
+        string? sessionId,
+        ExecutionReport report,
+        CancellationToken ct)
+    {
+        if (_sessionPersistence is null || string.IsNullOrWhiteSpace(sessionId))
+        {
+            return;
+        }
+
+        await _sessionPersistence.RecordFillAsync(sessionId, report, ct).ConfigureAwait(false);
+    }
+
+    private string? ResolveSessionId(string orderId) =>
+        _orderSessionIds.TryGetValue(orderId, out var sessionId) ? sessionId : null;
 }
 
 /// <summary>Placeholder attribute for ADR traceability.</summary>

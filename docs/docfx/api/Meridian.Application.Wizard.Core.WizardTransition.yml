@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardTransition
-    path: ../../src/Meridian.Application/Wizard/Core/WizardTransition.cs
+    path: src/Meridian.Application/Wizard/Core/WizardTransition.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Wizard/Core/WizardTransition.cs
+    path: src/Meridian.Application/Wizard/Core/WizardTransition.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
-    path: ../../src/Meridian.Application/Wizard/Core/WizardTransition.cs
+    path: src/Meridian.Application/Wizard/Core/WizardTransition.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
-    path: ../../src/Meridian.Application/Wizard/Core/WizardTransition.cs
+    path: src/Meridian.Application/Wizard/Core/WizardTransition.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Condition
-    path: ../../src/Meridian.Application/Wizard/Core/WizardTransition.cs
+    path: src/Meridian.Application/Wizard/Core/WizardTransition.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Applies
-    path: ../../src/Meridian.Application/Wizard/Core/WizardTransition.cs
+    path: src/Meridian.Application/Wizard/Core/WizardTransition.cs
     startLine: 17
   assemblies:
   - Meridian.Application

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchApiResponse
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 686
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 688
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 689
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 690
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ElapsedMs
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 691
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Query
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 692
   assemblies:
   - Meridian.Ui.Services

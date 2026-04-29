@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBookUpdateEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 516
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 518
   assemblies:
   - Meridian.Ui.Services

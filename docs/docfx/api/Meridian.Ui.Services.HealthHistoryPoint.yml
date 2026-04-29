@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthHistoryPoint
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 496
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 498
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 499
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 500
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessPercent
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 501
   assemblies:
   - Meridian.Ui.Services

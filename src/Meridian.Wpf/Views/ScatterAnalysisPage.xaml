@@ -45,9 +45,9 @@
 
     <!-- Expression line number prefix style -->
     <Style x:Key="LineNumberStyle" TargetType="TextBlock">
-      <Setter Property="Foreground" Value="#566B80" />
+      <Setter Property="Foreground" Value="{StaticResource ChartAxisLabelBrush}" />
       <Setter Property="FontSize" Value="12" />
-      <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New" />
+      <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="Width" Value="24" />
       <Setter Property="TextAlignment" Value="Right" />
@@ -56,14 +56,14 @@
 
     <!-- Expression text box style -->
     <Style x:Key="ExpressionTextBoxStyle" TargetType="TextBox">
-      <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New" />
+      <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
       <Setter Property="FontSize" Value="13" />
-      <Setter Property="Foreground" Value="#4FC3F7" />
+      <Setter Property="Foreground" Value="{StaticResource ChartPrimaryLineBrush}" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="CaretBrush" Value="White" />
-      <Setter Property="SelectionBrush" Value="#4C8DFF" />
+      <Setter Property="SelectionBrush" Value="{StaticResource ChartSecondaryLineBrush}" />
     </Style>
 
     <!-- Stats label style -->
@@ -138,10 +138,10 @@
             </Border>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}" />
+                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource ChartPlotAreaBrush}" />
               </Trigger>
               <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource AccentButtonBackground}" />
+                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource ChartPrimaryLineBrush}" />
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -168,7 +168,7 @@
         <!-- Page title + icon -->
         <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,24,0">
           <Border Width="40" Height="40" CornerRadius="12"
-                  Background="#1A3A5C" BorderBrush="{DynamicResource InfoColorBrush}" BorderThickness="1">
+                  Background="{StaticResource ConsoleAccentBlueAlpha20Brush}" BorderBrush="{DynamicResource InfoColorBrush}" BorderThickness="1">
             <TextBlock Text="⠿" FontSize="20" Foreground="{DynamicResource InfoColorBrush}"
                        VerticalAlignment="Center" HorizontalAlignment="Center" />
           </Border>
@@ -221,8 +221,8 @@
       <!-- ── Quickstart sidebar ─────────────────────────────────────────── -->
       <Border Grid.Column="0"
               Margin="24,12,0,24"
-              Background="{DynamicResource CardBackgroundBrush}"
-              BorderBrush="{DynamicResource CardBorderBrush}"
+              Background="{StaticResource ChartSurfaceBrush}"
+              BorderBrush="{StaticResource ChartBorderBrush}"
               BorderThickness="1" CornerRadius="8"
               ClipToBounds="True">
         <DockPanel>
@@ -230,25 +230,25 @@
           <!-- "EXPLORE PLOTTOOL" section label -->
           <Border DockPanel.Dock="Top"
                   Padding="12,10"
-                  BorderBrush="{DynamicResource CardBorderBrush}"
+                  BorderBrush="{StaticResource ChartBorderBrush}"
                   BorderThickness="0,0,0,1">
             <TextBlock Text="EXPLORE PLOTTOOL"
                        FontSize="10" FontWeight="Bold"
-                       Foreground="{DynamicResource MutedTextBrush}" />
+                       Foreground="{StaticResource ChartAxisLabelBrush}" />
           </Border>
 
           <!-- "Quickstart" group header -->
           <Border DockPanel.Dock="Top"
                   Padding="12,8"
-                  Background="{DynamicResource SubtleBackgroundBrush}"
-                  BorderBrush="{DynamicResource CardBorderBrush}"
+                  Background="{StaticResource ChartPlotAreaBrush}"
+                  BorderBrush="{StaticResource ChartBorderBrush}"
                   BorderThickness="0,0,0,1">
             <StackPanel Orientation="Horizontal">
               <TextBlock Text="▾" FontSize="11" VerticalAlignment="Center"
-                         Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,5,0" />
+                         Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,0,5,0" />
               <TextBlock Text="Quickstart"
                          FontSize="12" FontWeight="SemiBold"
-                         Foreground="{DynamicResource ConsoleTextBrush}" />
+                         Foreground="{StaticResource TopBarTextBrush}" />
             </StackPanel>
           </Border>
 
@@ -264,10 +264,10 @@
                           HorizontalAlignment="Stretch">
                     <StackPanel Orientation="Horizontal">
                       <TextBlock Text="›" FontSize="12" VerticalAlignment="Center"
-                                 Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,4,0" />
+                                 Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,0,4,0" />
                       <TextBlock Text="📁" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" />
                       <TextBlock Text="{Binding Name}" FontSize="12"
-                                 Foreground="{DynamicResource ConsoleTextBrush}"
+                                 Foreground="{StaticResource TopBarTextBrush}"
                                  TextWrapping="Wrap" />
                     </StackPanel>
                   </Button>
@@ -289,15 +289,14 @@
 
       <!-- ── Chart area ───────────────────────────────────────────────────── -->
       <Border Grid.Row="0"
-              Background="{DynamicResource CardBackgroundBrush}"
-              BorderBrush="{DynamicResource CardBorderBrush}"
-              BorderThickness="1" CornerRadius="8">
+              Style="{StaticResource ChartCardStyle}"
+              Padding="0">
         <Grid>
           <!-- Chart title -->
           <TextBlock x:Name="ChartTitleBlock"
                      Text="{Binding ChartTitle}"
                      FontSize="14" FontWeight="SemiBold"
-                     Foreground="{DynamicResource ConsoleTextBrush}"
+                     Foreground="{StaticResource TopBarTextBrush}"
                      Margin="16,12,16,0"
                      VerticalAlignment="Top" Panel.ZIndex="1" />
 
@@ -313,29 +312,30 @@
               <TextBlock Text="📊" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,8" />
               <TextBlock Text="{Binding StatusMessage}"
                          Style="{StaticResource CardDescriptionStyle}"
+                         Foreground="{StaticResource ChartAxisLabelBrush}"
                          HorizontalAlignment="Center" FontSize="13" />
             </StackPanel>
           </Border>
 
           <!-- Loading spinner text -->
           <Border Visibility="{Binding LoadingVisible}" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Loading data…" Style="{StaticResource CardDescriptionStyle}" FontSize="13" />
+            <TextBlock Text="Loading data…" Style="{StaticResource CardDescriptionStyle}" Foreground="{StaticResource ChartAxisLabelBrush}" FontSize="13" />
           </Border>
 
           <!-- Legend strip (bottom left) -->
           <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Left"
                       Margin="16,0,0,12"
                       Visibility="{Binding ChartVisible}">
-            <Ellipse Width="10" Height="10" Fill="#4C8DFF" Margin="0,0,4,0" VerticalAlignment="Center" />
-            <TextBlock Text="History" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
-            <Ellipse Width="10" Height="10" Fill="#F56565" Margin="0,0,4,0" VerticalAlignment="Center" />
-            <TextBlock Text="Current" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" />
+            <Ellipse Width="10" Height="10" Fill="{StaticResource ChartSecondaryLineBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
+            <TextBlock Text="History" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+            <Ellipse Width="10" Height="10" Fill="{StaticResource ChartDrawdownBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
+            <TextBlock Text="Current" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" />
           </StackPanel>
 
           <!-- Status bar -->
           <TextBlock Text="{Binding StatusMessage}"
                      FontSize="11"
-                     Foreground="{DynamicResource MutedTextBrush}"
+                     Foreground="{StaticResource ChartAxisLabelBrush}"
                      VerticalAlignment="Bottom" HorizontalAlignment="Right"
                      Margin="0,0,12,8"
                      Visibility="{Binding ChartVisible}" />
@@ -344,13 +344,12 @@
 
       <!-- ── Grid splitter ────────────────────────────────────────────────── -->
       <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"
-                    Background="{DynamicResource CardBorderBrush}" Cursor="SizeNS" />
+                    Background="{StaticResource ChartBorderBrush}" Cursor="SizeNS" />
 
       <!-- ── Bottom analysis panel ────────────────────────────────────────── -->
       <Border Grid.Row="2"
-              Background="{DynamicResource CardBackgroundBrush}"
-              BorderBrush="{DynamicResource CardBorderBrush}"
-              BorderThickness="1" CornerRadius="8">
+              Style="{StaticResource ChartCardStyle}"
+              Padding="0">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />  <!-- Tab headers -->
@@ -359,8 +358,8 @@
 
           <!-- Tab header strip -->
           <Border Grid.Row="0"
-                  BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,0,0,1"
-                  Background="{DynamicResource SubtleBackgroundBrush}">
+                  BorderBrush="{StaticResource ChartBorderBrush}" BorderThickness="0,0,0,1"
+                  Background="{StaticResource ChartPlotAreaBrush}">
             <StackPanel Orientation="Horizontal" Height="32">
               <RadioButton x:Name="TabExpressionEditor" Content="Expression Editor"
                            Style="{StaticResource AnalysisTabButtonStyle}"
@@ -389,7 +388,7 @@
 
               <!-- Expression 1 (X) -->
               <Border Grid.Row="0"
-                      Background="#0D1929" BorderBrush="#1E3050" BorderThickness="1" CornerRadius="4"
+                      Background="{StaticResource ChartPlotAreaBrush}" BorderBrush="{StaticResource ChartBorderBrush}" BorderThickness="1" CornerRadius="4"
                       Padding="8,6" Margin="0,0,0,4">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock Text="1" Style="{StaticResource LineNumberStyle}" />
@@ -402,7 +401,7 @@
 
               <!-- Expression 2 (Y) -->
               <Border Grid.Row="1"
-                      Background="#0D1929" BorderBrush="#1E3050" BorderThickness="1" CornerRadius="4"
+                      Background="{StaticResource ChartPlotAreaBrush}" BorderBrush="{StaticResource ChartBorderBrush}" BorderThickness="1" CornerRadius="4"
                       Padding="8,6">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock Text="2" Style="{StaticResource LineNumberStyle}" />
@@ -426,14 +425,14 @@
                         BorderThickness="0"
                         Background="Transparent"
                         RowBackground="Transparent"
-                        AlternatingRowBackground="#07FFFFFF"
-                        Foreground="{DynamicResource ConsoleTextBrush}"
+                        AlternatingRowBackground="{StaticResource ChartPlotAreaBrush}"
+                        Foreground="{StaticResource TopBarTextBrush}"
                         FontSize="12"
                         ColumnHeaderHeight="28">
                 <DataGrid.ColumnHeaderStyle>
                   <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="{DynamicResource SubtleBackgroundBrush}" />
-                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+                    <Setter Property="Background" Value="{StaticResource ChartPlotAreaBrush}" />
+                    <Setter Property="Foreground" Value="{StaticResource ChartAxisLabelBrush}" />
                     <Setter Property="FontSize" Value="11" />
                     <Setter Property="Padding" Value="10,0" />
                     <Setter Property="BorderThickness" Value="0" />

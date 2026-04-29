@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Session;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using ExportFormatModel = Meridian.Ui.Services.ExportFormat;
 using ExportJobModel = Meridian.Ui.Services.ExportJob;
@@ -201,6 +202,15 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.Context.CriticalValue.Should().Be("No urgent blockers");
         presentation.QueueScopeBadgeText.Should().Be("US Equities · Production");
         presentation.QueueSummaryText.Should().Contain("2 resumable backfill job(s)").And.Contain("3 remaining symbol(s)");
+        presentation.HeroState.FocusText.Should().Be("Historical coverage");
+        presentation.HeroState.BadgeText.Should().Be("Attention");
+        presentation.HeroState.HandoffTitleText.Should().Be("Resume staged backfills before the next operator handoff");
+        presentation.HeroState.PrimaryActionId.Should().Be("Backfill");
+        presentation.HeroState.SecondaryActionId.Should().Be("Schedules");
+        presentation.HeroState.TargetText.Should().Be("Target: Backfill");
+        presentation.HeroMetrics.Select(metric => metric.Label).Should().ContainInOrder("Providers", "Backfill", "Storage");
+        presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("2/2 ready", "3 pending", "61% used");
+        presentation.HeroMetrics.Select(metric => metric.Tone).Should().ContainInOrder("Success", "Warning", "Info");
 
         presentation.SummaryProvidersText.Should().Be("2/2 ready");
         presentation.SummaryBackfillText.Should().Be("3 pending");
@@ -241,18 +251,26 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
     {
         var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData
         {
-            ScopeLabel = "Provider and storage posture",
-            ScopeSummary = "Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell.",
+            ScopeLabel = "Provider and storage health",
+            ScopeSummary = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.",
             RetrievedAt = new DateTimeOffset(2026, 04, 16, 14, 30, 00, TimeSpan.Zero)
         });
 
         presentation.Context.FreshnessValue.Should().Be("Awaiting live telemetry");
         presentation.Context.ReviewStateValue.Should().Be("Awaiting queue");
         presentation.Context.CriticalValue.Should().Be("No urgent blockers");
-        presentation.QueueScopeBadgeText.Should().Be("Provider and storage posture");
+        presentation.QueueScopeBadgeText.Should().Be("Provider and storage health");
+        presentation.HeroState.FocusText.Should().Be("Provider routing");
+        presentation.HeroState.BadgeText.Should().Be("Degraded");
+        presentation.HeroState.HandoffTitleText.Should().Be("Refresh provider telemetry before routing new queue work");
+        presentation.HeroState.PrimaryActionId.Should().Be("Retry");
+        presentation.HeroState.SecondaryActionId.Should().Be("Diagnostics");
+        presentation.HeroState.TargetText.Should().Be("Target: Refresh current shell");
+        presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("No providers", "No active backfill", "No data");
+        presentation.HeroMetrics.Select(metric => metric.Tone).Should().ContainInOrder("Warning", "Neutral", "Neutral");
 
-        presentation.SummaryProvidersText.Should().Be("No data");
-        presentation.SummaryBackfillText.Should().Be("Idle");
+        presentation.SummaryProvidersText.Should().Be("No providers");
+        presentation.SummaryBackfillText.Should().Be("No active backfill");
         presentation.SummaryStorageText.Should().Be("No data");
 
         presentation.ProviderQueueItems.Should().ContainSingle();
@@ -273,6 +291,77 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.RecentOperations.Should().HaveCount(3);
         presentation.RecentOperations.Select(item => item.ActionId)
             .Should().ContainInOrder("ProviderHealth", "Backfill", "DataExport");
+    }
+
+    [Fact]
+    public void Build_WithFixtureModeAndNoTelemetry_UsesDemoCopyAndInfoTone()
+    {
+        var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData
+        {
+            EnvironmentMode = FixtureModeKind.Fixture,
+            ScopeLabel = "Demo review",
+            ScopeSummary = "Review Data Operations with sample telemetry.",
+            RetrievedAt = new DateTimeOffset(2026, 04, 16, 14, 30, 00, TimeSpan.Zero)
+        });
+
+        presentation.Context.FreshnessValue.Should().Be("Demo data active");
+        presentation.HeroState.FocusText.Should().Be("Demo data");
+        presentation.HeroState.BadgeText.Should().Be("Demo");
+        presentation.HeroState.BadgeTone.Should().Be(WorkspaceTone.Info);
+        presentation.HeroState.HandoffTitleText.Should().Be("Review the Data Operations flow with sample telemetry");
+        presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("Demo data", "No active backfill", "No data");
+        presentation.HeroMetrics[0].Tone.Should().Be(WorkspaceTone.Info);
+        presentation.SummaryProvidersText.Should().Be("Demo data");
+        presentation.SummaryProvidersTone.Should().Be(WorkspaceTone.Info);
+
+        presentation.ProviderQueueState.HasError.Should().BeFalse();
+        presentation.ProviderQueueState.IsEmpty.Should().BeTrue();
+        presentation.ProviderQueueState.Title.Should().Be("Demo provider telemetry");
+        presentation.ProviderQueueItems[0].StatusLabel.Should().Be("Demo data");
+        presentation.ProviderQueueItems[0].CountLabel.Should().Be("Fixture sample");
+        presentation.ProviderQueueItems[0].Tone.Should().Be(WorkspaceTone.Info);
+    }
+
+    [Fact]
+    public void Build_WithDisconnectedProvider_ShouldSurfaceDk1TrustRationaleInProviderQueue()
+    {
+        var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData
+        {
+            ScopeLabel = "DK1 pilot providers",
+            RetrievedAt = new DateTimeOffset(2026, 04, 24, 14, 30, 00, TimeSpan.Zero),
+            Providers =
+            [
+                new ProviderInfoModel { ProviderId = "alpaca", DisplayName = "Alpaca", Description = "DK1 pilot streaming provider" }
+            ],
+            ProviderStatus = new StatusProviderInfoModel
+            {
+                ActiveProvider = "Alpaca",
+                IsConnected = false,
+                ConnectionCount = 1,
+                AvailableProviders = ["Alpaca"]
+            },
+            BackfillHealth = new BackfillHealthResponse
+            {
+                IsHealthy = false,
+                Providers = new Dictionary<string, BackfillProviderHealth>
+                {
+                    ["Alpaca"] = new() { IsAvailable = false, ErrorMessage = "connection closed" }
+                }
+            }
+        });
+
+        presentation.ProviderQueueItems.Should().ContainSingle();
+        var providerQueue = presentation.ProviderQueueItems[0];
+        providerQueue.StatusLabel.Should().Be("Offline");
+        providerQueue.Detail.Should().Contain("Signal source: Provider quote/trade stream health telemetry");
+        providerQueue.Detail.Should().Contain("Reason code: PROVIDER_STREAM_DEGRADED");
+        providerQueue.Detail.Should().Contain("Recommended action: Verify provider connectivity");
+        presentation.HeroState.FocusText.Should().Be("Provider routing");
+        presentation.HeroState.BadgeText.Should().Be("Review");
+        presentation.HeroState.HandoffTitleText.Should().Be("Stabilize provider health before the next historical or export handoff");
+        presentation.HeroState.PrimaryActionId.Should().Be("ProviderHealth");
+        presentation.HeroState.SecondaryActionId.Should().Be("Provider");
+        presentation.HeroState.TargetText.Should().Be("Target: Provider Health");
     }
 
     [Fact]

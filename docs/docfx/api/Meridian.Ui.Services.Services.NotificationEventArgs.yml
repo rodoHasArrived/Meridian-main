@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotificationEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 41
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tag
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationMs
-    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
     startLine: 47
   assemblies:
   - Meridian.Ui.Services

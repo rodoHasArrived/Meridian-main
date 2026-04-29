@@ -1,6 +1,8 @@
 #!/usr/bin/env pwsh
 [CmdletBinding()]
 param(
+    [string]$Profile = 'screenshot-catalog',
+    [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
     [switch]$NoBuild,
     [switch]$Fixture,
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -13,12 +15,32 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
+
+$profileEnvelope = Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot
+$profileValidation = Test-MeridianWorkflowProfile -ProfileData $profileEnvelope.data
+if (-not $profileValidation.isValid) {
+    throw "Profile '$Profile' failed validation: $($profileValidation.errors -join '; ')"
+}
+
+$buildProfile = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'build' -Fallback @{}
+$hostProfile = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'host' -Fallback @{}
+$fixtureProfile = Get-MeridianWorkflowProfileValue -Table $profileEnvelope.data -Key 'fixture' -Fallback @{}
 
 $hostProject = 'src/Meridian/Meridian.csproj'
-$desktopProject = 'src/Meridian.Wpf/Meridian.Wpf.csproj'
+$desktopProject = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'projectPath' -Fallback 'src/Meridian.Wpf/Meridian.Wpf.csproj')
+$desktopConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'configuration' -Fallback 'Debug')
+$desktopFramework = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'framework' -Fallback 'net9.0-windows10.0.19041.0')
+$desktopExeName = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'exeName' -Fallback 'Meridian.Desktop.exe')
+$hostBaseUrl = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'baseUrl' -Fallback 'http://localhost:8080')
+$hostHealthPath = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'healthPath' -Fallback '/healthz')
+$hostStartupTimeoutSec = [int](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'startupTimeoutSec' -Fallback 30)
+$hostMode = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'mode' -Fallback 'desktop')
+$hostPort = [int](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'port' -Fallback 8080)
+$fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $false)
 $buildIsolationKey = New-MeridianBuildIsolationKey -Prefix 'desktop-run'
 $hostExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $hostProject -Configuration 'Debug' -Framework 'net9.0' -BinaryName 'Meridian.exe' -IsolationKey $buildIsolationKey
-$desktopExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration 'Debug' -Framework 'net9.0-windows10.0.19041.0' -BinaryName 'Meridian.Desktop.exe' -IsolationKey $buildIsolationKey
+$desktopExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration $desktopConfiguration -Framework $desktopFramework -BinaryName $desktopExeName -IsolationKey $buildIsolationKey
 $artifactsDir = Join-Path $repoRoot 'artifacts'
 $hostStdout = Join-Path $artifactsDir 'desktop-launcher-host.stdout.log'
 $hostStderr = Join-Path $artifactsDir 'desktop-launcher-host.stderr.log'
@@ -95,7 +117,8 @@ function Stop-WorkspaceDesktopProcesses {
 
 function Test-HealthyHost {
     try {
-        $response = Invoke-WebRequest -Uri 'http://localhost:8080/healthz' -UseBasicParsing -TimeoutSec 2
+        $healthUri = ($hostBaseUrl.TrimEnd('/')) + $hostHealthPath
+        $response = Invoke-WebRequest -Uri $healthUri -UseBasicParsing -TimeoutSec 2
         return $response.StatusCode -ge 200 -and $response.StatusCode -lt 300
     }
     catch {
@@ -142,6 +165,11 @@ try {
         throw 'The desktop launcher requires Windows because Meridian.Wpf is a Windows-only application.'
     }
 
+    if ($fixtureRequired -and -not $Fixture) {
+        $Fixture = $true
+        Write-Info "Profile '$Profile' requires fixture mode; enabling -Fixture."
+    }
+
     if ($Fixture) {
         Write-Info 'Fixture mode enabled; forcing synthetic backend overrides for deterministic local startup.'
         $env:MDC_DATASOURCE = 'Synthetic'
@@ -182,8 +210,8 @@ try {
             throw 'Meridian desktop restore failed.'
         }
 
-        & dotnet build $desktopProject -c Debug -v minimal -nologo --no-restore @(
-            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
+        & dotnet build $desktopProject -c $desktopConfiguration -v minimal -nologo --no-restore @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $desktopFramework -EnableFullWpfBuild
         )
         if ($LASTEXITCODE -ne 0) {
             throw 'Meridian desktop build failed.'
@@ -199,12 +227,12 @@ try {
     }
 
     if (Test-HealthyHost) {
-        Write-Ok 'Reusing existing local Meridian host on http://localhost:8080'
+        Write-Ok "Reusing existing local Meridian host on $hostBaseUrl"
     }
     else {
-        Write-Info 'Starting local Meridian host on http://localhost:8080...'
+        Write-Info "Starting local Meridian host on $hostBaseUrl..."
         $hostProcess = Start-Process -FilePath $hostExe `
-            -ArgumentList @('--mode', 'desktop', '--http-port', '8080') `
+            -ArgumentList @('--mode', $hostMode, '--http-port', "$hostPort") `
             -WorkingDirectory $repoRoot `
             -RedirectStandardOutput $hostStdout `
             -RedirectStandardError $hostStderr `
@@ -212,7 +240,7 @@ try {
         $hostOwned = $true
 
         $healthy = $false
-        for ($attempt = 0; $attempt -lt 30; $attempt++) {
+        for ($attempt = 0; $attempt -lt $hostStartupTimeoutSec; $attempt++) {
             if ($hostProcess.HasExited) {
                 break
             }
@@ -227,7 +255,7 @@ try {
 
         if (-not $healthy) {
             Show-HostLogs
-            throw 'Local Meridian host failed to become healthy on http://localhost:8080.'
+            throw "Local Meridian host failed to become healthy on $hostBaseUrl."
         }
 
         Write-Ok 'Local Meridian host is healthy'

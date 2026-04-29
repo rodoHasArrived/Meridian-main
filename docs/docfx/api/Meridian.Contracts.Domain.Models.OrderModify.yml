@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderModify
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewPrice
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewDisplayedSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewHiddenSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 32
   assemblies:
   - Meridian.Contracts
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LosesPriority
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 44
   assemblies:
   - Meridian.Contracts
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderModify.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderModify.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts

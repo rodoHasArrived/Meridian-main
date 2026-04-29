@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProgress
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 99
   assemblies:
   - Meridian.Contracts
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobId
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 111
   assemblies:
   - Meridian.Contracts
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 117
   assemblies:
   - Meridian.Contracts
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 127
   assemblies:
   - Meridian.Contracts
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedSymbols
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 137
   assemblies:
   - Meridian.Contracts
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedSymbols
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 147
   assemblies:
   - Meridian.Contracts
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBars
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 158
   assemblies:
   - Meridian.Contracts
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DownloadedBars
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 168
   assemblies:
   - Meridian.Contracts
@@ -384,7 +384,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsPerSecond
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 178
   assemblies:
   - Meridian.Contracts
@@ -427,7 +427,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSecondsRemaining
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 185
   assemblies:
   - Meridian.Contracts
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 191
   assemblies:
   - Meridian.Contracts
@@ -516,7 +516,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -562,7 +562,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolProgress
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 205
   assemblies:
   - Meridian.Contracts
@@ -608,7 +608,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentProvider
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 211
   assemblies:
   - Meridian.Contracts
@@ -651,7 +651,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 217
   assemblies:
   - Meridian.Contracts
@@ -694,7 +694,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressPercent
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 223
   assemblies:
   - Meridian.Contracts
@@ -735,7 +735,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsProgressPercent
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 229
   assemblies:
   - Meridian.Contracts
@@ -776,7 +776,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Elapsed
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 235
   assemblies:
   - Meridian.Contracts
@@ -817,7 +817,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsComplete
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 241
   assemblies:
   - Meridian.Contracts
@@ -858,7 +858,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingSymbols
-    path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
+    path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
     startLine: 247
   assemblies:
   - Meridian.Contracts

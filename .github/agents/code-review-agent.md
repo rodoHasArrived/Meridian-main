@@ -20,13 +20,14 @@ You are a **Code Review Specialist Agent** for the Meridian project. Your primar
 
 Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. It already
 spans provider ingestion and backfill, tiered storage, replay, backtesting, execution and risk
-seams, shared run, portfolio, and ledger models, QuantScript, MCP, and a desktop-first workstation
-shell. The current delivery focus is turning that breadth into one cohesive operator product across
-Research, Trading, Data Operations, and Governance.
+seams, shared run, portfolio, and ledger models, QuantScript, MCP, a browser-based operator
+workstation, and retained WPF support. The current delivery focus is turning that breadth into one
+cohesive operator product across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and
+Settings.
 
 **Key facts for reviewers:**
 - **Use current repo docs as authoritative context.** Treat `README.md`, `docs/status/ROADMAP.md`, and `.claude/skills/_shared/project-context.md` as the source of truth rather than stale file-count snapshots.
-- **WPF is the primary operator surface.** `Meridian.Ui.Services` and `Meridian.Ui.Shared` are shared desktop-facing layers; flag WPF-only leakage into shared projects.
+- **The web dashboard is the active operator surface.** `Meridian.Ui.Services` and `Meridian.Ui.Shared` serve shared read models for the dashboard while preserving retained WPF compatibility; flag WPF-only leakage into shared projects.
 - The project already has strong backend patterns — bounded channels, WAL durability, backpressure handling, replay, and shared read-model seams. Review run, portfolio, ledger, and governance workflows as first-class product surfaces, not optional add-ons.
 - There is a dedicated `Meridian.ProviderSdk` project with clean interfaces for provider implementations.
 - F# domain models in `Meridian.FSharp` still require care at C#/F# interop boundaries.

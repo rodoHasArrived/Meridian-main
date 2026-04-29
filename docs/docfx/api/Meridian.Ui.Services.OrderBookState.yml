@@ -38,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBookState
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 374
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 376
   assemblies:
   - Meridian.Ui.Services
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 377
   assemblies:
   - Meridian.Ui.Services
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bids
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 378
   assemblies:
   - Meridian.Ui.Services
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Asks
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 379
   assemblies:
   - Meridian.Ui.Services
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BestBid
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 380
   assemblies:
   - Meridian.Ui.Services
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BestAsk
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 381
   assemblies:
   - Meridian.Ui.Services
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 382
   assemblies:
   - Meridian.Ui.Services
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 383
   assemblies:
   - Meridian.Ui.Services
@@ -306,7 +306,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadBps
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 384
   assemblies:
   - Meridian.Ui.Services
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imbalance
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 385
   assemblies:
   - Meridian.Ui.Services
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxBidSize
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 386
   assemblies:
   - Meridian.Ui.Services
@@ -393,7 +393,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxAskSize
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 387
   assemblies:
   - Meridian.Ui.Services
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdateTime
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 388
   assemblies:
   - Meridian.Ui.Services
@@ -451,7 +451,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentTrades
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 389
   assemblies:
   - Meridian.Ui.Services
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalVolume
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 390
   assemblies:
   - Meridian.Ui.Services
@@ -509,7 +509,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuyVolume
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 391
   assemblies:
   - Meridian.Ui.Services
@@ -538,7 +538,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SellVolume
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 392
   assemblies:
   - Meridian.Ui.Services
@@ -567,7 +567,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CumulativeDelta
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 393
   assemblies:
   - Meridian.Ui.Services
@@ -596,7 +596,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTradePrice
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 394
   assemblies:
   - Meridian.Ui.Services
@@ -625,7 +625,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTradeTime
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 395
   assemblies:
   - Meridian.Ui.Services

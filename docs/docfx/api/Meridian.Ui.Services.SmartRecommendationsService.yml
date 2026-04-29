@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SmartRecommendationsService
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecommendationsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services

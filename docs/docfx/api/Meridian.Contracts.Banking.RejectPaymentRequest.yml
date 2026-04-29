@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectPaymentRequest
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 44
   assemblies:
   - Meridian.Contracts
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewedBy
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts

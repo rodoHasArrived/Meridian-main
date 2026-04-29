@@ -62,6 +62,51 @@ jobs:
       collect-coverage: true
     secrets: inherit
 
+  contract-compatibility:
+    name: Contract Compatibility Gate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Capture PR body
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      run: |
+        printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+
+    - name: Run contract compatibility gate
+      run: |
+        python3 scripts/check_contract_compatibility_gate.py \
+          --base "${{ github.event.pull_request.base.sha }}" \
+          --head "HEAD" \
+          --pr-body-file "$RUNNER_TEMP/pr-body.md"
+
+    - name: Generate contract review packet
+      if: always()
+      run: |
+        mkdir -p artifacts/contract-review/pr-${{ github.event.pull_request.number }}
+        python3 scripts/generate_contract_review_packet.py \
+          --base "${{ github.event.pull_request.base.sha }}" \
+          --head "HEAD" \
+          --pr-body-file "$RUNNER_TEMP/pr-body.md" \
+          --output artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.json \
+          --markdown-output artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.md
+        cat artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.md >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload contract review packet
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: contract-review-packet
+        path: artifacts/contract-review/pr-${{ github.event.pull_request.number }}/
+        retention-days: 14
+
   config-schema:
     name: Config Schema Check
     runs-on: ubuntu-latest
@@ -183,41 +228,81 @@ jobs:
         echo "## Golden Fixture Regression" >> $GITHUB_STEP_SUMMARY
         echo "Canonicalization golden fixtures detected a regression. Check test output for details." >> $GITHUB_STEP_SUMMARY
 
-  contract-compatibility:
-    name: Contract Compatibility Gate
+  kernel-parity:
+    name: Kernel Parity Suite
     runs-on: ubuntu-latest
     needs: [build-and-test]
-    if: always() && needs.build-and-test.result == 'success' && github.event_name == 'pull_request'
-    timeout-minutes: 15
+    if: always() && needs.build-and-test.result == 'success'
+    timeout-minutes: 30
 
     steps:
     - name: Checkout
       uses: actions/checkout@v5
+
+    - name: Detect kernel-related changes
+      id: kernel-filter
+      uses: dorny/paths-filter@v3
       with:
-        fetch-depth: 0
+        filters: |
+          kernel:
+            - 'src/Meridian.FSharp/**'
+            - 'src/Meridian.FSharp.Ledger/**'
+            - 'src/Meridian.Ledger/**'
+            - 'src/Meridian.Risk/**'
+            - 'src/Meridian.Application/**'
+            - 'tests/Meridian.FSharp.Tests/**'
+            - 'tests/Meridian.Tests/Application/FSharpParity/**'
 
-    - name: Fetch base branch
-      run: git fetch --no-tags origin ${{ github.base_ref }} --depth=1
+    - name: Setup .NET with Cache
+      if: steps.kernel-filter.outputs.kernel == 'true'
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Write PR body to file
+    - name: Restore dependencies
+      if: steps.kernel-filter.outputs.kernel == 'true'
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Run C# kernel parity tests
+      if: steps.kernel-filter.outputs.kernel == 'true'
       run: |
-        cat <<'EOF' > pr-body.txt
-        ${{ github.event.pull_request.body }}
-        EOF
+        dotnet test tests/Meridian.Tests \
+          --filter "Category=KernelParity|FullyQualifiedName~KernelParity" \
+          -c Release \
+          /p:EnableWindowsTargeting=true \
+          --logger "trx;LogFileName=kernel-parity-csharp.trx" \
+          --verbosity normal
 
-    - name: Enforce compatibility migration policy
+    - name: Run F# kernel parity tests
+      if: steps.kernel-filter.outputs.kernel == 'true'
       run: |
-        python3 scripts/check_contract_compatibility_gate.py \
-          --base "origin/${{ github.base_ref }}" \
-          --head "HEAD" \
-          --pr-body-file pr-body.txt
+        dotnet test tests/Meridian.FSharp.Tests \
+          --filter "Category=KernelParity|FullyQualifiedName~KernelParity|DisplayName~KernelParity" \
+          -c Release \
+          /p:EnableWindowsTargeting=true \
+          --logger "trx;LogFileName=kernel-parity-fsharp.trx" \
+          --verbosity normal
 
-    - name: Contract compatibility failure hint
-      if: failure()
+    - name: Upload kernel parity results
+      if: always() && steps.kernel-filter.outputs.kernel == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: kernel-parity-results
+        path: |
+          tests/Meridian.Tests/TestResults/kernel-parity-csharp.trx
+          tests/Meridian.FSharp.Tests/TestResults/kernel-parity-fsharp.trx
+        retention-days: 7
+
+    - name: Skip note when no kernel files changed
+      if: steps.kernel-filter.outputs.kernel != 'true'
+      run: echo "Kernel parity suite skipped because this PR does not touch kernel-related paths." >> $GITHUB_STEP_SUMMARY
+
+    - name: Kernel parity failure hint
+      if: failure() && steps.kernel-filter.outputs.kernel == 'true'
       run: |
-        echo "::error::Potential contract-breaking changes require migration notes and compatibility matrix updates."
-        echo "## Contract Compatibility Gate" >> $GITHUB_STEP_SUMMARY
-        echo "Detected a potential breaking contract change without required migration-note evidence." >> $GITHUB_STEP_SUMMARY
+        echo "::error::Kernel parity suite failed. Investigate score/severity/reason mismatches or update expected divergence annotations."
+        echo "## Kernel Parity Regression" >> $GITHUB_STEP_SUMMARY
+        echo "Kernel-related changes must preserve C# and F# behavior parity unless an expected divergence is explicitly documented." >> $GITHUB_STEP_SUMMARY
 
   # ─── AI PR Review ──────────────────────────────────────────────────────
 
@@ -236,13 +321,31 @@ jobs:
 
     - name: Get PR diff summary
       id: diff
+      shell: bash
       run: |
-        DIFF_STATS=$(git diff --stat origin/${{ github.base_ref }}...HEAD | tail -1)
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | head -30)
-        echo "stats=$DIFF_STATS" >> $GITHUB_OUTPUT
-        echo "files<<FILESEOF" >> $GITHUB_OUTPUT
-        echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-        echo "FILESEOF" >> $GITHUB_OUTPUT
+        set -euo pipefail
+
+        BASE_REF="${{ github.base_ref }}"
+        REMOTE_BASE="origin/${BASE_REF}"
+
+        git fetch --no-tags --prune --depth=200 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}" || \
+          git fetch --no-tags --prune origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+
+        DIFF_RANGE="${REMOTE_BASE}...HEAD"
+        DIFF_STATS=$(git diff --stat "$DIFF_RANGE" | tail -1)
+
+        mapfile -t FILTERED_FILES < <(
+          git diff --name-only --diff-filter=ACMR "$DIFF_RANGE" | \
+            grep -Ev '(^README\.md$|^Meridian Design System \(3\)/README\.md$)' | \
+            head -30 || true
+        )
+
+        {
+          echo "stats=$DIFF_STATS"
+          echo "files<<FILESEOF"
+          printf '%s\n' "${FILTERED_FILES[@]}"
+          echo "FILESEOF"
+        } >> "$GITHUB_OUTPUT"
 
     - name: AI review summary
       id: ai-review
@@ -286,7 +389,7 @@ jobs:
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [lint, build-and-test, config-schema, ibapi-smoke, golden-fixtures, contract-compatibility, ai-pr-review]
+    needs: [lint, build-and-test, contract-compatibility, config-schema, ibapi-smoke, golden-fixtures, kernel-parity, ai-pr-review]
     if: always()
     timeout-minutes: 30
 
@@ -299,17 +402,21 @@ jobs:
         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
         echo "| Code Formatting | ${{ needs.lint.result == 'success' && 'Passed' || (needs.lint.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Build & Test | ${{ needs.build-and-test.result == 'success' && 'Passed' || (needs.build-and-test.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Contract Compatibility | ${{ needs.contract-compatibility.result == 'success' && 'Passed' || (needs.contract-compatibility.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Config Schema | ${{ needs.config-schema.result == 'success' && 'Passed' || (needs.config-schema.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| IBAPI Smoke Build | ${{ needs.ibapi-smoke.result == 'success' && 'Passed' || (needs.ibapi-smoke.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Golden Fixtures | ${{ needs.golden-fixtures.result == 'success' && 'Passed' || (needs.golden-fixtures.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Kernel Parity | ${{ needs.kernel-parity.result == 'success' && 'Passed' || (needs.kernel-parity.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| AI PR Review | ${{ needs.ai-pr-review.result == 'success' && 'Completed' || (needs.ai-pr-review.result == 'skipped' && 'Skipped' || 'Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
 
 
         if [[ "${{ needs.lint.result }}" == "failure" ]] || \
            [[ "${{ needs.build-and-test.result }}" == "failure" ]] || \
+           [[ "${{ needs.contract-compatibility.result }}" == "failure" ]] || \
            [[ "${{ needs.config-schema.result }}" == "failure" ]] || \
            [[ "${{ needs.ibapi-smoke.result }}" == "failure" ]] || \
-           [[ "${{ needs.golden-fixtures.result }}" == "failure" ]]; then
+           [[ "${{ needs.golden-fixtures.result }}" == "failure" ]] || \
+           [[ "${{ needs.kernel-parity.result }}" == "failure" ]]; then
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ❌ Some checks failed" >> $GITHUB_STEP_SUMMARY
           exit 1

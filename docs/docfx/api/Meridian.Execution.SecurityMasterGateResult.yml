@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterGateResult
-    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    path: src/Meridian.Execution/ISecurityMasterGate.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    path: src/Meridian.Execution/ISecurityMasterGate.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsApproved
-    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    path: src/Meridian.Execution/ISecurityMasterGate.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    path: src/Meridian.Execution/ISecurityMasterGate.cs
     startLine: 7
   assemblies:
   - Meridian.Execution

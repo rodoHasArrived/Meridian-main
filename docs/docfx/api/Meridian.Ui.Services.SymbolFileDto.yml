@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolFileDto
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 52
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileName
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 54
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataType
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 55
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifiedAt
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 57
   assemblies:
   - Meridian.Ui.Services
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 58
   assemblies:
   - Meridian.Ui.Services
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionType
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 59
   assemblies:
   - Meridian.Ui.Services

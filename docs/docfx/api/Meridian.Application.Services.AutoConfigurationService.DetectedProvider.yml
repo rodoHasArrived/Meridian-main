@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedProvider
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCredentials
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingCredentials
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRecommended
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuggestedPriority
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 27
   assemblies:
   - Meridian.Application

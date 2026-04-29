@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircularBufferExtensions
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 204
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sum
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 209
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Average
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 222
   assemblies:
   - Meridian.Ui.Services
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Max
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 232
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Min
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 249
   assemblies:
   - Meridian.Ui.Services
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateRate
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 269
   assemblies:
   - Meridian.Ui.Services
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatePercentageChange
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 290
   assemblies:
   - Meridian.Ui.Services

@@ -6,6 +6,32 @@ namespace Meridian.Wpf.Tests.Models;
 public sealed class ShellNavigationCatalogTests
 {
     [Fact]
+    public void NavigationText_ShouldAvoidBannedJargon_AndKeepSubtitlesConcise()
+    {
+        foreach (var page in ShellNavigationCatalog.Pages)
+        {
+            page.Subtitle.Length.Should().BeLessThanOrEqualTo(
+                ShellNavigationTextStyleGuide.SubtitleMaxLength,
+                $"{page.PageTag} subtitle should stay concise for shell navigation");
+            AssertDoesNotContainBannedTerms(page.Subtitle, $"{page.PageTag} subtitle");
+            AssertDoesNotContainBannedTerms(page.Title, $"{page.PageTag} title");
+        }
+
+        foreach (var workspace in ShellNavigationCatalog.Workspaces)
+        {
+            workspace.Description.Length.Should().BeLessThanOrEqualTo(
+                ShellNavigationTextStyleGuide.SubtitleMaxLength,
+                $"{workspace.Id} description should stay concise for workspace selection");
+            workspace.Summary.Length.Should().BeLessThanOrEqualTo(
+                ShellNavigationTextStyleGuide.SubtitleMaxLength,
+                $"{workspace.Id} summary should stay concise for workspace selection");
+            AssertDoesNotContainBannedTerms(workspace.Description, $"{workspace.Id} description");
+            AssertDoesNotContainBannedTerms(workspace.Summary, $"{workspace.Id} summary");
+            AssertDoesNotContainBannedTerms(workspace.Title, $"{workspace.Id} title");
+        }
+    }
+
+    [Fact]
     public void Aliases_ShouldResolveBackToCanonicalDescriptors()
     {
         foreach (var page in ShellNavigationCatalog.Pages)
@@ -49,18 +75,50 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
-    public void ResolveDefaultPanes_GovernanceWithoutPrimaryContext_UsesContextlessPanes()
+    public void Workspaces_ShouldExposeSevenCanonicalRoots()
+    {
+        ShellNavigationCatalog.Workspaces
+            .Select(static workspace => workspace.Id)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+
+        ShellNavigationCatalog.GetDefaultWorkspace().Id.Should().Be("strategy");
+    }
+
+    [Fact]
+    public void ResolveDefaultPanes_AccountingWithoutPrimaryContext_UsesContextlessPanes()
     {
         var panes = ShellNavigationCatalog.ResolveDefaultPanes(new WorkspaceShellState(
-            WorkspaceId: "governance",
-            LayoutId: "governance-workspace",
-            DisplayName: "Governance Workspace",
+            WorkspaceId: "accounting",
+            LayoutId: "accounting-workspace",
+            DisplayName: "Accounting Workspace",
             LayoutScopeKey: null,
             WindowMode: BoundedWindowMode.DockFloat,
             LayoutPresetId: null,
             HasPrimaryContext: false));
 
-        panes.Select(pane => pane.PageTag).Should().ContainInOrder("Diagnostics", "NotificationCenter", "SystemHealth");
+        panes.Select(pane => pane.PageTag).Should().ContainInOrder("FundLedger", "FundTrialBalance", "FundAuditTrail");
+    }
+
+    [Fact]
+    public void ProviderHealth_ShouldBelongToDataWhileDiagnosticsStaysSettingsOwned()
+    {
+        var providerHealth = ShellNavigationCatalog.GetPage("ProviderHealth");
+        var diagnostics = ShellNavigationCatalog.GetPage("Diagnostics");
+
+        providerHealth.Should().NotBeNull();
+        providerHealth!.WorkspaceId.Should().Be("data");
+        ShellNavigationCatalog.GetPagesForWorkspace("data")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain("ProviderHealth");
+        ShellNavigationCatalog.GetRelatedPages("DataShell")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain("ProviderHealth");
+
+        diagnostics.Should().NotBeNull();
+        diagnostics!.WorkspaceId.Should().Be("settings");
     }
 
     [Fact]
@@ -77,11 +135,10 @@ public sealed class ShellNavigationCatalogTests
 
         panes.Select(pane => pane.PageTag).Should().ContainInOrder(
             "LiveData",
-            "RunPortfolio",
+            "OrderBook",
             "PositionBlotter",
             "RunRisk",
-            "RunLedger",
-            "FundTrialBalance");
+            "TradingHours");
         panes.Last().OpenWithoutBoundParameter.Should().BeTrue();
     }
 
@@ -93,12 +150,40 @@ public sealed class ShellNavigationCatalogTests
             .Select(static page => page.PageTag)
             .ToArray();
 
-        relatedPages.Should().ContainInOrder("RunPortfolio", "PositionBlotter", "RunRisk");
-        relatedPages.Should().Contain("FundPortfolio");
+        relatedPages.Should().ContainInOrder("LiveData", "OrderBook", "PositionBlotter", "RunRisk");
+        relatedPages.Should().Contain("PortfolioShell");
+    }
+
+    [Fact]
+    public void OperatorRoutes_ShouldUseSevenWorkspaceLandingLabels()
+    {
+        ShellNavigationCatalog.GetPage("TradingShell")!.Title.Should().Be("Trading Workspace");
+        ShellNavigationCatalog.GetPage("PortfolioShell")!.Title.Should().Be("Portfolio Workspace");
+        ShellNavigationCatalog.GetPage("AccountingShell")!.Title.Should().Be("Accounting Workspace");
+        ShellNavigationCatalog.GetPage("ReportingShell")!.Title.Should().Be("Reporting Workspace");
+        ShellNavigationCatalog.GetPage("StrategyShell")!.Title.Should().Be("Strategy Workspace");
+        ShellNavigationCatalog.GetPage("DataShell")!.Title.Should().Be("Data Workspace");
+        ShellNavigationCatalog.GetPage("SettingsShell")!.Title.Should().Be("Settings Workspace");
+
+        ShellNavigationCatalog.GetPage("ResearchShell").Should().BeSameAs(ShellNavigationCatalog.GetPage("StrategyShell"));
+        ShellNavigationCatalog.GetPage("DataOperationsShell").Should().BeSameAs(ShellNavigationCatalog.GetPage("DataShell"));
+        ShellNavigationCatalog.GetPage("GovernanceShell").Should().BeSameAs(ShellNavigationCatalog.GetPage("AccountingShell"));
+
+        ShellNavigationCatalog.GetPage("Workspaces")!.SectionLabel.Should().Be("Workspace layouts");
+        ShellNavigationCatalog.GetPage("Dashboard")!.Title.Should().Be("Reporting dashboard");
     }
 
     private static IEnumerable<WorkspacePaneDefinition> EnumeratePanes(WorkspaceShellDefinition shell)
         => shell.DefaultPanes
             .Concat(shell.ContextlessPanes)
             .Concat(shell.PresetPanes.Values.SelectMany(static panes => panes));
+
+    private static void AssertDoesNotContainBannedTerms(string value, string scope)
+    {
+        foreach (var term in ShellNavigationTextStyleGuide.BannedJargonTerms)
+        {
+            value.Contains(term, StringComparison.OrdinalIgnoreCase)
+                .Should().BeFalse($"{scope} should not include banned jargon '{term}'");
+        }
+    }
 }

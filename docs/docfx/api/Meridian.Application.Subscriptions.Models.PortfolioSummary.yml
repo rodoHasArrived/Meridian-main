@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioSummary
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Broker
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 29
   assemblies:
   - Meridian.Core
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalValue
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashBalance
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 35
   assemblies:
   - Meridian.Core
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuyingPower
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 37
   assemblies:
   - Meridian.Core
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 39
   assemblies:
   - Meridian.Core
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetrievedAt
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 41
   assemblies:
   - Meridian.Core
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 43
   assemblies:
   - Meridian.Core

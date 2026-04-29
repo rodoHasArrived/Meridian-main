@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliResult
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExitCode
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ok
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 49
   assemblies:
   - Meridian.Application
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 55
   assemblies:
   - Meridian.Application
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromBool
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 58
   assemblies:
   - Meridian.Application

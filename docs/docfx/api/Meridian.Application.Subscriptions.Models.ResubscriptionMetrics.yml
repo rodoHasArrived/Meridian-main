@@ -43,7 +43,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscriptionMetrics
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAttempts
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeSuccesses
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeFailures
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 34
   assemblies:
   - Meridian.Core
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitedSkips
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 35
   assemblies:
   - Meridian.Core
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerOpens
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 37
   assemblies:
   - Meridian.Core
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerCloses
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 38
   assemblies:
   - Meridian.Core
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerHalfOpens
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 39
   assemblies:
   - Meridian.Core
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentCircuitState
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 41
   assemblies:
   - Meridian.Core
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsInCooldown
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 43
   assemblies:
   - Meridian.Core
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsCircuitOpen
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 44
   assemblies:
   - Meridian.Core
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalResubscribeTimeMs
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 46
   assemblies:
   - Meridian.Core
@@ -402,7 +402,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastResubscribeTimestamp
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 47
   assemblies:
   - Meridian.Core
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessRate
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 52
   assemblies:
   - Meridian.Core
@@ -462,7 +462,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageResubscribeTimeMs
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 66
   assemblies:
   - Meridian.Core
@@ -493,7 +493,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncResubscribeAttempt
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 79
   assemblies:
   - Meridian.Core
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncResubscribeSuccess
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 86
   assemblies:
   - Meridian.Core
@@ -551,7 +551,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncResubscribeFailure
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 94
   assemblies:
   - Meridian.Core
@@ -577,7 +577,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncRateLimitedSkip
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 97
   assemblies:
   - Meridian.Core
@@ -603,7 +603,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncCircuitBreakerOpen
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 100
   assemblies:
   - Meridian.Core
@@ -629,7 +629,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncCircuitBreakerClose
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 107
   assemblies:
   - Meridian.Core
@@ -655,7 +655,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncCircuitBreakerHalfOpen
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 114
   assemblies:
   - Meridian.Core
@@ -681,7 +681,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetSymbolsInCooldown
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 121
   assemblies:
   - Meridian.Core
@@ -713,7 +713,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetSymbolsCircuitOpen
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 124
   assemblies:
   - Meridian.Core
@@ -745,7 +745,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 132
   assemblies:
   - Meridian.Core
@@ -775,7 +775,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
     startLine: 154
   assemblies:
   - Meridian.Core

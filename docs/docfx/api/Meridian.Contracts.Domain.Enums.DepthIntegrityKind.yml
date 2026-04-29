@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthIntegrityKind
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ok
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gap
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrder
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidPosition
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stale
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts

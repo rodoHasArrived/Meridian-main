@@ -82,7 +82,26 @@ fi
 
 run_step "dotnet-restore" dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
 run_step "dotnet-build" dotnet build Meridian.sln -c Release --no-restore --nologo /p:EnableWindowsTargeting=true
-run_step "dotnet-test" dotnet test Meridian.sln -c Release --no-build --nologo --filter "Category!=Integration" /p:EnableWindowsTargeting=true
+test_common_args=(-c Release --no-build --nologo /p:EnableWindowsTargeting=true)
+test_filtered_args=("${test_common_args[@]}" --filter "Category!=Integration")
+fsharp_test_args=(
+    "${test_common_args[@]}"
+    --verbosity minimal
+    --logger "trx;LogFileName=test-results-fsharp.trx"
+    --results-directory .ai/test-results
+    --collect "XPlat Code Coverage"
+    --blame-hang-timeout 60s
+)
+
+run_step "dotnet-test-backtesting" dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj "${test_filtered_args[@]}"
+run_step "dotnet-test-fsharp" dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj "${fsharp_test_args[@]}"
+run_step "dotnet-test-main" dotnet test tests/Meridian.Tests/Meridian.Tests.csproj "${test_filtered_args[@]}"
+run_step "dotnet-test-ui" dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj "${test_filtered_args[@]}"
+run_step "dotnet-test-mcpserver" dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj "${test_filtered_args[@]}"
+run_step "dotnet-test-directlending" dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj "${test_filtered_args[@]}"
+run_step "dotnet-test-fundstructure" dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj "${test_filtered_args[@]}"
+run_step "dotnet-test-quantscript" dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj "${test_filtered_args[@]}"
+record_step "dotnet-test-wpf" "skipped" "WPF tests require the desktop validation lane and are not run by Linux full maintenance."
 
 if [[ "$MAKE_AVAILABLE" == true && -f Makefile ]]; then
     grep -qE '^[[:space:]]*doctor:' Makefile 2>/dev/null && \

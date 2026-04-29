@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationSource
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 22
   assemblies:
   - Meridian.Core
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Environment
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Runtime
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 34
   assemblies:
   - Meridian.Core
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandLine
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 37
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remote
-    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    path: src/Meridian.Core/Config/IConfigurationProvider.cs
     startLine: 40
   assemblies:
   - Meridian.Core

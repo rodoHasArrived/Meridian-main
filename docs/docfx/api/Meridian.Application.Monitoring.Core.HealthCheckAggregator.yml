@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckAggregator
-    path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
+    path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
+    path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
+    path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unregister
-    path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
+    path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAllAsync
-    path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
+    path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
     startLine: 55
   assemblies:
   - Meridian.Application
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAsync
-    path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
+    path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
     startLine: 89
   assemblies:
   - Meridian.Application

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +16,7 @@ TRACKED_PREFIXES = (
     "src/Meridian.Ledger/",
 )
 TRACKED_EXACT = {
+    "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
 }
 
@@ -22,14 +24,34 @@ BREAKING_REMOVAL_PATTERNS = (
     re.compile(r"^-\s*public\s+(?:sealed\s+|static\s+|partial\s+|readonly\s+|abstract\s+)*"
                r"(?:record|class|interface|enum|struct|delegate)\b"),
     re.compile(r"^-\s*public\s+[^=;]+\("),
+    re.compile(r"^-\s*public\s+(?:const|static\s+readonly)\s+string\s+[A-Za-z_]\w*\s*="),
+    re.compile(r"^-\s*public\s+(?:required\s+|static\s+|virtual\s+|override\s+|sealed\s+|readonly\s+)*"
+               r"[A-Za-z_][\w<>,?\[\]\s.]*\s+[A-Za-z_]\w*\s*\{\s*(?:get|init|set)\b"),
     re.compile(r"^-\s*group\.Map(?:Get|Post|Put|Delete|Patch)\("),
     re.compile(r"^-\s*\.WithName\("),
     re.compile(r"^-\s*\.Produces<"),
 )
 
+CS_CONTRACT_TYPE_PATTERN = (
+    r"(?:bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|object|"
+    r"Guid|DateOnly|DateTime|DateTimeOffset|TimeSpan|CancellationToken|"
+    r"IReadOnlyList<[^>]+>|IReadOnlyDictionary<[^>]+>|IEnumerable<[^>]+>|"
+    r"Dictionary<[^>]+>|List<[^>]+>|[A-Z][\w.<>?,\[\]]+)\??"
+)
+
+BREAKING_CONTRACT_SHAPE_PATTERNS = (
+    re.compile(
+        r"^-\s*(?:\[property:\s*[^\]]+\]\s*)?"
+        rf"{CS_CONTRACT_TYPE_PATTERN}\s+@?[A-Za-z_]\w*\s*(?:=\s*[^,)]+)?\s*[,)]\s*;?\s*$"
+    ),
+    re.compile(r"^-\s*[A-Z][A-Za-z0-9_]*\s*(?:=\s*[-+]?\d+)?\s*,?\s*$"),
+)
+
+GIT_EXECUTABLE = shutil.which("git") or shutil.which("git.cmd") or "git"
+
 
 def run_git(args: list[str]) -> str:
-    result = subprocess.run(["git", *args], check=True, capture_output=True, text=True)
+    result = subprocess.run([GIT_EXECUTABLE, *args], check=True, capture_output=True, text=True)
     return result.stdout
 
 
@@ -65,6 +87,16 @@ def migration_note_in_matrix(diff_range: str, matrix_doc_path: str) -> bool:
         return False
 
 
+def is_breaking_removal_line(line: str) -> bool:
+    return any(pattern.search(line) for pattern in BREAKING_REMOVAL_PATTERNS) or any(
+        pattern.search(line) for pattern in BREAKING_CONTRACT_SHAPE_PATTERNS
+    )
+
+
+def patch_has_breaking_removal(patch: str) -> bool:
+    return any(is_breaking_removal_line(line) for line in patch.splitlines())
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Enforce contract compatibility migration-note requirements.")
     parser.add_argument("--base", required=True, help="Base git ref for comparison.")
@@ -91,7 +123,7 @@ def main() -> int:
         print(f"  - {path}")
 
     patch = run_git(["diff", "--unified=0", diff_range, "--", *tracked_changed_files])
-    is_breaking = any(pattern.search(line) for line in patch.splitlines() for pattern in BREAKING_REMOVAL_PATTERNS)
+    is_breaking = patch_has_breaking_removal(patch)
 
     if not is_breaking:
         print("Tracked surfaces changed, but no breaking-removal heuristic matched; compatibility gate passed.")

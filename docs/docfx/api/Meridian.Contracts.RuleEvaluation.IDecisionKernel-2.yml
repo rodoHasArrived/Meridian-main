@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDecisionKernel
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 54
   assemblies:
   - Meridian.Contracts
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Evaluate
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 56
   assemblies:
   - Meridian.Contracts

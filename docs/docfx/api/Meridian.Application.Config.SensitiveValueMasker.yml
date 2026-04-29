@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPrefixLength
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultSuffixLength
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskChar
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinLengthForPartialMask
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mask
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 74
   assemblies:
   - Meridian.Application
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskCompletely
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 97
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSensitiveProperty
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 108
   assemblies:
   - Meridian.Application
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSensitiveEnvVar
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 130
   assemblies:
   - Meridian.Application
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskIfSensitive
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 157
   assemblies:
   - Meridian.Application
@@ -381,7 +381,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskDictionary
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 168
   assemblies:
   - Meridian.Application
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskConnectionString
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 183
   assemblies:
   - Meridian.Application
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskAlpacaOptions
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 206
   assemblies:
   - Meridian.Application
@@ -495,7 +495,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatMaskedCredential
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 220
   assemblies:
   - Meridian.Application
@@ -533,7 +533,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaskedEnvironmentVariables
-    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    path: src/Meridian.Application/Config/SensitiveValueMasker.cs
     startLine: 231
   assemblies:
   - Meridian.Application

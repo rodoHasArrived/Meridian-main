@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivitySummary
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllReachable
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetworkIssues
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 44
   assemblies:
   - Meridian.Application

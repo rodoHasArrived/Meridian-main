@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IProviderMetadata
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 31
   assemblies:
   - Meridian.ProviderSdk
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 37
   assemblies:
   - Meridian.ProviderSdk
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 42
   assemblies:
   - Meridian.ProviderSdk
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 47
   assemblies:
   - Meridian.ProviderSdk
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 52
   assemblies:
   - Meridian.ProviderSdk
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 57
   assemblies:
   - Meridian.ProviderSdk
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresCredentials
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 63
   assemblies:
   - Meridian.ProviderSdk
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 69
   assemblies:
   - Meridian.ProviderSdk
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 74
   assemblies:
   - Meridian.ProviderSdk
@@ -372,7 +372,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 79
   assemblies:
   - Meridian.ProviderSdk
@@ -403,7 +403,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedDataTypes
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 84
   assemblies:
   - Meridian.ProviderSdk

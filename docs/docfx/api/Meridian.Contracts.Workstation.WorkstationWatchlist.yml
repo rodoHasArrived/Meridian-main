@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationWatchlist
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistId
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCount
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 32
   assemblies:
   - Meridian.Contracts
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPinned
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SortOrder
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccentColor
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts

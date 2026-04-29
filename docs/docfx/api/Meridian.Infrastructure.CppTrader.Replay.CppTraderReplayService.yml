@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderReplayService
-    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateReplaySessionAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure.CppTrader

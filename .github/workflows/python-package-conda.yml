@@ -31,8 +31,12 @@ jobs:
     - name: Test with pytest
       run: |
         conda install pytest
-        if find . -type f \( -name "test_*.py" -o -name "*_test.py" \) | grep -q .; then
-          pytest
-        else
-          echo "No Python tests found; skipping pytest."
+        set +e
+        pytest
+        exit_code=$?
+        set -e
+        if [ "$exit_code" -eq 5 ]; then
+          echo "No Python tests were collected; skipping pytest."
+          exit 0
         fi
+        exit "$exit_code"

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapLeanEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Shared

@@ -10,6 +10,20 @@ namespace Meridian.Wpf.Tests.Views;
 public sealed class DataQualityPageSmokeTests
 {
     [Fact]
+    public void DataQualityPageSource_ShouldWireSymbolSearchRecovery()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml"));
+        var code = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml.cs"));
+
+        xaml.Should().Contain("Text=\"{Binding SymbolFilterScopeText}\"");
+        xaml.Should().Contain("Text=\"{Binding SymbolEmptyStateTitle}\"");
+        xaml.Should().Contain("Text=\"{Binding SymbolEmptyStateDetail}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataQualityClearSymbolFilterButton\"");
+        code.Should().Contain("ClearSymbolFilter_Click");
+        code.Should().Contain("_viewModel.ClearSymbolFilter()");
+    }
+
+    [Fact]
     public void DataQualityPage_ShouldResolveWithApplicationResources()
     {
         WpfTestThread.Run(() =>

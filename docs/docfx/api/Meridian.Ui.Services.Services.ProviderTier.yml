@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTier
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 316
   assemblies:
   - Meridian.Ui.Services
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Free
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 318
   assemblies:
   - Meridian.Ui.Services
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreeWithAccount
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 319
   assemblies:
   - Meridian.Ui.Services
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitedFree
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 320
   assemblies:
   - Meridian.Ui.Services
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Premium
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 321
   assemblies:
   - Meridian.Ui.Services

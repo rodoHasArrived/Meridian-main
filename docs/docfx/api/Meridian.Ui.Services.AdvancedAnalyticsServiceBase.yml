@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdvancedAnalyticsServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeGapsAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairGapsAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareProvidersAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 72
   assemblies:
   - Meridian.Ui.Services
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyHistogramAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 101
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyStatisticsAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 130
   assemblies:
   - Meridian.Ui.Services
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectAnomaliesAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 160
   assemblies:
   - Meridian.Ui.Services
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityReportAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 188
   assemblies:
   - Meridian.Ui.Services
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeCompletenessAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 216
   assemblies:
   - Meridian.Ui.Services
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetThroughputAnalysisAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 244
   assemblies:
   - Meridian.Ui.Services
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitStatusAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 275
   assemblies:
   - Meridian.Ui.Services
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
     startLine: 298
   assemblies:
   - Meridian.Ui.Services

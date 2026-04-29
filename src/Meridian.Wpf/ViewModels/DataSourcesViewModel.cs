@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -34,6 +35,10 @@ public sealed class DataSourcesViewModel : BindableBase
     private bool _isEditPanelVisible;
     private string _editPanelTitle = "Add Data Source";
     private bool _isSaving;
+    private bool _canSaveSource;
+    private string _sourceSetupReadinessTitle = "Data source setup incomplete";
+    private string _sourceSetupReadinessDetail = "Name the source and choose a valid priority before saving.";
+    private string _sourceSetupScopeText = "Interactive Brokers - Real-time - Global symbol list";
 
     // ── Form fields ─────────────────────────────────────────────────────
     private string _sourceNameText = string.Empty;
@@ -77,20 +82,12 @@ public sealed class DataSourcesViewModel : BindableBase
     private DataSourceConfigDto? _selectedDefaultRealTimeSource;
     private DataSourceConfigDto? _selectedDefaultHistoricalSource;
 
-    // ── Internal form state (set by code-behind for non-bindable controls)
+    // ── Internal form state
     private string? _editingSourceId;
-
-    /// <summary>Provider tag for the current edit form (e.g. "IB", "Alpaca", "Polygon"). Set by code-behind.</summary>
-    internal string SelectedProvider { get; set; } = "IB";
-
-    /// <summary>Type tag for the current edit form (e.g. "RealTime", "Historical", "Both"). Set by code-behind.</summary>
-    internal string SelectedType { get; set; } = "RealTime";
-
-    /// <summary>Alpaca feed tag (e.g. "iex", "sip"). Set by code-behind.</summary>
-    internal string AlpacaFeed { get; set; } = "iex";
-
-    /// <summary>Polygon feed tag (e.g. "stocks", "options"). Set by code-behind.</summary>
-    internal string PolygonFeed { get; set; } = "stocks";
+    private string _selectedProvider = "IB";
+    private string _selectedType = "RealTime";
+    private string _alpacaFeed = "iex";
+    private string _polygonFeed = "stocks";
 
     /// <summary>Polygon API key read from the PasswordBox by code-behind before Save.</summary>
     internal string PolygonApiKey { get; set; } = string.Empty;
@@ -109,7 +106,7 @@ public sealed class DataSourcesViewModel : BindableBase
         ToggleSourceEnabledCommand = new AsyncRelayCommand<DataSourceConfigDto>(ToggleSourceEnabledAsync);
 
         // Edit form
-        SaveSourceCommand = new AsyncRelayCommand(SaveSourceAsync);
+        SaveSourceCommand = new AsyncRelayCommand(SaveSourceAsync, () => CanSaveSource);
         CancelEditCommand = new RelayCommand(CancelEdit);
     }
 
@@ -182,7 +179,11 @@ public sealed class DataSourcesViewModel : BindableBase
     public bool IsEditPanelVisible
     {
         get => _isEditPanelVisible;
-        private set => SetProperty(ref _isEditPanelVisible, value);
+        private set
+        {
+            if (SetProperty(ref _isEditPanelVisible, value))
+                RefreshEditReadiness();
+        }
     }
 
     public string EditPanelTitle
@@ -194,7 +195,39 @@ public sealed class DataSourcesViewModel : BindableBase
     public bool IsSaving
     {
         get => _isSaving;
-        private set => SetProperty(ref _isSaving, value);
+        private set
+        {
+            if (SetProperty(ref _isSaving, value))
+                RefreshEditReadiness();
+        }
+    }
+
+    public bool CanSaveSource
+    {
+        get => _canSaveSource;
+        private set
+        {
+            if (SetProperty(ref _canSaveSource, value))
+                SaveSourceCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public string SourceSetupReadinessTitle
+    {
+        get => _sourceSetupReadinessTitle;
+        private set => SetProperty(ref _sourceSetupReadinessTitle, value);
+    }
+
+    public string SourceSetupReadinessDetail
+    {
+        get => _sourceSetupReadinessDetail;
+        private set => SetProperty(ref _sourceSetupReadinessDetail, value);
+    }
+
+    public string SourceSetupScopeText
+    {
+        get => _sourceSetupScopeText;
+        private set => SetProperty(ref _sourceSetupScopeText, value);
     }
 
     // ── Form field properties ─────────────────────────────────────────────
@@ -202,7 +235,11 @@ public sealed class DataSourcesViewModel : BindableBase
     public string SourceNameText
     {
         get => _sourceNameText;
-        set => SetProperty(ref _sourceNameText, value);
+        set
+        {
+            if (SetProperty(ref _sourceNameText, value))
+                RefreshEditReadiness();
+        }
     }
 
     public string SourceNameError
@@ -220,7 +257,11 @@ public sealed class DataSourcesViewModel : BindableBase
     public string PriorityText
     {
         get => _priorityText;
-        set => SetProperty(ref _priorityText, value);
+        set
+        {
+            if (SetProperty(ref _priorityText, value))
+                RefreshEditReadiness();
+        }
     }
 
     public string PriorityError
@@ -244,7 +285,66 @@ public sealed class DataSourcesViewModel : BindableBase
     public string SymbolsText
     {
         get => _symbolsText;
-        set => SetProperty(ref _symbolsText, value);
+        set
+        {
+            if (SetProperty(ref _symbolsText, value))
+                RefreshEditReadiness();
+        }
+    }
+
+    public string SelectedProvider
+    {
+        get => _selectedProvider;
+        set
+        {
+            var provider = string.IsNullOrWhiteSpace(value) ? "IB" : value;
+            if (SetProperty(ref _selectedProvider, provider))
+            {
+                IsIBPanelVisible = provider == "IB";
+                IsAlpacaPanelVisible = provider == "Alpaca";
+                IsPolygonPanelVisible = provider == "Polygon";
+                RefreshEditReadiness();
+            }
+        }
+    }
+
+    public string SelectedType
+    {
+        get => _selectedType;
+        set
+        {
+            var type = string.IsNullOrWhiteSpace(value) ? "RealTime" : value;
+            if (SetProperty(ref _selectedType, type))
+                RefreshEditReadiness();
+        }
+    }
+
+    public string AlpacaFeed
+    {
+        get => _alpacaFeed;
+        set
+        {
+            var feed = string.IsNullOrWhiteSpace(value) ? "iex" : value;
+            if (SetProperty(ref _alpacaFeed, feed))
+                RefreshEditReadiness();
+        }
+    }
+
+    public string AlpacaEnvironmentTag
+    {
+        get => AlpacaSandbox ? "true" : "false";
+        set => AlpacaSandbox = string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public string PolygonFeed
+    {
+        get => _polygonFeed;
+        set
+        {
+            var feed = string.IsNullOrWhiteSpace(value) ? "stocks" : value;
+            if (SetProperty(ref _polygonFeed, feed))
+                RefreshEditReadiness();
+        }
     }
 
     // ── Provider panel visibility ─────────────────────────────────────────
@@ -278,7 +378,15 @@ public sealed class DataSourcesViewModel : BindableBase
 
     // ── Alpaca settings ───────────────────────────────────────────────────
 
-    public bool AlpacaSandbox { get => _alpacaSandbox; set => SetProperty(ref _alpacaSandbox, value); }
+    public bool AlpacaSandbox
+    {
+        get => _alpacaSandbox;
+        set
+        {
+            if (SetProperty(ref _alpacaSandbox, value))
+                OnPropertyChanged(nameof(AlpacaEnvironmentTag));
+        }
+    }
     public bool AlpacaSubscribeQuotes { get => _alpacaSubscribeQuotes; set => SetProperty(ref _alpacaSubscribeQuotes, value); }
 
     // ── Polygon settings ──────────────────────────────────────────────────
@@ -354,15 +462,6 @@ public sealed class DataSourcesViewModel : BindableBase
         }
     }
 
-    /// <summary>Called by code-behind when the Provider ComboBox selection changes.</summary>
-    internal void OnProviderSelected(string provider)
-    {
-        SelectedProvider = provider;
-        IsIBPanelVisible = provider == "IB";
-        IsAlpacaPanelVisible = provider == "Alpaca";
-        IsPolygonPanelVisible = provider == "Polygon";
-    }
-
     // ── Private helpers ───────────────────────────────────────────────────
 
     private void UpdateDefaultSourceCollections(DataSourcesConfigDto config)
@@ -391,9 +490,11 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private void BeginEditSource(string? sourceId)
     {
-        if (sourceId == null) return;
+        if (sourceId == null)
+            return;
         var source = DataSources.FirstOrDefault(s => s.Id == sourceId);
-        if (source == null) return;
+        if (source == null)
+            return;
 
         _editingSourceId = sourceId;
         EditPanelTitle = "Edit Data Source";
@@ -403,9 +504,11 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task DeleteSourceAsync(string? sourceId, CancellationToken ct = default)
     {
-        if (sourceId == null) return;
+        if (sourceId == null)
+            return;
         var source = DataSources.FirstOrDefault(s => s.Id == sourceId);
-        if (source == null) return;
+        if (source == null)
+            return;
 
         var result = MessageBox.Show(
             $"Are you sure you want to delete '{source.Name}'?",
@@ -413,7 +516,8 @@ public sealed class DataSourcesViewModel : BindableBase
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageBoxResult.Yes)
+            return;
 
         try
         {
@@ -429,7 +533,8 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task SaveSourceAsync(CancellationToken ct = default)
     {
-        if (!ValidateEditForm()) return;
+        if (!ValidateEditForm())
+            return;
 
         IsSaving = true;
         try
@@ -455,24 +560,28 @@ public sealed class DataSourcesViewModel : BindableBase
     {
         IsEditPanelVisible = false;
         _editingSourceId = null;
+        ClearValidationErrors();
     }
 
     // ── Fire-and-forget wrappers (property setters cannot be async) ───────
 
     private async void SaveFailoverSettingsFireAndForget()
     {
-        try { await SaveFailoverSettingsAsync(); }
+        try
+        { await SaveFailoverSettingsAsync(); }
         catch (Exception ex) { ShowStatus($"Failed to update failover settings: {ex.Message}", isError: true); }
     }
 
     private async void SetDefaultSourceFireAndForget(string id, bool isHistorical)
     {
-        try { await SetDefaultSourceAsync(id, isHistorical); }
+        try
+        { await SetDefaultSourceAsync(id, isHistorical); }
         catch (Exception ex) { ShowStatus($"Failed to set default source: {ex.Message}", isError: true); }
     }
 
     private async Task SaveFailoverSettingsAsync(CancellationToken ct = default)
-    {        IsFailoverTimeoutErrorVisible = false;
+    {
+        IsFailoverTimeoutErrorVisible = false;
         if (!int.TryParse(FailoverTimeoutText, out var timeout) || timeout is < 5 or > 300)
         {
             FailoverTimeoutError = "Timeout must be between 5 and 300 seconds.";
@@ -504,7 +613,8 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task ToggleSourceEnabledAsync(DataSourceConfigDto? source, CancellationToken ct = default)
     {
-        if (source == null) return;
+        if (source == null)
+            return;
         try
         {
             await _configService.AddOrUpdateDataSourceAsync(source, ct);
@@ -530,11 +640,7 @@ public sealed class DataSourcesViewModel : BindableBase
 
         if (!string.IsNullOrWhiteSpace(SymbolsText))
         {
-            source.Symbols = SymbolsText
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim().ToUpperInvariant())
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToArray();
+            source.Symbols = ParseSymbols(SymbolsText);
         }
 
         switch (SelectedProvider)
@@ -582,7 +688,7 @@ public sealed class DataSourcesViewModel : BindableBase
         DescriptionText = source.Description ?? string.Empty;
         SymbolsText = source.Symbols != null ? string.Join(", ", source.Symbols) : string.Empty;
 
-        OnProviderSelected(source.Provider ?? "IB");
+        SelectedProvider = source.Provider ?? "IB";
 
         if (source.IB != null)
         {
@@ -640,30 +746,110 @@ public sealed class DataSourcesViewModel : BindableBase
         PolygonSubscribeAggregates = false;
 
         ClearValidationErrors();
-        OnProviderSelected("IB");
+        SelectedProvider = "IB";
     }
 
     private bool ValidateEditForm()
     {
-        ClearValidationErrors();
-        var hasError = false;
-
-        if (string.IsNullOrWhiteSpace(SourceNameText))
-        {
-            SourceNameError = "Name is required.";
-            IsSourceNameErrorVisible = true;
-            hasError = true;
-        }
-
-        if (!int.TryParse(PriorityText, out var priority) || priority is < 1 or > 1000)
-        {
-            PriorityError = "Priority must be between 1 and 1000.";
-            IsPriorityErrorVisible = true;
-            hasError = true;
-        }
-
-        return !hasError;
+        var state = RefreshEditReadiness();
+        return state.CanSave;
     }
+
+    internal DataSourceEditReadinessState RefreshEditReadiness()
+    {
+        var state = BuildEditReadinessState(
+            SourceNameText,
+            PriorityText,
+            SelectedProvider,
+            SelectedType,
+            SymbolsText);
+
+        SourceNameError = state.SourceNameError;
+        IsSourceNameErrorVisible = state.IsSourceNameErrorVisible;
+        PriorityError = state.PriorityError;
+        IsPriorityErrorVisible = state.IsPriorityErrorVisible;
+        SourceSetupReadinessTitle = state.Title;
+        SourceSetupReadinessDetail = state.Detail;
+        SourceSetupScopeText = state.ScopeText;
+        CanSaveSource = IsEditPanelVisible && state.CanSave && !IsSaving;
+        return state;
+    }
+
+    internal static DataSourceEditReadinessState BuildEditReadinessState(
+        string? sourceName,
+        string? priorityText,
+        string? provider,
+        string? type,
+        string? symbolsText)
+    {
+        var nameError = string.Empty;
+        var priorityError = string.Empty;
+        var blockers = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            nameError = "Name is required.";
+            blockers.Add("Name the source.");
+        }
+
+        if (!int.TryParse(priorityText, out var priority) || priority is < 1 or > 1000)
+        {
+            priorityError = "Priority must be between 1 and 1000.";
+            blockers.Add("Set a priority between 1 and 1000.");
+        }
+
+        var providerLabel = GetProviderDisplayName(provider);
+        var typeLabel = GetTypeDisplayName(type);
+        var symbolScope = BuildSymbolScopeText(symbolsText);
+        var canSave = blockers.Count == 0;
+
+        return new DataSourceEditReadinessState(
+            canSave,
+            canSave ? "Data source ready" : "Data source setup incomplete",
+            canSave
+                ? $"{providerLabel} {typeLabel.ToLowerInvariant()} source is ready to save."
+                : string.Join(" ", blockers),
+            $"{providerLabel} - {typeLabel} - {symbolScope}",
+            nameError,
+            !string.IsNullOrEmpty(nameError),
+            priorityError,
+            !string.IsNullOrEmpty(priorityError));
+    }
+
+    private static string GetProviderDisplayName(string? provider) => provider switch
+    {
+        "Alpaca" => "Alpaca",
+        "Polygon" => "Polygon.io",
+        "Robinhood" => "Robinhood",
+        _ => "Interactive Brokers"
+    };
+
+    private static string GetTypeDisplayName(string? type) => type switch
+    {
+        "Historical" => "Historical",
+        "Both" => "Real-time and historical",
+        _ => "Real-time"
+    };
+
+    private static string BuildSymbolScopeText(string? symbolsText)
+    {
+        var symbols = ParseSymbols(symbolsText);
+        return symbols.Length == 0
+            ? "Global symbol list"
+            : symbols.Length == 1
+                ? "1 symbol: " + symbols[0]
+                : $"{symbols.Length} symbols: {string.Join(", ", symbols.Take(4))}{(symbols.Length > 4 ? ", ..." : string.Empty)}";
+    }
+
+    private static string[] ParseSymbols(string? symbolsText)
+        => string.IsNullOrWhiteSpace(symbolsText)
+            ? Array.Empty<string>()
+            : symbolsText
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim().ToUpperInvariant())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
     private void ClearValidationErrors()
     {
@@ -682,3 +868,13 @@ public sealed class DataSourcesViewModel : BindableBase
         IsStatusVisible = true;
     }
 }
+
+internal sealed record DataSourceEditReadinessState(
+    bool CanSave,
+    string Title,
+    string Detail,
+    string ScopeText,
+    string SourceNameError,
+    bool IsSourceNameErrorVisible,
+    string PriorityError,
+    bool IsPriorityErrorVisible);

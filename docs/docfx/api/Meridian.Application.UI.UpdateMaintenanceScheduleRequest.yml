@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMaintenanceScheduleRequest
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 523
   assemblies:
   - Meridian.Application
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 523
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 524
   assemblies:
   - Meridian.Application
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 525
   assemblies:
   - Meridian.Application
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronExpression
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 526
   assemblies:
   - Meridian.Application
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeZoneId
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 527
   assemblies:
   - Meridian.Application
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskType
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 528
   assemblies:
   - Meridian.Application
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 529
   assemblies:
   - Meridian.Application
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 530
   assemblies:
   - Meridian.Application
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDurationMinutes
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 531
   assemblies:
   - Meridian.Application
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 532
   assemblies:
   - Meridian.Application
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetPaths
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 533
   assemblies:
   - Meridian.Application
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 534
   assemblies:
   - Meridian.Application
@@ -441,7 +441,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Options
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 535
   assemblies:
   - Meridian.Application

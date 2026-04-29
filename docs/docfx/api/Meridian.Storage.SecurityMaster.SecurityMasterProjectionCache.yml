@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterProjectionCache
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
     startLine: 5
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
     startLine: 9
   assemblies:
   - Meridian.Storage
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upsert
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceAll
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
     startLine: 17
   assemblies:
   - Meridian.Storage
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
     startLine: 26
   assemblies:
   - Meridian.Storage

@@ -1,6 +1,12 @@
 # Meridian UI Screenshots
 
-Screenshots of the Meridian WPF desktop application. Desktop screenshots run on `windows-latest` in fixture mode.
+Screenshots of Meridian operator surfaces. The current refresh workflow captures both the retained WPF desktop catalog under `desktop/` and the browser workstation dashboard under `web/`; the older root-level web/API captures in this file are retained as historical reference.
+
+## Current Desktop Highlight
+
+The current Governance assurance workflow centers the desktop **Security Master** page, which now carries the workstation context strip, trust/freshness posture, and grouped assurance entry point.
+
+![WPF Security Master](desktop/wpf-security-master.png)
 
 ## How to run (WPF desktop)
 
@@ -10,10 +16,21 @@ $env:MDC_FIXTURE_MODE = '1'
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
 ```
 
-Desktop screenshots are stored under [`desktop/`](desktop/) and are captured using Windows UI Automation and the built-in Command
-Palette to navigate between pages.
+Desktop screenshots are stored under `desktop/` and are captured using Windows UI Automation against the desktop shell.
+
+## How to run (web dashboard)
+
+```powershell
+npm --prefix src/Meridian.Ui/dashboard ci
+npm --prefix src/Meridian.Ui/dashboard run build
+npm --prefix src/Meridian.Ui/dashboard run screenshots -- --output-dir docs/screenshots/web
+```
+
+The web screenshot runner starts the Vite dashboard on `127.0.0.1`, captures the canonical workstation routes listed in `scripts/dev/web-screenshot-routes.json`, writes a manifest under `artifacts/web-screenshots/`, and fails if a capture has no workstation shell, too little rendered text, or a suspiciously small PNG.
 
 ---
+
+## Legacy Web And API Captures
 
 ## 01 – Main Dashboard
 
@@ -199,13 +216,19 @@ The **Security master coverage** deep-link within the Governance workspace, show
 
 ---
 
-## WPF Desktop Application
+## WPF Desktop Catalog
 
 The following screenshots are captured from the WPF desktop application running in
-fixture mode (`MDC_FIXTURE_MODE=1`). They live under the [`desktop/`](desktop/) subdirectory.
+fixture mode (`MDC_FIXTURE_MODE=1`). They live under the `desktop/` subdirectory.
+
+The machine-readable contract for this table is `docs/screenshots/desktop/catalog.json`.
+Run `python3 scripts/dev/validate-screenshot-contract.py` to verify the desktop files,
+workflow capture names, and this README table stay in sync.
+
+`D13` reflects the current governance assurance-oriented Security Master workstation surface.
 
 | # | Page | File |
-|---|------|------|
+| --- | ------ | ------ |
 | D01 | Dashboard | [`desktop/wpf-dashboard.png`](desktop/wpf-dashboard.png) |
 | D02 | Providers | [`desktop/wpf-providers.png`](desktop/wpf-providers.png) |
 | D03 | Provider Health | [`desktop/wpf-provider-health.png`](desktop/wpf-provider-health.png) |

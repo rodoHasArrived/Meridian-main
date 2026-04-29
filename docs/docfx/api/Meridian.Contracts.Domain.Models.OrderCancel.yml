@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderCancel
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanceledSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts

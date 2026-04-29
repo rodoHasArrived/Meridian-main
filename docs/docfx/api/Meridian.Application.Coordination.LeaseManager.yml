@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeaseManager
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireAsync
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewAsync
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseAsync
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 104
   assemblies:
   - Meridian.Application
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HoldsLease
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 113
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotAsync
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    path: src/Meridian.Application/Coordination/LeaseManager.cs
     startLine: 156
   assemblies:
   - Meridian.Application

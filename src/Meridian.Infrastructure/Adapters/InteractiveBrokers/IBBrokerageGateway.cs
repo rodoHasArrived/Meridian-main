@@ -150,6 +150,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        RejectSessionScopedOrderType(request.Type);
 
         var gatewayOrderId = ReserveGatewayOrderId();
         var meridianOrderId = request.ClientOrderId ?? $"IB-{gatewayOrderId}";
@@ -456,6 +457,15 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         {
             throw new InvalidOperationException(
                 "IB brokerage gateway is not connected. Call ConnectAsync first.");
+        }
+    }
+
+    private static void RejectSessionScopedOrderType(OrderType type)
+    {
+        if (type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        {
+            throw new NotSupportedException(
+                $"Interactive Brokers gateway does not currently preserve the {type} session timing qualifier.");
         }
     }
 

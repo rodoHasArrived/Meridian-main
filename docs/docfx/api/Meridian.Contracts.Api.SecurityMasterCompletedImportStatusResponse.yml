@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterCompletedImportStatusResponse
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileExtension
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Total
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Processed
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imported
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 69
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skipped
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConflictsDetected
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCount
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 81
   assemblies:
   - Meridian.Contracts
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAtUtc
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAtUtc
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts

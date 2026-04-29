@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestResult
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 42
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 42
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Request
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 43
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 44
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshots
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 45
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashFlows
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 46
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fills
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 47
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 48
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 49
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ElapsedTime
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 50
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsProcessed
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 51
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeTickets
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 52
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TcaReport
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 53
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineMetadata
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 54
   assemblies:
   - Meridian.Backtesting.Sdk

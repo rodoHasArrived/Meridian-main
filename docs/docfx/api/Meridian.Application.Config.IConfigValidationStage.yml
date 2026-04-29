@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IConfigValidationStage
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 87
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 89
   assemblies:
   - Meridian.Application

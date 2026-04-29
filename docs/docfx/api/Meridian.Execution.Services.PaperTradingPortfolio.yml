@@ -43,7 +43,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperTradingPortfolio
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultAccountId
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 34
   assemblies:
   - Meridian.Execution
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 69
   assemblies:
   - Meridian.Execution
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 106
   assemblies:
   - Meridian.Execution
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 112
   assemblies:
   - Meridian.Execution
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarginCollateral
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 118
   assemblies:
   - Meridian.Execution
@@ -300,7 +300,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 124
   assemblies:
   - Meridian.Execution
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 130
   assemblies:
   - Meridian.Execution
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 136
   assemblies:
   - Meridian.Execution
@@ -399,7 +399,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 143
   assemblies:
   - Meridian.Execution
@@ -440,7 +440,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 186
   assemblies:
   - Meridian.Execution
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccount
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 192
   assemblies:
   - Meridian.Execution
@@ -514,7 +514,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregateSnapshot
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 201
   assemblies:
   - Meridian.Execution
@@ -546,7 +546,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountSnapshot
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 219
   assemblies:
   - Meridian.Execution
@@ -585,7 +585,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllAccountSnapshots
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 230
   assemblies:
   - Meridian.Execution
@@ -615,7 +615,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckMarginStatus
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 255
   assemblies:
   - Meridian.Execution
@@ -669,7 +669,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMarginRequirement
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 301
   assemblies:
   - Meridian.Execution
@@ -710,7 +710,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccrueMarginInterest
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 319
   assemblies:
   - Meridian.Execution
@@ -758,7 +758,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyFill
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 354
   assemblies:
   - Meridian.Execution
@@ -789,7 +789,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyFill
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 360
   assemblies:
   - Meridian.Execution
@@ -828,7 +828,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMarketPrice
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 385
   assemblies:
   - Meridian.Execution
@@ -864,7 +864,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMarketPrice
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 400
   assemblies:
   - Meridian.Execution
@@ -902,7 +902,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 418
   assemblies:
   - Meridian.Execution
@@ -936,7 +936,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyCorporateActionsAsync
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 426
   assemblies:
   - Meridian.Execution
@@ -979,7 +979,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyCorporateActionsAsync
-    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
     startLine: 435
   assemblies:
   - Meridian.Execution

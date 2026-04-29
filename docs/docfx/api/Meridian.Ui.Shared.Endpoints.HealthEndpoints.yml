@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapHealthEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Shared

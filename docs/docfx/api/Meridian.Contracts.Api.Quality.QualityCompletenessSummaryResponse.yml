@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityCompletenessSummaryResponse
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbolDates
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 62
   assemblies:
   - Meridian.Contracts
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageScore
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinScore
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 64
   assemblies:
   - Meridian.Contracts
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxScore
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 65
   assemblies:
   - Meridian.Contracts
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsTracked
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatesTracked
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExpectedEvents
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 69
   assemblies:
   - Meridian.Contracts
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallCoverage
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 70
   assemblies:
   - Meridian.Contracts
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GradeDistribution
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 71
   assemblies:
   - Meridian.Contracts
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts

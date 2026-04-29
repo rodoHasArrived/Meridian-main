@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConnectionType
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 44
   assemblies:
   - Meridian.ProviderSdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brokerage
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 47
   assemblies:
   - Meridian.ProviderSdk
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custodian
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 48
   assemblies:
   - Meridian.ProviderSdk
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bank
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 49
   assemblies:
   - Meridian.ProviderSdk
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataVendor
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 50
   assemblies:
   - Meridian.ProviderSdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 51
   assemblies:
   - Meridian.ProviderSdk
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
-    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
     startLine: 52
   assemblies:
   - Meridian.ProviderSdk

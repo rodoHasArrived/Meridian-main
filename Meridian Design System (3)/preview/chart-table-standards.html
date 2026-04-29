@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Chart and table standards</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .axis { stroke: var(--chart-grid-major); }
+  .grid-line { stroke: var(--chart-grid); }
+  .line-primary { fill: none; stroke: var(--chart-ma20); stroke-width: 2; }
+  .line-bench { fill: none; stroke: var(--chart-bench); stroke-width: 1.4; opacity: .85; }
+  .line-warn { fill: none; stroke: var(--state-warn-fg); stroke-width: 1.4; opacity: .85; }
+  .fan-band { fill: var(--chart-band); stroke: none; }
+  .danger-band { fill: var(--chart-dd); stroke: none; }
+  .dot-primary { fill: var(--cyan-primary); }
+  .dot-muted { fill: var(--chart-bench); opacity: .35; }
+  .depth-bid { fill: var(--state-healthy-bg); stroke: var(--state-healthy-fg); }
+  .depth-ask { fill: var(--state-danger-bg); stroke: var(--state-danger-fg); }
+</style>
+</head>
+<body>
+  <main class="chart-standard-shell">
+    <header class="chart-standard-head">
+      <div>
+        <div class="chart-standard-sub">Evidence standards · charts and tables</div>
+        <h1>Chart and table standards</h1>
+      </div>
+      <div class="chart-standard-sub">Projection · scatter · order book · dense grid</div>
+    </header>
+
+    <section class="chart-standard-grid">
+      <article class="chart-standard-card">
+        <div class="chart-standard-title"><b>Projection and fan charts</b><span>forecast cut · range bands</span></div>
+        <div class="chart-standard-body">
+          <div class="chart-standard-box">
+            <svg viewBox="0 0 640 220" role="img" aria-label="Projection fan chart example">
+              <g>
+                <line class="grid-line" x1="44" y1="28" x2="612" y2="28"></line>
+                <line class="grid-line" x1="44" y1="76" x2="612" y2="76"></line>
+                <line class="grid-line" x1="44" y1="124" x2="612" y2="124"></line>
+                <line class="grid-line" x1="44" y1="172" x2="612" y2="172"></line>
+                <line class="axis" x1="44" y1="196" x2="612" y2="196"></line>
+                <line class="axis" x1="44" y1="28" x2="44" y2="196"></line>
+              </g>
+              <path class="fan-band" d="M320 112 C380 70 460 52 612 38 L612 174 C468 162 382 142 320 112 Z"></path>
+              <path class="danger-band" d="M320 112 C390 130 470 152 612 184 L612 196 L320 196 Z"></path>
+              <line x1="320" y1="28" x2="320" y2="196" stroke="var(--state-danger-fg)" stroke-dasharray="5 5"></line>
+              <path class="line-primary" d="M44 158 C116 162 174 148 232 130 C274 118 300 112 320 112 C382 102 444 86 612 58"></path>
+              <path class="line-bench" d="M320 112 C382 122 452 98 612 90"></path>
+              <path class="line-warn" d="M320 112 C382 138 452 146 612 154"></path>
+            </svg>
+          </div>
+          <div class="chart-standard-notes">
+            <div>Use one vertical forecast cut line and label the range table below the chart.</div>
+            <div>Keep percentile bands low-opacity; the median or observed path stays visually dominant.</div>
+            <div>Projection tables use mono values with signed deltas and explicit time horizons.</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chart-standard-card">
+        <div class="chart-standard-title"><b>Scatter and regression</b><span>cloud · selected mark · fit</span></div>
+        <div class="chart-standard-body">
+          <div class="chart-standard-box">
+            <svg viewBox="0 0 640 220" role="img" aria-label="Scatter chart example">
+              <g>
+                <line class="grid-line" x1="44" y1="28" x2="612" y2="28"></line>
+                <line class="grid-line" x1="44" y1="76" x2="612" y2="76"></line>
+                <line class="grid-line" x1="44" y1="124" x2="612" y2="124"></line>
+                <line class="grid-line" x1="44" y1="172" x2="612" y2="172"></line>
+                <line class="axis" x1="44" y1="196" x2="612" y2="196"></line>
+                <line class="axis" x1="44" y1="28" x2="44" y2="196"></line>
+              </g>
+              <line class="line-bench" x1="82" y1="174" x2="586" y2="56"></line>
+              <g>
+                <circle class="dot-muted" cx="120" cy="162" r="3"></circle><circle class="dot-muted" cx="148" cy="150" r="3"></circle><circle class="dot-muted" cx="182" cy="144" r="3"></circle><circle class="dot-muted" cx="216" cy="132" r="3"></circle><circle class="dot-muted" cx="250" cy="124" r="3"></circle><circle class="dot-muted" cx="284" cy="118" r="3"></circle><circle class="dot-muted" cx="318" cy="104" r="3"></circle><circle class="dot-muted" cx="352" cy="102" r="3"></circle><circle class="dot-muted" cx="386" cy="92" r="3"></circle><circle class="dot-muted" cx="420" cy="88" r="3"></circle><circle class="dot-muted" cx="454" cy="76" r="3"></circle><circle class="dot-muted" cx="488" cy="68" r="3"></circle>
+                <circle class="dot-primary" cx="284" cy="118" r="4"></circle>
+              </g>
+            </svg>
+          </div>
+          <div class="chart-standard-notes">
+            <div>Use a muted cloud, one selected mark, and a single fit line. Avoid color-only category encoding.</div>
+            <div>Show sample count, beta, correlation, and selected point identifiers in the chart header.</div>
+            <div>Selected points should drive the row-detail panel or entity summary.</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chart-standard-card">
+        <div class="chart-standard-title"><b>Order-book depth</b><span>bid · ask · spread</span></div>
+        <div class="chart-standard-body">
+          <div class="chart-standard-box">
+            <svg viewBox="0 0 640 220" role="img" aria-label="Order book depth chart example">
+              <g>
+                <line class="grid-line" x1="44" y1="28" x2="612" y2="28"></line>
+                <line class="grid-line" x1="44" y1="76" x2="612" y2="76"></line>
+                <line class="grid-line" x1="44" y1="124" x2="612" y2="124"></line>
+                <line class="grid-line" x1="44" y1="172" x2="612" y2="172"></line>
+                <line class="axis" x1="44" y1="196" x2="612" y2="196"></line>
+              </g>
+              <path class="depth-bid" d="M70 196 L70 170 L120 170 L120 148 L170 148 L170 126 L220 126 L220 104 L270 104 L270 84 L310 84 L310 196 Z"></path>
+              <path class="depth-ask" d="M330 196 L330 92 L380 92 L380 112 L430 112 L430 132 L480 132 L480 152 L530 152 L530 174 L590 174 L590 196 Z"></path>
+              <line x1="320" y1="64" x2="320" y2="196" stroke="var(--cyan-primary)" stroke-dasharray="4 4"></line>
+            </svg>
+          </div>
+          <div class="chart-standard-notes">
+            <div>Depth charts use mirrored bid/ask fills, a visible spread marker, and mono price labels.</div>
+            <div>Pair the chart with a dense price-level table. Cumulative quantity is right-aligned.</div>
+            <div>Selected price levels should remain stable when refresh updates arrive.</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chart-standard-card">
+        <div class="chart-standard-title"><b>Dense table evidence</b><span>sticky · selected · detail</span></div>
+        <div class="chart-standard-body">
+          <div class="dense-table-wrap">
+            <table class="dense-table">
+              <thead>
+                <tr><th>Symbol</th><th>Side</th><th class="r">Qty</th><th class="r">Avg px</th><th class="r">Mark</th><th class="r">Day P&amp;L</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr class="selected"><td>AAPL</td><td>Long</td><td class="r">100</td><td class="r">184.22</td><td class="r">187.42</td><td class="r fg-success">+320.00</td><td><span class="state-matrix-badge state-healthy">Filled</span></td></tr>
+                <tr><td>TSLA</td><td>Short</td><td class="r">40</td><td class="r">174.20</td><td class="r">176.55</td><td class="r fg-danger">−94.00</td><td><span class="state-matrix-badge state-warn">Partial</span></td></tr>
+                <tr><td>SPY</td><td>Long</td><td class="r">120</td><td class="r">512.30</td><td class="r">510.80</td><td class="r fg-success">+180.00</td><td><span class="state-matrix-badge state-selected">Selected</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="chart-standard-notes">
+            <div>Headers are sticky and mono. Numeric columns are right-aligned with tabular figures.</div>
+            <div>Selected rows must drive a visible detail panel, not just a highlight.</div>
+            <div>Group columns only when it clarifies workflow scope such as price, settlement, or evidence.</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="chart-standard-grid" style="margin-top:10px;">
+      <article class="status-window">
+        <div class="head">Status window</div>
+        <div class="body">Use for run status, audit trails, packet generation, queue processing, or workflow summaries. It belongs beside or below evidence and must include owner, timestamp, and next action when available.</div>
+      </article>
+      <article class="row-detail-panel">
+        <div class="head">Row detail panel</div>
+        <div class="body">Use for selected trades, holdings, reconciliation breaks, provider rows, and report items. Keep canonical IDs mono and preserve the selected-row link back to the table.</div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

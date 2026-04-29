@@ -5,7 +5,7 @@
 # The WPF project requires Windows or EnableWindowsTargeting=true.
 # See: src/Meridian.Wpf/README.md and docs/development/wpf-implementation-notes.md
 
-.PHONY: desktop-build desktop-test desktop-test-position-blotter-route
+.PHONY: desktop-build desktop-test desktop-test-position-blotter-route desktop-test-operator-inbox-route
 
 desktop-build: ## Build the WPF desktop project (requires Windows or EnableWindowsTargeting)
 	@echo "$(BLUE)Building Meridian.Wpf...$(NC)"
@@ -20,3 +20,6 @@ desktop-test: ## Run WPF desktop tests
 
 desktop-test-position-blotter-route: ## Run the isolated WPF position blotter route validation slice
 	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
+
+desktop-test-operator-inbox-route: ## Run the isolated WPF operator inbox route validation slice
+	@pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-operator-inbox-route.ps1

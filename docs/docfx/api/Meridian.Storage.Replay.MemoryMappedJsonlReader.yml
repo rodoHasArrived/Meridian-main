@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryMappedJsonlReader
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 77
   assemblies:
   - Meridian.Storage
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesRead
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 91
   assemblies:
   - Meridian.Storage
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesRead
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 96
   assemblies:
   - Meridian.Storage
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsRead
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 101
   assemblies:
   - Meridian.Storage
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryMappedFilesUsed
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 106
   assemblies:
   - Meridian.Storage
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 111
   assemblies:
   - Meridian.Storage
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 119
   assemblies:
   - Meridian.Storage
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsAsync
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 129
   assemblies:
   - Meridian.Storage
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadFileAsync
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 151
   assemblies:
   - Meridian.Storage
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsBatchedAsync
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 180
   assemblies:
   - Meridian.Storage
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsInRangeAsync
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 420
   assemblies:
   - Meridian.Storage
@@ -414,7 +414,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsForSymbolsAsync
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 437
   assemblies:
   - Meridian.Storage
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFileStatistics
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 453
   assemblies:
   - Meridian.Storage

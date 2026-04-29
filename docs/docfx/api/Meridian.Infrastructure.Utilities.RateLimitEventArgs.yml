@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitEventArgs
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 250
   assemblies:
   - Meridian.Infrastructure
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 252
   assemblies:
   - Meridian.Infrastructure
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 253
   assemblies:
   - Meridian.Infrastructure
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataType
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 254
   assemblies:
   - Meridian.Infrastructure
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetsAt
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 255
   assemblies:
   - Meridian.Infrastructure
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryAfter
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 256
   assemblies:
   - Meridian.Infrastructure
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
     startLine: 258
   assemblies:
   - Meridian.Infrastructure

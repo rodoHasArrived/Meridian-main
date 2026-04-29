@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitOptions
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 526
   assemblies:
   - Meridian.Infrastructure
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 526
   assemblies:
   - Meridian.Infrastructure
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentRequests
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 527
   assemblies:
   - Meridian.Infrastructure
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 528
   assemblies:
   - Meridian.Infrastructure
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindowValue
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 529
   assemblies:
   - Meridian.Infrastructure
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDelayBetweenRequestsMs
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 530
   assemblies:
   - Meridian.Infrastructure
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 533
   assemblies:
   - Meridian.Infrastructure

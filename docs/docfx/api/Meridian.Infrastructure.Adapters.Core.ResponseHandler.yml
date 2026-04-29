@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResponseHandler
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleResponseAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure

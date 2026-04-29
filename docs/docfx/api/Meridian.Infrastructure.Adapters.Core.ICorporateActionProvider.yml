@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICorporateActionProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
     startLine: 21
   assemblies:
   - Meridian.Infrastructure
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure

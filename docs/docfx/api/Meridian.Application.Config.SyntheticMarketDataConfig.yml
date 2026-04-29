@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyntheticMarketDataConfig
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seed
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalTradeDensityPerDay
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalQuoteDensityPerDay
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultDepthLevels
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 13
   assemblies:
   - Meridian.Core
@@ -334,7 +334,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeCorporateActions
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeReferenceData
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 15
   assemblies:
   - Meridian.Core
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UniverseSymbols
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -421,7 +421,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultHistoryStart
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 17
   assemblies:
   - Meridian.Core
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultHistoryEnd
-    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
     startLine: 18
   assemblies:
   - Meridian.Core

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HtmlTemplateGenerator
-    path: ../../src/Meridian.Ui.Shared/HtmlTemplateGenerator.Styles.cs
+    path: src/Meridian.Ui.Shared/HtmlTemplateGenerator.Styles.cs
     startLine: 2
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
-    path: ../../src/Meridian.Ui.Shared/HtmlTemplateGenerator.cs
+    path: src/Meridian.Ui.Shared/HtmlTemplateGenerator.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Shared
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Login
-    path: ../../src/Meridian.Ui.Shared/HtmlTemplateGenerator.Login.cs
+    path: src/Meridian.Ui.Shared/HtmlTemplateGenerator.Login.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Shared

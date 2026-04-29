@@ -6,6 +6,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using System.IO;
 using System.Windows.Controls;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -108,6 +109,12 @@ public sealed class CashFlowViewModelTests
         vm.StatusText.Should().Contain("Select a strategy run");
         vm.Entries.Should().BeEmpty();
         vm.LadderBuckets.Should().BeEmpty();
+        vm.HasEntries.Should().BeFalse();
+        vm.HasLadderBuckets.Should().BeFalse();
+        vm.IsEntriesEmptyStateVisible.Should().BeTrue();
+        vm.IsLadderEmptyStateVisible.Should().BeTrue();
+        vm.EntriesEmptyStateTitle.Should().Be("Select a run to inspect cash flows");
+        vm.LadderEmptyStateDetail.Should().Contain("Select a strategy run");
         vm.TotalEntriesText.Should().Be("-");
         vm.TotalInflowsText.Should().Be("-");
         vm.TotalOutflowsText.Should().Be("-");
@@ -148,6 +155,12 @@ public sealed class CashFlowViewModelTests
         vm.StatusText.Should().Contain("unknown-run-id");
         vm.Entries.Should().BeEmpty();
         vm.LadderBuckets.Should().BeEmpty();
+        vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
+        vm.OpenPortfolioCommand.CanExecute(null).Should().BeFalse();
+        vm.OpenLedgerCommand.CanExecute(null).Should().BeFalse();
+        vm.EntriesEmptyStateTitle.Should().Be("Cash-flow data unavailable");
+        vm.EntriesEmptyStateDetail.Should().Contain("unknown-run-id");
+        vm.LadderEmptyStateDetail.Should().Contain("retained run");
     }
 
     // ── Data loading ──────────────────────────────────────────────────────
@@ -161,6 +174,8 @@ public sealed class CashFlowViewModelTests
         await Task.Delay(100);
 
         vm.Entries.Should().HaveCount(3, "three cash flow events were recorded");
+        vm.HasEntries.Should().BeTrue();
+        vm.IsEntriesEmptyStateVisible.Should().BeFalse();
         vm.TotalEntriesText.Should().Be("3");
     }
 
@@ -179,7 +194,7 @@ public sealed class CashFlowViewModelTests
     }
 
     [Fact]
-    public async Task Parameter_WhenSetToKnownRunId_ShouldPopulateLadderBuckets()
+    public async Task Parameter_WhenSetToKnownRunId_ShouldDescribeMissingLadderBuckets()
     {
         var (vm, runId) = CreateWithTradeRun();
 
@@ -187,6 +202,41 @@ public sealed class CashFlowViewModelTests
         await Task.Delay(100);
 
         vm.BucketSummaryText.Should().NotBe("-");
+        vm.HasLadderBuckets.Should().BeFalse();
+        vm.IsLadderEmptyStateVisible.Should().BeTrue();
+        vm.LadderEmptyStateDetail.Should().Contain("events are loaded");
+    }
+
+    [Fact]
+    public async Task Parameter_WhenSetToRunWithoutCashFlows_ShouldShowEmptyGuidance()
+    {
+        var store = new StrategyRunStore();
+        var runService = new StrategyRunWorkspaceService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+        var started = new DateTimeOffset(2026, 3, 1, 9, 30, 0, TimeSpan.Zero);
+        var request = new BacktestRequest(
+            From: DateOnly.FromDateTime(started.UtcDateTime),
+            To: DateOnly.FromDateTime(started.AddDays(10).UtcDateTime),
+            Symbols: ["AAPL"],
+            InitialCash: 100_000m,
+            DataRoot: "./data/test");
+        var runId = await runService.RecordBacktestRunAsync(request, "No Cash Flow Strategy", BuildResult(started, []));
+        var vm = new CashFlowViewModel(runService, NavigationService.Instance);
+
+        vm.Parameter = runId;
+        await Task.Delay(100);
+
+        vm.HasEntries.Should().BeFalse();
+        vm.HasLadderBuckets.Should().BeFalse();
+        vm.IsEntriesEmptyStateVisible.Should().BeTrue();
+        vm.IsLadderEmptyStateVisible.Should().BeTrue();
+        vm.EntriesEmptyStateTitle.Should().Be("No cash-flow events recorded");
+        vm.EntriesEmptyStateDetail.Should().Contain("no trade, commission, dividend");
+        vm.LadderEmptyStateTitle.Should().Be("No cash ladder buckets");
+        vm.LadderEmptyStateDetail.Should().Contain("no retained cash-flow events");
+        vm.OpenRunDetailCommand.CanExecute(null).Should().BeTrue();
     }
 
     [Fact]
@@ -260,5 +310,43 @@ public sealed class CashFlowViewModelTests
             navigation.GetCurrentPageTag().Should().Be("SecurityMaster");
             navigation.GetBreadcrumbs().First().Parameter.Should().Be(vm.SelectedEntry!.Symbol);
         });
+    }
+
+    [Fact]
+    public void RunCashFlowPageSource_BindsCashFlowEmptyStates()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\RunCashFlowPage.xaml"));
+        var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\CashFlowViewModel.cs"));
+
+        xaml.Should().Contain("RunCashFlowLadderGrid");
+        xaml.Should().Contain("RunCashFlowLadderEmptyState");
+        xaml.Should().Contain("RunCashFlowEntriesGrid");
+        xaml.Should().Contain("RunCashFlowEntriesEmptyState");
+        xaml.Should().Contain("{Binding HasLadderBuckets, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding IsLadderEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding HasEntries, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding IsEntriesEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}");
+        xaml.Should().Contain("{Binding LadderEmptyStateTitle}");
+        xaml.Should().Contain("{Binding EntriesEmptyStateDetail}");
+        viewModel.Should().Contain("public bool HasEntries => Entries.Count > 0;");
+        viewModel.Should().Contain("private void RaiseCashFlowStateChanged()");
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            $"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }

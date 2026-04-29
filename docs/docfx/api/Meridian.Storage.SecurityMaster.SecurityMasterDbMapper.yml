@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterDbMapper
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
     startLine: 4
   assemblies:
   - Meridian.Storage
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToSummary
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
     startLine: 6
   assemblies:
   - Meridian.Storage
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDetail
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
     startLine: 16
   assemblies:
   - Meridian.Storage

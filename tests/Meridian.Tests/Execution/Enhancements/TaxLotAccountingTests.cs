@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Execution.TaxLotAccounting;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.TaxLotAccounting;
 
 namespace Meridian.Tests.Execution.Enhancements;
 

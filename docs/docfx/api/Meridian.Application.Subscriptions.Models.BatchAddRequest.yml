@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchAddRequest
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 48
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 48
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 49
   assemblies:
   - Meridian.Core
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Defaults
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 50
   assemblies:
   - Meridian.Core
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipExisting
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 51
   assemblies:
   - Meridian.Core

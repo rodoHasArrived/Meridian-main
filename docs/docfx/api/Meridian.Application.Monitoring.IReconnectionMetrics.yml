@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IReconnectionMetrics
-    path: ../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
+    path: src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAttempt
-    path: ../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
+    path: src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
     startLine: 17
   assemblies:
   - Meridian.Core

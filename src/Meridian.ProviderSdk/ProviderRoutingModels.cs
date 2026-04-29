@@ -260,7 +260,13 @@ public sealed record ProviderRouteDecision(
     bool IsHealthy,
     IReadOnlyList<string> ReasonCodes,
     IReadOnlyList<string> FallbackConnectionIds,
-    string? PolicyGate = null);
+    string? PolicyGate = null,
+    double CompositeScore = 0,
+    double HealthScore = 0,
+    double LatencyScore = 0,
+    double DataQualityScore = 0,
+    double CoverageScore = 0,
+    double PolicyGateScore = 0);
 
 /// <summary>
 /// Full route evaluation result including skipped candidates.

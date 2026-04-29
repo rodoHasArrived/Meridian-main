@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregatePortfolioService
-    path: ../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/AggregatePortfolioService.cs
     startLine: 8
   assemblies:
   - Meridian.Strategies
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/AggregatePortfolioService.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregatedPositions
-    path: ../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/AggregatePortfolioService.cs
     startLine: 18
   assemblies:
   - Meridian.Strategies
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCrossStrategyExposure
-    path: ../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/AggregatePortfolioService.cs
     startLine: 82
   assemblies:
   - Meridian.Strategies
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNetPositionForSymbol
-    path: ../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/AggregatePortfolioService.cs
     startLine: 105
   assemblies:
   - Meridian.Strategies

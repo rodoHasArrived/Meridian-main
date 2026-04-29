@@ -20,8 +20,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrometheusMetricsUpdater
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 654
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 700
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -58,8 +58,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 660
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 706
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -90,8 +90,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 681
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 727
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring

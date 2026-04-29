@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerAccounts
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 5
   assemblies:
   - Meridian.Ledger
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 8
   assemblies:
   - Meridian.Ledger
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapitalAccount
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 12
   assemblies:
   - Meridian.Ledger
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedGain
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 16
   assemblies:
   - Meridian.Ledger
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedLoss
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 20
   assemblies:
   - Meridian.Ledger
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionExpense
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 24
   assemblies:
   - Meridian.Ledger
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginInterestExpense
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 28
   assemblies:
   - Meridian.Ledger
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashInterestIncome
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 32
   assemblies:
   - Meridian.Ledger
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortRebateIncome
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 36
   assemblies:
   - Meridian.Ledger
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendIncome
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 40
   assemblies:
   - Meridian.Ledger
@@ -368,7 +368,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashAccount
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 43
   assemblies:
   - Meridian.Ledger
@@ -402,7 +402,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapitalAccountFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 46
   assemblies:
   - Meridian.Ledger
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedGainFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 49
   assemblies:
   - Meridian.Ledger
@@ -470,7 +470,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedLossFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 52
   assemblies:
   - Meridian.Ledger
@@ -504,7 +504,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionExpenseFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 55
   assemblies:
   - Meridian.Ledger
@@ -538,7 +538,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginInterestExpenseFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 58
   assemblies:
   - Meridian.Ledger
@@ -572,7 +572,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashInterestIncomeFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 61
   assemblies:
   - Meridian.Ledger
@@ -606,7 +606,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortRebateIncomeFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 64
   assemblies:
   - Meridian.Ledger
@@ -640,7 +640,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendIncomeFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 67
   assemblies:
   - Meridian.Ledger
@@ -674,7 +674,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendExpenseFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 70
   assemblies:
   - Meridian.Ledger
@@ -708,7 +708,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CouponIncomeFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 73
   assemblies:
   - Meridian.Ledger
@@ -742,7 +742,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CouponExpenseFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 76
   assemblies:
   - Meridian.Ledger
@@ -776,7 +776,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorporateActionIncomeFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 79
   assemblies:
   - Meridian.Ledger
@@ -810,7 +810,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorporateActionExpenseFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 82
   assemblies:
   - Meridian.Ledger
@@ -844,7 +844,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedGain
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 86
   assemblies:
   - Meridian.Ledger
@@ -873,7 +873,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedLoss
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 90
   assemblies:
   - Meridian.Ledger
@@ -902,7 +902,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetainedEarnings
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 94
   assemblies:
   - Meridian.Ledger
@@ -931,7 +931,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedGainFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 97
   assemblies:
   - Meridian.Ledger
@@ -965,7 +965,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedLossFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 100
   assemblies:
   - Meridian.Ledger
@@ -999,7 +999,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetainedEarningsFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 103
   assemblies:
   - Meridian.Ledger
@@ -1033,7 +1033,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendExpense
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 107
   assemblies:
   - Meridian.Ledger
@@ -1062,7 +1062,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CouponIncome
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 111
   assemblies:
   - Meridian.Ledger
@@ -1091,7 +1091,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CouponExpense
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 115
   assemblies:
   - Meridian.Ledger
@@ -1120,7 +1120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorporateActionIncome
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 119
   assemblies:
   - Meridian.Ledger
@@ -1149,7 +1149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorporateActionExpense
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 123
   assemblies:
   - Meridian.Ledger
@@ -1178,7 +1178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Securities
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 131
   assemblies:
   - Meridian.Ledger
@@ -1221,7 +1221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendReceivable
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 144
   assemblies:
   - Meridian.Ledger
@@ -1266,7 +1266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccruedInterestReceivable
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 155
   assemblies:
   - Meridian.Ledger
@@ -1309,7 +1309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorpActionDistribution
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 166
   assemblies:
   - Meridian.Ledger
@@ -1352,7 +1352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortSecuritiesPayable
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 177
   assemblies:
   - Meridian.Ledger
@@ -1395,7 +1395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedFxGain
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 191
   assemblies:
   - Meridian.Ledger
@@ -1427,7 +1427,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedFxLoss
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 198
   assemblies:
   - Meridian.Ledger
@@ -1459,7 +1459,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedFxGain
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 202
   assemblies:
   - Meridian.Ledger
@@ -1488,7 +1488,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedFxLoss
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 206
   assemblies:
   - Meridian.Ledger
@@ -1517,7 +1517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashInCurrency
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 215
   assemblies:
   - Meridian.Ledger
@@ -1560,7 +1560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginLoanPayable
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 227
   assemblies:
   - Meridian.Ledger
@@ -1589,7 +1589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StockBorrowFeeExpense
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 231
   assemblies:
   - Meridian.Ledger
@@ -1618,7 +1618,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginLoanPayableFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 237
   assemblies:
   - Meridian.Ledger
@@ -1654,7 +1654,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StockBorrowFeeExpenseFor
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 243
   assemblies:
   - Meridian.Ledger
@@ -1690,7 +1690,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionPremiumAsset
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 254
   assemblies:
   - Meridian.Ledger
@@ -1731,7 +1731,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionPremiumLiability
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 264
   assemblies:
   - Meridian.Ledger
@@ -1772,7 +1772,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FuturesMtmSettlement
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 274
   assemblies:
   - Meridian.Ledger
@@ -1813,7 +1813,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocationControl
-    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    path: src/Meridian.Ledger/LedgerAccounts.cs
     startLine: 289
   assemblies:
   - Meridian.Ledger

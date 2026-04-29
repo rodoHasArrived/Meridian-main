@@ -1,6 +1,6 @@
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,9 +11,20 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import {
+  formatReadinessStatusValue,
+  mapReadinessStatusLevel,
+  useOrderTicketViewModel,
+  usePromotionGateViewModel,
+  useTradingReadinessViewModel,
+  type AcceptanceLevel,
+  type PromotionOutcomeLevel,
+  type TradingReadinessState,
+  type TradingReadinessSummaryRow
+} from "@/screens/trading-screen.view-model";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -46,13 +57,37 @@ const focusCopy: Record<string, { title: string; description: string }> = {
   }
 };
 
-type OrderPhase = "idle" | "submitting" | "submitted" | "error";
-
-interface OrderState {
-  phase: OrderPhase;
-  orderId: string | null;
-  error: string | null;
+interface CockpitAcceptanceItem {
+  label: string;
+  value: string;
+  detail: string;
+  level: AcceptanceLevel;
 }
+
+const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  error: "text-destructive"
+};
+
+const acceptanceTone: Record<AcceptanceLevel, string> = {
+  ready: "border-success/30 bg-success/10 text-success",
+  review: "border-warning/30 bg-warning/10 text-warning",
+  atRisk: "border-destructive/30 bg-destructive/10 text-destructive"
+};
+
+const acceptanceLabel: Record<AcceptanceLevel, string> = {
+  ready: "Ready",
+  review: "Review",
+  atRisk: "At risk"
+};
+
+const workItemTone: Record<string, string> = {
+  Info: "border-border/70 bg-secondary/25 text-muted-foreground",
+  Success: "border-success/30 bg-success/10 text-success",
+  Warning: "border-warning/30 bg-warning/10 text-warning",
+  Critical: "border-destructive/30 bg-destructive/10 text-destructive"
+};
 
 // --- Shared confirmation state for all write actions ---
 
@@ -77,16 +112,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
     if (pathname.includes("/risk")) return "risk";
     return "orders";
   }, [pathname]);
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
 
-  const [showOrderForm, setShowOrderForm] = useState(false);
-  const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
-    symbol: "",
-    side: "Buy",
-    type: "Market",
-    quantity: 0,
-    limitPrice: null
+  const orderTicket = useOrderTicketViewModel({
+    onOrderAccepted: async () => {
+      await Promise.all([
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
+    }
   });
-  const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
 
   // --- Shared confirmation dialog state ---
   const [confirm, setConfirm] = useState<ConfirmState>({
@@ -135,7 +170,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
           occurredAt: new Date().toISOString()
         };
       }
-      await refreshExecutionControls();
+      await Promise.all([
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
       setConfirm((prev) => ({ ...prev, busy: false, result }));
     } catch (err) {
       setConfirm((prev) => ({
@@ -168,17 +206,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [replayError, setReplayError] = useState<string | null>(null);
   const [replaySpeed, setReplaySpeed] = useState("1");
   const [seekMs, setSeekMs] = useState("0");
-
-  const [promotionRunId, setPromotionRunId] = useState("");
-  const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
-  const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
-  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
-  const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
-  const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
-  const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
-  const [promotionError, setPromotionError] = useState<string | null>(null);
-  const [promotionBusy, setPromotionBusy] = useState(false);
-  const [promotionResult, setPromotionResult] = useState<string | null>(null);
+  const promotionGate = usePromotionGateViewModel();
 
   async function refreshExecutionAudit() {
     try {
@@ -210,34 +238,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
         }
       })
       .catch(() => { /* replay unavailable */ });
-    getPromotionHistory()
-      .then(setPromotionHistory)
-      .catch(() => { /* history unavailable */ });
     void refreshExecutionAudit();
     void refreshExecutionControls();
   }, []);
-
-  async function handleSubmitOrder(e: React.FormEvent) {
-    e.preventDefault();
-    setOrderState({ phase: "submitting", orderId: null, error: null });
-    try {
-      const result = await submitOrder(orderForm);
-      if (result.success) {
-        setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
-        setShowOrderForm(false);
-        setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
-        await refreshExecutionControls();
-      } else {
-        setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
-      }
-    } catch (err) {
-      setOrderState({
-        phase: "error",
-        orderId: null,
-        error: err instanceof Error ? err.message : "Order submission failed."
-      });
-    }
-  }
 
   async function handleCreateSession(e: React.FormEvent) {
     e.preventDefault();
@@ -251,6 +254,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setShowSessionForm(false);
       setNewSessionStrategyId("");
       setNewSessionCash("100000");
+      await tradingReadiness.refresh();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to create session.");
     } finally {
@@ -281,8 +285,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
           }
         };
       });
-      await refreshExecutionAudit();
-      await refreshExecutionControls();
+      await Promise.all([
+        refreshExecutionAudit(),
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
     }
@@ -310,8 +317,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSelectedSessionId(sessionId);
       setSelectedSessionDetail(detail);
       setSessionReplayVerification(verification);
-      await refreshExecutionAudit();
-      await refreshExecutionControls();
+      await Promise.all([
+        refreshExecutionAudit(),
+        refreshExecutionControls(),
+        tradingReadiness.refresh()
+      ]);
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
@@ -349,46 +359,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
     }
   }
 
-  async function handleEvaluatePromotion() {
-    if (!promotionRunId.trim()) return;
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionResult(null);
-    try {
-      const evaluation = await evaluatePromotion(promotionRunId.trim());
-      setPromotionEval(evaluation);
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Evaluation failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
-
-  async function handlePromoteToPaper() {
-    if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
-      setPromotionError("Approver and approval reason are required.");
-      return;
-    }
-    setPromotionBusy(true);
-    setPromotionError(null);
-    try {
-      const result = await approvePromotion({
-        runId: promotionRunId.trim(),
-        approvedBy: promotionApprovedBy.trim(),
-        approvalReason: promotionApprovalReason.trim(),
-        reviewNotes: promotionReviewNotes.trim() || undefined,
-        manualOverrideId: promotionManualOverrideId.trim() || undefined
-      });
-      setPromotionResult(result.success ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}` : result.reason);
-      const history = await getPromotionHistory();
-      setPromotionHistory(history);
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Promotion approval failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
-
   if (!data) {
     return (
       <Card>
@@ -399,6 +369,19 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Card>
     );
   }
+
+  const cockpitAcceptance = buildCockpitAcceptance({
+    operatorReadiness: tradingReadiness.readiness,
+    sessions,
+    selectedSessionDetail,
+    sessionReplayVerification,
+    executionAudit,
+    executionControls,
+    promotionEval: promotionGate.evaluation,
+    promotionHistory: promotionGate.history,
+    promotionApprovedBy: promotionGate.form.approvedBy,
+    promotionApprovalReason: promotionGate.form.approvalReason
+  });
 
   return (
     <div className="space-y-8">
@@ -443,7 +426,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardTitle>Current workstream</CardTitle>
             <CardDescription className="text-slate-300">
               Deep links under{" "}
-              <code className="rounded bg-white/10 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
@@ -455,6 +438,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      <AcceptanceStatusCard
+        items={cockpitAcceptance}
+        readinessVm={tradingReadiness}
+      />
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
@@ -517,7 +505,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <p className="font-mono">As of {executionControls.asOf}</p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">Execution controls snapshot unavailable.</p>
+                <p className="text-xs text-muted-foreground">Snapshot unavailable.</p>
               )}
             </div>
           </CardContent>
@@ -611,34 +599,44 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <Trash2 className="mr-2 h-4 w-4" />
                   Cancel all
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={orderTicket.toggleTicket}
+                  aria-expanded={orderTicket.open}
+                  aria-controls="trading-order-ticket"
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  New order
+                  {orderTicket.openButtonLabel}
                 </Button>
               </div>
             </div>
           </CardHeader>
-          {showOrderForm && (
-            <CardContent className="border-b border-border/60 pb-6">
-              <form onSubmit={handleSubmitOrder} className="space-y-4">
+          {orderTicket.open && (
+            <CardContent id="trading-order-ticket" className="border-b border-border/60 pb-6">
+              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby="order-ticket-requirements">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
+                    <label htmlFor="order-ticket-symbol" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
                     <input
+                      id="order-ticket-symbol"
                       type="text"
                       placeholder="AAPL"
-                      value={orderForm.symbol}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value }))}
-                      onBlur={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                      value={orderTicket.form.symbol}
+                      onChange={(e) => orderTicket.updateField("symbol", e.target.value)}
+                      onBlur={orderTicket.normalizeSymbol}
+                      aria-describedby="order-ticket-requirements"
+                      aria-invalid={orderTicket.invalidField === "symbol" ? true : undefined}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       required
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
+                    <label htmlFor="order-ticket-side" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
                     <select
-                      value={orderForm.side}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, side: e.target.value as "Buy" | "Sell" }))}
+                      id="order-ticket-side"
+                      value={orderTicket.form.side}
+                      onChange={(e) => orderTicket.updateField("side", e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="Buy">Buy</option>
@@ -646,10 +644,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
+                    <label htmlFor="order-ticket-type" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
                     <select
-                      value={orderForm.type}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, type: e.target.value as "Market" | "Limit" | "Stop" }))}
+                      id="order-ticket-type"
+                      value={orderTicket.form.type}
+                      onChange={(e) => orderTicket.updateField("type", e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="Market">Market</option>
@@ -658,28 +657,34 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
+                    <label htmlFor="order-ticket-quantity" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
                     <input
+                      id="order-ticket-quantity"
                       type="number"
                       min={1}
                       step={1}
-                      value={orderForm.quantity || ""}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
+                      value={orderTicket.form.quantity || ""}
+                      onChange={(e) => orderTicket.updateField("quantity", e.target.value)}
+                      aria-describedby="order-ticket-requirements"
+                      aria-invalid={orderTicket.invalidField === "quantity" ? true : undefined}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       required
                     />
                   </div>
-                  {(orderForm.type === "Limit" || orderForm.type === "Stop") && (
+                  {orderTicket.requiresLimitPrice && (
                     <div className="space-y-1">
-                      <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {orderForm.type} Price
+                      <label htmlFor="order-ticket-limit-price" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {orderTicket.priceLabel}
                       </label>
                       <input
+                        id="order-ticket-limit-price"
                         type="number"
                         min={0}
                         step={0.01}
-                        value={orderForm.limitPrice ?? ""}
-                        onChange={(e) => setOrderForm((prev) => ({ ...prev, limitPrice: e.target.value ? Number(e.target.value) : null }))}
+                        value={orderTicket.form.limitPrice ?? ""}
+                        onChange={(e) => orderTicket.updateField("limitPrice", e.target.value)}
+                        aria-describedby="order-ticket-requirements"
+                        aria-invalid={orderTicket.invalidField === "limitPrice" ? true : undefined}
                         className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                         required
                       />
@@ -687,37 +692,47 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   )}
                 </div>
 
-                {orderState.error && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
-                    <XCircle className="h-4 w-4 shrink-0" />
-                    {orderState.error}
-                  </div>
-                )}
+                <p id="order-ticket-requirements" className="text-xs text-muted-foreground">
+                  {orderTicket.requirementText}
+                </p>
+                <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
 
-                {orderState.phase === "submitted" && (
-                  <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 shrink-0" />
-                    Order submitted{orderState.orderId ? ` — ${orderState.orderId}` : ""}.
+                {orderTicket.errorText && (
+                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
+                    <XCircle className="h-4 w-4 shrink-0" />
+                    {orderTicket.errorText}
                   </div>
                 )}
 
                 <div className="flex gap-3">
-                  <Button type="submit" size="sm" disabled={orderState.phase === "submitting"}>
-                    {orderState.phase === "submitting" ? "Submitting…" : "Submit order"}
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!orderTicket.canSubmit}
+                    aria-label={orderTicket.submitAriaLabel}
+                    aria-describedby="order-ticket-requirements"
+                  >
+                    {orderTicket.submitButtonLabel}
                   </Button>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setShowOrderForm(false);
-                      setOrderState({ phase: "idle", orderId: null, error: null });
-                    }}
+                    onClick={orderTicket.closeTicket}
+                    disabled={!orderTicket.canClose}
                   >
                     Cancel
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          )}
+          {!orderTicket.open && orderTicket.successText && (
+            <CardContent className="border-b border-border/60 pb-4">
+              <div role="status" className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 shrink-0" />
+                {orderTicket.successText}
+              </div>
             </CardContent>
           )}
           <CardContent>
@@ -911,7 +926,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   </div>
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
+                      "rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
                       selectedSessionDetail.summary.isActive
                         ? "bg-success/10 text-success"
                         : "bg-secondary text-muted-foreground"
@@ -992,7 +1007,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         <span className="font-mono text-muted-foreground">{entry.outcome}</span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {entry.message ?? "No operator message recorded."}
+                        {entry.action === "ReplayPaperSession" && sessionReplayVerification?.isConsistent
+                          ? "Replay verification audit recorded for paper session."
+                          : entry.message ?? "No operator message recorded."}
                       </p>
                       <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                         {entry.occurredAt}
@@ -1097,64 +1114,144 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardDescription>Requires eligibility check before confirmation and audit refresh.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <input
-              aria-label="Run id"
-              placeholder="backtest run id"
-              value={promotionRunId}
-              onChange={(e) => setPromotionRunId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-            />
-            <input
-              aria-label="Approved by"
-              placeholder="operator id"
-              value={promotionApprovedBy}
-              onChange={(e) => setPromotionApprovedBy(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              required
-            />
-            <input
-              aria-label="Approval reason"
-              placeholder="why this promotion is approved"
-              value={promotionApprovalReason}
-              onChange={(e) => setPromotionApprovalReason(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              required
-            />
-            <input
-              aria-label="Review notes"
-              placeholder="optional review notes"
-              value={promotionReviewNotes}
-              onChange={(e) => setPromotionReviewNotes(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <input
-              aria-label="Manual override id"
-              placeholder="optional manual override id"
-              value={promotionManualOverrideId}
-              onChange={(e) => setPromotionManualOverrideId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-            />
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
-              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
+            <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
+              <div className="eyebrow-label">Action state</div>
+              <p className="mt-2 text-sm font-semibold text-foreground">{promotionGate.nextActionText}</p>
+              <div className="mt-2 grid gap-2 text-xs leading-5 text-muted-foreground md:grid-cols-2">
+                <p>{promotionGate.approvalRequirementText}</p>
+                <p>{promotionGate.rejectionRequirementText}</p>
+              </div>
             </div>
-            {promotionEval && (
+
+            <span className="sr-only" aria-live="polite">{promotionGate.statusAnnouncement}</span>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label htmlFor="promotion-run-id" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Run id</span>
+                <input
+                  id="promotion-run-id"
+                  aria-label="Run id"
+                  placeholder="backtest run id"
+                  value={promotionGate.form.runId}
+                  onChange={(e) => promotionGate.updateField("runId", e.target.value)}
+                  aria-describedby="promotion-run-help promotion-action-state"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
+              </label>
+              <label htmlFor="promotion-operator-id" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Operator id</span>
+                <input
+                  id="promotion-operator-id"
+                  aria-label="Operator id"
+                  placeholder="operator id"
+                  value={promotionGate.form.approvedBy}
+                  onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
+                  aria-describedby="promotion-action-state"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  required
+                />
+              </label>
+            </div>
+            <label htmlFor="promotion-approval-reason" className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</span>
+              <input
+                id="promotion-approval-reason"
+                aria-label="Approval reason"
+                placeholder="why this promotion is approved"
+                value={promotionGate.form.approvalReason}
+                onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
+                aria-describedby="promotion-action-state"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                required
+              />
+            </label>
+            <label htmlFor="promotion-rejection-reason" className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Rejection reason</span>
+              <input
+                id="promotion-rejection-reason"
+                aria-label="Rejection reason"
+                placeholder="why this promotion is rejected"
+                value={promotionGate.form.rejectionReason}
+                onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
+                aria-describedby="promotion-action-state"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label htmlFor="promotion-review-notes" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</span>
+                <input
+                  id="promotion-review-notes"
+                  aria-label="Review notes"
+                  placeholder="optional review notes"
+                  value={promotionGate.form.reviewNotes}
+                  onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Manual override id</span>
+                <input
+                  id="promotion-manual-override"
+                  aria-label="Manual override id"
+                  placeholder="optional manual override id"
+                  value={promotionGate.form.manualOverrideId}
+                  onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => void promotionGate.evaluateGateChecks()} disabled={!promotionGate.canEvaluate}>
+                {promotionGate.evaluateButtonLabel}
+              </Button>
+              <Button size="sm" onClick={() => void promotionGate.promoteToPaper()} disabled={!promotionGate.canPromote}>
+                {promotionGate.promoteButtonLabel}
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => void promotionGate.rejectPromotion()} disabled={!promotionGate.canReject}>
+                {promotionGate.rejectButtonLabel}
+              </Button>
+            </div>
+            {promotionGate.evaluation && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
-                <p>Eligible: {promotionEval.isEligible ? "Yes" : "No"}</p>
-                <p>Sharpe: {promotionEval.sharpeRatio} · Max DD: {promotionEval.maxDrawdownPercent}% · Return: {promotionEval.totalReturn}%</p>
-                <p>{promotionEval.reason}</p>
+                <p>Eligible: {promotionGate.evaluation.isEligible ? "Yes" : "No"}</p>
+                <p>Sharpe: {promotionGate.evaluation.sharpeRatio} · Max DD: {promotionGate.evaluation.maxDrawdownPercent}% · Return: {promotionGate.evaluation.totalReturn}%</p>
+                <p>{promotionGate.evaluation.reason}</p>
+                {promotionGate.evaluation.requiresHumanApproval && <p>Human approval required</p>}
+                {promotionGate.evaluation.requiresManualOverride && (
+                  <p>Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
+                )}
+                {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
+                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                    {promotionGate.evaluation.blockingReasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
-            {promotionResult && <p className="text-xs text-success">{promotionResult}</p>}
-            {promotionError && <p className="text-xs text-destructive">{promotionError}</p>}
+            {promotionGate.outcome && (
+              <p role="status" className={cn("text-xs", promotionOutcomeTone[promotionGate.outcome.level])}>
+                {promotionGate.outcome.message}
+              </p>
+            )}
+            {promotionGate.errorText && <p role="alert" className="text-xs text-destructive">{promotionGate.errorText}</p>}
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
-                {promotionHistory.slice(0, 4).map((record) => (
+                {promotionGate.history.length === 0 && (
+                  <li className="text-muted-foreground">{promotionGate.historyEmptyText}</li>
+                )}
+                {promotionGate.history.slice(0, 4).map((record) => (
                   <li key={record.promotionId} className="font-mono">
                     {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
+                    {record.decision ? ` · ${record.decision}` : ""}
+                    {record.sourceRunId ? ` · source: ${record.sourceRunId}` : record.runId ? ` · source: ${record.runId}` : ""}
+                    {record.targetRunId ? ` · target: ${record.targetRunId}` : ""}
                     {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
                     {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
+                    {record.auditReference ? ` · audit: ${record.auditReference}` : ""}
                     {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
                     {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
                   </li>
@@ -1170,6 +1267,358 @@ export function TradingScreen({ data }: TradingScreenProps) {
         onClose={closeConfirm}
         onConfirm={executeConfirmedAction}
       />
+    </div>
+  );
+}
+
+function buildCockpitAcceptance({
+  operatorReadiness,
+  sessions,
+  selectedSessionDetail,
+  sessionReplayVerification,
+  executionAudit,
+  executionControls,
+  promotionEval,
+  promotionHistory,
+  promotionApprovedBy,
+  promotionApprovalReason
+}: {
+  operatorReadiness: TradingOperatorReadiness | null;
+  sessions: PaperSessionSummary[];
+  selectedSessionDetail: PaperSessionDetail | null;
+  sessionReplayVerification: PaperSessionReplayVerification | null;
+  executionAudit: ExecutionAuditEntry[];
+  executionControls: ExecutionControlSnapshot | null;
+  promotionEval: PromotionEvaluationResult | null;
+  promotionHistory: PromotionRecord[];
+  promotionApprovedBy: string;
+  promotionApprovalReason: string;
+}): CockpitAcceptanceItem[] {
+  if (operatorReadiness?.acceptanceGates?.length) {
+    return operatorReadiness.acceptanceGates.map(mapAcceptanceGate);
+  }
+
+  const readinessSession = operatorReadiness?.activeSession ?? null;
+  const sessionCount = Math.max(sessions.length, operatorReadiness?.sessions.length ?? 0);
+  const readinessReplay = operatorReadiness?.replay ?? null;
+  const replayEvidence = sessionReplayVerification
+    ? {
+        isConsistent: sessionReplayVerification.isConsistent,
+        comparedFillCount: sessionReplayVerification.comparedFillCount,
+        comparedOrderCount: sessionReplayVerification.comparedOrderCount,
+        comparedLedgerEntryCount: sessionReplayVerification.comparedLedgerEntryCount,
+        mismatchReasons: sessionReplayVerification.mismatchReasons
+      }
+    : readinessReplay;
+  const readinessControls = operatorReadiness?.controls ?? null;
+  const circuitBreakerOpen = readinessControls?.circuitBreakerOpen ?? executionControls?.circuitBreaker.isOpen ?? false;
+  const circuitBreakerReason = readinessControls?.circuitBreakerReason ?? executionControls?.circuitBreaker.reason ?? null;
+  const manualOverrideCount = readinessControls?.manualOverrideCount ?? executionControls?.manualOverrides.length ?? 0;
+  const serverAuditEvidenceCount = (readinessReplay?.verificationAuditId ? 1 : 0) + (operatorReadiness?.promotion?.auditReference ? 1 : 0);
+  const latestPromotion = promotionHistory[0];
+  const latestPromotionHasRationale = Boolean(
+    latestPromotion?.approvalReason || latestPromotion?.reviewNotes
+  );
+  const latestPromotionHasLineage = Boolean(
+    latestPromotion?.sourceRunId || latestPromotion?.runId
+  );
+  const latestPromotionTraceComplete = Boolean(
+    latestPromotion?.decision &&
+    latestPromotion?.approvedBy &&
+    latestPromotionHasRationale &&
+    latestPromotionHasLineage &&
+    latestPromotion?.auditReference
+  );
+  const promotionReviewPrepared = Boolean(
+    promotionEval?.isEligible &&
+    promotionApprovedBy.trim() &&
+    promotionApprovalReason.trim()
+  );
+  const readinessPromotion = operatorReadiness?.promotion ?? null;
+  const readinessPromotionTraceComplete = Boolean(
+    readinessPromotion?.approvalStatus &&
+    readinessPromotion?.approvedBy &&
+    readinessPromotion?.reason &&
+    readinessPromotion?.sourceRunId &&
+    readinessPromotion?.auditReference &&
+    !readinessPromotion?.requiresReview
+  );
+
+  return [
+    selectedSessionDetail
+      ? {
+          label: "Session persistence",
+          value: "Ready",
+          detail: `Restored ${selectedSessionDetail.summary.sessionId} with ${selectedSessionDetail.orderHistory?.length ?? 0} retained orders.`,
+          level: "ready"
+        }
+      : readinessSession
+        ? {
+            label: "Session persistence",
+            value: readinessSession.isActive ? "Active" : "Restored",
+            detail: `${readinessSession.sessionId} tracks ${readinessSession.orderCount} retained orders and ${readinessSession.positionCount} positions.`,
+            level: readinessSession.isActive ? "ready" : "review"
+          }
+      : sessionCount > 0
+        ? {
+            label: "Session persistence",
+            value: "Restore required",
+            detail: "Restore a paper session before treating the cockpit as operator-ready.",
+            level: "review"
+          }
+        : {
+            label: "Session persistence",
+            value: "No session",
+            detail: "Create a paper session so orders, fills, and portfolio state can be retained.",
+            level: "atRisk"
+          },
+    replayEvidence
+      ? {
+          label: "Replay confidence",
+          value: replayEvidence.isConsistent ? "Ready" : "Mismatch detected",
+          detail: replayEvidence.isConsistent
+            ? `Compared ${replayEvidence.comparedFillCount} fills, ${replayEvidence.comparedOrderCount} orders, and ${replayEvidence.comparedLedgerEntryCount} ledger entries.`
+            : replayEvidence.mismatchReasons[0] ?? "Replay output differs from current session state.",
+          level: replayEvidence.isConsistent ? "ready" : "atRisk"
+        }
+      : {
+          label: "Replay confidence",
+          value: "Verify required",
+          detail: "Run replay verification for the selected paper session before accepting cockpit readiness.",
+          level: "review"
+        },
+    circuitBreakerOpen
+      ? {
+          label: "Audit + controls",
+          value: "Circuit open",
+          detail: circuitBreakerReason ?? "The execution circuit breaker must be resolved before acceptance.",
+          level: "atRisk"
+        }
+      : executionAudit.length > 0 || serverAuditEvidenceCount > 0
+        ? {
+            label: "Audit + controls",
+            value: "Ready",
+            detail: `${executionAudit.length || serverAuditEvidenceCount} recent execution audit ${executionAudit.length + serverAuditEvidenceCount === 1 ? "entry is" : "entries are"} visible; ${manualOverrideCount} manual override(s) active.`,
+            level: "ready"
+          }
+        : {
+            label: "Audit + controls",
+            value: "No entries",
+            detail: "Execution actions need visible audit and control evidence for daily operation.",
+            level: "review"
+          },
+    readinessPromotionTraceComplete
+      ? {
+          label: "Promotion review",
+          value: "Ready",
+          detail: `${readinessPromotion!.approvalStatus} by ${readinessPromotion!.approvedBy}: ${readinessPromotion!.reason}. Audit ${readinessPromotion!.auditReference}.`,
+          level: "ready"
+        }
+      : readinessPromotion
+        ? {
+            label: "Promotion review",
+            value: "Trace incomplete",
+            detail: readinessPromotion.reason || "Promotion decision is missing operator, lineage, rationale, or audit linkage.",
+            level: "review"
+          }
+      : promotionEval
+          ? {
+              label: "Promotion review",
+              value: promotionEval.isEligible
+                ? promotionReviewPrepared ? "Trace pending" : "Rationale required"
+                : "Gate blocked",
+              detail: promotionEval.isEligible
+                ? promotionReviewPrepared
+                  ? "Confirm promotion to write the durable audit-linked decision record."
+                  : "Add operator and approval reason before confirming promotion."
+                : promotionEval.blockingReasons?.[0] ?? promotionEval.reason,
+              level: promotionEval.isEligible ? "review" : "atRisk"
+            }
+      : latestPromotionTraceComplete
+        ? {
+            label: "Promotion review",
+            value: "Ready",
+            detail: `${latestPromotion!.decision} by ${latestPromotion!.approvedBy}: ${latestPromotion!.approvalReason ?? latestPromotion!.reviewNotes}. Audit ${latestPromotion!.auditReference}.`,
+            level: "ready"
+          }
+        : latestPromotion && latestPromotionHasRationale
+          ? {
+              label: "Promotion review",
+              value: "Trace incomplete",
+              detail: "Latest promotion decision has rationale but is missing operator, lineage, or audit linkage.",
+              level: "review"
+            }
+      : {
+          label: "Promotion review",
+          value: "Evaluate gate",
+          detail: "Evaluate a backtest run before promoting it into paper operation.",
+          level: "review"
+        }
+  ];
+}
+
+function mapAcceptanceGate(gate: TradingAcceptanceGate): CockpitAcceptanceItem {
+  return {
+    label: gate.label,
+    value: formatReadinessStatusValue(gate.status),
+    detail: gate.detail,
+    level: mapReadinessStatusLevel(gate.status)
+  };
+}
+
+function AcceptanceStatusCard({
+  items,
+  readinessVm
+}: {
+  items: CockpitAcceptanceItem[];
+  readinessVm: TradingReadinessState & { refresh: () => Promise<void> };
+}) {
+  const readyCount = items.filter((item) => item.level === "ready").length;
+  const totalCount = items.length;
+  const hasAtRisk = items.some((item) => item.level === "atRisk");
+  const overallLevel: AcceptanceLevel = readyCount === totalCount ? "ready" : hasAtRisk ? "atRisk" : "review";
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="eyebrow-label">Operator Acceptance</div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              Paper cockpit readiness
+            </CardTitle>
+            <CardDescription>
+              Session, replay, audit, and promotion signals for the current paper workflow.
+            </CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/trading/readiness">Open console</Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => { void readinessVm.refresh(); }}
+              disabled={readinessVm.refreshing}
+              aria-label={readinessVm.refreshAriaLabel}
+            >
+              <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
+              {readinessVm.refreshButtonLabel}
+            </Button>
+            <span className={cn("rounded-sm border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
+              {readyCount}/{totalCount} ready
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="sr-only" aria-live="polite">{readinessVm.statusAnnouncement}</div>
+        {readinessVm.summaryRows.length > 0 && (
+          <div className="grid gap-2 md:grid-cols-4" aria-label={readinessVm.summaryLabel}>
+            {readinessVm.summaryRows.map((row) => (
+              <ReadinessSummaryPill key={row.id} row={row} />
+            ))}
+          </div>
+        )}
+        {readinessVm.errorText && (
+          <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            {readinessVm.errorText}
+          </div>
+        )}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {items.map((item) => (
+            <AcceptanceRow key={item.label} item={item} />
+          ))}
+        </div>
+        {(readinessVm.workItems.length > 0 || readinessVm.warnings.length > 0) && (
+          <OperatorWorkItemList workItems={readinessVm.workItems} warnings={readinessVm.warnings} />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
+  return (
+    <div className={cn("rounded-lg border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
+      <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
+    </div>
+  );
+}
+
+function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
+  return (
+    <div className={cn("rounded-xl border px-4 py-3", acceptanceTone[item.level])}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
+          <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
+        </div>
+        <span className="rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-foreground">
+          {acceptanceLabel[item.level]}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-foreground/80">{item.detail}</p>
+    </div>
+  );
+}
+
+function OperatorWorkItemList({
+  workItems,
+  warnings
+}: {
+  workItems: OperatorWorkItem[];
+  warnings: string[];
+}) {
+  const primaryWorkItem = workItems[0] ?? null;
+
+  return (
+    <div className="rounded-xl border border-border/70 bg-secondary/25 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator work items</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {workItems.length} readiness item{workItems.length === 1 ? "" : "s"} and {warnings.length} warning{warnings.length === 1 ? "" : "s"}.
+          </p>
+        </div>
+        {primaryWorkItem && (
+          <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            {primaryWorkItem.kind}
+          </span>
+        )}
+      </div>
+
+      {workItems.length > 0 && (
+        <ul className="mt-3 grid gap-2 md:grid-cols-2">
+          {workItems.slice(0, 4).map((item) => (
+            <li key={item.workItemId} className={cn("rounded-lg border px-3 py-2 text-sm", workItemTone[item.tone] ?? workItemTone.Info)}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-foreground">{item.label}</span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.12em]">{item.tone}</span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-foreground/80">{item.detail}</p>
+              {(item.runId || item.auditReference || item.targetPageTag || item.workspace) && (
+                <p className="mt-2 font-mono text-[11px] text-foreground/70">
+                  {[item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" · ")}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {warnings.length > 0 && (
+        <ul className="mt-3 space-y-1 text-xs text-warning">
+          {warnings.slice(0, 3).map((warning) => (
+            <li key={warning} className="flex gap-2">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{warning}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -1346,7 +1795,7 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 
 function WiringRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
     </div>
@@ -1367,7 +1816,7 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
 
 function ContextRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className="font-mono text-slate-100">{value}</span>
     </div>

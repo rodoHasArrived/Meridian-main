@@ -107,6 +107,17 @@ public sealed class AlpacaBrokerageGatewayTests
         sut.BrokerageCapabilities.SupportsOrderModification.Should().BeTrue();
     }
 
+    [Fact]
+    public void BrokerageCapabilities_DoesNotAdvertiseSessionScopedOrderTypes()
+    {
+        var sut = CreateSut(new ConstantStubHandler(HttpStatusCode.OK, new StringContent("{}")));
+
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnClose);
+    }
+
     // ── ConnectAsync ──────────────────────────────────────────────────────
 
     [Fact]
@@ -163,6 +174,31 @@ public sealed class AlpacaBrokerageGatewayTests
         report.Symbol.Should().Be("AAPL");
         report.Side.Should().Be(OrderSide.Buy);
         report.OrderStatus.Should().Be(OrderStatus.Accepted);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_RejectsMarketOnCloseBeforePostingOrder()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.MarketOnClose,
+            Quantity = 10m,
+        }, cts.Token);
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*MarketOnClose*session timing qualifier*");
+        responses.Should().BeEmpty();
         await sut.DisposeAsync();
     }
 
@@ -389,6 +425,123 @@ public sealed class AlpacaBrokerageGatewayTests
         positions.Should().HaveCount(2);
         positions.Should().Contain(p => p.AssetClass == "equity" && p.AccruedInterest == null);
         positions.Should().Contain(p => p.AssetClass == "us_treasury" && p.AccruedInterest == 0.75m);
+    }
+
+    [Fact]
+    public async Task Scenario_MultiAccountAllocation_ReadSideSyncMapsAccountPortfolioOrdersFillsAndCashActivity()
+    {
+        var capturedPaths = new List<string>();
+        var handler = new CapturingStubHandler(
+            request => capturedPaths.Add(request.RequestUri?.PathAndQuery ?? string.Empty),
+            request =>
+            {
+                var uri = request.RequestUri!;
+                if (uri.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                if (uri.AbsolutePath == "/v2/positions")
+                {
+                    return BuildPositionsResponse(new object[]
+                    {
+                        new
+                        {
+                            symbol = "AAPL",
+                            qty = "100",
+                            avg_entry_price = "175.00",
+                            current_price = "187.50",
+                            market_value = "18750.00",
+                            unrealized_pl = "1250.00",
+                            asset_class = "equity",
+                        }
+                    });
+                }
+
+                if (uri.AbsolutePath == "/v2/orders")
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "ord-open-1",
+                            client_order_id = "client-open-1",
+                            symbol = "AAPL",
+                            side = "buy",
+                            type = "limit",
+                            qty = "25",
+                            filled_qty = "0",
+                            limit_price = "185.00",
+                            status = "accepted",
+                            created_at = "2026-04-25T14:30:00Z"
+                        }
+                    });
+                }
+
+                if (uri.AbsolutePath == "/v2/account/activities")
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "fill-1",
+                            activity_type = "FILL",
+                            transaction_time = "2026-04-25T14:35:00Z",
+                            symbol = "AAPL",
+                            qty = "10",
+                            price = "184.25",
+                            side = "buy",
+                            order_id = "ord-fill-1",
+                            commission = "0",
+                            exchange = "XNAS"
+                        },
+                        new
+                        {
+                            id = "cash-1",
+                            activity_type = "DIV",
+                            transaction_time = "2026-04-24T20:00:00Z",
+                            symbol = "AAPL",
+                            net_amount = "42.50",
+                            currency = "USD",
+                            description = "Dividend"
+                        }
+                    });
+                }
+
+                return BuildJson(new { });
+            });
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var accounts = await ((IBrokerageAccountCatalog)sut).GetAccountsAsync(cts.Token);
+        var portfolio = await ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("TEST123", cts.Token);
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            new DateTimeOffset(2026, 4, 24, 0, 0, 0, TimeSpan.Zero),
+            cts.Token);
+
+        accounts.Should().ContainSingle(account =>
+            account.ProviderId == "alpaca" &&
+            account.AccountId == "TEST123" &&
+            account.Currency == "USD");
+        portfolio.Balance.Equity.Should().Be(100000m);
+        portfolio.Positions.Should().ContainSingle(position =>
+            position.Symbol == "AAPL" &&
+            position.Quantity == 100m &&
+            position.MarketValue == 18750m);
+        activity.Orders.Should().ContainSingle(order =>
+            order.OrderId == "ord-open-1" &&
+            order.Status == OrderStatus.Accepted);
+        activity.Fills.Should().ContainSingle(fill =>
+            fill.FillId == "fill-1" &&
+            fill.OrderId == "ord-fill-1" &&
+            fill.Price == 184.25m);
+        activity.CashTransactions.Should().ContainSingle(cash =>
+            cash.TransactionId == "cash-1" &&
+            cash.TransactionType == "DIV" &&
+            cash.Amount == 42.50m);
+        capturedPaths.Should().Contain(path =>
+            path.StartsWith("/v2/account/activities?direction=desc&page_size=100&after=", StringComparison.Ordinal));
     }
 
     // ── Stub infrastructure ───────────────────────────────────────────────

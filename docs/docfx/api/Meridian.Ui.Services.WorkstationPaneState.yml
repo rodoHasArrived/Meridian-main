@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationPaneState
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 142
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaneId
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 144
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PageTag
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 145
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 146
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DockZone
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 147
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsToolPane
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 148
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPinned
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 150
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Order
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 151
   assemblies:
   - Meridian.Ui.Services

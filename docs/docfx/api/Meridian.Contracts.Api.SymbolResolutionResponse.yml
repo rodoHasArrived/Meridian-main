@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolResolutionResponse
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvedSymbol
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 74
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 92
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderMappings
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 98
   assemblies:
   - Meridian.Contracts

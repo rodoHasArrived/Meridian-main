@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerScope
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consolidated
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entity
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sleeve
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vehicle
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DescriptiveStats
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 774
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 776
   assemblies:
   - Meridian.Storage
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mean
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 777
   assemblies:
   - Meridian.Storage
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Median
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 778
   assemblies:
   - Meridian.Storage
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Min
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 779
   assemblies:
   - Meridian.Storage
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Max
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 780
   assemblies:
   - Meridian.Storage
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StdDev
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 781
   assemblies:
   - Meridian.Storage
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentile25
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 782
   assemblies:
   - Meridian.Storage
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentile75
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 783
   assemblies:
   - Meridian.Storage
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentile95
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 784
   assemblies:
   - Meridian.Storage
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentile99
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 785
   assemblies:
   - Meridian.Storage

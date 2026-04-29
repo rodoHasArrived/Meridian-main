@@ -12,7 +12,9 @@ public enum ReconciliationSourceKind : byte
     Unknown = 0,
     Portfolio = 1,
     Ledger = 2,
-    Bank = 3
+    Bank = 3,
+    ExternalStatement = Bank,
+    Cash = 4
 }
 
 /// <summary>
@@ -24,7 +26,21 @@ public enum ReconciliationBreakStatus : byte
     Open = 0,
     Matched = 1,
     Investigating = 2,
-    Resolved = 3
+    Resolved = 3,
+    PartialMatch = 4
+}
+
+/// <summary>
+/// Materiality level for a reconciliation break.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakSeverity>))]
+public enum ReconciliationBreakSeverity : byte
+{
+    Info = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4
 }
 
 /// <summary>
@@ -38,7 +54,12 @@ public enum ReconciliationBreakCategory : byte
     MissingPortfolioCoverage = 2,
     ClassificationGap = 3,
     TimingMismatch = 4,
-    MissingBankCoverage = 5
+    MissingBankCoverage = 5,
+    CashMismatch = 6,
+    MissingCashCoverage = 7,
+    MissingExternalStatementCoverage = 8,
+    ExternalStatementMismatch = 9,
+    PartialMatch = 10
 }
 
 /// <summary>
@@ -101,6 +122,7 @@ public sealed record ReconciliationBreakDto(
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
+    ReconciliationBreakSeverity Severity,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf);
@@ -124,8 +146,9 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
     IReadOnlyList<BankTransactionDto>? BankTransactions = null,
     /// <summary>
-    /// Security Master classification keyed by ticker symbol, populated for every symbol whose
-    /// Security Master entry was resolved at reconciliation time. Suitable for audit reporting.
+    /// Security Master classification keyed by ticker symbol, populated for every
+    /// symbol resolved at reconciliation time from the shared workstation instrument layer.
+    /// Suitable for governance and audit reporting.
     /// </summary>
     IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
 
@@ -138,6 +161,17 @@ public enum ReconciliationBreakQueueStatus : byte
     InReview = 1,
     Resolved = 2,
     Dismissed = 3
+}
+
+/// <summary>
+/// Aggregate readiness state for reconciliation tolerance calibration and governance sign-off.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCalibrationStatusDto>))]
+public enum ReconciliationCalibrationStatusDto : byte
+{
+    Ready = 0,
+    ReviewRequired = 1,
+    Blocked = 2
 }
 
 /// <summary>
@@ -158,7 +192,49 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? ReviewedAt = null,
     string? ResolvedBy = null,
     DateTimeOffset? ResolvedAt = null,
-    string? ResolutionNote = null);
+    string? ResolutionNote = null,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium,
+    string? ExceptionRoute = null,
+    string? ToleranceProfileId = null,
+    decimal? ToleranceBand = null,
+    string? RequiredSignoffRole = null,
+    string? SignoffStatus = null);
+
+/// <summary>
+/// Per-profile rollup for reconciliation tolerance calibration and exception routing.
+/// </summary>
+public sealed record ReconciliationCalibrationProfileSummaryDto(
+    string ToleranceProfileId,
+    string ExceptionRoute,
+    ReconciliationBreakSeverity HighestSeverity,
+    decimal? MaxToleranceBand,
+    int TotalBreakCount,
+    int OpenBreakCount,
+    int InReviewBreakCount,
+    int ResolvedBreakCount,
+    int DismissedBreakCount,
+    int PendingSignoffCount,
+    int SignedOffCount,
+    DateTimeOffset LastUpdatedAt);
+
+/// <summary>
+/// Operator-facing calibration summary for the reconciliation break queue.
+/// </summary>
+public sealed record ReconciliationCalibrationSummaryDto(
+    DateTimeOffset AsOf,
+    ReconciliationCalibrationStatusDto Status,
+    string Summary,
+    int TotalBreakCount,
+    int ActiveBreakCount,
+    int OpenBreakCount,
+    int InReviewBreakCount,
+    int ResolvedBreakCount,
+    int DismissedBreakCount,
+    int CriticalOpenBreakCount,
+    int PendingSignoffCount,
+    int SignedOffCount,
+    int MissingCalibrationMetadataCount,
+    IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles);
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

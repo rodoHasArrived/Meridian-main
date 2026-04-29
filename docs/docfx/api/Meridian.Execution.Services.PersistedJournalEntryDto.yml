@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistedJournalEntryDto
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 43
   assemblies:
   - Meridian.Execution
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 43
   assemblies:
   - Meridian.Execution
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 44
   assemblies:
   - Meridian.Execution
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 45
   assemblies:
   - Meridian.Execution
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 46
   assemblies:
   - Meridian.Execution
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lines
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 47
   assemblies:
   - Meridian.Execution
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivityType
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 48
   assemblies:
   - Meridian.Execution
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 49
   assemblies:
   - Meridian.Execution
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 50
   assemblies:
   - Meridian.Execution
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 51
   assemblies:
   - Meridian.Execution
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerView
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 52
   assemblies:
   - Meridian.Execution
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    path: src/Meridian.Execution/Services/IPaperSessionStore.cs
     startLine: 53
   assemblies:
   - Meridian.Execution

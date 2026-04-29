@@ -64,6 +64,10 @@ public class JsonlBatchWriteTests : IDisposable
 
         var files = Directory.GetFiles(_testRoot, "*.jsonl", SearchOption.AllDirectories);
         files.Should().HaveCount(1);
+        var lines = await File.ReadAllLinesAsync(files[0]);
+        lines.Should().ContainSingle();
+        var deserialize = () => System.Text.Json.JsonSerializer.Deserialize<MarketEvent>(lines[0]);
+        deserialize.Should().NotThrow();
     }
 
     [Fact]
@@ -214,6 +218,19 @@ public class JsonlBatchWriteTests : IDisposable
 
         await sink.FlushAsync();
         sink.EventsWritten.Should().Be(6);
+
+        var files = Directory.GetFiles(_testRoot, "*.jsonl", SearchOption.AllDirectories);
+        files.Should().HaveCount(2);
+        foreach (var file in files)
+        {
+            var lines = await File.ReadAllLinesAsync(file);
+            lines.Should().HaveCount(3);
+            foreach (var line in lines)
+            {
+                var deserialize = () => System.Text.Json.JsonSerializer.Deserialize<MarketEvent>(line);
+                deserialize.Should().NotThrow();
+            }
+        }
     }
 
     [Fact]

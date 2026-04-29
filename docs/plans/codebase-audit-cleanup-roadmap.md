@@ -1,6 +1,6 @@
 # Codebase Audit and Cleanup Roadmap
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-04-28
 **Status:** Active cleanup backlog
 **Purpose:** Current cleanup and maintainability roadmap grounded in the repository as it exists today
 
@@ -53,14 +53,14 @@ Primary anchors:
 
 ### 2. WPF workflow cleanup
 
-The app now has shared run surfaces and updated workspace categories, but the shell still carries page-first structure and mixed implementation depth.
+The app now has shared run surfaces and a delivered four-workspace shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
 
 Open work:
 
-- continue moving from page-first navigation to true workspace-first shells
+- validate the delivered workspace shells against real Research, Trading, Data Operations, and Governance journeys
 - identify placeholder or low-value pages and either strengthen them or label/re-scope them
 - keep business logic moving out of page code-behind and into shared services/view models
-- make run, portfolio, and ledger flows feel like one workstation family rather than separate page islands
+- make run, portfolio, ledger, Position Blotter, and reconciliation flows feel like one workstation family rather than separate page islands
 
 Primary anchors:
 
@@ -105,12 +105,12 @@ Do not run a massive mechanical cleanup sweep just to reduce counts. Prefer adja
 
 ### 5. Repository and documentation hygiene
 
-The repo structure is healthier than before, but it still needs ongoing maintenance.
+The repo structure is healthier than before, but it still needs ongoing maintenance. The generated 2026-04-28 documentation dashboard reports 89/100 health, and the generated coverage report shows 88.3% documented items; the largest practical gaps are endpoint and configuration documentation, not a new roadmap direction.
 
 Open work:
 
 - keep generated docs, status docs, and hand-maintained planning docs synchronized
-- continue consolidating overlapping CI workflows where ownership and purpose are clear
+- continue consolidating overlapping CI workflows where ownership and purpose are clear; the WPF screenshot-refresh lane now has scheduled/push/manual capture, least-privilege default permissions, diagnostic artifacts, and one final screenshot commit job, so future cleanup should preserve that ownership model
 - move newly historical documents to `archive/docs/` once they stop serving as active guidance
 - keep README/index/navigation docs aligned when planning documents are promoted or retired
 

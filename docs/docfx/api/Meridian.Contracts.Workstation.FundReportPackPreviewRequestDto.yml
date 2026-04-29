@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundReportPackPreviewRequestDto
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 88
   assemblies:
   - Meridian.Contracts
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportKind
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 89
   assemblies:
   - Meridian.Contracts
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 91
   assemblies:
   - Meridian.Contracts

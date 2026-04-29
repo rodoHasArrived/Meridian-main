@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
@@ -16,7 +17,10 @@ public sealed class MainShellViewModelTests
 {
     private static MainPageViewModel CreateMainPageViewModel(
         FundContextService? fundContextService = null,
-        WorkstationOperatingContextService? operatingContextService = null)
+        WorkstationOperatingContextService? operatingContextService = null,
+        WorkspaceShellContextService? workspaceShellContextService = null,
+        SettingsConfigurationService? settingsConfigurationService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxClient = null)
     {
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
@@ -28,7 +32,14 @@ public sealed class MainShellViewModelTests
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-        return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService, operatingContextService);
+        return new MainPageViewModel(
+            navigationService,
+            fixtureModeDetector,
+            fundContextService,
+            operatingContextService,
+            workspaceShellContextService,
+            operatorInboxApiClient: operatorInboxClient,
+            settingsConfigurationService: settingsConfigurationService);
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
@@ -87,6 +98,20 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void CommandPaletteQuery_UsesTierOrderingWithinMatchingResults()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "workspace";
+
+            vm.CommandPalettePages.Should().NotBeEmpty();
+            vm.CommandPalettePages.First().PageTag.Should().Be("Workspaces");
+        });
+    }
+
+    [Fact]
     public void CommandPaletteQuery_WhenNoResults_ShowsHelpfulEmptyStateAndCanClear()
     {
         WpfTestThread.Run(() =>
@@ -136,6 +161,45 @@ public sealed class MainShellViewModelTests
             vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["GovernanceShell", "FundLedger", "FundReconciliation"]);
             vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
             vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
+        });
+    }
+
+    [Fact]
+    public void WorkspaceNavigation_UsesFriendlyContextTagsInsteadOfRawTierNames()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.SelectWorkspaceCommand.Execute("governance");
+
+            vm.SecondaryNavigationItems.Should().OnlyContain(item => item.VisibilityLabel != "Secondary");
+            vm.OverflowNavigationItems.Should().OnlyContain(item => item.VisibilityLabel == "Support");
+        });
+    }
+
+    [Fact]
+    public void RecentPages_AreScopedToTheActiveWorkspace()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.ActivateShell();
+            vm.NavigateToPageCommand.Execute("Backtest");
+            vm.NavigateToPageCommand.Execute("GovernanceShell");
+            vm.NavigateToPageCommand.Execute("SecurityMaster");
+
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
+            vm.RecentPagesSummaryText.Should().Be("1 recent governance workflow");
+
+            vm.SelectWorkspaceCommand.Execute("research");
+
+            vm.CurrentWorkspace.Should().Be("research");
+            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
+            vm.RecentPagesSummaryText.Should().Be("1 recent research workflow");
         });
     }
 
@@ -200,6 +264,35 @@ public sealed class MainShellViewModelTests
             vm.CurrentPageTag.Should().Be("AddProviderWizard");
         });
     }
+
+    [Fact]
+    public void NavigateToProviderHealth_KeepsDataOperationsWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("ProviderHealth");
+
+            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentPageTag.Should().Be("ProviderHealth");
+        });
+    }
+
+    [Fact]
+    public void NavigateToDiagnostics_KeepsGovernanceWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("Diagnostics");
+
+            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentPageTag.Should().Be("Diagnostics");
+        });
+    }
+
     [Fact]
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
@@ -216,10 +309,33 @@ public sealed class MainShellViewModelTests
 
             detector.SetFixtureMode(true);
 
-            vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
-            vm.FixtureModeBannerText.Should().Contain("FIXTURE MODE");
+            vm.FixtureModeBannerVisibility.Should().Be(Visibility.Collapsed);
+            vm.FixtureModeBannerText.Should().Contain("Demo data mode");
+            vm.ShellStatusText.Should().Be("Demo data");
+            vm.ShellStatusTone.Should().Be(WorkspaceTone.Info);
 
             detector.SetFixtureMode(false);
+        });
+    }
+
+    [Fact]
+    public void LaunchArgs_ShouldNormalizeAliasesAndSequentialForwardedNavigation()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel();
+
+            vm.HandleLaunchArgs(["--page=RunBrowser"]);
+
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("StrategyRuns");
+
+            vm.HandleLaunchArgs(["--navigate", "Backtest"]);
+
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("Backtest");
+
+            vm.HandleLaunchArgs(["--page", "DataOperationsShell"]);
+
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataOperationsShell");
         });
     }
 
@@ -376,6 +492,321 @@ public sealed class MainShellViewModelTests
         });
     }
 
+    [Fact]
+    public void ShellDensityPreference_RemainsIndependentFromBoundedWindowMode()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var preferencesPath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-main-shell-tests",
+                $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
+
+            try
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+                var settingsConfigurationService = SettingsConfigurationService.Instance;
+                settingsConfigurationService.SetShellDensityMode(ShellDensityMode.Compact);
+
+                var fundContext = await CreateFundContextAsync();
+                var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
+                await operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review");
+
+                using var vm = CreateMainPageViewModel(
+                    fundContext,
+                    operatingContextService,
+                    settingsConfigurationService: settingsConfigurationService);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                vm.IsCompactShellDensity.Should().BeTrue();
+                vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
+                vm.CurrentModeName.Should().Contain("Accounting Review");
+
+                settingsConfigurationService.SetShellDensityMode(ShellDensityMode.Standard);
+                await WaitForConditionAsync(() => vm.ShellDensityMode == ShellDensityMode.Standard);
+
+                vm.IsCompactShellDensity.Should().BeFalse();
+                vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
+            }
+            finally
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+                if (File.Exists(preferencesPath))
+                {
+                    File.Delete(preferencesPath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void ToggleShellDensityCommand_UpdatesShellStateAndPersistsPreference()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var preferencesPath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-main-shell-tests",
+                $"{Guid.NewGuid():N}.density-toggle.json");
+
+            try
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+                var settingsConfigurationService = SettingsConfigurationService.Instance;
+                settingsConfigurationService.SetShellDensityMode(ShellDensityMode.Standard);
+
+                using var vm = CreateMainPageViewModel(settingsConfigurationService: settingsConfigurationService);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                vm.ShellDensityButtonText.Should().Be("Density: Standard");
+                vm.ShellDensityToggleTooltip.Should().Be("Switch to compact shell density");
+
+                vm.ToggleShellDensityCommand.Execute(null);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                vm.IsCompactShellDensity.Should().BeTrue();
+                vm.ShellDensityButtonText.Should().Be("Density: Compact");
+                vm.ShellDensityToggleTooltip.Should().Be("Switch to standard shell density");
+                settingsConfigurationService.GetShellDensityMode().Should().Be(ShellDensityMode.Compact);
+
+                vm.ToggleShellDensityCommand.Execute(null);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                vm.IsCompactShellDensity.Should().BeFalse();
+                settingsConfigurationService.GetShellDensityMode().Should().Be(ShellDensityMode.Standard);
+            }
+            finally
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+                if (File.Exists(preferencesPath))
+                {
+                    File.Delete(preferencesPath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void WorkflowSummaryPresentation_PrioritizesCurrentWorkspace()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            await WaitForConditionAsync(() =>
+                vm.PrimaryWorkflowSummary is not null &&
+                vm.SecondaryWorkflowSummaries.Count == 3);
+
+            vm.PrimaryWorkflowSummary.Should().NotBeNull();
+            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("research");
+            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("research");
+
+            vm.SelectWorkspaceCommand.Execute("trading");
+
+            await WaitForConditionAsync(() => vm.PrimaryWorkflowSummary?.WorkspaceId == "trading");
+
+            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("trading");
+            vm.SecondaryWorkflowSummaries.Should().HaveCount(3);
+            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
+            vm.PrimaryWorkflowTargetText.Should().NotBe("Target page: -");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_LoadsQueueAndNavigatesToPrimaryWorkItem()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "paper-replay-stale-session-1",
+                        Kind: OperatorWorkItemKindDto.PaperReplay,
+                        Label: "Replay verification is stale",
+                        Detail: "Session changed after the latest replay audit.",
+                        Tone: OperatorWorkItemToneDto.Critical,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "TradingShell")
+                ],
+                CriticalCount: 1,
+                WarningCount: 0,
+                ReviewCount: 1,
+                Summary: "1 critical work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxButtonText.Should().Be("Queue (1)");
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Danger);
+            vm.OperatorInboxSummary.Should().Contain("critical");
+            vm.OperatorInboxPrimaryLabel.Should().Be("Replay verification is stale");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentPageTag.Should().Be("FundAuditTrail");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_UsesRouteToOpenSpecificWorkbench()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "reconciliation-break-run-1-cash-mismatch",
+                        Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+                        Label: "Reconciliation break requires review",
+                        Detail: "Cash mismatch needs governance review.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("FundReconciliation");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.CurrentPageTag.Should().Be("FundReconciliation");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_PromotesQueueAttentionIntoShellContext()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            NotificationService.Instance.ClearHistory();
+            var fundContext = await CreateFundContextAsync();
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "reconciliation-break-run-1-cash-mismatch",
+                        Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+                        Label: "Reconciliation break requires review",
+                        Detail: "Cash mismatch needs governance review.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        Workspace: "Governance",
+                        TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}/break-123/review",
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+            var statusService = Substitute.For<IStatusService>();
+            statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<StatusResponse?>(new StatusResponse
+                {
+                    IsConnected = true,
+                    TimestampUtc = DateTimeOffset.UtcNow,
+                    Metrics = new MetricsData { IsStale = false }
+                }));
+            var contextService = new WorkspaceShellContextService(
+                fundContext,
+                FixtureModeDetector.Instance,
+                NotificationService.Instance,
+                statusService);
+
+            using var vm = CreateMainPageViewModel(
+                fundContextService: fundContext,
+                workspaceShellContextService: contextService,
+                operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.ShellContext.Badges.Any(badge => badge.Label == "Queue action"));
+
+            vm.ShellContext.Badges.Should().ContainEquivalentOf(new WorkspaceShellBadge
+            {
+                Label = "Attention",
+                Value = "1 review: Reconciliation break requires review | warning | Governance | open FundReconciliation",
+                Glyph = "\uE7F4",
+                Tone = WorkspaceTone.Warning
+            });
+            vm.ShellContext.Badges.Should().ContainEquivalentOf(new WorkspaceShellBadge
+            {
+                Label = "Queue action",
+                Value = "Open FundReconciliation",
+                Glyph = "\uE7F4",
+                Tone = WorkspaceTone.Warning
+            });
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_WhenClientFails_DegradesToNotificationCenter()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inboxClient = new FakeOperatorInboxApiClient(new InvalidOperationException("backend unavailable"));
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() =>
+                vm.OperatorInboxSummary.Contains("awaiting backend", StringComparison.OrdinalIgnoreCase));
+
+            vm.OperatorInboxReviewCount.Should().Be(0);
+            vm.OperatorInboxTone.Should().Be(WorkspaceTone.Neutral);
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentPageTag.Should().Be("NotificationCenter");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxPresentation_RequestsActiveAccountScopedInbox()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var accountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [],
+                CriticalCount: 0,
+                WarningCount: 0,
+                ReviewCount: 0,
+                Summary: "No operator work items are open.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            vm.SelectedOperatingContext = new WorkstationOperatingContext
+            {
+                ScopeKind = OperatingContextScopeKind.Account,
+                ScopeId = accountId.ToString("D"),
+                AccountId = accountId.ToString("D"),
+                DisplayName = "Northwind Brokerage Account",
+                DefaultWorkspaceId = "trading",
+                DefaultLandingPageTag = "TradingShell"
+            };
+            vm.RefreshPageCommand.Execute(null);
+
+            await WaitForConditionAsync(() => inboxClient.FundAccountCalls.Contains(accountId));
+
+            inboxClient.FundAccountCalls.Should().Contain(accountId);
+            vm.OperatorInboxSummary.Should().Be("No operator work items are open.");
+        });
+    }
+
     private static async Task<FundContextService> CreateFundContextAsync()
     {
         var storagePath = Path.Combine(
@@ -421,6 +852,50 @@ public sealed class MainShellViewModelTests
             }
 
             await Task.Delay(25);
+        }
+    }
+
+    private sealed class FakeOperatorInboxApiClient : IWorkstationOperatorInboxApiClient
+    {
+        private readonly object _gate = new();
+        private readonly List<Guid?> _fundAccountCalls = [];
+        private readonly OperatorInboxDto? _inbox;
+        private readonly Exception? _exception;
+
+        public IReadOnlyList<Guid?> FundAccountCalls
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _fundAccountCalls.ToArray();
+                }
+            }
+        }
+
+        public FakeOperatorInboxApiClient(OperatorInboxDto inbox)
+        {
+            _inbox = inbox;
+        }
+
+        public FakeOperatorInboxApiClient(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        public Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default)
+        {
+            lock (_gate)
+            {
+                _fundAccountCalls.Add(fundAccountId);
+            }
+
+            if (_exception is not null)
+            {
+                throw _exception;
+            }
+
+            return Task.FromResult(_inbox);
         }
     }
 }

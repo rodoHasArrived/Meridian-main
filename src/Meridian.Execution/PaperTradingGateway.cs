@@ -46,8 +46,14 @@ public sealed class PaperTradingGateway : IExecutionGateway
     {
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
-        // Market orders fill immediately at a simulated price
-        if (request.Type == OrderType.Market)
+        if (request.Type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        {
+            throw new NotSupportedException(
+                $"Paper trading gateway does not preserve the {request.Type} session timing qualifier.");
+        }
+
+        // Market-style orders fill immediately at a simulated price
+        if (request.Type is OrderType.Market)
         {
             var report = new ExecutionReport
             {

@@ -24,6 +24,8 @@ public sealed class QuantScriptGlobals
     private const string ContextIntervalKey = "interval";
     private readonly List<ConsoleOutputEntry> _output = [];
     private readonly object _outputLock = new();
+    private readonly object _parameterRegistrationLock = new();
+    private readonly Dictionary<string, ParameterDescriptor> _runtimeParameters = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyDictionary<string, object?> _parameters;
     private Func<CancellationToken> _cancellationTokenProvider;
 
@@ -97,17 +99,28 @@ public sealed class QuantScriptGlobals
     public T Param<T>(string name, T defaultValue = default!, double min = double.MinValue,
         double max = double.MaxValue, string? description = null)
     {
-        if (!_parameters.TryGetValue(name, out var val))
-            return defaultValue;
-        if (val is T typed)
-            return typed;
-        if (val is not null)
+        var resolved = defaultValue;
+        if (_parameters.TryGetValue(name, out var val))
         {
-            try
-            { return (T)Convert.ChangeType(val, typeof(T)); }
-            catch { /* fall through to default */ }
+            if (val is T typed)
+            {
+                resolved = typed;
+            }
+            else if (val is not null)
+            {
+                try
+                {
+                    resolved = (T)Convert.ChangeType(val, typeof(T));
+                }
+                catch
+                {
+                    resolved = defaultValue;
+                }
+            }
         }
-        return defaultValue;
+
+        RegisterRuntimeParameter(name, typeof(T), defaultValue, min, max, description);
+        return resolved;
     }
 
     /// <summary>Toolbar-selected symbol (normalized uppercase), if supplied by the host UI.</summary>
@@ -155,12 +168,98 @@ public sealed class QuantScriptGlobals
         }
     }
 
+    internal IReadOnlyList<ParameterDescriptor> SnapshotRuntimeParameters()
+    {
+        lock (_parameterRegistrationLock)
+        {
+            return _runtimeParameters.Values.ToList();
+        }
+    }
+
     internal void UpdateExecutionContext(
         IReadOnlyDictionary<string, object?>? parameters,
         Func<CancellationToken> cancellationTokenProvider)
     {
         _parameters = parameters ?? new Dictionary<string, object?>();
         _cancellationTokenProvider = cancellationTokenProvider ?? throw new ArgumentNullException(nameof(cancellationTokenProvider));
+        Data.UpdateCancellationTokenProvider(_cancellationTokenProvider);
+        Backtest.UpdateCancellationTokenProvider(_cancellationTokenProvider);
+    }
+
+    private void RegisterRuntimeParameter(
+        string name,
+        Type parameterType,
+        object? defaultValue,
+        double min,
+        double max,
+        string? description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        var descriptor = new ParameterDescriptor(
+            name.Trim(),
+            GetFriendlyTypeName(parameterType),
+            name.Trim(),
+            defaultValue,
+            min,
+            max,
+            string.IsNullOrWhiteSpace(description) ? null : description.Trim());
+
+        lock (_parameterRegistrationLock)
+        {
+            _runtimeParameters[descriptor.Name] = descriptor;
+        }
+    }
+
+    private static string GetFriendlyTypeName(Type type)
+    {
+        var effectiveType = Nullable.GetUnderlyingType(type) ?? type;
+        return effectiveType switch
+        {
+            _ when effectiveType == typeof(int) => "int",
+            _ when effectiveType == typeof(double) => "double",
+            _ when effectiveType == typeof(decimal) => "decimal",
+            _ when effectiveType == typeof(bool) => "bool",
+            _ when effectiveType == typeof(float) => "float",
+            _ when effectiveType == typeof(long) => "long",
+            _ when effectiveType == typeof(string) => "string",
+            _ => effectiveType.Name
+        };
+    }
+
+    private string? GetStringContextValue(string key)
+    {
+        var raw = GetContextValue(key);
+        return raw switch
+        {
+            null => null,
+            string text when string.IsNullOrWhiteSpace(text) => null,
+            string text => text,
+            _ => raw.ToString()
+        };
+    }
+
+    private DateOnly? GetDateOnlyContextValue(string key)
+    {
+        var raw = GetContextValue(key);
+        return raw switch
+        {
+            null => null,
+            DateOnly dateOnly => dateOnly,
+            DateTime dateTime => DateOnly.FromDateTime(dateTime),
+            DateTimeOffset dateTimeOffset => DateOnly.FromDateTime(dateTimeOffset.Date),
+            string text when DateOnly.TryParse(text, out var parsedDateOnly) => parsedDateOnly,
+            string text when DateTime.TryParse(text, out var parsedDateTime) => DateOnly.FromDateTime(parsedDateTime),
+            _ => null
+        };
+    }
+
+    private object? GetContextValue(string key)
+    {
+        if (_parameters.TryGetValue(key, out var value))
+            return value;
+        return _parameters.TryGetValue($"context.{key}", out value) ? value : null;
     }
 
     private string? GetStringContextValue(string key)

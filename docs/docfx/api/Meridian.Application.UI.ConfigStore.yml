@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigStore
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPathResolver
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 39
   assemblies:
   - Meridian.Application
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfig
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 66
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Load
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 92
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 94
   assemblies:
   - Meridian.Application
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadStatusJson
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -352,7 +352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusPath
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 133
   assemblies:
   - Meridian.Application
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillStatusPath
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 140
   assemblies:
   - Meridian.Application
@@ -420,7 +420,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadBackfillStatus
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 147
   assemblies:
   - Meridian.Application
@@ -448,7 +448,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataRoot
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 154
   assemblies:
   - Meridian.Application
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderMetricsPath
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 160
   assemblies:
   - Meridian.Application
@@ -516,7 +516,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadProviderMetrics
-    path: ../../src/Meridian.Application/Http/ConfigStore.cs
+    path: src/Meridian.Application/Http/ConfigStore.cs
     startLine: 167
   assemblies:
   - Meridian.Application

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBookLevelDto
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Level
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 59
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketMaker
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 62
   assemblies:
   - Meridian.Contracts

@@ -88,7 +88,8 @@
                 <TextBox x:Name="SymbolSearchBox"
                          Grid.Column="0"
                          Style="{StaticResource FormTextBoxStyle}"
-                         TextChanged="SymbolSearch_TextChanged">
+                         AutomationProperties.AutomationId="SymbolsSearchBox"
+                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <TextBox.Template>
                         <ControlTemplate TargetType="TextBox">
                             <Border Background="{TemplateBinding Background}"
@@ -113,7 +114,9 @@
                           Style="{StaticResource FormComboBoxStyle}"
                           Width="150"
                           Margin="16,0,0,0"
-                          SelectionChanged="Filter_Changed">
+                          AutomationProperties.AutomationId="SymbolsSubscriptionFilterCombo"
+                          SelectedValuePath="Tag"
+                          SelectedValue="{Binding SelectedSubscriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <ComboBoxItem Content="All Symbols" Tag="All" IsSelected="True" />
                     <ComboBoxItem Content="Trades Only" Tag="Trades" />
                     <ComboBoxItem Content="Depth Only" Tag="Depth" />
@@ -125,7 +128,9 @@
                           Style="{StaticResource FormComboBoxStyle}"
                           Width="130"
                           Margin="16,0,0,0"
-                          SelectionChanged="Filter_Changed">
+                          AutomationProperties.AutomationId="SymbolsExchangeFilterCombo"
+                          SelectedValuePath="Tag"
+                          SelectedValue="{Binding SelectedExchangeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <ComboBoxItem Content="All Exchanges" Tag="All" IsSelected="True" />
                     <ComboBoxItem Content="SMART" Tag="SMART" />
                     <ComboBoxItem Content="NYSE" Tag="NYSE" />
@@ -136,7 +141,8 @@
                 <Button Grid.Column="3"
                         Content="Clear Filters"
                         Style="{StaticResource GhostButtonStyle}"
-                        Click="ClearFilters_Click"
+                        AutomationProperties.AutomationId="SymbolsClearFiltersButton"
+                        Command="{Binding ClearFiltersCommand}"
                         Margin="16,0,0,0" />
             </Grid>
         </Border>
@@ -174,32 +180,40 @@
                                       Checked="SelectAll_Changed"
                                       Unchecked="SelectAll_Changed" />
 
-                            <TextBlock x:Name="SelectionCountText"
-                                       Grid.Column="1"
-                                       Text="0 selected"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       FontSize="12"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="SelectionCountText"
+                                           Text="{Binding SelectionCountText}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding VisibleSymbolScopeText}"
+                                           AutomationProperties.AutomationId="SymbolsVisibleScopeText"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
 
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
                                 <Button x:Name="BulkEnableTradesBtn"
                                         Content="Enable Trades"
                                         Style="{StaticResource GhostButtonStyle}"
                                         Click="BulkEnableTrades_Click"
-                                        IsEnabled="False"
+                                        IsEnabled="{Binding CanBulkAction}"
                                         Margin="0,0,8,0" />
                                 <Button x:Name="BulkEnableDepthBtn"
                                         Content="Enable Depth"
                                         Style="{StaticResource GhostButtonStyle}"
                                         Click="BulkEnableDepth_Click"
-                                        IsEnabled="False"
+                                        IsEnabled="{Binding CanBulkAction}"
                                         Margin="0,0,8,0" />
                                 <Button x:Name="BulkDeleteBtn"
                                         Content="Delete Selected"
                                         Style="{StaticResource GhostButtonStyle}"
                                         Click="BulkDelete_Click"
-                                        IsEnabled="False" />
+                                        IsEnabled="{Binding CanBulkAction}" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -261,9 +275,11 @@
 
                     <ListView x:Name="SymbolsListView"
                               Grid.Row="2"
+                              ItemsSource="{Binding FilteredSymbols}"
                               Background="Transparent"
                               BorderThickness="0"
-                              SelectionChanged="SymbolsListView_SelectionChanged">
+                              SelectionChanged="SymbolsListView_SelectionChanged"
+                              Visibility="{Binding HasVisibleSymbols, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ListView.ContextMenu>
                             <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                                 <MenuItem Header="View Live Data" Command="{Binding NavigateToLiveDataCommand}"/>
@@ -325,6 +341,38 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+
+                    <Border x:Name="SymbolsEmptyStatePanel"
+                            Grid.Row="2"
+                            Padding="28"
+                            Margin="8"
+                            CornerRadius="8"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            AutomationProperties.AutomationId="SymbolsEmptyStatePanel"
+                            Visibility="{Binding IsSymbolsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    MaxWidth="420">
+                            <TextBlock Text="{Binding SymbolsEmptyStateTitle}"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding SymbolsEmptyStateDetail}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Margin="0,8,0,0" />
+                            <Button Content="Clear Filters"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding ClearFiltersCommand}"
+                                    AutomationProperties.AutomationId="SymbolsEmptyStateClearFiltersButton"
+                                    Visibility="{Binding HasActiveFilters, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,16,0,0" />
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 

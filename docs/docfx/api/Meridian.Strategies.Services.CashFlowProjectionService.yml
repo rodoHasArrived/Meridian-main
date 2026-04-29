@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashFlowProjectionService
-    path: ../../src/Meridian.Strategies/Services/CashFlowProjectionService.cs
+    path: src/Meridian.Strategies/Services/CashFlowProjectionService.cs
     startLine: 10
   assemblies:
   - Meridian.Strategies
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/CashFlowProjectionService.cs
+    path: src/Meridian.Strategies/Services/CashFlowProjectionService.cs
     startLine: 17
   assemblies:
   - Meridian.Strategies
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
-    path: ../../src/Meridian.Strategies/Services/CashFlowProjectionService.cs
+    path: src/Meridian.Strategies/Services/CashFlowProjectionService.cs
     startLine: 34
   assemblies:
   - Meridian.Strategies

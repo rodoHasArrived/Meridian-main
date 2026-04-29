@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalQuotesResult
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 333
   assemblies:
   - Meridian.Infrastructure
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 333
   assemblies:
   - Meridian.Infrastructure
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 334
   assemblies:
   - Meridian.Infrastructure
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextPageToken
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 335
   assemblies:
   - Meridian.Infrastructure
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 336
   assemblies:
   - Meridian.Infrastructure
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasMore
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 339
   assemblies:
   - Meridian.Infrastructure

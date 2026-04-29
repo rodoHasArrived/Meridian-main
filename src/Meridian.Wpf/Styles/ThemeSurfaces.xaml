@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="clr-namespace:Meridian.Wpf.Views">
 
-    <!-- Premium cards: white/off-white bg, 8px radius, hairline border, subtle elevation shadow -->
+    <!-- Premium cards: dark navy surface, 8px radius, cyan-tinted hairline border. -->
     <Style x:Key="CardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
@@ -12,13 +12,48 @@
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#1A6BB5" BlurRadius="0" ShadowDepth="0" Opacity="0" />
+                <DropShadowEffect Color="#020812" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.28" />
             </Setter.Value>
         </Setter>
     </Style>
 
+    <Style x:Key="ChartCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Background" Value="{StaticResource ChartSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ChartBorderBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000"
+                                  BlurRadius="10"
+                                  ShadowDepth="2"
+                                  Direction="270"
+                                  Opacity="0.24" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ChartPlotAreaStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ChartPlotAreaBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ChartGridLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style x:Key="ChartCanvasPlotAreaStyle" TargetType="Border" BasedOn="{StaticResource ChartPlotAreaStyle}">
+        <Setter Property="Background" Value="{StaticResource ChartCanvasGridBrush}" />
+    </Style>
+
+    <Style x:Key="ChartLegendStripStyle" TargetType="Border">
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Background" Value="{StaticResource ChartSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ChartBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+    </Style>
+
     <Style x:Key="SectionCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
-        <Setter Property="Margin" Value="0,0,0,16" />
+        <Setter Property="Margin" Value="{StaticResource WorkspaceSectionCardMargin}" />
     </Style>
 
     <!-- Shared deep-page shell cleanup: let legacy pages hide duplicate hero chrome when
@@ -43,6 +78,16 @@
                 <Setter Property="Padding" Value="16,14" />
                 <Setter Property="Margin" Value="0,0,0,16" />
             </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                               Value="True" />
+                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsCompactDensity)}"
+                               Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Padding" Value="12,10" />
+                <Setter Property="Margin" Value="0,0,0,12" />
+            </MultiDataTrigger>
         </Style.Triggers>
     </Style>
 
@@ -70,6 +115,10 @@
                          Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />
             </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsCompactDensity)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 
@@ -93,30 +142,30 @@
     </Style>
 
     <Style x:Key="CompactCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="14" />
+        <Setter Property="Padding" Value="{StaticResource WorkspaceCardPaddingCompact}" />
     </Style>
 
     <!-- ElevatedCardStyle: subtle drop shadow for raised panel feel -->
     <Style x:Key="ElevatedSurfaceCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#1A2A4A" BlurRadius="18" ShadowDepth="2" Direction="270" Opacity="0.10" />
+                <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="2" Direction="270" Opacity="0.34" />
             </Setter.Value>
         </Setter>
     </Style>
 
     <!-- TerminalCardStyle: elevated surface for code/data panels -->
     <Style x:Key="TerminalCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
@@ -124,27 +173,28 @@
     </Style>
 
     <Style x:Key="MetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="Padding" Value="18" />
     </Style>
 
     <!-- Metric cards: prominent left-accent bar, modern radii -->
     <Style x:Key="MetricCardSuccessStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
     </Style>
 
     <Style x:Key="MetricCardDangerStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
     </Style>
 
     <Style x:Key="MetricCardWarningStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
     </Style>
 
     <Style x:Key="MetricCardInfoStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
     </Style>
 
@@ -158,29 +208,39 @@
     </Style>
 
     <Style x:Key="SuccessBadgeStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeSuccessBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeSuccessBorderBrush}" />
     </Style>
 
     <Style x:Key="DangerBadgeStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeDangerBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeDangerBorderBrush}" />
     </Style>
 
     <Style x:Key="WarningBadgeInlineStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeWarningBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeWarningBorderBrush}" />
     </Style>
 
     <Style x:Key="InfoBadgeInlineStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeInfoBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeInfoBorderBrush}" />
     </Style>
 
     <Style x:Key="HorizontalDividerStyle" TargetType="Rectangle">
         <Setter Property="Height" Value="1" />
         <Setter Property="Fill" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
+    <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
 
     <Style x:Key="WorkspaceContextStripStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
@@ -204,13 +264,26 @@
 
     <Style x:Key="WorkspaceKpiTileStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="MinWidth" Value="112" />
-        <Setter Property="Padding" Value="18,14" />
+        <Setter Property="Padding" Value="18,12" />
         <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style x:Key="WorkspaceSummaryTileContentStyle" TargetType="StackPanel">
+        <Setter Property="MinWidth" Value="76" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
 
     <Style x:Key="WorkspaceWorkbenchCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="Padding" Value="20" />
         <Setter Property="CornerRadius" Value="14" />
+    </Style>
+
+    <Style x:Key="WorkspaceCardHeaderGridStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="{StaticResource WorkspaceCardHeaderToBodyMargin}" />
+    </Style>
+
+    <Style x:Key="WorkspaceCardFooterPanelStyle" TargetType="WrapPanel">
+        <Setter Property="Margin" Value="0,14,0,0" />
     </Style>
 
     <Style x:Key="WorkspaceInspectorCardStyle" TargetType="Border" BasedOn="{StaticResource CompactCardStyle}">
@@ -219,15 +292,96 @@
         <Setter Property="Margin" Value="0,0,0,12" />
     </Style>
 
+    <Style x:Key="WorkspaceToneInspectorCardStyle" TargetType="Border" BasedOn="{StaticResource WorkspaceInspectorCardStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tone}" Value="Info">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Success">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="WorkspaceQueueCardStyle" TargetType="Border" BasedOn="{StaticResource CompactCardStyle}">
         <Setter Property="Padding" Value="14" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Margin" Value="0,0,0,10" />
     </Style>
 
+    <Style x:Key="WorkspaceToneQueueCardStyle" TargetType="Border" BasedOn="{StaticResource WorkspaceQueueCardStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tone}" Value="Info">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Success">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                <Setter Property="BorderThickness" Value="4,1,1,1" />
+                <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="WorkspaceQueueItemCardStyle" TargetType="Border" BasedOn="{StaticResource WorkspaceQueueCardStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+    </Style>
+
+    <Style x:Key="WorkspaceToneBadgeStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tone}" Value="Info">
+                <Setter Property="Background" Value="{StaticResource BadgeInfoBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BadgeInfoBorderBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Success">
+                <Setter Property="Background" Value="{StaticResource BadgeSuccessBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BadgeSuccessBorderBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                <Setter Property="Background" Value="{StaticResource BadgeWarningBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BadgeWarningBorderBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                <Setter Property="Background" Value="{StaticResource BadgeDangerBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BadgeDangerBorderBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="WorkspaceToneBadgeTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tone}" Value="Info">
+                <Setter Property="Foreground" Value="{StaticResource BadgeInfoForegroundBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Success">
+                <Setter Property="Foreground" Value="{StaticResource BadgeSuccessForegroundBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                <Setter Property="Foreground" Value="{StaticResource BadgeWarningForegroundBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                <Setter Property="Foreground" Value="{StaticResource BadgeDangerForegroundBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="WorkspaceEmptyStateCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">

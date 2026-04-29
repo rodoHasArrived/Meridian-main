@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageRequest
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 342
   assemblies:
   - Meridian.Application
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 342
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 343
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 344
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputDirectory
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 345
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 346
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 347
   assemblies:
   - Meridian.Application
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartDate
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 348
   assemblies:
   - Meridian.Application
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndDate
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 349
   assemblies:
   - Meridian.Application
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 350
   assemblies:
   - Meridian.Application
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionLevel
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 351
   assemblies:
   - Meridian.Application
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeQualityReport
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 352
   assemblies:
   - Meridian.Application
@@ -424,7 +424,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeDataDictionary
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 353
   assemblies:
   - Meridian.Application
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeLoaderScripts
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 354
   assemblies:
   - Meridian.Application
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChecksums
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 355
   assemblies:
   - Meridian.Application
@@ -511,7 +511,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 356
   assemblies:
   - Meridian.Application
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomMetadata
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 357
   assemblies:
   - Meridian.Application

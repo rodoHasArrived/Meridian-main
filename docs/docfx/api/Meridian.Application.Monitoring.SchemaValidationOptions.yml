@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaValidationOptions
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 272
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableVersionTracking
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 277
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlwaysRunStartupCheck
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 282
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFilesToCheck
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 287
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailOnFirstIncompatibility
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 292
   assemblies:
   - Meridian.Application

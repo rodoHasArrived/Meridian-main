@@ -20,37 +20,37 @@ namespace Meridian.Backtesting.Sdk.Strategies.AdvancedCarry;
 /// </summary>
 public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
 {
-    private const int    RollingWindowDays       = 63;     // ~3 months
-    private const int    YieldMaWindowDays        = 20;     // MA for rotation signal
-    private const double FallbackVol              = 0.20;
-    private const double FallbackReturn           = 0.08;
-    private const double DefaultAdv              = 1_000_000.0;
-    private const double DefaultBidAskBps        = 10.0;
-    private const double DefaultProxyYield        = 0.03;
-    private const double YieldProxyMultiplier     = 0.40;   // fraction of ann. return used as proxy yield
-    private const double MaxProxyYield            = 0.20;   // cap proxy yield at 20 %
-    private const double YieldMaThreshold         = 0.001;  // 10 bps: min rise above MA to trigger tilt
-    private const double YieldMomentumMultiplier  = 2.0;    // scale factor for yield-rise tilt
-    private const double MaxYieldMomentumContrib  = 0.05;   // cap tilt contribution at 5 %
+    private const int RollingWindowDays = 63;     // ~3 months
+    private const int YieldMaWindowDays = 20;     // MA for rotation signal
+    private const double FallbackVol = 0.20;
+    private const double FallbackReturn = 0.08;
+    private const double DefaultAdv = 1_000_000.0;
+    private const double DefaultBidAskBps = 10.0;
+    private const double DefaultProxyYield = 0.03;
+    private const double YieldProxyMultiplier = 0.40;   // fraction of ann. return used as proxy yield
+    private const double MaxProxyYield = 0.20;   // cap proxy yield at 20 %
+    private const double YieldMaThreshold = 0.001;  // 10 bps: min rise above MA to trigger tilt
+    private const double YieldMomentumMultiplier = 2.0;    // scale factor for yield-rise tilt
+    private const double MaxYieldMomentumContrib = 0.05;   // cap tilt contribution at 5 %
 
-    private readonly AdvancedCarryDecisionEngine             _engine;
-    private readonly AdvancedCarryConfiguration              _configuration;
-    private readonly YieldCarryMode                          _yieldCarryMode;
-    private readonly int                                     _rebalanceFrequencyDays;
-    private readonly double                                  _minYieldSpreadToLong;
-    private readonly IReadOnlyDictionary<string, double>     _explicitYields;
+    private readonly AdvancedCarryDecisionEngine _engine;
+    private readonly AdvancedCarryConfiguration _configuration;
+    private readonly YieldCarryMode _yieldCarryMode;
+    private readonly int _rebalanceFrequencyDays;
+    private readonly double _minYieldSpreadToLong;
+    private readonly IReadOnlyDictionary<string, double> _explicitYields;
 
     private readonly Dictionary<string, Queue<double>> _returnsHistory = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, Queue<double>> _yieldHistory   = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, decimal>       _prevDayClose   = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Queue<double>> _yieldHistory = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, decimal> _prevDayClose = new(StringComparer.OrdinalIgnoreCase);
     private int _daysSinceRebalance;
 
     /// <inheritdoc />
     public string Name => _yieldCarryMode switch
     {
-        YieldCarryMode.YieldSpread   => "Yield-Spread Carry Trade",
+        YieldCarryMode.YieldSpread => "Yield-Spread Carry Trade",
         YieldCarryMode.YieldRotation => "Yield-Rotation Carry Trade",
-        _                            => "Advanced Carry Trade"
+        _ => "Advanced Carry Trade"
     };
 
     /// <summary>Creates a new carry trade strategy.</summary>
@@ -67,20 +67,20 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
     /// </param>
     /// <param name="forecastOverlay">Optional carry forecast overlay.</param>
     public CarryTradeBacktestStrategy(
-        AdvancedCarryConfiguration?          configuration          = null,
-        YieldCarryMode                       yieldCarryMode         = YieldCarryMode.YieldSpread,
-        int                                  rebalanceFrequencyDays = 5,
-        IReadOnlyDictionary<string, double>? explicitYields         = null,
-        double                               minYieldSpreadToLong   = 0.0,
-        ICarryForecastOverlay?               forecastOverlay        = null)
+        AdvancedCarryConfiguration? configuration = null,
+        YieldCarryMode yieldCarryMode = YieldCarryMode.YieldSpread,
+        int rebalanceFrequencyDays = 5,
+        IReadOnlyDictionary<string, double>? explicitYields = null,
+        double minYieldSpreadToLong = 0.0,
+        ICarryForecastOverlay? forecastOverlay = null)
     {
-        _configuration          = configuration ?? new AdvancedCarryConfiguration();
-        _yieldCarryMode         = yieldCarryMode;
+        _configuration = configuration ?? new AdvancedCarryConfiguration();
+        _yieldCarryMode = yieldCarryMode;
         _rebalanceFrequencyDays = Math.Max(1, rebalanceFrequencyDays);
-        _explicitYields         = explicitYields
+        _explicitYields = explicitYields
                                   ?? new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        _minYieldSpreadToLong   = minYieldSpreadToLong;
-        _engine                 = new AdvancedCarryDecisionEngine(forecastOverlay);
+        _minYieldSpreadToLong = minYieldSpreadToLong;
+        _engine = new AdvancedCarryDecisionEngine(forecastOverlay);
     }
 
     /// <inheritdoc />
@@ -112,7 +112,8 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
                 _returnsHistory[bar.Symbol] = rq;
             }
             rq.Enqueue(dailyReturn);
-            while (rq.Count > RollingWindowDays) rq.Dequeue();
+            while (rq.Count > RollingWindowDays)
+                rq.Dequeue();
 
             // Rolling implied-yield history (used by YieldRotation MA signal)
             var impliedYield = ComputeImpliedYield(bar.Symbol);
@@ -122,7 +123,8 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
                 _yieldHistory[bar.Symbol] = yq;
             }
             yq.Enqueue(impliedYield);
-            while (yq.Count > YieldMaWindowDays) yq.Dequeue();
+            while (yq.Count > YieldMaWindowDays)
+                yq.Dequeue();
         }
 
         _prevDayClose[bar.Symbol] = bar.Close;
@@ -199,7 +201,8 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
         foreach (var symbol in ctx.Universe)
         {
             var price = ctx.GetLastPrice(symbol);
-            if (price is null || price <= 0m) continue;
+            if (price is null || price <= 0m)
+                continue;
 
             _returnsHistory.TryGetValue(symbol, out var rq);
             var returns = rq is { Count: >= 5 } ? rq.ToArray() : Array.Empty<double>();
@@ -207,22 +210,22 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
 
             var (carryYield, expectedReturn) = _yieldCarryMode switch
             {
-                YieldCarryMode.YieldSpread   => SignalYieldSpread(symbol, priceReturn),
+                YieldCarryMode.YieldSpread => SignalYieldSpread(symbol, priceReturn),
                 YieldCarryMode.YieldRotation => SignalYieldRotation(symbol, priceReturn),
-                _                            => SignalClassicCarry(symbol, priceReturn)
+                _ => SignalClassicCarry(symbol, priceReturn)
             };
 
             result.Add(new CarryAssetSnapshot(
-                Symbol:                 symbol,
-                LastPrice:              price.Value,
-                ExpectedAnnualReturn:   expectedReturn,
-                AnnualCarryYield:       carryYield,
-                AnnualPriceReturn:      priceReturn,
-                AnnualVolatility:       annVol,
-                DurationYears:          1.0,
-                SpreadDurationYears:    1.0,
-                AverageDailyVolume:     DefaultAdv,
-                BidAskSpreadBps:        DefaultBidAskBps,
+                Symbol: symbol,
+                LastPrice: price.Value,
+                ExpectedAnnualReturn: expectedReturn,
+                AnnualCarryYield: carryYield,
+                AnnualPriceReturn: priceReturn,
+                AnnualVolatility: annVol,
+                DurationYears: 1.0,
+                SpreadDurationYears: 1.0,
+                AverageDailyVolume: DefaultAdv,
+                BidAskSpreadBps: DefaultBidAskBps,
                 HistoricalDailyReturns: returns.Length > 0 ? returns : null));
         }
         return result;
@@ -237,9 +240,9 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
     private (double carryYield, double expectedReturn) SignalYieldSpread(
         string symbol, double priceReturn)
     {
-        var yield       = GetAssetYield(symbol);
-        var netSpread   = yield - _configuration.RiskFreeRate;
-        var expected    = netSpread + 0.30 * priceReturn;
+        var yield = GetAssetYield(symbol);
+        var netSpread = yield - _configuration.RiskFreeRate;
+        var expected = netSpread + 0.30 * priceReturn;
         return (yield, Clamp(expected));
     }
 
@@ -250,7 +253,7 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
     private (double carryYield, double expectedReturn) SignalYieldRotation(
         string symbol, double priceReturn)
     {
-        var yield     = GetAssetYield(symbol);
+        var yield = GetAssetYield(symbol);
         var netSpread = yield - _configuration.RiskFreeRate;
 
         var yieldMomentum = 0.0;
@@ -269,7 +272,7 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
     private (double carryYield, double expectedReturn) SignalClassicCarry(
         string symbol, double priceReturn)
     {
-        var yield    = GetAssetYield(symbol);
+        var yield = GetAssetYield(symbol);
         var expected = priceReturn + yield;
         return (yield, Clamp(expected));
     }
@@ -281,7 +284,7 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
         if (_yieldCarryMode == YieldCarryMode.YieldRotation)
         {
             // Keep the top 50 % by yield (minimum 1)
-            var sorted    = snapshots.OrderByDescending(s => s.AnnualCarryYield).ToList();
+            var sorted = snapshots.OrderByDescending(s => s.AnnualCarryYield).ToList();
             var keepCount = Math.Max(1, (int)Math.Ceiling(sorted.Count * 0.5));
             return sorted.Take(keepCount).ToList();
         }
@@ -316,7 +319,8 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
     /// <summary>Derives the current implied yield using available history.</summary>
     private double ComputeImpliedYield(string symbol)
     {
-        if (_explicitYields.TryGetValue(symbol, out var y)) return y;
+        if (_explicitYields.TryGetValue(symbol, out var y))
+            return y;
         if (_returnsHistory.TryGetValue(symbol, out var rq) && rq.Count >= 5)
             return Math.Max(0.0, Math.Min(rq.Average() * 252.0 * 0.40, 0.20));
         return DefaultProxyYield;
@@ -327,10 +331,10 @@ public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
         if (returns.Length < 2)
             return (FallbackVol, FallbackReturn);
 
-        var mean     = returns.Average();
+        var mean = returns.Average();
         var variance = returns.Sum(r => (r - mean) * (r - mean)) / (returns.Length - 1);
-        var vol      = Math.Max(0.01, Math.Min(Math.Sqrt(variance * 252.0), 2.0));
-        var ret      = Math.Max(-0.50, Math.Min(mean * 252.0, 2.0));
+        var vol = Math.Max(0.01, Math.Min(Math.Sqrt(variance * 252.0), 2.0));
+        var ret = Math.Max(-0.50, Math.Min(mean * 252.0, 2.0));
         return (vol, ret);
     }
 

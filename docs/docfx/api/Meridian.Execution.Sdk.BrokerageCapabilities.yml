@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 35
   assemblies:
   - Meridian.Execution.Sdk
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedOrderTypes
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 38
   assemblies:
   - Meridian.Execution.Sdk
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedTimeInForce
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 41
   assemblies:
   - Meridian.Execution.Sdk
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOrderModification
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 44
   assemblies:
   - Meridian.Execution.Sdk
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsPartialFills
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 47
   assemblies:
   - Meridian.Execution.Sdk
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsShortSelling
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 50
   assemblies:
   - Meridian.Execution.Sdk
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsFractionalShares
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 53
   assemblies:
   - Meridian.Execution.Sdk
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsExtendedHours
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 56
   assemblies:
   - Meridian.Execution.Sdk
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetClasses
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 59
   assemblies:
   - Meridian.Execution.Sdk
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 62
   assemblies:
   - Meridian.Execution.Sdk
@@ -347,7 +347,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Extensions
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 65
   assemblies:
   - Meridian.Execution.Sdk
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsEquity
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 69
   assemblies:
   - Meridian.Execution.Sdk
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsEquityAndFixedIncome
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 102
   assemblies:
   - Meridian.Execution.Sdk

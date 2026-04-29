@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleLoadReport
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 195
   assemblies:
   - Meridian.ProviderSdk
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 195
   assemblies:
   - Meridian.ProviderSdk
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Loaded
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 196
   assemblies:
   - Meridian.ProviderSdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 197
   assemblies:
   - Meridian.ProviderSdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDiscovered
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 198
   assemblies:
   - Meridian.ProviderSdk
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadedCount
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 201
   assemblies:
   - Meridian.ProviderSdk
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedCount
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 204
   assemblies:
   - Meridian.ProviderSdk
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllLoaded
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 207
   assemblies:
   - Meridian.ProviderSdk
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnyLoaded
-    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
     startLine: 210
   assemblies:
   - Meridian.ProviderSdk

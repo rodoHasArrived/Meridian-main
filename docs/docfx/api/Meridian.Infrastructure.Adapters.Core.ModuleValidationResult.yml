@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleValidationResult
-    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    path: src/Meridian.ProviderSdk/IProviderModule.cs
     startLine: 64
   assemblies:
   - Meridian.ProviderSdk
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    path: src/Meridian.ProviderSdk/IProviderModule.cs
     startLine: 64
   assemblies:
   - Meridian.ProviderSdk
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    path: src/Meridian.ProviderSdk/IProviderModule.cs
     startLine: 64
   assemblies:
   - Meridian.ProviderSdk
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailureReason
-    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    path: src/Meridian.ProviderSdk/IProviderModule.cs
     startLine: 64
   assemblies:
   - Meridian.ProviderSdk
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Valid
-    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    path: src/Meridian.ProviderSdk/IProviderModule.cs
     startLine: 67
   assemblies:
   - Meridian.ProviderSdk
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
-    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    path: src/Meridian.ProviderSdk/IProviderModule.cs
     startLine: 70
   assemblies:
   - Meridian.ProviderSdk

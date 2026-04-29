@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ILiveFeedAdapter
-    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedSymbols
-    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastTrade
-    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
     startLine: 19
   assemblies:
   - Meridian.Execution
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastQuote
-    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastOrderBook
-    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
     startLine: 31
   assemblies:
   - Meridian.Execution

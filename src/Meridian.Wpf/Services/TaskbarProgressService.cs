@@ -83,10 +83,12 @@ public sealed class TaskbarProgressService
 
     private void Apply(Action<IntPtr> action)
     {
-        if (_taskbarList == null) return;
+        if (_taskbarList == null)
+            return;
 
         var hwnd = ResolveHwnd();
-        if (hwnd == IntPtr.Zero) return;
+        if (hwnd == IntPtr.Zero)
+            return;
 
         try
         {
@@ -100,7 +102,8 @@ public sealed class TaskbarProgressService
 
     private IntPtr ResolveHwnd()
     {
-        if (_hwnd != IntPtr.Zero) return _hwnd;
+        if (_hwnd != IntPtr.Zero)
+            return _hwnd;
 
         try
         {
@@ -120,11 +123,11 @@ public sealed class TaskbarProgressService
 
     private enum TaskbarProgressState
     {
-        NoProgress    = 0,
+        NoProgress = 0,
         Indeterminate = 1,
-        Normal        = 2,
-        Error         = 4,
-        Paused        = 8,
+        Normal = 2,
+        Error = 4,
+        Paused = 8,
     }
 
     /// <summary>

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderReasonDelta
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 551
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 551
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 552
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousContribution
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 553
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentContribution
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 554
   assemblies:
   - Meridian.Application
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delta
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 555
   assemblies:
   - Meridian.Application

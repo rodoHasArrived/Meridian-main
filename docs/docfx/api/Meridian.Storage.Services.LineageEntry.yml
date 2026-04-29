@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LineageEntry
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 438
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 438
   assemblies:
   - Meridian.Storage
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 439
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 440
   assemblies:
   - Meridian.Storage
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourcePath
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 441
   assemblies:
   - Meridian.Storage
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceProvider
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 442
   assemblies:
   - Meridian.Storage
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransformationType
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 443
   assemblies:
   - Meridian.Storage
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 444
   assemblies:
   - Meridian.Storage
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 445
   assemblies:
   - Meridian.Storage

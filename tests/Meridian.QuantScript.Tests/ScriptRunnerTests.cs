@@ -298,11 +298,13 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x += 1; var y = x + 1; Print(y);", first.Checkpoint!, NoParams);
 
         first.Checkpoint.Should().NotBeNull();
         second.Success.Should().BeTrue();
-        second.ConsoleOutput.Should().Contain("42");
+        second.CompilationErrors.Should().BeEmpty();
+        second.CompileTime.Should().BeGreaterThanOrEqualTo(TimeSpan.Zero);
+        second.ConsoleOutput.Should().Contain("43");
     }
 
     [Fact]
@@ -311,11 +313,51 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x = ;", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x = \"wrong\";", first.Checkpoint!, NoParams);
 
         second.Success.Should().BeFalse();
         second.CompilationErrors.Should().NotBeEmpty();
+        second.RuntimeError.Should().BeNull();
         second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+
+        var third = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        third.Success.Should().BeTrue();
+        third.ConsoleOutput.Should().Contain("42");
+    }
+
+    [Fact]
+    public async Task RunAsync_UsesFreshPerInvocationPlotQueue_NotInjectedQueueState()
+    {
+        var injectedQueue = new PlotQueue();
+        injectedQueue.Enqueue(new PlotRequest("leftover", PlotType.Line));
+        injectedQueue.Complete();
+
+        var runner = BuildRunner(plotQueue: injectedQueue);
+        var result = await runner.RunAsync("Print(\"no plots\")", NoParams);
+
+        result.Success.Should().BeTrue();
+        result.Plots.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunAsync_PlotsDoNotLeakAcrossRuns()
+    {
+        var runner = BuildRunner();
+        const string emitPlotSource = """
+            var r = new ReturnSeries(
+                "T",
+                ReturnKind.Arithmetic,
+                new[] { new ReturnPoint(new DateOnly(2024, 1, 1), 0.01) });
+            r.Plot("run1");
+            """;
+
+        var first = await runner.RunAsync(emitPlotSource, NoParams);
+        var second = await runner.RunAsync("Print(\"second\")", NoParams);
+
+        first.Success.Should().BeTrue();
+        first.Plots.Should().ContainSingle(p => p.Title == "run1");
+        second.Success.Should().BeTrue();
+        second.Plots.Should().BeEmpty();
     }
 
     [Fact]

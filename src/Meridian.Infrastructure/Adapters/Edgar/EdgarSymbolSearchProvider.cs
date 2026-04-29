@@ -344,7 +344,7 @@ public sealed class EdgarSymbolSearchProvider : IFilterableSymbolSearchProvider,
                 Figi: null,
                 CompositeFigi: null,
                 Isin: null,
-                Cusip: sub.Ein,
+                Cusip: null,
                 Source: "edgar",
                 LastUpdated: DateTimeOffset.UtcNow
             );
@@ -357,7 +357,8 @@ public sealed class EdgarSymbolSearchProvider : IFilterableSymbolSearchProvider,
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         _cacheLock.Dispose();
         _rateLimiter.Dispose();

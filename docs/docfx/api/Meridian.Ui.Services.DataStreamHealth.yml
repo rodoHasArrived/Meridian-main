@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataStreamHealth
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 203
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 205
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveStreams
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 206
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyStreams
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 207
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyStreams
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 208
   assemblies:
   - Meridian.Ui.Services
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallLatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 209
   assemblies:
   - Meridian.Ui.Services
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streams
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 210
   assemblies:
   - Meridian.Ui.Services

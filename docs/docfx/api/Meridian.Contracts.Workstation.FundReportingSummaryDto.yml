@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundReportingSummaryDto
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProfileCount
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecommendedProfiles
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 59
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportPackTargets
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Profiles
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 62
   assemblies:
   - Meridian.Contracts

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivalStorageStats
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 292
   assemblies:
   - Meridian.Storage
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingEvents
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 294
   assemblies:
   - Meridian.Storage
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastCommittedSequence
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 295
   assemblies:
   - Meridian.Storage
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFlushTime
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 296
   assemblies:
   - Meridian.Storage
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BufferDepth
-    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
     startLine: 297
   assemblies:
   - Meridian.Storage

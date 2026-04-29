@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexComponent
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 20
   assemblies:
   - Meridian.Core
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 20
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weight
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sector
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 27
   assemblies:
   - Meridian.Core

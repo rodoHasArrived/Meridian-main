@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMetadata
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sector
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Industry
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCap
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCapCategory
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 18
   assemblies:
   - Meridian.Core
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 20
   assemblies:
   - Meridian.Core
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetType
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 22
   assemblies:
   - Meridian.Core
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaysDividend
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexMemberships
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 28
   assemblies:
   - Meridian.Core

@@ -5,6 +5,8 @@
       AutomationProperties.Name="Agent">
 
     <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         <DataTemplate x:Key="MessageTemplate">
             <Border Margin="0,4" Padding="12,8" CornerRadius="8" MaxWidth="500"
                     HorizontalAlignment="{Binding Alignment}"
@@ -17,6 +19,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -35,37 +38,138 @@
             <ComboBox ItemsSource="{Binding AvailableModels}" 
                       SelectedItem="{Binding SelectedModel, UpdateSourceTrigger=PropertyChanged}"
                       DockPanel.Dock="Right" Width="180" Margin="8,0"
-                      IsEnabled="{Binding IsOllamaAvailable}"/>
+                      IsEnabled="{Binding IsAgentInputEnabled}"
+                      AutomationProperties.AutomationId="AgentModelSelector"/>
         </DockPanel>
 
+        <!-- Readiness briefing -->
+        <Border Grid.Row="1"
+                Margin="16,0,16,8"
+                Padding="14,12"
+                CornerRadius="8"
+                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                AutomationProperties.AutomationId="AgentReadinessCard"
+                AutomationProperties.Name="{Binding AgentReadinessTitle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Background="{Binding OllamaStatusBrush}"
+                        Width="10"
+                        Height="10"
+                        CornerRadius="5"
+                        Margin="0,4,10,0"
+                        VerticalAlignment="Top"
+                        AutomationProperties.AutomationId="AgentReadinessStatusDot"/>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding AgentReadinessTitle}"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                               AutomationProperties.AutomationId="AgentReadinessTitle"/>
+                    <TextBlock Text="{Binding AgentReadinessDetail}"
+                               Margin="0,3,0,0"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="AgentReadinessDetail"/>
+                </StackPanel>
+
+                <Border Grid.Column="2"
+                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                        CornerRadius="6"
+                        Padding="10,5"
+                        Margin="16,0,0,0"
+                        VerticalAlignment="Top"
+                        AutomationProperties.AutomationId="AgentModelScopeChip">
+                    <TextBlock Text="{Binding ModelScopeText}"
+                               FontSize="12"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+                </Border>
+            </Grid>
+        </Border>
+
         <!-- Message history -->
-        <ScrollViewer Grid.Row="1" x:Name="MessagesScroller" Padding="16,8" 
+        <ScrollViewer Grid.Row="2" x:Name="MessagesScroller" Padding="16,8"
                       VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding Messages}" 
-                          ItemTemplate="{StaticResource MessageTemplate}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+            <Grid>
+                <ItemsControl ItemsSource="{Binding Messages}"
+                              ItemTemplate="{StaticResource MessageTemplate}"
+                              Visibility="{Binding HasMessages, Converter={StaticResource BoolToVisibilityConverter}}"
+                              AutomationProperties.AutomationId="AgentMessageHistory">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <Border Margin="0,24"
+                        Padding="20"
+                        CornerRadius="8"
+                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                        BorderThickness="1"
+                        Visibility="{Binding IsConversationEmpty, Converter={StaticResource BoolToVisibilityConverter}}"
+                        AutomationProperties.AutomationId="AgentConversationEmptyState"
+                        AutomationProperties.Name="{Binding EmptyConversationTitle}">
+                    <StackPanel HorizontalAlignment="Center"
+                                MaxWidth="520">
+                        <TextBlock Text="{Binding EmptyConversationTitle}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextAlignment="Center"
+                                   AutomationProperties.AutomationId="AgentConversationEmptyTitle"/>
+                        <TextBlock Text="{Binding EmptyConversationDetail}"
+                                   Margin="0,6,0,0"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   AutomationProperties.AutomationId="AgentConversationEmptyDetail"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </ScrollViewer>
 
         <!-- Input bar -->
-        <Border Grid.Row="2" Margin="16,8" Background="{StaticResource ConsoleBackgroundLightBrush}" Padding="0,8">
-            <DockPanel>
-                <Button DockPanel.Dock="Right" Content="Send" 
-                        Command="{Binding SendCommand}" 
-                        Width="70" Margin="8,0,0,0"/>
-                
-                <Button DockPanel.Dock="Right" Content="Clear" 
-                        Command="{Binding ClearCommand}" 
-                        Width="70" Margin="0,0,8,0"/>
+        <Border Grid.Row="3" Margin="16,8" Background="{StaticResource ConsoleBackgroundLightBrush}" Padding="0,8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                         AcceptsReturn="False" Padding="8,6"
-                         IsEnabled="{Binding IsOllamaAvailable}"/>
-            </DockPanel>
+                <DockPanel Grid.Row="0">
+                    <Button DockPanel.Dock="Right" Content="Send"
+                            Command="{Binding SendCommand}"
+                            Width="70" Margin="8,0,0,0"
+                            AutomationProperties.AutomationId="AgentSendButton"/>
+
+                    <Button DockPanel.Dock="Right" Content="Clear"
+                            Command="{Binding ClearCommand}"
+                            Width="70" Margin="0,0,8,0"
+                            AutomationProperties.AutomationId="AgentClearButton"/>
+
+                    <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="False" Padding="8,6"
+                             IsEnabled="{Binding IsAgentInputEnabled}"
+                             AutomationProperties.AutomationId="AgentInputTextBox"/>
+                </DockPanel>
+
+                <TextBlock Grid.Row="1"
+                           Text="{Binding InputStateText}"
+                           Margin="0,6,0,0"
+                           FontSize="12"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="AgentInputStateText"/>
+            </Grid>
         </Border>
     </Grid>
 </Page>

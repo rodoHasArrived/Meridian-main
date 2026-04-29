@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHttpUtilities
-    path: ../../src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
+    path: src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
     startLine: 7
   assemblies:
   - Meridian.ProviderSdk
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureDefaultHeaders
-    path: ../../src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
+    path: src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
     startLine: 12
   assemblies:
   - Meridian.ProviderSdk
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddApiKeyHeader
-    path: ../../src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
+    path: src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
     startLine: 29
   assemblies:
   - Meridian.ProviderSdk

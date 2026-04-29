@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Colors: Surface scale</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); }
+  .title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: #FFF; letter-spacing: -0.01em; }
+  .sub   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.14em; }
+
+  /* ----- stacked diagram ----- */
+  .stack { position: relative; height: 260px; margin-bottom: 28px; border-radius: 6px; overflow: hidden;
+           border: 1px solid var(--border-color); background: #05101B; }
+  .layer { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between;
+           padding: 0 18px; font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; }
+  .layer .lbl { display: flex; align-items: center; gap: 10px; }
+  .layer .tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .layer .hex { color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+
+  .l-bg    { top: 0;   height: 44px; background: #08101A; }
+  .l-card  { top: 44px; height: 44px; background: #0D1722; box-shadow: inset 0 1px 0 #1A2940; }
+  .l-panel { top: 88px; height: 44px; background: #101C2B; box-shadow: inset 0 1px 0 #1F2E42; }
+  .l-soft  { top:132px; height: 44px; background: #162334; box-shadow: inset 0 1px 0 #26364B; }
+  .l-raise { top:176px; height: 44px; background: #1B2A3C; box-shadow: inset 0 1px 0 #2D3E54; }
+  .l-bord  { top:220px; height: 40px; background: #1F344C; box-shadow: inset 0 1px 0 #2E4766; }
+
+  /* ----- grid ----- */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .swatch { border-radius: 6px; border: 1px solid var(--border-color); padding: 14px 16px 14px; min-height: 128px;
+            display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+  .swatch .row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .swatch .name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #FFF; }
+  .swatch .hex  { font-family: var(--font-mono); font-size: 11px; color: #A8B5C4; font-variant-numeric: tabular-nums; }
+  .swatch .hsl  { font-family: var(--font-mono); font-size: 10px; color: #7C8A9B; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .swatch .desc { font-size: 11px; line-height: 1.45; color: #BEC8D4; margin-top: 6px; max-width: 260px; }
+  .swatch .meta { display: flex; gap: 10px; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); }
+  .swatch .meta .token { color: #2AB2D4; }
+  .swatch .depth { position: absolute; right: 10px; top: 10px; display: flex; gap: 2px; }
+  .swatch .depth i { width: 5px; height: 5px; border-radius: 1px; background: #1F344C; }
+  .swatch .depth i.on { background: #2AB2D4; }
+
+  /* sample block inside each swatch */
+  .sample { margin-top: 10px; padding: 8px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 10px; color: #DEE6EF;
+            display: flex; align-items: center; justify-content: space-between; font-variant-numeric: tabular-nums; }
+  .sample .k { color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 9px; }
+
+  .foot { display: flex; justify-content: space-between; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color);
+          font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="sub">Design tokens · color · surfaces</div>
+      <div class="title">Surface scale — depth from app root to elevated card</div>
+    </div>
+    <div class="sub">6 tiers · deep navy · WCAG AA with <span style="color:#2AB2D4;">#DEE6EF</span> foreground</div>
+  </div>
+
+  <!-- stacked elevation -->
+  <div class="stack" aria-hidden="true">
+    <div class="layer l-bg">
+      <div class="lbl"><span class="tag">01 · base</span><span>background</span></div>
+      <span class="hex">#08101A · 215 42% 6%</span>
+    </div>
+    <div class="layer l-card">
+      <div class="lbl"><span class="tag">02 · card</span><span>card</span></div>
+      <span class="hex">#0D1722 · 215 34% 9%</span>
+    </div>
+    <div class="layer l-panel">
+      <div class="lbl"><span class="tag">03 · panel</span><span>panel-strong</span></div>
+      <span class="hex">#101C2B · 213 48% 12%</span>
+    </div>
+    <div class="layer l-soft">
+      <div class="lbl"><span class="tag">04 · soft</span><span>panel-soft</span></div>
+      <span class="hex">#162334 · 213 36% 15%</span>
+    </div>
+    <div class="layer l-raise">
+      <div class="lbl"><span class="tag">05 · raise</span><span>surface-raise</span></div>
+      <span class="hex">#1B2A3C · 213 40% 18%</span>
+    </div>
+    <div class="layer l-bord">
+      <div class="lbl"><span class="tag">06 · border</span><span>border</span></div>
+      <span class="hex">#1F344C · 208 38% 22%</span>
+    </div>
+  </div>
+
+  <!-- detailed swatches -->
+  <div class="grid">
+
+    <div class="swatch" style="background:#08101A;">
+      <div class="depth"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div>
+        <div class="row1"><span class="name">background</span><span class="hex">#08101A</span></div>
+        <div class="hsl">hsl 215 42% 6%</div>
+        <div class="desc">App root canvas. Use for the body behind all windows and the letterbox in fixed-size views.</div>
+      </div>
+      <div class="meta"><span class="token">--background</span><span>.bg-app</span></div>
+    </div>
+
+    <div class="swatch" style="background:#0D1722;">
+      <div class="depth"><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      <div>
+        <div class="row1"><span class="name">card</span><span class="hex">#0D1722</span></div>
+        <div class="hsl">hsl 215 34% 9%</div>
+        <div class="desc">Primary content container: tables, chart cards, form surfaces. Sits directly on background.</div>
+      </div>
+      <div class="meta"><span class="token">--card</span><span>.bg-card · .panel-surface</span></div>
+    </div>
+
+    <div class="swatch" style="background:#101C2B;">
+      <div class="depth"><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
+      <div>
+        <div class="row1"><span class="name">panel-strong</span><span class="hex">#101C2B</span></div>
+        <div class="hsl">hsl 213 48% 12%</div>
+        <div class="desc">Heavy panels: sidebar, toolbars, chrome. One step up from card with a touch more saturation.</div>
+      </div>
+      <div class="meta"><span class="token">--panel-strong</span><span>.bg-panel</span></div>
+    </div>
+
+    <div class="swatch" style="background:#162334;">
+      <div class="depth"><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div>
+      <div>
+        <div class="row1"><span class="name">panel-soft</span><span class="hex">#162334</span></div>
+        <div class="hsl">hsl 213 36% 15%</div>
+        <div class="desc">Section fills inside cards: KPI inserts, code blocks, quiet emphasis. Hover state for rows.</div>
+      </div>
+      <div class="sample" style="background:#162334; border: 1px solid #1F344C;">
+        <span class="k">row · hover</span>
+        <span>187.42 <span style="color:#26BF86;">+1.74%</span></span>
+      </div>
+    </div>
+
+    <div class="swatch" style="background:#1B2A3C;">
+      <div class="depth"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></div>
+      <div>
+        <div class="row1"><span class="name">surface-raise</span><span class="hex">#1B2A3C</span></div>
+        <div class="hsl">hsl 213 40% 18%</div>
+        <div class="desc">Buttons, chips, popovers, tooltips, selected states. Highest reachable tier before borders.</div>
+      </div>
+      <div class="sample" style="background:#1B2A3C; border: 1px solid #2A4566;">
+        <span class="k">chip · active</span>
+        <span style="color:#2AB2D4;">DAILY MAX ▾</span>
+      </div>
+    </div>
+
+    <div class="swatch" style="background:#0D1722;">
+      <div class="depth"><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+      <div>
+        <div class="row1"><span class="name">border</span><span class="hex">#1F344C</span></div>
+        <div class="hsl">hsl 208 38% 22%</div>
+        <div class="desc">Default 1 px hairline. Use <code style="color:#2AB2D4;">#2A4566</code> for higher-contrast emphasis borders.</div>
+      </div>
+      <div class="sample" style="background:#0D1722; border: 1px solid #1F344C;">
+        <span class="k">border · default</span>
+        <span style="color:#A8B5C4;">1px · #1F344C</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Tokens resolve from HSL via Tailwind config</span>
+    <span>Foreground #DEE6EF on #08101A → <span style="color:#26BF86;">13.2 : 1</span> · AAA</span>
+  </div>
+</div>
+</body>
+</html>

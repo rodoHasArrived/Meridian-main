@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPluginLoaderService
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadPluginsAsync
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadedPlugins
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 39
   assemblies:
   - Meridian.Application

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchOperationResult
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 84
   assemblies:
   - Meridian.Core
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 84
   assemblies:
   - Meridian.Core
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 85
   assemblies:
   - Meridian.Core
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 86
   assemblies:
   - Meridian.Core
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedCount
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 87
   assemblies:
   - Meridian.Core
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedCount
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 88
   assemblies:
   - Meridian.Core
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedCount
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 89
   assemblies:
   - Meridian.Core
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 90
   assemblies:
   - Meridian.Core
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedSymbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 91
   assemblies:
   - Meridian.Core
@@ -342,7 +342,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 92
   assemblies:
   - Meridian.Core
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessingTimeMs
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 93
   assemblies:
   - Meridian.Core

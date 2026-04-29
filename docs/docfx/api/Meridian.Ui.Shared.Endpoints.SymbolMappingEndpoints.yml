@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMappingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSymbolMappingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared

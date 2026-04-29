@@ -9,8 +9,8 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Archive;
+using Meridian.Contracts.Configuration;
 using Meridian.Storage.Services;
 using Meridian.Ui.Services;
 using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
@@ -338,7 +338,8 @@ public sealed class ArchiveHealthService
         var config = await ConfigService.Instance.LoadConfigAsync();
         var basePath = ConfigService.Instance.ResolveDataRoot(config);
 
-        if (!Directory.Exists(basePath)) return;
+        if (!Directory.Exists(basePath))
+            return;
 
         var files = Directory.GetFiles(basePath, "*.*", SearchOption.AllDirectories)
             .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz") || f.EndsWith(".parquet"))
@@ -414,7 +415,8 @@ public sealed class ArchiveHealthService
         try
         {
             var fileInfo = new FileInfo(filePath);
-            if (!fileInfo.Exists || fileInfo.Length == 0) return false;
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+                return false;
 
             using var sha256 = SHA256.Create();
             await using var stream = File.OpenRead(filePath);
@@ -448,8 +450,10 @@ public sealed class ArchiveHealthService
             score -= failedPercent * 2;
         }
 
-        if (status.StorageHealthInfo?.UsedPercent >= 95) score -= 30;
-        else if (status.StorageHealthInfo?.UsedPercent >= 85) score -= 10;
+        if (status.StorageHealthInfo?.UsedPercent >= 95)
+            score -= 30;
+        else if (status.StorageHealthInfo?.UsedPercent >= 85)
+            score -= 10;
 
         var criticalIssues = status.Issues?.Count(i => i.Severity == "Critical") ?? 0;
         score -= criticalIssues * 15;

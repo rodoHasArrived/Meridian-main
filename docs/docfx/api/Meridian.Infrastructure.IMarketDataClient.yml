@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMarketDataClient
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 18
   assemblies:
   - Meridian.ProviderSdk
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 22
   assemblies:
   - Meridian.ProviderSdk
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 24
   assemblies:
   - Meridian.ProviderSdk
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 25
   assemblies:
   - Meridian.ProviderSdk
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 28
   assemblies:
   - Meridian.ProviderSdk
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 31
   assemblies:
   - Meridian.ProviderSdk
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 34
   assemblies:
   - Meridian.ProviderSdk
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
+    path: src/Meridian.ProviderSdk/IMarketDataClient.cs
     startLine: 37
   assemblies:
   - Meridian.ProviderSdk

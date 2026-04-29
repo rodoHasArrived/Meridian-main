@@ -5,18 +5,20 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:services="clr-namespace:Meridian.Wpf.Services"
+      xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Data Operations Workspace"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.DataOperationsShellTitle}"
       AutomationProperties.AutomationId="DataOperationsWorkspaceShellPage">
 
     <Page.Resources>
         <DataTemplate x:Key="QueueItemTemplate" DataType="{x:Type models:WorkspaceQueueItem}">
-            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -29,15 +31,15 @@
                                        FontSize="14"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="10,0,8,0">
+                            <Border Style="{StaticResource WorkspaceToneBadgeStyle}" Margin="10,0,8,0">
                                 <TextBlock Text="{Binding StatusLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
                             </Border>
-                            <Border Style="{StaticResource InfoBadgeInlineStyle}">
+                            <Border Style="{StaticResource NeutralBadgeStyle}">
                                 <TextBlock Text="{Binding CountLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}" />
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
                             </Border>
                         </WrapPanel>
 
@@ -74,8 +76,53 @@
             </Border>
         </DataTemplate>
 
+
+        <DataTemplate x:Key="QueueRegionStateTemplate" DataType="{x:Type models:WorkspaceQueueRegionState}">
+            <Border Style="{StaticResource WorkspaceQueueStateCardStyle}">
+                <StackPanel>
+                    <Border Style="{StaticResource WorkspaceQueueStateIconContainerStyle}">
+                        <TextBlock Text="{Binding IconGlyph}"
+                                   Style="{StaticResource WorkspaceQueueStateIconTextStyle}" />
+                    </Border>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource WorkspaceQueueStateTitleTextStyle}" />
+                    <TextBlock Text="{Binding Description}" Style="{StaticResource WorkspaceQueueStateDescriptionTextStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Tag="{Binding PrimaryActionId}"
+                                Content="{Binding PrimaryActionLabel}"
+                                Click="OnQueueStateActionClick"
+                                Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PrimaryActionLabel}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Tag="{Binding SecondaryActionId}"
+                                Content="{Binding SecondaryActionLabel}"
+                                Click="OnQueueStateActionClick">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SecondaryActionLabel}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
         <DataTemplate x:Key="RecentItemTemplate" DataType="{x:Type models:WorkspaceRecentItem}">
-            <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
+            <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}">
                 <StackPanel>
                     <TextBlock Text="{Binding Title}"
                                FontSize="13"
@@ -89,7 +136,7 @@
                     <TextBlock Text="{Binding Meta}"
                                Margin="0,6,0,0"
                                FontSize="10"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                               Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
                     <Button Tag="{Binding ActionId}"
                             Content="{Binding ActionLabel}"
                             Click="OnRecentActionClick"
@@ -109,10 +156,33 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+
+        <DataTemplate x:Key="HeroMetricTemplate" DataType="{x:Type services:DataOperationsHeroMetric}">
+            <Border Style="{StaticResource WorkspaceToneBadgeStyle}"
+                    MinWidth="112"
+                    Margin="0,0,8,8"
+                    Padding="10,8"
+                    ToolTip="{Binding Detail}"
+                    AutomationProperties.Name="{Binding AutomationName}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Label}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                    <TextBlock Text="{Binding Value}"
+                               Margin="0,4,0,0"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -121,11 +191,157 @@
 
         <views:WorkspaceShellContextStripControl x:Name="ContextStrip" />
 
+        <Border Grid.Row="1"
+                Style="{StaticResource SectionCardStyle}"
+                Margin="0,16,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.6*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44"
+                                Height="44"
+                                CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}"
+                                BorderThickness="1">
+                            <TextBlock Text="&#xEE94;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Data Operations"
+                                       Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Provider readiness, queue pressure, storage posture, and export delivery from one operator shell."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Border Margin="0,18,0,0"
+                            Padding="14,12"
+                            CornerRadius="12"
+                            Background="#10263A"
+                            BorderBrush="#22486B"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Active Scope"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#7EA3C5" />
+                            <TextBlock x:Name="OperationsHeroScopeText"
+                                       Margin="0,6,0,0"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       Text="Provider and storage health" />
+                            <TextBlock x:Name="OperationsHeroSummaryText"
+                                       Margin="0,4,0,0"
+                                       FontSize="12"
+                                       Foreground="#A8BED7"
+                                       TextWrapping="Wrap"
+                                       Text="Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell." />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Margin="16,0,0,0"
+                        Padding="16,14"
+                        CornerRadius="12"
+                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="Next Handoff"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <Border x:Name="OperationsHeroBadgeBorder"
+                                    DockPanel.Dock="Right"
+                                    Style="{StaticResource NeutralBadgeStyle}">
+                                <TextBlock x:Name="OperationsHeroBadgeText"
+                                           FontSize="10"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           Text="Loading"
+                                           AutomationProperties.AutomationId="OperationsHeroBadgeText" />
+                            </Border>
+                        </DockPanel>
+                        <TextBlock x:Name="OperationsHeroFocusText"
+                                   Margin="0,10,0,0"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Text="Operational posture"
+                                   AutomationProperties.AutomationId="OperationsHeroFocusText" />
+                        <TextBlock x:Name="OperationsHeroActionSummaryText"
+                                   Margin="0,6,0,0"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Text="Refreshing provider, backfill, storage, and export posture."
+                                   AutomationProperties.AutomationId="OperationsHeroActionSummaryText" />
+                        <ItemsControl x:Name="OperationsHeroMetricsList"
+                                      Margin="0,12,0,0"
+                                      ItemTemplate="{StaticResource HeroMetricTemplate}"
+                                      AutomationProperties.AutomationId="OperationsHeroMetricsList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <TextBlock x:Name="OperationsHeroHandoffTitleText"
+                                   Margin="0,12,0,0"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Text="Telemetry refresh in progress"
+                                   AutomationProperties.AutomationId="OperationsHeroHandoffTitleText" />
+                        <TextBlock x:Name="OperationsHeroHandoffDetailText"
+                                   Margin="0,6,0,0"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Text="The Data Operations shell is collecting current readiness signals."
+                                   AutomationProperties.AutomationId="OperationsHeroHandoffDetailText" />
+                        <WrapPanel Margin="0,12,0,0">
+                            <Button x:Name="OperationsHeroPrimaryActionButton"
+                                    Click="OnOperationsHeroPrimaryActionClick"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,8"
+                                    Visibility="Collapsed"
+                                    AutomationProperties.AutomationId="OperationsHeroPrimaryActionButton" />
+                            <Button x:Name="OperationsHeroSecondaryActionButton"
+                                    Click="OnOperationsHeroSecondaryActionClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8"
+                                    Visibility="Collapsed"
+                                    AutomationProperties.AutomationId="OperationsHeroSecondaryActionButton" />
+                        </WrapPanel>
+                        <TextBlock x:Name="OperationsHeroTargetText"
+                                   Margin="0,10,0,0"
+                                   FontSize="10"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Text="Target: Current shell"
+                                   AutomationProperties.AutomationId="OperationsHeroTargetText" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
-                                          Grid.Row="1"
+                                          Grid.Row="2"
                                           CommandInvoked="OnCommandBarCommandInvoked" />
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.15*" />
                 <ColumnDefinition Width="16" />
@@ -139,7 +355,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -171,20 +387,35 @@
                             <TextBlock Text="Providers"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,0,0,8" />
-                            <ItemsControl x:Name="ProviderQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="ProviderQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="ProviderQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Backfill"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="BackfillQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="BackfillQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="BackfillQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Storage"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="StorageQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="StorageQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="StorageQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
@@ -211,7 +442,7 @@
                                        Text="Provider readiness, historical coverage, and storage posture live in the same operator shell." />
                             <UniformGrid Columns="3" Margin="0,14,0,0">
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Providers"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -221,10 +452,14 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="3" />
+                                        <TextBlock Text="Connectivity posture"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Backfill"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -234,10 +469,14 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource WarningColorBrush}"
                                                    Text="Queue" />
+                                        <TextBlock Text="Historical coverage"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Storage"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -247,6 +486,10 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="Watch" />
+                                        <TextBlock Text="Durability health"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
@@ -255,7 +498,7 @@
 
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <Grid Margin="0,0,0,10">
+                            <Grid Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -281,7 +524,7 @@
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Storage"
                                         Click="OpenStorage_Click"
                                         Style="{StaticResource SecondaryButtonStyle}"
@@ -309,7 +552,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Margin="0,12,0,0"
                 Style="{StaticResource WorkspaceDockHostStyle}">
             <StackPanel>

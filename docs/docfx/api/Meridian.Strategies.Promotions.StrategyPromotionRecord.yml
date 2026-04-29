@@ -5,18 +5,23 @@ items:
   id: StrategyPromotionRecord
   parent: Meridian.Strategies.Promotions
   children:
-  - Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.Double,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.String,System.String)
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.Double,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovedBy
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.AuditReference
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.ManualOverrideId
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotedAt
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotionId
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingMaxDrawdownPercent
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingSharpe
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingTotalReturn
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunType
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.StrategyId
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.StrategyName
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId
   - Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunType
   langs:
   - csharp
@@ -31,8 +36,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyPromotionRecord
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 85
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 106
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -55,16 +60,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.Double,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.String,System.String)
-  commentId: M:Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.Double,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.String,System.String)
-  id: '#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.Double,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.String,System.String)'
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.Double,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.Double,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.Double,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String)'
   parent: Meridian.Strategies.Promotions.StrategyPromotionRecord
   langs:
   - csharp
   - vb
-  name: StrategyPromotionRecord(string, string, string, RunType, RunType, double, decimal, decimal, DateTimeOffset, string?, string?, string?)
-  nameWithType: StrategyPromotionRecord.StrategyPromotionRecord(string, string, string, RunType, RunType, double, decimal, decimal, DateTimeOffset, string?, string?, string?)
-  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.StrategyPromotionRecord(string, string, string, Meridian.Strategies.Models.RunType, Meridian.Strategies.Models.RunType, double, decimal, decimal, System.DateTimeOffset, string?, string?, string?)
+  name: StrategyPromotionRecord(string, string, string, RunType, RunType, string, string?, double, decimal, decimal, string, DateTimeOffset, string?, string?, string?, string?, string?)
+  nameWithType: StrategyPromotionRecord.StrategyPromotionRecord(string, string, string, RunType, RunType, string, string?, double, decimal, decimal, string, DateTimeOffset, string?, string?, string?, string?, string?)
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.StrategyPromotionRecord(string, string, string, Meridian.Strategies.Models.RunType, Meridian.Strategies.Models.RunType, string, string?, double, decimal, decimal, string, System.DateTimeOffset, string?, string?, string?, string?, string?)
   type: Constructor
   source:
     remote:
@@ -72,8 +77,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 85
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 106
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -83,7 +88,7 @@ items:
     Should be serialised and stored alongside the strategy's run history.
   example: []
   syntax:
-    content: public StrategyPromotionRecord(string PromotionId, string StrategyId, string StrategyName, RunType SourceRunType, RunType TargetRunType, double QualifyingSharpe, decimal QualifyingMaxDrawdownPercent, decimal QualifyingTotalReturn, DateTimeOffset PromotedAt, string? AuditReference = null, string? ApprovedBy = null, string? ManualOverrideId = null)
+    content: public StrategyPromotionRecord(string PromotionId, string StrategyId, string StrategyName, RunType SourceRunType, RunType TargetRunType, string SourceRunId, string? TargetRunId, double QualifyingSharpe, decimal QualifyingMaxDrawdownPercent, decimal QualifyingTotalReturn, string Decision, DateTimeOffset PromotedAt, string? AuditReference = null, string? ApprovedBy = null, string? ApprovalReason = null, string? ReviewNotes = null, string? ManualOverrideId = null)
     parameters:
     - id: PromotionId
       type: System.String
@@ -95,25 +100,35 @@ items:
       type: Meridian.Strategies.Models.RunType
     - id: TargetRunType
       type: Meridian.Strategies.Models.RunType
+    - id: SourceRunId
+      type: System.String
+    - id: TargetRunId
+      type: System.String
     - id: QualifyingSharpe
       type: System.Double
     - id: QualifyingMaxDrawdownPercent
       type: System.Decimal
     - id: QualifyingTotalReturn
       type: System.Decimal
+    - id: Decision
+      type: System.String
     - id: PromotedAt
       type: System.DateTimeOffset
     - id: AuditReference
       type: System.String
     - id: ApprovedBy
       type: System.String
+    - id: ApprovalReason
+      type: System.String
+    - id: ReviewNotes
+      type: System.String
     - id: ManualOverrideId
       type: System.String
-    content.vb: Public Sub New(PromotionId As String, StrategyId As String, StrategyName As String, SourceRunType As RunType, TargetRunType As RunType, QualifyingSharpe As Double, QualifyingMaxDrawdownPercent As Decimal, QualifyingTotalReturn As Decimal, PromotedAt As DateTimeOffset, AuditReference As String = Nothing, ApprovedBy As String = Nothing, ManualOverrideId As String = Nothing)
+    content.vb: Public Sub New(PromotionId As String, StrategyId As String, StrategyName As String, SourceRunType As RunType, TargetRunType As RunType, SourceRunId As String, TargetRunId As String, QualifyingSharpe As Double, QualifyingMaxDrawdownPercent As Decimal, QualifyingTotalReturn As Decimal, Decision As String, PromotedAt As DateTimeOffset, AuditReference As String = Nothing, ApprovedBy As String = Nothing, ApprovalReason As String = Nothing, ReviewNotes As String = Nothing, ManualOverrideId As String = Nothing)
   overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor*
-  nameWithType.vb: StrategyPromotionRecord.New(String, String, String, RunType, RunType, Double, Decimal, Decimal, DateTimeOffset, String, String, String)
-  fullName.vb: Meridian.Strategies.Promotions.StrategyPromotionRecord.New(String, String, String, Meridian.Strategies.Models.RunType, Meridian.Strategies.Models.RunType, Double, Decimal, Decimal, System.DateTimeOffset, String, String, String)
-  name.vb: New(String, String, String, RunType, RunType, Double, Decimal, Decimal, DateTimeOffset, String, String, String)
+  nameWithType.vb: StrategyPromotionRecord.New(String, String, String, RunType, RunType, String, String, Double, Decimal, Decimal, String, DateTimeOffset, String, String, String, String, String)
+  fullName.vb: Meridian.Strategies.Promotions.StrategyPromotionRecord.New(String, String, String, Meridian.Strategies.Models.RunType, Meridian.Strategies.Models.RunType, String, String, Double, Decimal, Decimal, String, System.DateTimeOffset, String, String, String, String, String)
+  name.vb: New(String, String, String, RunType, RunType, String, String, Double, Decimal, Decimal, String, DateTimeOffset, String, String, String, String, String)
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotionId
   commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotionId
   id: PromotionId
@@ -131,8 +146,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionId
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 86
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 107
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -160,8 +175,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 87
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 108
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -189,8 +204,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 88
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 109
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -218,8 +233,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceRunType
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 89
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 110
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -247,8 +262,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetRunType
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 90
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 111
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -259,6 +274,64 @@ items:
       type: Meridian.Strategies.Models.RunType
     content.vb: Public Property TargetRunType As RunType
   overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunType*
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId
+  commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId
+  id: SourceRunId
+  parent: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  langs:
+  - csharp
+  - vb
+  name: SourceRunId
+  nameWithType: StrategyPromotionRecord.SourceRunId
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceRunId
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public string SourceRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceRunId As String
+  overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId*
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId
+  commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId
+  id: TargetRunId
+  parent: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  langs:
+  - csharp
+  - vb
+  name: TargetRunId
+  nameWithType: StrategyPromotionRecord.TargetRunId
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetRunId
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public string? TargetRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetRunId As String
+  overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId*
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingSharpe
   commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingSharpe
   id: QualifyingSharpe
@@ -276,8 +349,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualifyingSharpe
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 91
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 114
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -305,8 +378,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualifyingMaxDrawdownPercent
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 92
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 115
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -334,8 +407,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualifyingTotalReturn
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 93
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 116
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -346,6 +419,35 @@ items:
       type: System.Decimal
     content.vb: Public Property QualifyingTotalReturn As Decimal
   overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingTotalReturn*
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision
+  commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision
+  id: Decision
+  parent: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  langs:
+  - csharp
+  - vb
+  name: Decision
+  nameWithType: StrategyPromotionRecord.Decision
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Decision
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public string Decision { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Decision As String
+  overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision*
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotedAt
   commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotedAt
   id: PromotedAt
@@ -363,8 +465,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotedAt
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 94
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 118
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -392,8 +494,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditReference
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 95
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 119
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -421,8 +523,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApprovedBy
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 96
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 120
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -433,6 +535,64 @@ items:
       type: System.String
     content.vb: Public Property ApprovedBy As String
   overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovedBy*
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason
+  commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason
+  id: ApprovalReason
+  parent: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  langs:
+  - csharp
+  - vb
+  name: ApprovalReason
+  nameWithType: StrategyPromotionRecord.ApprovalReason
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApprovalReason
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public string? ApprovalReason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ApprovalReason As String
+  overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason*
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes
+  commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes
+  id: ReviewNotes
+  parent: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  langs:
+  - csharp
+  - vb
+  name: ReviewNotes
+  nameWithType: StrategyPromotionRecord.ReviewNotes
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewNotes
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public string? ReviewNotes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReviewNotes As String
+  overload: Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes*
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.ManualOverrideId
   commentId: P:Meridian.Strategies.Promotions.StrategyPromotionRecord.ManualOverrideId
   id: ManualOverrideId
@@ -450,8 +610,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverrideId
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 97
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 123
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -769,7 +929,7 @@ references:
   - name: )
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor*
   commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.#ctor
-  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord__ctor_System_String_System_String_System_String_Meridian_Strategies_Models_RunType_Meridian_Strategies_Models_RunType_System_Double_System_Decimal_System_Decimal_System_DateTimeOffset_System_String_System_String_System_String_
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord__ctor_System_String_System_String_System_String_Meridian_Strategies_Models_RunType_Meridian_Strategies_Models_RunType_System_String_System_String_System_Double_System_Decimal_System_Decimal_System_String_System_DateTimeOffset_System_String_System_String_System_String_System_String_System_String_
   name: StrategyPromotionRecord
   nameWithType: StrategyPromotionRecord.StrategyPromotionRecord
   fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.StrategyPromotionRecord
@@ -884,6 +1044,18 @@ references:
   name: TargetRunType
   nameWithType: StrategyPromotionRecord.TargetRunType
   fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunType
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId*
+  commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_SourceRunId
+  name: SourceRunId
+  nameWithType: StrategyPromotionRecord.SourceRunId
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.SourceRunId
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId*
+  commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_TargetRunId
+  name: TargetRunId
+  nameWithType: StrategyPromotionRecord.TargetRunId
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.TargetRunId
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingSharpe*
   commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingSharpe
   href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_QualifyingSharpe
@@ -902,6 +1074,12 @@ references:
   name: QualifyingTotalReturn
   nameWithType: StrategyPromotionRecord.QualifyingTotalReturn
   fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.QualifyingTotalReturn
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision*
+  commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_Decision
+  name: Decision
+  nameWithType: StrategyPromotionRecord.Decision
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.Decision
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotedAt*
   commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.PromotedAt
   href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_PromotedAt
@@ -920,6 +1098,18 @@ references:
   name: ApprovedBy
   nameWithType: StrategyPromotionRecord.ApprovedBy
   fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovedBy
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason*
+  commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_ApprovalReason
+  name: ApprovalReason
+  nameWithType: StrategyPromotionRecord.ApprovalReason
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.ApprovalReason
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes*
+  commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_ReviewNotes
+  name: ReviewNotes
+  nameWithType: StrategyPromotionRecord.ReviewNotes
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord.ReviewNotes
 - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord.ManualOverrideId*
   commentId: Overload:Meridian.Strategies.Promotions.StrategyPromotionRecord.ManualOverrideId
   href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html#Meridian_Strategies_Promotions_StrategyPromotionRecord_ManualOverrideId

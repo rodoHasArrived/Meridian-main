@@ -19,8 +19,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrometheusReconnectionMetrics
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 645
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 691
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -62,8 +62,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAttempt
-    path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 647
+    path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
+    startLine: 693
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring

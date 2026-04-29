@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSessionStatistics
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 140
   assemblies:
   - Meridian.Contracts
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeEvents
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 151
   assemblies:
   - Meridian.Contracts
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteEvents
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthEvents
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 163
   assemblies:
   - Meridian.Contracts
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarEvents
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 169
   assemblies:
   - Meridian.Contracts
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 175
   assemblies:
   - Meridian.Contracts
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressedBytes
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 181
   assemblies:
   - Meridian.Contracts
@@ -368,7 +368,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 193
   assemblies:
   - Meridian.Contracts
@@ -454,7 +454,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 199
   assemblies:
   - Meridian.Contracts
@@ -497,7 +497,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrors
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 205
   assemblies:
   - Meridian.Contracts
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 211
   assemblies:
   - Meridian.Contracts
@@ -583,7 +583,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionRatio
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 217
   assemblies:
   - Meridian.Contracts

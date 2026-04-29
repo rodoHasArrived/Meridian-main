@@ -110,10 +110,17 @@ public static class BackfillScheduleEndpoints
                 return Results.Json(new { executions = Array.Empty<object>(), total = 0 }, jsonOptions);
 
             var executions = history.GetRecentExecutions(limit ?? 50);
+            var autoExecutions = executions.Where(e => e.Trigger == ExecutionTrigger.AutoRemediation).ToList();
             return Results.Json(new
             {
                 executions,
                 total = executions.Count,
+                autoRemediation = new
+                {
+                    total = autoExecutions.Count,
+                    withReason = autoExecutions.Count(e => !string.IsNullOrWhiteSpace(e.AutoRemediationTriggerReason)),
+                    lastOutcome = autoExecutions.FirstOrDefault()?.AutoRemediationLastOutcome
+                },
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
@@ -126,11 +133,24 @@ public static class BackfillScheduleEndpoints
         {
             var systemSummary = history?.GetSystemSummary(TimeSpan.FromDays(30));
             var statusSummary = schedMgr?.GetStatusSummary();
+            var autoExecutions = history?.GetRecentExecutions(250)
+                .Where(e => e.Trigger == ExecutionTrigger.AutoRemediation)
+                .ToList() ?? new List<BackfillExecutionLog>();
 
             return Results.Json(new
             {
                 schedules = statusSummary,
                 executions = systemSummary,
+                autoRemediation = new
+                {
+                    totalTriggers = autoExecutions.Count,
+                    completed = autoExecutions.Count(e => string.Equals(e.AutoRemediationLastOutcome, "Completed", StringComparison.OrdinalIgnoreCase)),
+                    failed = autoExecutions.Count(e => string.Equals(e.AutoRemediationLastOutcome, "FailedTransient", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(e.AutoRemediationLastOutcome, "FailedPermanent", StringComparison.OrdinalIgnoreCase)),
+                    latestTriggerReason = autoExecutions.FirstOrDefault()?.AutoRemediationTriggerReason,
+                    latestAttemptCount = autoExecutions.FirstOrDefault()?.AutoRemediationAttemptCount ?? 0,
+                    latestOutcome = autoExecutions.FirstOrDefault()?.AutoRemediationLastOutcome
+                },
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })

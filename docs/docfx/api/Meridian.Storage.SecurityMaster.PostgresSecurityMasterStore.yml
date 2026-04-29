@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgresSecurityMasterStore
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 8
   assemblies:
   - Meridian.Storage
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 12
   assemblies:
   - Meridian.Storage
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertProjectionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 17
   assemblies:
   - Meridian.Storage
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistProjectionBatchAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAliasAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 43
   assemblies:
   - Meridian.Storage
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateProjectionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 85
   assemblies:
   - Meridian.Storage
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 103
   assemblies:
   - Meridian.Storage
@@ -292,7 +292,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProjectionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 109
   assemblies:
   - Meridian.Storage
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdentifierAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 115
   assemblies:
   - Meridian.Storage
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 122
   assemblies:
   - Meridian.Storage
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAllAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 182
   assemblies:
   - Meridian.Storage
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCheckpointAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 208
   assemblies:
   - Meridian.Storage
@@ -484,7 +484,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCheckpointAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs
     startLine: 223
   assemblies:
   - Meridian.Storage

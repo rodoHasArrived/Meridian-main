@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoginSessionMiddlewareExtensions
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 135
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseLoginSessionAuthentication
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 141
   assemblies:
   - Meridian.Ui.Shared

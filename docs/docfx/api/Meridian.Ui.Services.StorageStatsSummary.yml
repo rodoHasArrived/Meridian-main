@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageStatsSummary
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsedSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreeSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsedPercentage
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldestData
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewestData
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services

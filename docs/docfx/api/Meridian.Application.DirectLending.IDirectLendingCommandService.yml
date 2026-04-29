@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDirectLendingCommandService
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateLoanAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivateLoanAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BookDrawdownAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyRateResetAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPrincipalPaymentAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyMixedPaymentAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssessFeeAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyWriteOffAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -419,7 +419,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostDailyAccrualAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -459,7 +459,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestProjectionAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -499,7 +499,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostJournalAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -532,7 +532,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -570,7 +570,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateServicerReportBatchAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -608,7 +608,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChargePrepaymentPenaltyAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -648,7 +648,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAllAsync
-    path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
     startLine: 36
   assemblies:
   - Meridian.Application

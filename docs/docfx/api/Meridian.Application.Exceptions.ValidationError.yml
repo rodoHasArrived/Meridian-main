@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationError
-    path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
+    path: src/Meridian.Core/Exceptions/ValidationException.cs
     startLine: 38
   assemblies:
   - Meridian.Core
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
+    path: src/Meridian.Core/Exceptions/ValidationException.cs
     startLine: 38
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
+    path: src/Meridian.Core/Exceptions/ValidationException.cs
     startLine: 39
   assemblies:
   - Meridian.Core
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
+    path: src/Meridian.Core/Exceptions/ValidationException.cs
     startLine: 40
   assemblies:
   - Meridian.Core
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Field
-    path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
+    path: src/Meridian.Core/Exceptions/ValidationException.cs
     startLine: 41
   assemblies:
   - Meridian.Core
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AttemptedValue
-    path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
+    path: src/Meridian.Core/Exceptions/ValidationException.cs
     startLine: 42
   assemblies:
   - Meridian.Core

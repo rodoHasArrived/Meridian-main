@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationProgress
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 267
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Next
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 286
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetProgress
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 296
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 306
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 311
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 321
   assemblies:
   - Meridian.Application
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 337
   assemblies:
   - Meridian.Application

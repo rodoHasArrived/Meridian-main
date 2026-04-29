@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTools
-    path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
+    path: src/Meridian.Mcp/Tools/ProviderTools.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
+    path: src/Meridian.Mcp/Tools/ProviderTools.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderTemplate
-    path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
+    path: src/Meridian.Mcp/Tools/ProviderTools.cs
     startLine: 16
   assemblies:
   - mdc-mcp
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListProviders
-    path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
+    path: src/Meridian.Mcp/Tools/ProviderTools.cs
     startLine: 41
   assemblies:
   - mdc-mcp

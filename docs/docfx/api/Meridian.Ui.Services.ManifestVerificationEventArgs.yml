@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestVerificationEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 521
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Result
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 523
   assemblies:
   - Meridian.Ui.Services

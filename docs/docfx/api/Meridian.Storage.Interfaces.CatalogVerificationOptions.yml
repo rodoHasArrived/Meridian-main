@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogVerificationOptions
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 223
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChecksums
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 228
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyFileExists
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 233
   assemblies:
   - Meridian.Storage
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyEventCounts
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 238
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxParallelism
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 243
   assemblies:
   - Meridian.Storage
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopOnFirstError
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 248
   assemblies:
   - Meridian.Storage

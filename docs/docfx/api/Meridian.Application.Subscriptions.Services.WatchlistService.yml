@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistService
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllWatchlistsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWatchlistSummariesAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 74
   assemblies:
   - Meridian.Application
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 102
   assemblies:
   - Meridian.Application
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 131
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 148
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 191
   assemblies:
   - Meridian.Application
@@ -390,7 +390,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 237
   assemblies:
   - Meridian.Application
@@ -425,7 +425,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 263
   assemblies:
   - Meridian.Application
@@ -463,7 +463,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWatchlistsForSymbolAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 280
   assemblies:
   - Meridian.Application
@@ -501,7 +501,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 289
   assemblies:
   - Meridian.Application
@@ -539,7 +539,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportWatchlistAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 321
   assemblies:
   - Meridian.Application
@@ -577,7 +577,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReorderWatchlistsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
     startLine: 337
   assemblies:
   - Meridian.Application

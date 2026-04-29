@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDegradedEvent
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 567
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 567
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 568
   assemblies:
   - Meridian.Application
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeScore
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 569
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
     startLine: 570
   assemblies:
   - Meridian.Application

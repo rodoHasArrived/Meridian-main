@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 18
   assemblies:
   - Meridian.Infrastructure
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnProgressUpdate
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealth
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -511,7 +511,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedGranularities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -544,7 +544,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 90
   assemblies:
   - Meridian.Infrastructure
@@ -588,7 +588,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 127
   assemblies:
   - Meridian.Infrastructure
@@ -626,7 +626,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 138
   assemblies:
   - Meridian.Infrastructure
@@ -670,7 +670,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregateBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 141
   assemblies:
   - Meridian.Infrastructure
@@ -716,7 +716,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 451
   assemblies:
   - Meridian.Infrastructure
@@ -763,7 +763,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAllProvidersHealthAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 529
   assemblies:
   - Meridian.Infrastructure
@@ -796,7 +796,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 640
   assemblies:
   - Meridian.Infrastructure

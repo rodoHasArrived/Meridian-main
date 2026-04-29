@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationService
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pipeline
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 61
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunWizardAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 67
   assemblies:
   - Meridian.Application
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAutoConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 72
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQuickstartAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 77
   assemblies:
   - Meridian.Application
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoConfigure
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 83
   assemblies:
   - Meridian.Application
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFirstTimeConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectProviders
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 98
   assemblies:
   - Meridian.Application
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCredentialStatus
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 104
   assemblies:
   - Meridian.Application
@@ -407,7 +407,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersByCapability
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 110
   assemblies:
   - Meridian.Application
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestRealTimeProvider
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 120
   assemblies:
   - Meridian.Application
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalProviders
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 131
   assemblies:
   - Meridian.Application
@@ -503,7 +503,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrintProviderDetection
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 142
   assemblies:
   - Meridian.Application
@@ -537,7 +537,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCredentialContext
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 184
   assemblies:
   - Meridian.Application
@@ -575,7 +575,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAllCredentials
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 192
   assemblies:
   - Meridian.Application
@@ -608,7 +608,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 348
   assemblies:
   - Meridian.Application
@@ -647,7 +647,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 358
   assemblies:
   - Meridian.Application
@@ -688,7 +688,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRunValidationAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 380
   assemblies:
   - Meridian.Application
@@ -728,7 +728,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerformQuickCheck
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 401
   assemblies:
   - Meridian.Application
@@ -761,7 +761,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestConnectivityAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 410
   assemblies:
   - Meridian.Application
@@ -796,7 +796,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateCredentialsAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 421
   assemblies:
   - Meridian.Application
@@ -831,7 +831,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplySelfHealingFixes
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 444
   assemblies:
   - Meridian.Application
@@ -882,7 +882,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsIBGatewayAvailable
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 604
   assemblies:
   - Meridian.Application
@@ -912,7 +912,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyEnvironmentOverrides
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 633
   assemblies:
   - Meridian.Application
@@ -945,7 +945,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAndPrepareConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 643
   assemblies:
   - Meridian.Application
@@ -986,7 +986,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadValidatedConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 691
   assemblies:
   - Meridian.Application
@@ -1028,7 +1028,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 707
   assemblies:
   - Meridian.Application
@@ -1066,7 +1066,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunWizardAndValidateAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 715
   assemblies:
   - Meridian.Application
@@ -1099,7 +1099,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAutoConfigAndValidate
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 724
   assemblies:
   - Meridian.Application
@@ -1135,7 +1135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnvironmentName
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 763
   assemblies:
   - Meridian.Application
@@ -1165,7 +1165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartHotReload
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 797
   assemblies:
   - Meridian.Application
@@ -1205,7 +1205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartValidatedHotReload
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 820
   assemblies:
   - Meridian.Application
@@ -1250,7 +1250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopHotReload
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 835
   assemblies:
   - Meridian.Application
@@ -1278,7 +1278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayConfigSummary
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 846
   assemblies:
   - Meridian.Application
@@ -1316,7 +1316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConfigTemplate
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 855
   assemblies:
   - Meridian.Application
@@ -1352,7 +1352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConfig
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 864
   assemblies:
   - Meridian.Application
@@ -1388,7 +1388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfigAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 873
   assemblies:
   - Meridian.Application
@@ -1428,7 +1428,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    path: src/Meridian.Application/Services/ConfigurationService.cs
     startLine: 881
   assemblies:
   - Meridian.Application

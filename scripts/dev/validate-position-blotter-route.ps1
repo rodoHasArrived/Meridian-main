@@ -19,7 +19,9 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $env:MERIDIAN_REPO_ROOT = $repoRoot
 $runStamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$summaryDir = Join-Path (Join-Path $repoRoot $OutputRoot) $runStamp
+$resolvedOutputRoot = Join-Path $repoRoot $OutputRoot
+Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot
+$summaryDir = Join-Path $resolvedOutputRoot $runStamp
 $testProject = "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"
 $buildIsolationKey = New-MeridianBuildIsolationKey -Prefix "position-blotter-route"
 $resultsDirectory = Join-Path $summaryDir "TestResults"

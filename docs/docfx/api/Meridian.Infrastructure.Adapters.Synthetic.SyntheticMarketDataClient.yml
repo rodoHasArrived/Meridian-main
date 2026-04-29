@@ -38,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyntheticMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 15
   assemblies:
   - Meridian.Infrastructure
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 34
   assemblies:
   - Meridian.Infrastructure
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 35
   assemblies:
   - Meridian.Infrastructure
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -396,7 +396,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -429,7 +429,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -463,7 +463,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -497,7 +497,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -532,7 +532,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 76
   assemblies:
   - Meridian.Infrastructure
@@ -568,7 +568,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -603,7 +603,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -639,7 +639,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -674,7 +674,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 102
   assemblies:
   - Meridian.Infrastructure
@@ -720,7 +720,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 105
   assemblies:
   - Meridian.Infrastructure
@@ -760,7 +760,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs
     startLine: 108
   assemblies:
   - Meridian.Infrastructure

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FixtureScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
-    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disconnected
-    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Degraded
-    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Services
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Loading
-    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services

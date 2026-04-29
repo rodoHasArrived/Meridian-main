@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageHealth
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 138
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 140
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 141
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsedBytes
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 142
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailableBytes
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 143
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsedPercent
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 144
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 145
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedFiles
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 146
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedFiles
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 147
   assemblies:
   - Meridian.Ui.Services
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastChecked
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 148
   assemblies:
   - Meridian.Ui.Services
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services

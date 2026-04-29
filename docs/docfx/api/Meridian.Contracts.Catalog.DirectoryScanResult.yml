@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryScanResult
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 308
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 313
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 319
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 325
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesScanned
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 331
   assemblies:
   - Meridian.Contracts
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesWithErrors
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 337
   assemblies:
   - Meridian.Contracts
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationMs
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 343
   assemblies:
   - Meridian.Contracts
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 349
   assemblies:
   - Meridian.Contracts
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 355
   assemblies:
   - Meridian.Contracts

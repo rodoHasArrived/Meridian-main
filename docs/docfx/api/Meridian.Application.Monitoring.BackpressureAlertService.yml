@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackpressureAlertService
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBackpressureDetected
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBackpressureResolved
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 38
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterPipelineProvider
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 255
   assemblies:
   - Meridian.Application

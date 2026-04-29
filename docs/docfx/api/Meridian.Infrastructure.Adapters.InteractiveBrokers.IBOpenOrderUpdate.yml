@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBOpenOrderUpdate
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Action
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 55
   assemblies:
   - Meridian.Infrastructure
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderType
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -336,7 +336,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 61
   assemblies:
   - Meridian.Infrastructure
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 62
   assemblies:
   - Meridian.Infrastructure
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Account
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -481,7 +481,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commission
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -510,7 +510,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectReason
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 65
   assemblies:
   - Meridian.Infrastructure
@@ -539,7 +539,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 66
   assemblies:
   - Meridian.Infrastructure
@@ -568,7 +568,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReceivedAt
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 67
   assemblies:
   - Meridian.Infrastructure

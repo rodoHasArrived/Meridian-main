@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolManagementService
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMonitoredSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetArchivedSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 100
   assemblies:
   - Meridian.Ui.Services
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStatusAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 126
   assemblies:
   - Meridian.Ui.Services
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 147
   assemblies:
   - Meridian.Ui.Services
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 204
   assemblies:
   - Meridian.Ui.Services
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleTradesAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 235
   assemblies:
   - Meridian.Ui.Services
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleDepthAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 263
   assemblies:
   - Meridian.Ui.Services
@@ -406,7 +406,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStatisticsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 291
   assemblies:
   - Meridian.Ui.Services
@@ -439,7 +439,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 303
   assemblies:
   - Meridian.Ui.Services
@@ -479,7 +479,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolArchiveInfoAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 321
   assemblies:
   - Meridian.Ui.Services
@@ -517,7 +517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkAddSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 333
   assemblies:
   - Meridian.Ui.Services
@@ -561,7 +561,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkRemoveSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 389
   assemblies:
   - Meridian.Ui.Services
@@ -599,7 +599,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 431
   assemblies:
   - Meridian.Ui.Services

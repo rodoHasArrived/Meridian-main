@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityKindMapping
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAssetClass
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToInstrumentTypes
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
     startLine: 76
   assemblies:
   - Meridian.Application
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToPrimaryInstrumentType
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
     startLine: 86
   assemblies:
   - Meridian.Application

@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapAnalysisResult
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 490
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 492
   assemblies:
   - Meridian.Infrastructure
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 493
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Granularity
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 494
   assemblies:
   - Meridian.Infrastructure
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzedAt
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 495
   assemblies:
   - Meridian.Infrastructure
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 497
   assemblies:
   - Meridian.Infrastructure
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsWithGaps
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 498
   assemblies:
   - Meridian.Infrastructure
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsComplete
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 499
   assemblies:
   - Meridian.Infrastructure
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGapDays
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 500
   assemblies:
   - Meridian.Infrastructure
@@ -298,7 +298,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGaps
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 503
   assemblies:
   - Meridian.Infrastructure
@@ -329,7 +329,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGaps
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 505
   assemblies:
   - Meridian.Infrastructure
@@ -358,7 +358,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasGaps
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 507
   assemblies:
   - Meridian.Infrastructure
@@ -387,7 +387,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessPercent
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
     startLine: 508
   assemblies:
   - Meridian.Infrastructure

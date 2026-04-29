@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRunService
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDryRunMode
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableDryRunMode
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateAsync
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateReport
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 100
   assemblies:
   - Meridian.Application

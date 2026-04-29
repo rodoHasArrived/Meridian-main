@@ -7,7 +7,7 @@ This section is automatically generated from the XML documentation comments in t
 The Meridian platform is organized into focused assemblies. Browse the namespace tree on the left to explore the full public API.
 
 | Assembly | Purpose |
-|----------|---------|
+| ---------- | --------- |
 | **Meridian.Contracts** | Shared DTOs, domain events, and interface contracts used across the platform |
 | **Meridian.Core** | Core abstractions: configuration, exceptions, logging, and serialization |
 | **Meridian.Domain** | Domain model: collectors, market event payloads, and publishers |
@@ -53,10 +53,10 @@ Implement `IRiskRule` from `Meridian.Risk` and register it in DI. The `Composite
 dotnet tool update -g docfx
 
 # Full build — outputs to docs/_site/
-docfx docs/docfx/docfx.json
+docfx docfx.json
 
 # Serve locally with live preview
-docfx docs/docfx/docfx.json --serve
+docfx docfx.json --serve
 ```
 
 > **Note:** The source code must build successfully before DocFX can extract XML documentation.

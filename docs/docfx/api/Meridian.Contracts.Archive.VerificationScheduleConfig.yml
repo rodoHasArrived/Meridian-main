@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationScheduleConfig
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 223
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 225
   assemblies:
   - Meridian.Contracts
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyVerificationTime
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 228
   assemblies:
   - Meridian.Contracts
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyVerificationScope
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 231
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WeeklyFullVerificationDay
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 234
   assemblies:
   - Meridian.Contracts
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MonthlyFullVerificationDay
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 237
   assemblies:
   - Meridian.Contracts
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseDuringMarketHours
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 240
   assemblies:
   - Meridian.Contracts
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentVerifications
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 243
   assemblies:
   - Meridian.Contracts

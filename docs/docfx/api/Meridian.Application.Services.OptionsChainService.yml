@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsChainService
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsProviderAvailable
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderStatus
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 69
   assemblies:
   - Meridian.Application
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 87
   assemblies:
   - Meridian.Application
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchChainSnapshotAsync
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 107
   assemblies:
   - Meridian.Application
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchOptionQuoteAsync
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 138
   assemblies:
   - Meridian.Application
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchConfiguredChainsAsync
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 164
   assemblies:
   - Meridian.Application
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCachedChain
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 221
   assemblies:
   - Meridian.Application
@@ -426,7 +426,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCachedChainsForUnderlying
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 230
   assemblies:
   - Meridian.Application
@@ -462,7 +462,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQuotesForUnderlying
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 239
   assemblies:
   - Meridian.Application
@@ -498,7 +498,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 248
   assemblies:
   - Meridian.Application
@@ -528,7 +528,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedUnderlyings
-    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    path: src/Meridian.Application/Services/OptionsChainService.cs
     startLine: 254
   assemblies:
   - Meridian.Application

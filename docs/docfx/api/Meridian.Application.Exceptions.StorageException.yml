@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageException
-    path: ../../src/Meridian.Core/Exceptions/StorageException.cs
+    path: src/Meridian.Core/Exceptions/StorageException.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Core/Exceptions/StorageException.cs
+    path: src/Meridian.Core/Exceptions/StorageException.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/StorageException.cs
+    path: src/Meridian.Core/Exceptions/StorageException.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/StorageException.cs
+    path: src/Meridian.Core/Exceptions/StorageException.cs
     startLine: 13
   assemblies:
   - Meridian.Core
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/StorageException.cs
+    path: src/Meridian.Core/Exceptions/StorageException.cs
     startLine: 19
   assemblies:
   - Meridian.Core

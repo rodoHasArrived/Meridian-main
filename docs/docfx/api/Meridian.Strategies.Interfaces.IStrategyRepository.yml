@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStrategyRepository
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
     startLine: 8
   assemblies:
   - Meridian.Strategies
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRunAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
     startLine: 11
   assemblies:
   - Meridian.Strategies
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
     startLine: 14
   assemblies:
   - Meridian.Strategies
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestRunAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
     startLine: 17
   assemblies:
   - Meridian.Strategies
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllRunsAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
     startLine: 20
   assemblies:
   - Meridian.Strategies

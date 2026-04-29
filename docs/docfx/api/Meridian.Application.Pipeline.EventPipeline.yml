@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventPipeline
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 120
   assemblies:
   - Meridian.Application
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 175
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishedCount
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 265
   assemblies:
   - Meridian.Application
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DroppedCount
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 268
   assemblies:
   - Meridian.Application
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsumedCount
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 271
   assemblies:
   - Meridian.Application
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoveredCount
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 274
   assemblies:
   - Meridian.Application
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedCount
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 277
   assemblies:
   - Meridian.Application
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeduplicatedCount
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 280
   assemblies:
   - Meridian.Application
@@ -454,7 +454,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDeduplicationEnabled
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 283
   assemblies:
   - Meridian.Application
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeakQueueSize
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 286
   assemblies:
   - Meridian.Application
@@ -516,7 +516,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentQueueSize
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 289
   assemblies:
   - Meridian.Application
@@ -547,7 +547,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 292
   assemblies:
   - Meridian.Application
@@ -578,7 +578,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageProcessingTimeUs
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 295
   assemblies:
   - Meridian.Application
@@ -609,7 +609,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSinceLastFlush
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 308
   assemblies:
   - Meridian.Application
@@ -640,7 +640,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWalEnabled
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 319
   assemblies:
   - Meridian.Application
@@ -671,7 +671,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidationEnabled
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 322
   assemblies:
   - Meridian.Application
@@ -702,7 +702,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsUnderPressure
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 328
   assemblies:
   - Meridian.Application
@@ -738,7 +738,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoverAsync
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 346
   assemblies:
   - Meridian.Application
@@ -784,7 +784,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 452
   assemblies:
   - Meridian.Application
@@ -837,7 +837,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublishWithResult
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 532
   assemblies:
   - Meridian.Application
@@ -882,7 +882,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishAsync
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 575
   assemblies:
   - Meridian.Application
@@ -922,7 +922,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 589
   assemblies:
   - Meridian.Application
@@ -950,7 +950,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 601
   assemblies:
   - Meridian.Application
@@ -996,7 +996,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 663
   assemblies:
   - Meridian.Application
@@ -1026,7 +1026,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 904
   assemblies:
   - Meridian.Application
@@ -1062,7 +1062,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditTrail
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 993
   assemblies:
   - Meridian.Application
@@ -1093,7 +1093,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueCapacity
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 998
   assemblies:
   - Meridian.Application
@@ -1124,7 +1124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventMetrics
-    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    path: src/Meridian.Application/Pipeline/EventPipeline.cs
     startLine: 1003
   assemblies:
   - Meridian.Application

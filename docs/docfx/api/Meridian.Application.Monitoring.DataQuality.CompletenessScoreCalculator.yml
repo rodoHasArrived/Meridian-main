@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScoreCalculator
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolLiquidity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordEvent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordEvents
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScore
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 92
   assemblies:
   - Meridian.Application
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllScores
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 104
   assemblies:
   - Meridian.Application
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScoresForDate
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScoresForSymbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 128
   assemblies:
   - Meridian.Application
@@ -358,7 +358,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAverageScore
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 140
   assemblies:
   - Meridian.Application
@@ -391,7 +391,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLowCompletenessSymbols
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 149
   assemblies:
   - Meridian.Application
@@ -429,7 +429,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 160
   assemblies:
   - Meridian.Application
@@ -459,7 +459,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetExpectedEventsPerHour
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 202
   assemblies:
   - Meridian.Application
@@ -495,7 +495,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 213
   assemblies:
   - Meridian.Application
@@ -531,7 +531,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAll
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 222
   assemblies:
   - Meridian.Application
@@ -559,7 +559,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 258
   assemblies:
   - Meridian.Application

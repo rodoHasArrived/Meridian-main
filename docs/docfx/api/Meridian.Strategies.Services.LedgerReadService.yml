@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReadService
-    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    path: src/Meridian.Strategies/Services/LedgerReadService.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    path: src/Meridian.Strategies/Services/LedgerReadService.cs
     startLine: 13
   assemblies:
   - Meridian.Strategies
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    path: src/Meridian.Strategies/Services/LedgerReadService.cs
     startLine: 17
   assemblies:
   - Meridian.Strategies
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSummary
-    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    path: src/Meridian.Strategies/Services/LedgerReadService.cs
     startLine: 22
   assemblies:
   - Meridian.Strategies
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSummaryAsync
-    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    path: src/Meridian.Strategies/Services/LedgerReadService.cs
     startLine: 25
   assemblies:
   - Meridian.Strategies

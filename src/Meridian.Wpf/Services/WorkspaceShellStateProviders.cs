@@ -54,7 +54,7 @@ public sealed class ResearchWorkspaceShellStateProvider : WorkspaceShellStatePro
     }
 
     public override WorkspaceShellDefinition Definition
-        => ShellNavigationCatalog.GetWorkspaceShell("research")!;
+        => ShellNavigationCatalog.GetWorkspaceShell("strategy")!;
 
     public override async Task<WorkspaceShellState> GetStateAsync(CancellationToken ct = default)
     {
@@ -108,7 +108,7 @@ public sealed class DataOperationsWorkspaceShellStateProvider : WorkspaceShellSt
     }
 
     public override WorkspaceShellDefinition Definition
-        => ShellNavigationCatalog.GetWorkspaceShell("data-operations")!;
+        => ShellNavigationCatalog.GetWorkspaceShell("data")!;
 }
 
 public sealed class GovernanceWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
@@ -124,11 +124,74 @@ public sealed class GovernanceWorkspaceShellStateProvider : WorkspaceShellStateP
     }
 
     public override WorkspaceShellDefinition Definition
-        => ShellNavigationCatalog.GetWorkspaceShell("governance")!;
+        => ShellNavigationCatalog.GetWorkspaceShell("accounting")!;
 
     protected override string? GetLayoutScopeKey()
         => base.GetLayoutScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
 
     protected override bool HasPrimaryContext()
         => _fundContextService.CurrentFundProfile is not null;
+}
+
+public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+{
+    private readonly FundContextService _fundContextService;
+
+    public PortfolioWorkspaceShellStateProvider(
+        FundContextService fundContextService,
+        WorkstationOperatingContextService? operatingContextService)
+        : base(operatingContextService)
+    {
+        _fundContextService = fundContextService;
+    }
+
+    public override WorkspaceShellDefinition Definition
+        => ShellNavigationCatalog.GetWorkspaceShell("portfolio")!;
+
+    protected override string? GetLayoutScopeKey()
+        => base.GetLayoutScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
+}
+
+public sealed class AccountingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+{
+    private readonly FundContextService _fundContextService;
+
+    public AccountingWorkspaceShellStateProvider(
+        FundContextService fundContextService,
+        WorkstationOperatingContextService? operatingContextService)
+        : base(operatingContextService)
+    {
+        _fundContextService = fundContextService;
+    }
+
+    public override WorkspaceShellDefinition Definition
+        => ShellNavigationCatalog.GetWorkspaceShell("accounting")!;
+
+    protected override string? GetLayoutScopeKey()
+        => base.GetLayoutScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
+
+    protected override bool HasPrimaryContext()
+        => _fundContextService.CurrentFundProfile is not null;
+}
+
+public sealed class ReportingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+{
+    public ReportingWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)
+        : base(operatingContextService)
+    {
+    }
+
+    public override WorkspaceShellDefinition Definition
+        => ShellNavigationCatalog.GetWorkspaceShell("reporting")!;
+}
+
+public sealed class SettingsWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+{
+    public SettingsWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)
+        : base(operatingContextService)
+    {
+    }
+
+    public override WorkspaceShellDefinition Definition
+        => ShellNavigationCatalog.GetWorkspaceShell("settings")!;
 }

@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-21
+**Last Reviewed:** 2026-04-29
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
@@ -17,7 +17,8 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 ## Hand-Authored Source Of Truth
 
 | Document | Description |
-|----------|-------------|
+| --- | --- |
+| [PROGRAM_STATE.md](PROGRAM_STATE.md) | Canonical wave status labels, ownership/escalation metadata (primary owner, backup owner, SLA, dependency owners), target dates, and evidence links reused by status docs |
 | [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) | Short stakeholder-facing snapshot that combines roadmap, opportunities, and target-state direction |
 | [ROADMAP.md](ROADMAP.md) | Primary wave-structured delivery roadmap |
 | [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md) | Prioritized repo-grounded opportunities that sit alongside the roadmap |
@@ -32,16 +33,23 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
 | [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
 
+## Compatibility Views
+
+| Document | Description |
+| --- | --- |
+| [ROADMAP_NOW_NEXT_LATER_2026_03_25.md](ROADMAP_NOW_NEXT_LATER_2026_03_25.md) | Refreshed Now / Next / Later compatibility view for the canonical roadmap |
+
 ## Generated Status Reports
 
 | Document | Description |
-|----------|-------------|
+| --- | --- |
 | [CHANGELOG.md](CHANGELOG.md) | Generated repository/doc snapshot summary |
 | [TODO.md](TODO.md) | Informational TODO/FIXME aggregation from source comments |
 | [health-dashboard.md](health-dashboard.md) | Documentation health report |
 | [coverage-report.md](coverage-report.md) | Documentation coverage summary |
 | [metrics-dashboard.md](metrics-dashboard.md) | Documentation metrics dashboard |
 | [docs-automation-summary.md](docs-automation-summary.md) | Latest docs automation run summary |
+| [program-state-summary.md](program-state-summary.md) | Generated wave escalation summary used by roadmap/readiness reporting |
 | [api-docs-report.md](api-docs-report.md) | API docs validation summary |
 | [example-validation.md](example-validation.md) | Code-block validation output |
 | [link-repair-report.md](link-repair-report.md) | Internal link audit output |
@@ -51,13 +59,17 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 Machine-readable sidecars that remain active in this folder:
 
 - `docs-automation-summary.json` - automation run summary consumed by docs tooling
+- `program-state-summary.json` - generated wave ownership/escalation metadata consumed by roadmap/readiness reporting
+
+## Dashboard Evidence Reference
+
+For dashboard purpose, required evidence inputs, `.md` + `.json` output paths, blocker triage, and stale-evidence handling guidance, see [Documentation Automation - Status Dashboard Evidence Surfaces](../development/documentation-automation.md#status-dashboard-evidence-surfaces).
 
 ## Archived Snapshots
 
 These dated snapshots remain useful for history, but they no longer act as active status guidance:
 
-- [Documentation triage (2026-03-21)](../../archive/docs/summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
-- [Now / Next / Later roadmap snapshot (2026-03-25)](../../archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
+- [Documentation triage (2026-03-21)](DOCUMENTATION_TRIAGE_2026_03_21.md)
 
 ## Recommended Reading Order
 
@@ -87,7 +99,7 @@ When authoring or editing these doc categories, include the required section hea
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
 - **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
-- **Workstation state:** Web and WPF both expose meaningful workspace flows, but cockpit hardening and shared-model continuity still remain
+- **Workstation state:** The web dashboard is the active operator UI lane, with retained WPF support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, canonical web workspace navigation, and shared-model continuity still remain
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans

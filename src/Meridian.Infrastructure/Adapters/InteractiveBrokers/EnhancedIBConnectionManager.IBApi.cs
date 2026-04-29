@@ -1001,7 +1001,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 OrderType.Limit => "LMT",
                 OrderType.StopMarket => "STP",
                 OrderType.StopLimit => "STP LMT",
-                _ => "MKT"
+                OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose
+                    => throw new NotSupportedException(
+                        $"Interactive Brokers order mapping does not preserve the {request.Type} session timing qualifier."),
+                _ => throw new NotSupportedException($"Interactive Brokers order mapping does not support {request.Type}.")
             },
             Tif = request.TimeInForce switch
             {

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatMissedEvent
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 73
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 73
   assemblies:
   - Meridian.Core
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 74
   assemblies:
   - Meridian.Core
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 75
   assemblies:
   - Meridian.Core
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissedCount
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 76
   assemblies:
   - Meridian.Core
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSinceLastActivity
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 77
   assemblies:
   - Meridian.Core
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
     startLine: 78
   assemblies:
   - Meridian.Core

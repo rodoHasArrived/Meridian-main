@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Execution.Exceptions;
 using Meridian.Execution.Adapters;
+using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -56,6 +56,29 @@ public sealed class BrokerageGatewayAdapterTests
 
         result.IsValid.Should().BeFalse();
         result.Reason.Should().Contain("Market");
+    }
+
+    [Theory]
+    [InlineData(SdkOrderType.MarketOnOpen)]
+    [InlineData(SdkOrderType.MarketOnClose)]
+    [InlineData(SdkOrderType.LimitOnOpen)]
+    [InlineData(SdkOrderType.LimitOnClose)]
+    public async Task ValidateOrderAsync_DefaultCapabilitiesRejectSessionScopedOrderTypes(SdkOrderType orderType)
+    {
+        await using var adapter = CreateAdapter();
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = orderType,
+            Quantity = 10,
+            LimitPrice = orderType is SdkOrderType.LimitOnOpen or SdkOrderType.LimitOnClose ? 150m : null
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain(orderType.ToString());
     }
 
     [Fact]
@@ -155,6 +178,31 @@ public sealed class BrokerageGatewayAdapterTests
         result.IsValid.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsLimitOnCloseWithoutLimitPrice()
+    {
+        var caps = BrokerageCapabilities.UsEquity() with
+        {
+            SupportedOrderTypes = new HashSet<SdkOrderType>(BrokerageCapabilities.UsEquity().SupportedOrderTypes)
+            {
+                SdkOrderType.LimitOnClose
+            }
+        };
+        await using var adapter = CreateAdapter(CreateMockGateway(caps));
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.LimitOnClose,
+            Quantity = 10
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("limit price");
+    }
+
     // ── SubmitAsync ────────────────────────────────────────────────────
 
     [Fact]
@@ -172,6 +220,27 @@ public sealed class BrokerageGatewayAdapterTests
         Func<Task> act = async () => await adapter.SubmitAsync(request);
 
         await act.Should().ThrowAsync<UnsupportedOrderRequestException>();
+    }
+
+    [Fact]
+    public async Task SubmitAsync_DoesNotForwardUnsupportedSessionScopedOrderType()
+    {
+        var gateway = CreateMockGateway();
+        await using var adapter = CreateAdapter(gateway);
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.MarketOnClose,
+            Quantity = 1m
+        };
+
+        Func<Task> act = async () => await adapter.SubmitAsync(request);
+
+        await act.Should().ThrowAsync<UnsupportedOrderRequestException>()
+            .WithMessage("*MarketOnClose*");
+        await gateway.DidNotReceive()
+            .SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Metric / KPI cards</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 18px; font-family: var(--font-sans); color: var(--fg); }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .card { background: #0D1722; border: 1px solid #1F344C; border-radius: 8px; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .head { display: flex; align-items: center; justify-content: space-between; }
+  .label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-muted); }
+  .spark { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
+  .spark i { width: 2px; background: currentColor; opacity: .6; display: block; }
+  .val { font-family: var(--font-mono); font-weight: 500; font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .delta { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+  .success { color: #26BF86; }
+  .danger { color: #DE5878; }
+  .primary { color: #2AB2D4; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="grid">
+    <div class="card">
+      <div class="head"><span class="label">NET P&L</span>
+        <span class="spark success"><i style="height:4px"></i><i style="height:7px"></i><i style="height:5px"></i><i style="height:9px"></i><i style="height:12px"></i><i style="height:10px"></i><i style="height:14px"></i></span>
+      </div>
+      <div class="val success">+12,430.17</div>
+      <div class="delta success">▲ +0.42% · 1D</div>
+    </div>
+    <div class="card">
+      <div class="head"><span class="label">SHARPE · 30D</span></div>
+      <div class="val">1.84</div>
+      <div class="delta">σ 0.21 · vs 1.62 prior</div>
+    </div>
+    <div class="card">
+      <div class="head"><span class="label">EXPOSURE</span></div>
+      <div class="val primary">$1.24M</div>
+      <div class="delta">NET 62% · GROSS 148%</div>
+    </div>
+    <div class="card">
+      <div class="head"><span class="label">DRAWDOWN</span>
+        <span class="spark danger"><i style="height:11px"></i><i style="height:8px"></i><i style="height:9px"></i><i style="height:6px"></i><i style="height:5px"></i><i style="height:4px"></i><i style="height:3px"></i></span>
+      </div>
+      <div class="val danger">−2.41%</div>
+      <div class="delta">MAX −4.10% · 90D</div>
+    </div>
+  </div>
+</body>
+</html>

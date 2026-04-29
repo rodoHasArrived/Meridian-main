@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketHeartbeat
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 229
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionLost
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 240
   assemblies:
   - Meridian.Infrastructure
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PingsSent
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 245
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 247
   assemblies:
   - Meridian.Infrastructure
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordPongReceived
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 327
   assemblies:
   - Meridian.Infrastructure
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 343
   assemblies:
   - Meridian.Infrastructure

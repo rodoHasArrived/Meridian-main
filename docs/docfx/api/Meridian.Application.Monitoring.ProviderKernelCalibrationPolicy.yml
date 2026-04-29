@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderKernelCalibrationPolicy
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 260
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 260
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSnapshotAge
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 261
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinPrecision
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 262
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinRecall
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 263
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiredSeverity
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 264
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 266
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Evaluate
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 269
   assemblies:
   - Meridian.Application

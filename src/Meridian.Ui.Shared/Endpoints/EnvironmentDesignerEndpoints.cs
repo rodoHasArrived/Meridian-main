@@ -16,7 +16,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/drafts", async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var drafts = await service.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(drafts, jsonOptions);
@@ -27,7 +28,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/drafts/{draftId:guid}", async (Guid draftId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var draft = await service.GetDraftAsync(draftId, context.RequestAborted).ConfigureAwait(false);
             return draft is null ? Results.NotFound() : Results.Json(draft, jsonOptions);
@@ -39,7 +41,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapPost("/drafts", async (JsonElement body, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateEnvironmentDraftRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -57,7 +60,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapPut("/drafts/{draftId:guid}", async (Guid draftId, JsonElement body, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var draft = JsonSerializer.Deserialize<EnvironmentDraftDto>(body.GetRawText(), jsonOptions);
             if (draft is null)
@@ -77,7 +81,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapDelete("/drafts/{draftId:guid}", async (Guid draftId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             await service.DeleteDraftAsync(draftId, context.RequestAborted).ConfigureAwait(false);
             return Results.NoContent();
@@ -88,7 +93,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapPost("/validate", async (JsonElement body, HttpContext context) =>
         {
             var validationService = context.RequestServices.GetService<IEnvironmentValidationService>();
-            if (validationService is null) return ServiceUnavailable();
+            if (validationService is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<ValidateDraftEnvelope>(body.GetRawText(), jsonOptions);
             if (request?.Draft is null)
@@ -108,7 +114,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapPost("/publish/preview", async (JsonElement body, HttpContext context) =>
         {
             var publishService = context.RequestServices.GetService<IEnvironmentPublishService>();
-            if (publishService is null) return ServiceUnavailable();
+            if (publishService is null)
+                return ServiceUnavailable();
 
             var plan = JsonSerializer.Deserialize<EnvironmentPublishPlanDto>(body.GetRawText(), jsonOptions);
             if (plan is null)
@@ -126,7 +133,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapPost("/publish", async (JsonElement body, HttpContext context) =>
         {
             var publishService = context.RequestServices.GetService<IEnvironmentPublishService>();
-            if (publishService is null) return ServiceUnavailable();
+            if (publishService is null)
+                return ServiceUnavailable();
 
             var plan = JsonSerializer.Deserialize<EnvironmentPublishPlanDto>(body.GetRawText(), jsonOptions);
             if (plan is null)
@@ -144,7 +152,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/versions", async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var organizationId = ParseGuid(context.Request.Query["organizationId"]);
             var versions = await service.ListPublishedVersionsAsync(organizationId, context.RequestAborted).ConfigureAwait(false);
@@ -156,7 +165,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/versions/current", async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var organizationId = ParseGuid(context.Request.Query["organizationId"]);
             var version = await service.GetCurrentPublishedVersionAsync(organizationId, context.RequestAborted).ConfigureAwait(false);
@@ -169,7 +179,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/versions/{versionId:guid}", async (Guid versionId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IEnvironmentDesignService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var version = await service.GetPublishedVersionAsync(versionId, context.RequestAborted).ConfigureAwait(false);
             return version is null ? Results.NotFound() : Results.Json(version, jsonOptions);
@@ -181,7 +192,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapPost("/versions/{versionId:guid}/rollback", async (Guid versionId, JsonElement body, HttpContext context) =>
         {
             var publishService = context.RequestServices.GetService<IEnvironmentPublishService>();
-            if (publishService is null) return ServiceUnavailable();
+            if (publishService is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<RollbackEnvironmentVersionRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -201,7 +213,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/runtime/current", async (HttpContext context) =>
         {
             var runtimeService = context.RequestServices.GetService<IEnvironmentRuntimeProjectionService>();
-            if (runtimeService is null) return ServiceUnavailable();
+            if (runtimeService is null)
+                return ServiceUnavailable();
 
             var organizationId = ParseGuid(context.Request.Query["organizationId"]);
             var runtime = await runtimeService.GetCurrentRuntimeAsync(organizationId, context.RequestAborted).ConfigureAwait(false);
@@ -214,7 +227,8 @@ public static class EnvironmentDesignerEndpoints
         group.MapGet("/runtime/versions/{versionId:guid}", async (Guid versionId, HttpContext context) =>
         {
             var runtimeService = context.RequestServices.GetService<IEnvironmentRuntimeProjectionService>();
-            if (runtimeService is null) return ServiceUnavailable();
+            if (runtimeService is null)
+                return ServiceUnavailable();
 
             var runtime = await runtimeService.GetRuntimeForVersionAsync(versionId, context.RequestAborted).ConfigureAwait(false);
             return runtime is null ? Results.NotFound() : Results.Json(runtime, jsonOptions);

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deferred
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure

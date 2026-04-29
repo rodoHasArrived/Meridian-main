@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FuturePosition
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 44
   assemblies:
   - Meridian.Execution
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contracts
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 47
   assemblies:
   - Meridian.Execution
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 50
   assemblies:
   - Meridian.Execution
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSettlementPrice
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 53
   assemblies:
   - Meridian.Execution
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkPrice
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 56
   assemblies:
   - Meridian.Execution
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 59
   assemblies:
   - Meridian.Execution
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 63
   assemblies:
   - Meridian.Execution
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 66
   assemblies:
   - Meridian.Execution
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 69
   assemblies:
   - Meridian.Execution
@@ -419,7 +419,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SettleDaily
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 81
   assemblies:
   - Meridian.Execution
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithSettlement
-    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    path: src/Meridian.Execution/Derivatives/FuturePosition.cs
     startLine: 96
   assemblies:
   - Meridian.Execution

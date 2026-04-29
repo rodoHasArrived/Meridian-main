@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrImplementation
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 74
   assemblies:
   - Meridian.ProviderSdk
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 74
   assemblies:
   - Meridian.ProviderSdk
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrId
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 75
   assemblies:
   - Meridian.ProviderSdk
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 76
   assemblies:
   - Meridian.ProviderSdk
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImplementationType
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 77
   assemblies:
   - Meridian.ProviderSdk
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TypeName
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 78
   assemblies:
   - Meridian.ProviderSdk
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromAttribute
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 83
   assemblies:
   - Meridian.ProviderSdk

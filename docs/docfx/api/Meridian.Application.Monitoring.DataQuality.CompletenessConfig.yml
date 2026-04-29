@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 411
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEventsPerHour
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 418
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingStartHour
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 423
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingStartMinute
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 428
   assemblies:
   - Meridian.Application
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingEndHour
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 433
   assemblies:
   - Meridian.Application
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingEndMinute
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 438
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 443
   assemblies:
   - Meridian.Application
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableAutoCalibration
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 453
   assemblies:
   - Meridian.Application
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalibrationWindowMinutes
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 459
   assemblies:
   - Meridian.Application
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalibrationMinEvents
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 467
   assemblies:
   - Meridian.Application
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
     startLine: 469
   assemblies:
   - Meridian.Application

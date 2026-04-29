@@ -1,5 +1,9 @@
 Set-StrictMode -Version Latest
 
+$script:MeridianSharedBuildScriptRoot = $PSScriptRoot
+$script:MeridianBuildArtifactRetentionApplied = $false
+$script:MeridianWorkflowArtifactRetentionRoots = @{}
+
 function ConvertTo-MeridianBuildSlug {
     param([Parameter(Mandatory = $true)][string]$Value)
 
@@ -12,8 +16,216 @@ function ConvertTo-MeridianBuildSlug {
     return $slug
 }
 
+function Get-MeridianSharedRepoRoot {
+    if ([string]::IsNullOrWhiteSpace($script:MeridianSharedBuildScriptRoot)) {
+        return $null
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $script:MeridianSharedBuildScriptRoot '../..'))
+}
+
+function Format-MeridianBuildBytes {
+    param([Parameter(Mandatory = $true)][long]$Bytes)
+
+    if ($Bytes -ge 1GB) {
+        return '{0:N2} GB' -f ($Bytes / 1GB)
+    }
+
+    if ($Bytes -ge 1MB) {
+        return '{0:N2} MB' -f ($Bytes / 1MB)
+    }
+
+    if ($Bytes -ge 1KB) {
+        return '{0:N2} KB' -f ($Bytes / 1KB)
+    }
+
+    return "$Bytes B"
+}
+
+function Get-MeridianDirectorySizeBytes {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $sum = 0L
+    foreach ($file in Get-ChildItem -LiteralPath $Path -Recurse -Force -File -ErrorAction SilentlyContinue) {
+        $sum += $file.Length
+    }
+
+    return [int64]$sum
+}
+
+function Invoke-MeridianBuildArtifactRetention {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [int]$MaxAgeDays = 14,
+        [int]$RetainLatest = 10
+    )
+
+    if ($script:MeridianBuildArtifactRetentionApplied -or ($MaxAgeDays -le 0 -and $RetainLatest -le 0)) {
+        return
+    }
+
+    $script:MeridianBuildArtifactRetentionApplied = $true
+    $cutoffUtc = (Get-Date).ToUniversalTime().AddDays(-$MaxAgeDays)
+    $artifactRoots = @(
+        (Join-Path $RepoRoot 'artifacts/bin')
+        (Join-Path $RepoRoot 'artifacts/obj')
+    )
+
+    $deletedCount = 0
+    $freedBytes = 0L
+
+    foreach ($artifactRoot in $artifactRoots) {
+        if (-not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+            continue
+        }
+
+        $resolvedRoot = [System.IO.Path]::GetFullPath($artifactRoot)
+        $resolvedRootWithSeparator = $resolvedRoot
+        if (-not $resolvedRootWithSeparator.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+            $resolvedRootWithSeparator += [System.IO.Path]::DirectorySeparatorChar
+        }
+
+        $artifactDirectories = @(
+            Get-ChildItem -LiteralPath $resolvedRoot -Directory -Force -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTimeUtc -Descending
+        )
+        if ($artifactDirectories.Count -eq 0) {
+            continue
+        }
+
+        $retainedDirectories = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+        if ($RetainLatest -gt 0) {
+            foreach ($directory in ($artifactDirectories | Select-Object -First $RetainLatest)) {
+                [void]$retainedDirectories.Add([System.IO.Path]::GetFullPath($directory.FullName))
+            }
+        }
+
+        foreach ($directory in $artifactDirectories) {
+            $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
+            if (-not $candidatePath.StartsWith($resolvedRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+                Write-Warning "Skipping build artifact retention candidate outside expected root: $candidatePath"
+                continue
+            }
+
+            $ageExpired = $MaxAgeDays -gt 0 -and $directory.LastWriteTimeUtc -lt $cutoffUtc
+            $countExceeded = $RetainLatest -gt 0 -and -not $retainedDirectories.Contains($candidatePath)
+            if (-not $ageExpired -and -not $countExceeded) {
+                continue
+            }
+
+            try {
+                $candidateBytes = Get-MeridianDirectorySizeBytes -Path $candidatePath
+                Remove-Item -LiteralPath $candidatePath -Recurse -Force -ErrorAction Stop
+                $deletedCount++
+                $freedBytes += $candidateBytes
+            }
+            catch {
+                Write-Warning "Failed to prune stale build artifact directory '$candidatePath': $($_.Exception.Message)"
+            }
+        }
+    }
+
+    if ($deletedCount -gt 0) {
+        Write-Host ("[INFO] Pruned {0} isolated build artifact director{1} using age/count retention (older than {2} days or beyond latest {3} per root) from artifacts/bin and artifacts/obj ({4} recovered)." -f `
+                $deletedCount, `
+                $(if ($deletedCount -eq 1) { 'y' } else { 'ies' }), `
+                $MaxAgeDays, `
+                $RetainLatest, `
+                (Format-MeridianBuildBytes -Bytes $freedBytes))
+    }
+}
+
+function Invoke-MeridianWorkflowArtifactRetention {
+    param(
+        [Parameter(Mandatory = $true)][string]$OutputRoot,
+        [int]$MaxAgeDays = 14,
+        [int]$RetainLatest = 10
+    )
+
+    if ($MaxAgeDays -le 0) {
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $OutputRoot -PathType Container)) {
+        return
+    }
+
+    $resolvedRoot = [System.IO.Path]::GetFullPath($OutputRoot)
+    if ($script:MeridianWorkflowArtifactRetentionRoots.ContainsKey($resolvedRoot)) {
+        return
+    }
+
+    $script:MeridianWorkflowArtifactRetentionRoots[$resolvedRoot] = $true
+
+    $resolvedRootWithSeparator = $resolvedRoot
+    if (-not $resolvedRootWithSeparator.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $resolvedRootWithSeparator += [System.IO.Path]::DirectorySeparatorChar
+    }
+
+    $runDirectories = @(
+        Get-ChildItem -LiteralPath $resolvedRoot -Directory -Force -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending
+    )
+
+    if ($runDirectories.Count -eq 0) {
+        return
+    }
+
+    $retainedDirectories = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    if ($RetainLatest -gt 0) {
+        foreach ($directory in ($runDirectories | Select-Object -First $RetainLatest)) {
+            [void]$retainedDirectories.Add([System.IO.Path]::GetFullPath($directory.FullName))
+        }
+    }
+
+    $cutoffUtc = (Get-Date).ToUniversalTime().AddDays(-$MaxAgeDays)
+    $deletedCount = 0
+    $freedBytes = 0L
+
+    foreach ($directory in $runDirectories) {
+        if ($directory.LastWriteTimeUtc -ge $cutoffUtc) {
+            continue
+        }
+
+        $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
+        if ($retainedDirectories.Contains($candidatePath)) {
+            continue
+        }
+
+        if (-not $candidatePath.StartsWith($resolvedRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+            Write-Warning "Skipping workflow artifact retention candidate outside expected root: $candidatePath"
+            continue
+        }
+
+        try {
+            $candidateBytes = Get-MeridianDirectorySizeBytes -Path $candidatePath
+            Remove-Item -LiteralPath $candidatePath -Recurse -Force -ErrorAction Stop
+            $deletedCount++
+            $freedBytes += $candidateBytes
+        }
+        catch {
+            Write-Warning "Failed to prune stale workflow artifact directory '$candidatePath': $($_.Exception.Message)"
+        }
+    }
+
+    if ($deletedCount -gt 0) {
+        Write-Host ("[INFO] Pruned {0} stale workflow artifact director{1} older than {2} days from {3}; retained latest {4} ({5} recovered)." -f `
+                $deletedCount, `
+                $(if ($deletedCount -eq 1) { 'y' } else { 'ies' }), `
+                $MaxAgeDays, `
+                $resolvedRoot, `
+                $RetainLatest, `
+                (Format-MeridianBuildBytes -Bytes $freedBytes))
+    }
+}
+
 function New-MeridianBuildIsolationKey {
     param([string]$Prefix = 'automation')
+
+    $repoRoot = Get-MeridianSharedRepoRoot
+    if (-not [string]::IsNullOrWhiteSpace($repoRoot)) {
+        Invoke-MeridianBuildArtifactRetention -RepoRoot $repoRoot
+    }
 
     $slug = ConvertTo-MeridianBuildSlug -Value $Prefix
     $timestamp = Get-Date -Format 'yyyyMMddHHmmss'
@@ -47,7 +259,14 @@ function Get-MeridianProjectBinaryPath {
 
     if ([string]::IsNullOrWhiteSpace($IsolationKey)) {
         $projectDirectory = Split-Path -Parent $ProjectPath
-        return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot (Join-Path $projectDirectory "bin/$Configuration/$Framework/$BinaryName")))
+        $projectOutputDirectory = if ([System.IO.Path]::IsPathRooted($projectDirectory)) {
+            Join-Path $projectDirectory "bin/$Configuration/$Framework"
+        }
+        else {
+            Join-Path $RepoRoot (Join-Path $projectDirectory "bin/$Configuration/$Framework")
+        }
+
+        return [System.IO.Path]::GetFullPath((Join-Path $projectOutputDirectory $BinaryName))
     }
 
     $outputRoot = Get-MeridianProjectOutputRoot -RepoRoot $RepoRoot -ProjectPath $ProjectPath -IsolationKey $IsolationKey

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterQueryService
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdentifierAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEconomicDefinitionByIdAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingParametersAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCorporateActionsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPreferredEquityTermsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConvertibleEquityTermsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
+    path: src/Meridian.Application/SecurityMaster/ISecurityMasterQueryService.cs
     startLine: 40
   assemblies:
   - Meridian.Application

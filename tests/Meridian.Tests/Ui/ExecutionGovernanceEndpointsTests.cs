@@ -4,8 +4,8 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.Models;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Ui.Shared.Endpoints;
@@ -61,7 +61,7 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
-    public async Task ControlsEndpoints_CreateAndClearManualOverride_UpdatesControlsAndAuditTrail()
+    public async Task ControlsEndpoints_CreateAndClearManualOverride_PreserveAuditMetadata()
     {
         var tempRoot = CreateTempRoot();
 
@@ -74,51 +74,43 @@ public sealed class ExecutionGovernanceEndpointsTests
         });
 
         var client = app.GetTestClient();
-        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops-supervisor");
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
         var createResponse = await client.PostAsync(
             "/api/execution/controls/manual-overrides",
             JsonContent(new
             {
                 kind = ExecutionManualOverrideKinds.AllowLivePromotion,
-                reason = "promotion approval window",
-                strategyId = "strat-42"
+                reason = "Risk review completed",
+                strategyId = "strategy-live",
+                runId = "run-123",
+                correlationId = "corr-override-create"
             }));
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        using var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync());
-        var createdOverride = createJson.RootElement
-            .GetProperty("manualOverrides")
-            .EnumerateArray()
-            .Single();
-
-        var overrideId = createdOverride.GetProperty("overrideId").GetString();
-        overrideId.Should().NotBeNullOrWhiteSpace();
-        createdOverride.GetProperty("kind").GetString().Should().Be(ExecutionManualOverrideKinds.AllowLivePromotion);
-        createdOverride.GetProperty("strategyId").GetString().Should().Be("strat-42");
-
-        var controlsAfterCreate = await client.GetAsync("/api/execution/controls");
-        controlsAfterCreate.StatusCode.Should().Be(HttpStatusCode.OK);
-        using var controlsAfterCreateJson = JsonDocument.Parse(await controlsAfterCreate.Content.ReadAsStringAsync());
-        controlsAfterCreateJson.RootElement
-            .GetProperty("manualOverrides")
-            .EnumerateArray()
-            .Should()
-            .Contain(entry => entry.GetProperty("overrideId").GetString() == overrideId);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdOverride = JsonSerializer.Deserialize<ExecutionManualOverride>(
+            await createResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+        createdOverride.Should().NotBeNull();
 
         var clearResponse = await client.PostAsync(
-            $"/api/execution/controls/manual-overrides/{overrideId}/clear",
-            JsonContent(new { reason = "window closed" }));
+            $"/api/execution/controls/manual-overrides/{createdOverride!.OverrideId}/clear",
+            JsonContent(new
+            {
+                reason = "Approval window closed",
+                correlationId = "corr-override-clear"
+            }));
+
         clearResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        using var clearJson = JsonDocument.Parse(await clearResponse.Content.ReadAsStringAsync());
-        clearJson.RootElement.GetProperty("manualOverrides").GetArrayLength().Should().Be(0);
 
-        var controlsAfterClear = await client.GetAsync("/api/execution/controls");
-        controlsAfterClear.StatusCode.Should().Be(HttpStatusCode.OK);
-        using var controlsAfterClearJson = JsonDocument.Parse(await controlsAfterClear.Content.ReadAsStringAsync());
-        controlsAfterClearJson.RootElement.GetProperty("manualOverrides").GetArrayLength().Should().Be(0);
-
-        var auditResponse = await client.GetAsync("/api/execution/audit?take=20");
+        var controlsResponse = await client.GetAsync("/api/execution/controls");
+        controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var controls = JsonSerializer.Deserialize<ExecutionControlSnapshot>(
+            await controlsResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+        controls.Should().NotBeNull();
+        controls!.ManualOverrides.Should().BeEmpty();
+        var auditResponse = await client.GetAsync("/api/execution/audit?take=10");
         auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(
             await auditResponse.Content.ReadAsStringAsync(),
@@ -127,10 +119,14 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "ManualOverrideCreated" &&
-            entry.Actor == "ops-supervisor");
+            entry.Actor == "ops" &&
+            entry.RunId == "run-123" &&
+            entry.CorrelationId == "corr-override-create");
         auditEntries.Should().Contain(entry =>
             entry.Action == "ManualOverrideCleared" &&
-            entry.Actor == "ops-supervisor");
+            entry.Actor == "ops" &&
+            entry.RunId == "run-123" &&
+            entry.CorrelationId == "corr-override-clear");
     }
 
     [Fact]

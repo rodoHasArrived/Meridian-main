@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEtlExportService
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsync
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 24
   assemblies:
   - Meridian.Application

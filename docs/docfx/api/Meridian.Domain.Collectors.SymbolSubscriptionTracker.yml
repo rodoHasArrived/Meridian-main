@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSubscriptionTracker
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 9
   assemblies:
   - Meridian.Domain
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 14
   assemblies:
   - Meridian.Domain
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireExplicitSubscription
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 22
   assemblies:
   - Meridian.Domain
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSubscription
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 27
   assemblies:
   - Meridian.Domain
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterSubscription
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 37
   assemblies:
   - Meridian.Domain
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSubscribed
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 47
   assemblies:
   - Meridian.Domain
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAutoSubscribe
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 53
   assemblies:
   - Meridian.Domain
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShouldProcessUpdate
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 62
   assemblies:
   - Meridian.Domain
@@ -306,7 +306,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSubscribedSymbols
-    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
     startLine: 74
   assemblies:
   - Meridian.Domain

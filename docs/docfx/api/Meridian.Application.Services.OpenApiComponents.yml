@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenApiComponents
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 583
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schemas
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 585
   assemblies:
   - Meridian.Application

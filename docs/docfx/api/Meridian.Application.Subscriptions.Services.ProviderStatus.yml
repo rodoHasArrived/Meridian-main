@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderStatus
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 488
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 488
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 489
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 490
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 491
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Available
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
     startLine: 492
   assemblies:
   - Meridian.Application

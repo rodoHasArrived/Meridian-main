@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MultiCurrencyCashBalance
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 23
   assemblies:
   - Meridian.Execution
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balances
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 30
   assemblies:
   - Meridian.Execution
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 35
   assemblies:
   - Meridian.Execution
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 41
   assemblies:
   - Meridian.Execution
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subtract
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 51
   assemblies:
   - Meridian.Execution
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToBaseCurrency
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 59
   assemblies:
   - Meridian.Execution
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
-    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
     startLine: 67
   assemblies:
   - Meridian.Execution

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioReadService
-    path: ../../src/Meridian.Strategies/Services/PortfolioReadService.cs
+    path: src/Meridian.Strategies/Services/PortfolioReadService.cs
     startLine: 8
   assemblies:
   - Meridian.Strategies
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/PortfolioReadService.cs
+    path: src/Meridian.Strategies/Services/PortfolioReadService.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/PortfolioReadService.cs
+    path: src/Meridian.Strategies/Services/PortfolioReadService.cs
     startLine: 16
   assemblies:
   - Meridian.Strategies
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSummary
-    path: ../../src/Meridian.Strategies/Services/PortfolioReadService.cs
+    path: src/Meridian.Strategies/Services/PortfolioReadService.cs
     startLine: 21
   assemblies:
   - Meridian.Strategies
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSummaryAsync
-    path: ../../src/Meridian.Strategies/Services/PortfolioReadService.cs
+    path: src/Meridian.Strategies/Services/PortfolioReadService.cs
     startLine: 24
   assemblies:
   - Meridian.Strategies

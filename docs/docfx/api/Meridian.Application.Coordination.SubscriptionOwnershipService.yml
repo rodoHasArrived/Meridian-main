@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionOwnershipService
-    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
     startLine: 2
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireAsync
-    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseAsync
-    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
     startLine: 18
   assemblies:
   - Meridian.Application

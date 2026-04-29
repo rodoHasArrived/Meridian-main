@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedResiliencePolicies
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultTimeout
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortTimeout
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 21
   assemblies:
   - Meridian.Infrastructure
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongTimeout
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 26
   assemblies:
   - Meridian.Infrastructure
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSharedResiliencePolicy
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddCustomResiliencePolicy
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRetryPolicy
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCircuitBreakerPolicy
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSharedResiliencePolicyTracked
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 113
   assemblies:
   - Meridian.Infrastructure
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitPolicy
-    path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
+    path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
     startLine: 128
   assemblies:
   - Meridian.Infrastructure

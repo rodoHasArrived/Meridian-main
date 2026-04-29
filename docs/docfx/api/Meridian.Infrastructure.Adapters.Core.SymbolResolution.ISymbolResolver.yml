@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISymbolResolver
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
     startLine: 7
   assemblies:
   - Meridian.Infrastructure
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSymbolAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure

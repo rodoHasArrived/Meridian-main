@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerSnapshot
-    path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
+    path: src/Meridian.Ledger/LedgerSnapshot.cs
     startLine: 5
   assemblies:
   - Meridian.Ledger
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
+    path: src/Meridian.Ledger/LedgerSnapshot.cs
     startLine: 5
   assemblies:
   - Meridian.Ledger
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
+    path: src/Meridian.Ledger/LedgerSnapshot.cs
     startLine: 6
   assemblies:
   - Meridian.Ledger
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balances
-    path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
+    path: src/Meridian.Ledger/LedgerSnapshot.cs
     startLine: 7
   assemblies:
   - Meridian.Ledger
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryCount
-    path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
+    path: src/Meridian.Ledger/LedgerSnapshot.cs
     startLine: 8
   assemblies:
   - Meridian.Ledger
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerEntryCount
-    path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
+    path: src/Meridian.Ledger/LedgerSnapshot.cs
     startLine: 9
   assemblies:
   - Meridian.Ledger

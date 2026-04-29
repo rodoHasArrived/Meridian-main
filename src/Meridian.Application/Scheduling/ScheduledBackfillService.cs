@@ -1,3 +1,4 @@
+using Meridian.Application.Backfill;
 using Meridian.Application.Coordination;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
     private readonly ScheduledBackfillOptions _options;
     private readonly List<string> _defaultSymbols;
     private readonly IScheduledWorkOwnershipService? _ownershipService;
+    private readonly AutoGapRemediationService? _autoGapRemediationService;
 
     private CancellationTokenSource? _cts;
     private Task? _schedulerTask;
@@ -44,7 +46,8 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         DataGapAnalyzer gapAnalyzer,
         IScheduledWorkOwnershipService? ownershipService = null,
         ScheduledBackfillOptions? options = null,
-        IEnumerable<string>? defaultSymbols = null)
+        IEnumerable<string>? defaultSymbols = null,
+        AutoGapRemediationService? autoGapRemediationService = null)
     {
         _logger = logger;
         _scheduleManager = scheduleManager;
@@ -54,6 +57,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         _ownershipService = ownershipService;
         _options = options ?? new ScheduledBackfillOptions();
         _defaultSymbols = defaultSymbols?.ToList() ?? new List<string>();
+        _autoGapRemediationService = autoGapRemediationService;
     }
 
     /// <summary>
@@ -383,6 +387,13 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                     execution.ToDate,
                     schedule.Granularity,
                     ct);
+
+                if (_autoGapRemediationService is not null)
+                {
+                    await _autoGapRemediationService
+                        .HandleGapAnalysisResultAsync(gapAnalysis, schedule.PreferredProviders.FirstOrDefault(), ct)
+                        .ConfigureAwait(false);
+                }
 
                 execution.Statistics.GapsDetected = gapAnalysis.TotalGaps;
 

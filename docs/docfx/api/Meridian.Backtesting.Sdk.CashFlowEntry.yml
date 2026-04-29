@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashFlowEntry
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Amount
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk

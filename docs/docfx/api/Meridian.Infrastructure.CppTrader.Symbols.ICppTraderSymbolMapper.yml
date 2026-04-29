@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderSymbolMapper
-    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
     startLine: 5
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbol
-    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
     startLine: 7
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToRegisterRequest
-    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertPriceToNanos
-    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertQuantityToNanos
-    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertQuantityFromNanos
-    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
     startLine: 15
   assemblies:
   - Meridian.Infrastructure.CppTrader

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorHandlingOptions
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 358
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 360
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Silent
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 361
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Verbose
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 362
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyUser
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 364
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeContext
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 365
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotificationTitle
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 366
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 367
   assemblies:
   - Meridian.Ui.Services

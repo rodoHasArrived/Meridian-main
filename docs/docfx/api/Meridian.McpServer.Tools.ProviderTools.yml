@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTools
-    path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
+    path: src/Meridian.McpServer/Tools/ProviderTools.cs
     startLine: 8
   assemblies:
   - Meridian.McpServer
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
+    path: src/Meridian.McpServer/Tools/ProviderTools.cs
     startLine: 25
   assemblies:
   - Meridian.McpServer
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListBackfillProviders
-    path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
+    path: src/Meridian.McpServer/Tools/ProviderTools.cs
     startLine: 35
   assemblies:
   - Meridian.McpServer
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastBackfillResult
-    path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
+    path: src/Meridian.McpServer/Tools/ProviderTools.cs
     startLine: 49
   assemblies:
   - Meridian.McpServer

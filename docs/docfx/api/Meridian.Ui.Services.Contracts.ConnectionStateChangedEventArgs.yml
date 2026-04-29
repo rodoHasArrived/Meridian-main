@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStateChangedEventArgs
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldState
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewState
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services

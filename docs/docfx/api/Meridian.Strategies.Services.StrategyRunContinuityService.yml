@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunContinuityService
-    path: ../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+    path: src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
     startLine: 7
   assemblies:
   - Meridian.Strategies
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+    path: src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunContinuityAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+    path: src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
     startLine: 25
   assemblies:
   - Meridian.Strategies

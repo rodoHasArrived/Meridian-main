@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerBandsData
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 597
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 599
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpperBand
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 600
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MiddleBand
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 601
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowerBand
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 602
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentB
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 603
   assemblies:
   - Meridian.Ui.Services

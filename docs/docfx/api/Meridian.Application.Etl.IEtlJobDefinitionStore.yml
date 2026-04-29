@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEtlJobDefinitionStore
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListAsync
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteAsync
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 12
   assemblies:
   - Meridian.Application

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighPerformanceJson
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 275
   assemblies:
   - Meridian.Core
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializeToUtf8Bytes
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 280
   assemblies:
   - Meridian.Core
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Serialize
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 288
   assemblies:
   - Meridian.Core
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeserializeFromUtf8Bytes
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 296
   assemblies:
   - Meridian.Core
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deserialize
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 304
   assemblies:
   - Meridian.Core
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseAlpacaTrade
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 312
   assemblies:
   - Meridian.Core
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseAlpacaQuote
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 320
   assemblies:
   - Meridian.Core
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseAlpacaMessages
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 328
   assemblies:
   - Meridian.Core
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteTo
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 336
   assemblies:
   - Meridian.Core
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializeToStreamAsync
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 344
   assemblies:
   - Meridian.Core

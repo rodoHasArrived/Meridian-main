@@ -69,6 +69,7 @@ public sealed class ReportGenerationService
             ct.ThrowIfCancellationRequested();
 
             SecurityDetailDto? detail = null;
+            SecurityEconomicDefinitionRecord? economicDefinition = null;
             if (!string.IsNullOrWhiteSpace(account.Symbol))
             {
                 try
@@ -76,6 +77,13 @@ public sealed class ReportGenerationService
                     detail = await _securityMaster
                         .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, account.Symbol, null, ct)
                         .ConfigureAwait(false);
+
+                    if (detail is not null)
+                    {
+                        economicDefinition = await _securityMaster
+                            .GetEconomicDefinitionByIdAsync(detail.SecurityId, ct)
+                            .ConfigureAwait(false);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -83,12 +91,23 @@ public sealed class ReportGenerationService
                 }
             }
 
+            var primaryIdentifier = economicDefinition?.Identifiers
+                .FirstOrDefault(static identifier => identifier.IsPrimary);
+            var lookupQuality = ResolveLookupQuality(detail, economicDefinition, primaryIdentifier);
+
             rows.Add(new EnrichedLedgerRow(
                 AccountName: account.Name,
                 AccountType: account.AccountType.ToString(),
                 Symbol: account.Symbol,
                 Currency: detail?.Currency,
                 AssetClass: detail?.AssetClass,
+                PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
+                PrimaryIdentifierValue: primaryIdentifier?.Value,
+                SubType: economicDefinition?.SubType,
+                AssetFamily: economicDefinition?.AssetFamily,
+                IssuerType: economicDefinition?.IssuerType,
+                RiskCountry: economicDefinition?.RiskCountry,
+                LookupQuality: lookupQuality,
                 DisplayName: detail?.DisplayName,
                 NetBalance: balance));
         }
@@ -102,13 +121,37 @@ public sealed class ReportGenerationService
     private static IReadOnlyList<AssetClassSection> BuildAssetClassSections(
         IReadOnlyList<EnrichedLedgerRow> rows)
         => rows
-            .GroupBy(r => r.AssetClass ?? "Unclassified", StringComparer.OrdinalIgnoreCase)
+            .GroupBy(r => r.AssetFamily ?? r.AssetClass ?? "Unclassified", StringComparer.OrdinalIgnoreCase)
             .Select(g => new AssetClassSection(
                 AssetClass: g.Key,
                 Rows: g.ToList(),
                 Total: g.Sum(r => r.NetBalance)))
             .OrderBy(s => s.AssetClass, StringComparer.Ordinal)
             .ToList();
+
+    private static string ResolveLookupQuality(
+        SecurityDetailDto? detail,
+        SecurityEconomicDefinitionRecord? economicDefinition,
+        SecurityIdentifierDto? primaryIdentifier)
+    {
+        if (detail is null)
+            return "missing";
+
+        if (economicDefinition is null)
+            return "partial";
+
+        var hasPrimaryIdentifier = primaryIdentifier is not null
+                                   && !string.IsNullOrWhiteSpace(primaryIdentifier.Value);
+        var hasGovernanceDimensions =
+            !string.IsNullOrWhiteSpace(economicDefinition.SubType)
+            && !string.IsNullOrWhiteSpace(economicDefinition.AssetFamily)
+            && !string.IsNullOrWhiteSpace(economicDefinition.IssuerType)
+            && !string.IsNullOrWhiteSpace(economicDefinition.RiskCountry);
+
+        return hasPrimaryIdentifier && hasGovernanceDimensions
+            ? "resolved"
+            : "partial";
+    }
 }
 
 // ── Request / result models ────────────────────────────────────────────────────
@@ -136,6 +179,13 @@ public sealed record EnrichedLedgerRow(
     string? Symbol,
     string? Currency,
     string? AssetClass,
+    string? PrimaryIdentifierKind,
+    string? PrimaryIdentifierValue,
+    string? SubType,
+    string? AssetFamily,
+    string? IssuerType,
+    string? RiskCountry,
+    string LookupQuality,
     string? DisplayName,
     decimal NetBalance);
 

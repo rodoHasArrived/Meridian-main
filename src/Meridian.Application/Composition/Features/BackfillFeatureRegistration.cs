@@ -30,6 +30,7 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             var factory = sp.GetService<ProviderFactory>();
             return new BackfillCoordinator(configStore, registry, factory);
         });
+        services.AddSingleton<IBackfillExecutionGateway, BackfillCoordinatorExecutionGateway>();
 
         // SchedulingService - symbol subscription scheduling
         services.AddSingleton<SchedulingService>(sp =>
@@ -56,6 +57,13 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             var config = configStore.Load();
             var history = sp.GetRequiredService<BackfillExecutionHistory>();
             return new BackfillScheduleManager(logger, config.DataRoot, history);
+        });
+        services.AddSingleton<AutoGapRemediationService>(sp =>
+        {
+            var gateway = sp.GetRequiredService<IBackfillExecutionGateway>();
+            var history = sp.GetRequiredService<BackfillExecutionHistory>();
+            var quality = sp.GetService<Monitoring.DataQuality.DataQualityMonitoringService>();
+            return new AutoGapRemediationService(gateway, history, quality);
         });
 
         return services;

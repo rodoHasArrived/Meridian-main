@@ -6,12 +6,12 @@ items:
   parent: Meridian.Execution.Services
   children:
   - Meridian.Execution.Services.ExecutionOperatorControlService.#ctor(Meridian.Execution.Services.ExecutionOperatorControlOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionOperatorControlService},Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
-  - Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
   - Meridian.Execution.Services.ExecutionOperatorControlService.CreateManualOverrideAsync(Meridian.Execution.Services.ManualOverrideRequest,System.Threading.CancellationToken)
   - Meridian.Execution.Services.ExecutionOperatorControlService.EvaluateLivePromotion(System.String,System.String,System.String)
   - Meridian.Execution.Services.ExecutionOperatorControlService.EvaluateOrder(Meridian.Execution.Sdk.OrderRequest,Meridian.Execution.Models.IPortfolioState)
   - Meridian.Execution.Services.ExecutionOperatorControlService.GetSnapshot
-  - Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.String,System.Threading.CancellationToken)
   - Meridian.Execution.Services.ExecutionOperatorControlService.SetDefaultPositionLimitAsync(System.Nullable{System.Decimal},System.String,System.String,System.Threading.CancellationToken)
   - Meridian.Execution.Services.ExecutionOperatorControlService.SetSymbolPositionLimitAsync(System.String,System.Nullable{System.Decimal},System.String,System.String,System.Threading.CancellationToken)
   langs:
@@ -27,8 +27,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionOperatorControlService
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 109
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 110
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -68,8 +68,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 121
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 122
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -106,8 +106,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 142
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 143
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -119,16 +119,16 @@ items:
       type: Meridian.Execution.Services.ExecutionControlSnapshot
     content.vb: Public Function GetSnapshot() As ExecutionControlSnapshot
   overload: Meridian.Execution.Services.ExecutionOperatorControlService.GetSnapshot*
-- uid: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.Threading.CancellationToken)
-  id: SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.Threading.CancellationToken)
+- uid: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: SetCircuitBreakerAsync(System.Boolean,System.String,System.String,System.String,System.Threading.CancellationToken)
   parent: Meridian.Execution.Services.ExecutionOperatorControlService
   langs:
   - csharp
   - vb
-  name: SetCircuitBreakerAsync(bool, string?, string?, CancellationToken)
-  nameWithType: ExecutionOperatorControlService.SetCircuitBreakerAsync(bool, string?, string?, CancellationToken)
-  fullName: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(bool, string?, string?, System.Threading.CancellationToken)
+  name: SetCircuitBreakerAsync(bool, string?, string?, string?, CancellationToken)
+  nameWithType: ExecutionOperatorControlService.SetCircuitBreakerAsync(bool, string?, string?, string?, CancellationToken)
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(bool, string?, string?, string?, System.Threading.CancellationToken)
   type: Method
   source:
     remote:
@@ -136,15 +136,15 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetCircuitBreakerAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 154
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 155
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
   summary: Opens or closes the global execution circuit breaker.
   example: []
   syntax:
-    content: public Task<ExecutionControlSnapshot> SetCircuitBreakerAsync(bool isOpen, string? reason, string? changedBy, CancellationToken ct = default)
+    content: public Task<ExecutionControlSnapshot> SetCircuitBreakerAsync(bool isOpen, string? reason, string? changedBy, string? correlationId = null, CancellationToken ct = default)
     parameters:
     - id: isOpen
       type: System.Boolean
@@ -152,15 +152,17 @@ items:
       type: System.String
     - id: changedBy
       type: System.String
+    - id: correlationId
+      type: System.String
     - id: ct
       type: System.Threading.CancellationToken
     return:
       type: System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionControlSnapshot}
-    content.vb: Public Function SetCircuitBreakerAsync(isOpen As Boolean, reason As String, changedBy As String, ct As CancellationToken = Nothing) As Task(Of ExecutionControlSnapshot)
+    content.vb: Public Function SetCircuitBreakerAsync(isOpen As Boolean, reason As String, changedBy As String, correlationId As String = Nothing, ct As CancellationToken = Nothing) As Task(Of ExecutionControlSnapshot)
   overload: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync*
-  nameWithType.vb: ExecutionOperatorControlService.SetCircuitBreakerAsync(Boolean, String, String, CancellationToken)
-  fullName.vb: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(Boolean, String, String, System.Threading.CancellationToken)
-  name.vb: SetCircuitBreakerAsync(Boolean, String, String, CancellationToken)
+  nameWithType.vb: ExecutionOperatorControlService.SetCircuitBreakerAsync(Boolean, String, String, String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync(Boolean, String, String, String, System.Threading.CancellationToken)
+  name.vb: SetCircuitBreakerAsync(Boolean, String, String, String, CancellationToken)
 - uid: Meridian.Execution.Services.ExecutionOperatorControlService.SetDefaultPositionLimitAsync(System.Nullable{System.Decimal},System.String,System.String,System.Threading.CancellationToken)
   commentId: M:Meridian.Execution.Services.ExecutionOperatorControlService.SetDefaultPositionLimitAsync(System.Nullable{System.Decimal},System.String,System.String,System.Threading.CancellationToken)
   id: SetDefaultPositionLimitAsync(System.Nullable{System.Decimal},System.String,System.String,System.Threading.CancellationToken)
@@ -178,8 +180,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetDefaultPositionLimitAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 191
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 196
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -220,8 +222,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetSymbolPositionLimitAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 228
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 236
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -264,8 +266,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateManualOverrideAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 279
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 290
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -282,16 +284,16 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionManualOverride}
     content.vb: Public Function CreateManualOverrideAsync(request As ManualOverrideRequest, ct As CancellationToken = Nothing) As Task(Of ExecutionManualOverride)
   overload: Meridian.Execution.Services.ExecutionOperatorControlService.CreateManualOverrideAsync*
-- uid: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
-  id: ClearManualOverrideAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+- uid: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: ClearManualOverrideAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
   parent: Meridian.Execution.Services.ExecutionOperatorControlService
   langs:
   - csharp
   - vb
-  name: ClearManualOverrideAsync(string, string?, string?, CancellationToken)
-  nameWithType: ExecutionOperatorControlService.ClearManualOverrideAsync(string, string?, string?, CancellationToken)
-  fullName: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(string, string?, string?, System.Threading.CancellationToken)
+  name: ClearManualOverrideAsync(string, string?, string?, string?, CancellationToken)
+  nameWithType: ExecutionOperatorControlService.ClearManualOverrideAsync(string, string?, string?, string?, CancellationToken)
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(string, string?, string?, string?, System.Threading.CancellationToken)
   type: Method
   source:
     remote:
@@ -299,15 +301,15 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearManualOverrideAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 337
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 351
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
   summary: Clears an existing manual override.
   example: []
   syntax:
-    content: public Task<bool> ClearManualOverrideAsync(string overrideId, string? changedBy, string? reason, CancellationToken ct = default)
+    content: public Task<bool> ClearManualOverrideAsync(string overrideId, string? changedBy, string? reason, string? correlationId = null, CancellationToken ct = default)
     parameters:
     - id: overrideId
       type: System.String
@@ -315,15 +317,17 @@ items:
       type: System.String
     - id: reason
       type: System.String
+    - id: correlationId
+      type: System.String
     - id: ct
       type: System.Threading.CancellationToken
     return:
       type: System.Threading.Tasks.Task{System.Boolean}
-    content.vb: Public Function ClearManualOverrideAsync(overrideId As String, changedBy As String, reason As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+    content.vb: Public Function ClearManualOverrideAsync(overrideId As String, changedBy As String, reason As String, correlationId As String = Nothing, ct As CancellationToken = Nothing) As Task(Of Boolean)
   overload: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync*
-  nameWithType.vb: ExecutionOperatorControlService.ClearManualOverrideAsync(String, String, String, CancellationToken)
-  fullName.vb: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(String, String, String, System.Threading.CancellationToken)
-  name.vb: ClearManualOverrideAsync(String, String, String, CancellationToken)
+  nameWithType.vb: ExecutionOperatorControlService.ClearManualOverrideAsync(String, String, String, String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync(String, String, String, String, System.Threading.CancellationToken)
+  name.vb: ClearManualOverrideAsync(String, String, String, String, CancellationToken)
 - uid: Meridian.Execution.Services.ExecutionOperatorControlService.EvaluateOrder(Meridian.Execution.Sdk.OrderRequest,Meridian.Execution.Models.IPortfolioState)
   commentId: M:Meridian.Execution.Services.ExecutionOperatorControlService.EvaluateOrder(Meridian.Execution.Sdk.OrderRequest,Meridian.Execution.Models.IPortfolioState)
   id: EvaluateOrder(Meridian.Execution.Sdk.OrderRequest,Meridian.Execution.Models.IPortfolioState)
@@ -341,8 +345,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateOrder
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 383
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 404
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -379,8 +383,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateLivePromotion
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 444
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 465
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -819,7 +823,7 @@ references:
   fullName: Meridian.Execution.Services.ExecutionControlSnapshot
 - uid: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync*
   commentId: Overload:Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync
-  href: Meridian.Execution.Services.ExecutionOperatorControlService.html#Meridian_Execution_Services_ExecutionOperatorControlService_SetCircuitBreakerAsync_System_Boolean_System_String_System_String_System_Threading_CancellationToken_
+  href: Meridian.Execution.Services.ExecutionOperatorControlService.html#Meridian_Execution_Services_ExecutionOperatorControlService_SetCircuitBreakerAsync_System_Boolean_System_String_System_String_System_String_System_Threading_CancellationToken_
   name: SetCircuitBreakerAsync
   nameWithType: ExecutionOperatorControlService.SetCircuitBreakerAsync
   fullName: Meridian.Execution.Services.ExecutionOperatorControlService.SetCircuitBreakerAsync
@@ -1089,7 +1093,7 @@ references:
   - name: )
 - uid: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync*
   commentId: Overload:Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync
-  href: Meridian.Execution.Services.ExecutionOperatorControlService.html#Meridian_Execution_Services_ExecutionOperatorControlService_ClearManualOverrideAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  href: Meridian.Execution.Services.ExecutionOperatorControlService.html#Meridian_Execution_Services_ExecutionOperatorControlService_ClearManualOverrideAsync_System_String_System_String_System_String_System_String_System_Threading_CancellationToken_
   name: ClearManualOverrideAsync
   nameWithType: ExecutionOperatorControlService.ClearManualOverrideAsync
   fullName: Meridian.Execution.Services.ExecutionOperatorControlService.ClearManualOverrideAsync

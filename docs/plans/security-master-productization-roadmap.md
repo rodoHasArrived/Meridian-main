@@ -1,7 +1,7 @@
 # Security Master Productization Roadmap
 
-**Last Updated:** 2026-04-16
-**Status:** Delivered baseline with Wave 6 operator workflow closure
+**Last Updated:** 2026-04-25
+**Status:** Delivered Security Master baseline; Wave 4 governance and fund-operations follow-ons remain active in the canonical roadmap
 **Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
@@ -15,7 +15,7 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 **Quick reference for types proposed in this roadmap:**
 
 | New concept | Required name form |
-|---|---|
+| --- | --- |
 | Corporate Action identifier | `CorpActId = CorpActId of Guid` |
 | Corporate Action domain event DU | `CorpActEvent` (not `CorporateActionEvent`) |
 | Bond term-sheet record | `BondDef` (not `BondTerms` for top-level; sub-records like `CouponTerms` remain as-is) |
@@ -30,14 +30,14 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 
 ## Summary
 
-Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap originally captured six prioritized ideas that moved Security Master from a backend capability into a first-class platform layer. It now records the delivered workstation/read-model productization plus the completed Wave 6 operator workflow closure that made ingest posture, conflict resolution, and governance drill-ins first-class workstation journeys.
+Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap originally captured six prioritized ideas that moved Security Master from a backend capability into a first-class platform layer. It now records the delivered workstation/read-model productization plus the completed Security Master operator workflow closure that made ingest posture, conflict resolution, and governance drill-ins first-class workstation journeys.
 
 Security Master is no longer a future roadmap wave. In the canonical roadmap it is a delivered baseline feeding the active governance productization path.
 
 **Delivered mechanics snapshot (as of 2026-04-16):**
 
 | # | Idea | Status |
-|---|------|--------|
+| --- | ------ | -------- |
 | 1 | Corporate Action Events | ✅ Delivered |
 | 2 | Bond Term Richness | ✅ Delivered |
 | 3 | Trading Parameters | ✅ Delivered |
@@ -45,14 +45,15 @@ Security Master is no longer a future roadmap wave. In the canonical roadmap it 
 | 5 | Golden Record Conflict Resolution | ✅ Delivered |
 | 6 | WPF Security Master Browser | ✅ Delivered |
 
-**Canonical status source note (2026-04-16):**
+**Canonical status source note (2026-04-25):**
 
-- Treat this roadmap as the canonical Wave 6 status source.
-- `docs/status/FEATURE_INVENTORY.md` should mirror these Wave 6 statuses and wording.
+- Treat [`../status/ROADMAP.md`](../status/ROADMAP.md) and [`../status/PROGRAM_STATE.md`](../status/PROGRAM_STATE.md) as the canonical wave status sources.
+- Treat this roadmap as the delivered-baseline reference for Security Master mechanics and the starting point for Wave 4 governance/fund-operations follow-ons.
+- `docs/status/FEATURE_INVENTORY.md` should mirror the delivered Security Master baseline without treating Security Master as a separate later-wave item.
 
-## Wave 6 Closure (2026-04-16)
+## Security Master Operator Closure (2026-04-16)
 
-The Wave 6 operator slice is now complete:
+The Security Master operator slice is now complete:
 
 1. **Automatic ingest-time conflict detection**
    - create, amend, import, and projection-write flows record `SecurityMasterConflict` entries instead of silently overwriting mismatches.
@@ -104,7 +105,7 @@ The following capabilities were implemented as foundational work for this wave a
 `SecurityTermModules.fs` now models fixed-income terms as a rich, composable module record rather than a single monolithic discriminated union case. The following term modules are fully implemented:
 
 | Module | F# Type | Key Fields |
-|--------|---------|-----------|
+| -------- | --------- | ----------- |
 | Maturity | `MaturityTerms` | `EffectiveDate`, `IssueDate`, `MaturityDate` (all `DateOnly option`) |
 | Coupon | `CouponTerms` | `CouponType`, `CouponRate`, `PaymentFrequency`, `DayCount` |
 | Discount | `DiscountTerms` | `DiscountRate`, `YieldRate` |
@@ -142,7 +143,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ### Acceptance Criteria — Status
 
 | Criterion | Status |
-|---|---|
+| --- | --- |
 | `PaperTradingGateway` rejects a sub-lot order for an instrument with `LotSize > 1` | ✅ Done |
 | `BacktestEngine` rounds fill prices to the instrument's tick size | ✅ Done |
 | Parameters are queryable by `GET /api/security-master/{id}/trading-parameters` | ✅ Done |
@@ -165,7 +166,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ### Acceptance Criteria — Status
 
 | Criterion | Status |
-|---|---|
+| --- | --- |
 | Polygon provider ingests a full exchange listing without manual CSV export. | ✅ Done |
 | `GET /api/security-master/ingest/status` returns in-progress and last-completed ingest summary. | ✅ Done |
 
@@ -186,7 +187,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ### Acceptance Criteria — Status
 
 | Criterion | Status |
-|---|---|
+| --- | --- |
 | Two providers with differing `DisplayName` for the same FIGI trigger an automatic `SecurityMasterConflict` record during ingest. | ✅ Done |
 | Unresolved conflict count is surfaced in the Security Master workstation operator surface. | ✅ Done |
 
@@ -210,7 +211,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 ## Sequencing
 
 | Order | Idea | Status | Notes |
-|-------|------|--------|-------|
+| ------- | ------ | -------- | ------- |
 | 1 | Bond Term Richness | ✅ Done | Data model foundation; enables fixed-income workflows downstream |
 | 2 | WPF Security Master Browser | ✅ Done | UI surface on top of completed backend capabilities |
 | 3 | Trading Parameters | ✅ Done | All six fields exposed; PaperTradingGateway validates lot size and snaps to tick grid |

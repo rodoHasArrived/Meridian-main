@@ -13,82 +13,97 @@ public static class ColorPalette
     public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 
 
-    /// <summary>Success/Active state (green).</summary>
-    public static readonly ArgbColor Success = new(255, 72, 187, 120);
+    /// <summary>Success/Active state (mint).</summary>
+    public static readonly ArgbColor Success = new(255, 38, 191, 134);
 
-    /// <summary>Warning state (orange).</summary>
-    public static readonly ArgbColor Warning = new(255, 237, 137, 54);
+    /// <summary>Warning state (amber).</summary>
+    public static readonly ArgbColor Warning = new(255, 214, 158, 56);
 
-    /// <summary>Error/Danger state (red).</summary>
-    public static readonly ArgbColor Error = new(255, 245, 101, 101);
+    /// <summary>Error/Danger state (coral).</summary>
+    public static readonly ArgbColor Error = new(255, 222, 88, 120);
 
-    /// <summary>Informational state (blue).</summary>
-    public static readonly ArgbColor Info = new(255, 88, 166, 255);
+    /// <summary>Informational state (signal cyan).</summary>
+    public static readonly ArgbColor Info = new(255, 42, 178, 212);
 
-    /// <summary>Inactive/Disabled state (gray).</summary>
-    public static readonly ArgbColor Inactive = new(255, 160, 174, 192);
+    /// <summary>Inactive/Disabled state (muted blue-gray).</summary>
+    public static readonly ArgbColor Inactive = new(255, 141, 160, 179);
 
-    /// <summary>Critical severity (bright red).</summary>
-    public static readonly ArgbColor Critical = new(255, 248, 81, 73);
+    /// <summary>Critical severity (coral).</summary>
+    public static readonly ArgbColor Critical = Error;
 
-    /// <summary>Warning events (amber/gold).</summary>
-    public static readonly ArgbColor WarningEvent = new(255, 210, 153, 34);
-
-
-
-    /// <summary>Primary chart line color (blue).</summary>
-    public static readonly ArgbColor ChartPrimary = new(255, 66, 153, 225);
-
-    /// <summary>Secondary chart line color (purple).</summary>
-    public static readonly ArgbColor ChartSecondary = new(255, 159, 122, 234);
-
-    /// <summary>Tertiary chart line color (teal).</summary>
-    public static readonly ArgbColor ChartTertiary = new(255, 56, 178, 172);
-
-    /// <summary>Chart positive/up color (green).</summary>
-    public static readonly ArgbColor ChartPositive = new(255, 72, 187, 120);
-
-    /// <summary>Chart negative/down color (red).</summary>
-    public static readonly ArgbColor ChartNegative = new(255, 245, 101, 101);
+    /// <summary>Warning events (amber).</summary>
+    public static readonly ArgbColor WarningEvent = Warning;
 
 
 
-    /// <summary>Data quality excellent (bright green).</summary>
-    public static readonly ArgbColor QualityExcellent = new(255, 56, 161, 105);
+    /// <summary>Primary chart line color (signal cyan).</summary>
+    public static readonly ArgbColor ChartPrimary = new(255, 42, 178, 212);
 
-    /// <summary>Data quality fair (yellow).</summary>
-    public static readonly ArgbColor QualityFair = new(255, 236, 201, 75);
+    /// <summary>Secondary chart line color (paper blue).</summary>
+    public static readonly ArgbColor ChartSecondary = new(255, 96, 165, 250);
+
+    /// <summary>Tertiary chart line color (amber).</summary>
+    public static readonly ArgbColor ChartTertiary = new(255, 214, 158, 56);
+
+    /// <summary>Chart positive/up color (mint).</summary>
+    public static readonly ArgbColor ChartPositive = Success;
+
+    /// <summary>Chart negative/down color (coral).</summary>
+    public static readonly ArgbColor ChartNegative = Error;
+
+    /// <summary>Chart card background.</summary>
+    public static readonly ArgbColor ChartBackground = new(255, 11, 21, 32);
+
+    /// <summary>Chart plot-area background.</summary>
+    public static readonly ArgbColor ChartDataBackground = new(255, 8, 16, 26);
+
+    /// <summary>Chart grid line color.</summary>
+    public static readonly ArgbColor ChartGrid = new(255, 26, 45, 68);
+
+    /// <summary>Chart axis and tick-label color.</summary>
+    public static readonly ArgbColor ChartAxis = new(255, 168, 181, 196);
+
+    /// <summary>Chart border color.</summary>
+    public static readonly ArgbColor ChartBorder = new(255, 42, 69, 102);
+
+
+
+    /// <summary>Data quality excellent (mint).</summary>
+    public static readonly ArgbColor QualityExcellent = Success;
+
+    /// <summary>Data quality fair (amber).</summary>
+    public static readonly ArgbColor QualityFair = Warning;
 
 
 
     /// <summary>Accent color for interactive elements.</summary>
-    public static readonly ArgbColor Accent = new(255, 99, 102, 241);
+    public static readonly ArgbColor Accent = Info;
 
     /// <summary>Subtle background color.</summary>
-    public static readonly ArgbColor SubtleBackground = new(255, 45, 55, 72);
+    public static readonly ArgbColor SubtleBackground = ChartDataBackground;
 
     /// <summary>Card background color.</summary>
-    public static readonly ArgbColor CardBackground = new(255, 26, 32, 44);
+    public static readonly ArgbColor CardBackground = ChartBackground;
 
     /// <summary>Muted text color.</summary>
-    public static readonly ArgbColor MutedText = new(255, 160, 174, 192);
+    public static readonly ArgbColor MutedText = ChartAxis;
 
     /// <summary>Light text on dark background.</summary>
-    public static readonly ArgbColor LightText = new(255, 226, 232, 240);
+    public static readonly ArgbColor LightText = new(255, 232, 241, 249);
 
 
 
     /// <summary>Semi-transparent success background.</summary>
-    public static readonly ArgbColor SuccessBackground = new(40, 72, 187, 120);
+    public static readonly ArgbColor SuccessBackground = new(40, 38, 191, 134);
 
     /// <summary>Semi-transparent warning background.</summary>
-    public static readonly ArgbColor WarningBackground = new(40, 237, 137, 54);
+    public static readonly ArgbColor WarningBackground = new(40, 214, 158, 56);
 
     /// <summary>Semi-transparent error background.</summary>
-    public static readonly ArgbColor ErrorBackground = new(40, 245, 101, 101);
+    public static readonly ArgbColor ErrorBackground = new(40, 222, 88, 120);
 
     /// <summary>Semi-transparent info background.</summary>
-    public static readonly ArgbColor InfoBackground = new(40, 88, 166, 255);
+    public static readonly ArgbColor InfoBackground = new(40, 42, 178, 212);
 
 
 

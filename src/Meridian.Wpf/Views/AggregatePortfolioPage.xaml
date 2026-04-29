@@ -7,6 +7,10 @@
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Aggregate Portfolio">
 
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />  <!-- exposure summary bar -->
@@ -69,6 +73,7 @@
         <!-- ─── Netted positions grid ─────────────────────────────────────── -->
         <DataGrid Grid.Row="2"
                   ItemsSource="{Binding Positions}"
+                  Visibility="{Binding IsPositionsGridVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserSortColumns="True"
@@ -89,6 +94,40 @@
                 <DataGridTextColumn Header="Runs"           Binding="{Binding ContributingRuns}"                      Width="50" />
             </DataGrid.Columns>
         </DataGrid>
+
+        <Border x:Name="AggregatePositionsEmptyStatePanel"
+                Grid.Row="2"
+                Padding="28"
+                Background="{DynamicResource CardBackgroundBrush}"
+                CornerRadius="6"
+                Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                AutomationProperties.AutomationId="AggregatePositionsEmptyStatePanel"
+                AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        MaxWidth="480">
+                <TextBlock x:Name="AggregatePositionsEmptyStateTitle"
+                           Text="{Binding PositionsEmptyStateTitle}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           AutomationProperties.AutomationId="AggregatePositionsEmptyStateTitle" />
+                <TextBlock x:Name="AggregatePositionsEmptyStateDetail"
+                           Margin="0,8,0,16"
+                           Text="{Binding PositionsEmptyStateDetail}"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           AutomationProperties.AutomationId="AggregatePositionsEmptyStateDetail" />
+                <Button x:Name="AggregatePositionsEmptyStateRefreshButton"
+                        Content="Refresh Portfolio"
+                        Command="{Binding RefreshCommand}"
+                        HorizontalAlignment="Center"
+                        MinWidth="140"
+                        AutomationProperties.AutomationId="AggregatePositionsEmptyStateRefreshButton" />
+            </StackPanel>
+        </Border>
 
         <!-- ─── Status bar ────────────────────────────────────────────────── -->
         <TextBlock Grid.Row="3" Margin="0,8,0,0"

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleEstimate
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 469
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 471
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 472
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSourceRecords
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 473
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSampleSize
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 474
   assemblies:
   - Meridian.Ui.Services
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedFileSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 475
   assemblies:
   - Meridian.Ui.Services
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedDurationSeconds
-    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
     startLine: 476
   assemblies:
   - Meridian.Ui.Services

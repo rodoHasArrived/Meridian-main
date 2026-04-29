@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndicatorType
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 553
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Overlay
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 555
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Oscillator
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 556
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Separate
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 557
   assemblies:
   - Meridian.Ui.Services

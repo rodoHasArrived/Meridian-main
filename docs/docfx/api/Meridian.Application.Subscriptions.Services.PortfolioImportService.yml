@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImportService
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromBrokerAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromAlpacaAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromInteractiveBrokersAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 81
   assemblies:
   - Meridian.Application
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportManualAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPortfolioSummaryAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 150
   assemblies:
   - Meridian.Application
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableBrokers
-    path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
     startLine: 165
   assemblies:
   - Meridian.Application

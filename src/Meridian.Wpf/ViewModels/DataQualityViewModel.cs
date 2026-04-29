@@ -139,6 +139,14 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     public bool HasNoAnomalies { get => _hasNoAnomalies; private set => SetProperty(ref _hasNoAnomalies, value); }
     private bool _hasNoSymbols = true;
     public bool HasNoSymbols { get => _hasNoSymbols; private set => SetProperty(ref _hasNoSymbols, value); }
+    private bool _hasActiveSymbolFilter;
+    public bool HasActiveSymbolFilter { get => _hasActiveSymbolFilter; private set => SetProperty(ref _hasActiveSymbolFilter, value); }
+    private string _symbolFilterScopeText = "Showing all monitored symbols.";
+    public string SymbolFilterScopeText { get => _symbolFilterScopeText; private set => SetProperty(ref _symbolFilterScopeText, value); }
+    private string _symbolEmptyStateTitle = "No symbols are currently being monitored.";
+    public string SymbolEmptyStateTitle { get => _symbolEmptyStateTitle; private set => SetProperty(ref _symbolEmptyStateTitle, value); }
+    private string _symbolEmptyStateDetail = "Add symbols from the workspace before running quality checks.";
+    public string SymbolEmptyStateDetail { get => _symbolEmptyStateDetail; private set => SetProperty(ref _symbolEmptyStateDetail, value); }
     private bool _isAnomalyCountBadgeVisible;
     public bool IsAnomalyCountBadgeVisible { get => _isAnomalyCountBadgeVisible; private set => SetProperty(ref _isAnomalyCountBadgeVisible, value); }
     private string _anomalyCountText = "0";
@@ -224,10 +232,13 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public void ApplySymbolFilter(string query)
     {
-        _symbolFilter = query ?? string.Empty;
+        _symbolFilter = (query ?? string.Empty).Trim();
         ReplaceCollection(FilteredSymbols, SymbolQuality.Where(s => string.IsNullOrWhiteSpace(_symbolFilter) || s.Symbol.Contains(_symbolFilter, StringComparison.OrdinalIgnoreCase)));
         HasNoSymbols = FilteredSymbols.Count == 0;
+        UpdateSymbolFilterState();
     }
+
+    public void ClearSymbolFilter() => ApplySymbolFilter(string.Empty);
 
     public void ApplyAlertFilter(string severity)
     {
@@ -310,7 +321,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         foreach (var alert in _allAlerts.ToList())
         {
-            try { await _apiClient.AcknowledgeAnomalyAsync(alert.Id, ct).ConfigureAwait(false); }
+            try
+            { await _apiClient.AcknowledgeAnomalyAsync(alert.Id, ct).ConfigureAwait(false); }
             catch (Exception ex) { _loggingService.LogError("Failed to acknowledge alert", ex); }
         }
 
@@ -457,13 +469,25 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public static string GetGrade(double score) => score switch
     {
-        >= 95 => "A+", >= 90 => "A", >= 85 => "A-", >= 80 => "B+", >= 75 => "B",
-        >= 70 => "B-", >= 65 => "C+", >= 60 => "C", >= 55 => "C-", >= 50 => "D", _ => "F"
+        >= 95 => "A+",
+        >= 90 => "A",
+        >= 85 => "A-",
+        >= 80 => "B+",
+        >= 75 => "B",
+        >= 70 => "B-",
+        >= 65 => "C+",
+        >= 60 => "C",
+        >= 55 => "C-",
+        >= 50 => "D",
+        _ => "F"
     };
 
     public static string GetStatus(double score) => score switch
     {
-        >= 90 => "Excellent", >= 75 => "Healthy", >= 50 => "Warning", _ => "Critical"
+        >= 90 => "Excellent",
+        >= 75 => "Healthy",
+        >= 50 => "Warning",
+        _ => "Critical"
     };
 
     public void Dispose()
@@ -611,9 +635,37 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         TrendChartChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    private void UpdateSymbolFilterState()
+    {
+        HasActiveSymbolFilter = !string.IsNullOrWhiteSpace(_symbolFilter);
+        SymbolFilterScopeText = HasActiveSymbolFilter
+            ? $"Filtering monitored symbols by \"{_symbolFilter}\"."
+            : "Showing all monitored symbols.";
+
+        if (SymbolQuality.Count == 0)
+        {
+            SymbolEmptyStateTitle = "No symbols are currently being monitored.";
+            SymbolEmptyStateDetail = HasActiveSymbolFilter
+                ? "Clear the filter or add symbols from the workspace before running quality checks."
+                : "Add symbols from the workspace before running quality checks.";
+            return;
+        }
+
+        if (HasActiveSymbolFilter)
+        {
+            SymbolEmptyStateTitle = $"No monitored symbols match \"{_symbolFilter}\".";
+            SymbolEmptyStateDetail = "Clear the filter to return to the monitored-symbol quality list.";
+            return;
+        }
+
+        SymbolEmptyStateTitle = "No symbols are currently being monitored.";
+        SymbolEmptyStateDetail = "Add symbols from the workspace before running quality checks.";
+    }
+
     private AlertModel? BuildAlertModel(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.Object) return null;
+        if (element.ValueKind != JsonValueKind.Object)
+            return null;
         var severityIndex = element.TryGetProperty("severity", out var severityNode) && severityNode.TryGetInt32(out var parsedSeverity) ? parsedSeverity : 0;
 
         return new AlertModel
@@ -629,7 +681,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     private AnomalyModel? BuildAnomalyModel(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.Object) return null;
+        if (element.ValueKind != JsonValueKind.Object)
+            return null;
         var severityIndex = element.TryGetProperty("severity", out var severityNode) && severityNode.TryGetInt32(out var parsedSeverity) ? parsedSeverity : 0;
         var typeIndex = element.TryGetProperty("type", out var typeNode) && typeNode.TryGetInt32(out var parsedType) ? parsedType : -1;
         var timestamp = string.Empty;

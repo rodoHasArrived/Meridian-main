@@ -41,7 +41,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPreset
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compression
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Destination
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 44
   assemblies:
   - Meridian.Contracts
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilenamePattern
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 51
   assemblies:
   - Meridian.Contracts
@@ -387,7 +387,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filters
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -430,7 +430,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schedule
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 64
   assemblies:
   - Meridian.Contracts
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleEnabled
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 70
   assemblies:
   - Meridian.Contracts
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostExportHook
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 77
   assemblies:
   - Meridian.Contracts
@@ -565,7 +565,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnComplete
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 83
   assemblies:
   - Meridian.Contracts
@@ -608,7 +608,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeDataDictionary
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 89
   assemblies:
   - Meridian.Contracts
@@ -651,7 +651,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeLoaderScript
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 95
   assemblies:
   - Meridian.Contracts
@@ -694,7 +694,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverwriteExisting
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 101
   assemblies:
   - Meridian.Contracts
@@ -737,7 +737,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 107
   assemblies:
   - Meridian.Contracts
@@ -780,7 +780,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 113
   assemblies:
   - Meridian.Contracts
@@ -823,7 +823,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUsedAt
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 119
   assemblies:
   - Meridian.Contracts
@@ -866,7 +866,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseCount
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 125
   assemblies:
   - Meridian.Contracts
@@ -909,7 +909,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBuiltIn
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 131
   assemblies:
   - Meridian.Contracts
@@ -952,7 +952,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Columns
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 138
   assemblies:
   - Meridian.Contracts
@@ -998,7 +998,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeManifest
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -1044,7 +1044,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validation
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 152
   assemblies:
   - Meridian.Contracts

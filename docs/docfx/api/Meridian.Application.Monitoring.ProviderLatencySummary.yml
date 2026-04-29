@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderLatencySummary
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 434
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 434
   assemblies:
   - Meridian.Application
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 435
   assemblies:
   - Meridian.Application
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FastestProvider
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 436
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlowestProvider
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 437
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP50Ms
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 438
   assemblies:
   - Meridian.Application
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP95Ms
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 439
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP99Ms
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 440
   assemblies:
   - Meridian.Application
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSamples
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 441
   assemblies:
   - Meridian.Application
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 442
   assemblies:
   - Meridian.Application

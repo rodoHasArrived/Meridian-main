@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyParameterAttribute
-    path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
+    path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
+    path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
+    path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
+    path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk

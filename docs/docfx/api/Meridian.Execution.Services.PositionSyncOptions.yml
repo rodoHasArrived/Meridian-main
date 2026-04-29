@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionSyncOptions
-    path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
+    path: src/Meridian.Execution/Services/PositionSyncOptions.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
+    path: src/Meridian.Execution/Services/PositionSyncOptions.cs
     startLine: 19
   assemblies:
   - Meridian.Execution
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncInterval
-    path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
+    path: src/Meridian.Execution/Services/PositionSyncOptions.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConsecutiveFailures
-    path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
+    path: src/Meridian.Execution/Services/PositionSyncOptions.cs
     startLine: 30
   assemblies:
   - Meridian.Execution
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackOffInterval
-    path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
+    path: src/Meridian.Execution/Services/PositionSyncOptions.cs
     startLine: 36
   assemblies:
   - Meridian.Execution
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DivergenceTolerance
-    path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
+    path: src/Meridian.Execution/Services/PositionSyncOptions.cs
     startLine: 43
   assemblies:
   - Meridian.Execution

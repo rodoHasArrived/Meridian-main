@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJsonSchema
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDataDictionary
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateTradeSchema
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 136
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateQuoteSchema
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 160
   assemblies:
   - Meridian.Ui.Services
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBboQuoteSchema
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 183
   assemblies:
   - Meridian.Ui.Services
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateL2DepthSchema
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 206
   assemblies:
   - Meridian.Ui.Services
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBarSchema
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 227
   assemblies:
   - Meridian.Ui.Services
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExchangeCodes
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 254
   assemblies:
   - Meridian.Ui.Services
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradeConditions
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 271
   assemblies:
   - Meridian.Ui.Services
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQuoteConditions
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 286
   assemblies:
   - Meridian.Ui.Services
@@ -372,7 +372,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsJson
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 301
   assemblies:
   - Meridian.Ui.Services
@@ -403,7 +403,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsMarkdown
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 306
   assemblies:
   - Meridian.Ui.Services
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsCsv
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 357
   assemblies:
   - Meridian.Ui.Services

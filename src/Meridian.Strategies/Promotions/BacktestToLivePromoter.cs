@@ -5,8 +5,8 @@ using Interop = Meridian.FSharp.Interop;
 namespace Meridian.Strategies.Promotions;
 
 /// <summary>
-/// Evaluates whether a strategy is eligible to be promoted from backtest → paper,
-/// or paper → live, based on configurable performance thresholds.
+/// Evaluates whether a strategy is eligible to be promoted from backtest -> paper,
+/// or paper -> live, based on configurable performance thresholds.
 /// </summary>
 public sealed class BacktestToLivePromoter
 {
@@ -43,37 +43,50 @@ public sealed class BacktestToLivePromoter
         BacktestResult result,
         string strategyId,
         string strategyName,
+        RunType sourceRunType,
+        RunType targetRunType,
         string sourceRunId,
         string? targetRunId,
-        RunType targetRunType,
         string decision,
         string? approvedBy = null,
-        string? manualOverrideId = null,
         string? approvalReason = null,
         string? reviewNotes = null,
-        string? auditReference = null)
+        string[]? approvalChecklist = null,
+        string? manualOverrideId = null,
+        string? auditReference = null,
+        string? promotionId = null)
     {
         ArgumentNullException.ThrowIfNull(result);
 
         return new StrategyPromotionRecord(
-            PromotionId: Guid.NewGuid().ToString("N"),
+            PromotionId: promotionId ?? Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
             StrategyName: strategyName,
+            SourceRunType: sourceRunType,
+            TargetRunType: targetRunType,
             SourceRunId: sourceRunId,
             TargetRunId: targetRunId,
-            SourceRunType: targetRunType == RunType.Paper ? RunType.Backtest : RunType.Paper,
-            TargetRunType: targetRunType,
             QualifyingSharpe: result.Metrics.SharpeRatio,
             QualifyingMaxDrawdownPercent: result.Metrics.MaxDrawdownPercent,
             QualifyingTotalReturn: result.Metrics.TotalReturn,
-            PromotedAt: DateTimeOffset.UtcNow,
             Decision: decision,
+            PromotedAt: DateTimeOffset.UtcNow,
             ApprovalReason: approvalReason,
             ReviewNotes: reviewNotes,
+            ApprovalChecklist: approvalChecklist is { Length: > 0 } ? [.. approvalChecklist] : null,
             AuditReference: auditReference,
             ApprovedBy: approvedBy,
             ManualOverrideId: manualOverrideId);
     }
+}
+
+/// <summary>
+/// Stable decision labels persisted into durable promotion history.
+/// </summary>
+public static class PromotionDecisionKinds
+{
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
 }
 
 /// <summary>Minimum thresholds that a strategy must meet to be eligible for promotion.</summary>
@@ -97,17 +110,18 @@ public sealed record StrategyPromotionRecord(
     string PromotionId,
     string StrategyId,
     string StrategyName,
-    string SourceRunId,
-    string? TargetRunId,
     RunType SourceRunType,
     RunType TargetRunType,
+    string SourceRunId,
+    string? TargetRunId,
     double QualifyingSharpe,
     decimal QualifyingMaxDrawdownPercent,
     decimal QualifyingTotalReturn,
-    DateTimeOffset PromotedAt,
     string Decision,
+    DateTimeOffset PromotedAt,
     string? ApprovalReason = null,
     string? ReviewNotes = null,
+    string[]? ApprovalChecklist = null,
     string? AuditReference = null,
     string? ApprovedBy = null,
     string? ManualOverrideId = null);

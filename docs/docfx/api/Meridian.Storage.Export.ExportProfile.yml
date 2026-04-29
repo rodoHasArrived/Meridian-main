@@ -42,7 +42,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportProfile
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 8
   assemblies:
   - Meridian.Storage
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 19
   assemblies:
   - Meridian.Storage
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetTool
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 31
   assemblies:
   - Meridian.Storage
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 37
   assemblies:
   - Meridian.Storage
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compression
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 43
   assemblies:
   - Meridian.Storage
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampSettings
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 49
   assemblies:
   - Meridian.Storage
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeFields
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 55
   assemblies:
   - Meridian.Storage
@@ -425,7 +425,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExcludeFields
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 61
   assemblies:
   - Meridian.Storage
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeLoaderScript
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 67
   assemblies:
   - Meridian.Storage
@@ -511,7 +511,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeDataDictionary
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 73
   assemblies:
   - Meridian.Storage
@@ -554,7 +554,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileNamePattern
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 80
   assemblies:
   - Meridian.Storage
@@ -600,7 +600,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitBySymbol
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 86
   assemblies:
   - Meridian.Storage
@@ -643,7 +643,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitByDate
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 92
   assemblies:
   - Meridian.Storage
@@ -686,7 +686,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRecordsPerFile
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 98
   assemblies:
   - Meridian.Storage
@@ -729,7 +729,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PythonPandas
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 104
   assemblies:
   - Meridian.Storage
@@ -760,7 +760,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RStats
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 120
   assemblies:
   - Meridian.Storage
@@ -791,7 +791,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuantConnectLean
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 136
   assemblies:
   - Meridian.Storage
@@ -822,7 +822,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Excel
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 154
   assemblies:
   - Meridian.Storage
@@ -853,7 +853,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgreSql
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 171
   assemblies:
   - Meridian.Storage
@@ -884,7 +884,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArrowFeather
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 188
   assemblies:
   - Meridian.Storage
@@ -915,7 +915,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunMat
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 204
   assemblies:
   - Meridian.Storage
@@ -946,7 +946,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithFormat
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 238
   assemblies:
   - Meridian.Storage
@@ -982,7 +982,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBuiltInProfiles
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 260
   assemblies:
   - Meridian.Storage

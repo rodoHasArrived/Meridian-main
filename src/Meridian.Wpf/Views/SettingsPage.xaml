@@ -317,10 +317,23 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <CheckBox x:Name="CompactModeToggle"
-                                  Content="Compact Mode (Reduced padding)"
-                                  IsChecked="{Binding IsCompactMode, Mode=TwoWay}"
-                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        <StackPanel>
+                            <TextBlock Text="Shell Density" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                            <ComboBox x:Name="ShellDensityModeCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding ShellDensityModes}"
+                                      SelectedItem="{Binding SelectedShellDensityMode, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Text="{Binding ShellDensityDescriptionText}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       Margin="0,8,0,0"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

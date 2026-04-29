@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanSymbolMapper
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsaMarket
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquitySecurityType
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Shared
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CryptoSecurityType
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Shared
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForexSecurityType
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Shared
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToLeanTicker
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Shared
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromLeanTicker
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 47
   assemblies:
   - Meridian.Ui.Shared
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectSecurityType
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 53
   assemblies:
   - Meridian.Ui.Shared
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectMarket
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 69
   assemblies:
   - Meridian.Ui.Shared
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildLeanDataDirectory
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 86
   assemblies:
   - Meridian.Ui.Shared
@@ -390,7 +390,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildLeanFileName
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 107
   assemblies:
   - Meridian.Ui.Shared
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapEventTypeToLean
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 113
   assemblies:
   - Meridian.Ui.Shared
@@ -467,7 +467,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapResolutionToMdc
-    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
     startLine: 129
   assemblies:
   - Meridian.Ui.Shared

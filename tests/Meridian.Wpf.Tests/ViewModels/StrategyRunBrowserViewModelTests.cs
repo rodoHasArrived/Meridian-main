@@ -3,6 +3,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Meridian.Strategies.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
@@ -65,6 +66,10 @@ public sealed class StrategyRunBrowserViewModelTests
 
         vm.Runs.Should().BeEmpty();
         vm.StatusText.Should().Contain("No recorded strategy runs");
+        vm.IsEmptyStateVisible.Should().BeTrue();
+        vm.HasFilterRecoveryAction.Should().BeFalse();
+        vm.EmptyStateTitle.Should().Be("No strategy runs recorded yet");
+        vm.RunScopeText.Should().Be("No recorded runs");
     }
 
     [Fact]
@@ -149,6 +154,87 @@ public sealed class StrategyRunBrowserViewModelTests
 
         vm.Runs.Should().BeEmpty();
         vm.StatusText.Should().Contain("No strategy runs match");
+        vm.IsEmptyStateVisible.Should().BeTrue();
+        vm.HasFilterRecoveryAction.Should().BeTrue();
+        vm.EmptyStateTitle.Should().Be("No strategy runs match the current filters");
+        vm.EmptyStateDetail.Should().Contain("Reset filters");
+        vm.RunScopeText.Should().Be("0 visible of 1 recorded run");
+        vm.CanChooseComparisonRun.Should().BeFalse();
+        vm.ComparisonGuidanceText.Should().Be("Reset filters to choose comparison runs from the recorded library.");
+    }
+
+    [Fact]
+    public async Task ClearRunFiltersCommand_RestoresRecordedRunsWhenFiltersHideRows()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Momentum Strategy", RunType.Backtest));
+        await store.RecordRunAsync(MakeEntry("Mean Reversion", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.SearchText = "no-match";
+
+        vm.Runs.Should().BeEmpty();
+        vm.HasActiveFilters.Should().BeTrue();
+        vm.HasFilterRecoveryAction.Should().BeTrue();
+        vm.ClearRunFiltersCommand.CanExecute(null).Should().BeTrue();
+        vm.RunScopeText.Should().Be("0 visible of 2 recorded runs");
+
+        vm.ClearRunFiltersCommand.Execute(null);
+
+        vm.SearchText.Should().BeEmpty();
+        vm.SelectedModeFilter.Should().Be("All");
+        vm.Runs.Should().HaveCount(2);
+        vm.IsEmptyStateVisible.Should().BeFalse();
+        vm.HasActiveFilters.Should().BeFalse();
+        vm.HasFilterRecoveryAction.Should().BeFalse();
+        vm.ClearRunFiltersCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithStrategyNavigationContext_FiltersRunsToRequestedStrategy()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(StrategyRunEntry.Start("alpha-strategy", "Alpha Strategy", RunType.Backtest));
+        await store.RecordRunAsync(StrategyRunEntry.Start("beta-strategy", "Beta Strategy", RunType.Backtest));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance)
+        {
+            Parameter = new StrategyRunsNavigationContext(StrategyId: "alpha-strategy")
+        };
+
+        await vm.RefreshAsync();
+
+        vm.Runs.Should().ContainSingle();
+        vm.Runs[0].StrategyId.Should().Be("alpha-strategy");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithRunNavigationContext_PreselectsPrimaryAndComparisonRuns()
+    {
+        var store = new StrategyRunStore();
+        var primary = StrategyRunEntry.Start("alpha-strategy", "Alpha Strategy", RunType.Backtest, "run-alpha-1");
+        var comparison = StrategyRunEntry.Start("alpha-strategy", "Alpha Strategy", RunType.Backtest, "run-alpha-2");
+        await store.RecordRunAsync(primary);
+        await store.RecordRunAsync(comparison);
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance)
+        {
+            Parameter = new StrategyRunsNavigationContext(
+                StrategyId: "alpha-strategy",
+                PrimaryRunId: primary.RunId,
+                ComparisonRunId: comparison.RunId)
+        };
+
+        await vm.RefreshAsync();
+
+        vm.SelectedRun?.RunId.Should().Be(primary.RunId);
+        vm.ComparisonRun?.RunId.Should().Be(comparison.RunId);
     }
 
     // ── CanExecute / selection tests ──────────────────────────────────────
@@ -252,6 +338,81 @@ public sealed class StrategyRunBrowserViewModelTests
     }
 
     [Fact]
+    public async Task ComparisonGuidance_WithSingleVisibleRun_ShouldDisableComparisonPicker()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Solo Strategy"));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.Runs.Should().ContainSingle();
+        vm.SelectedRun.Should().NotBeNull();
+        vm.CanChooseComparisonRun.Should().BeFalse();
+        vm.ComparisonGuidanceText.Should().Be(
+            "Only one visible run is available. Adjust filters or record another run before comparing.");
+    }
+
+    [Fact]
+    public async Task ComparisonGuidance_WithTwoVisibleRuns_ShouldPromptForSecondRun()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.Runs.Should().HaveCount(2);
+        vm.CanChooseComparisonRun.Should().BeTrue();
+        vm.ComparisonRun.Should().BeNull();
+        vm.ComparisonGuidanceText.Should().Be($"Choose a second run to compare with {vm.SelectedRun!.StrategyName}.");
+    }
+
+    [Fact]
+    public async Task ComparisonGuidance_WhenComparisonRunMatchesPrimary_ShouldRequestDifferentRun()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.ComparisonRun = vm.SelectedRun;
+
+        vm.CanCompareRuns.Should().BeFalse();
+        vm.CanChooseComparisonRun.Should().BeTrue();
+        vm.ComparisonGuidanceText.Should().Be("Choose a different run than the selected primary run.");
+    }
+
+    [Fact]
+    public async Task ComparisonGuidance_WhenDistinctComparisonRunSelected_ShouldExposeReadyState()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(MakeEntry("Alpha Strategy"));
+        await store.RecordRunAsync(MakeEntry("Beta Strategy", RunType.Paper));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance);
+
+        await vm.RefreshAsync();
+
+        vm.ComparisonRun = vm.Runs.First(run => !string.Equals(run.RunId, vm.SelectedRun!.RunId, StringComparison.Ordinal));
+
+        vm.CanCompareRuns.Should().BeTrue();
+        vm.CanChooseComparisonRun.Should().BeTrue();
+        vm.ComparisonGuidanceText.Should().Be(
+            $"Ready to compare {vm.SelectedRun!.StrategyName} against {vm.ComparisonRun!.StrategyName}.");
+    }
+
+    [Fact]
     public void ComparisonRows_WhenNoComparisonResult_ShouldBeEmpty()
     {
         var vm = CreateEmpty();
@@ -289,6 +450,31 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.ComparisonRows.Should().BeEmpty();
     }
 
+    [Fact]
+    public void StrategyRunsPageSource_BindsFilterRecoveryEmptyState()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\StrategyRunsPage.xaml"));
+
+        xaml.Should().Contain("StrategyRunsSearchBox");
+        xaml.Should().Contain("StrategyRunsModeFilter");
+        xaml.Should().Contain("StrategyRunsScopeText");
+        xaml.Should().Contain("{Binding RunScopeText}");
+        xaml.Should().Contain("StrategyRunsEmptyStatePanel");
+        xaml.Should().Contain("{Binding EmptyStateTitle}");
+        xaml.Should().Contain("{Binding EmptyStateDetail}");
+        xaml.Should().Contain("StrategyRunsEmptyStateResetFiltersButton");
+        xaml.Should().Contain("{Binding ClearRunFiltersCommand}");
+        xaml.Should().Contain("{Binding HasFilterRecoveryAction");
+        xaml.Should().Contain("StrategyRunsComparisonPickerPanel");
+        xaml.Should().Contain("StrategyRunsComparisonPicker");
+        xaml.Should().Contain("StrategyRunsComparisonGuidanceText");
+        xaml.Should().Contain("{Binding CanChooseComparisonRun}");
+        xaml.Should().Contain("{Binding ComparisonGuidanceText}");
+        xaml.Should().Contain("{DynamicResource EmbeddedShellHeroCardStyle}");
+        xaml.Should().Contain("{DynamicResource CardStyle}");
+        xaml.Should().Contain("{DynamicResource SecondaryButtonStyle}");
+    }
+
     private static StrategyRunSummary MakeSummary(
         string runId,
         string strategyName,
@@ -312,4 +498,21 @@ public sealed class StrategyRunBrowserViewModelTests
             FinalEquity: null,
             FillCount: 0,
             LastUpdatedAt: startedAt.AddHours(1));
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
 }

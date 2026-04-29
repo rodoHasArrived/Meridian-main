@@ -21,8 +21,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunContinuityWarning
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 478
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 484
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -59,8 +59,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 478
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 484
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -95,8 +95,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 479
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 485
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -124,8 +124,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 480
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 486
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

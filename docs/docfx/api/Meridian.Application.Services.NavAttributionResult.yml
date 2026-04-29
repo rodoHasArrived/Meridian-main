@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavAttributionResult
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 159
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 159
   assemblies:
   - Meridian.Application
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 160
   assemblies:
   - Meridian.Application
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 161
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 162
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputedAt
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 163
   assemblies:
   - Meridian.Application
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consolidated
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 164
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByEntity
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 165
   assemblies:
   - Meridian.Application
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BySleeve
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 166
   assemblies:
   - Meridian.Application
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByVehicle
-    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    path: src/Meridian.Application/Services/NavAttributionService.cs
     startLine: 167
   assemblies:
   - Meridian.Application

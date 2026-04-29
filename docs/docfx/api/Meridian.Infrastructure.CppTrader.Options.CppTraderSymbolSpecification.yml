@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderSymbolSpecification
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 40
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolId
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSize
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuantityIncrement
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceScale
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotSize
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionTimeZone
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure.CppTrader

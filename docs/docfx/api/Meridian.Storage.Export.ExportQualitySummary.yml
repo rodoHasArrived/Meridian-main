@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportQualitySummary
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 203
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 205
   assemblies:
   - Meridian.Storage
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 208
   assemblies:
   - Meridian.Storage
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExpectedRecords
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 211
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalActualRecords
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 214
   assemblies:
   - Meridian.Storage
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 217
   assemblies:
   - Meridian.Storage
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 220
   assemblies:
   - Meridian.Storage
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutliersDetected
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 223
   assemblies:
   - Meridian.Storage
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutlierHandling
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 226
   assemblies:
   - Meridian.Storage
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingDates
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 229
   assemblies:
   - Meridian.Storage
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssueDetails
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 232
   assemblies:
   - Meridian.Storage

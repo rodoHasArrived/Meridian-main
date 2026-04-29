@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidityThresholds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapThresholdSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEventsPerHour
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreshnessThresholdSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleDataThresholdSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadThresholdBps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSamplesForStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 31
   assemblies:
   - Meridian.Application

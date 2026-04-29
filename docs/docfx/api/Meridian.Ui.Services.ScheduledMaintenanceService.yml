@@ -39,7 +39,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledMaintenanceService
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tasks
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Services
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionLog
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSchedulerRunning
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartScheduler
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 48
   assemblies:
   - Meridian.Ui.Services
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopScheduler
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 63
   assemblies:
   - Meridian.Ui.Services
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddTask
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 81
   assemblies:
   - Meridian.Ui.Services
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveTask
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateTask
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 110
   assemblies:
   - Meridian.Ui.Services
@@ -356,7 +356,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTaskEnabled
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 125
   assemblies:
   - Meridian.Ui.Services
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunTaskNowAsync
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 138
   assemblies:
   - Meridian.Ui.Services
@@ -432,7 +432,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelTask
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 157
   assemblies:
   - Meridian.Ui.Services
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextRunTime
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 171
   assemblies:
   - Meridian.Ui.Services
@@ -504,7 +504,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUpcomingTasks
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 180
   assemblies:
   - Meridian.Ui.Services
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchedulerStarted
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 515
   assemblies:
   - Meridian.Ui.Services
@@ -569,7 +569,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchedulerStopped
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 520
   assemblies:
   - Meridian.Ui.Services
@@ -598,7 +598,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskAdded
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 525
   assemblies:
   - Meridian.Ui.Services
@@ -627,7 +627,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskRemoved
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 530
   assemblies:
   - Meridian.Ui.Services
@@ -656,7 +656,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskUpdated
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 535
   assemblies:
   - Meridian.Ui.Services
@@ -685,7 +685,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskStarted
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 540
   assemblies:
   - Meridian.Ui.Services
@@ -714,7 +714,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskCompleted
-    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
     startLine: 545
   assemblies:
   - Meridian.Ui.Services

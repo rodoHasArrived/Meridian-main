@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonElementExtensions
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStringOrNull
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStringOrEmpty
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 38
   assemblies:
   - Meridian.Infrastructure
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDecimalOrDefault
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDoubleOrDefault
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 71
   assemblies:
   - Meridian.Infrastructure
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetInt32OrDefault
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 91
   assemblies:
   - Meridian.Infrastructure
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetInt64OrDefault
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 111
   assemblies:
   - Meridian.Infrastructure
@@ -352,7 +352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBoolOrDefault
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 131
   assemblies:
   - Meridian.Infrastructure
@@ -397,7 +397,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDateTimeOffsetFromUnixMs
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 152
   assemblies:
   - Meridian.Infrastructure
@@ -442,7 +442,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDateTimeOffsetFromUnixSeconds
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 179
   assemblies:
   - Meridian.Infrastructure
@@ -487,7 +487,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasProperty
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 205
   assemblies:
   - Meridian.Infrastructure
@@ -529,7 +529,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetArrayOrEmpty
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 217
   assemblies:
   - Meridian.Infrastructure
@@ -574,7 +574,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetInt32ArrayOrEmpty
-    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
     startLine: 232
   assemblies:
   - Meridian.Infrastructure

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IWizardStep
-    path: ../../src/Meridian.Application/Wizard/Core/IWizardStep.cs
+    path: src/Meridian.Application/Wizard/Core/IWizardStep.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepId
-    path: ../../src/Meridian.Application/Wizard/Core/IWizardStep.cs
+    path: src/Meridian.Application/Wizard/Core/IWizardStep.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Application/Wizard/Core/IWizardStep.cs
+    path: src/Meridian.Application/Wizard/Core/IWizardStep.cs
     startLine: 18
   assemblies:
   - Meridian.Application

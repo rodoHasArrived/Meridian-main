@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceExecution
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 277
   assemblies:
   - Meridian.Storage
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionId
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 282
   assemblies:
   - Meridian.Storage
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleId
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 287
   assemblies:
   - Meridian.Storage
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleName
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 292
   assemblies:
   - Meridian.Storage
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskType
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 297
   assemblies:
   - Meridian.Storage
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 302
   assemblies:
   - Meridian.Storage
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualTrigger
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 307
   assemblies:
   - Meridian.Storage
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 312
   assemblies:
   - Meridian.Storage
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 317
   assemblies:
   - Meridian.Storage
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 322
   assemblies:
   - Meridian.Storage
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 327
   assemblies:
   - Meridian.Storage
@@ -381,7 +381,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssuesFound
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 332
   assemblies:
   - Meridian.Storage
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssuesResolved
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 337
   assemblies:
   - Meridian.Storage
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesProcessed
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 342
   assemblies:
   - Meridian.Storage
@@ -474,7 +474,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesSaved
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 347
   assemblies:
   - Meridian.Storage
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 352
   assemblies:
   - Meridian.Storage
@@ -536,7 +536,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogMessages
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 357
   assemblies:
   - Meridian.Storage
@@ -567,7 +567,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Result
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 362
   assemblies:
   - Meridian.Storage

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SimpleStatus
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetrievedAtUtc
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceProvider
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsStale
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AgeSeconds
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 40
   assemblies:
   - Meridian.Ui.Services
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataProvenance
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Services

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthSnapshot
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 635
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 635
   assemblies:
   - Meridian.Application
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 636
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connections
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 637
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalConnections
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 638
   assemblies:
   - Meridian.Application
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyConnections
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 639
   assemblies:
   - Meridian.Application
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyConnections
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 640
   assemblies:
   - Meridian.Application
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalAverageLatencyMs
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 641
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalMinLatencyMs
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 642
   assemblies:
   - Meridian.Application
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalMaxLatencyMs
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 643
   assemblies:
   - Meridian.Application

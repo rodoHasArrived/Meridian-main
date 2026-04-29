@@ -1,10 +1,19 @@
-export type WorkspaceKey = "overview" | "research" | "trading" | "data-operations" | "governance";
+export type WorkspaceKey =
+  | "trading"
+  | "portfolio"
+  | "accounting"
+  | "reporting"
+  | "strategy"
+  | "data"
+  | "settings";
+
+export type LegacyWorkspaceKey = "overview" | "research" | "data-operations" | "governance";
 
 export interface SessionInfo {
   displayName: string;
   role: string;
   environment: "paper" | "live" | "research";
-  activeWorkspace: WorkspaceKey;
+  activeWorkspace: WorkspaceKey | LegacyWorkspaceKey;
   commandCount: number;
 }
 
@@ -56,6 +65,10 @@ export interface PromotionEvaluationResult {
   reason: string;
   found: boolean;
   ready: boolean;
+  requiresHumanApproval?: boolean;
+  requiresManualOverride?: boolean;
+  requiredManualOverrideKind?: string | null;
+  blockingReasons?: string[] | null;
 }
 
 export interface PromotionDecisionResult {
@@ -63,6 +76,8 @@ export interface PromotionDecisionResult {
   promotionId: string | null;
   newRunId: string | null;
   reason: string;
+  auditReference?: string | null;
+  approvedBy?: string | null;
 }
 
 export interface PromotionRecord {
@@ -72,9 +87,13 @@ export interface PromotionRecord {
   sourceRunType: string;
   targetRunType: string;
   runId?: string;
+  sourceRunId?: string | null;
+  targetRunId?: string | null;
+  decision?: string | null;
   approvedBy?: string | null;
   approvalReason?: string | null;
   reviewNotes?: string | null;
+  auditReference?: string | null;
   manualOverrideId?: string | null;
   qualifyingSharpe: number;
   qualifyingMaxDrawdownPercent: number;
@@ -193,6 +212,167 @@ export interface ExecutionControlSnapshot {
   asOf: string;
 }
 
+export type OperatorWorkItemKind =
+  | "PaperReplay"
+  | "PromotionReview"
+  | "BrokerageSync"
+  | "SecurityMasterCoverage"
+  | "ReconciliationBreak"
+  | "ReportPackApproval"
+  | "ProviderTrustGate"
+  | "ExecutionControl";
+
+export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
+export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
+
+export interface OperatorWorkItem {
+  workItemId: string;
+  kind: OperatorWorkItemKind;
+  label: string;
+  detail: string;
+  tone: OperatorWorkItemTone;
+  createdAt: string;
+  runId: string | null;
+  fundAccountId: string | null;
+  auditReference: string | null;
+  workspace?: string | null;
+  targetRoute?: string | null;
+  targetPageTag?: string | null;
+}
+
+export interface OperatorInbox {
+  asOf: string;
+  items: OperatorWorkItem[];
+  criticalCount: number;
+  warningCount: number;
+  reviewCount: number;
+  summary: string;
+}
+
+export interface TradingAcceptanceGate {
+  gateId: string;
+  label: string;
+  status: TradingAcceptanceGateStatus;
+  detail: string;
+  sessionId: string | null;
+  runId: string | null;
+  auditReference: string | null;
+}
+
+export interface TradingPaperSessionReadiness {
+  sessionId: string;
+  strategyId: string;
+  strategyName: string | null;
+  isActive: boolean;
+  initialCash: number;
+  createdAt: string;
+  closedAt: string | null;
+  symbolCount: number;
+  orderCount: number;
+  positionCount: number;
+  portfolioValue: number | null;
+}
+
+export interface TradingReplayReadiness {
+  sessionId: string;
+  replaySource: string;
+  isConsistent: boolean;
+  comparedFillCount: number;
+  comparedOrderCount: number;
+  comparedLedgerEntryCount: number;
+  verifiedAt: string;
+  lastPersistedFillAt: string | null;
+  lastPersistedOrderUpdateAt: string | null;
+  verificationAuditId: string | null;
+  mismatchReasons: string[];
+}
+
+export interface TradingControlReadiness {
+  circuitBreakerOpen: boolean;
+  circuitBreakerReason: string | null;
+  circuitBreakerChangedBy: string | null;
+  circuitBreakerChangedAt: string | null;
+  manualOverrideCount: number;
+  symbolLimitCount: number;
+  defaultMaxPositionSize: number | null;
+}
+
+export interface TradingPromotionReadiness {
+  state: string;
+  reason: string;
+  requiresReview: boolean;
+  sourceRunId: string | null;
+  targetRunId: string | null;
+  suggestedNextMode: string | null;
+  auditReference: string | null;
+  approvalStatus: string | null;
+  manualOverrideId: string | null;
+  approvedBy: string | null;
+  approvalChecklist?: string[] | null;
+}
+
+export interface TradingOperatorSignoffReadiness {
+  status: string;
+  requiredBeforeDk1Exit: boolean;
+  requiredOwners: string[];
+  signedOwners: string[];
+  missingOwners: string[];
+  completedAt: string | null;
+  sourcePath: string | null;
+}
+
+export interface TradingTrustGateReadiness {
+  gateId: string;
+  status: string;
+  readyForOperatorReview: boolean;
+  operatorSignoffRequired: boolean;
+  operatorSignoffStatus: string;
+  generatedAt: string | null;
+  packetPath: string | null;
+  sourceSummary: string | null;
+  requiredSampleCount: number;
+  readySampleCount: number;
+  validatedEvidenceDocumentCount: number;
+  requiredOwners: string[];
+  blockers: string[];
+  detail: string;
+  operatorSignoff: TradingOperatorSignoffReadiness | null;
+}
+
+export interface WorkstationBrokerageSyncStatus {
+  fundAccountId: string;
+  providerId: string | null;
+  externalAccountId: string | null;
+  health: "Unlinked" | "Healthy" | "Stale" | "Degraded" | "Failed";
+  isLinked: boolean;
+  isStale: boolean;
+  lastAttemptedSyncAt: string | null;
+  lastSuccessfulSyncAt: string | null;
+  lastError: string | null;
+  positionCount: number;
+  openOrderCount: number;
+  fillCount: number;
+  cashTransactionCount: number;
+  securityMissingCount: number;
+  warnings: string[];
+}
+
+export interface TradingOperatorReadiness {
+  asOf: string;
+  overallStatus: TradingAcceptanceGateStatus;
+  readyForPaperOperation: boolean;
+  acceptanceGates: TradingAcceptanceGate[];
+  activeSession: TradingPaperSessionReadiness | null;
+  sessions: TradingPaperSessionReadiness[];
+  replay: TradingReplayReadiness | null;
+  controls: TradingControlReadiness;
+  promotion: TradingPromotionReadiness | null;
+  trustGate: TradingTrustGateReadiness;
+  brokerageSync: WorkstationBrokerageSyncStatus | null;
+  workItems: OperatorWorkItem[];
+  warnings: string[];
+}
+
 export interface CreateExecutionManualOverrideRequest {
   kind: string;
   reason: string;
@@ -249,6 +429,11 @@ export interface DataOperationsProviderRecord {
   capability: string;
   latency: string;
   note: string;
+  trustScore?: string;
+  signalSource?: string;
+  reasonCode?: string;
+  recommendedAction?: string;
+  gateImpact?: string;
 }
 
 export interface DataOperationsBackfillRecord {
@@ -338,6 +523,7 @@ export interface TradingWorkspaceResponse {
   fills: TradingFill[];
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
+  readiness?: TradingOperatorReadiness | null;
 }
 
 export interface GovernanceReconciliationRecord {
@@ -669,6 +855,9 @@ export interface SecurityClassificationSummary {
   subType: string | null;
   primaryIdentifierKind: string | null;
   primaryIdentifierValue: string | null;
+  matchedIdentifierKind?: string | null;
+  matchedIdentifierValue?: string | null;
+  matchedProvider?: string | null;
 }
 
 export interface SecurityEconomicDefinitionSummary {

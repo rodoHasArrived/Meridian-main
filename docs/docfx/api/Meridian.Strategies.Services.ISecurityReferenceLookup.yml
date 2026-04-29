@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityReferenceLookup
-    path: ../../src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
+    path: src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
     startLine: 7
   assemblies:
   - Meridian.Strategies
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBySymbolAsync
-    path: ../../src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
+    path: src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies

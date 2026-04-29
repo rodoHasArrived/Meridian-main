@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayFileInfo
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 295
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 297
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileName
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 298
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 299
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 300
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 301
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 302
   assemblies:
   - Meridian.Ui.Services
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 303
   assemblies:
   - Meridian.Ui.Services
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompressed
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 304
   assemblies:
   - Meridian.Ui.Services

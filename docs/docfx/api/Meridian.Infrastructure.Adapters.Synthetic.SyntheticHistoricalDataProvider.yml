@@ -36,7 +36,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyntheticHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 20
   assemblies:
   - Meridian.Infrastructure
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 21
   assemblies:
   - Meridian.Infrastructure
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 23
   assemblies:
   - Meridian.Infrastructure
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 26
   assemblies:
   - Meridian.Infrastructure
@@ -352,7 +352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -396,7 +396,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalQuotesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure
@@ -492,7 +492,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalQuotesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -541,7 +541,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalTradesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure
@@ -590,7 +590,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalTradesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -639,7 +639,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalAuctionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -686,7 +686,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalAuctionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -733,7 +733,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDividendsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -777,7 +777,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSplitsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure

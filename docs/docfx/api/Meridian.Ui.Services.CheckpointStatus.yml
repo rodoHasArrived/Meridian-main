@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointStatus
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 405
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InProgress
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 408
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 409
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartiallyCompleted
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 410
   assemblies:
   - Meridian.Ui.Services
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 411
   assemblies:
   - Meridian.Ui.Services
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 412
   assemblies:
   - Meridian.Ui.Services

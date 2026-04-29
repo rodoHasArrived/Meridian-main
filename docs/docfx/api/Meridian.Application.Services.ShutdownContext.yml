@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownContext
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 477
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 477
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 478
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 479
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestedAt
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 480
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeoutSeconds
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 481
   assemblies:
   - Meridian.Application

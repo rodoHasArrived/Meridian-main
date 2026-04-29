@@ -77,7 +77,8 @@ public sealed partial class SplitPaneViewModel : BindableBase
     [RelayCommand]
     private void SetActivePane(int? index)
     {
-        if (index is null or < 0) return;
+        if (index is null or < 0)
+            return;
         ActivePaneIndex = index.Value;
         ActivePaneChanged?.Invoke(this, index.Value);
     }

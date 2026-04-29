@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoNavigationSubsystem
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 263
   assemblies:
   - Meridian.McpServer
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 263
   assemblies:
   - Meridian.McpServer
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 264
   assemblies:
   - Meridian.McpServer
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 265
   assemblies:
   - Meridian.McpServer
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 266
   assemblies:
   - Meridian.McpServer
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Projects
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 267
   assemblies:
   - Meridian.McpServer
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectPaths
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 268
   assemblies:
   - Meridian.McpServer
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommonTasks
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 269
   assemblies:
   - Meridian.McpServer
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Keywords
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 270
   assemblies:
   - Meridian.McpServer
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KeyContracts
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 271
   assemblies:
   - Meridian.McpServer
@@ -353,7 +353,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entrypoints
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 272
   assemblies:
   - Meridian.McpServer
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelatedDocs
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 273
   assemblies:
   - Meridian.McpServer
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecommendedStart
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 274
   assemblies:
   - Meridian.McpServer
@@ -440,7 +440,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocCoverageHint
-    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
     startLine: 275
   assemblies:
   - Meridian.McpServer

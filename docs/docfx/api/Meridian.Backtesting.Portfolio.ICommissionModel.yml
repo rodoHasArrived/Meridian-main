@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICommissionModel
-    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Calculate
-    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalizingPublisher
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 44
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalizationCount
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 66
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedCount
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 69
   assemblies:
   - Meridian.Application
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnresolvedCount
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 72
   assemblies:
   - Meridian.Application
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DualWriteCount
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 75
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuarantinedCount
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageDurationUs
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 81
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 93
   assemblies:
   - Meridian.Application
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMetricsSnapshot
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
     startLine: 161
   assemblies:
   - Meridian.Application

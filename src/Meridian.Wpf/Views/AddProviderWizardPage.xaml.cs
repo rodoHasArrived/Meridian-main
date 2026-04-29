@@ -26,11 +26,7 @@ public partial class AddProviderWizardPage : Page
     private readonly SettingsConfigurationService _settingsConfigService;
     private readonly AddProviderWizardViewModel _viewModel;
 
-    // Provider data — kept in code-behind because filtering/selection logic also drives
-    // the CredentialFieldsPanel (dynamic WPF control tree), not just display-only bindings.
-    private IReadOnlyList<ProviderCatalogEntry> _allProviders = Array.Empty<ProviderCatalogEntry>();
     private ProviderCatalogEntry? _selectedProvider;
-    private string _activeFilter = "all";
 
     public AddProviderWizardPage(
         WpfServices.NavigationService navigationService,
@@ -38,21 +34,21 @@ public partial class AddProviderWizardPage : Page
     {
         InitializeComponent();
 
-        _navigationService      = navigationService;
-        _notificationService    = notificationService;
-        _configService          = WpfServices.ConfigService.Instance;
-        _settingsConfigService  = SettingsConfigurationService.Instance;
+        _navigationService = navigationService;
+        _notificationService = notificationService;
+        _configService = WpfServices.ConfigService.Instance;
+        _settingsConfigService = SettingsConfigurationService.Instance;
 
-        _viewModel  = new AddProviderWizardViewModel();
+        _viewModel = new AddProviderWizardViewModel();
         DataContext = _viewModel;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _allProviders = _settingsConfigService.GetProviderCatalog();
+        var providers = _settingsConfigService.GetProviderCatalog();
         var credentialStatuses = _settingsConfigService.GetProviderCredentialStatuses();
 
-        ProviderCatalogList.ItemsSource = BuildCatalogViewModels(_allProviders, credentialStatuses);
+        _viewModel.LoadProviderCatalog(providers, credentialStatuses);
         _viewModel.CurrentStep = 1;
     }
 
@@ -61,39 +57,14 @@ public partial class AddProviderWizardPage : Page
         _navigationService.NavigateTo("Settings");
     }
 
-    private void FilterAll_Click(object sender, RoutedEventArgs e)       => ApplyFilter("all");
-    private void FilterFree_Click(object sender, RoutedEventArgs e)      => ApplyFilter("free");
-    private void FilterStreaming_Click(object sender, RoutedEventArgs e) => ApplyFilter("streaming");
-    private void FilterHistorical_Click(object sender, RoutedEventArgs e) => ApplyFilter("historical");
-
-    private void ApplyFilter(string filter)
-    {
-        _activeFilter = filter;
-        var credentialStatuses = _settingsConfigService.GetProviderCredentialStatuses();
-
-        var filtered = filter switch
-        {
-            "free"       => _allProviders.Where(p => p.Tier is ProviderTier.Free or ProviderTier.FreeWithAccount),
-            "streaming"  => _allProviders.Where(p => p.SupportsStreaming),
-            "historical" => _allProviders.Where(p => p.SupportsHistorical),
-            _            => _allProviders.AsEnumerable(),
-        };
-
-        ProviderCatalogList.ItemsSource = BuildCatalogViewModels(filtered, credentialStatuses);
-
-        // Update filter button styles (view-cosmetic — which button appears "active")
-        FilterAllBtn.Style       = (Style)FindResource(filter == "all"        ? "SecondaryButtonStyle" : "GhostButtonStyle");
-        FilterFreeBtn.Style      = (Style)FindResource(filter == "free"       ? "SecondaryButtonStyle" : "GhostButtonStyle");
-        FilterStreamingBtn.Style = (Style)FindResource(filter == "streaming"  ? "SecondaryButtonStyle" : "GhostButtonStyle");
-        FilterHistoricalBtn.Style = (Style)FindResource(filter == "historical" ? "SecondaryButtonStyle" : "GhostButtonStyle");
-    }
-
     private void ProviderCard_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button button || button.Tag is not string providerId) return;
+        if (sender is not Button button || button.Tag is not string providerId)
+            return;
 
-        _selectedProvider = _allProviders.FirstOrDefault(p => p.Id == providerId);
-        if (_selectedProvider == null) return;
+        _selectedProvider = _viewModel.FindProvider(providerId);
+        if (_selectedProvider == null)
+            return;
 
         // Update ViewModel display properties (XAML binds to these)
         _viewModel.ApplySelectedProvider(_selectedProvider);
@@ -111,37 +82,39 @@ public partial class AddProviderWizardPage : Page
     {
         CredentialFieldsPanel.Children.Clear();
 
-        if (_selectedProvider == null) return;
+        if (_selectedProvider == null)
+            return;
 
         _viewModel.ApplyCredentialsInfo(_selectedProvider.DisplayName, _selectedProvider.CredentialFields.Length > 0);
 
-        if (_selectedProvider.CredentialFields.Length == 0) return;
+        if (_selectedProvider.CredentialFields.Length == 0)
+            return;
 
         foreach (var field in _selectedProvider.CredentialFields)
         {
-            var envVar       = field.EnvironmentVariable ?? string.Empty;
+            var envVar = field.EnvironmentVariable ?? string.Empty;
             var currentValue = GetConfiguredEnvironmentValue(field) ?? "";
 
             var label = new TextBlock
             {
-                Text   = field.DisplayName,
-                Style  = (Style)FindResource("FormLabelStyle"),
+                Text = field.DisplayName,
+                Style = (Style)FindResource("FormLabelStyle"),
                 Margin = new Thickness(0, 0, 0, 4),
             };
 
             var textBox = new TextBox
             {
                 Style = (Style)FindResource("FormTextBoxStyle"),
-                Text  = currentValue,
-                Tag   = envVar,
+                Text = currentValue,
+                Tag = envVar,
             };
 
             var envHint = new TextBlock
             {
-                Text       = $"Environment variable: {string.Join(", ", field.AllEnvironmentVariables)}",
-                FontSize   = 11,
+                Text = $"Environment variable: {string.Join(", ", field.AllEnvironmentVariables)}",
+                FontSize = 11,
                 Foreground = (Brush)FindResource("ConsoleTextMutedBrush"),
-                Margin     = new Thickness(0, 2, 0, 12),
+                Margin = new Thickness(0, 2, 0, 12),
             };
 
             CredentialFieldsPanel.Children.Add(label);
@@ -152,7 +125,8 @@ public partial class AddProviderWizardPage : Page
 
     private void TestProviderConnection_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedProvider == null) return;
+        if (_selectedProvider == null)
+            return;
 
         SaveCredentials();
         _viewModel.SetConnectionTestTesting(_selectedProvider.DisplayName);
@@ -175,7 +149,8 @@ public partial class AddProviderWizardPage : Page
 
     private async void SaveProvider_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedProvider == null) return;
+        if (_selectedProvider == null)
+            return;
 
         SaveCredentials();
 
@@ -220,17 +195,6 @@ public partial class AddProviderWizardPage : Page
         }
     }
 
-    private static IEnumerable<ProviderCatalogViewModel> BuildCatalogViewModels(
-        IEnumerable<ProviderCatalogEntry> providers,
-        IEnumerable<ProviderCredentialStatus> credentialStatuses)
-    {
-        return providers.Select(p =>
-        {
-            var credStatus = credentialStatuses.FirstOrDefault(c => c.ProviderId == p.Id);
-            return new ProviderCatalogViewModel(p, credStatus);
-        });
-    }
-
     private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
     {
         return field.AllEnvironmentVariables
@@ -249,61 +213,3 @@ public partial class AddProviderWizardPage : Page
         return null;
     }
 }
-
-/// <summary>
-/// View model for provider catalog cards in the wizard.
-/// </summary>
-internal sealed class ProviderCatalogViewModel
-{
-    public ProviderCatalogViewModel(ProviderCatalogEntry entry, ProviderCredentialStatus? credStatus)
-    {
-        Id          = entry.Id;
-        DisplayName = entry.DisplayName;
-        Description = entry.Description;
-        SupportsStreaming  = entry.SupportsStreaming;
-        SupportsHistorical = entry.SupportsHistorical;
-
-        TierLabel = entry.Tier switch
-        {
-            ProviderTier.Free            => "FREE",
-            ProviderTier.FreeWithAccount => "FREE*",
-            ProviderTier.LimitedFree     => "LIMITED",
-            ProviderTier.Premium         => "PREMIUM",
-            _                            => "FREE",
-        };
-        TierBrush = entry.Tier switch
-        {
-            ProviderTier.Free or ProviderTier.FreeWithAccount =>
-                new SolidColorBrush(Color.FromArgb(40, 63, 185, 80)),
-            ProviderTier.LimitedFree =>
-                new SolidColorBrush(Color.FromArgb(40, 210, 153, 34)),
-            ProviderTier.Premium =>
-                new SolidColorBrush(Color.FromArgb(40, 88, 166, 255)),
-            _ => new SolidColorBrush(Color.FromArgb(40, 128, 128, 128)),
-        };
-
-        CredentialStatusBrush = credStatus?.State switch
-        {
-            CredentialState.Configured  => new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-            CredentialState.Partial     => new SolidColorBrush(Color.FromRgb(210, 153, 34)),
-            CredentialState.Missing     => new SolidColorBrush(Color.FromRgb(248, 81, 73)),
-            CredentialState.NotRequired => new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-            _                           => new SolidColorBrush(Color.FromRgb(139, 148, 158)),
-        };
-
-        StreamingVisibility  = entry.SupportsStreaming  ? Visibility.Visible : Visibility.Collapsed;
-        HistoricalVisibility = entry.SupportsHistorical ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    public string Id { get; }
-    public string DisplayName { get; }
-    public string Description { get; }
-    public bool SupportsStreaming { get; }
-    public bool SupportsHistorical { get; }
-    public string TierLabel { get; }
-    public Brush TierBrush { get; }
-    public Brush CredentialStatusBrush { get; }
-    public Visibility StreamingVisibility { get; }
-    public Visibility HistoricalVisibility { get; }
-}
-

@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionJob
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobId
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkloadType
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 40
   assemblies:
   - Meridian.Contracts
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 46
   assemblies:
   - Meridian.Contracts
@@ -300,7 +300,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 52
   assemblies:
   - Meridian.Contracts
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointToken
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryEnvelope
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts
@@ -477,7 +477,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sla
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -520,7 +520,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -563,7 +563,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -606,7 +606,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -649,7 +649,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts
@@ -692,7 +692,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolProgress
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 108
   assemblies:
   - Meridian.Contracts
@@ -735,7 +735,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTerminal
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 114
   assemblies:
   - Meridian.Contracts
@@ -776,7 +776,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsResumable
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 122
   assemblies:
   - Meridian.Contracts
@@ -817,7 +817,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryTransition
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 131
   assemblies:
   - Meridian.Contracts
@@ -853,7 +853,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidTransition
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts

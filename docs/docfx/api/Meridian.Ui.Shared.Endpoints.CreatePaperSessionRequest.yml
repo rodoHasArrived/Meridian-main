@@ -23,8 +23,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePaperSessionRequest
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1003
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1094
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -61,8 +61,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1003
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1094
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -101,8 +101,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1004
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1095
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -130,8 +130,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1005
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1096
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -159,8 +159,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1006
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1097
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -188,8 +188,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1007
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1098
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

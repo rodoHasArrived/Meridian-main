@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParsedPathMetadata
-    path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
+    path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
     startLine: 507
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
+    path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
     startLine: 507
   assemblies:
   - Meridian.Storage
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
+    path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
     startLine: 508
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
+    path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
     startLine: 509
   assemblies:
   - Meridian.Storage
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
+    path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
     startLine: 510
   assemblies:
   - Meridian.Storage
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
+    path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
     startLine: 511
   assemblies:
   - Meridian.Storage

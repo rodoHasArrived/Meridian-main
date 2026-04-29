@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITradingParametersBackfillService
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTickerAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure

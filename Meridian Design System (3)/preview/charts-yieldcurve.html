@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Charts: Yield curve</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
+  .card { background: #0B1520; border: 1px solid #2A4566; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2A4566; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .title b { color: #FFF; margin-right: 10px; }
+  .stats { display: flex; gap: 18px; font-family: var(--font-mono); font-size: 11px; color: #A8B5C4; }
+  .stats b { color: #FFF; font-weight: 500; margin-left: 4px; }
+  svg { display: block; width: 100%; height: 300px; }
+  .legend { display: flex; gap: 14px; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-transform: uppercase; letter-spacing: 0.12em; }
+  .sw { display: inline-block; width: 18px; height: 2px; margin-right: 6px; vertical-align: middle; }
+</style>
+</head>
+<body class="bg-app">
+<div class="card">
+  <div class="head">
+    <div class="title"><b>US TREASURY YIELD CURVE</b>spot · 1m ago · 12m ago</div>
+    <div class="stats">
+      <span>2s10s<b class="" style="color:#DE5878;">−32 bps</b></span>
+      <span>3m10y<b style="color:#DE5878;">−88 bps</b></span>
+      <span>Δ 1m<b style="color:#26BF86;">+12 bps</b></span>
+    </div>
+  </div>
+  <svg viewBox="0 0 800 300" preserveAspectRatio="none">
+    <!-- grid -->
+    <g stroke="#1A2D44" stroke-width="1">
+      <line x1="50" y1="30" x2="790" y2="30"/>
+      <line x1="50" y1="80" x2="790" y2="80"/>
+      <line x1="50" y1="130" x2="790" y2="130"/>
+      <line x1="50" y1="180" x2="790" y2="180"/>
+      <line x1="50" y1="230" x2="790" y2="230"/>
+    </g>
+    <!-- y labels (yield %) -->
+    <g font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" text-anchor="end">
+      <text x="44" y="34">5.5</text>
+      <text x="44" y="84">5.0</text>
+      <text x="44" y="134">4.5</text>
+      <text x="44" y="184">4.0</text>
+      <text x="44" y="234">3.5</text>
+    </g>
+    <!-- x axis tenors (log-ish spacing) -->
+    <g font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" text-anchor="middle">
+      <text x="70"  y="254">1M</text>
+      <text x="130" y="254">3M</text>
+      <text x="195" y="254">6M</text>
+      <text x="270" y="254">1Y</text>
+      <text x="360" y="254">2Y</text>
+      <text x="455" y="254">3Y</text>
+      <text x="545" y="254">5Y</text>
+      <text x="645" y="254">7Y</text>
+      <text x="720" y="254">10Y</text>
+      <text x="780" y="254">30Y</text>
+    </g>
+
+    <!-- 12m ago curve (muted, normal-shaped) -->
+    <polyline fill="none" stroke="#5B7B9E" stroke-width="1.8" stroke-dasharray="4 4" opacity="0.85"
+      points="70,180 130,172 195,166 270,158 360,150 455,142 545,132 645,124 720,118 780,110"/>
+
+    <!-- 1m ago curve -->
+    <polyline fill="none" stroke="#8CC5DE" stroke-width="1.8" opacity="0.9"
+      points="70,42 130,48 195,58 270,72 360,98 455,108 545,120 645,130 720,138 780,148"/>
+
+    <!-- spot curve (inverted) -->
+    <polyline fill="none" stroke="#2AB2D4" stroke-width="2.5"
+      points="70,28 130,36 195,48 270,62 360,90 455,102 545,116 645,126 720,134 780,142"/>
+
+    <!-- points on spot curve -->
+    <g fill="#2AB2D4">
+      <circle cx="70"  cy="28"  r="3"/>
+      <circle cx="130" cy="36"  r="3"/>
+      <circle cx="195" cy="48"  r="3"/>
+      <circle cx="270" cy="62"  r="3"/>
+      <circle cx="360" cy="90"  r="3"/>
+      <circle cx="455" cy="102" r="3"/>
+      <circle cx="545" cy="116" r="3"/>
+      <circle cx="645" cy="126" r="3"/>
+      <circle cx="720" cy="134" r="3"/>
+      <circle cx="780" cy="142" r="3"/>
+    </g>
+
+    <!-- inversion shading between spot and reference flat line at 1Y -->
+    <g fill="#DE5878" fill-opacity="0.10">
+      <path d="M70,28 L130,36 L195,48 L270,62 L360,90 L360,62 L270,62 L195,48 L130,36 L70,28 Z"/>
+    </g>
+
+    <!-- yield callouts on select points -->
+    <g font-family="IBM Plex Mono" font-size="10" fill="#FFF">
+      <text x="70"  y="22" text-anchor="middle">5.42</text>
+      <text x="360" y="84" text-anchor="middle">4.78</text>
+      <text x="720" y="128" text-anchor="middle">4.46</text>
+    </g>
+
+    <!-- axis titles -->
+    <text font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" x="420" y="282" text-anchor="middle">Tenor</text>
+    <text font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" x="16" y="135" text-anchor="middle" transform="rotate(-90 16 135)">Yield (%)</text>
+  </svg>
+  <div class="legend">
+    <span><i class="sw" style="background:#2AB2D4;"></i>Spot</span>
+    <span><i class="sw" style="background:#8CC5DE;"></i>1m ago</span>
+    <span><i class="sw" style="background:#5B7B9E;border-top:1px dashed #5B7B9E;height:0;"></i>12m ago</span>
+    <span style="margin-left:auto;">source: UST · settle 16:00 ET</span>
+  </div>
+</div>
+</body>
+</html>

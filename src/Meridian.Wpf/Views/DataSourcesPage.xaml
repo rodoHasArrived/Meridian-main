@@ -171,8 +171,8 @@
 
                                         <CheckBox Grid.Column="0"
                                                   IsChecked="{Binding Enabled, Mode=TwoWay}"
-                                                  Checked="SourceEnabled_Changed"
-                                                  Unchecked="SourceEnabled_Changed"
+                                                  Command="{Binding DataContext.ToggleSourceEnabledCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                  CommandParameter="{Binding}"
                                                   VerticalAlignment="Center" />
 
                                         <StackPanel Grid.Column="1">
@@ -201,14 +201,14 @@
                                         </StackPanel>
 
                                         <Button Grid.Column="3" Content="Edit"
-                                                Tag="{Binding Id}"
-                                                Click="EditDataSource_Click"
+                                                Command="{Binding DataContext.EditSourceCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                CommandParameter="{Binding Id}"
                                                 Margin="8,0,0,0"
                                                 Style="{StaticResource SecondaryButtonStyle}" />
 
                                         <Button Grid.Column="4" Content="Delete"
-                                                Tag="{Binding Id}"
-                                                Click="DeleteDataSource_Click"
+                                                Command="{Binding DataContext.DeleteSourceCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                CommandParameter="{Binding Id}"
                                                 Margin="8,0,0,0"
                                                 Style="{StaticResource GhostButtonStyle}" />
                                     </Grid>
@@ -238,6 +238,28 @@
                                    Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" />
                     </StackPanel>
 
+                    <Border AutomationProperties.AutomationId="DataSourcesEditReadinessCard"
+                            Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12"
+                            Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{Binding SourceSetupReadinessTitle}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding SourceSetupReadinessDetail}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding SourceSetupScopeText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="11"
+                                       Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
+
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -263,7 +285,8 @@
                             <TextBlock Text="Provider *" Style="{StaticResource FormLabelStyle}" />
                             <ComboBox x:Name="ProviderCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
-                                      SelectionChanged="ProviderCombo_SelectionChanged">
+                                      SelectedValuePath="Tag"
+                                      SelectedValue="{Binding SelectedProvider, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <ComboBoxItem Content="Interactive Brokers (IB)" Tag="IB" />
                                 <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
                                 <ComboBoxItem Content="Polygon.io" Tag="Polygon" />
@@ -273,7 +296,10 @@
 
                         <StackPanel Grid.Row="1" Grid.Column="0">
                             <TextBlock Text="Data Type *" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="TypeCombo" Style="{StaticResource FormComboBoxStyle}">
+                            <ComboBox x:Name="TypeCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      SelectedValuePath="Tag"
+                                      SelectedValue="{Binding SelectedType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <ComboBoxItem Content="Real-Time" Tag="RealTime" />
                                 <ComboBoxItem Content="Historical" Tag="Historical" />
                                 <ComboBoxItem Content="Both" Tag="Both" />
@@ -332,16 +358,19 @@
                                 <CheckBox x:Name="IBPaperTradingCheck"
                                           Grid.Row="1" Grid.Column="0"
                                           Content="Paper Trading"
+                                          IsChecked="{Binding IBPaperTrading, Mode=TwoWay}"
                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
 
                                 <CheckBox x:Name="IBSubscribeDepthCheck"
                                           Grid.Row="1" Grid.Column="1"
                                           Content="Subscribe Depth"
+                                          IsChecked="{Binding IBSubscribeDepth, Mode=TwoWay}"
                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
 
                                 <CheckBox x:Name="IBTickByTickCheck"
                                           Grid.Row="1" Grid.Column="2"
                                           Content="Tick-by-Tick"
+                                          IsChecked="{Binding IBTickByTick, Mode=TwoWay}"
                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             </Grid>
                         </StackPanel>
@@ -367,7 +396,10 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Feed Type" Style="{StaticResource FormLabelStyle}" />
-                                    <ComboBox x:Name="AlpacaFeedCombo" Style="{StaticResource FormComboBoxStyle}">
+                                    <ComboBox x:Name="AlpacaFeedCombo"
+                                              Style="{StaticResource FormComboBoxStyle}"
+                                              SelectedValuePath="Tag"
+                                              SelectedValue="{Binding AlpacaFeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                         <ComboBoxItem Content="IEX (Free)" Tag="iex" />
                                         <ComboBoxItem Content="SIP (Paid)" Tag="sip" />
                                         <ComboBoxItem Content="Delayed SIP" Tag="delayed_sip" />
@@ -376,7 +408,10 @@
 
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="Environment" Style="{StaticResource FormLabelStyle}" />
-                                    <ComboBox x:Name="AlpacaEnvironmentCombo" Style="{StaticResource FormComboBoxStyle}">
+                                    <ComboBox x:Name="AlpacaEnvironmentCombo"
+                                              Style="{StaticResource FormComboBoxStyle}"
+                                              SelectedValuePath="Tag"
+                                              SelectedValue="{Binding AlpacaEnvironmentTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                         <ComboBoxItem Content="Production" Tag="false" />
                                         <ComboBoxItem Content="Sandbox" Tag="true" />
                                     </ComboBox>
@@ -385,6 +420,7 @@
 
                             <CheckBox x:Name="AlpacaSubscribeQuotesCheck"
                                       Content="Subscribe to Quotes (BBO)"
+                                      IsChecked="{Binding AlpacaSubscribeQuotes, Mode=TwoWay}"
                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                         </StackPanel>
                     </Border>
@@ -413,7 +449,10 @@
 
                                 <StackPanel Grid.Row="0" Grid.Column="1">
                                     <TextBlock Text="Feed" Style="{StaticResource FormLabelStyle}" />
-                                    <ComboBox x:Name="PolygonFeedCombo" Style="{StaticResource FormComboBoxStyle}">
+                                    <ComboBox x:Name="PolygonFeedCombo"
+                                              Style="{StaticResource FormComboBoxStyle}"
+                                              SelectedValuePath="Tag"
+                                              SelectedValue="{Binding PolygonFeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                         <ComboBoxItem Content="Stocks" Tag="stocks" />
                                         <ComboBoxItem Content="Options" Tag="options" />
                                         <ComboBoxItem Content="Forex" Tag="forex" />
@@ -424,14 +463,18 @@
                                 <CheckBox x:Name="PolygonDelayedCheck"
                                           Grid.Row="1" Grid.Column="0"
                                           Content="Use Delayed Data (15 min)"
+                                          IsChecked="{Binding PolygonDelayed, Mode=TwoWay}"
                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
 
                                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-                                    <CheckBox x:Name="PolygonTradesCheck" Content="Trades" IsChecked="True"
+                                    <CheckBox x:Name="PolygonTradesCheck" Content="Trades"
+                                              IsChecked="{Binding PolygonSubscribeTrades, Mode=TwoWay}"
                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,12,0" />
                                     <CheckBox x:Name="PolygonQuotesCheck" Content="Quotes"
+                                              IsChecked="{Binding PolygonSubscribeQuotes, Mode=TwoWay}"
                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,12,0" />
                                     <CheckBox x:Name="PolygonAggregatesCheck" Content="Aggregates"
+                                              IsChecked="{Binding PolygonSubscribeAggregates, Mode=TwoWay}"
                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </StackPanel>
                             </Grid>
@@ -447,6 +490,7 @@
                                            Margin="8,2,0,0" />
                             </StackPanel>
                             <TextBox x:Name="SymbolsBox" Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding SymbolsText, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,8,0,0" />
                         </StackPanel>
                     </Border>
@@ -455,6 +499,8 @@
                         <Button x:Name="SaveSourceButton"
                                 Content="Save Data Source"
                                 Style="{StaticResource AccentButtonStyle}"
+                                AutomationProperties.AutomationId="DataSourcesSaveSourceButton"
+                                IsEnabled="{Binding CanSaveSource}"
                                 Click="SaveDataSource_Click"
  />
                         <Button Content="Cancel"

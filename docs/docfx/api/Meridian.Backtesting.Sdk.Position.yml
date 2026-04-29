@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Position
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenLots
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsShort
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 18
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AbsoluteQuantity
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 21
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
-    path: ../../src/Meridian.Backtesting.Sdk/Position.cs
+    path: src/Meridian.Backtesting.Sdk/Position.cs
     startLine: 24
   assemblies:
   - Meridian.Backtesting.Sdk

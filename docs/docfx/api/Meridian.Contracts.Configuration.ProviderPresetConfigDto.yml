@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPresetConfigDto
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 124
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PresetId
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 126
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 129
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 132
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Policies
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 135
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Highlights
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 138
   assemblies:
   - Meridian.Contracts
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBuiltIn
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 141
   assemblies:
   - Meridian.Contracts
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
     startLine: 144
   assemblies:
   - Meridian.Contracts

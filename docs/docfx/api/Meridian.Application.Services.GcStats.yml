@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GcStats
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 633
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gen0
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 635
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gen1
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 636
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gen2
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 637
   assemblies:
   - Meridian.Application

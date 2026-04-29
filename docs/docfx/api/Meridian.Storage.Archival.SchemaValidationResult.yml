@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaValidationResult
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 654
   assemblies:
   - Meridian.Storage
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaId
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 656
   assemblies:
   - Meridian.Storage
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 657
   assemblies:
   - Meridian.Storage
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 658
   assemblies:
   - Meridian.Storage
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 659
   assemblies:
   - Meridian.Storage

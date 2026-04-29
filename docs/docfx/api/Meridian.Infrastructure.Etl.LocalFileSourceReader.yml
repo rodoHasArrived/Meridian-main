@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LocalFileSourceReader
-    path: ../../src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
     startLine: 5
   assemblies:
   - Meridian.Infrastructure
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListFilesAsync
-    path: ../../src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StageFileAsync
-    path: ../../src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure

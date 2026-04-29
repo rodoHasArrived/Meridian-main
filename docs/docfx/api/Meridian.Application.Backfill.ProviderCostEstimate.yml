@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCostEstimate
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 313
   assemblies:
   - Meridian.Application
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 313
   assemblies:
   - Meridian.Application
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 314
   assemblies:
   - Meridian.Application
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 315
   assemblies:
   - Meridian.Application
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 316
   assemblies:
   - Meridian.Application
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedApiCalls
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 317
   assemblies:
   - Meridian.Application
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedWallClockTime
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 318
   assemblies:
   - Meridian.Application
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 319
   assemblies:
   - Meridian.Application
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 321
   assemblies:
   - Meridian.Application
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WouldExceedFreeQuota
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 322
   assemblies:
   - Meridian.Application
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDateRange
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 323
   assemblies:
   - Meridian.Application

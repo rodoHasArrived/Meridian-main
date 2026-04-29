@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LifecycleTierInfo
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 403
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 403
   assemblies:
   - Meridian.Storage
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 404
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 405
   assemblies:
   - Meridian.Storage
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldestFileAge
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 406
   assemblies:
   - Meridian.Storage
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewestFileAge
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 407
   assemblies:
   - Meridian.Storage

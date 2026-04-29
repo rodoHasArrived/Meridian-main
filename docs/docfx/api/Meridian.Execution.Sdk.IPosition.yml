@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPosition
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 15
   assemblies:
   - Meridian.Execution.Sdk
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 18
   assemblies:
   - Meridian.Execution.Sdk
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 21
   assemblies:
   - Meridian.Execution.Sdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 24
   assemblies:
   - Meridian.Execution.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 27
   assemblies:
   - Meridian.Execution.Sdk
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 30
   assemblies:
   - Meridian.Execution.Sdk
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsShort
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 33
   assemblies:
   - Meridian.Execution.Sdk
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AbsoluteQuantity
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 36
   assemblies:
   - Meridian.Execution.Sdk
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
-    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    path: src/Meridian.Execution.Sdk/IPosition.cs
     startLine: 39
   assemblies:
   - Meridian.Execution.Sdk

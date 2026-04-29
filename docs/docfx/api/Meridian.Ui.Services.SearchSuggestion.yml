@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchSuggestion
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 399
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Text
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 401
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 402
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 403
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigationTarget
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 404
   assemblies:
   - Meridian.Ui.Services

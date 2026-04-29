@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using Meridian.Ui.Services;
 using LoggingService = Meridian.Wpf.Services.LoggingService;
-using MessagingService = Meridian.Wpf.Services.MessagingService;
 using MessageTypes = Meridian.Wpf.Services.MessageTypes;
+using MessagingService = Meridian.Wpf.Services.MessagingService;
 
 namespace Meridian.Wpf.ViewModels;
 

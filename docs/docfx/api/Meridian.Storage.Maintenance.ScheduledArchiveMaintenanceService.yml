@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledArchiveMaintenanceService
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionStarted
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 28
   assemblies:
   - Meridian.Storage
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionCompleted
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 29
   assemblies:
   - Meridian.Storage
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionFailed
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRunning
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 32
   assemblies:
   - Meridian.Storage
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueuedExecutions
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 33
   assemblies:
   - Meridian.Storage
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentExecution
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 34
   assemblies:
   - Meridian.Storage
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 36
   assemblies:
   - Meridian.Storage
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 53
   assemblies:
   - Meridian.Storage
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteMaintenanceAsync
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 790
   assemblies:
   - Meridian.Storage
@@ -399,7 +399,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TriggerScheduleAsync
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 855
   assemblies:
   - Meridian.Storage
@@ -442,7 +442,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelExecutionAsync
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 879
   assemblies:
   - Meridian.Storage
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
-    path: ../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
+    path: src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs
     startLine: 891
   assemblies:
   - Meridian.Storage

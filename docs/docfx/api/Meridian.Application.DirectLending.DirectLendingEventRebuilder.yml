@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingEventRebuilder
-    path: ../../src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
+    path: src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rebuild
-    path: ../../src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
+    path: src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
     startLine: 17
   assemblies:
   - Meridian.Application

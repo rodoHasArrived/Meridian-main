@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveDataEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapLiveDataEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Shared

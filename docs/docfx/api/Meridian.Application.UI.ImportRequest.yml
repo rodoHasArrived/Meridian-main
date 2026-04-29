@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportRequest
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 363
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 363
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagePath
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 364
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DestinationDirectory
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 365
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateChecksums
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 366
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MergeWithExisting
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 367
   assemblies:
   - Meridian.Application

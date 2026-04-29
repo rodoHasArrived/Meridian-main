@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircularBuffer
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capacity
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Services
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEmpty
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 49
   assemblies:
   - Meridian.Ui.Services
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFull
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 54
   assemblies:
   - Meridian.Ui.Services
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 61
   assemblies:
   - Meridian.Ui.Services
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: this[]
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 78
   assemblies:
   - Meridian.Ui.Services
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNewest
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 98
   assemblies:
   - Meridian.Ui.Services
@@ -372,7 +372,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOldest
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 114
   assemblies:
   - Meridian.Ui.Services
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetNewest
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 130
   assemblies:
   - Meridian.Ui.Services
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetFromNewest
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 150
   assemblies:
   - Meridian.Ui.Services
@@ -497,7 +497,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 166
   assemblies:
   - Meridian.Ui.Services
@@ -527,7 +527,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToArray
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 177
   assemblies:
   - Meridian.Ui.Services
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnumerator
-    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
     startLine: 190
   assemblies:
   - Meridian.Ui.Services

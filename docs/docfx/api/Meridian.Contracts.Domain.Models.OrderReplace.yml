@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderReplace
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldOrderId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewOrderId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewPrice
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewDisplayedSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewHiddenSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LosesPriority
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -336,7 +336,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 50
   assemblies:
   - Meridian.Contracts
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts

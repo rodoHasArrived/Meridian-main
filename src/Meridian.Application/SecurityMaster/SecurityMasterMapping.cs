@@ -179,6 +179,7 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.Valoren => IdentifierKind.Valoren,
             SecurityIdentifierKind.PermTicker => IdentifierKind.PermTicker,
             SecurityIdentifierKind.Ric => IdentifierKind.Ric,
+            SecurityIdentifierKind.Cik => IdentifierKind.Cik,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -322,25 +323,25 @@ internal static class SecurityMasterMapping
 
     private static BondSubclass ParseBondSubclass(string? subclass) => subclass switch
     {
-        "Sovereign"          => BondSubclass.Sovereign,
-        "Municipal"          => BondSubclass.Municipal,
-        "Agency"             => BondSubclass.Agency,
-        "Convertible"        => BondSubclass.Convertible,
-        "InflationLinked"    => BondSubclass.InflationLinked,
-        "FloatingRate"       => BondSubclass.FloatingRate,
-        "AssetBacked"        => BondSubclass.AssetBacked,
-        "MortgageBacked"     => BondSubclass.MortgageBacked,
-        "AgencyMbs"          => BondSubclass.AgencyMbs,
-        "CommercialMbs"      => BondSubclass.CommercialMbs,
-        "Cmo"                => BondSubclass.Cmo,
-        "Clo"                => BondSubclass.Clo,
-        "Cdo"                => BondSubclass.Cdo,
-        "PrincipalOnly"      => BondSubclass.PrincipalOnly,
-        "InterestOnly"       => BondSubclass.InterestOnly,
-        "InverseInterestOnly"=> BondSubclass.InverseInterestOnly,
-        "Corporate"          => BondSubclass.Corporate,
-        null or ""           => BondSubclass.Corporate,
-        var other            => BondSubclass.NewOther(other)
+        "Sovereign" => BondSubclass.Sovereign,
+        "Municipal" => BondSubclass.Municipal,
+        "Agency" => BondSubclass.Agency,
+        "Convertible" => BondSubclass.Convertible,
+        "InflationLinked" => BondSubclass.InflationLinked,
+        "FloatingRate" => BondSubclass.FloatingRate,
+        "AssetBacked" => BondSubclass.AssetBacked,
+        "MortgageBacked" => BondSubclass.MortgageBacked,
+        "AgencyMbs" => BondSubclass.AgencyMbs,
+        "CommercialMbs" => BondSubclass.CommercialMbs,
+        "Cmo" => BondSubclass.Cmo,
+        "Clo" => BondSubclass.Clo,
+        "Cdo" => BondSubclass.Cdo,
+        "PrincipalOnly" => BondSubclass.PrincipalOnly,
+        "InterestOnly" => BondSubclass.InterestOnly,
+        "InverseInterestOnly" => BondSubclass.InverseInterestOnly,
+        "Corporate" => BondSubclass.Corporate,
+        null or "" => BondSubclass.Corporate,
+        var other => BondSubclass.NewOther(other)
     };
 
     private static BondTerms ToBondTerms(JsonElement json)
@@ -462,7 +463,9 @@ internal static class SecurityMasterMapping
             : null;
 
     private static int? GetOptionalInt(JsonElement json, string propertyName)
-        => json.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var intValue)
+        => json.TryGetProperty(propertyName, out var value) &&
+           value.ValueKind == JsonValueKind.Number &&
+           value.TryGetInt32(out var intValue)
             ? intValue
             : null;
 
@@ -521,27 +524,27 @@ internal static class SecurityMasterMapping
     private static FSharpOption<BondSubclass> ToBondSubclassOption(string? raw)
         => raw switch
         {
-            "Corporate"     => FSharpOption<BondSubclass>.Some(BondSubclass.Corporate),
-            "Government"    => FSharpOption<BondSubclass>.Some(BondSubclass.Sovereign),
-            "Sovereign"     => FSharpOption<BondSubclass>.Some(BondSubclass.Sovereign),
-            "Municipal"     => FSharpOption<BondSubclass>.Some(BondSubclass.Municipal),
-            "Convertible"   => FSharpOption<BondSubclass>.Some(BondSubclass.Convertible),
-            "AssetBacked"   => FSharpOption<BondSubclass>.Some(BondSubclass.AssetBacked),
-            "MortgageBacked"=> FSharpOption<BondSubclass>.Some(BondSubclass.MortgageBacked),
-            not null        => FSharpOption<BondSubclass>.Some(BondSubclass.NewOther(raw)),
-            null            => FSharpOption<BondSubclass>.None
+            "Corporate" => FSharpOption<BondSubclass>.Some(BondSubclass.Corporate),
+            "Government" => FSharpOption<BondSubclass>.Some(BondSubclass.Sovereign),
+            "Sovereign" => FSharpOption<BondSubclass>.Some(BondSubclass.Sovereign),
+            "Municipal" => FSharpOption<BondSubclass>.Some(BondSubclass.Municipal),
+            "Convertible" => FSharpOption<BondSubclass>.Some(BondSubclass.Convertible),
+            "AssetBacked" => FSharpOption<BondSubclass>.Some(BondSubclass.AssetBacked),
+            "MortgageBacked" => FSharpOption<BondSubclass>.Some(BondSubclass.MortgageBacked),
+            not null => FSharpOption<BondSubclass>.Some(BondSubclass.NewOther(raw)),
+            null => FSharpOption<BondSubclass>.None
         };
 
     private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
         => raw switch
         {
-            "FullVoting"    => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.FullVoting),
+            "FullVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.FullVoting),
             "LimitedVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.LimitedVoting),
-            "NonVoting"     => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NonVoting),
-            "DualClass"     => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.DualClass),
-            "SuperVoting"   => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.SuperVoting),
-            not null        => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NewOtherVotingRights(raw)),
-            null            => FSharpOption<VotingRightsCat>.None
+            "NonVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NonVoting),
+            "DualClass" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.DualClass),
+            "SuperVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.SuperVoting),
+            not null => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NewOtherVotingRights(raw)),
+            null => FSharpOption<VotingRightsCat>.None
         };
 
     private static DividendType ToDividendType(string raw)

@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillResult
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsWritten
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedUtc
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedUtc
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -384,7 +384,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedSymbols
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolValidationSignals
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    path: src/Meridian.Application/Backfill/BackfillResult.cs
     startLine: 33
   assemblies:
   - Meridian.Application

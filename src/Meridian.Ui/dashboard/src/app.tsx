@@ -1,85 +1,118 @@
 import { useState } from "react";
+import { AlertTriangle, LoaderCircle, Search } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
+import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
-import { WORKSPACES } from "@/lib/workspace";
+import { legacyWorkspaceRedirect, workspaceForKey } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
-import { OverviewScreen } from "@/screens/overview-screen";
+import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
 import { ResearchScreen } from "@/screens/research-screen";
 import { TradingScreen } from "@/screens/trading-screen";
-import type { WorkspaceKey } from "@/types";
+import { WorkspacePlaceholderScreen } from "@/screens/workspace-placeholder-screen";
+import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
   const { session, overview, research, trading, dataOperations, governance, loading, error, workspaceErrors, refresh } = useWorkstationData();
-  const activeWorkspace = getWorkspaceForPath(pathname);
-  const degradedWorkspaceCount = Object.keys(workspaceErrors).length;
-  const bootstrapFailed = !loading && !session && !research && !trading;
+  const shell = buildAppShellViewState({
+    pathname,
+    loading,
+    error,
+    workspaceErrors,
+    payload: {
+      session,
+      overview,
+      research,
+      trading,
+      dataOperations,
+      governance
+    }
+  });
 
   return (
-    <div className="min-h-screen p-4 lg:p-6">
-      <div className="mx-auto flex max-w-[1720px] flex-col gap-4 lg:flex-row">
+    <div className="workstation-frame">
+      <header className="workstation-masthead">
+        <div className="workstation-brand">
+          <img src={meridianMarkUrl} alt="" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="name">Meridian</div>
+            <div className="sub">Operator workstation</div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          onClick={() => setCommandOpen(true)}
+          aria-label="Open workstation command palette"
+        >
+          <Search className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="truncate">
+            <b>{shell.activeWorkspace.label}</b> · {shell.activeWorkspace.status} · Command palette
+          </span>
+        </button>
+
+        <div className="workstation-actions">
+          {session ? (
+            <>
+              <Badge variant={session.environment}>{session.environment}</Badge>
+              <span>{session.displayName}</span>
+              <span className="text-muted-foreground">{session.role}</span>
+            </>
+          ) : (
+            <span>Session loading</span>
+          )}
+        </div>
+      </header>
+
+      <div className="workstation-shell">
         <WorkspaceNav />
 
-        <main className="panel-surface min-h-[calc(100vh-3rem)] flex-1 overflow-hidden p-6 lg:p-8">
+        <main className="workbench grid grid-rows-[auto_minmax(0,1fr)]">
           <WorkspaceHeader
-            workspace={activeWorkspace}
+            workspace={shell.activeWorkspace}
             session={session}
             onOpenCommandPalette={() => setCommandOpen(true)}
             onRefresh={refresh}
+            refreshing={loading}
           />
 
-          <div className="mt-8">
-            {!loading && degradedWorkspaceCount > 0 ? (
-              <Card className="mb-4 border-warning/30">
-                <CardHeader>
-                  <CardTitle>Workstation bootstrap is partially degraded</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  {error ?? "Some prefetched workspace summaries did not load. Routes remain available while those slices recover."}
-                </CardContent>
-              </Card>
-            ) : null}
-            {loading ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Booting workstation shell</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  Loading session state, workspace summaries, and the initial research slice.
-                </CardContent>
-              </Card>
-            ) : bootstrapFailed ? (
-                <Card className="border-danger/20">
-                  <CardHeader>
-                    <CardTitle>Workstation bootstrap failed</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-danger">{error}</CardContent>
-                </Card>
-              ) : (
+          <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
+            {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
+            {shell.canRenderRoutes ? (
               <Routes>
-                <Route path="/overview" element={<OverviewScreen data={overview} session={session} />} />
-                <Route path="/" element={<ResearchScreen data={research} />} />
-                <Route
-                  path="/trading/*"
-                  element={<TradingScreen data={trading} />}
-                />
-                <Route
-                  path="/data-operations/*"
-                  element={<DataOperationsScreen data={dataOperations} />}
-                />
-                <Route
-                  path="/governance/*"
-                  element={<GovernanceScreen data={governance} />}
-                />
-                <Route path="*" element={<Navigate to="/overview" replace />} />
+                <Route path="/" element={<Navigate to="/trading" replace />} />
+                <Route path="/trading/readiness" element={(
+                  <OperatorReadinessConsole
+                    research={research}
+                    trading={trading}
+                    dataOperations={dataOperations}
+                    governance={governance}
+                  />
+                )} />
+                <Route path="/trading/*" element={<TradingScreen data={trading} />} />
+                <Route path="/portfolio/*" element={<Placeholder workspaceKey="portfolio" session={session} overview={overview} />} />
+                <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
+                <Route path="/reporting/*" element={<GovernanceScreen data={governance} />} />
+                <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
+                <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
+                <Route path="/settings/*" element={<Placeholder workspaceKey="settings" session={session} overview={overview} />} />
+                <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
+                <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
+                <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
+                <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
+                <Route path="*" element={<Navigate to="/trading" replace />} />
               </Routes>
-            )}
+            ) : null}
           </div>
         </main>
       </div>
@@ -89,31 +122,65 @@ export function App() {
   );
 }
 
-function getWorkspaceForPath(pathname: string) {
-  const key = normalizeWorkspace(pathname);
-  return WORKSPACES.find((workspace) => workspace.key === key) ?? WORKSPACES[0];
+function Placeholder({
+  workspaceKey,
+  session,
+  overview
+}: {
+  workspaceKey: WorkspaceKey;
+  session: SessionInfo | null;
+  overview: SystemOverviewResponse | null;
+}) {
+  return <WorkspacePlaceholderScreen workspace={workspaceForKey(workspaceKey)} session={session} overview={overview} />;
 }
 
-function normalizeWorkspace(pathname: string): WorkspaceKey {
-  if (pathname.startsWith("/overview")) {
-    return "overview";
-  }
+function LegacyWorkspaceRedirect() {
+  const location = useLocation();
+  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
+}
 
-  if (pathname.startsWith("/trading")) {
-    return "trading";
-  }
+function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
+  const toneClass =
+    panel.tone === "danger"
+      ? "border-danger/30 bg-danger/10 text-danger"
+      : panel.tone === "warning"
+        ? "border-warning/30 bg-warning/10 text-warning"
+        : "border-border/70 bg-secondary/25 text-muted-foreground";
+  const Icon = panel.tone === "loading" ? LoaderCircle : AlertTriangle;
 
-  if (pathname.startsWith("/data-operations")) {
-    return "data-operations";
-  }
-
-  if (pathname.startsWith("/governance")) {
-    return "governance";
-  }
-
-  if (pathname === "/") {
-    return "research";
-  }
-
-  return "overview";
+  return (
+    <Card
+      role={panel.role}
+      aria-live={panel.ariaLive}
+      className={`mb-4 ${toneClass}`}
+    >
+      <CardHeader className="flex flex-col gap-3 space-y-0 md:flex-row md:items-start md:justify-between">
+        <div>
+          <div className="eyebrow-label">Shell status</div>
+          <CardTitle className="mt-2 flex items-center gap-2 text-base text-foreground">
+            <Icon className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
+            {panel.title}
+          </CardTitle>
+        </div>
+        {panel.actionLabel ? (
+          <Button variant="outline" size="sm" onClick={onRetry}>
+            {panel.actionLabel}
+          </Button>
+        ) : null}
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <p className="leading-6 text-foreground/80">{panel.detail}</p>
+        {panel.items.length > 0 ? (
+          <ul className="grid gap-2 md:grid-cols-2">
+            {panel.items.map((item) => (
+              <li key={item.key} className="rounded-lg border border-border/60 bg-background/45 px-3 py-2">
+                <div className="font-semibold text-foreground">{item.label}</div>
+                <div className="mt-1 text-xs leading-5 text-foreground/70">{item.detail}</div>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
 }

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityComparisonResponse
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 185
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 185
   assemblies:
   - Meridian.Contracts
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 186
   assemblies:
   - Meridian.Contracts
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 188
   assemblies:
   - Meridian.Contracts
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 189
   assemblies:
   - Meridian.Contracts
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Discrepancies
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 190
   assemblies:
   - Meridian.Contracts
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecommendedProvider
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 191
   assemblies:
   - Meridian.Contracts
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComparedAt
-    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
     startLine: 192
   assemblies:
   - Meridian.Contracts

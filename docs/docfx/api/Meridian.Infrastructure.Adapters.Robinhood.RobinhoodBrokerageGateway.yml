@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodBrokerageGateway
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 40
   assemblies:
   - Meridian.Infrastructure
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 79
   assemblies:
   - Meridian.Infrastructure
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 85
   assemblies:
   - Meridian.Infrastructure
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 88
   assemblies:
   - Meridian.Infrastructure
@@ -336,7 +336,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 97
   assemblies:
   - Meridian.Infrastructure
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 116
   assemblies:
   - Meridian.Infrastructure
@@ -406,7 +406,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 124
   assemblies:
   - Meridian.Infrastructure
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 220
   assemblies:
   - Meridian.Infrastructure
@@ -483,7 +483,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 273
   assemblies:
   - Meridian.Infrastructure
@@ -529,7 +529,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 338
   assemblies:
   - Meridian.Infrastructure
@@ -564,7 +564,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 348
   assemblies:
   - Meridian.Infrastructure
@@ -599,7 +599,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 370
   assemblies:
   - Meridian.Infrastructure
@@ -634,7 +634,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 473
   assemblies:
   - Meridian.Infrastructure
@@ -669,7 +669,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 503
   assemblies:
   - Meridian.Infrastructure
@@ -707,7 +707,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
     startLine: 522
   assemblies:
   - Meridian.Infrastructure

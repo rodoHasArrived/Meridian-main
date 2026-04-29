@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedStartupHelpers
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 103
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveConfigPath
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 111
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfigMinimal
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 126
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveDeployment
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 178
   assemblies:
   - Meridian.Application
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnsureDefaultSymbols
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 184
   assemblies:
   - Meridian.Application
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildBackfillRequest
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 196
   assemblies:
   - Meridian.Application

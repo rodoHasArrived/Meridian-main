@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoBarConstants
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoDurationMs
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessDurationMs
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningDurationMs
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorDurationMs
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalDurationMs
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Services
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDurationForSeverity
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services

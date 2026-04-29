@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppSettings
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 446
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 448
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceTimeoutSeconds
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 449
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTimeoutMinutes
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 450
   assemblies:
   - Meridian.Ui.Services

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleType
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 51
   assemblies:
   - Meridian.Core
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OneTime
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 53
   assemblies:
   - Meridian.Core
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Daily
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 55
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weekly
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 57
   assemblies:
   - Meridian.Core
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 59
   assemblies:
   - Meridian.Core

@@ -53,7 +53,7 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
-        "args": ["--output", "docs/status/health-dashboard.md"],
+        "args": ["--output", "docs/status/health-dashboard.md", "--json-output", "docs/status/health-dashboard.json"],
         "output": "docs/status/health-dashboard.md",
     },
     "repair-links": {
@@ -65,6 +65,16 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "script": "validate-examples.py",
         "args": ["--output", "docs/status/example-validation.md"],
         "output": "docs/status/example-validation.md",
+    },
+    "check-ai-inventory": {
+        "script": "check-ai-inventory.py",
+        "args": [
+            "--output",
+            "docs/status/ai-inventory-report.md",
+            "--json-output",
+            "docs/status/ai-inventory-report.json",
+        ],
+        "output": "docs/status/ai-inventory-report.md",
     },
     "generate-coverage": {
         "script": "generate-coverage.py",
@@ -98,8 +108,38 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-metrics-dashboard": {
         "script": "generate-metrics-dashboard.py",
-        "args": ["--output", "docs/status/metrics-dashboard.md"],
+        "args": ["--output", "docs/status/metrics-dashboard.md", "--json-output", "docs/status/metrics-dashboard.json"],
         "output": "docs/status/metrics-dashboard.md",
+    },
+    "generate-api-contract-coverage-dashboard": {
+        "script": "generate-api-contract-coverage-dashboard.py",
+        "args": ["--output", "docs/status/api-contract-coverage-dashboard.md", "--json-output", "docs/status/api-contract-coverage-dashboard.json"],
+        "output": "docs/status/api-contract-coverage-dashboard.md",
+    },
+    "generate-pilot-readiness-dashboard": {
+        "script": "generate-pilot-readiness-dashboard.py",
+        "args": ["--output", "docs/status/pilot-readiness-dashboard.md", "--json-output", "docs/status/pilot-readiness-dashboard.json"],
+        "output": "docs/status/pilot-readiness-dashboard.md",
+    },
+    "generate-paper-replay-reliability-dashboard": {
+        "script": "generate-paper-replay-reliability-dashboard.py",
+        "args": ["--output", "docs/status/paper-replay-reliability-dashboard.md", "--json-output", "docs/status/paper-replay-reliability-dashboard.json"],
+        "output": "docs/status/paper-replay-reliability-dashboard.md",
+    },
+    "generate-evidence-continuity-dashboard": {
+        "script": "generate-evidence-continuity-dashboard.py",
+        "args": ["--output", "docs/status/evidence-continuity-dashboard.md", "--json-output", "docs/status/evidence-continuity-dashboard.json"],
+        "output": "docs/status/evidence-continuity-dashboard.md",
+    },
+    "generate-governance-readiness-dashboard": {
+        "script": "generate-governance-readiness-dashboard.py",
+        "args": ["--output", "docs/status/governance-readiness-dashboard.md", "--json-output", "docs/status/governance-readiness-dashboard.json"],
+        "output": "docs/status/governance-readiness-dashboard.md",
+    },
+    "generate-workflow-manifest": {
+        "script": "generate-workflow-manifest.py",
+        "args": [],
+        "output": "docs/status/workflow-validation-summary.json",
     },
     "create-todo-issues": {
         "script": "create-todo-issues.py",
@@ -109,13 +149,20 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
 }
 
 PROFILE_CONFIG: Dict[str, List[str]] = {
-    "quick": ["scan-todos", "validate-examples", "repair-links"],
+    "quick": ["scan-todos", "validate-examples", "repair-links", "check-ai-inventory", "generate-workflow-manifest"],
     "core": [
         "scan-todos",
         "generate-structure-docs",
         "generate-health-dashboard",
         "validate-examples",
+        "check-ai-inventory",
         "generate-coverage",
+        "generate-pilot-readiness-dashboard",
+        "generate-paper-replay-reliability-dashboard",
+        "generate-evidence-continuity-dashboard",
+        "generate-governance-readiness-dashboard",
+        "generate-api-contract-coverage-dashboard",
+        "generate-workflow-manifest",
     ],
     "full": [
         "scan-todos",
@@ -123,6 +170,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-health-dashboard",
         "repair-links",
         "validate-examples",
+        "check-ai-inventory",
         "generate-coverage",
         "generate-changelog",
         "rules-engine",
@@ -130,6 +178,12 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-dependency-graph",
         "sync-readme-badges",
         "generate-metrics-dashboard",
+        "generate-pilot-readiness-dashboard",
+        "generate-paper-replay-reliability-dashboard",
+        "generate-evidence-continuity-dashboard",
+        "generate-governance-readiness-dashboard",
+        "generate-api-contract-coverage-dashboard",
+        "generate-workflow-manifest",
     ],
 }
 

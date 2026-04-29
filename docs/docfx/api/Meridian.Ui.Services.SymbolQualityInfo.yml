@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolQualityInfo
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 1301
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 1303
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 1304
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 1305
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasGaps
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 1306
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityGrade
-    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
     startLine: 1307
   assemblies:
   - Meridian.Ui.Services

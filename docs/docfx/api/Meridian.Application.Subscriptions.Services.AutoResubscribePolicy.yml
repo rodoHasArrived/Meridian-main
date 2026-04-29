@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoResubscribePolicy
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentCircuitState
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsInCooldown
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 73
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsWithOpenCircuit
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnIntegrityEventAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDepthIntegrityEventAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 176
   assemblies:
   - Meridian.Application
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTradeIntegrityEventAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 200
   assemblies:
   - Meridian.Application
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetCircuitBreaker
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 212
   assemblies:
   - Meridian.Application
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbolCircuit
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 226
   assemblies:
   - Meridian.Application
@@ -396,7 +396,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
     startLine: 355
   assemblies:
   - Meridian.Application
