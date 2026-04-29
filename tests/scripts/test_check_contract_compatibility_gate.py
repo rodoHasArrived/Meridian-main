@@ -88,6 +88,26 @@ diff --git a/src/Meridian.Strategies/Services/StrategyRunReadService.cs b/src/Me
 
         self.assertFalse(gate.patch_has_breaking_removal(patch))
 
+    def test_patch_has_breaking_removal_detects_continuity_dto_member_removal(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/ReconciliationContinuityDtos.cs b/src/Meridian.Contracts/Workstation/ReconciliationContinuityDtos.cs
+@@ -31 +31,0 @@ public sealed record ReconciliationContinuityDto(
+-    decimal PendingCashFlow,
+"""
+
+        self.assertTrue(gate.patch_has_breaking_removal(patch))
+
+
+    def test_patch_has_breaking_removal_detects_continuity_dto_member_rename(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs b/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs
+@@ -18 +18 @@ public sealed record LedgerContinuityDto(
+-    decimal SettledCash,
++    decimal AvailableCash,
+"""
+
+        self.assertTrue(gate.patch_has_breaking_removal(patch))
+
 
 if __name__ == "__main__":
     unittest.main()

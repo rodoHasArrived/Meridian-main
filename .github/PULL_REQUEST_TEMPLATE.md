@@ -85,6 +85,10 @@ body:
           required: false
         - label: Contract migration notes added (required for breaking workstation/strategy/ledger contract changes)
           required: false
+        - label: Contract review packet artifact link added (required for shared-contract deltas in src/Meridian.Contracts/Workstation or src/Meridian.Contracts/Api)
+          required: false
+        - label: Migration note snippet added in PR body (required for non-additive shared-contract deltas)
+          required: false
 
   - type: textarea
     id: breaking-changes

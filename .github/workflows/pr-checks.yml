@@ -74,13 +74,24 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Detect continuity contract changes
+      id: continuity-filter
+      uses: dorny/paths-filter@v3
+      with:
+        filters: |
+          continuity_contracts:
+            - 'src/Meridian.Contracts/Workstation/**'
+            - 'src/Meridian.Contracts/Api/**'
+
     - name: Capture PR body
+      if: steps.continuity-filter.outputs.continuity_contracts == 'true'
       env:
         PR_BODY: ${{ github.event.pull_request.body }}
       run: |
         printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
 
     - name: Run contract compatibility gate
+      if: steps.continuity-filter.outputs.continuity_contracts == 'true'
       run: |
         python3 scripts/check_contract_compatibility_gate.py \
           --base "${{ github.event.pull_request.base.sha }}" \
@@ -88,7 +99,7 @@ jobs:
           --pr-body-file "$RUNNER_TEMP/pr-body.md"
 
     - name: Generate contract review packet
-      if: always()
+      if: always() && steps.continuity-filter.outputs.continuity_contracts == 'true'
       run: |
         mkdir -p artifacts/contract-review/pr-${{ github.event.pull_request.number }}
         python3 scripts/generate_contract_review_packet.py \
@@ -100,12 +111,16 @@ jobs:
         cat artifacts/contract-review/pr-${{ github.event.pull_request.number }}/contract-review-packet.md >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload contract review packet
-      if: always()
+      if: always() && steps.continuity-filter.outputs.continuity_contracts == 'true'
       uses: actions/upload-artifact@v7
       with:
         name: contract-review-packet
         path: artifacts/contract-review/pr-${{ github.event.pull_request.number }}/
         retention-days: 14
+
+    - name: Skip note when no continuity contract files changed
+      if: steps.continuity-filter.outputs.continuity_contracts != 'true'
+      run: echo "Contract compatibility gate skipped because this PR does not touch src/Meridian.Contracts/Workstation or src/Meridian.Contracts/Api." >> $GITHUB_STEP_SUMMARY
 
   config-schema:
     name: Config Schema Check
