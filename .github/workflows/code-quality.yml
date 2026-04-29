@@ -241,7 +241,7 @@ jobs:
           steps.analyze.outputs.has_issues == '1' &&
           steps.analyze.outputs.quality_cancelled != '1' &&
           github.event_name != 'pull_request'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const workflowName = context.workflow;

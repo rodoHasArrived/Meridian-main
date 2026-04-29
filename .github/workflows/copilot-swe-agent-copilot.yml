@@ -79,7 +79,7 @@ jobs:
 
       - name: Build Copilot run brief
         id: brief
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const eventName = context.eventName;
@@ -195,7 +195,7 @@ jobs:
 
       - name: Post visibility comment
         if: steps.brief.outputs.issue_number != ''
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const issueNumber = Number('${{ steps.brief.outputs.issue_number }}');
