@@ -57,6 +57,11 @@ investment decision. Books Before Broker, Transaction Lab, Close the Books, brok
 reconciliation, controls, and evidence packet actions are useful names for future slices, but they
 remain planned until shared contracts, durable evidence, and browser-visible workflows exist.
 
+The umbrella commercial name for the evidence layer is **Meridian Evidence OS**. In this pilot
+workflow it means every artifact, decision, blocker, and report output should eventually link back
+to a governed evidence subject; it does not create a new wave or imply an implemented evidence
+platform.
+
 ---
 
 ## Workspace Mapping
@@ -108,6 +113,8 @@ operator shell.
 | Meridian Command Center | Readiness console, buyer demo mode, role-based demo views, blocker queue, report-pack readiness, operational health | Partial browser support exists through the read-only Operator Readiness Console; SLA aging, role-based demos, evidence packet actions, and full command-center scope remain planned. |
 
 Future implementation should favor shared-contract additions such as `EvidenceCompletenessSummary`, Run Evidence Graph lineage, Promotion/Data Trust Passport projections, accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-as-code policy summaries, evidence packet readiness, reconciliation casework, and governed report-pack readiness before expanding client-specific UI.
+
+Evidence OS follow-ons should use the same rule: model evidence bundle identity, proof/certificate projections, report-line provenance, strategy-to-ledger lineage, instrument passport projections, close-readiness scoring, break explanation summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and Evidence Vault artifact metadata in shared contracts before adding screen-specific workflow.
 
 ---
 

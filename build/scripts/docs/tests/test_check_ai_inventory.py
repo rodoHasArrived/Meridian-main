@@ -131,6 +131,35 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertEqual([], findings)
 
+    def test_check_catalog_drift_reports_legacy_canonical_repository_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "README.md",
+                "https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(any(finding.kind == "legacy-repository-link" for finding in findings))
+            self.assertTrue(any(finding.path == "docs/ai/README.md" for finding in findings))
+
+    def test_check_catalog_drift_allows_historical_workflow_evidence_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "ai-known-errors.md",
+                "https://github.com/rodoHasArrived/Meridian/actions/runs/123456\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "legacy-repository-link" for finding in findings))
+
     def test_build_payload_uses_portable_repository_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

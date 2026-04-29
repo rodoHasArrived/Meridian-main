@@ -296,6 +296,17 @@ const cleanGovernance: GovernanceWorkspaceResponse = {
   breakQueue: []
 };
 
+const noReportPackGovernance: GovernanceWorkspaceResponse = {
+  ...cleanGovernance,
+  reporting: {
+    profileCount: 0,
+    recommendedProfiles: [],
+    profiles: [],
+    reportPackTargets: [],
+    summary: "No governed report-pack targets are configured."
+  }
+};
+
 const cleanInbox: OperatorInbox = {
   asOf: "2026-04-29T12:01:00Z",
   items: [],
@@ -388,5 +399,22 @@ describe("operator readiness console view model", () => {
     expect(loadingState.overallLabel).toBe("Review pending");
     expect(readyState.overallLevel).toBe("ready");
     expect(readyState.overallLabel).toBe("Ready");
+  });
+
+  it("keeps the headline in review when governed report-pack readiness is missing", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading: readyTrading,
+      dataOperations,
+      governance: noReportPackGovernance,
+      operatorInbox: cleanInbox,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.overallLevel).toBe("review");
+    expect(state.overallLabel).toBe("Review pending");
+    expect(state.overallDetail).toContain("report-pack readiness item(s) still need review");
+    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No targets", level: "review" }));
   });
 });

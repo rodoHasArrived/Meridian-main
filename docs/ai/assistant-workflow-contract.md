@@ -111,6 +111,8 @@ Use this checklist when changing any AI-related asset:
       or authoritative docs change.
 - [ ] Keep generated AI inventory reports portable; they must not include local absolute repository
       paths, secrets, or machine-only identifiers.
+- [ ] Keep canonical GitHub documentation links pointed at `rodoHasArrived/Meridian-main`; historical
+      issue or workflow-run evidence links may retain their original repository if they are evidence.
 - [ ] Run targeted validation and record the command result.
 
 ---

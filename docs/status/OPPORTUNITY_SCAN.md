@@ -66,6 +66,25 @@ This layer adds the accounting, close, controls, and demo packaging ideas that m
 
 Evidence-backed narrative and client-ready commentary ideas remain a future parking-lot concept. They should not be ranked as active modules until the evidence graph, passport, reconciliation, and governed report-pack structures are stable enough to ground every sentence in Meridian evidence.
 
+## Additional Commercial Differentiators
+
+These ideas extend the accounting-led layer into marketable offers. They should remain planned or partial-support items until shared contracts, retained evidence, and browser-visible workflows exist.
+
+| Priority | Addition | Commercial reason | Current repo posture | Placement |
+| ---: | --- | --- | --- | --- |
+| 1 | Shadow Books | Clear recurring accounting pain; lets Meridian run beside external administrators, brokers, or custodians and explain differences | Planned on top of ledger, reconciliation, statement import, and close workflow support | Wave 4 later slice |
+| 2 | Report Line Provenance | Strong audit/accounting differentiator: every report number should link back to source run/session, ledger entries, reconciliation state, assumptions, and approvals | Planned; report-pack schema/version checks are inputs, not clickable provenance | Wave 4 |
+| 3 | Strategy Passport / Proof of Strategy Certificate | Easy buyer story for governance: one strategy version can show identity, data trust, backtest, paper, replay, ledger, blockers, and approvals | Partial support through promotion checklist and review packets; certificate projection remains planned | Wave 2 into Wave 3 |
+| 4 | Close Readiness Score | Practical controller/operations surface for Security Master, position, cash, ledger, pricing, reconciliation, report, and approval readiness | Planned; close checklist and readiness scoring remain open | Wave 4 later slice |
+| 5 | Investment Committee Packet Builder | Demoable deliverable that converts strategy or portfolio decisions into retained approval packets | Planned; promotion/report-pack support evidence exists, but IC packet generation remains open | Wave 3 into Wave 4 |
+| 6 | Reconciliation Casework | Recurring operational workflow with owner, tolerance, aging, evidence, comment, decision, and sign-off history | Early in progress through file-backed break queues and calibration rollups | Wave 4 |
+| 7 | Data Trust Passport | Makes research, paper, and report claims credible by proving provider, dataset, freshness, coverage, mapping, and replay evidence | Partial support through DK1 and data-quality posture; dataset passport projection remains planned | Wave 1 maintenance into Wave 3 |
+| 8 | Evidence Vault | Enterprise credibility through durable run packets, report packs, approvals, screenshots, validation outputs, external statements, decisions, and certificates with lineage | Planned; artifact generation exists in several lanes, but a vault is not delivered | Wave 4 support capability |
+| 9 | Promotion Certificate | Simple artifact for non-technical buyers that says whether a run or strategy version is eligible for paper or live consideration | Planned; should build on Strategy Passport and Evidence Completeness Score | Wave 3 support capability |
+| 10 | Evidence-aware AI Summaries | Modern differentiator after evidence structures mature; every sentence must cite evidence objects and never invent readiness | Deferred; do not rank as active until graph, vault, provenance, permissions, and report-pack structures are stable | Later optional track |
+
+The stronger umbrella name for these concepts is **Meridian Evidence OS**. It should describe Meridian's product category, not imply a delivered operating-system layer.
+
 ---
 
 ## Top Opportunities

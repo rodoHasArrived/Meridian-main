@@ -31,6 +31,8 @@ This framing sharpens Waves 2-4 without creating a new wave. The current repo ha
 
 The next accounting-led commercial wedge should be: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Ideas such as Books Before Broker, an investment accounting Transaction Lab, Close the Books workflow, broker statement reconciliation, Controls-as-Code, and one-click evidence packets should be treated as roadmap targets layered onto Waves 2-4. They are not current implementation claims; future delivery should start with shared evidence/accounting/readiness contracts and browser-dashboard workflows before any client-specific UI expands.
 
+The umbrella product story can be **Meridian Evidence OS**: a governed investment operating system that proves the lifecycle from data to decision to books to report. Evidence OS should connect the Run Evidence Graph, Evidence Vault, Evidence Completeness Score, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. Treat this as positioning for Waves 2-4, not a new platform implementation or wave.
+
 ---
 
 Use this document with:

@@ -9,7 +9,8 @@ Meridian is a .NET 9 trading and fund-operations platform with:
 - strategy/backtesting workflows,
 - execution and risk controls,
 - storage/archival pipelines,
-- and a desktop-first operator experience (WPF shell).
+- a browser-based operator workstation,
+- and retained WPF desktop support for shared contracts, regressions, and existing desktop workflows.
 
 ## Core Working Rules
 
@@ -33,8 +34,10 @@ make test
 
 ## High-Value Paths
 
-- `src/Meridian.Wpf/` — desktop shell (primary operator UX)
-- `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` — shared UI/service surface
+- `src/Meridian.Ui/dashboard/` — active browser-based operator workstation
+- `src/Meridian.Ui/wwwroot/workstation/` — built workstation assets served by `Meridian.Ui`
+- `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` — shared UI/API read-model surface
+- `src/Meridian.Wpf/` — retained desktop shell for support, shared contracts, and regressions
 - `src/Meridian.Application/` — orchestration + pipelines
 - `src/Meridian.Infrastructure/` — provider/integration adapters
 - `src/Meridian.Storage/` — WAL, archival, durability paths

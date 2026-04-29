@@ -28,6 +28,11 @@ PROMPTS_README = "docs/ai/prompts/README.md"
 INSTRUCTIONS_README = "docs/ai/instructions/README.md"
 CODEX_SKILLS_README = ".codex/skills/README.md"
 GITHUB_PROMPTS_README = ".github/prompts/README.md"
+CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
+LEGACY_CANONICAL_LINK_PREFIXES = (
+    "https://github.com/rodoHasArrived/Meridian/blob/main/",
+    "https://github.com/rodoHasArrived/Meridian/tree/main/",
+)
 
 AI_WORKFLOW_FILES = (
     ".github/workflows/documentation.yml",
@@ -378,7 +383,44 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
             )
         )
 
+    findings.extend(check_legacy_canonical_links(root, inventory))
+
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
+
+
+def check_legacy_canonical_links(root: Path, inventory: Sequence[InventoryItem]) -> list[Finding]:
+    findings: list[Finding] = []
+    scanned_paths: set[str] = set()
+
+    for item in inventory:
+        if item.path in scanned_paths:
+            continue
+        scanned_paths.add(item.path)
+
+        path = root / item.path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if not any(prefix in text for prefix in LEGACY_CANONICAL_LINK_PREFIXES):
+            continue
+
+        findings.append(
+            Finding(
+                severity="drift",
+                surface=item.surface,
+                kind="legacy-repository-link",
+                name=item.name,
+                path=item.path,
+                expected_doc=item.path,
+                message=(
+                    "Legacy canonical GitHub doc link points at rodoHasArrived/Meridian; "
+                    f"use {CURRENT_REPOSITORY_URL} for current Meridian-main docs."
+                ),
+            )
+        )
+
+    return findings
 
 
 def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequence[Finding]) -> dict[str, object]:

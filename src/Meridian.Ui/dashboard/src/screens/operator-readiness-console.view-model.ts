@@ -161,7 +161,8 @@ export function buildOperatorReadinessConsoleState({
     inboxLoading,
     inboxError,
     reconciliationRows,
-    promotionRows
+    promotionRows,
+    reportPackFacts
   });
   const readinessStatusLabel = readiness
     ? formatReadinessStatusValue(readiness.overallStatus)
@@ -179,7 +180,8 @@ export function buildOperatorReadinessConsoleState({
       inboxLoading,
       inboxError,
       reconciliationRows,
-      promotionRows
+      promotionRows,
+      reportPackFacts
     }),
     overallLevel,
     asOf,
@@ -569,7 +571,8 @@ function determineOverallLevel({
   inboxLoading,
   inboxError,
   reconciliationRows,
-  promotionRows
+  promotionRows,
+  reportPackFacts
 }: {
   readiness: TradingOperatorReadiness | null;
   operatorInbox: OperatorInbox | null;
@@ -577,6 +580,7 @@ function determineOverallLevel({
   inboxError: string | null;
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
+  reportPackFacts: ReadinessConsoleRow[];
 }): ReadinessConsoleLevel {
   if (!readiness) {
     return "review";
@@ -599,7 +603,8 @@ function determineOverallLevel({
     readiness.overallStatus === "Ready" &&
     (operatorInbox?.warningCount ?? 0) === 0 &&
     reconciliationRows.length === 0 &&
-    promotionRows.length === 0
+    promotionRows.length === 0 &&
+    !hasReportPackReadinessGap(reportPackFacts)
   ) {
     return "ready";
   }
@@ -613,7 +618,8 @@ function buildOverallDetail({
   inboxLoading,
   inboxError,
   reconciliationRows,
-  promotionRows
+  promotionRows,
+  reportPackFacts
 }: {
   readiness: TradingOperatorReadiness | null;
   operatorInbox: OperatorInbox | null;
@@ -621,6 +627,7 @@ function buildOverallDetail({
   inboxError: string | null;
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
+  reportPackFacts: ReadinessConsoleRow[];
 }): string {
   if (!readiness) {
     return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, or Governance payloads.";
@@ -636,7 +643,12 @@ function buildOverallDetail({
   }
 
   const reviewCount = operatorInbox?.reviewCount ?? readiness.workItems.length;
-  return `${reviewCount} operator review item(s), ${reconciliationRows.length} reconciliation item(s), and ${promotionRows.length} promotion blocker(s) are visible in the web console.`;
+  const reportPackReviewCount = reportPackFacts.filter((row) => row.level !== "ready").length;
+  if (reportPackReviewCount > 0) {
+    return `${reviewCount} operator review item(s), ${reconciliationRows.length} reconciliation item(s), ${promotionRows.length} promotion blocker(s), and ${reportPackReviewCount} report-pack readiness item(s) still need review.`;
+  }
+
+  return `${reviewCount} operator review item(s), ${reconciliationRows.length} reconciliation item(s), ${promotionRows.length} promotion blocker(s), and governed report-pack readiness are visible in the web console.`;
 }
 
 function buildStatusAnnouncement(
@@ -689,6 +701,10 @@ function formatEffectiveOverallLabel(
   }
 
   return readinessStatusLabel;
+}
+
+function hasReportPackReadinessGap(reportPackFacts: ReadinessConsoleRow[]): boolean {
+  return reportPackFacts.length === 0 || reportPackFacts.some((row) => row.level !== "ready");
 }
 
 function levelFromReadiness(status: string): ReadinessConsoleLevel {

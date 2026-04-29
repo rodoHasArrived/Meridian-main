@@ -55,9 +55,9 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
 The checker inventories root assistant entrypoints, Codex and Claude configuration, Copilot
-instructions, agents, skills, prompts, AI workflow files, `docs/ai/`, and MCP prompt/resource/tool
-surfaces. Its Markdown and JSON reports are safe to share because they use a portable repository
-identity instead of local absolute paths.
+instructions, agents, skills, prompts, AI workflow files, `docs/ai/`, MCP prompt/resource/tool
+surfaces, and stale canonical GitHub documentation links. Its Markdown and JSON reports are safe to
+share because they use a portable repository identity instead of local absolute paths.
 
 ### Tier 2: Navigation and Routing
 
@@ -126,4 +126,4 @@ Located mainly in `docs/ai/claude/`.
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-04-29_

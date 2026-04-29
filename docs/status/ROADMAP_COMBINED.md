@@ -67,6 +67,8 @@ That loop maps directly onto the active Waves 2-4 path. Existing support evidenc
 
 The accounting-led commercial wedge for the same path is: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, and evidence packet actions should sharpen Waves 2-4 as planned product modules. They should not be described as current capabilities until shared contracts, retained evidence, browser workflows, and governed outputs prove them end to end.
 
+The umbrella product story can be **Meridian Evidence OS**: a governed investment operating system that proves the lifecycle from data to decision to books to report. Evidence OS should tie together the evidence graph, vault, completeness scoring, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs while remaining positioning language until accepted slices exist.
+
 ---
 
 ## Current State

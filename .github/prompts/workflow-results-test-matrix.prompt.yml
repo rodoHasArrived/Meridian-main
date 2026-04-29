@@ -12,10 +12,11 @@ messages:
       The `{workflow_name}` workflow has completed with status: **{run_conclusion}**.
 
       ## Project Context
-      Meridian is a .NET 9.0 C#/F# market data collection system.
-      - Build: `dotnet build -c Release`
-      - Test: `dotnet test tests/Meridian.Tests`
-      - 14 main projects, 105 test files
+      Meridian is a .NET 9 C#/F# fund-management and trading platform with provider, storage,
+      execution, ledger, web workstation, retained WPF, and MCP surfaces.
+      - Build: `dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true`
+      - Test: run the nearest impacted test project first, then broaden if needed
+      - AI context: `docs/ai/assistant-workflow-contract.md` and `CLAUDE.md`
 
       ## Findings from Workflow Run
       {findings_text}

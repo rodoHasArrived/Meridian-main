@@ -35,6 +35,8 @@ The commercial product thesis for these workstreams is the **Meridian Assurance 
 
 The accounting-led commercial wedge asks whether Meridian can prove, book, reconcile, approve, and report an investment decision. Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, buyer demo mode, role-based demo views, readiness dashboards, and evidence packet actions belong in this addendum only as planned module direction until shared contracts, retained evidence, browser-dashboard workflows, and governed outputs prove a narrower slice.
 
+The Evidence OS umbrella adds proof certificates, accounting-aware backtesting, strategy-to-ledger drilldown, explain-the-break summaries, close readiness, instrument passports, fund operating model templates, Evidence Vault, Report Factory, Control Center, Report Line Provenance, Assurance Score, Evidence SLA, Decision Memory, and no-orphan-evidence validation as planned direction. These names should sharpen Waves 2-4, not create a new wave or imply a delivered evidence platform.
+
 This document therefore adds:
 
 1. explicit owner lanes
@@ -63,7 +65,7 @@ It should be read with:
 - concrete ownership and dependency mapping for active Waves 2-4
 - workstreams that turn existing read models and operator surfaces into durable workflows
 - cross-wave validation and release disciplines required to keep the active roadmap credible
-- browser-dashboard delivery targets for readiness dashboards, close workflow previews, evidence packet actions, buyer demo mode, and role-based demo views after shared contracts exist
+- browser-dashboard delivery targets for readiness dashboards, close workflow previews, evidence packet actions, proof certificates, report-line provenance previews, buyer demo mode, and role-based demo views after shared contracts exist
 
 ### Out of scope
 
@@ -72,6 +74,7 @@ It should be read with:
 - broad Wave 6 live-readiness expansion
 - optional advanced research, scale-out, or performance tracks
 - claims that Books Before Broker, insurance accounting, Close the Books, broker statement reconciliation, Controls-as-Code, shadow books, or demo packs are current capabilities before accepted evidence exists
+- claims that Evidence OS, Evidence Vault, Report Factory, report-line provenance, proof certificates, close readiness, Assurance Score, Evidence SLA, Decision Memory, or evidence-aware AI summaries are current capabilities before accepted evidence exists
 
 ### Assumptions
 
@@ -118,9 +121,10 @@ It should be read with:
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
 6. Accounting-led commercial slices must start with shared contract/readiness definitions such as accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness before web dashboard workflow expansion.
-7. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
-8. Desktop workflow automation must use canonical workspace tags, confirmed page-readiness markers, deterministic restore/build inputs, local single-instance behavior, diagnostic artifacts, and single-commit screenshot publication so screenshot/manual evidence does not drift from the shell routes operators actually use.
-9. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
+7. Evidence OS slices must start with shared evidence bundle identity, proof/certificate projections, report-line provenance, strategy-to-ledger lineage, instrument passport projections, close-readiness scoring, break explanation summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and Evidence Vault artifact metadata before UI expansion.
+8. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
+9. Desktop workflow automation must use canonical workspace tags, confirmed page-readiness markers, deterministic restore/build inputs, local single-instance behavior, diagnostic artifacts, and single-commit screenshot publication so screenshot/manual evidence does not drift from the shell routes operators actually use.
+10. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
 
 ---
 

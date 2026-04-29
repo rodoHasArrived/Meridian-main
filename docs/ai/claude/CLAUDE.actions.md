@@ -119,7 +119,7 @@ done
 
 ## Related Documentation
 
-- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md) - Full workflow details
+- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/README.md) - Full workflow details
 - [`docs/development/github-actions-summary.md`](../../development/github-actions-summary.md) - Workflow summary
 - [`docs/development/github-actions-testing.md`](../../development/github-actions-testing.md) - CI testing tips
 - [`docs/development/build-observability.md`](../../development/build-observability.md) - Build metrics system
@@ -128,9 +128,9 @@ done
 
 ## Related Resources
 
-- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md)
+- **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md)
 - **Error prevention:** [`docs/ai/ai-known-errors.md`](../ai-known-errors.md)
-- **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) § CI/CD Pipelines
+- **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) § CI/CD Pipelines
 
 ---
 

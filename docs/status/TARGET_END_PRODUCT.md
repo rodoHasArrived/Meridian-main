@@ -15,6 +15,8 @@ The product promise is continuity: one operator can move from data trust to rese
 
 The accounting-led product question is: can Meridian prove, book, reconcile, approve, and report an investment decision? Books Before Broker, Transaction Lab, insurance accounting views, Close the Books, broker statement reconciliation, report restatement tracking, controls, and evidence packets should be treated as planned product modules unless the roadmap already names partial support evidence.
 
+The umbrella product story is **Meridian Evidence OS**: a governed investment operating system that connects evidence graph, vault, completeness scoring, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. In current docs this is positioning language, not a delivered platform layer.
+
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 
 ---
@@ -70,9 +72,10 @@ These package names clarify the sellable product story without changing the cano
 - **Meridian Core:** Security Master, account/entity setup, provider/data trust, portfolio views, and audit-trail direction.
 - **Meridian Research Assurance:** data trust, run comparison, Run Evidence Graph, Data Trust Passport, and promotion evidence for research teams.
 - **Meridian PaperOps:** paper-session dashboarding, replay verification, order/fill/ledger consistency, promotion readiness, Books Before Broker direction, and accounting-grade paper evidence.
-- **Meridian FundOps:** portfolio accounting, Transaction Lab direction, reconciliation casework, shadow-book direction, insurance accounting pack direction, fund-close workflow direction, broker statement reconciliation, and governed report-pack support for accounting and operations teams.
-- **Meridian Controls:** strategy promotion records, Controls-as-Code direction, approval workflow, policy mapping, evidence vault direction, immutable decision-ledger direction, audit trail exploration, report restatement tracking, and governed report packs for oversight teams.
-- **Meridian Command Center:** web-first readiness console, buyer demo mode direction, role-based demo views, blocker queue, SLA/aging direction, report-pack status, and operational health for managers.
+- **Meridian FundOps:** portfolio accounting, Transaction Lab direction, reconciliation casework, shadow-book direction, close readiness, insurance accounting pack direction, fund-close workflow direction, broker statement reconciliation, and governed report-pack support for accounting and operations teams.
+- **Meridian Controls:** strategy promotion records, Proof of Strategy certificates, Controls-as-Code direction, approval workflow, policy mapping, evidence vault direction, immutable decision-ledger direction, audit trail exploration, report restatement tracking, and governed report packs for oversight teams.
+- **Meridian Report Factory:** report templates, periods, approval workflow, pack generation, versioning, restatements, report-line provenance, exports, and archival.
+- **Meridian Command Center:** web-first readiness console, buyer demo mode direction, role-based demo views, blocker queue, evidence SLA direction, Assurance Score direction, report-pack status, and operational health for managers.
 
 Only the underlying support evidence already described in the roadmap should be treated as current implementation. Package names are commercial grouping language until their shared contracts, browser workflows, evidence retention, and governed outputs are accepted.
 

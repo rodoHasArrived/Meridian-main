@@ -23,6 +23,8 @@ The commercial filter for these outcomes is the **Meridian Assurance Loop**: Dat
 
 The accounting-led extension for this window is narrow: use Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, buyer demo mode, and evidence packet actions as prioritization language only. Six-week work should favor shared-contract definitions and browser-dashboard readiness previews over new module claims.
 
+The Evidence OS extension is also prioritization language only. Proof certificates, strategy-to-ledger drilldowns, report-line provenance, close readiness, instrument passports, Evidence Vault, Evidence SLA, Decision Memory, Assurance Score, and no-orphan-evidence validation should be scoped as shared-contract/readiness targets unless a narrower slice has accepted evidence.
+
 Explicit non-goals in this window:
 
 - Wave 5 Backtest Studio unification
@@ -116,7 +118,7 @@ This plan starts from the current repo state:
 
 - Security Master remains the delivered baseline while account/entity, reconciliation, cash-flow, multi-ledger, and reporting-adjacent workflows deepen on top of it
 - the next governance slice is defined in terms of shared DTOs, read models, export seams, account/provider-routing evidence, reconciliation break-queue state, calibration-summary rollups, seeded exception-route/tolerance/sign-off metadata, and operator surfaces rather than a parallel governance stack
-- accounting-led commercial slices should start as shared acceptance definitions for accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness
+- accounting-led and Evidence OS commercial slices should start as shared acceptance definitions for accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, instrument passport projections, proof/certificate projections, strategy-to-ledger lineage, report-line provenance, break explanation summaries, report restatement tracking, controls-policy summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and evidence packet readiness
 
 ---
 
@@ -172,7 +174,7 @@ Priorities:
 
 - keep Security Master authoritative while extending its use across governance workflows
 - define the next concrete slices for account/entity, multi-ledger, cash-flow, calibrated reconciliation, and reporting work
-- keep Books Before Broker, Transaction Lab, insurance accounting, Close the Books, broker statement reconciliation, shadow books, and controls as roadmap targets unless a slice has shared contracts, retained evidence, and browser-visible workflow support
+- keep Books Before Broker, Transaction Lab, insurance accounting, Close the Books, broker statement reconciliation, shadow books, Evidence Vault, Report Factory, report-line provenance, instrument passports, decision memory, and controls as roadmap targets unless a slice has shared contracts, retained evidence, and browser-visible workflow support
 - treat the Fund Accounts operator brief as Wave 4 support evidence only while it remains a projection of shared account, provider-routing, retained balance-history, and shared-data-access state
 - keep governance work grounded in shared DTOs, read models, and export seams rather than a separate subsystem
 
