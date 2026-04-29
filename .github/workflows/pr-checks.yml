@@ -321,13 +321,31 @@ jobs:
 
     - name: Get PR diff summary
       id: diff
+      shell: bash
       run: |
-        DIFF_STATS=$(git diff --stat origin/${{ github.base_ref }}...HEAD | tail -1)
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | head -30)
-        echo "stats=$DIFF_STATS" >> $GITHUB_OUTPUT
-        echo "files<<FILESEOF" >> $GITHUB_OUTPUT
-        echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-        echo "FILESEOF" >> $GITHUB_OUTPUT
+        set -euo pipefail
+
+        BASE_REF="${{ github.base_ref }}"
+        REMOTE_BASE="origin/${BASE_REF}"
+
+        git fetch --no-tags --prune --depth=200 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}" || \
+          git fetch --no-tags --prune origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+
+        DIFF_RANGE="${REMOTE_BASE}...HEAD"
+        DIFF_STATS=$(git diff --stat "$DIFF_RANGE" | tail -1)
+
+        mapfile -t FILTERED_FILES < <(
+          git diff --name-only --diff-filter=ACMR "$DIFF_RANGE" | \
+            grep -Ev '(^README\.md$|^Meridian Design System \(3\)/README\.md$)' | \
+            head -30 || true
+        )
+
+        {
+          echo "stats=$DIFF_STATS"
+          echo "files<<FILESEOF"
+          printf '%s\n' "${FILTERED_FILES[@]}"
+          echo "FILESEOF"
+        } >> "$GITHUB_OUTPUT"
 
     - name: AI review summary
       id: ai-review
