@@ -1780,6 +1780,46 @@ public sealed class WorkstationEndpointsTests
             .Contain("security-coverage");
     }
 
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ContinuityWarnings_ShouldFlowAcrossResearchTradingGovernanceAndReviewPacket()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runId = $"run-cross-surface-continuity-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(runId, includeCashFlows: false, includeFills: false, promotionState: StrategyRunPromotionState.CandidateForLive));
+
+        var client = app.GetTestClient();
+
+        var reviewPacket = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>($"/api/workstation/runs/{runId}/review-packet", ServerJsonOptions);
+        reviewPacket.Should().NotBeNull();
+        reviewPacket!.Continuity.Should().NotBeNull();
+        reviewPacket.Continuity!.ContinuityStatus.HasFills.Should().BeFalse();
+
+        var warningCodes = reviewPacket.Continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code).ToArray();
+        warningCodes.Should().Contain(["missing-fills", "lineage-promotion-gap"]);
+
+        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => item.WorkItemId.StartsWith("continuity-missing-fills", StringComparison.Ordinal));
+        inbox.Items.Should().Contain(item => item.WorkItemId.StartsWith("continuity-lineage-promotion-gap", StringComparison.Ordinal));
+
+        using var continuity = await ReadJsonAsync(client, $"/api/workstation/runs/{runId}/continuity");
+        var continuityWarnings = continuity.RootElement
+            .GetProperty("continuityStatus")
+            .GetProperty("warnings")
+            .EnumerateArray()
+            .Select(static warning => warning.GetProperty("code").GetString())
+            .ToArray();
+
+        continuity.RootElement.GetProperty("continuityStatus").GetProperty("hasFills").GetBoolean().Should().BeFalse();
+        continuityWarnings.Should().Contain(["missing-fills", "lineage-promotion-gap"]);
+        continuityWarnings.Should().Contain(warningCodes);
+    }
     [Fact]
     public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnNotFoundForMissingRun()
     {
@@ -3281,22 +3321,40 @@ public sealed class WorkstationEndpointsTests
         };
     }
 
-    private static StrategyRunEntry BuildContinuityRun(string runId)
+    private static StrategyRunEntry BuildContinuityRun(string runId, bool includeCashFlows = true, bool includeFills = false, StrategyRunPromotionState promotionState = StrategyRunPromotionState.None)
     {
         var run = BuildReconciliationReadyRun(runId);
-        var cashFlows = new CashFlowEntry[]
-        {
-            new TradeCashFlow(run.StartedAt.AddMinutes(10), -400m, "AAPL", 10L, 40m),
-            new CommissionCashFlow(run.StartedAt.AddMinutes(10), -1m, "AAPL", Guid.NewGuid()),
-            new DividendCashFlow(run.StartedAt.AddDays(3), 25m, "AAPL", 10L, 2.5m)
-        };
+        var cashFlows = includeCashFlows
+            ? new CashFlowEntry[]
+            {
+                new TradeCashFlow(run.StartedAt.AddMinutes(10), -400m, "AAPL", 10L, 40m),
+                new CommissionCashFlow(run.StartedAt.AddMinutes(10), -1m, "AAPL", Guid.NewGuid()),
+                new DividendCashFlow(run.StartedAt.AddDays(3), 25m, "AAPL", 10L, 2.5m)
+            }
+            : [];
+        var fills = includeFills
+            ? new FillEvent[]
+            {
+                new(
+                    FillId: Guid.NewGuid(),
+                    OrderId: Guid.NewGuid(),
+                    Symbol: "AAPL",
+                    FilledQuantity: 10L,
+                    FillPrice: 40m,
+                    Commission: 1m,
+                    FilledAt: run.StartedAt.AddMinutes(10),
+                    AccountId: "default-brokerage")
+            }
+            : [];
 
         return run with
         {
             Metrics = run.Metrics! with
             {
-                CashFlows = cashFlows
+                CashFlows = cashFlows,
+                Fills = fills
             },
+            PromotionState = promotionState,
             FundProfileId = "alpha-credit",
             FundDisplayName = "Alpha Credit"
         };

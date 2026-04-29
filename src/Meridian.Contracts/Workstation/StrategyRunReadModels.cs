@@ -537,6 +537,7 @@ public sealed record StrategyRunContinuityStatus(
     bool HasPortfolio,
     bool HasLedger,
     bool HasCashFlow,
+    bool HasFills,
     bool HasReconciliation,
     int AsOfDriftMinutes,
     int OpenReconciliationBreaks,
