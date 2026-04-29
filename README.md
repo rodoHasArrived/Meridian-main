@@ -6987,6 +6987,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
+│       │   ├── SymbolMappingViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
@@ -7846,10 +7847,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
+│   │   │   ├── ChartingPageViewModelTests.cs
+│   │   │   ├── CollectionSessionViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── DataSamplingViewModelTests.cs
+│   │   │   ├── DataSourcesViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
@@ -7870,6 +7874,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── SymbolMappingViewModelTests.cs
 │   │   │   ├── SymbolsPageViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
 │   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
@@ -7930,6 +7935,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-599 directories, 7180 files
+599 directories, 7185 files
 ```
 <!-- readme-tree end -->
