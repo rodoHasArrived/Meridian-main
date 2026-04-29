@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-04-27
+**Last Reviewed:** 2026-04-29
 
 ## Summary
 
@@ -35,7 +35,7 @@ This sprint closes that gap with four explicit acceptance gates:
 
 ### In Scope
 
-- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with WPF as the primary operator lane and retained web/API surfaces as supporting consumers
+- harden the shared workstation paper-trading cockpit around paper-session create, restore, verify, close, and promotion review, with the web dashboard as the active operator lane and retained WPF/API surfaces as supporting consumers
 - make replay verification an operator-facing readiness signal instead of a hidden service capability
 - tighten order, control, and risk audit correlation so decisions can be explained from the cockpit
 - make `Backtest -> Paper` traceability durable and make `Paper -> Live` readiness explicit without widening live-readiness claims
@@ -52,7 +52,7 @@ This sprint closes that gap with four explicit acceptance gates:
 ### Assumptions
 
 - Wave 1 remains the trust boundary for provider confidence and is not reopened here.
-- Wave 2 is a shared workstation cockpit hardening effort: WPF is the primary operator shell, and the retained web/API surfaces should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
+- Wave 2 is a shared workstation cockpit hardening effort: the web dashboard is now the active operator shell, and retained WPF/API surfaces should consume the same readiness, session, replay, control, audit, and promotion seams rather than defining separate readiness semantics.
 - Later `Paper -> Live` work should only inherit controls from this sprint; it should not claim live readiness by default.
 
 ## Acceptance Gates

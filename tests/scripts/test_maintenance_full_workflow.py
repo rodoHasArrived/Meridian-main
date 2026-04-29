@@ -48,6 +48,13 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
         self.assertIn("tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", line)
         self.assertNotIn("--filter", line)
 
+    def test_fsharp_maintenance_lane_matches_ci_discovery_arguments(self) -> None:
+        self.assertIn('fsharp_test_args=(', self.script)
+        self.assertIn('--logger "trx;LogFileName=test-results-fsharp.trx"', self.script)
+        self.assertIn("--results-directory .ai/test-results", self.script)
+        self.assertIn('--collect "XPlat Code Coverage"', self.script)
+        self.assertIn("--blame-hang-timeout 60s", self.script)
+
     def test_wpf_tests_are_left_to_desktop_validation_lane(self) -> None:
         self.assertIn('record_step "dotnet-test-wpf" "skipped"', self.script)
         self.assertIn("desktop validation lane", self.script)

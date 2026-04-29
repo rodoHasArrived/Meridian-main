@@ -66,24 +66,37 @@ export function useWorkstationData() {
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
-    const read = <T,>(key: WorkspaceKey, result: PromiseSettledResult<T>): T | null => {
+    const bootstrapErrors: string[] = [];
+    const readWorkspace = <T,>(keys: WorkspaceKey[], result: PromiseSettledResult<T>): T | null => {
       if (result.status === "fulfilled") {
         return result.value;
       }
 
-      workspaceErrors[key] = result.reason instanceof Error ? result.reason.message : "Workspace request failed.";
+      const message = result.reason instanceof Error ? result.reason.message : "Workspace request failed.";
+      for (const key of keys) {
+        workspaceErrors[key] = message;
+      }
+      return null;
+    };
+
+    const readBootstrap = <T,>(result: PromiseSettledResult<T>): T | null => {
+      if (result.status === "fulfilled") {
+        return result.value;
+      }
+
+      bootstrapErrors.push(result.reason instanceof Error ? result.reason.message : "Workstation bootstrap request failed.");
       return null;
     };
 
     const nextState: WorkstationDataState = {
-      session: read("overview", session),
-      overview: read("overview", overview),
-      research: read("research", research),
-      trading: read("trading", trading),
-      dataOperations: read("data-operations", dataOperations),
-      governance: read("governance", governance),
+      session: readBootstrap(session),
+      overview: readBootstrap(overview),
+      research: readWorkspace(["strategy"], research),
+      trading: readWorkspace(["trading"], trading),
+      dataOperations: readWorkspace(["data"], dataOperations),
+      governance: readWorkspace(["accounting", "reporting"], governance),
       loading: false,
-      error: Object.values(workspaceErrors)[0] ?? null,
+      error: Object.values(workspaceErrors)[0] ?? bootstrapErrors[0] ?? null,
       workspaceErrors
     };
 

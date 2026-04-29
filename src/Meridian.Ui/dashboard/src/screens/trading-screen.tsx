@@ -11,8 +11,9 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, rejectPromotion, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { usePromotionGateViewModel, type PromotionOutcomeLevel } from "@/screens/trading-screen.view-model";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
@@ -52,13 +53,6 @@ interface OrderState {
   phase: OrderPhase;
   orderId: string | null;
   error: string | null;
-}
-
-type PromotionOutcomeLevel = "success" | "warning" | "error";
-
-interface PromotionOutcome {
-  level: PromotionOutcomeLevel;
-  message: string;
 }
 
 type AcceptanceLevel = "ready" | "review" | "atRisk";
@@ -221,18 +215,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [replayError, setReplayError] = useState<string | null>(null);
   const [replaySpeed, setReplaySpeed] = useState("1");
   const [seekMs, setSeekMs] = useState("0");
-
-  const [promotionRunId, setPromotionRunId] = useState("");
-  const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
-  const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
-  const [promotionRejectionReason, setPromotionRejectionReason] = useState("");
-  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
-  const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
-  const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
-  const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
-  const [promotionError, setPromotionError] = useState<string | null>(null);
-  const [promotionBusy, setPromotionBusy] = useState(false);
-  const [promotionOutcome, setPromotionOutcome] = useState<PromotionOutcome | null>(null);
+  const promotionGate = usePromotionGateViewModel();
 
   async function refreshExecutionAudit() {
     try {
@@ -264,9 +247,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
         }
       })
       .catch(() => { /* replay unavailable */ });
-    getPromotionHistory()
-      .then(setPromotionHistory)
-      .catch(() => { /* history unavailable */ });
     void refreshExecutionAudit();
     void refreshExecutionControls();
   }, []);
@@ -403,87 +383,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
     }
   }
 
-  async function handleEvaluatePromotion() {
-    if (!promotionRunId.trim()) return;
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionOutcome(null);
-    try {
-      const evaluation = await evaluatePromotion(promotionRunId.trim());
-      setPromotionEval(evaluation);
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Evaluation failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
-
-  async function handlePromoteToPaper() {
-    if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
-      setPromotionError("Operator and approval reason are required.");
-      setPromotionOutcome(null);
-      return;
-    }
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionOutcome(null);
-    try {
-      const result = await approvePromotion({
-        runId: promotionRunId.trim(),
-        approvedBy: promotionApprovedBy.trim(),
-        approvalReason: promotionApprovalReason.trim(),
-        reviewNotes: promotionReviewNotes.trim() || undefined,
-        manualOverrideId: promotionManualOverrideId.trim() || undefined
-      });
-      setPromotionOutcome({
-        level: result.success ? "success" : "error",
-        message: result.success
-          ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit reference ${result.auditReference}` : ""}`
-          : result.reason
-      });
-      const history = await getPromotionHistory();
-      setPromotionHistory(history);
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Promotion approval failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
-
-  async function handleRejectPromotion() {
-    if (!promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionRejectionReason.trim()) {
-      setPromotionError("Run id, operator, and rejection reason are required.");
-      setPromotionOutcome(null);
-      return;
-    }
-
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionOutcome(null);
-    try {
-      const result = await rejectPromotion({
-        runId: promotionRunId.trim(),
-        reason: promotionRejectionReason.trim(),
-        rejectedBy: promotionApprovedBy.trim(),
-        reviewNotes: promotionReviewNotes.trim() || undefined,
-        manualOverrideId: promotionManualOverrideId.trim() || undefined
-      });
-      setPromotionOutcome({
-        level: result.success ? "warning" : "error",
-        message: `${result.reason}${result.auditReference ? ` · Audit reference ${result.auditReference}` : ""}`
-      });
-      const history = await getPromotionHistory();
-      setPromotionHistory(history);
-      if (result.success) {
-        setPromotionRejectionReason("");
-      }
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Promotion rejection failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
-
   if (!data) {
     return (
       <Card>
@@ -502,10 +401,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
     sessionReplayVerification,
     executionAudit,
     executionControls,
-    promotionEval,
-    promotionHistory,
-    promotionApprovedBy,
-    promotionApprovalReason
+    promotionEval: promotionGate.evaluation,
+    promotionHistory: promotionGate.history,
+    promotionApprovedBy: promotionGate.form.approvedBy,
+    promotionApprovalReason: promotionGate.form.approvalReason
   });
   const operatorWorkItems = data.readiness?.workItems ?? [];
   const operatorWarnings = data.readiness?.warnings ?? [];
@@ -629,7 +528,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <p className="font-mono">As of {executionControls.asOf}</p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">Execution controls snapshot unavailable.</p>
+                <p className="text-xs text-muted-foreground">Snapshot unavailable.</p>
               )}
             </div>
           </CardContent>
@@ -1211,83 +1110,136 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardDescription>Requires eligibility check before confirmation and audit refresh.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <input
-              aria-label="Run id"
-              placeholder="backtest run id"
-              value={promotionRunId}
-              onChange={(e) => setPromotionRunId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-            />
-            <input
-              aria-label="Operator id"
-              placeholder="operator id"
-              value={promotionApprovedBy}
-              onChange={(e) => setPromotionApprovedBy(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              required
-            />
-            <input
-              aria-label="Approval reason"
-              placeholder="why this promotion is approved"
-              value={promotionApprovalReason}
-              onChange={(e) => setPromotionApprovalReason(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              required
-            />
-            <input
-              aria-label="Rejection reason"
-              placeholder="why this promotion is rejected"
-              value={promotionRejectionReason}
-              onChange={(e) => setPromotionRejectionReason(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <input
-              aria-label="Review notes"
-              placeholder="optional review notes"
-              value={promotionReviewNotes}
-              onChange={(e) => setPromotionReviewNotes(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <input
-              aria-label="Manual override id"
-              placeholder="optional manual override id"
-              value={promotionManualOverrideId}
-              onChange={(e) => setPromotionManualOverrideId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-            />
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
-              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
-              <Button size="sm" variant="destructive" onClick={handleRejectPromotion} disabled={promotionBusy || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionRejectionReason.trim()}>Reject promotion</Button>
+            <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
+              <div className="eyebrow-label">Action state</div>
+              <p className="mt-2 text-sm font-semibold text-foreground">{promotionGate.nextActionText}</p>
+              <div className="mt-2 grid gap-2 text-xs leading-5 text-muted-foreground md:grid-cols-2">
+                <p>{promotionGate.approvalRequirementText}</p>
+                <p>{promotionGate.rejectionRequirementText}</p>
+              </div>
             </div>
-            {promotionEval && (
+
+            <span className="sr-only" aria-live="polite">{promotionGate.statusAnnouncement}</span>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label htmlFor="promotion-run-id" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Run id</span>
+                <input
+                  id="promotion-run-id"
+                  aria-label="Run id"
+                  placeholder="backtest run id"
+                  value={promotionGate.form.runId}
+                  onChange={(e) => promotionGate.updateField("runId", e.target.value)}
+                  aria-describedby="promotion-run-help promotion-action-state"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
+              </label>
+              <label htmlFor="promotion-operator-id" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Operator id</span>
+                <input
+                  id="promotion-operator-id"
+                  aria-label="Operator id"
+                  placeholder="operator id"
+                  value={promotionGate.form.approvedBy}
+                  onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
+                  aria-describedby="promotion-action-state"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  required
+                />
+              </label>
+            </div>
+            <label htmlFor="promotion-approval-reason" className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</span>
+              <input
+                id="promotion-approval-reason"
+                aria-label="Approval reason"
+                placeholder="why this promotion is approved"
+                value={promotionGate.form.approvalReason}
+                onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
+                aria-describedby="promotion-action-state"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                required
+              />
+            </label>
+            <label htmlFor="promotion-rejection-reason" className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Rejection reason</span>
+              <input
+                id="promotion-rejection-reason"
+                aria-label="Rejection reason"
+                placeholder="why this promotion is rejected"
+                value={promotionGate.form.rejectionReason}
+                onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
+                aria-describedby="promotion-action-state"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label htmlFor="promotion-review-notes" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</span>
+                <input
+                  id="promotion-review-notes"
+                  aria-label="Review notes"
+                  placeholder="optional review notes"
+                  value={promotionGate.form.reviewNotes}
+                  onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Manual override id</span>
+                <input
+                  id="promotion-manual-override"
+                  aria-label="Manual override id"
+                  placeholder="optional manual override id"
+                  value={promotionGate.form.manualOverrideId}
+                  onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => void promotionGate.evaluateGateChecks()} disabled={!promotionGate.canEvaluate}>
+                {promotionGate.evaluateButtonLabel}
+              </Button>
+              <Button size="sm" onClick={() => void promotionGate.promoteToPaper()} disabled={!promotionGate.canPromote}>
+                {promotionGate.promoteButtonLabel}
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => void promotionGate.rejectPromotion()} disabled={!promotionGate.canReject}>
+                {promotionGate.rejectButtonLabel}
+              </Button>
+            </div>
+            {promotionGate.evaluation && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
-                <p>Eligible: {promotionEval.isEligible ? "Yes" : "No"}</p>
-                <p>Sharpe: {promotionEval.sharpeRatio} · Max DD: {promotionEval.maxDrawdownPercent}% · Return: {promotionEval.totalReturn}%</p>
-                <p>{promotionEval.reason}</p>
-                {promotionEval.requiresHumanApproval && <p>Human approval required</p>}
-                {promotionEval.requiresManualOverride && (
-                  <p>Manual override required{promotionEval.requiredManualOverrideKind ? `: ${promotionEval.requiredManualOverrideKind}` : ""}</p>
+                <p>Eligible: {promotionGate.evaluation.isEligible ? "Yes" : "No"}</p>
+                <p>Sharpe: {promotionGate.evaluation.sharpeRatio} · Max DD: {promotionGate.evaluation.maxDrawdownPercent}% · Return: {promotionGate.evaluation.totalReturn}%</p>
+                <p>{promotionGate.evaluation.reason}</p>
+                {promotionGate.evaluation.requiresHumanApproval && <p>Human approval required</p>}
+                {promotionGate.evaluation.requiresManualOverride && (
+                  <p>Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
                 )}
-                {promotionEval.blockingReasons && promotionEval.blockingReasons.length > 0 && (
+                {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
                   <ul className="mt-2 list-disc space-y-1 pl-4">
-                    {promotionEval.blockingReasons.map((reason) => (
+                    {promotionGate.evaluation.blockingReasons.map((reason) => (
                       <li key={reason}>{reason}</li>
                     ))}
                   </ul>
                 )}
               </div>
             )}
-            {promotionOutcome && (
-              <p role="status" className={cn("text-xs", promotionOutcomeTone[promotionOutcome.level])}>
-                {promotionOutcome.message}
+            {promotionGate.outcome && (
+              <p role="status" className={cn("text-xs", promotionOutcomeTone[promotionGate.outcome.level])}>
+                {promotionGate.outcome.message}
               </p>
             )}
-            {promotionError && <p className="text-xs text-destructive">{promotionError}</p>}
+            {promotionGate.errorText && <p role="alert" className="text-xs text-destructive">{promotionGate.errorText}</p>}
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
-                {promotionHistory.slice(0, 4).map((record) => (
+                {promotionGate.history.length === 0 && (
+                  <li className="text-muted-foreground">{promotionGate.historyEmptyText}</li>
+                )}
+                {promotionGate.history.slice(0, 4).map((record) => (
                   <li key={record.promotionId} className="font-mono">
                     {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
                     {record.decision ? ` · ${record.decision}` : ""}

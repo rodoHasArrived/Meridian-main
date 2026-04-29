@@ -2,47 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian Design System</title>
 <link rel="stylesheet" href="colors_and_type.css">
 <style>
-  body { margin: 0; font-family: var(--font-sans); color: #FFFFFF; background: #05101B !important; background-image: none !important; }
-  .shell { max-width: 1280px; margin: 0 auto; padding: 32px 28px 80px; }
+  body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .shell { max-width: 1320px; margin: 0 auto; padding: 28px 24px 72px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border-color); }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand img { width: 34px; height: 34px; }
+  .brand h1 { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: 0; margin: 0; color: #FFFFFF; }
+  .brand .sub { font-family: var(--font-mono); font-size: 10px; color: var(--cyan-primary); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 2px; }
+  .top .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; line-height: 1.55; }
+  .top .meta .v { color: var(--cyan-primary); }
 
-  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #2A4566; }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand img { width: 32px; height: 32px; }
-  .brand h1 { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; margin: 0; color: #FFFFFF; }
-  .brand .sub { font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-transform: uppercase; letter-spacing: 0.14em; margin-top: 2px; }
-  .top .meta { font-family: var(--font-mono); font-size: 11px; color: #A8B5C4; text-align: right; }
-  .top .meta .v { color: #2AB2D4; }
+  .hero { display: grid; grid-template-columns: minmax(0, .85fr) minmax(520px, 1.15fr); gap: 18px; align-items: stretch; margin-bottom: 30px; }
+  .hero-copy { border: 1px solid var(--border-color); border-radius: var(--radius-xl); background: #0B1520; padding: 26px 28px; box-shadow: var(--shadow-workstation); display: flex; flex-direction: column; justify-content: space-between; min-height: 360px; }
+  .hero-copy .eyebrow { color: var(--cyan-primary); margin-bottom: 14px; }
+  .hero-copy .big { font-family: var(--font-display); font-weight: 600; font-size: 36px; line-height: 1.08; letter-spacing: 0; margin: 0 0 16px; color: #FFFFFF; }
+  .hero-copy .big em { color: var(--cyan-primary); font-style: normal; }
+  .hero-copy p { font-size: 13px; line-height: 1.65; color: #D4DCE6; max-width: 58ch; margin: 0; }
+  .hero-copy .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+  .link-chip { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--fg); text-decoration: none; font-family: var(--font-mono); font-size: 10.5px; }
+  .link-chip.primary { border-color: rgba(42,178,212,0.45); background: rgba(42,178,212,0.10); color: var(--cyan-primary); }
 
-  .hero { padding: 28px 32px 32px; border: 1px solid #2A4566; border-radius: 10px; background: #0B1520; margin-bottom: 32px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; align-items: center; }
-  .hero .big { font-family: var(--font-display); font-weight: 600; font-size: 34px; line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 12px; color: #FFFFFF; }
-  .hero .big em { color: #2AB2D4; font-style: normal; }
-  .hero p { font-size: 13px; line-height: 1.65; color: #D4DCE6; max-width: 52ch; margin: 0 0 18px; }
-  .hero .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .stat { border: 1px solid #2A4566; border-radius: 6px; padding: 12px 14px; background: #05101B; }
-  .stat .k { font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-transform: uppercase; letter-spacing: 0.14em; }
-  .stat .v { font-family: var(--font-mono); font-size: 22px; color: #FFFFFF; margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-  .stat .v.p { color: #2AB2D4; }
+  .monitor { overflow: hidden; border: 1px solid var(--border-hi); border-radius: var(--radius-xl); background: #050B12; box-shadow: var(--shadow-float); }
+  .monitor img { display: block; width: 100%; height: 100%; min-height: 360px; object-fit: cover; object-position: 61% 44%; opacity: 0.95; }
 
-  h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; color: #FFFFFF; margin: 40px 0 14px; padding-bottom: 10px; border-bottom: 1px solid #2A4566; display: flex; justify-content: space-between; align-items: baseline; }
-  h2.sec .idx { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; font-weight: 400; }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 30px; }
+  .stat { border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 12px 14px; background: #0B1520; box-shadow: var(--shadow-panel); }
+  .stat .k { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.14em; }
+  .stat .v { font-family: var(--font-mono); font-size: 22px; color: #FFFFFF; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .stat .v.p { color: var(--cyan-primary); }
 
-  .docs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .docs a { display: block; padding: 16px; border: 1px solid #2A4566; border-radius: 6px; text-decoration: none; background: #0B1520; color: #FFFFFF; transition: all 150ms ease; }
-  .docs a:hover { border-color: #2AB2D4; background: #13253A; }
-  .docs .n { font-family: var(--font-mono); font-size: 10px; color: #2AB2D4; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px; }
+  h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; color: #FFFFFF; margin: 36px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: baseline; }
+  h2.sec .idx { font-family: var(--font-mono); font-size: 11px; color: var(--cyan-primary); font-weight: 400; }
+
+  .docs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .docs a { display: block; padding: 15px; border: 1px solid var(--border-color); border-radius: var(--radius-md); text-decoration: none; background: #0B1520; color: #FFFFFF; transition: border-color 150ms ease, background 150ms ease; }
+  .docs a:hover { border-color: var(--border-hi); background: #101C2B; }
+  .docs .n { font-family: var(--font-mono); font-size: 10px; color: var(--cyan-primary); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px; }
   .docs .t { font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #FFFFFF; }
-  .docs .d { font-size: 11px; color: #A8B5C4; line-height: 1.55; }
+  .docs .d { font-size: 11px; color: var(--fg-muted); line-height: 1.55; }
 
-  .system { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: start; padding: 16px 0; border-bottom: 1px solid #2A4566; }
+  .system { display: grid; grid-template-columns: 190px 1fr; gap: 24px; align-items: start; padding: 16px 0; border-bottom: 1px solid var(--border-color); }
   .system:last-of-type { border-bottom: 0; }
   .system .lead { font-family: var(--font-mono); font-size: 11px; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.14em; padding-top: 2px; font-weight: 500; }
   .system .body { font-size: 13px; line-height: 1.65; color: #D4DCE6; }
-  .system code { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; background: #05101B; padding: 2px 6px; border: 1px solid #2A4566; border-radius: 3px; }
+  .system code { font-family: var(--font-mono); font-size: 11px; color: var(--cyan-primary); background: #05101B; padding: 2px 6px; border: 1px solid var(--border-color); border-radius: 3px; }
 
-  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #2A4566; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.14em; }
+  .reference-board { margin-top: 0; }
+  .reference-card img.workstation { object-position: 61% 44%; }
+  .reference-card img.custody { object-position: 54% 48%; }
+  .reference-card img.guide { object-position: 44% 45%; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); display: flex; justify-content: space-between; gap: 12px; text-transform: uppercase; letter-spacing: 0.14em; }
+
+  @media (max-width: 1080px) {
+    .hero { grid-template-columns: 1fr; }
+    .monitor img { max-height: 460px; }
+    .docs, .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 680px) {
+    .shell { padding: 20px 14px 56px; }
+    .top, footer { flex-direction: column; align-items: flex-start; }
+    .top .meta { text-align: left; }
+    .hero-copy { min-height: auto; padding: 22px; }
+    .hero-copy .big { font-size: 28px; }
+    .docs, .stats, .system { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body class="bg-app">
@@ -52,71 +81,95 @@
         <img src="assets/brand/meridian-mark.svg" alt="">
         <div>
           <h1>Meridian</h1>
-          <div class="sub">Design System · v1.0</div>
+          <div class="sub">Design system · image-refined</div>
         </div>
       </div>
       <div class="meta">
-        SOURCE · rodoHasArrived/Meridian-main@main<br>
-        BUILD · <span class="v">MRD-DS-1.0.0</span> · 2026.04
+        SOURCE · Meridian-main<br>
+        BUILD · <span class="v">MRD-DS-2.1.0</span> · 2026.04
       </div>
     </div>
 
     <section class="hero">
-      <div>
-        <h1 class="big">An operator workstation<br>for <em>research, trading,<br>data-ops &amp; governance.</em></h1>
-        <p>Meridian is a dense, quantitative cockpit. Navy surfaces, mono-numeric data, restrained iconography. This system documents the tokens, typography, and components used across the web dashboard and WPF desktop shell.</p>
+      <div class="hero-copy">
+        <div>
+          <div class="eyebrow">Operator workstation reference</div>
+          <h1 class="big">Dense financial workflows with <em>evidence-first</em> screens.</h1>
+          <p>Refined from the uploaded workstation, custody, reporting, charting, product-guide, and security-master references. Meridian keeps its navy/cyan identity while adopting the best structural cues: masthead, left rail, compact filters, split workbenches, and selected-row detail.</p>
+        </div>
+        <div class="links">
+          <a class="link-chip primary" href="INSPIRATION_BRIEF.md">Inspiration brief</a>
+          <a class="link-chip" href="preview/institutional-workstation.html">Workstation preview</a>
+          <a class="link-chip" href="colors_and_type.css">Token CSS</a>
+        </div>
       </div>
-      <div class="stats">
-        <div class="stat"><div class="k">TOKENS</div><div class="v p">54</div></div>
-        <div class="stat"><div class="k">COMPONENTS</div><div class="v">9</div></div>
-        <div class="stat"><div class="k">ICONS · 24×24</div><div class="v">47</div></div>
-        <div class="stat"><div class="k">FONT FAMILIES</div><div class="v">3</div></div>
+      <div class="monitor">
+        <img src="uploads/ChatGPT Image Apr 24, 2026, 03_58_29 PM.png" alt="Meridian workstation concept reference">
       </div>
     </section>
 
-    <h2 class="sec"><span>Documentation</span><span class="idx">01 / 02</span></h2>
-    <div class="docs">
-      <a href="README.md"><div class="n">§0 · README</div><div class="t">Overview &amp; sources</div><div class="d">Product context, repo provenance, file map.</div></a>
-      <a href="CONTENT_FUNDAMENTALS.md"><div class="n">§1 · CONTENT</div><div class="t">Voice, tone, copy</div><div class="d">Operator-to-operator. Sentence case, no emoji.</div></a>
-      <a href="VISUAL_FOUNDATIONS.md"><div class="n">§2 · VISUAL</div><div class="t">Foundations</div><div class="d">Surfaces, borders, shadows, motion, layout.</div></a>
-      <a href="ICONOGRAPHY.md"><div class="n">§3 · ICONS</div><div class="t">Iconography</div><div class="d">Line icons, 24×24, currentColor. No emoji.</div></a>
+    <div class="stats">
+      <div class="stat"><div class="k">Token file</div><div class="v p">v2.1</div></div>
+      <div class="stat"><div class="k">Workspaces</div><div class="v">7</div></div>
+      <div class="stat"><div class="k">Icon set</div><div class="v">47</div></div>
+      <div class="stat"><div class="k">Upload refs</div><div class="v">15</div></div>
     </div>
 
-    <h2 class="sec"><span>System notes</span><span class="idx">02 / 02</span></h2>
+    <h2 class="sec"><span>Documentation</span><span class="idx">01 / 04</span></h2>
+    <div class="docs">
+      <a href="README.md"><div class="n">§0 · README</div><div class="t">Overview &amp; sources</div><div class="d">Product context, repo provenance, file map.</div></a>
+      <a href="INSPIRATION_BRIEF.md"><div class="n">§1 · BRIEF</div><div class="t">Uploaded image cues</div><div class="d">Workstation, custody, reporting, charting, and security-master patterns.</div></a>
+      <a href="CONTENT_FUNDAMENTALS.md"><div class="n">§2 · CONTENT</div><div class="t">Voice, tone, copy</div><div class="d">Operator-to-operator. Sentence case, no emoji.</div></a>
+      <a href="VISUAL_FOUNDATIONS.md"><div class="n">§3 · VISUAL</div><div class="t">Foundations</div><div class="d">Surfaces, borders, shadows, motion, layout.</div></a>
+    </div>
+
+    <h2 class="sec"><span>Reference Board</span><span class="idx">02 / 04</span></h2>
+    <div class="reference-board">
+      <div class="reference-card">
+        <img class="workstation" src="uploads/ChatGPT Image Apr 24, 2026, 03_58_29 PM.png" alt="Dark Meridian workstation reference">
+        <div class="body"><div class="k">Target mood</div><div class="t">Masthead, rail, KPI evidence</div><div class="d">Use the monitor-like shell and chart/table pairing; keep the brand and navigation Meridian-owned.</div></div>
+      </div>
+      <div class="reference-card">
+        <img class="custody" src="uploads/pasted-1777329416322-0.png" alt="Custody positions density reference">
+        <div class="body"><div class="k">Institutional density</div><div class="t">Filters, row counts, detail panes</div><div class="d">Compact controls, high row count tables, selected records, and status windows inform the dense-table primitives.</div></div>
+      </div>
+      <div class="reference-card">
+        <img class="guide" src="uploads/pasted-1777385797260-0.png" alt="Product guide annotation reference">
+        <div class="body"><div class="k">Walkthroughs</div><div class="t">Task annotations stay in docs</div><div class="d">Guide-style pins are useful in manuals and previews; production screens should use labels, banners, and state text.</div></div>
+      </div>
+    </div>
+
+    <h2 class="sec"><span>System notes</span><span class="idx">03 / 04</span></h2>
 
     <div class="system">
       <div class="lead">Palette</div>
-      <div class="body">Base is a desaturated navy <code>#08101A</code>. Surface stack: <code>card #0D1722</code> → <code>panel #101C2B</code> → <code>soft #162334</code> → <code>raise #1B2A3C</code>. A single signal primary <code>#2AB2D4</code> carries all CTAs, active nav, and focus rings. Semantic tones are reserved: <code>success</code>, <code>warning</code>, <code>danger</code>, plus environment <code>paper</code> and <code>live</code>.</div>
+      <div class="body">Base is deep navy <code>#08101A</code>. Surface stack: <code>card #0D1722</code> → <code>panel #101C2B</code> → <code>soft #162334</code> → <code>raise #1B2A3C</code>. A single signal primary <code>#2AB2D4</code> carries CTAs, active nav, focus rings, chart lines, and selected-row emphasis. Semantic tones remain structural: <code>healthy</code>, <code>observe</code>, <code>critical</code>, <code>paper</code>, <code>research</code>, <code>pending</code>, <code>inactive</code>.</div>
     </div>
     <div class="system">
       <div class="lead">Typography</div>
-      <div class="body">Three families, strict roles. <code>Space Grotesk 600</code> for display titles, restrained and compact. <code>IBM Plex Sans 400/500</code> for UI prose and labels. <code>IBM Plex Mono</code> — tabular — for every number, identifier, timestamp, and KPI. Headings and metrics use <code>letter-spacing: -0.01em</code> and sit tight.</div>
+      <div class="body">Three families, strict roles. <code>Space Grotesk 600</code> for display titles. <code>IBM Plex Sans 400/500</code> for UI prose and labels. <code>IBM Plex Mono</code> — tabular — for every number, identifier, timestamp, row count, price, and KPI. Letter spacing stays at <code>0</code> except mono eyebrows and table headers.</div>
     </div>
     <div class="system">
       <div class="lead">Geometry</div>
-      <div class="body">Radii step 4 / 6 / 8 / 10 px — no soft pillows. Default border <code>#1F344C</code> at full opacity; semantic borders sit at 30%. Shadows are 1–2 px drops with a faint inset highlight; no glow. Spacing snaps to a 4 px grid.</div>
+      <div class="body">Radii step 3 / 4 / 6 / 8 / 10 px. Default border <code>#1F344C</code>; high-contrast separators and active frames use <code>#2A4566</code>. Shadows are shallow with faint inset highlights; no large glow effects. Uploaded custody/reporting references favor crisp rows and narrow controls.</div>
     </div>
     <div class="system">
-      <div class="lead">Data density</div>
-      <div class="body">Tables: <code>padding: 7px 12px</code>, 12 px mono cells, right-aligned numerics with tabular figures. Tags are 10 px, 3 px radius. KPI cards are 22 px mono values — never display numerals. Spark and trend indicators use arrows (▲ ▼ ▬), never colored arrows alone.</div>
-    </div>
-    <div class="system">
-      <div class="lead">Motion</div>
-      <div class="body">200 ms ease. No bounce, no scale, no parallax. Focus is a 2 px cyan ring at 18% opacity. Async states use spinners on icons only, never on whole components.</div>
+      <div class="lead">Workbenches</div>
+      <div class="body">Use <code>.workstation-frame</code>, <code>.workstation-masthead</code>, <code>.operator-rail</code>, <code>.toolbar-strip</code>, <code>.metric-strip</code>, <code>.split-workbench</code>, <code>.dense-table</code>, and <code>.entity-summary</code> for image-inspired operator pages. Summary metrics must connect to chart/table/detail evidence.</div>
     </div>
 
-    <h2 class="sec"><span>Kits</span><span class="idx">03 / 03</span></h2>
+    <h2 class="sec"><span>Kits</span><span class="idx">04 / 04</span></h2>
     <div class="docs">
-      <a href="colors_and_type.css"><div class="n">§4 · TOKENS</div><div class="t">colors_and_type.css</div><div class="d">All CSS variables + typography classes. Drop in &lt;head&gt;.</div></a>
-      <a href="ui_kits/dashboard/README.md"><div class="n">§5 · REACT</div><div class="t">Dashboard kit</div><div class="d">9 JSX components: PanelSurface, Button, Badge, MetricCard…</div></a>
-      <a href="preview/components-metrics.html"><div class="n">§6 · PREVIEW</div><div class="t">Preview cards</div><div class="d">All tokens &amp; components rendered standalone.</div></a>
-      <a href="SKILL.md"><div class="n">§7 · SKILL</div><div class="t">SKILL.md</div><div class="d">Claude Skill manifest with fast rules.</div></a>
+      <a href="colors_and_type.css"><div class="n">§4 · TOKENS</div><div class="t">colors_and_type.css</div><div class="d">CSS variables, typography, state classes, workstation primitives.</div></a>
+      <a href="ui_kits/dashboard/README.md"><div class="n">§5 · REACT</div><div class="t">Dashboard kit</div><div class="d">JSX primitives for panels, buttons, badges, metrics, dense tables, and workstation shell.</div></a>
+      <a href="preview/institutional-workstation.html"><div class="n">§6 · PREVIEW</div><div class="t">Institutional workstation</div><div class="d">Image-inspired masthead, rail, KPI strip, dense table, and entity inspector.</div></a>
+      <a href="preview/design-standards.html"><div class="n">§7 · STANDARDS</div><div class="t">Design standards</div><div class="d">Rules for tokens, data density, state patterns, and command surfaces.</div></a>
     </div>
 
     <footer>
-      <span>MRD-DS-1.0.0</span>
-      <span>CYAN · AMBER · NAVY</span>
-      <span>© Meridian</span>
+      <span>MRD-DS-2.1.0</span>
+      <span>Trading · Portfolio · Accounting · Reporting · Strategy · Data · Settings</span>
+      <span>Meridian</span>
     </footer>
   </div>
 </body>

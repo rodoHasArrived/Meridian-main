@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-04-29
 **Horizon:** Next 6 weeks
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -16,7 +16,7 @@ The next six weeks should focus on four outcomes:
 
 1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and preserve the signed DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, freshly generated date-stamped parity-packet artifacts, and valid packet-bound sign-off evidence
 2. harden the Wave 2 paper-trading cockpit that is already visible in the workstation
-3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while consolidating the active WPF shell direction
+3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while moving new operator UI validation through the active web dashboard and retaining WPF as support evidence
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
 
 Explicit non-goals in this window:
@@ -32,7 +32,9 @@ Explicit non-goals in this window:
 
 This plan starts from the current repo state:
 
-- the WPF workstation shell is the primary operator shell and is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; the retained local API/web surfaces remain supporting consumers of the same workstation contracts
+- the web dashboard in `src/Meridian.Ui/dashboard/` is now the active operator UI lane, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`; the retained WPF shell remains support evidence for compatibility and shared-contract regression checks
+- the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, component/view-model coverage, and refreshed built assets; canonical seven-workspace web navigation, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
+- the WPF workstation shell is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; it remains useful support evidence for retained desktop workflows and shared workstation contracts rather than the default lane for new operator features
 - the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest results empty-state guidance, Position Blotter, Notification Center history recovery, Trading Hours session and holiday-calendar guidance, Welcome, Storage archive posture, System Health triage, Activity Log triage/export/clear state, Watchlist posture plus pinned-first display, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation and comparison guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing states, workspace queue tone styles, the workspace shell context strip, route-aware operator queue button state with shell-context attention cues, the Trading desk briefing hero's stale-replay count detail, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the Data Operations desk briefing hero's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
 - the latest shell-support evidence adds Welcome readiness progress for connection/symbol/storage posture, Storage archive posture for daily growth/capacity/last-scan handoffs, Storage preview scope/guidance for archive-path decisions, OrderBook order-flow posture for depth/tape/spread monitoring, compact shared deep-page command chrome that preserves related-workflow and trust-state context, actionable shell-context attention details, a provider-degradation next action that opens `ProviderHealth`, brokerage-sync queue routing into `AccountPortfolio`, bounded run review-packet queue items, and Trading hero attention states for warning or critical shared work items; treat these as validation support for operator orientation and routing, not as separate readiness exits
 - fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores shared project assets without pinning the WPF target framework before building the desktop shell with the pinned WPF framework and confirming page tags, so test evidence should distinguish demo-state validation from operational readiness
@@ -119,7 +121,7 @@ This plan starts from the current repo state:
 | 1 | DK1 / Wave 1 closeout confirmation | preserve the signed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; signed 2026-04-27 DK1 parity packet; valid packet-bound sign-off evidence; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links; future-review rerun guidance |
 | 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
 | 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion approval/rejection rationale checklist; cockpit operator-path checklist |
-| 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating the active WPF shell direction | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; shell-navigation validation targets tied to active flows |
+| 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating the active web dashboard direction and retained WPF support | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; web/workstation validation targets tied to active flows |
 | 5 | Wave 4 governance slice | connect the delivered Security Master baseline to concrete governance product slices | account/entity and strategy-structure targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
 | 6 | Hardening and closeout | make the six-week baseline easy to continue from without widening scope | docs/status refresh; acceptance-criteria review; narrowed follow-on backlog that still stays within Waves 1-4 |
 
@@ -230,6 +232,6 @@ Mitigation:
 - backfill checkpoint and gap-handling confidence remains backed by passing evidence instead of only document claims
 - the paper-trading cockpit has a tighter, more dependable operator story
 - shared run, portfolio, ledger, cash-flow, and reconciliation flows are easier to follow across workspaces
-- the active WPF shell direction is better validated against real workflows and remains clearly subordinate to Waves 1-4 rather than becoming a parallel program
+- the active web dashboard direction is better validated against real workflows, and retained WPF support remains clearly subordinate to Waves 1-4 rather than becoming a parallel program
 - at least one concrete governance slice is clearly defined or landed on top of the delivered Security Master baseline
 - the next follow-on slice remains clearly bounded to Waves 1-4, with Wave 5+, broader live-readiness claims, and optional advanced research / scale tracks still deferred

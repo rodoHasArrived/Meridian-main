@@ -100,7 +100,7 @@ const data: GovernanceWorkspaceResponse = {
 describe("GovernanceScreen", () => {
   it("renders reconciliation, cash-flow, and reporting summaries", () => {
     render(
-      <MemoryRouter initialEntries={["/governance"]}>
+      <MemoryRouter initialEntries={["/accounting"]}>
         <GovernanceScreen data={data} />
       </MemoryRouter>
     );
@@ -113,7 +113,7 @@ describe("GovernanceScreen", () => {
 
   it("adapts the hero copy for security-master deep links", () => {
     render(
-      <MemoryRouter initialEntries={["/governance/security-master"]}>
+      <MemoryRouter initialEntries={["/accounting/security-master"]}>
         <GovernanceScreen data={data} />
       </MemoryRouter>
     );
@@ -126,7 +126,7 @@ describe("GovernanceScreen", () => {
     vi.mocked(api.searchSecurities).mockRejectedValueOnce(new Error("Provider offline"));
 
     render(
-      <MemoryRouter initialEntries={["/governance/security-master"]}>
+      <MemoryRouter initialEntries={["/accounting/security-master"]}>
         <GovernanceScreen data={data} />
       </MemoryRouter>
     );
@@ -136,7 +136,7 @@ describe("GovernanceScreen", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Security search failed: Provider offline");
   });
 
-  it("accepts and renders alias rows inside identity drill-in for governance workflows", async () => {
+  it("accepts and renders alias rows inside identity drill-in for accounting workflows", async () => {
     const user = userEvent.setup();
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([
       {
@@ -197,7 +197,7 @@ describe("GovernanceScreen", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/governance/security-master"]}>
+      <MemoryRouter initialEntries={["/accounting/security-master"]}>
         <GovernanceScreen data={data} />
       </MemoryRouter>
     );
@@ -216,7 +216,7 @@ describe("GovernanceScreen", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/governance/reconciliation"]}>
+      <MemoryRouter initialEntries={["/accounting/reconciliation"]}>
         <GovernanceScreen data={data} />
       </MemoryRouter>
     );

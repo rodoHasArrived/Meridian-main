@@ -12,9 +12,10 @@ messages:
 
       ## Repository Context
       - Meridian is a .NET 9 fund-management and trading-platform codebase.
-      - The primary operator shell is `src/Meridian.Wpf/`.
-      - Treat `src/Meridian.Ui/` as retained local diagnostics/API support, not the primary operator shell.
-      - Keep root navigation limited to `Research`, `Trading`, `Data Operations`, and `Governance`.
+      - The active operator UI lane is `src/Meridian.Ui/dashboard/`, with built assets in `src/Meridian.Ui/wwwroot/workstation/`.
+      - Use this prompt only for retained WPF shell support, regression fixes, or explicitly requested desktop work.
+      - Keep visible operator navigation limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+      - Treat WPF `Research`, `Data Operations`, and `Governance` catalogs as compatibility aliases, not the current product taxonomy.
       - Prefer existing WPF MVVM patterns, XAML resources, shell navigation catalogs, and service layers.
 
       ## Start Here
@@ -123,7 +124,7 @@ messages:
         `QuantScriptPage`, `BacktestPage`, and research shell links
 
       ## Required Workflow
-      1. Classify the target page into one workspace: research, trading, data-operations, or governance.
+      1. Classify the target page into one visible operator workspace: trading, portfolio, accounting, reporting, strategy, data, or settings. If the work touches retained WPF routing, also name the compatibility catalog it maps through.
       2. Produce a screen-impact table with columns: screen/file, change type, reason, data dependency,
          and validation.
       3. Separate changes into `must change`, `conditional`, and `do not touch`.

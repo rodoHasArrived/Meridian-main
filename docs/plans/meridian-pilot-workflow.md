@@ -1,6 +1,6 @@
 # Meridian Pilot Workflow
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-04-29
 **Status:** Golden-path productization filter for the active Waves 2-4 operator-readiness path
 
 ---
@@ -79,8 +79,8 @@ operator shell.
 ## Release Rules
 
 1. Do not add broad provider, broker, or page scope unless it directly strengthens the pilot path.
-2. Put workflow decisions in shared services and contracts before exposing them in WPF or a retained local web surface.
-3. Keep WPF as the current primary operator shell, but do not make WPF-only state the product boundary.
+2. Put workflow decisions in shared services and contracts before exposing them in the web dashboard or retained WPF surfaces.
+3. Keep the web dashboard as the active operator UI lane, but do not make browser-only state the product boundary; retained WPF state remains compatibility and support evidence only.
 4. Prefer generated readiness dashboards over repeated manual status prose when a claim depends on tests, artifacts, or source metadata.
 5. Treat report packs as product artifacts, not only export files: they need lineage, approval state, and restatement posture.
 6. Treat reconciliation as casework: owner, status, tolerance, decision, sign-off, and audit history are part of the workflow.

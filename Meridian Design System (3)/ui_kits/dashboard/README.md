@@ -24,5 +24,34 @@ Minimal JSX kit that mirrors the live dashboard components. Load in this order:
 | `StatusBanner` | Horizontal banner. `tone`: success / warning / danger. |
 | `NavItem` | Sidebar row with optional `icon`, `label`, `status`, `active`. |
 | `DataTable` | Columns array + rows array (each cell can be `{ value, color }`). |
+| `WorkstationShell` | Masthead + left rail + content slot for image-inspired operator pages. |
+| `ToolbarStrip` | Compact one-line filter/action strip. |
+| `DenseDataTable` | High-row-count table with sticky headers, mono cells, selected-row support. |
+| `EntitySummary` | Canonical identifier/detail grid for Security Master, portfolio, custody, and reporting records. |
 
 All components are exported to `window` via `Object.assign(window, {...})`.
+
+## Workstation pattern
+
+The uploaded reference images favor a full workstation structure rather than standalone cards:
+
+```jsx
+<WorkstationShell
+  activeNav="Trading"
+  nav={[
+    { label: "Trading", status: "LIVE" },
+    { label: "Portfolio", status: "OK" },
+    { label: "Accounting", status: "OBS" },
+    { label: "Reporting", status: "12" },
+    { label: "Strategy", status: "RUN" },
+    { label: "Data", status: "OK" },
+    { label: "Settings", status: "" },
+  ]}>
+  <ToolbarStrip items={[{ label: "Account: All" }, { label: "Date: 26 Apr 26" }, { label: "Status: Pending", active: true }]} />
+  <DenseDataTable columns={[{ label: "Symbol" }, { label: "Qty", align: "right" }]} rows={[["AAPL", "100"]]} />
+</WorkstationShell>
+```
+
+Use this pattern for operator pages that need global context, compact filters, and selected-record
+evidence. Use the uploaded images as structure and density inspiration only; keep Meridian labels,
+colors, and brand assets.

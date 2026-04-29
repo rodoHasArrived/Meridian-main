@@ -29,6 +29,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'SharedCheckpoint.ps1')
 . (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 
@@ -720,14 +721,14 @@ function Get-StageState {
 
 function Test-StageOutputsValid {
     param([hashtable]$StageData)
-    if ($null -eq $StageData -or -not $StageData.ContainsKey('outputs')) {
+    if ($null -eq $StageData -or -not (Test-MeridianDictionaryContainsKey -Dictionary $StageData -Key 'outputs')) {
         return $false
     }
 
     $outputs = $StageData.outputs
     if ($null -eq $outputs) { return $false }
 
-    if ($outputs.ContainsKey('requiredFiles')) {
+    if (Test-MeridianDictionaryContainsKey -Dictionary $outputs -Key 'requiredFiles') {
         foreach ($path in @($outputs.requiredFiles)) {
             if ([string]::IsNullOrWhiteSpace([string]$path)) { continue }
             if (-not (Test-Path -LiteralPath [string]$path)) { return $false }
@@ -824,7 +825,7 @@ $checkpoint = Initialize-MeridianCheckpoint `
     -AllowInputMismatch:$AllowCheckpointInputMismatch
 
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$existingRunDirectory = if ($checkpoint.Data.metadata.ContainsKey('runDirectory')) { [string]$checkpoint.Data.metadata.runDirectory } else { '' }
+$existingRunDirectory = if (Test-MeridianDictionaryContainsKey -Dictionary $checkpoint.Data.metadata -Key 'runDirectory') { [string]$checkpoint.Data.metadata.runDirectory } else { '' }
 $runDirectory = Join-Path $resolvedOutputRoot "$timestamp-$Workflow"
 if (-not [string]::IsNullOrWhiteSpace($existingRunDirectory)) {
     $runDirectory = $existingRunDirectory

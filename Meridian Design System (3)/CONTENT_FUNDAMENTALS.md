@@ -9,7 +9,7 @@ Meridian is a tool for professional operators — quants, traders, data engineer
 Good:
 - "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
 - "Paper thresholds, drawdown limits, and buying‑power constraints are evaluated on every order submission and displayed here for operator review."
-- "System overview with live health status, symbol subscription management, and per‑symbol data quality monitoring now available across all five workspaces."
+- "System health, symbol subscription state, and per-symbol data quality stay visible across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
 
 Avoid:
 - Empty enthusiasm: "Meridian makes trading easy!" — no.
@@ -27,7 +27,7 @@ Avoid:
 - **Sentence case** for everything normal: titles, button labels, menu items, descriptions.
   - "New order", "Cancel all", "Create session", "Verify replay"
 - **Title Case** for nav labels and workspace names.
-  - "Overview", "Research", "Trading", "Data Operations", "Governance"
+  - "Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"
 - **ALL CAPS** — reserved, with wide tracking (`0.14em`–`0.24em`) — for:
   - Eyebrow labels ("TRADING LANE", "ROUTE CONTEXT", "BROKERAGE WIRING")
   - Environment badges ("PAPER", "LIVE", "RESEARCH")
@@ -63,6 +63,24 @@ Avoid:
 | Error | "X failed." + reason | "Order submission failed.", "Evaluation failed." |
 | Success | Past tense fact + ID | "Order submitted — ord‑a8f2c", "Promoted. Promotion ID: prm‑9341." |
 | Confirm | Imperative verb | "Cancel all", "Close position", "Verify replay" |
+| Toolbar status | Count + state + scope | "473 records · Securities · 26 Apr 26" |
+| Selected row detail | Entity + action evidence | "T326117E183 · Pending · Settles 29 Apr 26" |
+| Product-guide callout | Action label + outcome | "Send to desk opens the quote request review." |
+
+## Image-inspired workflow copy
+
+The uploaded product-guide and custody references show useful operator patterns, but production
+Meridian copy should stay terse:
+
+- Use workflow stage labels such as "Import portfolio", "Price bonds", "Review exceptions",
+  "Verify replay", and "Send to desk".
+- Show evidence near each action: row counts, timestamps, session IDs, owner, status, and next
+  action.
+- In docs or walkthrough previews, callouts may say "Click Send to desk". In the application,
+  the button should simply be named "Send to desk" and the resulting state should explain what
+  happened.
+- Avoid long explanatory sidebars inside the workstation. Use compact banners, row details, and
+  selected-record inspectors.
 
 ## Never
 

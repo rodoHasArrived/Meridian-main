@@ -67,6 +67,31 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void RunDesktopWorkflowScript_ShouldImportCheckpointHelpersBeforeWorkflowExecution()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedCheckpoint.ps1')");
+        script.Should().Contain("$checkpoint = Initialize-MeridianCheckpoint");
+        script.Should().Contain("Test-MeridianCheckpointStepShouldRun -Context $checkpoint");
+        script.Should().Contain("Start-MeridianCheckpointStep -Context $checkpoint");
+        script.Should().Contain("Complete-MeridianCheckpointStep -Context $checkpoint");
+        script.Should().Contain("Fail-MeridianCheckpointStep -Context $checkpoint");
+        script.Should().Contain("Test-MeridianDictionaryContainsKey -Dictionary $checkpoint.Data.metadata -Key 'runDirectory'");
+        script.Should().Contain("Test-MeridianDictionaryContainsKey -Dictionary $StageData -Key 'outputs'");
+        script.Should().Contain("Test-MeridianDictionaryContainsKey -Dictionary $outputs -Key 'requiredFiles'");
+        script.Should().NotContain("$checkpoint.Data.metadata.ContainsKey('runDirectory')");
+        script.Should().NotContain("$StageData.ContainsKey('outputs')");
+        script.Should().NotContain("$outputs.ContainsKey('requiredFiles')");
+
+        var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'SharedCheckpoint.ps1')", StringComparison.Ordinal);
+        var initializeIndex = script.IndexOf("$checkpoint = Initialize-MeridianCheckpoint", StringComparison.Ordinal);
+
+        importIndex.Should().BeGreaterThan(0);
+        initializeIndex.Should().BeGreaterThan(importIndex);
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldBringMeridianToForegroundBeforeSavingCapture()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
@@ -134,6 +159,16 @@ public sealed class DesktopWorkflowScriptTests
         workflow.Should().Contain("dotnet restore Meridian.sln -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
         workflow.Should().Contain("dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
         workflow.Should().Contain("-p:EnableFullWpfBuild=true \\");
+    }
+
+    [Fact]
+    public void RefreshScreenshotsWorkflow_ShouldTrackCheckpointHelperDependency()
+    {
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\refresh-screenshots.yml"));
+
+        workflow.Should().Contain("'scripts/dev/SharedCheckpoint.ps1'");
+        workflow.Should().Contain("pwsh -File scripts/dev/run-desktop-workflow.ps1");
+        workflow.Should().Contain("-SkipBuild");
     }
 
     [Fact]

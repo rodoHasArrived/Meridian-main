@@ -40,9 +40,10 @@ Every assistant and automation should use the same high-level flow:
    and resources before broad recursive search.
 3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
-4. **Preserve architecture boundaries.** Follow the current desktop-first framing, the four root
-   workspaces (`Research`, `Trading`, `Data Operations`, `Governance`), and MVVM separation for
-   WPF changes.
+4. **Preserve architecture boundaries.** Follow the current browser-first operator UI framing,
+   keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
+   `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
+   WPF names as retained compatibility aliases rather than new root workspaces.
 5. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
 6. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
@@ -100,6 +101,9 @@ Use this checklist when changing any AI-related asset:
 - [ ] Update only the provider-specific files that need host mechanics or discoverability links.
 - [ ] Keep shared project context mirrored between `.codex/skills/_shared/project-context.md` and
       `.claude/skills/_shared/project-context.md` when current project framing changes.
+- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
+      retained WPF support only when needed, and visible root workspaces limited to `Trading`,
+      `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
       descriptions or default prompts change.
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.
@@ -143,4 +147,4 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-04-29_

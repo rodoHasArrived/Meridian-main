@@ -224,6 +224,10 @@ from `artifacts/bin` and `artifacts/obj` before the build starts, and trims exce
 beyond the latest 10 runs per artifact root; use `--isolation-retention-days <days>` and
 `--isolation-retain-latest <count>` to tune those limits, or set both to `0` to disable cleanup for a
 run.
+`build/scripts/publish/publish.ps1 -OutputDir artifacts/publish/<run-name>` also prunes generated
+publish-output siblings older than 14 days or beyond the latest 5 runs; use
+`-OutputRetentionDays <days>` and `-OutputRetainLatest <count>` to tune that guard, or set both to
+`0` for a run that must keep all publish outputs.
 
 Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
 DTOs, execution-control evidence, acceptance gates, or operator work-item projection.

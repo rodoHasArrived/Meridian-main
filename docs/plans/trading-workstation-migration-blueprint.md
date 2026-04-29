@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-04-28
-**Status:** Active blueprint — WPF shell/navigation baseline is implemented; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers; the shared operator-inbox endpoint now aggregates readiness, actionable latest-run review-packet, and reconciliation work items with navigation targets, and the WPF shell queue button resolves known route metadata into concrete workbenches, including brokerage-sync blockers into `AccountPortfolio`, while passing active account context as `fundAccountId` before falling back to page tags and surfacing active review attention in shell context; Trading Hours now projects session-specific trading-desk briefings, OrderBook now projects order-flow posture from depth/tape/spread state, Welcome shows provider/symbol/storage readiness progress, Data Operations now has provider/backfill/storage/export handoff surfaces including Storage archive posture, Storage preview scope/guidance, and Provider Health posture briefing, shared deep-page hosts can use compact command chrome with related-workflow/trust-state context, shell-context attention banners now include severity/owner/source/action detail, System Health is present for diagnostics handoffs, Notification Center can recover hidden retained history after aggressive filters, Activity Log triage plus export/clear header actions are present for local operational review, Watchlist posture plus pinned-first card ordering helps stage symbol sets before monitoring/research/trading handoffs, Messaging Hub projects delivery posture, refresh recency, and retained activity scope, StrategyRuns can recover filtered-away retained runs while showing visible-versus-recorded scope, BatchBacktest exposes stateful results empty guidance, QuantScript exposes local Run History with Research handoffs for mirrored runs, Security Master exposes runtime/search recovery, Fund Accounts projects account-queue/provider-routing/shared-data and balance-evidence readiness, and desktop workflow automation now covers canonical launch/deep-link routing, single-instance argument forwarding, and scheduled/manual WPF screenshot evidence capture with a single post-matrix commit step; workflow validation and cockpit/shared-model/governance hardening remain in progress
+**Last Updated:** 2026-04-29
+**Status:** Active blueprint — the active operator UI implementation lane is now the web dashboard in `src/Meridian.Ui/dashboard/`, with WPF retained for compatibility, support fixes, and shared-contract regression evidence. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and retained WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
 
 ---
 
@@ -263,13 +263,13 @@ These services should sit above raw engine/service primitives and below UI view 
 - P&L Attribution
 - Audit Trail
 
-## 6.4 Desktop-local API direction
+## 6.4 Web workstation and local API direction
 
-The standalone web dashboard has been retired. The remaining supporting surface should stay local and API-first so the desktop workstation, Swagger, and automation can share the same read models without reintroducing a browser product:
+The standalone-browser direction has been restored as the active operator UI lane through the React/Vite dashboard. The local API should remain the shared contract source so the web workstation, retained WPF shell, Swagger, and automation consume the same read models instead of drifting into separate products:
 
-- run browser and strategy-state queries through retained workstation APIs
+- run browser, strategy-state, compare, diff, and promotion-history queries through shared workstation APIs
 - portfolio summary and cash / ledger inspection through localhost routes
-- lightweight diagnostics and audit access for desktop tooling
+- lightweight diagnostics and audit access for web, desktop-support, and automation tooling
 
 ---
 

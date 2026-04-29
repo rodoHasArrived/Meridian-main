@@ -6,14 +6,30 @@ Meridian is a **dark cockpit**. Not a dark mode — a cockpit. The baseline is a
 
 ```css
 background-image:
-  radial-gradient(ellipse at 10% 0%,  rgba(42, 178, 212, 0.20) 0%, transparent 35%),
-  radial-gradient(ellipse at 88% 8%,  rgba(96, 165, 250, 0.14) 0%, transparent 30%),
-  radial-gradient(ellipse at 92% 88%, rgba(214, 158, 56, 0.12) 0%, transparent 28%),
-  radial-gradient(ellipse at 4% 90%,  rgba(52, 211, 153, 0.08) 0%, transparent 24%),
-  linear-gradient(175deg, rgba(6,14,24,0.99) 0%, rgba(8,18,30,1) 50%, rgba(6,12,20,1) 100%);
+  radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.08) 0%, transparent 40%),
+  radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.05) 0%, transparent 38%),
+  linear-gradient(180deg, rgba(8,16,26,1) 0%, rgba(8,16,26,1) 100%);
 ```
 
-Four corner radial glows (cyan top‑left, blue top‑right, amber bottom‑right, mint bottom‑left) warm the shell without drawing attention. **This is the only gradient in the design system that's allowed to be decorative.** Everything else that looks like a gradient is a brand mark.
+The uploaded workstation render reinforces a monitor-like shell: dark perimeter, compact masthead,
+persistent left rail, and cyan used as a signal, not decoration. Ambient light stays faint and static.
+**This is the only decorative gradient allowed.** Everything else that looks like a gradient is a
+brand mark or a chart encoding.
+
+## Reference-derived structure
+
+The uploaded custody, reporting, charting, product-guide, and security-master images point to one
+consistent workstation model:
+
+- **Masthead:** global search, alerts, tasks, settings, and session/user controls in a thin top bar.
+- **Left rail:** persistent workspace navigation with compact labels and optional status metadata.
+- **Toolbar strip:** one-line filters, date scope, columns, export, refresh, and view controls.
+- **Evidence first:** KPI rows sit above chart/table evidence; they do not become standalone dashboards.
+- **Split workbench:** canonical records use list/detail or chart/detail layouts with identifiers and next actions visible.
+- **Status window:** bottom or side panels show run status, audit trails, exceptions, or selected-row details.
+
+Use these as Meridian patterns. Do not copy JPMorgan, Goldman Sachs, Beta One, VPR, or other
+third-party brand elements.
 
 ## Color system
 
@@ -21,14 +37,15 @@ Four corner radial glows (cyan top‑left, blue top‑right, amber bottom‑righ
 
 | Token | Hex | Use |
 |---|---|---|
-| `--bg` | `#0A1524` | App base. Only full‑bleed element. |
-| `--card` | `#0F1E30` | Default card surface. |
-| `--panel-strong` | `#10243A` | Header & sidebar — slightly brighter. |
-| `--panel-soft` | `#17293C` | Inline data grids and subtle lift. |
-| `--surface-raise` | `#1D3146` | Hover states, selected rows. |
-| `--border` | `#22405A` | Default stroke. Usually at 70–80% opacity. |
-| `--fg` | `#E8F1F9` | Primary text. |
-| `--fg-muted` | `#8DA0B3` | Secondary/supporting text, icons. |
+| `--bg` | `#08101A` | App base. Only full-bleed element. |
+| `--card-bg` | `#0D1722` | Default card surface. |
+| `--panel-strong-bg` | `#101C2B` | Header and sidebar. |
+| `--panel-soft-bg` | `#162334` | Inline data grids and subtle lift. |
+| `--surface-raise-bg` | `#1B2A3C` | Hover states, selected rows. |
+| `--border-color` | `#1F344C` | Default stroke. |
+| `--border-hi` | `#2A4566` | High-contrast separators, active states, selected frames. |
+| `--fg` | `#DEE6EF` | Primary text. |
+| `--fg-muted` | `#7C8A9B` | Secondary/supporting text, icons. |
 | `--primary` | `#2AB2D4` | Signal cyan — CTAs, active nav, focus rings. |
 | `--accent` | `#D69E38` | Amber — warnings, paper environment, caution. |
 | `--success` | `#26BF86` | Healthy, completed, positive P&L. |
@@ -78,13 +95,15 @@ Three families, each with a job:
 
 | Token | Value | Use |
 |---|---|---|
-| `--radius-xl` | 1.25rem / 20px | Major panels, nav, header |
-| `--radius-lg` | 0.875rem / 14px | Cards |
-| `--radius-md` | 0.625rem / 10px | Inputs, buttons |
-| `--radius-sm` | 0.375rem / 6px | Badges, tags, chips |
-| full | 9999px | Pill badges only |
+| `--radius-xl` | 0.625rem / 10px | Major panels |
+| `--radius-lg` | 0.5rem / 8px | Cards |
+| `--radius-md` | 0.375rem / 6px | Inputs, buttons |
+| `--radius-sm` | 0.25rem / 4px | Chips and badges |
+| `--radius-xs` | 0.1875rem / 3px | Tags and price labels |
 
-Meridian leans into **generous radii** — 20px on the outermost frames — to soften the otherwise dense, data‑heavy grid.
+Meridian uses **tight radii** to match institutional density. The uploaded custody and charting
+references read best when rows, filters, and detail panes stay crisp. Avoid soft pillows and
+rounded marketing cards.
 
 ## Borders
 
@@ -97,19 +116,23 @@ Meridian leans into **generous radii** — 20px on the outermost frames — to s
 
 ```css
 --shadow-workstation:
-  0 1px 0 rgba(255,255,255,0.03) inset,   /* inner top highlight */
-  0 10px 30px -12px rgba(0,0,0,0.55);     /* deep soft drop */
+  0 1px 0 rgba(255,255,255,0.02) inset,
+  0 1px 2px rgba(0,0,0,0.30);
 
 --shadow-panel:
-  0 1px 0 rgba(255,255,255,0.04) inset,
-  0 4px 16px -6px rgba(0,0,0,0.45);
+  0 1px 0 rgba(255,255,255,0.02) inset,
+  0 1px 1px rgba(0,0,0,0.25);
 ```
 
-Every surface pairs an **inner highlight** (to feel lit from above) with a **deep, soft drop** (to feel seated). No harsh black shadows.
+Every surface pairs an **inner highlight** with a shallow workstation shadow. Floating dialogs may
+use `--shadow-float`; tables, nav, and workbench panels should not look like marketing cards.
 
 ## Backgrounds & imagery
 
-- Never use photography. The only image assets are the brand marks.
+- Use uploaded reference images in documentation and preview galleries only.
+- Never use third-party screenshots as production UI imagery.
+- Never use photography inside the workstation shell. The only product assets are brand marks,
+  icons, charts, generated screenshots, and operator evidence.
 - No repeating patterns, no textures, no noise.
 - The ambient gradient on `body` is the only decoration.
 - **Full‑bleed** is used once — the login screen — using the hero SVG.
@@ -134,6 +157,9 @@ Meridian is **dense** by consumer‑UI standards but **breathing** by Bloomberg 
 - Tables: `px-3 py-2` (not `px-2 py-1`).
 - KPI grids: 2 cols mobile, 4 cols desktop, never more than 6.
 - Never collapse labels into icons. Icons accompany labels; they never replace them.
+- Filters and toolbar controls should fit in one row before wrapping.
+- Selected rows should reveal a detail pane or status window, not just a color highlight.
+- Long-running workflows should expose status, owner/action, and last-updated evidence.
 
 ## The cockpit rules
 

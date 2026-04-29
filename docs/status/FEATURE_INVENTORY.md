@@ -225,13 +225,17 @@ Provider validation matrix and evidence guidance now live in `docs/status/provid
 
 ---
 
-## 9. Retained Local Web/API Surface
+## 9. Web Workstation And Local API Surface
 
-This surface remains useful for local diagnostics, API-backed workflows, and support tooling. It is
-not the primary operator shell; WPF owns current workstation delivery.
+The React/Vite dashboard in `src/Meridian.Ui/dashboard/` is now the active operator UI delivery
+lane, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The older local web/API
+surface remains useful for diagnostics, API-backed workflows, and support tooling, while WPF is
+retained for desktop compatibility, shared-contract regression checks, and support fixes.
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
+| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, research, trading, data-operations, and governance paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation and full cockpit/governance acceptance remain open |
+| Web Research run library | ⚠️ | `ResearchScreen` and `useResearchRunLibraryViewModel` expose retained run review, two-run compare/diff readiness, promotion-history loading, accessible command-error alerts, and component/view-model coverage; Backtest Studio unification and strategy-aware launch/preflight remain open |
 | HTML dashboard (auto-refreshing) | ✅ | `HtmlTemplateGenerator`; SSE-powered live updates |
 | Server-Sent Events stream | ✅ | `/api/events/stream`; 2-second push cycle |
 | Configuration wizard UI | ✅ | Interactive provider setup, credential entry, symbol config |
@@ -484,7 +488,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 ### Remaining execution work
 
-- Wire brokerage gateways into the shared workstation paper-trading cockpit and primary WPF operator lane
+- Wire brokerage gateways into the shared workstation paper-trading cockpit and active web operator lane, while keeping WPF compatibility checks for retained desktop support
 - Validate brokerage adapters against live vendor APIs
 - Complete cockpit-visible `Backtest → Paper → Live` workflow hardening and audit UX
 - Complete paper-trading session persistence and replay operator flows
@@ -547,7 +551,7 @@ This section inventories the workflow-centric product model that now sits above 
 
 | Surface | Status | Notes |
 | --------- | -------- | ------- |
-| Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the Research shell now has a desk briefing hero for selected-run, run-detail, portfolio, and `Backtest -> Paper` promotion-review handoffs, while deeper research workflow acceptance and Backtest Studio unification remain open |
+| Research workspace taxonomy | Partial | The active web dashboard now has a Research run library with retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets; retained desktop vocabulary also aligns on `Research`, and the WPF Research shell has a desk briefing hero for selected-run, run-detail, portfolio, and `Backtest -> Paper` promotion-review handoffs. Deeper research workflow acceptance, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open |
 | Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`, and the desk briefing hero projects context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight handoffs from shared readiness inputs; the shared trading-readiness endpoint gives the cockpit one acceptance contract with recent risk/control audit evidence and missing-field explainability warnings, while cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently, the Data Operations shell now has a desk briefing hero for provider, backfill, storage, session, export, blocker, and next-handoff posture, and `StoragePage` now shows selected root/layout/compression preview scope before archive-path work; deeper workflow acceptance and cross-workspace handoff proof remain open |
 | Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, Security Master/reconciliation drill-ins are live, Fund Accounts now has a stateful operator brief for account-queue, provider-routing, shared-data, balance-evidence snapshot posture, and reconciliation readiness states, and Notification Center can recover hidden retained notification history after aggressive filters; broader governance-first product flows remain incomplete |
@@ -567,7 +571,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger/cash-flow surfaces | In progress | Code present in `src/Meridian.Wpf/`; StrategyRuns now has visible-versus-recorded run scope, filter-aware empty-state recovery, and comparison-picker guidance, BatchBacktest has stateful results empty guidance for idle, validation-blocked, running, failed, cancelled, and populated sweep states, and RunCashFlow now distinguishes selected-run, missing-run, no-event, and loaded cash-flow evidence states while broader paper/live history continuity remains open |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the WPF desk briefing hero, a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/signed DK1 trust-gate/brokerage/work-item posture with stable work-item IDs, an initial `/api/workstation/operator/inbox` aggregation contract for readiness work items plus open reconciliation breaks, and route-aware WPF shell queue-button consumption of the primary work item with active-account `fundAccountId` propagation; cockpit hardening, broader broker validation, end-to-end queue workflow handling, and stronger acceptance criteria remain |
+| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the retained WPF desk briefing hero, a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/signed DK1 trust-gate/brokerage/work-item posture with stable work-item IDs, an initial `/api/workstation/operator/inbox` aggregation contract for readiness work items plus open reconciliation breaks, and route-aware WPF shell queue-button consumption of the primary work item with active-account `fundAccountId` propagation; active cockpit acceptance now belongs in the web dashboard, while cockpit hardening, broader broker validation, end-to-end queue workflow handling, and stronger acceptance criteria remain |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Endpoint layer and dashboard flows exist, and promotion approvals now carry an explicit approval checklist for DK1 trust packet, lineage, portfolio/ledger continuity, and risk-control review; safety-gated lifecycle hardening, broader operator acceptance, and full live-readiness remain open |
 
 ### Additional governance and platform tracks
@@ -645,7 +649,7 @@ These areas are part of the documented implementation scope even though they are
 
 Meridian’s intended end state is a comprehensive fund management platform rather than a loose collection of pages and utilities.
 
-- `Research`, `Trading`, `Data Operations`, and `Governance` should operate as durable product surfaces, not only naming conventions.
+- `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` should operate as durable top-level operator surfaces in the active web workstation, with legacy `Research`, `Data Operations`, and `Governance` names retained only where compatibility or transitional routing still requires them.
 - Backtests, paper sessions, and live-facing history should share one recognizable run model with first-class portfolio and ledger drill-ins.
 - Account, entity, strategy-implementation, and trade-management workflows should be part of the same connected product surface.
 - Security Master now serves as the authoritative instrument-definition layer across research, trading, governance, portfolio, and ledger workflows; the current repo already delivers that baseline.

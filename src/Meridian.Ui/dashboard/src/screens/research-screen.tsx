@@ -16,7 +16,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Loading Research</CardTitle>
+          <CardTitle>Loading Strategy</CardTitle>
           <CardDescription>Waiting for run history and comparison state.</CardDescription>
         </CardHeader>
       </Card>
@@ -31,7 +31,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
       <Card>
         <CardHeader>
-          <div className="eyebrow-label">Research Lane</div>
+          <div className="eyebrow-label">Strategy Lane</div>
           <CardTitle>Strategy run library</CardTitle>
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>

@@ -11,6 +11,7 @@ import {
   reviewReconciliationBreak
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { workspaceForPath } from "@/lib/workspace";
 import {
   resolveGovernanceWorkstream,
   resolveSelectedReconciliation,
@@ -45,12 +46,17 @@ const focusCopy: Record<string, { title: string; description: string }> = {
   "security-master": {
     title: "Security coverage",
     description: "Coverage gaps and reference integrity stay tied to reconciliation and reporting readiness."
+  },
+  reporting: {
+    title: "Reporting profiles",
+    description: "Report packs, governed exports, and loader artifacts stay tied to accounting evidence."
   }
 };
 
 export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const { pathname } = useLocation();
   const workstream = resolveGovernanceWorkstream(pathname);
+  const workspace = workspaceForPath(pathname);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const selectedReconciliation = resolveSelectedReconciliation(data?.reconciliationQueue ?? [], selectedRunId);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
@@ -123,7 +129,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardHeader>
-            <div className="eyebrow-label">Governance Lane</div>
+            <div className="eyebrow-label">{workspace.label} Lane</div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
               {focus.title}
@@ -144,7 +150,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             <GovernanceHighlight
               icon={Landmark}
               title="Reporting"
-              description="Export profiles stay close to governance workflows instead of living in a separate tool."
+              description="Export profiles stay close to accounting and reporting workflows instead of living in a separate tool."
             />
           </CardContent>
         </Card>
@@ -154,7 +160,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             <div className="eyebrow-label">Cash Flow</div>
             <CardTitle>{data.cashFlow.summary}</CardTitle>
             <CardDescription className="text-slate-300">
-              Route focus at <code className="rounded bg-white/10 px-1 py-0.5">{pathname}</code> reuses the same governance summary payload.
+              Route focus at <code className="rounded bg-white/10 px-1 py-0.5">{pathname}</code> reuses the same accounting/reporting summary payload.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -262,12 +268,12 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Governance exports</CardTitle>
+              <CardTitle>Reporting exports</CardTitle>
               <CardDescription>Entry points for report/export handoff using existing export infrastructure.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button asChild><a href="/api/export/preview" target="_blank" rel="noreferrer">Preview report payload</a></Button>
-              <Button asChild variant="outline"><a href="/api/export/analysis" target="_blank" rel="noreferrer">Run governance export</a></Button>
+              <Button asChild variant="outline"><a href="/api/export/analysis" target="_blank" rel="noreferrer">Run reporting export</a></Button>
               <Button asChild variant="outline"><a href="/api/export/formats" target="_blank" rel="noreferrer">List export formats</a></Button>
             </CardContent>
           </Card>

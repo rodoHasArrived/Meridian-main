@@ -82,6 +82,12 @@ runs per artifact root so repeated local automation does not fill the disk befor
 can run. Override the age window with `--isolation-retention-days <days>` and the count guard with
 `--isolation-retain-latest <count>`, or set both to `0` for a run that must skip cleanup.
 
+`build/scripts/publish/publish.ps1` keeps the default `./dist` publish behavior unchanged. When
+automation points `-OutputDir` under `artifacts/publish/<run-name>`, the script prunes sibling
+generated publish directories older than 14 days or beyond the latest 5 runs before publishing.
+Tune that with `-OutputRetentionDays <days>` and `-OutputRetainLatest <count>`, or set both to `0`
+to skip publish-output retention for a run.
+
 ## Event Schema
 
 Each event follows the schema below, stored in `build-events.jsonl`:

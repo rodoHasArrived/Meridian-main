@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { workspaceForPath } from "@/lib/workspace";
 import { useDataOperationsViewModel } from "@/screens/data-operations-screen.view-model";
 import type { BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
 
@@ -14,13 +15,14 @@ interface DataOperationsScreenProps {
 
 export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
   const { pathname } = useLocation();
+  const workspace = workspaceForPath(pathname);
   const vm = useDataOperationsViewModel(data, pathname);
 
   if (!data) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Loading Data Operations</CardTitle>
+          <CardTitle>Loading {workspace.label}</CardTitle>
           <CardDescription>Waiting for provider posture and backfill queue state.</CardDescription>
         </CardHeader>
       </Card>
@@ -36,7 +38,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardHeader>
-            <div className="eyebrow-label">Data Operations Lane</div>
+            <div className="eyebrow-label">{workspace.label} Lane</div>
             <CardTitle className="flex items-center gap-2">
               <DatabaseZap className="h-5 w-5 text-primary" />
               {vm.workstream === "backfills" ? "Backfill queue focus" : "Provider health"}

@@ -55,7 +55,7 @@ const data: DataOperationsWorkspaceResponse = {
 describe("DataOperationsScreen", () => {
   it("renders provider, backfill, and export summaries", () => {
     render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
+      <MemoryRouter initialEntries={["/data"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -68,7 +68,7 @@ describe("DataOperationsScreen", () => {
 
   it("adapts the hero copy for deep-link routes", () => {
     render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+      <MemoryRouter initialEntries={["/data/backfills"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -82,7 +82,7 @@ describe("DataOperationsScreen", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
+      <MemoryRouter initialEntries={["/data/backfills"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -97,7 +97,7 @@ describe("DataOperationsScreen", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
+      <MemoryRouter initialEntries={["/data"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -113,7 +113,7 @@ describe("DataOperationsScreen", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
+      <MemoryRouter initialEntries={["/data"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -145,7 +145,7 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
 
     render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
+      <MemoryRouter initialEntries={["/data"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -192,7 +192,7 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "getBackfillProgress").mockResolvedValue(mockProgress);
 
     render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
+      <MemoryRouter initialEntries={["/data"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );
@@ -217,7 +217,7 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "previewBackfill").mockRejectedValueOnce(new Error("Provider offline"));
 
     render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
+      <MemoryRouter initialEntries={["/data"]}>
         <DataOperationsScreen data={data} />
       </MemoryRouter>
     );

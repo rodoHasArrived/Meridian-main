@@ -84,6 +84,10 @@ const conflicts: SecurityMasterConflict[] = [
 
 describe("governance-screen view model", () => {
   it("derives the governance workstream and selected reconciliation run", () => {
+    expect(resolveGovernanceWorkstream("/accounting/security-master")).toBe("security-master");
+    expect(resolveGovernanceWorkstream("/accounting/reconciliation")).toBe("reconciliation");
+    expect(resolveGovernanceWorkstream("/accounting")).toBe("ledger");
+    expect(resolveGovernanceWorkstream("/reporting")).toBe("reporting");
     expect(resolveGovernanceWorkstream("/governance/security-master")).toBe("security-master");
     expect(resolveGovernanceWorkstream("/governance/reconciliation")).toBe("reconciliation");
     expect(resolveGovernanceWorkstream("/governance")).toBe("ledger");

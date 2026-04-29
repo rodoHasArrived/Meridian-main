@@ -2,7 +2,8 @@
 // Meridian Dashboard UI Kit
 // Load AFTER React + Babel, as <script type="text/babel" src=".../components.jsx">
 // Exposes: PanelSurface, Eyebrow, Button, Badge, MetricCard, Input,
-//          StatusBanner, NavItem, DataTable → window
+//          StatusBanner, NavItem, DataTable, WorkstationShell,
+//          ToolbarStrip, DenseDataTable, EntitySummary → window
 // ============================================================
 
 function PanelSurface({ children, strong, className = "", style = {}, ...rest }) {
@@ -147,7 +148,7 @@ function NavItem({ icon, label, status, active = false }) {
 function DataTable({ columns, rows }) {
   return (
     <div style={{
-      border: "1px solid hsl(var(--border) / .7)", borderRadius: 14, overflow: "hidden",
+      border: "1px solid hsl(var(--border) / .7)", borderRadius: 8, overflow: "hidden",
       background: "hsl(var(--card))"
     }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -178,7 +179,135 @@ function DataTable({ columns, rows }) {
   );
 }
 
+function WorkstationShell({ brand = "Meridian", subtitle = "Workstation", brandMark = "assets/brand/meridian-mark.svg", search = "Search securities, reports, orders…", actions, nav = [], activeNav, children }) {
+  return (
+    <div style={{
+      minHeight: "100vh", display: "grid", gridTemplateRows: "52px 1fr",
+      background: "hsl(var(--background))", backgroundImage: "var(--bg-ambient)",
+      color: "var(--fg)", fontFamily: "var(--font-sans)"
+    }}>
+      <div style={{
+        display: "grid", gridTemplateColumns: "minmax(220px,280px) minmax(240px,1fr) auto",
+        alignItems: "center", gap: 16, padding: "0 18px",
+        background: "#05101B", borderBottom: "1px solid var(--border-color)",
+        boxShadow: "var(--shadow-panel)"
+      }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+          <img src={brandMark} alt="" style={{ width: 28, height: 28 }} />
+          <div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 600, color: "#FFF" }}>{brand}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--cyan-primary)" }}>{subtitle}</div>
+          </div>
+        </div>
+        <div style={{
+          height: 30, maxWidth: 680, display: "flex", alignItems: "center", gap: 10,
+          padding: "0 12px", border: "1px solid var(--border-color)", borderRadius: 4,
+          background: "#0B1520", color: "var(--fg-muted)", fontFamily: "var(--font-mono)", fontSize: 11
+        }}>
+          <span>⌕</span><span>{search}</span>
+        </div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "flex-end", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-muted)" }}>
+          {actions || <><span>Alerts <b style={{ color: "var(--cyan-primary)" }}>0</b></span><span>Tasks <b style={{ color: "var(--cyan-primary)" }}>0</b></span></>}
+        </div>
+      </div>
+      <div style={{ minHeight: 0, display: "grid", gridTemplateColumns: "248px minmax(0,1fr)" }}>
+        <nav style={{ minHeight: 0, overflow: "auto", padding: "12px 10px", background: "#08131F", borderRight: "1px solid var(--border-color)" }}>
+          {nav.map((item) => {
+            const active = activeNav ? item.label === activeNav : item.active;
+            return (
+              <div key={item.label} style={{
+                display: "grid", gridTemplateColumns: "16px 1fr auto", gap: 9, alignItems: "center",
+                minHeight: 32, padding: "6px 10px", border: `1px solid ${active ? "rgba(42,178,212,.28)" : "transparent"}`,
+                borderRadius: 4, background: active ? "rgba(42,178,212,.10)" : "transparent",
+                boxShadow: active ? "inset 3px 0 0 var(--cyan-primary)" : "none",
+                color: active ? "#FFF" : "var(--fg-muted)", fontSize: 12
+              }}>
+                <span style={{ color: active ? "var(--cyan-primary)" : "var(--fg-muted)" }}>{item.icon || "·"}</span>
+                <span>{item.label}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, color: active ? "var(--cyan-primary)" : "var(--fg-muted)" }}>{item.status}</span>
+              </div>
+            );
+          })}
+        </nav>
+        <main style={{ minWidth: 0, minHeight: 0 }}>{children}</main>
+      </div>
+    </div>
+  );
+}
+
+function ToolbarStrip({ items = [], right }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 8, minWidth: 0, padding: "0 18px",
+      height: 44, background: "#0B1520", borderBottom: "1px solid var(--border-color)",
+      fontFamily: "var(--font-mono)", fontSize: 11
+    }}>
+      {items.map((item) => (
+        <span key={item.label || item} style={{
+          display: "inline-flex", alignItems: "center", gap: 6, height: 26, padding: "0 10px",
+          border: `1px solid ${item.active ? "rgba(42,178,212,.42)" : "var(--border-color)"}`,
+          borderRadius: 4, background: item.active ? "rgba(42,178,212,.10)" : "#08101A",
+          color: item.active ? "var(--cyan-primary)" : "var(--fg)", whiteSpace: "nowrap"
+        }}>{item.label || item}</span>
+      ))}
+      <span style={{ flex: "1 1 auto" }} />
+      {right}
+    </div>
+  );
+}
+
+function DenseDataTable({ columns, rows, selectedIndex = -1 }) {
+  return (
+    <div style={{ maxWidth: "100%", overflow: "auto" }}>
+      <table style={{
+        width: "100%", minWidth: 780, borderCollapse: "collapse", fontFamily: "var(--font-mono)",
+        fontSize: 11.5, fontVariantNumeric: "tabular-nums"
+      }}>
+        <thead><tr>{columns.map((col, i) => (
+          <th key={i} style={{
+            position: "sticky", top: 0, zIndex: 1, padding: "8px 10px",
+            borderBottom: "1px solid var(--border-color)", background: "#08101A",
+            color: "var(--fg-muted)", fontSize: 9.5, fontWeight: 500, letterSpacing: ".12em",
+            textAlign: col.align === "right" ? "right" : "left", textTransform: "uppercase"
+          }}>{col.label || col}</th>
+        ))}</tr></thead>
+        <tbody>{rows.map((row, ri) => (
+          <tr key={ri}>{row.map((cell, ci) => {
+            const col = columns[ci] || {};
+            return (
+              <td key={ci} style={{
+                padding: "7px 10px", borderBottom: "1px solid #142036", whiteSpace: "nowrap",
+                background: ri === selectedIndex ? "rgba(42,178,212,.14)" : (ri % 2 === 1 ? "rgba(255,255,255,.018)" : "transparent"),
+                color: (cell && cell.color) || (ri === selectedIndex ? "#FFF" : "var(--fg)"),
+                textAlign: col.align === "right" ? "right" : "left"
+              }}>{cell && cell.value !== undefined ? cell.value : cell}</td>
+            );
+          })}</tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+
+function EntitySummary({ fields = [] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
+      {fields.map((field, i) => (
+        <div key={field.label} style={{
+          minWidth: 0, padding: "11px 14px",
+          borderRight: i % 2 === 0 ? "1px solid #142036" : 0,
+          borderBottom: "1px solid #142036"
+        }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--fg-muted)" }}>{field.label}</div>
+          <div style={{ marginTop: 5, fontFamily: "var(--font-mono)", fontSize: 12, color: "#FFF", wordBreak: "break-word" }}>{field.value}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 Object.assign(window, {
   PanelSurface, Eyebrow, Button, Badge, MetricCard, Input,
-  StatusBanner, NavItem, DataTable,
+  StatusBanner, NavItem, DataTable, WorkstationShell,
+  ToolbarStrip, DenseDataTable, EntitySummary,
 });

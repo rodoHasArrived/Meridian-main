@@ -2,7 +2,7 @@
 
 **Owner:** Research Platform / Backtesting / Workstation
 **Audience:** Backtesting, QuantScript, WPF, Application, and API contributors
-**Last Updated:** 2026-04-23
+**Last Updated:** 2026-04-29
 **Status:** Proposed
 
 > Companion documents:
@@ -36,7 +36,7 @@ Primary objective: make backtesting and QuantScript feel like one coherent produ
 
 ### Assumptions
 
-- WPF remains the primary operator shell for this plan.
+- The web dashboard is now the active operator UI lane for new research workflow proof; WPF remains retained support and shared-contract regression coverage for this plan.
 - Native Meridian backtesting remains the first-class research engine in this phase; Lean parity continues in parallel through existing Wave 5 planning.
 - Additive contracts are preferred over breaking changes.
 

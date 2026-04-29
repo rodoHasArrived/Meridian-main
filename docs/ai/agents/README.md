@@ -7,8 +7,9 @@ All agent surfaces should follow the shared provider-agnostic workflow in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 All three surfaces should stay aligned around the same current product framing: Meridian is a
-desktop-first fund-management and trading workstation with shared `Research`, `Trading`,
-`Data Operations`, and `Governance` workflows on top of strong provider, storage, execution,
+.NET 9 fund-management and trading platform with an active browser-based operator workstation,
+retained WPF support, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
+`Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
 ledger, and MCP foundations.
 
 ---
@@ -98,4 +99,4 @@ Use repo navigation first whenever the main problem is â€œwhere should I start?â
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-04-29_

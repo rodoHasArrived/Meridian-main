@@ -13,7 +13,7 @@ import type {
   SecurityMasterEntry
 } from "@/types";
 
-export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master";
+export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
 
 export interface SecurityMasterServices {
   search: (query: string) => Promise<SecurityMasterEntry[]>;
@@ -210,6 +210,10 @@ export function useSecurityMasterViewModel(
 }
 
 export function resolveGovernanceWorkstream(pathname: string): GovernanceWorkstream {
+  if (pathname.startsWith("/reporting")) {
+    return "reporting";
+  }
+
   if (pathname.includes("/reconciliation")) {
     return "reconciliation";
   }

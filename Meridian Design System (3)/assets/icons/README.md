@@ -16,6 +16,11 @@ available for use in web dashboards, documentation, and future cross-platform ta
 
 ## Workspace Icons
 
+The SVG set was extracted from the historical desktop/workstation vocabulary. Current top-level
+operator navigation is `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+`Settings`; older `Research`, `Data Operations`, and `Governance` names remain useful as icon
+source groups and compatibility aliases.
+
 | File | Workspace | Replaces |
 |------|-----------|---------|
 | `research.svg` | Research | 🔬 |

@@ -13,13 +13,16 @@ This matches the visual language of **Lucide** / **Heroicons outline** — not b
 
 ## What's in `assets/icons/`
 
-47 custom SVGs covering every workspace, page, and utility action. Grouped:
+47 custom SVGs covering workspace, page, and utility actions. The files were extracted from the
+historical desktop vocabulary, so some group names are compatibility labels. Current top-level
+operator navigation is `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+`Settings`.
 
-- **Workspaces:** `research`, `trading`, `data-operations`, `governance`
-- **Research pages:** `dashboard`, `live-data`, `order-book`, `charting`, `data-browser`, `data-sampling`, `symbol-storage`
-- **Trading pages:** `backtest`, `strategy-runs`, `run-detail`, `run-ledger`, `run-portfolio`, `run-mat`, `trading-hours`
-- **Data Ops pages:** `symbols`, `backfill`, `provider-health`, `data-sources`, `data-quality`, `data-calendar`, `data-export`, `storage-optimization`, `storage`, `archive-health`, `event-replay`, `index-subscription`, `portfolio-import`, `watchlist`, `schedule-manager`, `collection-sessions`, `account-portfolio`, `aggregate-portfolio`
-- **Governance pages:** `security-master`, `settings`, `diagnostics`, `service-manager`, `admin-maintenance`, `retention-assurance`, `lean-integration`, `system-health`, `help`, `keyboard-shortcuts`
+- **Workspace and compatibility icons:** `trading`, `research`, `data-operations`, `governance`
+- **Market and charting pages:** `dashboard`, `live-data`, `order-book`, `charting`, `data-browser`, `data-sampling`, `symbol-storage`
+- **Trading and strategy pages:** `backtest`, `strategy-runs`, `run-detail`, `run-ledger`, `run-portfolio`, `run-mat`, `trading-hours`
+- **Portfolio, data, and operations pages:** `symbols`, `backfill`, `provider-health`, `data-sources`, `data-quality`, `data-calendar`, `data-export`, `storage-optimization`, `storage`, `archive-health`, `event-replay`, `index-subscription`, `portfolio-import`, `watchlist`, `schedule-manager`, `collection-sessions`, `account-portfolio`, `aggregate-portfolio`
+- **Accounting, reporting, settings, and system pages:** `security-master`, `settings`, `diagnostics`, `service-manager`, `admin-maintenance`, `retention-assurance`, `lean-integration`, `system-health`, `help`, `keyboard-shortcuts`
 
 The canonical `assets/icons/README.md` (copied from the repo) is the authoritative inventory.
 
@@ -46,8 +49,8 @@ import { RadioTower, Wallet, ClipboardList } from "lucide-react";
 For custom icons that lucide doesn't have:
 
 ```tsx
-import ResearchIcon from '@/assets/icons/research.svg?react';
-<ResearchIcon className="w-5 h-5" />
+import TradingIcon from '@/assets/icons/trading.svg?react';
+<TradingIcon className="w-5 h-5" />
 ```
 
 ### In WPF
@@ -80,7 +83,9 @@ The desktop app uses **Segoe MDL2 Assets** glyph codes (Windows built‑in icon 
 - Sidebar logo (48px, on a `primary/12` background, inside a rounded square)
 - Login illustration (full size, on navy)
 
-`meridian-wordmark.svg` pairs the mark with a **MERIDIAN** wordmark and the descriptor **RESEARCH / TRADING / DATA OPS / GOVERNANCE** — reserved for marketing surfaces, about panes, and splash screens.
+`meridian-wordmark.svg` pairs the mark with a **MERIDIAN** wordmark and an older descriptor
+set. Treat that descriptor as historical artwork; use text labels in the current shell for
+`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 
 **Do not recolor the brand mark.** The gradient is specified in the SVG and is the one place a multi‑stop gradient is allowed.
 

@@ -21,6 +21,7 @@ on:
       - '.github/workflows/refresh-screenshots.yml'
       - 'config/appsettings.sample.json'
       - 'scripts/dev/SharedBuild.ps1'
+      - 'scripts/dev/SharedCheckpoint.ps1'
       - 'scripts/dev/desktop-workflows.json'
       - 'scripts/dev/workflow-profiles/**'
       - 'scripts/dev/SharedWorkflowProfiles.ps1'

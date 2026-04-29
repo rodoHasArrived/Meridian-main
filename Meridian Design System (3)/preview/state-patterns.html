@@ -61,7 +61,7 @@
   .table-wrap { border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin: 0; }
 
   /* ----- Workspace colors ----- */
-  .ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
+  .ws-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; }
   .ws-cell { padding: 14px 16px; border-right: 1px solid var(--border-color); }
   .ws-cell:last-child { border-right: 0; }
   .ws-cell .name { font-family: var(--font-display); font-size: 14px; color: #FFF; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.005em; }
@@ -225,26 +225,6 @@
     </div>
     <div class="ws-grid">
       <div class="ws-cell">
-        <div class="accent" style="background:#A8B5C4;"></div>
-        <div class="name">Overview</div>
-        <div class="items">
-          <div class="item"><div class="sw" style="background:#A8B5C4;"></div><span>Nav inset: bone</span></div>
-          <div class="item"><div class="sw" style="background:#A8B5C4;"></div><span>Eyebrow: muted</span></div>
-          <div class="item"><div class="sw" style="background:#A8B5C4;"></div><span>Icon: muted</span></div>
-        </div>
-        <div class="token">--fg-muted</div>
-      </div>
-      <div class="ws-cell">
-        <div class="accent" style="background:#60A5FA;"></div>
-        <div class="name">Research</div>
-        <div class="items">
-          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Nav inset: blue</span></div>
-          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Badge: --paper</span></div>
-          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Icon: blue-400</span></div>
-        </div>
-        <div class="token">--state-paper-fg</div>
-      </div>
-      <div class="ws-cell">
         <div class="accent" style="background:#2AB2D4;"></div>
         <div class="name">Trading</div>
         <div class="items">
@@ -252,27 +232,67 @@
           <div class="item"><div class="sw" style="background:#2AB2D4;"></div><span>Badge: --live</span></div>
           <div class="item"><div class="sw" style="background:#2AB2D4;"></div><span>Icon: primary</span></div>
         </div>
-        <div class="token">--cyan-primary</div>
+        <div class="token">--workspace-trading</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:#A78BFA;"></div>
-        <div class="name">Data Ops</div>
+        <div class="accent" style="background:#60A5FA;"></div>
+        <div class="name">Portfolio</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Nav inset: violet</span></div>
-          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Badge: pending</span></div>
-          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Icon: violet</span></div>
+          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Nav inset: blue</span></div>
+          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Badge: paper</span></div>
+          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Icon: blue</span></div>
         </div>
-        <div class="token">--state-pending-fg</div>
+        <div class="token">--workspace-portfolio</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#26BF86;"></div>
+        <div class="name">Accounting</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#26BF86;"></div><span>Nav inset: green</span></div>
+          <div class="item"><div class="sw" style="background:#26BF86;"></div><span>Badge: healthy</span></div>
+          <div class="item"><div class="sw" style="background:#26BF86;"></div><span>Icon: success</span></div>
+        </div>
+        <div class="token">--workspace-accounting</div>
       </div>
       <div class="ws-cell">
         <div class="accent" style="background:#D69E38;"></div>
-        <div class="name">Governance</div>
+        <div class="name">Reporting</div>
         <div class="items">
           <div class="item"><div class="sw" style="background:#D69E38;"></div><span>Nav inset: amber</span></div>
           <div class="item"><div class="sw" style="background:#D69E38;"></div><span>Badge: warn</span></div>
           <div class="item"><div class="sw" style="background:#D69E38;"></div><span>Icon: accent</span></div>
         </div>
-        <div class="token">--state-warn-fg</div>
+        <div class="token">--workspace-reporting</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#A78BFA;"></div>
+        <div class="name">Strategy</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Nav inset: violet</span></div>
+          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Badge: pending</span></div>
+          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Icon: violet</span></div>
+        </div>
+        <div class="token">--workspace-strategy</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#93B4DA;"></div>
+        <div class="name">Data</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#93B4DA;"></div><span>Nav inset: slate</span></div>
+          <div class="item"><div class="sw" style="background:#93B4DA;"></div><span>Badge: research</span></div>
+          <div class="item"><div class="sw" style="background:#93B4DA;"></div><span>Icon: data</span></div>
+        </div>
+        <div class="token">--workspace-data</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#7C8A9B;"></div>
+        <div class="name">Settings</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#7C8A9B;"></div><span>Nav inset: muted</span></div>
+          <div class="item"><div class="sw" style="background:#7C8A9B;"></div><span>Badge: inactive</span></div>
+          <div class="item"><div class="sw" style="background:#7C8A9B;"></div><span>Icon: muted</span></div>
+        </div>
+        <div class="token">--workspace-settings</div>
       </div>
     </div>
   </div>

@@ -4,7 +4,7 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-04-13
+> **Last verified:** 2026-04-29
 > **Primary grounding docs:** `README.md`, `docs/status/ROADMAP.md`,
 > `docs/plans/trading-workstation-migration-blueprint.md`,
 > `docs/plans/governance-fund-ops-blueprint.md`
@@ -16,17 +16,18 @@
 - Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery problem is product-shaped rather than primitive-shaped: prove operator
-  trust, close workflow gaps, and deepen governance/fund-operations without splitting the product
-  into parallel subsystems.
-- `src/Meridian.Wpf/` is the primary operator shell. `src/Meridian.Ui.Services/` and
-  `src/Meridian.Ui.Shared/` are the shared desktop-facing service and endpoint layers that support
-  the local workstation experience.
-- `src/Meridian.Ui/` remains a supporting web/API surface, but new operator workflow guidance
-  should optimize for the desktop shell first.
-- Keep the top-level workstation to four workspaces: `Research`, `Trading`, `Data Operations`, and
-  `Governance`. Fund-ops, banking, portfolio, and ledger expansions should surface as Governance
-  aliases, tabs, or command-palette routes instead of brand-new root workspaces.
+- The current delivery focus is productization: turn those foundations into one cohesive operator
+  experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+  `Settings`.
+- New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
+  contracts, regression fixes, or retained desktop support.
+- `src/Meridian.Ui/dashboard/` is now the active browser-based operator UI lane, with production
+  assets built into `src/Meridian.Ui/wwwroot/workstation/`.
+- `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
+  that should support the web dashboard first while preserving retained desktop compatibility.
+- Keep top-level operator navigation to seven workspaces: `Trading`, `Portfolio`, `Accounting`,
+  `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
+  `Governance` names remain compatibility aliases, not visible root workspaces.
 
 ---
 
@@ -52,6 +53,8 @@ dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
+npm --prefix src/Meridian.Ui/dashboard run test
+npm --prefix src/Meridian.Ui/dashboard run build
 make test
 make desktop-run
 pwsh ./scripts/dev/run-desktop.ps1
@@ -80,8 +83,10 @@ Prefer the narrowest validation command that matches the touched files.
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
+- `src/Meridian.Ui/dashboard/`: browser-based operator workstation dashboard
+- `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the WPF shell
+  services, workstation endpoints, and the retained WPF shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: performance suites
 
@@ -137,4 +142,3 @@ Prefer the narrowest validation command that matches the touched files.
   services; await initialization and terminal metadata writes at the service boundary.
 - Do not add package versions directly to project files; central package management lives in
   `Directory.Packages.props`.
-

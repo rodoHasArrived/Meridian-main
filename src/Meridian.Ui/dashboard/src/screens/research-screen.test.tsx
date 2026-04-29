@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResearchScreen } from "@/screens/research-screen";
 import * as api from "@/lib/api";
+import { afterEach } from "vitest";
 import type { PromotionRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: ResearchWorkspaceResponse = {
@@ -42,6 +43,12 @@ const twoRuns: ResearchWorkspaceResponse = {
 };
 
 describe("ResearchScreen", () => {
+  afterEach(() => {
+    restoreApiSpy(api.compareRuns);
+    restoreApiSpy(api.diffRuns);
+    restoreApiSpy(api.getPromotionHistory);
+  });
+
   it("opens a detail dialog with run notes when the Open button is clicked", async () => {
     const user = userEvent.setup();
     render(<ResearchScreen data={twoRuns} />);
@@ -63,16 +70,21 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("PAPER")).toBeInTheDocument();
   });
 
-  it("shows compare and diff buttons after two runs are checked", async () => {
+  it("keeps compare and diff disabled until two runs are checked", async () => {
     const user = userEvent.setup();
     render(<ResearchScreen data={twoRuns} />);
+
+    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeDisabled();
+    expect(screen.getByText("No runs selected")).toBeInTheDocument();
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeEnabled();
+    expect(screen.getByText("Mean Reversion FX vs Index Momentum")).toBeInTheDocument();
   });
 
   it("calls compareRuns API and renders a comparison table cell", async () => {
@@ -111,6 +123,22 @@ describe("ResearchScreen", () => {
       expect(cells.some((el) => el.closest("td") !== null)).toBe(true);
     });
     expect(api.compareRuns).toHaveBeenCalledOnce();
+  });
+
+  it("shows an error banner when compare fails", async () => {
+    vi.spyOn(api, "compareRuns").mockRejectedValue(new Error("Compare service unavailable"));
+
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Compare service unavailable");
+    });
   });
 
   it("loads and displays run diff panel when Diff is clicked", async () => {
@@ -180,3 +208,8 @@ describe("ResearchScreen", () => {
     expect(api.getPromotionHistory).toHaveBeenCalledOnce();
   });
 });
+
+function restoreApiSpy(fn: unknown) {
+  const spy = fn as { mockRestore?: () => void };
+  spy.mockRestore?.();
+}

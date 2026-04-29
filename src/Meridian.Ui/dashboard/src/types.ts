@@ -1,10 +1,19 @@
-export type WorkspaceKey = "overview" | "research" | "trading" | "data-operations" | "governance";
+export type WorkspaceKey =
+  | "trading"
+  | "portfolio"
+  | "accounting"
+  | "reporting"
+  | "strategy"
+  | "data"
+  | "settings";
+
+export type LegacyWorkspaceKey = "overview" | "research" | "data-operations" | "governance";
 
 export interface SessionInfo {
   displayName: string;
   role: string;
   environment: "paper" | "live" | "research";
-  activeWorkspace: WorkspaceKey;
+  activeWorkspace: WorkspaceKey | LegacyWorkspaceKey;
   commandCount: number;
 }
 

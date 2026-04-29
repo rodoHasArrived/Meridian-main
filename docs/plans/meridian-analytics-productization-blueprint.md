@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Research, Trading, Governance, Desktop, API, and Architecture contributors
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-29
 **Status:** Proposed blueprint for productizing the `Research -> Trading -> Governance` operator journey
 
 > Companion to:
@@ -36,7 +36,7 @@ The design keeps Meridian's top-level workstation information architecture uncha
 - `Data Operations`
 - `Governance`
 
-WPF remains the primary operator shell. Shared services and workstation/fund-structure endpoints remain the integration boundary for desktop, web, and API consumers.
+The web dashboard is now the active operator UI lane. Shared services and workstation/fund-structure endpoints remain the integration boundary for web, retained desktop, and API consumers.
 
 The milestone order should stay intentionally balanced:
 

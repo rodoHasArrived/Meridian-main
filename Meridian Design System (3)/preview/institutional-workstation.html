@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Institutional workstation</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; min-height: 100%; font-family: var(--font-sans); }
+  .workstation-frame { height: 100vh; }
+  .workbench { overflow: hidden; }
+  .status-dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; display: inline-block; margin-right: 6px; }
+  .chart-card { height: 100%; min-height: 0; padding: 14px; display: grid; grid-template-rows: auto 1fr; gap: 12px; }
+  .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .chart-title { font-size: 13px; font-weight: 600; color: #FFFFFF; }
+  .chart-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+  .chart-box { min-height: 260px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #05101B; overflow: hidden; }
+  .chart-box svg { display: block; width: 100%; height: 100%; min-height: 260px; }
+  .inspector { display: grid; grid-template-rows: auto auto minmax(260px, 1fr) auto; min-height: 0; }
+  .action-row { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border-color); background: #05101B; }
+  .action-row button { height: 28px; padding: 0 11px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: #0B1520; color: var(--fg); font-family: var(--font-mono); font-size: 11px; }
+  .action-row button.primary { border-color: var(--cyan-primary); background: var(--cyan-primary); color: #05101B; font-weight: 600; }
+  .note { padding: 12px 14px; font-size: 12px; line-height: 1.55; color: var(--fg-muted); }
+  .note b { color: #FFFFFF; font-weight: 500; }
+  .guide-strip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border-color); background: rgba(222,88,120,0.08); color: var(--state-danger-fg); font-family: var(--font-mono); font-size: 10.5px; }
+</style>
+</head>
+<body>
+  <div class="workstation-frame">
+    <header class="workstation-masthead">
+      <div class="workstation-brand">
+        <img src="../assets/brand/meridian-mark.svg" alt="">
+        <div>
+          <div class="name">Meridian</div>
+          <div class="sub">Operator workstation</div>
+        </div>
+      </div>
+      <div class="workstation-search"><span>⌕</span><span>Search securities, portfolios, reports, orders…</span></div>
+      <div class="workstation-actions">
+        <span>Alerts <b>2</b></span>
+        <span>Tasks <b>5</b></span>
+        <span>AR</span>
+      </div>
+    </header>
+
+    <div class="workstation-shell">
+      <aside class="operator-rail">
+        <div class="operator-rail-section">Workspaces</div>
+        <div class="operator-nav-item active"><span>↗</span><span>Trading</span><span class="status">LIVE</span></div>
+        <div class="operator-nav-item"><span>▦</span><span>Portfolio</span><span class="status">OK</span></div>
+        <div class="operator-nav-item"><span>≡</span><span>Accounting</span><span class="status">OBS</span></div>
+        <div class="operator-nav-item"><span>▤</span><span>Reporting</span><span class="status">12</span></div>
+        <div class="operator-nav-item"><span>◇</span><span>Strategy</span><span class="status">RUN</span></div>
+        <div class="operator-nav-item"><span>●</span><span>Data</span><span class="status">OK</span></div>
+        <div class="operator-nav-item"><span>··</span><span>Settings</span><span class="status"></span></div>
+        <div class="operator-rail-section">Queues</div>
+        <div class="operator-nav-item"><span style="color:var(--state-warn-fg)">●</span><span>Pending trades</span><span class="status">4</span></div>
+        <div class="operator-nav-item"><span style="color:var(--state-paper-fg)">●</span><span>Paper replay</span><span class="status">STALE</span></div>
+        <div class="operator-nav-item"><span style="color:var(--state-healthy-fg)">●</span><span>Provider sync</span><span class="status">OK</span></div>
+      </aside>
+
+      <main class="workbench">
+        <div class="toolbar-strip">
+          <span class="toolbar-chip">Account: All</span>
+          <span class="toolbar-chip">Date: 26 Apr 26</span>
+          <span class="toolbar-chip active">Status: Pending</span>
+          <span class="toolbar-chip">Columns</span>
+          <span class="toolbar-spacer"></span>
+          <span class="toolbar-chip">Export</span>
+          <span class="toolbar-chip active">Refresh</span>
+        </div>
+
+        <section class="metric-strip">
+          <div class="metric-tile"><div class="k">Market value</div><div class="v">$14.68B</div><div class="d fg-success">+1.23% · 1D</div></div>
+          <div class="metric-tile"><div class="k">Unrealized P&amp;L</div><div class="v">$482.15M</div><div class="d fg-success">+2.45% · 1D</div></div>
+          <div class="metric-tile"><div class="k">Risk VaR 95%</div><div class="v">$95.32M</div><div class="d fg-danger">−0.62% · 1D</div></div>
+          <div class="metric-tile"><div class="k">Pending trades</div><div class="v">4</div><div class="d fg-warning">Settlement review</div></div>
+          <div class="metric-tile"><div class="k">Last update</div><div class="v">19:19</div><div class="d">28 Apr 26</div></div>
+        </section>
+
+        <section class="split-workbench">
+          <div class="workbench-panel">
+            <div class="workbench-panel-header"><b>Trade manager</b><span>4 records · selected row drives detail</span></div>
+            <div class="dense-table-wrap">
+              <table class="dense-table">
+                <thead>
+                  <tr>
+                    <th>Trade status</th>
+                    <th>Account</th>
+                    <th>Transaction</th>
+                    <th class="r">Price</th>
+                    <th class="r">Qty</th>
+                    <th>Trade date</th>
+                    <th>Settle date</th>
+                    <th>Matched</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="selected">
+                    <td><span class="status-dot fg-warning"></span>Pending</td>
+                    <td>P 69198</td>
+                    <td>T326117E183</td>
+                    <td class="r">100.750000</td>
+                    <td class="r">16,400,000</td>
+                    <td>27 Apr 26</td>
+                    <td>29 Apr 26</td>
+                    <td>No</td>
+                  </tr>
+                  <tr>
+                    <td><span class="status-dot fg-warning"></span>Pending</td>
+                    <td>P 69198</td>
+                    <td>T326117E184</td>
+                    <td class="r">100.750000</td>
+                    <td class="r">30,000,000</td>
+                    <td>27 Apr 26</td>
+                    <td>29 Apr 26</td>
+                    <td>No</td>
+                  </tr>
+                  <tr>
+                    <td><span class="status-dot fg-warning"></span>Pending</td>
+                    <td>P 69187</td>
+                    <td>T326117E2JP</td>
+                    <td class="r">99.375000</td>
+                    <td class="r">24,640,000</td>
+                    <td>27 Apr 26</td>
+                    <td>29 Apr 26</td>
+                    <td>Partial</td>
+                  </tr>
+                  <tr>
+                    <td><span class="status-dot fg-warning"></span>Pending</td>
+                    <td>P 69187</td>
+                    <td>T326117E2JQ</td>
+                    <td class="r">99.375000</td>
+                    <td class="r">2,100,000</td>
+                    <td>27 Apr 26</td>
+                    <td>29 Apr 26</td>
+                    <td>No</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="guide-strip"><span class="annotation-callout">a</span><span>Documentation-only callouts can point to selected rows; production UI uses the selected-row inspector.</span></div>
+          </div>
+
+          <div class="workbench-panel inspector">
+            <div class="workbench-panel-header"><b>Selected detail</b><span>T326117E183 · Pending</span></div>
+            <div>
+              <div class="entity-summary">
+                <div class="field"><div class="k">Coupon rate</div><div class="v">6.000000</div></div>
+                <div class="field"><div class="k">Cash account</div><div class="v">0728169198</div></div>
+                <div class="field"><div class="k">Clearing broker</div><div class="v">BAIRD ROBERT W. &amp; CO.</div></div>
+                <div class="field"><div class="k">Nominee country</div><div class="v">United States</div></div>
+                <div class="field"><div class="k">Contractual settle</div><div class="v">29 Apr 26</div></div>
+                <div class="field"><div class="k">Last update</div><div class="v">27 Apr 26 · 15:15:27</div></div>
+              </div>
+              <div class="note"><b>Operator next action:</b> Review the partial trade indicator and fail narrative before releasing this row. This mirrors the uploaded custody detail pattern while keeping Meridian copy and tokens.</div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-head">
+                <div class="chart-title">Projection range</div>
+                <div class="chart-meta">1Y · medium sample</div>
+              </div>
+              <div class="chart-box">
+                <svg viewBox="0 0 640 260" preserveAspectRatio="none">
+                  <g stroke="#1A2D44" stroke-width="1">
+                    <line x1="44" y1="28" x2="612" y2="28"/><line x1="44" y1="78" x2="612" y2="78"/><line x1="44" y1="128" x2="612" y2="128"/><line x1="44" y1="178" x2="612" y2="178"/><line x1="44" y1="228" x2="612" y2="228"/>
+                    <line x1="44" y1="28" x2="44" y2="228"/><line x1="180" y1="28" x2="180" y2="228"/><line x1="316" y1="28" x2="316" y2="228"/><line x1="452" y1="28" x2="452" y2="228"/><line x1="588" y1="28" x2="588" y2="228"/>
+                  </g>
+                  <line x1="316" y1="28" x2="316" y2="228" stroke="#DE5878" stroke-dasharray="4 4"/>
+                  <path d="M44 174 C84 178 128 164 180 160 C226 152 268 122 316 118 C360 110 400 92 452 78 C502 96 548 82 612 58" fill="none" stroke="#2AB2D4" stroke-width="2"/>
+                  <path d="M316 118 C352 128 384 112 420 132 C470 102 520 146 612 86" fill="none" stroke="#60A5FA" stroke-width="1.4" opacity=".75"/>
+                  <path d="M316 118 C354 144 388 156 432 142 C480 166 530 148 612 172" fill="none" stroke="#D69E38" stroke-width="1.4" opacity=".72"/>
+                  <path d="M316 118 C360 98 400 68 444 46 C494 76 542 52 612 38" fill="none" stroke="#A78BFA" stroke-width="1.4" opacity=".72"/>
+                </svg>
+              </div>
+            </div>
+            <div class="action-row">
+              <button>Open audit trail</button>
+              <button>Assign owner</button>
+              <button class="primary">Send for review</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

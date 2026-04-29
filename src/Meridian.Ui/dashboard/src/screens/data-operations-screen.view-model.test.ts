@@ -42,6 +42,8 @@ const preview: BackfillTriggerResult = {
 
 describe("data-operations-screen view model", () => {
   it("derives route focus, selected backfill, and detail narrative", () => {
+    expect(resolveDataOperationsWorkstream("/data/backfills")).toBe("backfills");
+    expect(resolveDataOperationsWorkstream("/data")).toBe("overview");
     expect(resolveDataOperationsWorkstream("/data-operations/backfills")).toBe("backfills");
     expect(resolveDataOperationsWorkstream("/data-operations")).toBe("overview");
 

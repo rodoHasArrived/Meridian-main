@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-04-29
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -129,7 +129,7 @@ Open work:
 - extend run history beyond backtest-first into paper and live-adjacent results
 - deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger and reconciliation continuity in the primary WPF shell and retained workstation APIs
+- surface ledger and reconciliation continuity in the active web dashboard and retained workstation APIs/WPF support surfaces
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:

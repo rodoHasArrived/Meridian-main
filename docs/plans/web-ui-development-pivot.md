@@ -24,11 +24,12 @@ Pause new desktop-app feature development and continue operator UI delivery thro
 
 ## Near-Term Implementation Slices
 
-1. Restore and keep the dashboard runnable with local `npm install`, `npm run test`, and `npm run build`.
-2. Make the dashboard shell first-class: route `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` from shared workspace metadata instead of WPF-only assumptions.
+1. Restore and keep the dashboard runnable with local `npm install`, `npm run test`, and `npm run build`. Current evidence includes a refreshed workstation asset build, app-shell view-model coverage for loading/partial-degradation/bootstrap-failure status panels, canonical `WORKSPACES` metadata for `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`, route-aware command-palette and placeholder-route view-model coverage, and Research run-library component/view-model coverage for two-run compare/diff readiness, promotion-history loading, and command-error alerts.
+2. Keep the dashboard shell first-class: route the seven canonical workspaces from shared workspace metadata, preserve legacy aliases for `/overview`, `/research`, `/data-operations`, and `/governance`, and replace placeholder routes as dedicated web screens are implemented.
 3. Move Wave 2 cockpit acceptance into the web UI: session restore, replay verification, execution controls, promotion rationale, and operator work items should all consume shared workstation endpoints.
 4. Move data and governance operator workflows next: provider posture, backfill preview/trigger, export/report-pack preview, Security Master, reconciliation, and ledger review.
 5. Keep WPF tests only where shared contracts or retained desktop compatibility would otherwise regress.
+6. Treat the existing web Research run library as Wave 3 support evidence only; it does not close strategy-aware launch/preflight, persisted sweep grouping, or Backtest Studio unification.
 
 ## Validation
 

@@ -1,13 +1,16 @@
 # Meridian Design System
 
-An operator workstation design system for **Meridian** — a trading, research, data‑operations, and governance platform. The visual language is a deep navy cockpit with a sky‑cyan "signal" primary, reading like a Bloomberg terminal re‑skinned for a modern, typography‑led UI.
+An operator workstation design system for **Meridian** — a trading, portfolio, accounting,
+reporting, strategy, data, and settings platform. The visual language is a deep navy cockpit with
+a sky-cyan "signal" primary, shaped for dense institutional workflows without copying third-party
+terminal products.
 
 ## Products covered
 
 Meridian ships two distinct UI surfaces, both represented here:
 
-1. **Web Dashboard** (`src/Meridian.Ui/dashboard/`) — React + Tailwind + shadcn‑style components. Workflow‑centric shell with five workspaces: Overview, Research, Trading, Data Operations, Governance. This is the primary source of design tokens.
-2. **WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 9 desktop operator shell. Shares the brand assets and Segoe MDL2 icon mapping.
+1. **Web Dashboard** (`src/Meridian.Ui/dashboard/`) — the active browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+2. **Retained WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 9 desktop operator shell retained for shared contracts, regression fixes, and desktop support. It still shares brand assets and icon vocabulary.
 
 ## Sources
 
@@ -15,7 +18,8 @@ All visual design was reconstructed from the repository **rodoHasArrived/Meridia
 
 - Design tokens: `src/Meridian.Ui/dashboard/src/styles/index.css`
 - Components: `src/Meridian.Ui/dashboard/src/components/meridian/*.tsx`
-- Screens: `src/Meridian.Ui/dashboard/src/screens/*.tsx` (overview, trading, governance, research, data‑operations)
+- Screens: `src/Meridian.Ui/dashboard/src/screens/*.tsx` and workstation routes, with historical
+  screen names treated as compatibility context rather than current top-level navigation.
 - Brand assets: `src/Meridian.Wpf/Assets/Brand/*.svg`
 - Icon library: `src/Meridian.Wpf/Assets/Icons/*.svg` (47 icons, 24×24, stroke-based, currentColor)
 - Live screenshots: `docs/screenshots/*.png`
@@ -32,6 +36,7 @@ You don't need access to the repo to use this design system — everything is co
 - **`preview/`** — Design System review cards
 - **`ui_kits/dashboard/`** — React component kit for the web dashboard
 - **`SKILL.md`** — skill manifest for using this as a Claude Skill
+- **`INSPIRATION_BRIEF.md`** — image-derived guidance from uploaded workstation, custody, reporting, charting, and security-master references
 - **`CONTENT_FUNDAMENTALS.md`** — voice, tone, copy rules
 - **`VISUAL_FOUNDATIONS.md`** — visual motifs, layout rules, motion
 - **`ICONOGRAPHY.md`** — icon system, usage
@@ -54,16 +59,30 @@ See `CONTENT_FUNDAMENTALS.md` for the full rules. In short:
 
 See `VISUAL_FOUNDATIONS.md`. In short:
 
-- **Mood:** dark cockpit. Deep navy `#0A1524` base with radial cyan/amber/mint ambient glows in the corners — not a flat color, an atmosphere.
+- **Mood:** dark cockpit. Deep navy `#08101A` base with restrained cyan/blue ambient light. The uploaded references support a monitor-like workstation frame, not decorative glow-heavy pages.
 - **Primary:** `#2AB2D4` cyan (the "signal" color — used for active nav, primary buttons, focus rings, the brand mark).
 - **Accent:** `#D69E38` amber (warning, paper environment, caution).
 - **Semantic:** `#26BF86` success · `#D69E38` warning · `#DE5878` danger · `#60A5FA` paper · `#2AB2D4` live.
-- **Corners:** generous — `1.25rem` for panels, `0.875rem` for cards, `0.625rem` for inputs, `0.375rem` for pills.
-- **Borders:** subtle — `hsl(208 38% 22%)` on navy, usually at `/70` or `/80` opacity to feel drawn rather than carved.
-- **Shadows:** combined inner highlight + deep soft outer. Never harsh.
-- **Layout:** `max-w-[1720px]`, 320px left nav, fluid main with `p-6 lg:p-8`. Information density is high but breathing — panels always get `p-5/p-6`, cards get `p-4/p-5`.
+- **Corners:** tight — 10px maximum for major panels, 8px cards, 6px controls, 4px chips, 3px tags.
+- **Borders:** precise — `#1F344C` on navy, `#2A4566` for selected rows, active frames, and high-contrast separators.
+- **Shadows:** 1-2px workstation shadows with inset highlights. Large glow and elevation theatre are out.
+- **Layout:** masthead + left rail + dense content workbench. Uploaded references favor compact filters, selected-row detail panes, KPI-to-evidence flow, and horizontal status windows.
 - **Motion:** 200ms ease transitions on hover/press. No bouncing. No parallax. Spinners only for async refresh.
-- **Typography:** three families working together — IBM Plex Sans (UI), IBM Plex Mono (data), Space Grotesk (display headings and metric numbers).
+- **Typography:** three families working together — IBM Plex Sans (UI), IBM Plex Mono (data), Space Grotesk (display headings). Numbers, identifiers, timestamps, prices, and row counts are always mono.
+
+---
+
+## Image-inspired refinement
+
+The `uploads/` folder is a reference board for this package. It contains:
+
+- a target Meridian workstation render with KPI cards, chart/table pairing, and persistent masthead/rail structure;
+- custody, portfolio-reporting, and trade-manager screens that demonstrate table density, filter bars, selected-row details, and status windows;
+- Beta One product-guide captures that show annotated task flows for upload, pricing, profiles, and send-to-desk actions;
+- charting and security-master examples that support split workbenches and canonical identifier panels.
+
+Use those images to refine structure and density. Do not copy third-party branding, labels, marks,
+or product-specific layouts. Meridian keeps its own navy/cyan semantic system and operator copy.
 
 ---
 
