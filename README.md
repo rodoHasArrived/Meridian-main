@@ -5199,6 +5199,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
+│   │   ├── capture-web-screenshots.mjs
 │   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── desktop-workflows.json
@@ -5222,6 +5223,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-contract.py
 │   │   ├── validate-workflow-profile.ps1
+│   │   ├── web-screenshot-routes.json
 │   │   └── workflow-profiles
 │   │       ├── debug-startup.json
 │   │       ├── manual-data-operations.json
@@ -6645,6 +6647,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   └── workspace.ts
@@ -6677,6 +6680,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── test
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
 │   │   │   ├── tailwind.config.ts
 │   │   │   ├── tsconfig.json
@@ -6685,8 +6689,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CAwKqfhv.css
-│   │           │   └── index-CChzBFbU.js
+│   │           │   ├── index-Bo8YC_kb.css
+│   │           │   └── index-GKFaONS2.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8140,6 +8144,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-615 directories, 7350 files
+615 directories, 7354 files
 ```
 <!-- readme-tree end -->
