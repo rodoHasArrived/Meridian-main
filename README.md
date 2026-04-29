@@ -788,6 +788,7 @@ Use these documents together when planning or implementing new work:
 │       ├── security_master-print.html
 │       └── security_master.html
 ├── Meridian.sln
+├── NuGet.Config
 ├── README.md
 ├── archive
 │   └── docs
@@ -8158,6 +8159,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-615 directories, 7368 files
+615 directories, 7369 files
 ```
 <!-- readme-tree end -->
