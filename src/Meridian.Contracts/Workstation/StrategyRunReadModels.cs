@@ -536,6 +536,7 @@ public sealed record StrategyRunContinuityWarning(
 public sealed record StrategyRunContinuityStatus(
     bool HasPortfolio,
     bool HasLedger,
+    bool HasFills,
     bool HasCashFlow,
     bool HasReconciliation,
     int AsOfDriftMinutes,
