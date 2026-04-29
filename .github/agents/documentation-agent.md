@@ -673,6 +673,7 @@ Meridian-main
 │       │   ├── install.ps1
 │       │   └── install.sh
 │       ├── lib
+│       │   ├── ArtifactRetention.psm1
 │       │   └── BuildNotification.psm1
 │       ├── publish
 │       │   ├── publish.ps1
@@ -4713,6 +4714,7 @@ Meridian-main
 │   │   ├── ufl-treasury-bill-target-state-v2.md
 │   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── waves-2-4-operator-readiness-addendum.md
+│   │   ├── web-ui-development-pivot.md
 │   │   ├── workstation-release-readiness-blueprint.md
 │   │   └── workstation-sprint-1-implementation-backlog.md
 │   ├── providers
@@ -4853,6 +4855,120 @@ Meridian-main
 │   ├── docs.mk
 │   ├── install.mk
 │   └── test.mk
+├── Meridian Design System (3)
+│   ├── assets
+│   │   ├── brand
+│   │   │   ├── meridian-hero.svg
+│   │   │   ├── meridian-mark.svg
+│   │   │   ├── meridian-tile-256.png
+│   │   │   ├── meridian-tile.svg
+│   │   │   └── meridian-wordmark.svg
+│   │   ├── icons
+│   │   │   ├── account-portfolio.svg
+│   │   │   ├── admin-maintenance.svg
+│   │   │   ├── aggregate-portfolio.svg
+│   │   │   ├── archive-health.svg
+│   │   │   ├── backfill.svg
+│   │   │   ├── backtest.svg
+│   │   │   ├── charting.svg
+│   │   │   ├── collection-sessions.svg
+│   │   │   ├── dashboard.svg
+│   │   │   ├── data-browser.svg
+│   │   │   ├── data-calendar.svg
+│   │   │   ├── data-export.svg
+│   │   │   ├── data-operations.svg
+│   │   │   ├── data-quality.svg
+│   │   │   ├── data-sampling.svg
+│   │   │   ├── data-sources.svg
+│   │   │   ├── diagnostics.svg
+│   │   │   ├── event-replay.svg
+│   │   │   ├── governance.svg
+│   │   │   ├── help.svg
+│   │   │   ├── index-subscription.svg
+│   │   │   ├── keyboard-shortcuts.svg
+│   │   │   ├── lean-integration.svg
+│   │   │   ├── live-data.svg
+│   │   │   ├── order-book.svg
+│   │   │   ├── portfolio-import.svg
+│   │   │   ├── provider-health.svg
+│   │   │   ├── README.md
+│   │   │   ├── research.svg
+│   │   │   ├── retention-assurance.svg
+│   │   │   ├── run-detail.svg
+│   │   │   ├── run-ledger.svg
+│   │   │   ├── run-mat.svg
+│   │   │   ├── run-portfolio.svg
+│   │   │   ├── schedule-manager.svg
+│   │   │   ├── security-master.svg
+│   │   │   ├── service-manager.svg
+│   │   │   ├── settings.svg
+│   │   │   ├── storage-optimization.svg
+│   │   │   ├── storage.svg
+│   │   │   ├── strategy-runs.svg
+│   │   │   ├── symbol-storage.svg
+│   │   │   ├── symbols.svg
+│   │   │   ├── system-health.svg
+│   │   │   ├── trading-hours.svg
+│   │   │   ├── trading.svg
+│   │   │   └── watchlist.svg
+│   │   └── app.ico
+│   ├── docs
+│   │   └── screenshots
+│   │       ├── 01-dashboard.png
+│   │       ├── 11-login.png
+│   │       ├── 15-workstation-trading-orders.png
+│   │       ├── 20-workstation-data-operations-exports.png
+│   │       └── 21-workstation-governance-ledger.png
+│   ├── preview
+│   │   ├── brand-icons.html
+│   │   ├── brand-marks.html
+│   │   ├── charts-candlestick.html
+│   │   ├── charts-correlation.html
+│   │   ├── charts-equity-print.html
+│   │   ├── charts-equity.html
+│   │   ├── charts-heatmap.html
+│   │   ├── charts-histogram.html
+│   │   ├── charts-orderbook.html
+│   │   ├── charts-scatter.html
+│   │   ├── charts-sparklines.html
+│   │   ├── charts-volsurface.html
+│   │   ├── charts-yieldcurve.html
+│   │   ├── colors-ambient.html
+│   │   ├── colors-brand.html
+│   │   ├── colors-semantic.html
+│   │   ├── colors-surfaces.html
+│   │   ├── components-badges.html
+│   │   ├── components-banners.html
+│   │   ├── components-buttons.html
+│   │   ├── components-inputs.html
+│   │   ├── components-metrics.html
+│   │   ├── components-nav.html
+│   │   ├── components-table.html
+│   │   ├── design-standards.html
+│   │   ├── institutional-workstation.html
+│   │   ├── spacing-radii.html
+│   │   ├── spacing-scale.html
+│   │   ├── spacing-shadows.html
+│   │   ├── state-patterns.html
+│   │   ├── type-body.html
+│   │   ├── type-display.html
+│   │   └── type-mono.html
+│   ├── ui_kits
+│   │   ├── dashboard
+│   │   │   ├── components.jsx
+│   │   │   └── README.md
+│   │   ├── plottool_workstation.html
+│   │   ├── security_master-company.html
+│   │   ├── security_master-print.html
+│   │   └── security_master.html
+│   ├── colors_and_type.css
+│   ├── CONTENT_FUNDAMENTALS.md
+│   ├── ICONOGRAPHY.md
+│   ├── index.html
+│   ├── INSPIRATION_BRIEF.md
+│   ├── README.md
+│   ├── SKILL.md
+│   └── VISUAL_FOUNDATIONS.md
 ├── native
 │   └── cpptrader-host
 │       ├── src
@@ -6315,31 +6431,79 @@ Meridian-main
 │   │   └── Meridian.Strategies.csproj
 │   ├── Meridian.Ui
 │   │   ├── dashboard
-│   │   │   └── src
-│   │   │       ├── components
-│   │   │       │   └── meridian
-│   │   │       │       ├── workspace-header.tsx
-│   │   │       │       └── workspace-nav.tsx
-│   │   │       ├── lib
-│   │   │       │   ├── api.trading.test.ts
-│   │   │       │   └── api.ts
-│   │   │       ├── screens
-│   │   │       │   ├── data-operations-screen.test.tsx
-│   │   │       │   ├── governance-screen.test.tsx
-│   │   │       │   ├── governance-screen.tsx
-│   │   │       │   ├── overview-screen.tsx
-│   │   │       │   ├── research-screen.test.tsx
-│   │   │       │   ├── trading-screen.test.tsx
-│   │   │       │   └── trading-screen.tsx
-│   │   │       ├── styles
-│   │   │       │   └── index.css
-│   │   │       ├── app.tsx
-│   │   │       └── types.ts
+│   │   │   ├── src
+│   │   │   │   ├── components
+│   │   │   │   │   ├── meridian
+│   │   │   │   │   │   ├── command-palette.test.tsx
+│   │   │   │   │   │   ├── command-palette.tsx
+│   │   │   │   │   │   ├── command-palette.view-model.test.ts
+│   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── workspace-header.tsx
+│   │   │   │   │   │   ├── workspace-nav.test.tsx
+│   │   │   │   │   │   ├── workspace-nav.tsx
+│   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
+│   │   │   │   │   │   └── workspace-nav.view-model.ts
+│   │   │   │   │   └── ui
+│   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── button.tsx
+│   │   │   │   │       ├── card.tsx
+│   │   │   │   │       └── dialog.tsx
+│   │   │   │   ├── hooks
+│   │   │   │   │   └── use-workstation-data.ts
+│   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
+│   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── utils.ts
+│   │   │   │   │   ├── workspace.test.ts
+│   │   │   │   │   └── workspace.ts
+│   │   │   │   ├── screens
+│   │   │   │   │   ├── data-operations-screen.test.tsx
+│   │   │   │   │   ├── data-operations-screen.tsx
+│   │   │   │   │   ├── data-operations-screen.view-model.test.ts
+│   │   │   │   │   ├── data-operations-screen.view-model.ts
+│   │   │   │   │   ├── governance-screen.test.tsx
+│   │   │   │   │   ├── governance-screen.tsx
+│   │   │   │   │   ├── governance-screen.view-model.test.ts
+│   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── overview-screen.tsx
+│   │   │   │   │   ├── overview-screen.view-model.test.ts
+│   │   │   │   │   ├── overview-screen.view-model.ts
+│   │   │   │   │   ├── research-screen.test.tsx
+│   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── research-screen.view-model.test.ts
+│   │   │   │   │   ├── research-screen.view-model.ts
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
+│   │   │   │   │   ├── trading-screen.view-model.test.ts
+│   │   │   │   │   ├── trading-screen.view-model.ts
+│   │   │   │   │   ├── workspace-placeholder-screen.tsx
+│   │   │   │   │   ├── workspace-placeholder-screen.view-model.test.ts
+│   │   │   │   │   └── workspace-placeholder-screen.view-model.ts
+│   │   │   │   ├── styles
+│   │   │   │   │   └── index.css
+│   │   │   │   ├── test
+│   │   │   │   │   └── setup.ts
+│   │   │   │   ├── app-shell.view-model.test.ts
+│   │   │   │   ├── app-shell.view-model.ts
+│   │   │   │   ├── app.tsx
+│   │   │   │   ├── main.tsx
+│   │   │   │   ├── types.ts
+│   │   │   │   └── vite-env.d.ts
+│   │   │   ├── index.html
+│   │   │   ├── package-lock.json
+│   │   │   ├── package.json
+│   │   │   ├── postcss.config.cjs
+│   │   │   ├── tailwind.config.ts
+│   │   │   ├── tsconfig.json
+│   │   │   ├── tsconfig.node.json
+│   │   │   └── vite.config.ts
 │   │   └── wwwroot
 │   │       └── workstation
-│   │           └── assets
-│   │               ├── index-CnAc-D_d.js
-│   │               └── index-DLXsLZLB.css
+│   │           ├── assets
+│   │           │   ├── index-CcpVz9_t.js
+│   │           │   └── index-DNevvesn.css
+│   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
 │   │   │   ├── BoundedObservableCollection.cs
@@ -7769,6 +7933,7 @@ Meridian-main
 │   │   └── TestAssemblyConfiguration.cs
 │   ├── scripts
 │   │   ├── setup-verification.sh
+│   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_program_state_consistency.py
