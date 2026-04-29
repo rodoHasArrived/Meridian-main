@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-29 06:30:45 UTC. Do not edit manually.
+> Auto-generated on 2026-04-29 10:37:02 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4960,6 +4960,7 @@ Meridian-main
 │   │   │   └── screenshot-catalog.json
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
+│   │   ├── capture-web-screenshots.mjs
 │   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── desktop-workflows.json
@@ -4982,7 +4983,8 @@ Meridian-main
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-contract.py
-│   │   └── validate-workflow-profile.ps1
+│   │   ├── validate-workflow-profile.ps1
+│   │   └── web-screenshot-routes.json
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -6377,7 +6379,10 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── metric-card.view-model.test.ts
+│   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -6390,12 +6395,14 @@ Meridian-main
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── button.tsx
 │   │   │   │   │       ├── card.tsx
+│   │   │   │   │       ├── dialog.test.tsx
 │   │   │   │   │       └── dialog.tsx
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   └── workspace.ts
@@ -6408,6 +6415,9 @@ Meridian-main
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── operator-readiness-console.tsx
+│   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
+│   │   │   │   │   ├── operator-readiness-console.view-model.ts
 │   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── overview-screen.view-model.test.ts
 │   │   │   │   │   ├── overview-screen.view-model.ts
@@ -6425,6 +6435,7 @@ Meridian-main
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
+│   │   │   │   │   ├── render.tsx
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
@@ -6432,6 +6443,7 @@ Meridian-main
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
@@ -6444,8 +6456,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CAwKqfhv.css
-│   │           │   └── index-CChzBFbU.js
+│   │           │   ├── index-DN1W91Kc.js
+│   │           │   └── index-UFtGYQsd.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6639,10 +6651,13 @@ Meridian-main
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
+│   │   │   ├── FileWorkflowPresetStore.cs
 │   │   │   ├── IWorkflowActionCatalog.cs
 │   │   │   ├── IWorkflowDefinitionProvider.cs
+│   │   │   ├── IWorkflowPresetStore.cs
 │   │   │   ├── WorkflowActionIds.cs
 │   │   │   ├── WorkflowLibraryService.cs
+│   │   │   ├── WorkflowPresetService.cs
 │   │   │   ├── WorkflowRegistry.cs
 │   │   │   └── WorkflowServiceCollectionExtensions.cs
 │   │   ├── DtoExtensions.cs
@@ -7883,6 +7898,8 @@ Meridian-main
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
+│   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_documentation_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
@@ -7890,6 +7907,7 @@ Meridian-main
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_setup_dotnet_cache_action.py
 │   │   └── test_shared_build_retention.py
