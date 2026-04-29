@@ -70,6 +70,11 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("98%")).toBeInTheDocument();
     expect(screen.getByText("Keep provider active.")).toBeInTheDocument();
     expect(screen.getByText("Reason: TRUST_OK")).toBeInTheDocument();
+    const exportRow = screen.getByRole("group", { name: /python-pandas export ready/i });
+    expect(exportRow).toHaveTextContent("EX-2201");
+    expect(exportRow).toHaveTextContent("research pack · 124k · 4m ago");
+    expect(exportRow).toHaveTextContent("Next action");
+    expect(exportRow).toHaveTextContent("Attach export to the report pack");
   });
 
   it("renders explicit empty guidance when provider, backfill, and export arrays are empty", () => {
@@ -158,8 +163,11 @@ describe("DataOperationsScreen", () => {
     await user.click(screen.getByRole("button", { name: /^preview$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/preview — polygon/i)).toBeInTheDocument();
-      expect(screen.getByText(/Bars:\s*2,100/i)).toBeInTheDocument();
+      const previewStatus = screen.getByRole("status", { name: /preview ready — polygon/i });
+      expect(previewStatus).toHaveTextContent("Preview only");
+      expect(previewStatus).toHaveTextContent("Bars");
+      expect(previewStatus).toHaveTextContent("2,100");
+      expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
   });
 
@@ -205,8 +213,10 @@ describe("DataOperationsScreen", () => {
     await user.click(screen.getByRole("button", { name: /run backfill/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/backfill complete — polygon/i)).toBeInTheDocument();
-      expect(screen.getByText(/Bars:\s*512/i)).toBeInTheDocument();
+      const resultStatus = screen.getByRole("status", { name: /backfill complete — polygon/i });
+      expect(resultStatus).toHaveTextContent("Written");
+      expect(resultStatus).toHaveTextContent("MSFT");
+      expect(resultStatus).toHaveTextContent("512");
     });
   });
 

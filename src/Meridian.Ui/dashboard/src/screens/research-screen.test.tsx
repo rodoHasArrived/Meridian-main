@@ -142,6 +142,12 @@ describe("ResearchScreen", () => {
       const cells = screen.getAllByText("Carry Alpha");
       expect(cells.some((el) => el.closest("td") !== null)).toBe(true);
     });
+    expect(screen.getByRole("table", { name: "Strategy run comparison evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Carry Alpha: Running; net P&L \+\$3,200/ })).toBeInTheDocument();
+    expect(screen.getByText("Candidate for paper")).toBeInTheDocument();
+    expect(screen.getByText("+4.20%")).toBeInTheDocument();
+    expect(screen.getByText("-1.80%")).toBeInTheDocument();
+    expect(screen.getByText("Ledger missing; Audit missing")).toBeInTheDocument();
     expect(api.compareRuns).toHaveBeenCalledOnce();
   });
 

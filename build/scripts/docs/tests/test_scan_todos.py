@@ -51,8 +51,9 @@ class ScanTodosTests(unittest.TestCase):
             excluded_dist = root / "dist" / "bundle.js"
             excluded_worktree = root / ".claude" / "worktrees" / "copy" / "Active.cs"
             excluded_status = root / "docs" / "status" / "TODO.md"
+            excluded_local_config = root / "config" / "appsettings.json"
 
-            for path in (included, excluded_dist, excluded_worktree, excluded_status):
+            for path in (included, excluded_dist, excluded_worktree, excluded_status, excluded_local_config):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("// TODO: placeholder\n", encoding="utf-8")
 

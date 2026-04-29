@@ -40,6 +40,14 @@ export interface ReadinessConsoleRow {
   detail: string;
   meta: string;
   level: ReadinessConsoleLevel;
+  action?: ReadinessConsoleRowAction | null;
+}
+
+export interface ReadinessConsoleRowAction {
+  label: string;
+  route: string;
+  ariaLabel: string;
+  variant: "secondary" | "outline";
 }
 
 export interface ReadinessConsoleState {
@@ -62,6 +70,8 @@ export interface ReadinessConsoleState {
   promotionRows: ReadinessConsoleRow[];
   reportPackFacts: ReadinessConsoleRow[];
   workItems: ReadinessConsoleRow[];
+  workItemsSummary: string;
+  workItemsOverflowText: string | null;
 }
 
 export interface BuildOperatorReadinessConsoleStateOptions {
@@ -146,7 +156,8 @@ export function buildOperatorReadinessConsoleState({
   const reconciliationRows = buildReconciliationRows(governance);
   const promotionRows = buildPromotionRows(readiness, workItems);
   const reportPackFacts = buildReportPackFacts(governance);
-  const workItemRows = buildWorkItemRows(workItems);
+  const prioritizedWorkItems = prioritizeWorkItems(workItems);
+  const workItemRows = buildWorkItemRows(prioritizedWorkItems);
   const metrics = buildMetrics({
     latestRuns,
     readiness,
@@ -205,7 +216,9 @@ export function buildOperatorReadinessConsoleState({
     reconciliationRows,
     promotionRows,
     reportPackFacts,
-    workItems: workItemRows
+    workItems: workItemRows,
+    workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
+    workItemsOverflowText: buildWorkItemsOverflowText(prioritizedWorkItems.length, workItemRows.length)
   };
 }
 
@@ -381,7 +394,7 @@ function buildPromotionRows(
 
   workItems
     .filter((item) => item.kind === "PromotionReview")
-    .forEach((item) => rows.push(buildWorkItemRow(item)));
+    .forEach((item) => rows.push(buildWorkItemRow(item, false)));
 
   return dedupeRows(rows).slice(0, 6);
 }
@@ -431,18 +444,162 @@ function buildReportPackFacts(governance: GovernanceWorkspaceResponse | null): R
 }
 
 function buildWorkItemRows(workItems: OperatorWorkItem[]): ReadinessConsoleRow[] {
-  return workItems.slice(0, 6).map(buildWorkItemRow);
+  return workItems.slice(0, 6).map((item) => buildWorkItemRow(item, true));
 }
 
-function buildWorkItemRow(item: OperatorWorkItem): ReadinessConsoleRow {
+function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] {
+  return workItems
+    .map((item, index) => ({ item, index }))
+    .sort((left, right) => {
+      const toneDelta = tonePriority(left.item.tone) - tonePriority(right.item.tone);
+      if (toneDelta !== 0) {
+        return toneDelta;
+      }
+
+      const timeDelta = timestampPriority(right.item.createdAt) - timestampPriority(left.item.createdAt);
+      if (timeDelta !== 0) {
+        return timeDelta;
+      }
+
+      return left.index - right.index;
+    })
+    .map(({ item }) => item);
+}
+
+function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRow {
+  const action = includeAction ? buildWorkItemAction(item) : null;
+
   return {
     id: item.workItemId,
     label: item.label,
     value: item.tone,
     detail: item.detail,
     meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" - ") || item.kind,
-    level: levelFromTone(item.tone)
+    level: levelFromTone(item.tone),
+    action
   };
+}
+
+function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
+  const route = normalizeTargetRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
+  if (!route) {
+    return null;
+  }
+
+  const label = actionLabelForWorkItemKind(item.kind);
+  return {
+    label,
+    route,
+    ariaLabel: `${label}: ${item.label}`,
+    variant: item.tone === "Critical" ? "secondary" : "outline"
+  };
+}
+
+function normalizeTargetRoute(route: string | null | undefined): string | null {
+  const trimmed = route?.trim();
+  if (!trimmed || !trimmed.startsWith("/") || trimmed.startsWith("//")) {
+    return null;
+  }
+
+  return trimmed;
+}
+
+function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+  switch (kind) {
+    case "PaperReplay":
+    case "PromotionReview":
+    case "BrokerageSync":
+    case "ExecutionControl":
+      return "/trading/readiness";
+    case "SecurityMasterCoverage":
+      return "/accounting/security-master";
+    case "ReconciliationBreak":
+      return "/accounting/reconciliation";
+    case "ReportPackApproval":
+      return "/reporting";
+    case "ProviderTrustGate":
+      return "/data";
+  }
+}
+
+function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+  switch (kind) {
+    case "PaperReplay":
+      return "Open replay evidence";
+    case "PromotionReview":
+      return "Open promotion review";
+    case "BrokerageSync":
+      return "Open brokerage sync";
+    case "SecurityMasterCoverage":
+      return "Open Security Master";
+    case "ReconciliationBreak":
+      return "Open break queue";
+    case "ReportPackApproval":
+      return "Open report packs";
+    case "ProviderTrustGate":
+      return "Open provider trust";
+    case "ExecutionControl":
+      return "Open execution controls";
+  }
+}
+
+function buildWorkItemsSummary(workItems: OperatorWorkItem[], visibleCount: number): string {
+  if (workItems.length === 0) {
+    return "No operator work items returned by the shared operator-inbox contract.";
+  }
+
+  const counts = countWorkItemTones(workItems);
+  const toneSummary = [
+    counts.Critical > 0 ? `${formatCount(counts.Critical, "critical item")}` : null,
+    counts.Warning > 0 ? `${formatCount(counts.Warning, "warning")}` : null,
+    counts.Info > 0 ? `${formatCount(counts.Info, "info item")}` : null,
+    counts.Success > 0 ? `${formatCount(counts.Success, "success item")}` : null
+  ].filter(Boolean).join(", ");
+
+  return `Showing ${visibleCount} of ${formatCount(workItems.length, "operator work item")}; ${toneSummary}. Critical items sort first.`;
+}
+
+function buildWorkItemsOverflowText(totalCount: number, visibleCount: number): string | null {
+  const hiddenCount = totalCount - visibleCount;
+  if (hiddenCount <= 0) {
+    return null;
+  }
+
+  return `${formatCount(hiddenCount, "additional work item")} hidden from this view after priority sorting.`;
+}
+
+function countWorkItemTones(workItems: OperatorWorkItem[]): Record<OperatorWorkItem["tone"], number> {
+  return workItems.reduce<Record<OperatorWorkItem["tone"], number>>((counts, item) => {
+    counts[item.tone] += 1;
+    return counts;
+  }, {
+    Critical: 0,
+    Warning: 0,
+    Info: 0,
+    Success: 0
+  });
+}
+
+function tonePriority(tone: OperatorWorkItem["tone"]): number {
+  switch (tone) {
+    case "Critical":
+      return 0;
+    case "Warning":
+      return 1;
+    case "Info":
+      return 2;
+    case "Success":
+      return 3;
+  }
+}
+
+function timestampPriority(value: string): number {
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatCount(count: number, singular: string): string {
+  return `${count} ${count === 1 ? singular : `${singular}s`}`;
 }
 
 function buildMetrics({

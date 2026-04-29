@@ -83,7 +83,7 @@ All AI features use `actions/ai-inference@v1` with `continue-on-error: true` (ne
 ### Setup .NET with Cache (`.github/actions/setup-dotnet-cache/`)
 
 - Composite action for .NET SDK setup with NuGet caching
-- Inputs: `dotnet-version` (default: 9.0.x), `cache-suffix`
+- Inputs: `dotnet-version` (default: 10.0.x), `cache-suffix`
 - Cache key based on project file hashes
 - On macOS, exports `DOTNET_ROOT`, `DOTNET_ROOT_ARM64`, and `DOTNET_ROOT_X64` from the resolved
   real `dotnet` command path so generated test apphosts, including the F# xUnit v3 discovery

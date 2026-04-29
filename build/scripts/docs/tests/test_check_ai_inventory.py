@@ -160,6 +160,45 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertFalse(any(finding.kind == "legacy-repository-link" for finding in findings))
 
+    def test_check_catalog_drift_reports_copilot_repository_tree_duplication(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "copilot" / "instructions.md",
+                "\n".join(
+                    [
+                        "# Meridian Copilot Guide",
+                        "",
+                        "## Repository Structure",
+                        "",
+                        "```text",
+                        "Meridian-main",
+                        "src/",
+                        "```",
+                    ]
+                ),
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(any(finding.kind == "duplicated-repository-tree" for finding in findings))
+
+    def test_check_catalog_drift_allows_compact_copilot_navigation_guide(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "copilot" / "instructions.md",
+                "## Repository Navigation\nUse docs/ai/generated/repo-navigation.md for routing.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "duplicated-repository-tree" for finding in findings))
+
     def test_build_payload_uses_portable_repository_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

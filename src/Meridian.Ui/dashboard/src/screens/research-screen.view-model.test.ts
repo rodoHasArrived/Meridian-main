@@ -202,7 +202,19 @@ describe("research-screen view model", () => {
         fillCount: Number.NaN
       }
     ]);
-    expect(comparisonTable.caption).toBe("Run comparison results returned by the workstation API.");
+    expect(comparisonTable.caption).toBe("Run comparison evidence returned by the workstation API.");
+    expect(comparisonTable.rows[0].modeBadgeVariant).toBe("paper");
+    expect(comparisonTable.rows[0].statusBadgeVariant).toBe("warning");
+    expect(comparisonTable.rows[0].netPnlText).toBe("+$3,200");
+    expect(comparisonTable.rows[0].netPnlTone).toBe("success");
+    expect(comparisonTable.rows[0].totalReturnText).toBe("+4.20%");
+    expect(comparisonTable.rows[0].totalReturnTone).toBe("success");
+    expect(comparisonTable.rows[0].maxDrawdownText).toBe("-1.80%");
+    expect(comparisonTable.rows[0].maxDrawdownTone).toBe("danger");
+    expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
+    expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
+    expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
+    expect(comparisonTable.rows[0].ariaLabel).toContain("Mean Reversion FX: Running; net P&L +$3,200");
     expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
     expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");

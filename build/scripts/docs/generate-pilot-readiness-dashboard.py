@@ -11,14 +11,16 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from dashboard_rendering import (
     build_text_signal_dashboard,
     load_canonical_json,
-    render_text_signal_dashboard_markdown,
+    render_markdown_from_json,
+    render_text_signal_dashboard_body,
     text_signal_dashboard_summary,
     write_canonical_json,
 )
@@ -28,11 +30,32 @@ DATA_SOURCES = [
     "docs/status/provider-validation-matrix.md",
     "docs/status/dk1-pilot-parity-runbook.md",
     "docs/status/kernel-readiness-dashboard.md",
+    "artifacts/pilot-acceptance/latest/pilot-readiness.json",
     "scripts/dev/*dk1*",
     "tests/scripts/test_*dk1*",
 ]
 
+PILOT_ACCEPTANCE_ARTIFACT = "artifacts/pilot-acceptance/latest/pilot-readiness.json"
+
 CHECKS = [
+    {
+        "id": "pilot-acceptance-artifact",
+        "category": "Golden Path Evidence",
+        "label": "Pilot acceptance artifact proves all eight golden-path stage gates",
+        "paths": [PILOT_ACCEPTANCE_ARTIFACT],
+        "terms": [
+            '"allStagesReady": true',
+            '"readyStageCount": 8',
+            '"stageGates"',
+            '"evidenceGraph"',
+            '"GovernedReportPack"',
+        ],
+        "weight": 4,
+        "remediation": (
+            "Run PilotAcceptanceHarnessTests to regenerate the pilot readiness artifact "
+            "before claiming golden-path readiness."
+        ),
+    },
     {
         "id": "provider-matrix",
         "category": "Provider Evidence",
@@ -111,15 +134,175 @@ CHECKS = [
 
 
 def build_dashboard(root: Path) -> dict:
-    return build_text_signal_dashboard(
+    payload = build_text_signal_dashboard(
         root=root,
         dashboard="pilot-readiness",
         title="Pilot Readiness Dashboard",
         description=(
             "Tracks whether DK1 pilot evidence, packet-bound operator sign-off, "
-            "and the trading readiness handoff remain present and synchronized."
+            "the trading readiness handoff, and local golden-path acceptance "
+            "artifact remain present and synchronized."
         ),
         checks=CHECKS,
+    )
+    payload["pilot_acceptance_artifact"] = load_pilot_acceptance_artifact(root)
+    return payload
+
+
+def load_pilot_acceptance_artifact(root: Path) -> dict[str, Any]:
+    root = root.resolve()
+    artifact_path = root / PILOT_ACCEPTANCE_ARTIFACT
+    relative_path = artifact_path.relative_to(root).as_posix()
+    if not artifact_path.is_file():
+        return {
+            "status": "not_generated",
+            "path": relative_path,
+            "detail": (
+                "Run PilotAcceptanceHarnessTests to generate the golden-path "
+                "pilot readiness artifact."
+            ),
+            "stage_gates": [],
+            "evidence_edge_count": 0,
+        }
+
+    try:
+        artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {
+            "status": "unreadable",
+            "path": relative_path,
+            "detail": f"Could not read pilot readiness artifact: {exc}",
+            "stage_gates": [],
+            "evidence_edge_count": 0,
+        }
+
+    return load_pilot_acceptance_artifact_from_payload(artifact, relative_path)
+
+
+def load_pilot_acceptance_artifact_from_payload(
+    artifact: dict[str, Any],
+    relative_path: str,
+) -> dict[str, Any]:
+    stage_gates = [
+        {
+            "stage": str(gate.get("stage", "")),
+            "label": str(gate.get("label", "")),
+            "status": str(gate.get("status", "")),
+            "evidence_ids": [str(item) for item in gate.get("evidenceIds", [])],
+            "blockers": [str(item) for item in gate.get("blockers", [])],
+            "validation": str(gate.get("validation", "")),
+        }
+        for gate in artifact.get("stageGates", [])
+        if isinstance(gate, dict)
+    ]
+
+    return {
+        "status": "loaded",
+        "path": relative_path,
+        "generated_at_utc": artifact.get("generatedAtUtc"),
+        "all_stages_ready": bool(artifact.get("allStagesReady", False)),
+        "ready_stage_count": int(artifact.get("readyStageCount", 0)),
+        "total_stage_count": int(artifact.get("totalStageCount", len(stage_gates))),
+        "stage_gates": stage_gates,
+        "evidence_edge_count": len(artifact.get("evidenceGraph", [])),
+        "key_evidence": {
+            "provider_evidence_id": artifact.get("providerEvidenceId"),
+            "dataset_evidence_id": artifact.get("datasetEvidenceId"),
+            "research_run_id": artifact.get("researchRunId"),
+            "paper_session_id": artifact.get("paperSessionId"),
+            "replay_verification_audit_id": artifact.get("replayVerificationAuditId"),
+            "portfolio_evidence_id": artifact.get("portfolioEvidenceId"),
+            "ledger_evidence_id": artifact.get("ledgerEvidenceId"),
+            "reconciliation_run_id": artifact.get("reconciliationRunId"),
+            "report_pack_id": artifact.get("reportPackId"),
+        },
+    }
+
+
+def _format_evidence_ids(evidence_ids: Sequence[str], *, limit: int = 3) -> str:
+    if not evidence_ids:
+        return "-"
+
+    head = [f"`{item}`" for item in evidence_ids[:limit]]
+    if len(evidence_ids) > limit:
+        head.append(f"+{len(evidence_ids) - limit} more")
+    return ", ".join(head)
+
+
+def render_pilot_acceptance_artifact_section(payload: dict[str, Any]) -> str:
+    artifact = payload.get("pilot_acceptance_artifact", {})
+    lines = ["## Pilot Acceptance Artifact", ""]
+    if artifact.get("status") != "loaded":
+        lines.extend(
+            [
+                "| Field | Value |",
+                "| --- | --- |",
+                f"| Status | {artifact.get('status', 'not_generated')} |",
+                f"| Path | `{artifact.get('path', PILOT_ACCEPTANCE_ARTIFACT)}` |",
+                f"| Detail | {artifact.get('detail', 'No pilot artifact loaded.')} |",
+                "",
+            ]
+        )
+        return "\n".join(lines)
+
+    key_evidence = artifact.get("key_evidence", {})
+    lines.extend(
+        [
+            "| Field | Value |",
+            "| --- | --- |",
+            f"| Status | {artifact.get('status')} |",
+            f"| Path | `{artifact.get('path')}` |",
+            f"| Generated | {artifact.get('generated_at_utc', '-')} |",
+            f"| Stages ready | {artifact.get('ready_stage_count', 0)}/{artifact.get('total_stage_count', 0)} |",
+            f"| All stages ready | {artifact.get('all_stages_ready', False)} |",
+            f"| Evidence graph edges | {artifact.get('evidence_edge_count', 0)} |",
+            f"| Dataset evidence | `{key_evidence.get('dataset_evidence_id', '-')}` |",
+            f"| Paper session | `{key_evidence.get('paper_session_id', '-')}` |",
+            f"| Portfolio evidence | `{key_evidence.get('portfolio_evidence_id', '-')}` |",
+            f"| Ledger evidence | `{key_evidence.get('ledger_evidence_id', '-')}` |",
+            f"| Report pack | `{key_evidence.get('report_pack_id', '-')}` |",
+            "",
+            "### Stage Gates",
+            "",
+            "| Stage | Status | Evidence | Validation |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    for gate in artifact.get("stage_gates", []):
+        lines.append(
+            f"| {gate.get('label', gate.get('stage', ''))} | {gate.get('status', '')} | "
+            f"{_format_evidence_ids(gate.get('evidence_ids', []))} | {gate.get('validation', '')} |"
+        )
+
+    blockers = [
+        blocker
+        for gate in artifact.get("stage_gates", [])
+        for blocker in gate.get("blockers", [])
+    ]
+    lines.extend(["", "### Artifact Follow-up", ""])
+    if blockers:
+        for blocker in blockers:
+            lines.append(f"- {blocker}")
+    else:
+        lines.append("No stage blockers were recorded in the latest pilot artifact.")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_pilot_readiness_dashboard_markdown(payload: dict[str, Any]) -> str:
+    body = render_text_signal_dashboard_body(payload)
+    footer = "\n---\n\n_This dashboard is auto-generated. Do not edit manually._\n"
+    artifact_section = "\n" + render_pilot_acceptance_artifact_section(payload)
+    if footer in body:
+        body = body.replace(footer, artifact_section + footer)
+    else:
+        body = body.rstrip() + artifact_section
+
+    return render_markdown_from_json(
+        json_payload=payload,
+        render_body=lambda _: body,
+        data_sources=DATA_SOURCES,
     )
 
 
@@ -155,7 +338,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         canonical = load_canonical_json(args.json_output)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
-            render_text_signal_dashboard_markdown(canonical, data_sources=DATA_SOURCES),
+            render_pilot_readiness_dashboard_markdown(canonical),
             encoding="utf-8",
         )
         print(f"Markdown dashboard written to {args.output}")

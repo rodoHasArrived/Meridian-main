@@ -175,6 +175,16 @@ def _last_modified(path: Path, root: Path) -> datetime:
     return _file_mtime_utc(path)
 
 
+def _repo_relative_path(path: Path, root: Path) -> str:
+    """Return a stable repository-relative path for generated reports."""
+    return path.relative_to(root).as_posix()
+
+
+def _display_path(path: str) -> str:
+    """Normalize stored path strings before rendering Markdown."""
+    return path.replace("\\", "/")
+
+
 # ---------------------------------------------------------------------------
 # Link extraction & orphan detection
 # ---------------------------------------------------------------------------
@@ -194,7 +204,7 @@ def _normalise_link_target(link: str, source_dir: Path, root: Path) -> Optional[
         return None
     resolved = (source_dir / link).resolve()
     try:
-        return str(resolved.relative_to(root.resolve()))
+        return resolved.relative_to(root.resolve()).as_posix()
     except ValueError:
         return None
 
@@ -209,7 +219,7 @@ def _collect_links(
         if content is None:
             continue
         try:
-            source_rel = str(md_path.relative_to(root))
+            source_rel = _repo_relative_path(md_path, root)
         except ValueError:
             continue
         targets: set[str] = set()
@@ -235,7 +245,7 @@ def _find_orphans(
     all_rel: set[str] = set()
     for md_path in md_files:
         try:
-            all_rel.add(str(md_path.relative_to(root)))
+            all_rel.add(_repo_relative_path(md_path, root))
         except ValueError:
             pass
 
@@ -268,9 +278,9 @@ def _analyse_file(path: Path, root: Path, now: datetime) -> FileInfo:
     stale = (now - last_mod).days > STALE_THRESHOLD_DAYS
 
     try:
-        rel = str(path.relative_to(root))
+        rel = _repo_relative_path(path, root)
     except ValueError:
-        rel = str(path)
+        rel = _display_path(str(path))
 
     return FileInfo(
         path=rel,
@@ -422,7 +432,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     # Overall score
     lines.append("## Overall Health Score")
     lines.append("")
-    lines.append("```")
+    lines.append("```text")
     lines.append(f"  {_ascii_bar(metrics.health_score)}")
     lines.append(f"  Rating: {_score_label(metrics.health_score)}")
     lines.append("```")
@@ -432,7 +442,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     lines.append("## Summary")
     lines.append("")
     lines.append("| Metric | Value |")
-    lines.append("|--------|-------|")
+    lines.append("| -------- | ------- |")
     lines.append(f"| Total documentation files | {metrics.total_files} |")
     lines.append(f"| Total lines | {metrics.total_lines:,} |")
     lines.append(f"| Average file size (lines) | {metrics.average_lines} |")
@@ -449,7 +459,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     lines.append("### Score Breakdown")
     lines.append("")
     lines.append("| Component | Weight | Description |")
-    lines.append("|-----------|--------|-------------|")
+    lines.append("| ----------- | -------- | ------------- |")
     lines.append("| Orphan ratio | 30 pts | Fewer orphaned files is better |")
     lines.append("| Heading coverage | 25 pts | All files should have at least one heading |")
     lines.append("| Freshness | 20 pts | Files updated within the last 90 days |")
@@ -471,7 +481,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
             "These files lack a Markdown heading, making them harder to navigate:"
         )
         lines.append("")
-        for f in sorted(metrics.no_heading_files)[:15]:
+        for f in sorted(_display_path(f) for f in metrics.no_heading_files)[:15]:
             lines.append(f"- `{f}`")
         if len(metrics.no_heading_files) > 15:
             remaining = len(metrics.no_heading_files) - 15
@@ -486,7 +496,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
             "These files are not linked from any other Markdown file in the repository:"
         )
         lines.append("")
-        for f in sorted(metrics.orphaned_files)[:20]:
+        for f in sorted(_display_path(f) for f in metrics.orphaned_files)[:20]:
             lines.append(f"- `{f}`")
         if len(metrics.orphaned_files) > 20:
             remaining = len(metrics.orphaned_files) - 20
@@ -501,7 +511,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
             f"These files have not been updated in over {STALE_THRESHOLD_DAYS} days:"
         )
         lines.append("")
-        for f in sorted(metrics.stale_files)[:20]:
+        for f in sorted(_display_path(f) for f in metrics.stale_files)[:20]:
             lines.append(f"- `{f}`")
         if len(metrics.stale_files) > 20:
             remaining = len(metrics.stale_files) - 20
@@ -520,7 +530,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     )
     lines.append("")
     lines.append("| Date | Score | Files | Orphans | Stale |")
-    lines.append("|------|-------|-------|---------|-------|")
+    lines.append("| ------ | ------- | ------- | --------- | ------- |")
     lines.append(
         f"| {metrics.scan_time[:10]} | {metrics.health_score} "
         f"| {metrics.total_files} | {metrics.orphaned_count} | {metrics.stale_count} |"
@@ -530,7 +540,7 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     # Footer
     lines.append("---")
     lines.append("")
-    lines.append("*This file is auto-generated. Do not edit manually.*")
+    lines.append("_This file is auto-generated. Do not edit manually._")
     lines.append("")
 
     return "\n".join(lines)

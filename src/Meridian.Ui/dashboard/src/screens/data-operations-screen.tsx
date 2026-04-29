@@ -1,14 +1,15 @@
 import { DatabaseZap, Download, Play, RadioTower } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import { useDataOperationsViewModel } from "@/screens/data-operations-screen.view-model";
-import type { BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
-import type { DataOperationsEmptyState } from "@/screens/data-operations-screen.view-model";
+import type { DataOperationsWorkspaceResponse } from "@/types";
+import type { BackfillResultCardState, DataOperationsEmptyState } from "@/screens/data-operations-screen.view-model";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
@@ -178,12 +179,31 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {vm.exportSection.hasRows ? vm.exportSection.rows.map((item) => (
-              <div key={item.exportId} role="group" className="rounded-lg border border-border/70 p-3" aria-label={item.ariaLabel}>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-semibold">{item.profile}</span>
-                  <span className="font-mono text-xs">{item.status}</span>
+              <div
+                key={item.exportId}
+                role="group"
+                className={cn("rounded-md border p-3", exportToneClass[item.statusTone])}
+                aria-label={item.ariaLabel}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="font-semibold">{item.profile}</span>
+                    <p className="mt-1 text-sm text-muted-foreground">{item.summaryText}</p>
+                  </div>
+                  <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{item.summaryText}</p>
+                <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {item.detailFields.map((field) => (
+                    <div key={field.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
+                      <dt className="eyebrow-label">{field.label}</dt>
+                      <dd className="mt-1 truncate font-mono text-xs text-foreground">{field.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+                  <div className="eyebrow-label">Next action</div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.actionText}</p>
+                </div>
               </div>
             )) : (
               <EmptyState state={vm.exportSection.emptyState} />
@@ -267,8 +287,8 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             </div>
           )}
           <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
-          {vm.preview && <BackfillResult title={`Preview — ${vm.preview.provider}`} result={vm.preview} />}
-          {vm.result && <BackfillResult title={`Backfill complete — ${vm.result.provider}`} result={vm.result} />}
+          {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+          {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
 
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="outline" onClick={() => void vm.previewBackfill()} disabled={!vm.canPreview}>
@@ -314,14 +334,38 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function BackfillResult({ title, result }: { title: string; result: BackfillTriggerResult }) {
+const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
+  warning: "border-warning/35 bg-warning/10 text-warning",
+  success: "border-success/35 bg-success/10 text-success",
+  danger: "border-danger/35 bg-danger/10 text-danger"
+};
+
+const exportToneClass = {
+  success: "border-success/30 bg-success/5",
+  warning: "border-warning/30 bg-warning/5",
+  paper: "border-paper/30 bg-paper/5"
+} as const;
+
+function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
   return (
-    <div className="mt-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm">
-      <div className="font-semibold">{title}</div>
-      <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-xs">
-        <span>Symbols: {result.symbols.join(", ")}</span>
-        <span>Bars: {result.barsWritten.toLocaleString()}</span>
+    <div
+      role="status"
+      aria-label={state.ariaLabel}
+      className={cn("mt-4 rounded-md border p-3 text-sm", resultToneClass[state.tone])}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="font-semibold text-foreground">{state.title}</div>
+        <div className="font-mono text-xs">{state.statusLabel}</div>
       </div>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+        {state.rows.map((row) => (
+          <div key={row.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
+            <dt className="eyebrow-label">{row.label}</dt>
+            <dd className="mt-1 font-mono text-xs text-foreground">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
   );
 }

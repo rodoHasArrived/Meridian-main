@@ -1,4 +1,4 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
@@ -296,9 +296,10 @@ describe("TradingScreen", () => {
     await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
-    expect(screen.getByText(/Breaker Closed/i)).toBeInTheDocument();
-    expect(screen.getByText(/Default limit:/i)).toHaveTextContent("5000");
-    expect(screen.getByText(/Active overrides:/i)).toHaveTextContent("BypassOrderControls (AAPL)");
+    expect(screen.getAllByText(/Breaker Closed/i).length).toBeGreaterThan(0);
+    const controls = screen.getByLabelText(/Execution controls snapshot: breaker closed/i);
+    expect(within(controls).getByText("5000")).toBeInTheDocument();
+    expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
   });
 
   it("surfaces cockpit readiness against operator acceptance gates", async () => {
@@ -514,10 +515,12 @@ describe("TradingScreen", () => {
     const user = userEvent.setup();
     await renderTradingScreen();
 
-    await user.click(screen.getByRole("button", { name: "Start" }));
-    await screen.findByText(/Replay running/i);
+    const startButton = await screen.findByRole("button", { name: "Start" });
+    await waitFor(() => expect(startButton).toBeEnabled());
+    await user.click(startButton);
+    await screen.findByText("Replay running · 3/10 (30%)");
 
-    await user.click(screen.getByRole("button", { name: "Restore" }));
+    await user.click(screen.getByRole("button", { name: /restore paper session sess-1/i }));
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Selected session: sess-1/i)).toBeInTheDocument();
     expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
@@ -531,7 +534,7 @@ describe("TradingScreen", () => {
     await user.click(await screen.findByRole("button", { name: /verify replay/i }));
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
-    expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: /replay verification matched current state for sess-1/i })).toHaveTextContent(/Matched current state/i);
     expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
     expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
@@ -541,6 +544,8 @@ describe("TradingScreen", () => {
   it("opens confirmation dialog when Cancel order button is clicked", async () => {
     await renderTradingScreen();
     fireEvent.click(screen.getByTitle("Cancel order"));
-    expect(screen.getByText(/cancel order PO-1/i)).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /cancel order PO-1/i });
+    expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
+    expect(screen.getByRole("button", { name: /confirm cancel order po-1/i })).toBeEnabled();
   });
 });

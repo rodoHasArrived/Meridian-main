@@ -65,6 +65,8 @@ Every assistant and automation should use the same high-level flow:
   evidence that they are needed.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
+- Do not embed full repository trees in host-specific guidance. Link to
+  `docs/ai/generated/repo-navigation.*` or `docs/generated/repository-structure.md` instead.
 - Do not mix AI orchestration, tool logic, prompt management, or knowledge indexing into WPF views.
   Put that logic in services, agents, scripts, utilities, configuration, or documentation.
 - Respect existing worktree changes. Treat unrelated edits as user-owned unless explicitly told to
@@ -104,6 +106,8 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
       retained WPF support only when needed, and visible root workspaces limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+- [ ] Keep host-specific guides compact; route broad repository layout questions to generated
+      navigation or structure artifacts instead of copying tree snapshots into assistant docs.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
       descriptions or default prompts change.
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.

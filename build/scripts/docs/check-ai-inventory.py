@@ -28,6 +28,7 @@ PROMPTS_README = "docs/ai/prompts/README.md"
 INSTRUCTIONS_README = "docs/ai/instructions/README.md"
 CODEX_SKILLS_README = ".codex/skills/README.md"
 GITHUB_PROMPTS_README = ".github/prompts/README.md"
+COPILOT_GUIDE = "docs/ai/copilot/instructions.md"
 CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
 LEGACY_CANONICAL_LINK_PREFIXES = (
     "https://github.com/rodoHasArrived/Meridian/blob/main/",
@@ -384,6 +385,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
         )
 
     findings.extend(check_legacy_canonical_links(root, inventory))
+    findings.extend(check_compact_copilot_guide(root))
 
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
 
@@ -421,6 +423,32 @@ def check_legacy_canonical_links(root: Path, inventory: Sequence[InventoryItem])
         )
 
     return findings
+
+
+def check_compact_copilot_guide(root: Path) -> list[Finding]:
+    path = root / COPILOT_GUIDE
+    if not path.is_file():
+        return []
+
+    text = path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+    embeds_repository_tree = "\n## Repository Structure\n" in f"\n{text}" and "```text\nMeridian-main\n" in text
+    if not embeds_repository_tree:
+        return []
+
+    return [
+        Finding(
+            severity="drift",
+            surface="github-copilot",
+            kind="duplicated-repository-tree",
+            name=path.name,
+            path=COPILOT_GUIDE,
+            expected_doc="docs/ai/generated/repo-navigation.md",
+            message=(
+                "Copilot guide embeds a full repository tree; link to generated navigation or "
+                "repository-structure sources instead of duplicating broad layout context."
+            ),
+        )
+    ]
 
 
 def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequence[Finding]) -> dict[str, object]:

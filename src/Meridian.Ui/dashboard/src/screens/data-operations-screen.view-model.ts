@@ -31,6 +31,23 @@ export interface BackfillTriggerState {
   statusAnnouncement: string;
 }
 
+export type BackfillResultCardTone = "warning" | "success" | "danger";
+
+export interface BackfillResultDetailRow {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface BackfillResultCardState {
+  title: string;
+  statusLabel: string;
+  tone: BackfillResultCardTone;
+  ariaLabel: string;
+  rows: BackfillResultDetailRow[];
+  errorText: string | null;
+}
+
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
@@ -55,18 +72,20 @@ export interface DataOperationsProviderRow {
   latencyText: string;
   note: string;
   statusTone: "success" | "warning" | "danger";
-  trustFields: DataOperationsProviderTrustField[];
+  trustFields: DataOperationsDetailField[];
   reasonCodeText: string;
   recommendedActionText: string;
   gateImpactText: string;
   ariaLabel: string;
 }
 
-export interface DataOperationsProviderTrustField {
+export interface DataOperationsDetailField {
   id: string;
   label: string;
   value: string;
 }
+
+export type DataOperationsProviderTrustField = DataOperationsDetailField;
 
 export interface DataOperationsBackfillRow {
   jobId: string;
@@ -85,9 +104,14 @@ export interface DataOperationsExportRow {
   profile: string;
   target: string;
   status: DataOperationsExportRecord["status"];
+  statusLabel: string;
+  statusVariant: "success" | "warning" | "paper";
+  statusTone: "success" | "warning" | "paper";
   rows: string;
   updatedAt: string;
   summaryText: string;
+  detailFields: DataOperationsDetailField[];
+  actionText: string;
   ariaLabel: string;
 }
 
@@ -139,6 +163,14 @@ export function useDataOperationsViewModel(
   const triggerState = useMemo(
     () => buildBackfillTriggerState({ form, busy, phase, error, preview, result }),
     [busy, error, form, phase, preview, result]
+  );
+  const previewResultCard = useMemo(
+    () => preview ? buildBackfillResultCardState(preview, "preview") : null,
+    [preview]
+  );
+  const runResultCard = useMemo(
+    () => result ? buildBackfillResultCardState(result, "result") : null,
+    [result]
   );
 
   const openBackfillDialog = useCallback(() => {
@@ -229,7 +261,9 @@ export function useDataOperationsViewModel(
     form,
     updateBackfillForm,
     preview,
+    previewResultCard,
     result,
+    runResultCard,
     error,
     busy,
     phase,
@@ -366,17 +400,36 @@ export function buildExportSection(
 ): DataOperationsSectionState<DataOperationsExportRow> {
   return {
     rows: exports.map((item) => {
-      const summaryText = `${item.target} - ${item.rows}`;
+      const statusVariant = exportStatusVariant(item.status);
+      const actionText = exportActionText(item.status);
+      const summaryText = `${item.target} · ${item.rows} · ${item.updatedAt}`;
+      const detailFields = [
+        { id: "export-id", label: "Export ID", value: item.exportId },
+        { id: "target", label: "Target", value: item.target },
+        { id: "rows", label: "Rows", value: item.rows },
+        { id: "updated", label: "Updated", value: item.updatedAt }
+      ];
 
       return {
         exportId: item.exportId,
         profile: item.profile,
         target: item.target,
         status: item.status,
+        statusLabel: item.status,
+        statusVariant,
+        statusTone: statusVariant,
         rows: item.rows,
         updatedAt: item.updatedAt,
         summaryText,
-        ariaLabel: `${item.profile} export ${item.status}. ${summaryText}. Updated ${item.updatedAt}.`
+        detailFields,
+        actionText,
+        ariaLabel: [
+          `${item.profile} export ${item.status}`,
+          `Target ${item.target}`,
+          `Rows ${item.rows}`,
+          `Updated ${item.updatedAt}`,
+          `Next action ${actionText}`
+        ].join(". ")
       };
     }),
     hasRows: exports.length > 0,
@@ -385,6 +438,30 @@ export function buildExportSection(
       description: "Generated packages and reporting outputs will appear here with target, row count, and readiness status."
     }
   };
+}
+
+function exportStatusVariant(status: DataOperationsExportRecord["status"]): DataOperationsExportRow["statusVariant"] {
+  if (status === "Ready") {
+    return "success";
+  }
+
+  if (status === "Running") {
+    return "paper";
+  }
+
+  return "warning";
+}
+
+function exportActionText(status: DataOperationsExportRecord["status"]): string {
+  if (status === "Ready") {
+    return "Attach export to the report pack or hand off the package.";
+  }
+
+  if (status === "Running") {
+    return "Wait for the package writer to finish before handoff.";
+  }
+
+  return "Review export profile and target before report-pack use.";
 }
 
 export function resolveSelectedBackfill(
@@ -427,6 +504,48 @@ export function buildBackfillTriggerState({
     runButtonLabel: phase === "running" ? "Running..." : "Run backfill",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result })
+  };
+}
+
+export function buildBackfillResultCardState(
+  result: BackfillTriggerResult,
+  kind: "preview" | "result"
+): BackfillResultCardState {
+  const providerText = formatBackfillValue(result.provider, "Provider not reported");
+  const symbolsText = result.symbols.length > 0 ? result.symbols.join(", ") : "No symbols reported";
+  const barsText = result.barsWritten.toLocaleString();
+  const rangeText = formatBackfillRange(result.from, result.to);
+  const timingText = formatBackfillTiming(result.startedUtc, result.completedUtc);
+  const tone = resolveBackfillResultTone(result, kind);
+  const statusLabel = resolveBackfillResultStatusLabel(result, kind);
+  const title = kind === "preview"
+    ? `Preview ready — ${providerText}`
+    : result.success
+      ? `Backfill complete — ${providerText}`
+      : `Backfill failed — ${providerText}`;
+  const rows = [
+    { id: "provider", label: "Provider", value: providerText },
+    { id: "symbols", label: "Symbols", value: symbolsText },
+    { id: "range", label: "Range", value: rangeText },
+    { id: "bars", label: "Bars", value: barsText },
+    { id: "timing", label: "Timing", value: timingText }
+  ];
+
+  return {
+    title,
+    statusLabel,
+    tone,
+    rows,
+    errorText: result.error,
+    ariaLabel: [
+      title,
+      `Status ${statusLabel}`,
+      `Symbols ${symbolsText}`,
+      `Bars ${barsText}`,
+      `Range ${rangeText}`,
+      `Timing ${timingText}`,
+      result.error ? `Error ${result.error}` : null
+    ].filter(Boolean).join(". ")
   };
 }
 
@@ -488,6 +607,72 @@ function isValidDateInput(value: string): boolean {
 function formatProviderValue(value: string | null | undefined, fallback: string): string {
   const trimmed = value?.trim();
   return trimmed ? trimmed : fallback;
+}
+
+function formatBackfillValue(value: string | null | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
+}
+
+function formatBackfillRange(from: string | null, to: string | null): string {
+  const fromText = formatBackfillValue(from, "");
+  const toText = formatBackfillValue(to, "");
+
+  if (fromText && toText) {
+    return `${fromText} to ${toText}`;
+  }
+
+  if (fromText) {
+    return `From ${fromText}`;
+  }
+
+  if (toText) {
+    return `Through ${toText}`;
+  }
+
+  return "Full available history";
+}
+
+function formatBackfillTiming(startedUtc: string, completedUtc: string): string {
+  const started = new Date(startedUtc);
+  const completed = new Date(completedUtc);
+
+  if (Number.isNaN(started.getTime()) || Number.isNaN(completed.getTime())) {
+    return "Timing unavailable";
+  }
+
+  const elapsedSeconds = Math.max(0, Math.round((completed.getTime() - started.getTime()) / 1000));
+  return `${formatUtcMinute(started)} · ${elapsedSeconds}s elapsed`;
+}
+
+function formatUtcMinute(date: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = months[date.getUTCMonth()];
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const year = date.getUTCFullYear();
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+
+  return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
+}
+
+function resolveBackfillResultTone(
+  result: BackfillTriggerResult,
+  kind: "preview" | "result"
+): BackfillResultCardTone {
+  if (!result.success || result.error) {
+    return "danger";
+  }
+
+  return kind === "preview" ? "warning" : "success";
+}
+
+function resolveBackfillResultStatusLabel(result: BackfillTriggerResult, kind: "preview" | "result"): string {
+  if (!result.success || result.error) {
+    return "Failed";
+  }
+
+  return kind === "preview" ? "Preview only" : "Written";
 }
 
 function buildBackfillStatusAnnouncement({

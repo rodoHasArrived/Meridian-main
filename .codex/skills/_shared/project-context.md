@@ -9,7 +9,7 @@ repeating the same facts in every `SKILL.md`.
 
 ## Platform Snapshot
 
-- Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery.
+- Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one cohesive operator

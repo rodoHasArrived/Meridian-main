@@ -3,12 +3,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type { ResearchWorkspaceResponse } from "@/types";
 
 interface ResearchScreenProps {
   data: ResearchWorkspaceResponse | null;
 }
+
+const comparisonValueToneClass = {
+  success: "text-success",
+  danger: "text-danger",
+  muted: "text-muted-foreground"
+} as const;
 
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
@@ -119,27 +126,41 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         <Card>
           <CardHeader>
             <CardTitle>Run comparison</CardTitle>
-            <CardDescription>Shared comparison rows returned by the workstation API.</CardDescription>
+            <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
+              <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run comparison evidence">
                 <caption className="sr-only">{vm.comparisonTable.caption}</caption>
                 <thead className="bg-secondary/30">
-                  <tr>{["Strategy", "Mode", "Status", "Sharpe", "Fills"].map((column) => <th key={column} className="px-3 py-2">{column}</th>)}</tr>
+                  <tr>
+                    {["Strategy", "Mode", "Status", "Net P&L", "Return", "Drawdown", "Sharpe", "Fills", "Evidence"].map((column) => (
+                      <th key={column} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {column}
+                      </th>
+                    ))}
+                  </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/50">
                   {vm.comparisonTable.hasRows ? vm.comparisonTable.rows.map((row) => (
-                    <tr key={row.runId}>
-                      <td className="px-3 py-2">{row.strategyName}</td>
-                      <td className="px-3 py-2">{row.modeText}</td>
-                      <td className="px-3 py-2">{row.statusText}</td>
+                    <tr key={row.runId} aria-label={row.ariaLabel} className="align-top">
+                      <td className="px-3 py-2">
+                        <div className="font-semibold">{row.strategyName}</div>
+                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.promotionStateText}</div>
+                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.equityText}</div>
+                      </td>
+                      <td className="px-3 py-2"><Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge></td>
+                      <td className="px-3 py-2"><Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge></td>
+                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.netPnlTone])}>{row.netPnlText}</td>
+                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.totalReturnTone])}>{row.totalReturnText}</td>
+                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.maxDrawdownTone])}>{row.maxDrawdownText}</td>
                       <td className="px-3 py-2 font-mono">{row.sharpeRatioText}</td>
                       <td className="px-3 py-2 font-mono">{row.fillCountText}</td>
+                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.evidenceText}</td>
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                      <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
                         {vm.comparisonTable.emptyText}
                       </td>
                     </tr>

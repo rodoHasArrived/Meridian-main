@@ -1,6 +1,7 @@
 import { BookCheck, Landmark, Search, ShieldCheck, WalletCards } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ import {
   buildReconciliationNarrative,
   resolveGovernanceWorkstream,
   useGovernanceReconciliationViewModel,
+  useGovernanceReportingViewModel,
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
@@ -50,7 +52,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const workspace = workspaceForPath(pathname);
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
   const selectedReconciliation = reconciliation.selectedReconciliation;
+  const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const identity = securityMaster.identityView;
 
   if (!data) {
     return (
@@ -276,26 +280,98 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Landmark className="h-4 w-4 text-primary" />
-              Reporting profiles
-            </CardTitle>
-            <CardDescription>{data.reporting.summary}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {data.reporting.profiles.slice(0, 4).map((profile) => (
-              <div key={profile.id} className="rounded-xl border border-border/70 bg-secondary/30 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="font-semibold">{profile.name}</div>
-                  <div className="font-mono text-xs uppercase tracking-[0.16em] text-primary">{profile.format}</div>
-                </div>
-                <div className="mt-2 text-sm text-muted-foreground">{profile.description}</div>
-                <div className="mt-3 flex items-center justify-between gap-4 text-sm">
-                  <span className="text-muted-foreground">Target</span>
-                  <span className="font-mono">{profile.targetTool}</span>
-                </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Landmark className="h-4 w-4 text-primary" />
+                  {reporting.title}
+                </CardTitle>
+                <CardDescription className="mt-2">{reporting.description}</CardDescription>
               </div>
-            ))}
+              <span className="w-fit rounded-sm border border-primary/35 bg-primary/10 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
+                {reporting.countLabel}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="font-medium uppercase tracking-[0.14em] text-muted-foreground">{reporting.listLabel}</span>
+                <span className="font-mono text-muted-foreground">{reporting.visibleCountLabel}</span>
+              </div>
+              <div role="list" aria-label={reporting.listLabel} className="space-y-2">
+                {reporting.hasRows ? reporting.rows.map((profile) => (
+                  <div key={profile.id} role="listitem">
+                    <button
+                      type="button"
+                      aria-pressed={profile.isSelected}
+                      aria-controls={reporting.detailId}
+                      aria-label={profile.selectAriaLabel}
+                      onClick={() => reporting.selectProfile(profile.id)}
+                      className={cn(
+                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                        profile.isSelected
+                          ? "border-primary/45 bg-primary/10"
+                          : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-foreground">{profile.name}</div>
+                          <div className="mt-1 truncate font-mono text-xs text-muted-foreground">{profile.targetLabel}</div>
+                        </div>
+                        <span className="shrink-0 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
+                          {profile.formatLabel}
+                        </span>
+                      </div>
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{profile.description}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {profile.badges.map((badge) => (
+                          <span key={`${profile.id}-${badge.label}`} className={reportingBadgeClass(badge.tone)}>
+                            {badge.label}
+                          </span>
+                        ))}
+                      </div>
+                    </button>
+                  </div>
+                )) : (
+                  <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                    {reporting.emptyText}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <aside
+              id={reporting.detailId}
+              aria-live="polite"
+              data-testid="reporting-profile-detail"
+              className="min-w-0 overflow-hidden rounded-lg border border-border/70 bg-background/35 p-4"
+            >
+              <div className="eyebrow-label">{reporting.statusTitle}</div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{reporting.statusDetail}</p>
+              <p className="mt-2 font-mono text-xs text-muted-foreground">{reporting.nextAction}</p>
+              {reporting.selectedProfile ? (
+                <div id={reporting.selectedProfile.id} className="mt-4 border-t border-border/70 pt-4">
+                  <div className="break-words font-semibold text-foreground">{reporting.selectedProfile.title}</div>
+                  <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{reporting.selectedProfile.subtitle}</div>
+                  <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">{reporting.selectedProfile.description}</p>
+                  <dl className="mt-4 grid gap-2">
+                    {reporting.selectedProfile.fields.map((field) => (
+                      <div key={field.label} className="grid min-w-0 grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
+                        <dt className="min-w-0 text-xs text-muted-foreground">{field.label}</dt>
+                        <dd className={cn(
+                          "min-w-0 break-words text-right font-mono text-xs text-foreground",
+                          field.tone === "success" ? "text-success" : field.tone === "warning" ? "text-warning" : field.tone === "muted" ? "text-muted-foreground" : ""
+                        )}>
+                          {field.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ) : null}
+            </aside>
           </CardContent>
         </Card>
       </section>
@@ -401,56 +477,88 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   {securityMaster.identityErrorText}
                 </div>
               )}
-              {securityMaster.identity && (
-                <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 p-4">
-                  <div>
-                    <h4 className="font-semibold text-foreground">Identity drill-in · {securityMaster.identity.displayName}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {securityMaster.identity.securityId} · v{securityMaster.identity.version} · {securityMaster.identity.assetClass}
-                    </p>
-                  </div>
-
-                  <div>
-                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Identifiers</div>
-                    <div className="overflow-x-auto rounded-lg border border-border/60">
-                      <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-                        <thead className="bg-secondary/30">
-                          <tr>{["Kind", "Value", "Provider", "Primary", "Valid"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/40">
-                          {securityMaster.identity.identifiers.map((identifier) => (
-                            <tr key={`${identifier.kind}-${identifier.value}`}>
-                              <td className="px-3 py-2 font-mono">{identifier.kind}</td>
-                              <td className="px-3 py-2 font-mono">{identifier.value}</td>
-                              <td className="px-3 py-2">{identifier.provider ?? "—"}</td>
-                              <td className="px-3 py-2">{identifier.isPrimary ? "Yes" : "No"}</td>
-                              <td className="px-3 py-2 font-mono">{new Date(identifier.validFrom).toLocaleDateString()}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+              {identity && (
+                <div
+                  role="region"
+                  aria-label={identity.ariaLabel}
+                  className="space-y-4 rounded-lg border border-border/70 bg-secondary/20 p-4"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h4 className="font-semibold text-foreground">{identity.title}</h4>
+                      <p className="mt-1 font-mono text-xs text-muted-foreground">{identity.subtitle}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{identity.description}</p>
                     </div>
+                    <Badge variant={identity.statusBadgeVariant} dot>{identity.statusLabel}</Badge>
                   </div>
 
+                  <dl className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {identity.summaryFields.map((field) => (
+                      <div key={field.label} className="rounded-md border border-border/60 bg-background/40 px-3 py-2">
+                        <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                        <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+
                   <div>
-                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Aliases</div>
-                    {securityMaster.identity.aliases.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No aliases found.</p>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.identifiersTitle}</div>
+                    {identity.identifiers.length === 0 ? (
+                      <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                        {identity.identifierEmptyText}
+                      </p>
                     ) : (
                       <div className="overflow-x-auto rounded-lg border border-border/60">
-                        <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+                        <table aria-label={identity.identifiersTableLabel} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+                          <caption className="sr-only">{identity.identifiersTableLabel}</caption>
                           <thead className="bg-secondary/30">
-                            <tr>{["Kind", "Alias", "Provider", "Scope", "Enabled", "Valid From"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
+                            <tr>{["Kind", "Value", "Provider", "State", "Valid range"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
                           </thead>
                           <tbody className="divide-y divide-border/40">
-                            {securityMaster.identity.aliases.map((alias) => (
-                              <tr key={alias.aliasId}>
+                            {identity.identifiers.map((identifier) => (
+                              <tr key={identifier.rowId} aria-label={identifier.ariaLabel}>
+                                <td className="px-3 py-2 font-mono">{identifier.kind}</td>
+                                <td className="px-3 py-2 font-mono text-foreground">{identifier.value}</td>
+                                <td className="px-3 py-2">{identifier.providerLabel}</td>
+                                <td className="px-3 py-2">
+                                  <Badge variant={identifier.primaryBadgeVariant}>{identifier.primaryLabel}</Badge>
+                                </td>
+                                <td className="px-3 py-2 font-mono text-muted-foreground">{identifier.validRangeLabel}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.aliasesTitle}</div>
+                    {identity.aliases.length === 0 ? (
+                      <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                        {identity.aliasEmptyText}
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto rounded-lg border border-border/60">
+                        <table aria-label={identity.aliasesTableLabel} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+                          <caption className="sr-only">{identity.aliasesTableLabel}</caption>
+                          <thead className="bg-secondary/30">
+                            <tr>{["Kind", "Alias", "Provider", "Scope", "State", "Valid range"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/40">
+                            {identity.aliases.map((alias) => (
+                              <tr key={alias.rowId} aria-label={alias.ariaLabel}>
                                 <td className="px-3 py-2 font-mono">{alias.aliasKind}</td>
-                                <td className="px-3 py-2 font-mono">{alias.aliasValue}</td>
-                                <td className="px-3 py-2">{alias.provider ?? "—"}</td>
+                                <td className="px-3 py-2">
+                                  <div className="font-mono text-foreground">{alias.aliasValue}</div>
+                                  <div className="mt-1 text-xs text-muted-foreground">{alias.reasonText}</div>
+                                </td>
+                                <td className="px-3 py-2">{alias.providerLabel}</td>
                                 <td className="px-3 py-2">{alias.scope}</td>
-                                <td className="px-3 py-2">{alias.isEnabled ? "Yes" : "No"}</td>
-                                <td className="px-3 py-2 font-mono">{new Date(alias.validFrom).toLocaleDateString()}</td>
+                                <td className="px-3 py-2">
+                                  <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge>
+                                </td>
+                                <td className="px-3 py-2 font-mono text-muted-foreground">{alias.validRangeLabel}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -648,6 +756,16 @@ function GovernanceValue({ label, value, tone }: { label: string; value: string;
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-50", tone)}>{value}</span>
     </div>
+  );
+}
+
+function reportingBadgeClass(tone: "primary" | "success" | "warning" | "muted") {
+  return cn(
+    "rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]",
+    tone === "primary" ? "border-primary/35 bg-primary/10 text-primary" : "",
+    tone === "success" ? "border-success/35 bg-success/10 text-success" : "",
+    tone === "warning" ? "border-warning/35 bg-warning/10 text-warning" : "",
+    tone === "muted" ? "border-border/70 bg-secondary text-muted-foreground" : ""
   );
 }
 

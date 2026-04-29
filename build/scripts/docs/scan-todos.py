@@ -33,6 +33,9 @@ SKIP_DIRS = {
     "output",
     "publish",
 }
+SKIP_FILE_NAMES = {
+    "appsettings.json",
+}
 # Files/dirs whose content is meta (they process or report TODOs rather than contain them).
 # Scanning them produces thousands of self-referential false positives.
 SKIP_PATH_PREFIXES = (
@@ -98,6 +101,8 @@ def iter_files(root: Path) -> Iterable[Path]:
         ]
 
         for filename in filenames:
+            if filename in SKIP_FILE_NAMES:
+                continue
             path = current / filename
             if path.suffix.lower() not in TEXT_EXTENSIONS:
                 continue
@@ -174,7 +179,7 @@ def write_markdown(path: Path, todos: list[TodoItem]) -> None:
         f"Total items: **{len(todos)}**",
         "",
         "| File | Line | Tag | Linked Issue | Text |",
-        "|---|---:|---|:---:|---|",
+        "| --- | ---: | --- | :---: | --- |",
     ]
     for item in todos:
         safe_text = item.text.replace("|", "\\|")

@@ -153,9 +153,14 @@ export function OperatorReadinessConsole({
         <CardHeader>
           <div className="eyebrow-label">Operator Inbox</div>
           <CardTitle>Review work items</CardTitle>
-          <CardDescription>Warning and critical items from the shared operator-inbox contract.</CardDescription>
+          <CardDescription>{vm.workItemsSummary}</CardDescription>
         </CardHeader>
         <CardContent>
+          {vm.workItemsOverflowText ? (
+            <p role="status" className="mb-3 rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+              {vm.workItemsOverflowText}
+            </p>
+          ) : null}
           {vm.workItems.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {vm.workItems.map((item) => <ReadinessRow key={item.id} row={item} />)}
@@ -206,6 +211,15 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
         <Badge variant={levelBadge[row.level]}>{row.value}</Badge>
       </div>
       <p className="mt-2 text-xs leading-5 text-foreground/80">{row.detail}</p>
+      {row.action ? (
+        <div className="mt-3">
+          <Button asChild variant={row.action.variant} size="sm">
+            <Link to={row.action.route} aria-label={row.action.ariaLabel}>
+              {row.action.label}
+            </Link>
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

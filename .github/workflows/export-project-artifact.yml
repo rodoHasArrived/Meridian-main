@@ -45,13 +45,13 @@ jobs:
         if: inputs.archive_format == 'tar.gz'
         shell: bash
         run: |
-          tar --exclude='.git' -czf "${{ steps.metadata.outputs.base_name }}.tar.gz" .
+          git archive --format=tar.gz --output="${{ steps.metadata.outputs.base_name }}.tar.gz" "$GITHUB_SHA"
 
       - name: Create zip archive
         if: inputs.archive_format == 'zip'
         shell: bash
         run: |
-          zip -r "${{ steps.metadata.outputs.base_name }}.zip" . -x '.git/*'
+          git archive --format=zip --output="${{ steps.metadata.outputs.base_name }}.zip" "$GITHUB_SHA"
 
       - name: Upload exported project artifact
         uses: actions/upload-artifact@v7

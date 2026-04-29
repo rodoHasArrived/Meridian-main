@@ -4,7 +4,8 @@ This file is intentionally short. Keep it focused on **actionable, high-signal i
 
 ## What Meridian Is
 
-Meridian is a .NET 9 trading and fund-operations platform with:
+Meridian is a .NET 10 trading and fund-operations platform with:
+
 - market data ingestion (streaming + historical),
 - strategy/backtesting workflows,
 - execution and risk controls,
@@ -74,9 +75,11 @@ Repo-local skills are under `.codex/skills/`. Use the skill that best matches th
 ## Keep This File Lean
 
 When updating this file:
+
 - remove stale inventory/checklist bloat,
 - avoid duplicating deep architecture docs,
 - keep only evergreen guidance that accelerates task execution.
+
 ## Repository Structure
 
 ```text

@@ -4,9 +4,9 @@ author: 'Meridian'
 
 inputs:
   dotnet-version:
-    description: '.NET SDK version pattern (e.g. 9.0.x). Uses pre-installed SDK when available.'
+    description: '.NET SDK version pattern (e.g. 10.0.x). Uses pre-installed SDK when available.'
     required: false
-    default: '9.0.x'
+    default: '10.0.x'
   cache-suffix:
     description: 'Optional suffix for cache key to isolate caches between workflows'
     required: false
@@ -27,7 +27,7 @@ runs:
         set -euo pipefail
         requested_version="${{ inputs.dotnet-version }}"
 
-        # Convert patterns like 9.0.x to a prefix match (9.0.)
+        # Convert patterns like 10.0.x to a prefix match (10.0.)
         if [[ "$requested_version" == *".x" ]]; then
           match_target="${requested_version%.x}."
         else

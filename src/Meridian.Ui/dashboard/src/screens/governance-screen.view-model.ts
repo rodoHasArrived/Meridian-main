@@ -10,6 +10,8 @@ import {
   searchSecurities
 } from "@/lib/api";
 import type {
+  GovernanceReportingProfile,
+  GovernanceReportingSummary,
   GovernanceWorkspaceResponse,
   LedgerTrialBalanceLine,
   ReconciliationBreakQueueItem,
@@ -17,6 +19,8 @@ import type {
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
   SecurityIdentityDrillIn,
+  SecurityAliasEntry,
+  SecurityIdentifierEntry,
   SecurityMasterConflict,
   SecurityMasterEntry
 } from "@/types";
@@ -46,6 +50,49 @@ export interface SecuritySearchState {
   searchStatusText: string | null;
   searchErrorText: string | null;
   statusAnnouncement: string;
+}
+
+export interface SecurityIdentitySummaryFieldViewModel {
+  label: string;
+  value: string;
+}
+
+export interface SecurityIdentityIdentifierRowViewModel extends SecurityIdentifierEntry {
+  rowId: string;
+  providerLabel: string;
+  primaryLabel: string;
+  primaryBadgeVariant: "success" | "outline";
+  validRangeLabel: string;
+  ariaLabel: string;
+}
+
+export interface SecurityIdentityAliasRowViewModel extends SecurityAliasEntry {
+  rowId: string;
+  providerLabel: string;
+  enabledLabel: string;
+  enabledBadgeVariant: "success" | "warning";
+  validRangeLabel: string;
+  createdLabel: string;
+  reasonText: string;
+  ariaLabel: string;
+}
+
+export interface SecurityIdentityDrillInViewState {
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline";
+  summaryFields: SecurityIdentitySummaryFieldViewModel[];
+  identifiersTitle: string;
+  identifiersTableLabel: string;
+  identifiers: SecurityIdentityIdentifierRowViewModel[];
+  identifierEmptyText: string;
+  aliasesTitle: string;
+  aliasesTableLabel: string;
+  aliases: SecurityIdentityAliasRowViewModel[];
+  aliasEmptyText: string;
 }
 
 export interface SecurityConflictActionViewModel {
@@ -98,6 +145,52 @@ export interface ReconciliationBreakQueueState {
   statusAnnouncement: string;
 }
 
+export interface ReportingProfileBadgeViewModel {
+  label: string;
+  tone: "primary" | "success" | "warning" | "muted";
+}
+
+export interface ReportingProfileRowViewModel extends GovernanceReportingProfile {
+  formatLabel: string;
+  targetLabel: string;
+  recommendationLabel: string | null;
+  badges: ReportingProfileBadgeViewModel[];
+  isSelected: boolean;
+  selectAriaLabel: string;
+  detailId: string;
+}
+
+export interface ReportingProfileDetailField {
+  label: string;
+  value: string;
+  tone?: "success" | "warning" | "muted";
+}
+
+export interface ReportingProfileDetailViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  fields: ReportingProfileDetailField[];
+}
+
+export interface GovernanceReportingViewState {
+  title: string;
+  description: string;
+  countLabel: string;
+  visibleCountLabel: string;
+  targetSummary: string;
+  listLabel: string;
+  detailId: string;
+  rows: ReportingProfileRowViewModel[];
+  hasRows: boolean;
+  emptyText: string;
+  selectedProfile: ReportingProfileDetailViewModel | null;
+  statusTitle: string;
+  statusDetail: string;
+  nextAction: string;
+}
+
 const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
   getIdentity: (securityId) => getSecurityIdentity(securityId),
@@ -111,6 +204,22 @@ const defaultGovernanceReconciliationServices: GovernanceReconciliationServices 
   resolveBreak: (request) => resolveReconciliationBreak(request),
   getTrialBalance: (runId) => getRunTrialBalance(runId)
 };
+
+export function useGovernanceReportingViewModel(
+  reporting: GovernanceReportingSummary | null
+) {
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const viewState = useMemo(
+    () => buildGovernanceReportingViewState(reporting, selectedProfileId),
+    [reporting, selectedProfileId]
+  );
+  const selectProfile = useCallback((profileId: string) => setSelectedProfileId(profileId), []);
+
+  return {
+    ...viewState,
+    selectProfile
+  };
+}
 
 export function useSecurityMasterViewModel(
   active: boolean,
@@ -265,6 +374,10 @@ export function useSecurityMasterViewModel(
     () => buildSecurityConflictRows(conflicts, conflictResolvingId),
     [conflictResolvingId, conflicts]
   );
+  const identityView = useMemo(
+    () => buildSecurityIdentityDrillInState(identity),
+    [identity]
+  );
   const openConflictCount = countOpenSecurityConflicts(conflicts);
 
   return {
@@ -275,6 +388,7 @@ export function useSecurityMasterViewModel(
     selectedSecurityId,
     selectSecurity,
     identity,
+    identityView,
     identityLoading,
     identityErrorText: identityError,
     conflicts,
@@ -543,6 +657,41 @@ export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] |
   return conflicts?.filter((conflict) => conflict.status === "Open").length ?? 0;
 }
 
+export function buildSecurityIdentityDrillInState(
+  identity: SecurityIdentityDrillIn | null
+): SecurityIdentityDrillInViewState | null {
+  if (!identity) {
+    return null;
+  }
+
+  const effectiveRange = formatSecurityDateRange(identity.effectiveFrom, identity.effectiveTo);
+  const identifiers = identity.identifiers.map(buildSecurityIdentityIdentifierRow);
+  const aliases = identity.aliases.map(buildSecurityIdentityAliasRow);
+
+  return {
+    title: `Identity drill-in · ${identity.displayName}`,
+    subtitle: `${identity.securityId} · v${identity.version} · ${identity.assetClass || "—"}`,
+    description: `${formatCount(identifiers.length, "identifier")} · ${formatCount(aliases.length, "alias")} · effective ${effectiveRange}`,
+    ariaLabel: `Security identity detail for ${identity.displayName}`,
+    statusLabel: identity.status || "Unknown",
+    statusBadgeVariant: statusBadgeVariantForSecurityIdentity(identity.status),
+    summaryFields: [
+      { label: "Security ID", value: identity.securityId },
+      { label: "Version", value: `v${identity.version}` },
+      { label: "Asset class", value: identity.assetClass || "—" },
+      { label: "Effective", value: effectiveRange }
+    ],
+    identifiersTitle: "Identifiers",
+    identifiersTableLabel: `Identifiers for ${identity.displayName}`,
+    identifiers,
+    identifierEmptyText: "No identifiers found for this security.",
+    aliasesTitle: "Aliases",
+    aliasesTableLabel: `Aliases for ${identity.displayName}`,
+    aliases,
+    aliasEmptyText: "No aliases found for this security."
+  };
+}
+
 export function buildSecurityConflictRows(
   conflicts: SecurityMasterConflict[] | null,
   resolvingConflictId: string | null
@@ -666,6 +815,109 @@ export function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["
   return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";
 }
 
+export function buildGovernanceReportingViewState(
+  reporting: GovernanceReportingSummary | null,
+  selectedProfileId: string | null
+): GovernanceReportingViewState {
+  const profileCount = reporting?.profileCount ?? 0;
+  const profiles = reporting?.profiles ?? [];
+  const visibleProfiles = profiles.slice(0, 4);
+  const recommendedProfiles = new Set((reporting?.recommendedProfiles ?? []).map((value) => value.toLowerCase()));
+  const selectedId = selectedProfileId && visibleProfiles.some((profile) => profile.id === selectedProfileId)
+    ? selectedProfileId
+    : visibleProfiles[0]?.id ?? null;
+  const rows = visibleProfiles.map((profile) => buildReportingProfileRow(profile, recommendedProfiles, profile.id === selectedId));
+  const selectedRow = rows.find((profile) => profile.id === selectedId) ?? null;
+  const selectedProfile = selectedRow ? buildReportingProfileDetail(selectedRow) : null;
+  const targetSummary = formatReportPackTargets(reporting?.reportPackTargets ?? []);
+  const hiddenProfileCount = Math.max(profileCount - rows.length, 0);
+  const visibleCountLabel = hiddenProfileCount > 0
+    ? `Showing ${rows.length} of ${profileCount} profiles.`
+    : `${formatCount(rows.length, "profile")} loaded.`;
+
+  return {
+    title: "Reporting profiles",
+    description: reporting?.summary ?? "Reporting profile metadata has not loaded yet.",
+    countLabel: formatCount(profileCount, "profile"),
+    visibleCountLabel,
+    targetSummary,
+    listLabel: "Reporting profile selector",
+    detailId: "reporting-profile-detail",
+    rows,
+    hasRows: rows.length > 0,
+    emptyText: "No reporting profiles available. Sync report-pack metadata before export review.",
+    selectedProfile,
+    statusTitle: "Report packet posture",
+    statusDetail: profileCount > 0
+      ? `${formatCount(profileCount, "profile")} configured. ${targetSummary}`
+      : "No reporting profiles are configured for packet generation.",
+    nextAction: selectedRow
+      ? `Inspect ${selectedRow.name} before packet generation.`
+      : "Sync reporting profile metadata before packet generation."
+  };
+}
+
+function buildReportingProfileRow(
+  profile: GovernanceReportingProfile,
+  recommendedProfiles: Set<string>,
+  isSelected: boolean
+): ReportingProfileRowViewModel {
+  const isRecommended = recommendedProfiles.has(profile.id.toLowerCase()) || recommendedProfiles.has(profile.name.toLowerCase());
+  const badges: ReportingProfileBadgeViewModel[] = [
+    { label: profile.dataDictionary ? "Data dictionary" : "Dictionary missing", tone: profile.dataDictionary ? "success" : "warning" },
+    { label: profile.loaderScript ? "Loader script" : "No loader", tone: profile.loaderScript ? "primary" : "muted" }
+  ];
+
+  if (isRecommended) {
+    badges.unshift({ label: "Recommended", tone: "primary" });
+  }
+
+  return {
+    ...profile,
+    formatLabel: profile.format.toUpperCase(),
+    targetLabel: `Target - ${profile.targetTool}`,
+    recommendationLabel: isRecommended ? "Recommended for current packet flow" : null,
+    badges,
+    isSelected,
+    selectAriaLabel: `Inspect reporting profile ${profile.name} for ${profile.targetTool} ${profile.format}`,
+    detailId: `reporting-profile-${toDomId(profile.id)}`
+  };
+}
+
+function buildReportingProfileDetail(profile: ReportingProfileRowViewModel): ReportingProfileDetailViewModel {
+  return {
+    id: profile.detailId,
+    title: `Selected reporting profile - ${profile.name}`,
+    subtitle: `${profile.formatLabel} - ${profile.targetTool}`,
+    description: profile.description,
+    fields: [
+      { label: "Profile ID", value: profile.id },
+      { label: "Format", value: profile.formatLabel },
+      { label: "Target", value: profile.targetTool },
+      { label: "Data dictionary", value: profile.dataDictionary ? "Included" : "Missing", tone: profile.dataDictionary ? "success" : "warning" },
+      { label: "Loader script", value: profile.loaderScript ? "Available" : "Not configured", tone: profile.loaderScript ? "success" : "muted" },
+      { label: "Recommendation", value: profile.recommendationLabel ?? "Not recommended for current packet flow", tone: profile.recommendationLabel ? "success" : "muted" }
+    ]
+  };
+}
+
+function formatReportPackTargets(targets: string[]): string {
+  if (targets.length === 0) {
+    return "No report-pack targets configured.";
+  }
+
+  return `Targets: ${targets.join(", ")}.`;
+}
+
+function formatCount(count: number, singular: string): string {
+  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+}
+
+function toDomId(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "profile";
+}
+
 function buildSecurityConflictAction(
   conflict: SecurityMasterConflict,
   resolution: SecurityConflictResolution,
@@ -691,13 +943,81 @@ function buildSecurityConflictAction(
   };
 }
 
+function buildSecurityIdentityIdentifierRow(
+  identifier: SecurityIdentifierEntry
+): SecurityIdentityIdentifierRowViewModel {
+  const providerLabel = valueOrDash(identifier.provider);
+  const primaryLabel = identifier.isPrimary ? "Primary" : "Secondary";
+  const validRangeLabel = formatSecurityDateRange(identifier.validFrom, identifier.validTo);
+
+  return {
+    ...identifier,
+    rowId: `identifier-${toDomId(`${identifier.kind}-${identifier.value}`)}`,
+    providerLabel,
+    primaryLabel,
+    primaryBadgeVariant: identifier.isPrimary ? "success" : "outline",
+    validRangeLabel,
+    ariaLabel: `${identifier.kind} ${identifier.value}, ${primaryLabel}, provider ${providerLabel}, valid ${validRangeLabel}`
+  };
+}
+
+function buildSecurityIdentityAliasRow(alias: SecurityAliasEntry): SecurityIdentityAliasRowViewModel {
+  const providerLabel = valueOrDash(alias.provider);
+  const enabledLabel = alias.isEnabled ? "Enabled" : "Disabled";
+  const validRangeLabel = formatSecurityDateRange(alias.validFrom, alias.validTo);
+
+  return {
+    ...alias,
+    rowId: `alias-${toDomId(alias.aliasId)}`,
+    providerLabel,
+    enabledLabel,
+    enabledBadgeVariant: alias.isEnabled ? "success" : "warning",
+    validRangeLabel,
+    createdLabel: formatSecurityDate(alias.createdAt),
+    reasonText: alias.reason?.trim() || "No alias reason recorded.",
+    ariaLabel: `${alias.aliasKind} ${alias.aliasValue}, ${enabledLabel}, scope ${alias.scope}, provider ${providerLabel}, valid ${validRangeLabel}`
+  };
+}
+
+function statusBadgeVariantForSecurityIdentity(
+  status: string | null | undefined
+): SecurityIdentityDrillInViewState["statusBadgeVariant"] {
+  const normalized = status?.trim().toLowerCase();
+  if (normalized === "active") {
+    return "success";
+  }
+
+  if (normalized === "pending" || normalized === "inactive" || normalized === "deactivated") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
 function formatSecurityReferenceValue(value: string): string {
   return value.length > 8 ? `${value.substring(0, 8)}...` : value;
+}
+
+function formatSecurityDate(value: string | null | undefined): string {
+  if (!value) {
+    return "—";
+  }
+
+  const match = /^\d{4}-\d{2}-\d{2}/.exec(value);
+  return match?.[0] ?? value;
+}
+
+function formatSecurityDateRange(from: string | null | undefined, to: string | null | undefined): string {
+  return `${formatSecurityDate(from)} -> ${to ? formatSecurityDate(to) : "active"}`;
 }
 
 function formatConflictDate(value: string): string {
   const match = /^\d{4}-\d{2}-\d{2}/.exec(value);
   return match?.[0] ?? value;
+}
+
+function valueOrDash(value: string | null | undefined): string {
+  return value?.trim() || "—";
 }
 
 function buildSecurityStatusAnnouncement({

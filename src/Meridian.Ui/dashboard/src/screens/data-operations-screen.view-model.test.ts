@@ -3,6 +3,7 @@ import {
   buildBackfillSection,
   buildBackfillNarrative,
   buildBackfillRequest,
+  buildBackfillResultCardState,
   buildBackfillTriggerState,
   buildDataOperationsPresentationState,
   buildExportSection,
@@ -147,6 +148,45 @@ describe("data-operations-screen view model", () => {
     expect(running.statusAnnouncement).toBe("Running backfill request.");
   });
 
+  it("derives backfill preview and completion result cards", () => {
+    const previewCard = buildBackfillResultCardState(preview, "preview");
+
+    expect(previewCard.title).toBe("Preview ready — polygon");
+    expect(previewCard.statusLabel).toBe("Preview only");
+    expect(previewCard.tone).toBe("warning");
+    expect(previewCard.rows).toContainEqual({ id: "symbols", label: "Symbols", value: "AAPL, MSFT" });
+    expect(previewCard.rows).toContainEqual({ id: "bars", label: "Bars", value: "1,200" });
+    expect(previewCard.rows).toContainEqual({ id: "range", label: "Range", value: "2024-01-01 to 2024-01-31" });
+    expect(previewCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "Jan 31, 2024 10:00 UTC · 5s elapsed" });
+    expect(previewCard.ariaLabel).toContain("Status Preview only");
+
+    const completedCard = buildBackfillResultCardState(preview, "result");
+
+    expect(completedCard.title).toBe("Backfill complete — polygon");
+    expect(completedCard.statusLabel).toBe("Written");
+    expect(completedCard.tone).toBe("success");
+  });
+
+  it("derives failed backfill result cards with danger tone and error evidence", () => {
+    const failedCard = buildBackfillResultCardState({
+      ...preview,
+      success: false,
+      error: "Provider rejected the requested range.",
+      from: null,
+      to: null,
+      startedUtc: "not-a-date",
+      completedUtc: "not-a-date"
+    }, "result");
+
+    expect(failedCard.title).toBe("Backfill failed — polygon");
+    expect(failedCard.statusLabel).toBe("Failed");
+    expect(failedCard.tone).toBe("danger");
+    expect(failedCard.errorText).toBe("Provider rejected the requested range.");
+    expect(failedCard.rows).toContainEqual({ id: "range", label: "Range", value: "Full available history" });
+    expect(failedCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "Timing unavailable" });
+    expect(failedCard.ariaLabel).toContain("Error Provider rejected the requested range.");
+  });
+
   it("derives provider, backfill, and export section rows with empty guidance", () => {
     const providerSection = buildProviderSection(providers);
     expect(providerSection.hasRows).toBe(true);
@@ -166,8 +206,42 @@ describe("data-operations-screen view model", () => {
     expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
 
     const exportSection = buildExportSection(exports);
-    expect(exportSection.rows[0].summaryText).toBe("research pack - 124k");
+    expect(exportSection.rows[0].summaryText).toBe("research pack · 124k · 4m ago");
+    expect(exportSection.rows[0].statusVariant).toBe("success");
+    expect(exportSection.rows[0].detailFields).toContainEqual({
+      id: "export-id",
+      label: "Export ID",
+      value: "EX-2201"
+    });
+    expect(exportSection.rows[0].actionText).toContain("Attach export");
+    expect(exportSection.rows[0].ariaLabel).toContain("Next action Attach export");
     expect(buildExportSection([]).emptyState.title).toBe("No exports available");
+  });
+
+  it("maps export row status into semantic tones and next actions", () => {
+    const exportSection = buildExportSection([
+      {
+        exportId: "EX-2202",
+        profile: "report-pack",
+        target: "board packet",
+        status: "Running",
+        rows: "42k",
+        updatedAt: "1m ago"
+      },
+      {
+        exportId: "EX-2203",
+        profile: "excel",
+        target: "finance review",
+        status: "Attention",
+        rows: "7k",
+        updatedAt: "9m ago"
+      }
+    ]);
+
+    expect(exportSection.rows[0].statusVariant).toBe("paper");
+    expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before handoff.");
+    expect(exportSection.rows[1].statusVariant).toBe("warning");
+    expect(exportSection.rows[1].actionText).toBe("Review export profile and target before report-pack use.");
   });
 
   it("derives degraded provider trust evidence with explicit fallback copy", () => {

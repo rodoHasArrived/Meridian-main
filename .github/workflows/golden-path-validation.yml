@@ -8,7 +8,15 @@ on:
       - "docs/**/*.md"
       - "Makefile"
       - "build/scripts/install/**"
+      - "build/scripts/docs/dashboard_rendering.py"
+      - "build/scripts/docs/generate-pilot-readiness-dashboard.py"
       - "build/scripts/docs/validate-golden-path.sh"
+      - "src/Meridian.Contracts/Workstation/**"
+      - "src/Meridian.Execution/**"
+      - "src/Meridian.Ledger/**"
+      - "src/Meridian.Strategies/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
       - ".github/workflows/golden-path-validation.yml"
   push:
     branches: ["main"]
@@ -17,7 +25,15 @@ on:
       - "docs/**/*.md"
       - "Makefile"
       - "build/scripts/install/**"
+      - "build/scripts/docs/dashboard_rendering.py"
+      - "build/scripts/docs/generate-pilot-readiness-dashboard.py"
       - "build/scripts/docs/validate-golden-path.sh"
+      - "src/Meridian.Contracts/Workstation/**"
+      - "src/Meridian.Execution/**"
+      - "src/Meridian.Ledger/**"
+      - "src/Meridian.Strategies/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
       - ".github/workflows/golden-path-validation.yml"
   workflow_dispatch:
 
@@ -28,9 +44,16 @@ concurrency:
   group: golden-path-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
 jobs:
   validate:
-    name: Validate installer references
+    name: Validate golden path evidence
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -38,5 +61,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: golden-path
+
       - name: Validate Golden Path installer references
         run: ./build/scripts/docs/validate-golden-path.sh
+
+      - name: Restore pilot acceptance test project
+        run: dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Run pilot acceptance harness
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            --no-restore \
+            --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" \
+            --logger "trx;LogFileName=pilot-acceptance.trx" \
+            --results-directory ./TestResults \
+            --verbosity minimal \
+            /p:EnableWindowsTargeting=true
+
+      - name: Generate pilot readiness evidence dashboard
+        if: always()
+        run: |
+          python3 build/scripts/docs/generate-pilot-readiness-dashboard.py \
+            --output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md \
+            --json-output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json \
+            --summary
+
+      - name: Upload pilot acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pilot-acceptance-evidence
+          path: |
+            artifacts/pilot-acceptance/latest/*
+            TestResults/*
+          if-no-files-found: warn
+          retention-days: 14

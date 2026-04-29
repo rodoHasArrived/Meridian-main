@@ -1,5 +1,6 @@
-import { useEffect, type HTMLAttributes, type ReactNode } from "react";
+import { type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useDialogInteractionViewModel } from "@/components/ui/dialog.view-model";
 
 interface DialogProps {
   open: boolean;
@@ -8,20 +9,7 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
-  useEffect(() => {
-    if (!open || !onOpenChange) {
-      return undefined;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onOpenChange(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [onOpenChange, open]);
+  const vm = useDialogInteractionViewModel({ open, onOpenChange });
 
   if (!open) {
     return null;
@@ -29,24 +17,22 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
   return (
     <div
+      ref={vm.overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onOpenChange?.(false);
-        }
-      }}
+      onMouseDown={vm.handleBackdropMouseDown}
     >
       {children}
     </div>
   );
 }
 
-export function DialogContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function DialogContent({ className, tabIndex = -1, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className={cn("w-full max-w-lg rounded-lg border border-border bg-card p-5 text-card-foreground shadow-workstation", className)}
+      tabIndex={tabIndex}
+      className={cn("w-full max-w-lg rounded-lg border border-border bg-card p-5 text-card-foreground shadow-float backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", className)}
       {...props}
     />
   );

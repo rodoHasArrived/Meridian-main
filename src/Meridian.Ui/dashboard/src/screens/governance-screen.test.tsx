@@ -129,6 +129,48 @@ describe("GovernanceScreen", () => {
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
   });
 
+  it("renders reporting profile detail state and updates selected profile", async () => {
+    const user = userEvent.setup();
+    const reportingData: GovernanceWorkspaceResponse = {
+      ...data,
+      reporting: {
+        ...data.reporting,
+        profileCount: 2,
+        recommendedProfiles: ["board"],
+        reportPackTargets: ["board", "audit"],
+        profiles: [
+          ...data.reporting.profiles,
+          {
+            id: "board",
+            name: "Board packet",
+            targetTool: "Board",
+            format: "Markdown",
+            description: "Owner sign-off packet.",
+            loaderScript: true,
+            dataDictionary: false
+          }
+        ]
+      }
+    };
+
+    await renderGovernanceScreen(reportingData, "/reporting");
+
+    expect(screen.getByText("Report packet posture")).toBeInTheDocument();
+    expect(screen.getByText(/Targets: board, audit\./)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Inspect reporting profile Excel for Excel Xlsx" })).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: "Inspect reporting profile Board packet for Board Markdown" }));
+
+    expect(screen.getByText("Selected reporting profile - Board packet")).toBeInTheDocument();
+    expect(screen.getByText("MARKDOWN - Board")).toBeInTheDocument();
+    expect(screen.getByText("Dictionary missing")).toBeInTheDocument();
+    expect(screen.getAllByText("Loader script").length).toBeGreaterThan(0);
+
+    const detailPanel = screen.getByTestId("reporting-profile-detail");
+    expect(detailPanel).toHaveClass("min-w-0", "overflow-hidden");
+    expect(detailPanel.querySelector("dl > div")).toHaveClass("grid", "min-w-0");
+  });
+
   it("adapts the hero copy for security-master deep links", async () => {
     await renderGovernanceScreen(data, "/accounting/security-master");
 
@@ -213,7 +255,13 @@ describe("GovernanceScreen", () => {
     await user.click(securityRow);
 
     expect(await screen.findByText(/Identity drill-in · Apple Inc\./i)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Identifiers for Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByRole("row", {
+      name: "Ticker AAPL, Primary, provider Bloomberg, valid 2024-01-01 -> active"
+    })).toBeInTheDocument();
     expect(screen.getByText("Aliases")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Aliases for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
     expect(screen.getByText("Collector")).toBeInTheDocument();
   });

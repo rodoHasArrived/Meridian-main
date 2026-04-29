@@ -4,6 +4,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAINTENANCE_SCRIPT = REPO_ROOT / "scripts" / "ai" / "maintenance-full.sh"
+SETUP_SCRIPT = REPO_ROOT / "scripts" / "ai" / "setup-ai-agent.sh"
 FSHARP_TEST_PROJECT = REPO_ROOT / "tests" / "Meridian.FSharp.Tests" / "Meridian.FSharp.Tests.fsproj"
 CENTRAL_PACKAGES = REPO_ROOT / "Directory.Packages.props"
 DOCS_MAKEFILE = REPO_ROOT / "make" / "docs.mk"
@@ -13,6 +14,7 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.script = MAINTENANCE_SCRIPT.read_text(encoding="utf-8")
+        cls.setup_script = SETUP_SCRIPT.read_text(encoding="utf-8")
         cls.fsharp_project = FSHARP_TEST_PROJECT.read_text(encoding="utf-8")
         cls.central_packages = CENTRAL_PACKAGES.read_text(encoding="utf-8")
         cls.docs_makefile_lines = DOCS_MAKEFILE.read_text(encoding="utf-8").splitlines()
@@ -68,6 +70,13 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
         self.assertIn('<PackageVersion Include="xunit.v3" Version="3.2.2" />', self.central_packages)
         self.assertIn('<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />', self.central_packages)
         self.assertIn("<GenerateProgramFile>false</GenerateProgramFile>", self.fsharp_project)
+
+    def test_setup_ai_agent_uses_resolved_dotnet_root_for_testhost_launchers(self) -> None:
+        self.assertIn("resolve_dotnet_root()", self.setup_script)
+        self.assertIn('[[ -n "${DOTNET_ROOT:-}" && -d "$DOTNET_ROOT/host/fxr" ]]', self.setup_script)
+        self.assertIn("for candidate in \"$dotnet_dir\" \"$parent_dir\" \"$HOME/.dotnet\"", self.setup_script)
+        self.assertIn('export DOTNET_ROOT="$dotnet_root"', self.setup_script)
+        self.assertIn('export DOTNET_ROOT_X64="$dotnet_root"', self.setup_script)
 
 
 if __name__ == "__main__":

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildGovernanceReportingViewState,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationNarrative,
   buildSecurityConflictRows,
+  buildSecurityIdentityDrillInState,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveGovernanceWorkstream,
@@ -13,7 +15,8 @@ import type {
   GovernanceWorkspaceResponse,
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
-  SecurityMasterEntry
+  SecurityMasterEntry,
+  SecurityIdentityDrillIn
 } from "@/types";
 
 const reconciliationQueue: GovernanceWorkspaceResponse["reconciliationQueue"] = [
@@ -58,6 +61,42 @@ const securityResult: SecurityMasterEntry = {
     assetFamily: "Equity",
     issuerType: "Corporate"
   }
+};
+
+const securityIdentity: SecurityIdentityDrillIn = {
+  securityId: "sec-1",
+  displayName: "Apple Inc.",
+  assetClass: "Equity",
+  status: "Active",
+  version: 3,
+  effectiveFrom: "2024-01-01T00:00:00Z",
+  effectiveTo: null,
+  identifiers: [
+    {
+      kind: "Ticker",
+      value: "AAPL",
+      isPrimary: true,
+      validFrom: "2024-01-01T00:00:00Z",
+      validTo: null,
+      provider: "Bloomberg"
+    }
+  ],
+  aliases: [
+    {
+      aliasId: "alias-1",
+      securityId: "sec-1",
+      aliasKind: "ProviderSymbol",
+      aliasValue: "AAPL.OQ",
+      provider: null,
+      scope: "Collector",
+      reason: "Market data source mapping",
+      createdBy: "ops.gov",
+      createdAt: "2025-01-01T00:00:00Z",
+      validFrom: "2025-01-01T00:00:00Z",
+      validTo: null,
+      isEnabled: true
+    }
+  ]
 };
 
 const conflicts: SecurityMasterConflict[] = [
@@ -204,6 +243,43 @@ describe("governance-screen view model", () => {
     expect(countOpenSecurityConflicts(null)).toBe(0);
   });
 
+  it("derives Security Master identity drill-in rows and accessible table labels", () => {
+    const state = buildSecurityIdentityDrillInState(securityIdentity);
+
+    expect(state).toMatchObject({
+      title: "Identity drill-in · Apple Inc.",
+      subtitle: "sec-1 · v3 · Equity",
+      description: "1 identifier · 1 alias · effective 2024-01-01 -> active",
+      ariaLabel: "Security identity detail for Apple Inc.",
+      statusLabel: "Active",
+      statusBadgeVariant: "success",
+      identifiersTableLabel: "Identifiers for Apple Inc.",
+      aliasesTableLabel: "Aliases for Apple Inc."
+    });
+    expect(state?.summaryFields).toEqual(expect.arrayContaining([
+      { label: "Security ID", value: "sec-1" },
+      { label: "Effective", value: "2024-01-01 -> active" }
+    ]));
+    expect(state?.identifiers[0]).toMatchObject({
+      rowId: "identifier-ticker-aapl",
+      providerLabel: "Bloomberg",
+      primaryLabel: "Primary",
+      primaryBadgeVariant: "success",
+      validRangeLabel: "2024-01-01 -> active",
+      ariaLabel: "Ticker AAPL, Primary, provider Bloomberg, valid 2024-01-01 -> active"
+    });
+    expect(state?.aliases[0]).toMatchObject({
+      rowId: "alias-alias-1",
+      providerLabel: "—",
+      enabledLabel: "Enabled",
+      enabledBadgeVariant: "success",
+      validRangeLabel: "2025-01-01 -> active",
+      createdLabel: "2025-01-01",
+      reasonText: "Market data source mapping",
+      ariaLabel: "ProviderSymbol AAPL.OQ, Enabled, scope Collector, provider —, valid 2025-01-01 -> active"
+    });
+  });
+
   it("derives provider-specific conflict actions and row accessibility copy", () => {
     const rows = buildSecurityConflictRows(conflicts, "conflict-1");
 
@@ -306,5 +382,65 @@ describe("governance-screen view model", () => {
   it("keeps reconciliation narratives in the view model", () => {
     expect(buildReconciliationNarrative(reconciliationQueue[0])).toContain("Open reconciliation breaks remain");
     expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "Balanced" })).toContain("currently balanced");
+  });
+
+  it("derives reporting profile selector rows and detail state", () => {
+    const state = buildGovernanceReportingViewState({
+      profileCount: 2,
+      recommendedProfiles: ["board"],
+      reportPackTargets: ["board", "audit"],
+      summary: "2 export/reporting profiles are available for governance workflows.",
+      profiles: [
+        {
+          id: "excel",
+          name: "Excel",
+          targetTool: "Excel",
+          format: "Xlsx",
+          description: "Board-ready workbook export.",
+          loaderScript: false,
+          dataDictionary: true
+        },
+        {
+          id: "board",
+          name: "Board packet",
+          targetTool: "Board",
+          format: "Markdown",
+          description: "Owner sign-off packet.",
+          loaderScript: true,
+          dataDictionary: false
+        }
+      ]
+    }, "board");
+
+    expect(state.countLabel).toBe("2 profiles");
+    expect(state.targetSummary).toBe("Targets: board, audit.");
+    expect(state.rows[1]).toMatchObject({
+      id: "board",
+      isSelected: true,
+      formatLabel: "MARKDOWN",
+      targetLabel: "Target - Board",
+      recommendationLabel: "Recommended for current packet flow",
+      selectAriaLabel: "Inspect reporting profile Board packet for Board Markdown"
+    });
+    expect(state.rows[1].badges.map((badge) => badge.label)).toEqual(["Recommended", "Dictionary missing", "Loader script"]);
+    expect(state.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "Data dictionary", value: "Missing", tone: "warning" }),
+      expect.objectContaining({ label: "Loader script", value: "Available", tone: "success" })
+    ]));
+  });
+
+  it("surfaces reporting profile empty state from the view model", () => {
+    const state = buildGovernanceReportingViewState({
+      profileCount: 0,
+      recommendedProfiles: [],
+      reportPackTargets: [],
+      profiles: [],
+      summary: "No profiles loaded."
+    }, null);
+
+    expect(state.hasRows).toBe(false);
+    expect(state.emptyText).toBe("No reporting profiles available. Sync report-pack metadata before export review.");
+    expect(state.statusDetail).toBe("No reporting profiles are configured for packet generation.");
+    expect(state.nextAction).toBe("Sync reporting profile metadata before packet generation.");
   });
 });

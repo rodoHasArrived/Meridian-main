@@ -24,15 +24,33 @@ export interface OverviewWorkspaceLink {
   ariaLabel: string;
 }
 
+export type OverviewActivityTone = "default" | "warning" | "danger";
+export type OverviewActivityBadgeVariant = "outline" | "warning" | "danger";
+
+export interface OverviewActivityRow {
+  id: string;
+  type: SystemEventRecord["type"];
+  typeLabel: string;
+  statusCode: string;
+  badgeVariant: OverviewActivityBadgeVariant;
+  tone: OverviewActivityTone;
+  message: string;
+  source: string;
+  timestampLabel: string;
+  ariaLabel: string;
+}
+
 export interface OverviewStatusState {
   current: SystemOverviewResponse | null;
   metrics: MetricSnapshot[];
   events: SystemEventRecord[];
+  activityRows: OverviewActivityRow[];
   fallbackStats: OverviewFallbackStat[];
   workspaceLinks: OverviewWorkspaceLink[];
   workspaceSummary: string;
   hasMetrics: boolean;
   hasEvents: boolean;
+  activityListLabel: string;
   statusLabel: string;
   providerSummary: string | null;
   storageLabel: string | null;
@@ -59,6 +77,7 @@ export function buildOverviewStatusState({
 }: BuildOverviewStatusStateOptions): OverviewStatusState {
   const metrics = current?.metrics ?? [];
   const events = current?.recentEvents ?? [];
+  const activityRows = buildOverviewActivityRows(events);
   const refreshErrorText = refreshError
     ? `Refresh failed: ${refreshError}. Showing the last known status.`
     : null;
@@ -68,11 +87,13 @@ export function buildOverviewStatusState({
     current,
     metrics,
     events,
+    activityRows,
     fallbackStats: buildFallbackStats(current),
     workspaceLinks: buildOverviewWorkspaceLinks(),
     workspaceSummary: "7 canonical operator routes. Legacy routes redirect to their canonical workspaces.",
     hasMetrics: metrics.length > 0,
-    hasEvents: events.length > 0,
+    hasEvents: activityRows.length > 0,
+    activityListLabel: activityRows.length === 1 ? "1 recent system event" : `${activityRows.length} recent system events`,
     statusLabel: current ? statusLabels[current.systemStatus] : "Connecting to system...",
     providerSummary: current ? `${current.providersOnline} of ${current.providersTotal} providers online` : null,
     storageLabel: current ? storageLabels[current.storageHealth] : null,
@@ -137,6 +158,27 @@ export function buildOverviewWorkspaceLinks(): OverviewWorkspaceLink[] {
   }));
 }
 
+export function buildOverviewActivityRows(events: SystemEventRecord[]): OverviewActivityRow[] {
+  return events.map((event) => {
+    const typeState = activityTypeState[event.type];
+    const source = event.source.trim() || "Unknown source";
+    const timestampLabel = formatTime(event.timestamp);
+
+    return {
+      id: event.id,
+      type: event.type,
+      typeLabel: typeState.typeLabel,
+      statusCode: typeState.statusCode,
+      badgeVariant: typeState.badgeVariant,
+      tone: typeState.tone,
+      message: event.message,
+      source,
+      timestampLabel,
+      ariaLabel: `${typeState.typeLabel} event from ${source} at ${timestampLabel}: ${event.message}`
+    };
+  });
+}
+
 const statusLabels: Record<SystemOverviewResponse["systemStatus"], string> = {
   Healthy: "All Systems Healthy",
   Degraded: "System Degraded",
@@ -147,6 +189,27 @@ const storageLabels: Record<SystemOverviewResponse["storageHealth"], string> = {
   Healthy: "Healthy",
   Warning: "Warning",
   Critical: "Critical"
+};
+
+const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivityRow, "typeLabel" | "statusCode" | "badgeVariant" | "tone">> = {
+  info: {
+    typeLabel: "Info",
+    statusCode: "INFO",
+    badgeVariant: "outline",
+    tone: "default"
+  },
+  warning: {
+    typeLabel: "Warning",
+    statusCode: "OBS",
+    badgeVariant: "warning",
+    tone: "warning"
+  },
+  error: {
+    typeLabel: "Error",
+    statusCode: "ERR",
+    badgeVariant: "danger",
+    tone: "danger"
+  }
 };
 
 function buildFallbackStats(current: SystemOverviewResponse | null): OverviewFallbackStat[] {

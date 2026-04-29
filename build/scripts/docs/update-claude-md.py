@@ -80,7 +80,12 @@ def update_target(markdown: str, replacement_block: str) -> str:
     start, end = bounds
     section_text = "".join(lines[start:end])
     updated_section = replace_first_fenced_block(section_text, replacement_block)
-    return "".join(lines[:start]) + updated_section + "".join(lines[end:])
+    if end < len(lines) and lines[end].startswith("## ") and not updated_section.endswith("\n\n"):
+        updated_section = updated_section.rstrip() + "\n\n"
+    prefix = "".join(lines[:start])
+    if start > 0 and lines[start - 1].strip() and not prefix.endswith("\n\n"):
+        prefix = prefix.rstrip() + "\n\n"
+    return prefix + updated_section + "".join(lines[end:])
 
 
 def main() -> int:

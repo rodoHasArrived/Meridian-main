@@ -36,7 +36,7 @@ jobs:
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
           cache-suffix: maintenance-self-test
 
       - name: Check shell syntax

@@ -24,8 +24,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useOverviewStatusViewModel, type OverviewFallbackStatId } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
+import {
+  useOverviewStatusViewModel,
+  type OverviewActivityRow,
+  type OverviewFallbackStatId
+} from "@/screens/overview-screen.view-model";
+import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 interface OverviewScreenProps {
   data: SystemOverviewResponse | null;
@@ -56,10 +60,22 @@ const storageHealthConfig = {
   Critical: { className: "text-danger" }
 } as const;
 
-const eventTypeConfig = {
-  info: { icon: Activity, className: "text-muted-foreground" },
-  warning: { icon: AlertCircle, className: "text-warning" },
-  error: { icon: XCircle, className: "text-danger" }
+const activityToneConfig = {
+  default: {
+    icon: Activity,
+    iconClassName: "text-muted-foreground",
+    rowClassName: "border-border/55 bg-secondary/20"
+  },
+  warning: {
+    icon: AlertCircle,
+    iconClassName: "text-warning",
+    rowClassName: "border-warning/30 bg-warning/5"
+  },
+  danger: {
+    icon: XCircle,
+    iconClassName: "text-danger",
+    rowClassName: "border-danger/30 bg-danger/5"
+  }
 } as const;
 
 const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: string }> = {
@@ -156,13 +172,13 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         {/* Recent activity */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Activity</CardTitle>
+            <CardTitle className="text-base">Recent activity</CardTitle>
             <CardDescription>Latest system events across all workspaces.</CardDescription>
           </CardHeader>
           <CardContent>
             {vm.hasEvents ? (
-              <ul className="space-y-2">
-                {vm.events.map((event) => (
+              <ul aria-label={vm.activityListLabel} className="space-y-2">
+                {vm.activityRows.map((event) => (
                   <EventRow key={event.id} event={event} />
                 ))}
               </ul>
@@ -273,18 +289,27 @@ function StatCard({ icon: Icon, label, value, tone }: StatCardProps) {
   );
 }
 
-function EventRow({ event }: { event: SystemEventRecord }) {
-  const config = eventTypeConfig[event.type];
+function EventRow({ event }: { event: OverviewActivityRow }) {
+  const config = activityToneConfig[event.tone];
   const Icon = config.icon;
 
   return (
-    <li className="flex items-start gap-2.5 py-1.5 border-b border-border/40 last:border-0">
-      <Icon className={cn("size-3.5 mt-0.5 shrink-0", config.className)} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm leading-snug">{event.message}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {event.source} · {new Date(event.timestamp).toLocaleTimeString()}
-        </p>
+    <li>
+      <div
+        role="group"
+        aria-label={event.ariaLabel}
+        className={cn("flex items-start gap-3 rounded-md border px-3 py-2", config.rowClassName)}
+      >
+        <Icon aria-hidden="true" className={cn("mt-0.5 size-3.5 shrink-0", config.iconClassName)} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={event.badgeVariant} dot>{event.statusCode}</Badge>
+            <span className="font-mono text-[11px] text-muted-foreground">{event.source}</span>
+            <span aria-hidden="true" className="text-muted-foreground/45">·</span>
+            <span className="font-mono text-[11px] text-muted-foreground">{event.timestampLabel}</span>
+          </div>
+          <p className="mt-1 text-sm leading-snug">{event.message}</p>
+        </div>
       </div>
     </li>
   );

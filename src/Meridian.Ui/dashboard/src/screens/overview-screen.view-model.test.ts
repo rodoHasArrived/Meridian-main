@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildOverviewActivityRows,
   buildOverviewStatusState,
   buildOverviewWorkspaceLinks
 } from "@/screens/overview-screen.view-model";
@@ -34,6 +35,7 @@ describe("overview-screen view model", () => {
     expect(state.hasMetrics).toBe(false);
     expect(state.hasEvents).toBe(false);
     expect(state.activityEmptyText).toBe("No recent events.");
+    expect(state.activityRows).toEqual([]);
     expect(state.fallbackStats).toContainEqual({
       id: "providers",
       label: "Providers Online",
@@ -106,5 +108,42 @@ describe("overview-screen view model", () => {
     expect(links.find((link) => link.id === "strategy")?.badgeVariant).toBe("paper");
     expect(links.find((link) => link.id === "data")?.badgeVariant).toBe("live");
     expect(links[0].ariaLabel).toContain("Open Trading workspace");
+  });
+
+  it("derives activity row status, fallback timestamps, and accessible summaries", () => {
+    const rows = buildOverviewActivityRows([
+      {
+        id: "evt-1",
+        type: "warning",
+        message: "Brokerage sync delayed.",
+        source: "Provider health",
+        timestamp: "not-a-date"
+      },
+      {
+        id: "evt-2",
+        type: "error",
+        message: "Storage verification failed.",
+        source: " ",
+        timestamp: "2026-04-28T18:15:00Z"
+      }
+    ]);
+
+    expect(rows[0]).toMatchObject({
+      id: "evt-1",
+      typeLabel: "Warning",
+      statusCode: "OBS",
+      badgeVariant: "warning",
+      tone: "warning",
+      source: "Provider health",
+      timestampLabel: "Unavailable"
+    });
+    expect(rows[0].ariaLabel).toBe("Warning event from Provider health at Unavailable: Brokerage sync delayed.");
+    expect(rows[1]).toMatchObject({
+      typeLabel: "Error",
+      statusCode: "ERR",
+      badgeVariant: "danger",
+      tone: "danger",
+      source: "Unknown source"
+    });
   });
 });

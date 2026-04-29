@@ -8010,29 +8010,34 @@ Meridian-main
 ├── package.json
 └── README.md
 ```
+
 ## Standard Workflow
 
 Every documentation task follows this 4-step cycle:
 
 ### Step 1 — Understand the Change
+
 - Identify what code change, new feature, or requirement triggered the documentation need.
 - Run `python3 build/scripts/ai-repo-updater.py known-errors` to load the known-error
   registry and avoid repeating past mistakes.
 - Determine the affected audience (end users, operators, developers, quant developers).
 
 ### Step 2 — Plan Updates
+
 - List all documentation files that need updating (use the checklists in
   [Common Documentation Tasks](#common-documentation-tasks) below).
 - Check cross-references and dependencies across related files.
 - Identify diagrams needing regeneration.
 
 ### Step 3 — Make Updates
+
 - Edit documentation files.
 - Add tested code examples.
 - Regenerate diagrams if needed (`.dot`, `.puml` source files — never edit rendered images).
 - Update version information and "Last Updated" dates.
 
 ### Step 4 — Validate
+
 - Check links and cross-references.
 - Test code examples.
 - Preview markdown rendering.
@@ -8210,7 +8215,7 @@ Resources for AI agents working in this repository.
 **Claude sub-guides (`docs/ai/claude/`):**
 
 | File | Domain |
-|------|--------|
+| ------ | -------- |
 | `CLAUDE.providers.md` | Provider implementation contracts |
 | `CLAUDE.storage.md` | Storage sinks, WAL, archival |
 | `CLAUDE.testing.md` | Test patterns and coverage |

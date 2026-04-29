@@ -1,21 +1,29 @@
 import {
+  buildExecutionEvidenceState,
+  buildPaperSessionCreateRequest,
+  buildPaperSessionState,
+  buildSessionReplayControlsState,
+  buildTradingConfirmDialogState,
   buildOrderSubmitRequest,
   buildOrderTicketState,
   buildPromotionApprovalRequest,
   buildPromotionGateState,
   buildPromotionRejectionRequest,
   buildTradingReadinessState,
+  createTradingConfirmState,
+  emptyPaperSessionForm,
   emptyOrderTicketForm,
   emptyPromotionGateForm,
   formatReadinessStatusValue,
   mapBrokerageSyncLevel,
   mapReadinessStatusLevel,
   updateOrderTicketForm,
+  validatePaperSessionForm,
   validateOrderTicketForm,
   validatePromotionApproval,
   validatePromotionRejection
 } from "@/screens/trading-screen.view-model";
-import type { PromotionEvaluationResult, TradingOperatorReadiness } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -103,6 +111,337 @@ const blockedReadiness: TradingOperatorReadiness = {
   warnings: ["Portfolio snapshot failed."]
 };
 
+const activePaperSession: PaperSessionSummary = {
+  sessionId: "sess-1",
+  strategyId: "strat-1",
+  strategyName: null,
+  initialCash: 100000,
+  createdAt: "2026-01-01T00:00:00Z",
+  closedAt: null,
+  isActive: true
+};
+
+const selectedPaperSessionDetail: PaperSessionDetail = {
+  summary: activePaperSession,
+  symbols: ["AAPL", "MSFT"],
+  portfolio: {
+    cash: 99000,
+    portfolioValue: 100250,
+    unrealisedPnl: 250,
+    realisedPnl: 0,
+    positions: [
+      {
+        symbol: "AAPL",
+        quantity: 5,
+        averageCostBasis: 200,
+        currentPrice: 205,
+        marketValue: 1025,
+        unrealisedPnl: 25,
+        realisedPnl: 0
+      }
+    ],
+    asOf: "2026-01-01T00:15:00Z"
+  },
+  orderHistory: [
+    {
+      orderId: "ord-1",
+      symbol: "AAPL",
+      side: "Buy",
+      type: "Market",
+      quantity: 5,
+      filledQuantity: 5,
+      averageFillPrice: 200,
+      status: "Filled",
+      createdAt: "2026-01-01T00:05:00Z",
+      updatedAt: "2026-01-01T00:06:00Z"
+    }
+  ]
+};
+
+const consistentReplayVerification: PaperSessionReplayVerification = {
+  summary: activePaperSession,
+  symbols: ["AAPL", "MSFT"],
+  replaySource: "DurableFillLog",
+  isConsistent: true,
+  mismatchReasons: [],
+  currentPortfolio: selectedPaperSessionDetail.portfolio,
+  replayPortfolio: selectedPaperSessionDetail.portfolio!,
+  verifiedAt: "2026-01-01T00:20:00Z",
+  comparedFillCount: 1,
+  comparedOrderCount: 1,
+  comparedLedgerEntryCount: 2,
+  lastPersistedFillAt: "2026-01-01T00:10:00Z",
+  lastPersistedOrderUpdateAt: null,
+  verificationAuditId: "audit-verify-1"
+};
+
+const replayFile: ReplayFileRecord = {
+  path: "/tmp/replay.jsonl",
+  name: "replay.jsonl",
+  symbol: "AAPL",
+  eventType: "trades",
+  sizeBytes: 1024,
+  isCompressed: false,
+  lastModified: "2026-01-01T00:00:00Z"
+};
+
+const runningReplayStatus: ReplayStatus = {
+  sessionId: "rep-1",
+  filePath: "/tmp/replay.jsonl",
+  status: "running",
+  speedMultiplier: 1,
+  eventsProcessed: 3,
+  totalEvents: 10,
+  progressPercent: 30,
+  startedAt: "2026-01-01T00:00:00Z"
+};
+
+const executionAuditEntry: ExecutionAuditEntry = {
+  auditId: "audit-1",
+  category: "PaperSession",
+  action: "ReplayPaperSession",
+  outcome: "Completed",
+  occurredAt: "2026-01-01T00:20:00Z",
+  actor: "ops-session",
+  brokerName: null,
+  orderId: null,
+  runId: null,
+  symbol: null,
+  correlationId: null,
+  message: "Replay matched current state for paper session sess-1.",
+  metadata: { sessionId: "sess-1" }
+};
+
+const executionControlsSnapshot: ExecutionControlSnapshot = {
+  circuitBreaker: {
+    isOpen: false,
+    reason: null,
+    changedBy: "ops",
+    changedAt: "2026-01-01T00:00:00Z"
+  },
+  defaultMaxPositionSize: 5000,
+  symbolPositionLimits: { AAPL: 2500 },
+  manualOverrides: [
+    {
+      overrideId: "override-1",
+      kind: "BypassOrderControls",
+      reason: "incident drill",
+      createdBy: "ops",
+      createdAt: "2026-01-01T00:00:00Z",
+      expiresAt: null,
+      symbol: "AAPL",
+      strategyId: null,
+      runId: null
+    }
+  ],
+  asOf: "2026-01-01T00:20:00Z"
+};
+
+describe("execution evidence view model", () => {
+  it("derives controls summary rows and accessible audit rows", () => {
+    const state = buildExecutionEvidenceState({
+      auditEntries: [executionAuditEntry],
+      controlsSnapshot: executionControlsSnapshot,
+      loading: false,
+      errorText: null
+    });
+
+    expect(state.controlsPanel?.statusLabel).toBe("Breaker Closed");
+    expect(state.controlsPanel?.ariaLabel).toContain("1 symbol limit");
+    expect(state.controlsPanel?.rows).toContainEqual({ id: "default-limit", label: "Default limit", value: "5000" });
+    expect(state.controlsPanel?.rows).toContainEqual({ id: "symbol-limits", label: "Symbol limits", value: "AAPL=2500" });
+    expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "BypassOrderControls (AAPL)" });
+    expect(state.auditRows[0]).toMatchObject({
+      id: "audit-1",
+      action: "ReplayPaperSession",
+      outcome: "Completed",
+      outcomeTone: "success",
+      metadataText: "2026-01-01T00:20:00Z · session sess-1"
+    });
+    expect(state.auditRows[0].ariaLabel).toContain("Replay matched current state");
+    expect(state.statusAnnouncement).toBe("Breaker Closed. 1 audit entry loaded.");
+  });
+
+  it("derives loading, empty, and error copy without raw component branching", () => {
+    const loading = buildExecutionEvidenceState({
+      auditEntries: [],
+      controlsSnapshot: null,
+      loading: true,
+      errorText: null
+    });
+
+    expect(loading.auditEmptyText).toBe("Loading execution audit entries...");
+    expect(loading.controlsEmptyText).toBe("Loading execution controls snapshot...");
+    expect(loading.refreshButtonLabel).toBe("Refreshing...");
+
+    const failed = buildExecutionEvidenceState({
+      auditEntries: [],
+      controlsSnapshot: null,
+      loading: false,
+      errorText: "Controls API unavailable."
+    });
+
+    expect(failed.auditEmptyText).toBe("No execution audit entries available.");
+    expect(failed.controlsEmptyText).toBe("Snapshot unavailable.");
+    expect(failed.statusAnnouncement).toBe("Execution evidence refresh failed: Controls API unavailable.");
+  });
+});
+
+describe("paper session view model", () => {
+  it("derives session row actions, selected detail, and replay evidence", () => {
+    const state = buildPaperSessionState({
+      sessions: [activePaperSession],
+      selectedSessionId: "sess-1",
+      selectedSessionDetail: selectedPaperSessionDetail,
+      sessionReplayVerification: consistentReplayVerification,
+      form: emptyPaperSessionForm,
+      showCreateForm: false,
+      busyCommand: { kind: "verifying", sessionId: "sess-1" },
+      errorText: null
+    });
+
+    expect(state.rows).toEqual([
+      expect.objectContaining({
+        sessionId: "sess-1",
+        initialCashText: "$100,000.00",
+        statusLabel: "Active",
+        isSelected: true,
+        canRestore: false,
+        canVerify: false,
+        canClose: false,
+        verifyButtonLabel: "Verifying...",
+        ariaLabel: "sess-1, strat-1, Active, $100,000.00 initial cash"
+      })
+    ]);
+    expect(state.selectedSessionLabel).toBe("Selected session: sess-1");
+    expect(state.detail).toEqual(expect.objectContaining({
+      sessionId: "sess-1",
+      statusLabel: "Active",
+      statusTone: "ready",
+      ariaLabel: "Paper session detail for sess-1"
+    }));
+    expect(state.detail?.infoRows).toEqual([
+      { label: "Strategy", value: "strat-1" },
+      { label: "Initial cash", value: "$100,000.00" },
+      { label: "Tracked symbols", value: "AAPL, MSFT" },
+      { label: "Orders retained", value: "1" }
+    ]);
+    expect(state.detail?.metricRows).toEqual([
+      { label: "Cash", value: "$99,000.00" },
+      { label: "Portfolio value", value: "$100,250.00" },
+      { label: "Open positions", value: "1" }
+    ]);
+    expect(state.detail?.replay).toEqual(expect.objectContaining({
+      tone: "success",
+      statusLabel: "Matched current state",
+      ariaLabel: "Replay verification matched current state for sess-1"
+    }));
+    expect(state.detail?.replay?.rows).toContainEqual({ label: "Verification audit", value: "audit-verify-1" });
+    expect(state.statusAnnouncement).toBe("Verifying paper session sess-1.");
+  });
+
+  it("validates create-session cash and builds default strategy ids", () => {
+    expect(validatePaperSessionForm({ ...emptyPaperSessionForm, initialCash: "500" }))
+      .toBe("Enter initial cash of at least $1,000.");
+    expect(validatePaperSessionForm({ ...emptyPaperSessionForm, initialCash: "250000" })).toBeNull();
+
+    expect(buildPaperSessionCreateRequest({
+      strategyId: "  ",
+      initialCash: "250000"
+    }, () => 42)).toEqual({
+      strategyId: "strat-42",
+      initialCash: 250000
+    });
+
+    const invalidState = buildPaperSessionState({
+      sessions: [],
+      selectedSessionId: null,
+      selectedSessionDetail: null,
+      sessionReplayVerification: null,
+      form: { ...emptyPaperSessionForm, initialCash: "bad" },
+      showCreateForm: true,
+      busyCommand: null,
+      errorText: "Create failed"
+    });
+
+    expect(invalidState.canSubmitCreate).toBe(false);
+    expect(invalidState.formRequirementText).toBe("Enter initial cash of at least $1,000.");
+    expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
+  });
+});
+
+describe("session replay controls view model", () => {
+  it("derives file options, ready state, and running replay affordances", () => {
+    const ready = buildSessionReplayControlsState({
+      files: [replayFile],
+      selectedFilePath: replayFile.path,
+      replayStatus: null,
+      replaySpeed: "1",
+      seekMs: "0",
+      loadingFiles: false,
+      activeCommand: null,
+      errorText: null
+    });
+
+    expect(ready.fileOptions).toEqual([
+      expect.objectContaining({
+        path: replayFile.path,
+        name: "replay.jsonl",
+        ariaLabel: "replay.jsonl, AAPL / trades / 2026-01-01T00:00:00Z"
+      })
+    ]);
+    expect(ready.statusText).toBe("Ready to replay replay.jsonl.");
+    expect(ready.canStart).toBe(true);
+    expect(ready.canPause).toBe(false);
+    expect(ready.statusAnnouncement).toBe("Replay file replay.jsonl selected.");
+
+    const running = buildSessionReplayControlsState({
+      ...ready,
+      files: [replayFile],
+      selectedFilePath: replayFile.path,
+      replayStatus: runningReplayStatus
+    });
+
+    expect(running.statusText).toBe("Replay running · 3/10 (30%)");
+    expect(running.canPause).toBe(true);
+    expect(running.canSeek).toBe(true);
+    expect(running.canApplySpeed).toBe(true);
+    expect(running.statusAnnouncement).toBe("Replay running for rep-1 at 30 percent.");
+  });
+
+  it("derives busy labels and input validation for replay commands", () => {
+    const invalid = buildSessionReplayControlsState({
+      files: [replayFile],
+      selectedFilePath: replayFile.path,
+      replayStatus: runningReplayStatus,
+      replaySpeed: "0",
+      seekMs: "-1",
+      loadingFiles: false,
+      activeCommand: null,
+      errorText: "Replay service unavailable."
+    });
+
+    expect(invalid.speedValidationText).toBe("Enter a replay speed greater than 0.");
+    expect(invalid.seekValidationText).toBe("Enter a seek position of 0 ms or greater.");
+    expect(invalid.canStart).toBe(false);
+    expect(invalid.canSeek).toBe(false);
+    expect(invalid.canApplySpeed).toBe(false);
+    expect(invalid.statusAnnouncement).toBe("Session replay failed: Replay service unavailable.");
+
+    const starting = buildSessionReplayControlsState({
+      ...invalid,
+      replaySpeed: "1",
+      seekMs: "0",
+      activeCommand: "starting",
+      errorText: null
+    });
+
+    expect(starting.startButtonLabel).toBe("Starting...");
+    expect(starting.canStart).toBe(false);
+    expect(starting.statusAnnouncement).toBe("Starting session replay.");
+  });
+});
+
 describe("trading readiness view model", () => {
   it("derives contract summary rows, tones, and assistive labels", () => {
     const state = buildTradingReadinessState({
@@ -150,6 +489,86 @@ describe("trading readiness view model", () => {
     expect(mapReadinessStatusLevel("Blocked")).toBe("atRisk");
     expect(mapBrokerageSyncLevel({ ...blockedReadiness.brokerageSync!, health: "Healthy", isStale: false })).toBe("ready");
     expect(mapBrokerageSyncLevel(blockedReadiness.brokerageSync!)).toBe("atRisk");
+  });
+});
+
+describe("trading confirmation view model", () => {
+  it("derives dialog labels, copy, identifiers, and command affordances", () => {
+    const state = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "cancel-order", orderId: "PO-1" }));
+
+    expect(state.open).toBe(true);
+    expect(state.title).toBe("Cancel order PO-1");
+    expect(state.description).toBe("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
+    expect(state.dialogTitleId).toBe("trading-confirm-cancel-order-po-1-title");
+    expect(state.dialogDescriptionId).toBe("trading-confirm-cancel-order-po-1-description");
+    expect(state.confirmButtonLabel).toBe("Confirm");
+    expect(state.confirmAriaLabel).toBe("Confirm cancel order po-1");
+    expect(state.canClose).toBe(true);
+    expect(state.canConfirm).toBe(true);
+    expect(state.statusAnnouncement).toBe("Cancel order PO-1 confirmation open.");
+  });
+
+  it("derives busy and completed states for assistive feedback", () => {
+    const action = { kind: "close-position" as const, symbol: "AAPL" };
+    const busy = buildTradingConfirmDialogState({
+      ...createTradingConfirmState(action),
+      busy: true
+    });
+
+    expect(busy.title).toBe("Close position - AAPL");
+    expect(busy.confirmButtonLabel).toBe("Processing...");
+    expect(busy.canClose).toBe(false);
+    expect(busy.canConfirm).toBe(false);
+    expect(busy.statusAnnouncement).toBe("Close position - AAPL processing.");
+
+    const completed = buildTradingConfirmDialogState({
+      ...createTradingConfirmState(action),
+      result: {
+        actionId: "act-1",
+        status: "Completed",
+        message: "Position flattened.",
+        occurredAt: "2026-04-26T16:00:00Z"
+      }
+    });
+
+    expect(completed.isCompleted).toBe(true);
+    expect(completed.canConfirm).toBe(false);
+    expect(completed.resultPanel).toEqual(expect.objectContaining({
+      tone: "success",
+      status: "Completed",
+      actionId: "act-1",
+      ariaLabel: "Action completed: Position flattened."
+    }));
+    expect(completed.statusAnnouncement).toBe("Close position - AAPL completed: Position flattened.");
+  });
+
+  it("maps errors and rejected results into accessible status panels", () => {
+    const action = { kind: "stop-strategy" as const, strategyId: "strat-1" };
+    const failed = buildTradingConfirmDialogState({
+      ...createTradingConfirmState(action),
+      error: "Broker unavailable."
+    });
+
+    expect(failed.errorPanel).toEqual({
+      text: "Broker unavailable.",
+      ariaLabel: "Confirmation action failed: Broker unavailable."
+    });
+    expect(failed.statusAnnouncement).toBe("Stop strategy - strat-1 failed: Broker unavailable.");
+
+    const rejected = buildTradingConfirmDialogState({
+      ...createTradingConfirmState(action),
+      result: {
+        actionId: "act-2",
+        status: "Rejected",
+        message: "Strategy already stopped.",
+        occurredAt: "2026-04-26T16:00:00Z"
+      }
+    });
+
+    expect(rejected.resultPanel).toEqual(expect.objectContaining({
+      tone: "warning",
+      ariaLabel: "Action rejected: Strategy already stopped."
+    }));
   });
 });
 

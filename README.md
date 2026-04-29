@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into a cohesive web-first operator product across research, trading, data operations, governance, and fund-operations workflows.
+Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into a cohesive web-first operator product across research, trading, data operations, governance, and fund-operations workflows.
 
 > **Web UI active direction:** New operator UI development is focused on `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets. `src/Meridian.Wpf/` is retained for compatibility, regression fixes, and shared-contract support rather than new desktop-first feature work.
 
@@ -173,7 +173,7 @@ Use these documents together when planning or implementing new work:
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
 - [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes
 <!-- readme-tree start -->
-```
+```text
 .
 ├── .artifacts
 │   └── link-repair-report.md

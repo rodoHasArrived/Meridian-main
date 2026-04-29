@@ -131,7 +131,7 @@ defaults:
     shell: bash
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   PYTHON_VERSION: '3.11'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -758,9 +758,10 @@ jobs:
       - name: Sync AI instruction files
         run: |
           set -euo pipefail
+          # Keep docs/ai/copilot/instructions.md compact. It links to generated navigation
+          # instead of embedding the full repository tree.
           files=(
             "CLAUDE.md"
-            "docs/ai/copilot/instructions.md"
             ".github/agents/documentation-agent.md"
           )
 

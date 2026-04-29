@@ -1,7 +1,9 @@
 # AI Instructions Sync Workflow
 
 This document covers the AI instruction sync mechanism — the GitHub Actions workflow that keeps AI
-assistant files (CLAUDE.md, docs/ai/, .github/agents/) up to date as the codebase evolves.
+assistant files (`CLAUDE.md`, `docs/ai/`, `.github/agents/`) up to date as the codebase evolves.
+The compact Copilot guide intentionally links to generated navigation instead of embedding a full
+repository tree.
 
 ---
 
@@ -119,7 +121,8 @@ grep -A 50 "## Repository Structure" CLAUDE.md
 The sync workflow runs automatically:
 - **Trigger:** Every Monday at 03:00 UTC
 - **Default behavior:** Direct commit (no PR)
-- **Purpose:** Keeps AI instruction files synchronized with repository structure
+- **Purpose:** Keeps AI instruction files synchronized with repository structure and generated
+  navigation without duplicating tree snapshots in the compact Copilot guide
 
 Manual runs can be triggered at any time via `workflow_dispatch` with custom options.
 
@@ -133,7 +136,7 @@ Manual runs can be triggered at any time via `workflow_dispatch` with custom opt
 | `.github/workflows/readme-tree.yml` | Keeps README/AI markdown tree markers synchronized with the live repository layout |
 | `docs/ai/README.md` | Master AI resource index |
 | `CLAUDE.md` | Root AI context document |
-| `docs/ai/copilot/instructions.md` | Extended Copilot guidance |
+| `docs/ai/copilot/instructions.md` | Compact Copilot guide and routing links; no embedded repository tree |
 
 ## README Tree Marker Sync
 
@@ -150,6 +153,10 @@ To opt a markdown document into automatic tree updates, add:
 <!-- readme-tree start -->
 <!-- readme-tree end -->
 ```
+
+Do not apply repository-structure block sync to `docs/ai/copilot/instructions.md`; use
+`docs/ai/generated/repo-navigation.md`, `docs/ai/generated/repo-navigation.json`, or
+`docs/generated/repository-structure.md` when Copilot needs layout context.
 
 ---
 

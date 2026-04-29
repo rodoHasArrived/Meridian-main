@@ -24,7 +24,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 ## Current Direction
 
-- Meridian is a .NET 9 fund-management and trading-platform codebase.
+- Meridian is a .NET 10 fund-management and trading-platform codebase.
 - New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
 - `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the web dashboard and retained desktop shell.
@@ -221,9 +221,10 @@ python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.W
 
 `buildctl.py build --isolation-key ...` prunes stale isolated output directories older than 14 days
 from `artifacts/bin` and `artifacts/obj` before the build starts, and trims excess same-day output
-beyond the latest 10 runs per artifact root; use `--isolation-retention-days <days>` and
-`--isolation-retain-latest <count>` to tune those limits, or set both to `0` to disable cleanup for a
-run.
+beyond the latest 10 runs per artifact root. It also prunes oldest generated runs when either root
+exceeds 4096 MB; use `--isolation-retention-days <days>`,
+`--isolation-retain-latest <count>`, and `--isolation-max-root-size-mb <mb>` to tune those limits,
+or set all three to `0` to disable cleanup for a run.
 `build/scripts/publish/publish.ps1 -OutputDir artifacts/publish/<run-name>` also prunes generated
 publish-output siblings older than 14 days or beyond the latest 5 runs; use
 `-OutputRetentionDays <days>` and `-OutputRetainLatest <count>` to tune that guard, or set both to

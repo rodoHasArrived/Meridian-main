@@ -1,15 +1,16 @@
-> Auto-generated from canonical JSON payload.
-> Generated: 2026-04-29T10:37:10.107794+00:00
-> Data sources: repo markdown (*.md), git commit metadata
-
 # Documentation Health Dashboard
 
+_Auto-generated from canonical JSON payload._
+_Generated: 2026-04-29T11:05:40.252637+00:00_
+_Data sources: repo markdown (*.md), git commit metadata_
+
+
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-29T10:37:10.101811+00:00
+> Last updated: 2026-04-29T11:05:40.221656+00:00
 
 ## Overall Health Score
 
-```
+```text
   [###########################---] 89/100
   Rating: Good
 ```
@@ -17,20 +18,20 @@
 ## Summary
 
 | Metric | Value |
-|--------|-------|
-| Total documentation files | 420 |
-| Total lines | 147,384 |
-| Average file size (lines) | 350.9 |
-| Orphaned files | 117 |
+| -------- | ------- |
+| Total documentation files | 438 |
+| Total lines | 157,557 |
+| Average file size (lines) | 359.7 |
+| Orphaned files | 134 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 219 |
+| TODO/FIXME markers | 228 |
 | **Health score** | **89/100** |
 
 ### Score Breakdown
 
 | Component | Weight | Description |
-|-----------|--------|-------------|
+| ----------- | -------- | ------------- |
 | Orphan ratio | 30 pts | Fewer orphaned files is better |
 | Heading coverage | 25 pts | All files should have at least one heading |
 | Freshness | 20 pts | Files updated within the last 90 days |
@@ -63,16 +64,16 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-code-review/references/architecture.md`
 - `.claude/skills/meridian-code-review/references/schemas.md`
 - `.claude/skills/meridian-implementation-assurance/references/documentation-routing.md`
-- ... and 97 more
+- ... and 114 more
 
 ## Trend
 
 <!-- Trend data will be appended by CI when historical snapshots are available. -->
 
 | Date | Score | Files | Orphans | Stale |
-|------|-------|-------|---------|-------|
-| 2026-04-29 | 89 | 420 | 117 | 0 |
+| ------ | ------- | ------- | --------- | ------- |
+| 2026-04-29 | 89 | 438 | 134 | 0 |
 
 ---
 
-*This file is auto-generated. Do not edit manually.*
+_This file is auto-generated. Do not edit manually._
