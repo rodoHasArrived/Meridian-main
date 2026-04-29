@@ -1,6 +1,6 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-04-27
+Last reviewed: 2026-04-29
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -87,6 +87,7 @@ findings even when the compatibility gate fails.
 | Review date | Packet evidence | Gate result | Owner decision | Follow-up |
 | --- | --- | --- | --- | --- |
 | 2026-04-27 | `artifacts/contract-review/2026-04-27/contract-review-packet.json` and `artifacts/contract-review/2026-04-27/contract-review-packet.md` | Baseline packet for `origin/main...HEAD` had 0 tracked surface changes, no blocking findings, and `readyForCadenceReview=true`. | Shared Platform Interop owner approved and locked the weekly Wednesday shared-interop review cadence. Every cadence review must attach the generated JSON/Markdown packet, run the same-range compatibility gate, and record the owner decision before Wave 3/Wave 4 shared-contract work can claim readiness. | Run the next packet before the 2026-05-06 shared-interop review, and add migration notes plus PR-body evidence for any potential breaking contract change. |
+| 2026-04-29 | `artifacts/contract-review/2026-04-29/contract-review-packet.json` and `artifacts/contract-review/2026-04-29/contract-review-packet.md` | Refresh packet for `HEAD~1...HEAD` captured the `StrategyRunContinuityStatus` DTO delta and confirmed no blocking removals (`readyForCadenceReview=true`). | Shared Platform Interop owner requires merge/release to stay blocked on the compatibility gate plus packet review while this continuity contract evolves. | Keep cadence by attaching this packet to the next interop review and rerun packet + compatibility checks for each follow-up DTO delta. |
 
 ## Migration Notes
 
@@ -99,6 +100,8 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-04-26: Added additive trading-readiness control evidence fields (`TradingControlEvidenceDto`, `TradingControlReadinessDto.RecentEvidence`, explainability counts, and warnings) plus `OperatorWorkItemKindDto.ExecutionControl`. Older clients can ignore the new payload fields; enum-aware clients should treat the new work-item kind as an execution-risk blocker.
 - 2026-04-26: Added additive operator-inbox route `GET /api/workstation/operator/inbox`, `OperatorInboxDto`, and optional navigation fields on `OperatorWorkItemDto` so desktop/web consumers can open shared readiness and reconciliation work items from one queue. Older clients can continue reading readiness `WorkItems` without consuming the new route or optional fields.
 - 2026-04-27: Added `scripts/generate_contract_review_packet.py` as the repeatable weekly shared-interop review artifact for tracked contract changes. No runtime contract break introduced.
+- 2026-04-29: Updated `StrategyRunContinuityStatus` with additive `HasFills` coverage and tightened continuity warning-code expectations for run-centered readiness consumers. Older clients that do not read `HasFills` should continue defaulting to `false`/missing-field handling and can ignore unknown warning codes; consumers that branch on continuity warnings should treat new codes as additive and map unknown values to their existing generic warning UX.
+- 2026-04-29: Merge/release cadence now explicitly depends on passing both `scripts/check_contract_compatibility_gate.py --base <base> --head <head>` and the same-range `scripts/generate_contract_review_packet.py` review packet before owner sign-off.
 
 ## Pull Request Author Checklist
 
