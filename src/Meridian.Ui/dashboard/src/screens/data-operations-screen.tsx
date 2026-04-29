@@ -85,13 +85,49 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {vm.providerSection.hasRows ? vm.providerSection.rows.map((provider) => (
-              <div key={provider.provider} role="group" className="rounded-lg border border-border/70 p-3" aria-label={provider.ariaLabel}>
+              <div
+                key={provider.provider}
+                role="group"
+                className={cn(
+                  "rounded-lg border p-3",
+                  provider.statusTone === "danger"
+                    ? "border-danger/35 bg-danger/5"
+                    : provider.statusTone === "warning"
+                      ? "border-warning/35 bg-warning/5"
+                      : "border-border/70 bg-secondary/20"
+                )}
+                aria-label={provider.ariaLabel}
+              >
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-semibold">{provider.provider}</span>
-                  <span className={cn("font-mono text-xs", provider.statusTone === "success" ? "text-success" : "text-warning")}>{provider.status}</span>
+                  <span
+                    className={cn(
+                      "font-mono text-xs",
+                      provider.statusTone === "danger"
+                        ? "text-danger"
+                        : provider.statusTone === "warning"
+                          ? "text-warning"
+                          : "text-success"
+                    )}
+                  >
+                    {provider.status}
+                  </span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{provider.capability}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{provider.note}</p>
+                <div className="mt-3 grid grid-cols-2 gap-2" aria-label={`${provider.provider} trust evidence`}>
+                  {provider.trustFields.map((field) => (
+                    <div key={field.id} className="rounded-md border border-border/60 bg-background/40 px-2.5 py-2">
+                      <div className="eyebrow-label">{field.label}</div>
+                      <div className="mt-1 truncate font-mono text-xs text-foreground">{field.value}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 rounded-md border border-border/60 bg-background/40 px-3 py-2">
+                  <div className="eyebrow-label">Recommended action</div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{provider.recommendedActionText}</p>
+                  <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {provider.reasonCodeText}</p>
+                </div>
               </div>
             )) : (
               <EmptyState state={vm.providerSection.emptyState} />

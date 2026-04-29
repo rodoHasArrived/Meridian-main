@@ -2,6 +2,7 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type { ResearchWorkspaceResponse } from "@/types";
 
@@ -90,7 +91,13 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     <td className="px-3 py-2 font-mono">{run.sharpeText}</td>
                     <td className="px-3 py-2">{run.lastUpdatedText}</td>
                     <td className="px-3 py-2">
-                      <Button size="sm" variant="outline" aria-label={run.openDetailLabel} onClick={() => vm.openRunDetail(run.raw)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        aria-haspopup="dialog"
+                        aria-label={run.openDetailLabel}
+                        onClick={() => vm.openRunDetail(run.raw)}
+                      >
                         Open
                       </Button>
                     </td>
@@ -213,20 +220,62 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       )}
 
-      {vm.selectedRunDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4">
-          <div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-lg border border-border bg-card p-5 shadow-workstation">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="eyebrow-label">Run detail</div>
-                <h2 className="mt-1 text-lg font-semibold">{vm.selectedRunDetail.title}</h2>
+      <Dialog open={Boolean(vm.selectedRunDetail)}>
+        {vm.selectedRunDetail && (
+          <DialogContent
+            aria-labelledby={vm.selectedRunDetail.dialogTitleId}
+            aria-describedby={vm.selectedRunDetail.dialogDescriptionId}
+            className="max-w-2xl"
+            onKeyDown={(event) => {
+              if (vm.closeRunDetailForKey(event.key)) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+            }}
+          >
+            <DialogHeader className="mb-5 flex flex-row items-start justify-between gap-4 space-y-0">
+              <div className="min-w-0">
+                <div className="eyebrow-label">{vm.selectedRunDetail.eyebrow}</div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <DialogTitle id={vm.selectedRunDetail.dialogTitleId}>
+                    {vm.selectedRunDetail.title}
+                  </DialogTitle>
+                  <Badge variant={vm.selectedRunDetail.modeBadgeVariant} dot>
+                    {vm.selectedRunDetail.modeBadgeLabel}
+                  </Badge>
+                </div>
+                <DialogDescription id={vm.selectedRunDetail.dialogDescriptionId} className="mt-2">
+                  {vm.selectedRunDetail.description}
+                </DialogDescription>
+                <p className="mt-1 text-xs font-mono text-muted-foreground">{vm.selectedRunDetail.subtitle}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={vm.closeRunDetail}>Close</Button>
-            </div>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
-          </div>
-        </div>
-      )}
+              <Button
+                variant="ghost"
+                size="sm"
+                autoFocus
+                aria-label={vm.selectedRunDetail.closeButtonAriaLabel}
+                onClick={vm.closeRunDetail}
+              >
+                {vm.selectedRunDetail.closeButtonLabel}
+              </Button>
+            </DialogHeader>
+
+            <section aria-label={vm.selectedRunDetail.summaryLabel} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {vm.selectedRunDetail.summaryRows.map((row) => (
+                <div key={row.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
+                  <div className="eyebrow-label">{row.label}</div>
+                  <div className="mt-2 truncate font-mono text-sm text-foreground">{row.value}</div>
+                </div>
+              ))}
+            </section>
+
+            <section className="mt-4 rounded-md border border-border/70 bg-background/45 px-4 py-3">
+              <div className="eyebrow-label">{vm.selectedRunDetail.notesLabel}</div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
+            </section>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

@@ -259,7 +259,14 @@ function Get-MeridianProjectBinaryPath {
 
     if ([string]::IsNullOrWhiteSpace($IsolationKey)) {
         $projectDirectory = Split-Path -Parent $ProjectPath
-        return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot (Join-Path $projectDirectory "bin/$Configuration/$Framework/$BinaryName")))
+        $projectOutputDirectory = if ([System.IO.Path]::IsPathRooted($projectDirectory)) {
+            Join-Path $projectDirectory "bin/$Configuration/$Framework"
+        }
+        else {
+            Join-Path $RepoRoot (Join-Path $projectDirectory "bin/$Configuration/$Framework")
+        }
+
+        return [System.IO.Path]::GetFullPath((Join-Path $projectOutputDirectory $BinaryName))
     }
 
     $outputRoot = Get-MeridianProjectOutputRoot -RepoRoot $RepoRoot -ProjectPath $ProjectPath -IsolationKey $IsolationKey

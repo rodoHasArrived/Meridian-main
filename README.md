@@ -79,9 +79,17 @@ assets that are served from `src/Meridian.Ui/wwwroot/workstation/`.
 ```bash
 cd src/Meridian.Ui/dashboard
 npm install
+npm run dev
+npm run preview
 npm run test
 npm run build
 ```
+
+`npm run dev` serves the shell at `/workstation/`; `npm run preview` serves the built assets from
+`src/Meridian.Ui/wwwroot/workstation/`. Both commands proxy `/api` to `MERIDIAN_API_BASE_URL` when
+set, or `http://localhost:8080` by default. When the local API host is not running, development
+builds fall back to typed fixture data for the initial dashboard bootstrap GETs only; command and
+mutation workflows still require the Meridian API.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 

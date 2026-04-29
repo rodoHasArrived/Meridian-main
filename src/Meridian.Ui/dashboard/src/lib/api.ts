@@ -48,10 +48,26 @@ async function getJson<T>(path: string): Promise<T> {
   });
 
   if (!response.ok) {
+    const fixture = await getDevelopmentFallback<T>(path, response.status);
+    if (fixture !== undefined) {
+      return fixture;
+    }
+
     throw new Error(`Request failed for ${path} (${response.status})`);
   }
 
   return response.json() as Promise<T>;
+}
+
+const developmentFallbackStatuses = new Set([404, 500, 502, 503, 504]);
+
+async function getDevelopmentFallback<T>(path: string, status: number): Promise<T | undefined> {
+  if (!import.meta.env.DEV || !developmentFallbackStatuses.has(status)) {
+    return undefined;
+  }
+
+  const { resolveDevFixture } = await import("@/lib/dev-fixtures");
+  return resolveDevFixture<T>(path);
 }
 
 async function postJson<T>(path: string, body?: unknown): Promise<T> {

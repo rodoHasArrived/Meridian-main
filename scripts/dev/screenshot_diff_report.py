@@ -136,7 +136,16 @@ def main() -> int:
         filename = Path(rel).name
         thresholds = _entry_thresholds(config, filename)
 
-        if not current_path.exists() or not baseline_path.exists():
+        if current_path.exists() and not baseline_path.exists():
+            category = "non-blocking-noise"
+            reason = "New screenshot file"
+            diff_ratio = 0.0
+            masked_pixels = 0
+            with Image.open(current_path) as cur_img:
+                cur = ImageOps.exif_transpose(cur_img.convert("RGB"))
+                size = [cur.width, cur.height]
+                valid_pixels = cur.width * cur.height
+        elif not current_path.exists() or not baseline_path.exists():
             category = "blocking-regression"
             reason = "Current or baseline image missing"
             diff_ratio = 1.0

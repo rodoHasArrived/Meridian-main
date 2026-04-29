@@ -3,13 +3,16 @@ import {
   AlertCircle,
   ArrowRight,
   BarChart3,
+  BriefcaseBusiness,
   CheckCircle2,
   Database,
+  FileText,
   FlaskConical,
   Globe,
   LineChart,
   Radio,
   RefreshCcw,
+  Settings,
   Shield,
   TrendingUp,
   XCircle
@@ -22,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useOverviewStatusViewModel, type OverviewFallbackStatId } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemEventRecord, SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 interface OverviewScreenProps {
   data: SystemOverviewResponse | null;
@@ -59,40 +62,15 @@ const eventTypeConfig = {
   error: { icon: XCircle, className: "text-danger" }
 } as const;
 
-const workspaceLinks = [
-  {
-    key: "research",
-    label: "Research",
-    description: "Backtests, run comparisons, and experiment tracking.",
-    href: "/",
-    icon: FlaskConical,
-    accent: "text-blue-400"
-  },
-  {
-    key: "trading",
-    label: "Trading",
-    description: "Paper operations cockpit, positions, and blotter.",
-    href: "/trading",
-    icon: TrendingUp,
-    accent: "text-green-400"
-  },
-  {
-    key: "data-operations",
-    label: "Data Operations",
-    description: "Providers, backfills, symbols, and quality monitoring.",
-    href: "/data-operations",
-    icon: Database,
-    accent: "text-purple-400"
-  },
-  {
-    key: "governance",
-    label: "Governance",
-    description: "Ledger, reconciliation, and security master.",
-    href: "/governance",
-    icon: Shield,
-    accent: "text-orange-400"
-  }
-] as const;
+const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: string }> = {
+  trading: { icon: TrendingUp, accent: "text-success" },
+  portfolio: { icon: BriefcaseBusiness, accent: "text-paper" },
+  accounting: { icon: Shield, accent: "text-warning" },
+  reporting: { icon: FileText, accent: "text-primary" },
+  strategy: { icon: FlaskConical, accent: "text-primary" },
+  data: { icon: Database, accent: "text-live" },
+  settings: { icon: Settings, accent: "text-muted-foreground" }
+};
 
 const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
   providers: Globe,
@@ -200,23 +178,26 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Workspaces</CardTitle>
-            <CardDescription>Navigate to any workspace.</CardDescription>
+            <CardDescription>{vm.workspaceSummary}</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {workspaceLinks.map((ws) => {
-                const Icon = ws.icon;
+              {vm.workspaceLinks.map((ws) => {
+                const iconConfig = workspaceIconConfig[ws.id];
+                const Icon = iconConfig.icon;
                 return (
-                  <li key={ws.key}>
+                  <li key={ws.id}>
                     <Link
                       to={ws.href}
-                      className="flex items-center gap-3 rounded-md p-2.5 transition-colors hover:bg-muted/50 group"
+                      aria-label={ws.ariaLabel}
+                      className="group flex items-center gap-3 rounded-md border border-transparent p-2.5 transition-colors hover:border-border/70 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                      <Icon className={cn("size-4 shrink-0", ws.accent)} />
+                      <Icon className={cn("size-4 shrink-0", iconConfig.accent)} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium leading-none">{ws.label}</p>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">{ws.description}</p>
                       </div>
+                      <Badge variant={ws.badgeVariant} className="hidden shrink-0 md:inline-flex">{ws.status}</Badge>
                       <ArrowRight className="size-3.5 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground transition-colors" />
                     </Link>
                   </li>

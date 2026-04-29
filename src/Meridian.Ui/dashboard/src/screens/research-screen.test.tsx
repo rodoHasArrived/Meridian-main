@@ -53,15 +53,27 @@ describe("ResearchScreen", () => {
     const user = userEvent.setup();
     render(<ResearchScreen data={twoRuns} />);
 
-    // Both runs are rendered; click the button next to the paper run
     await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    // The dialog notes for whichever row is first in sorted order should be visible
-    expect(
-      screen.queryByText("Primary paper candidate.") ??
-      screen.queryByText("Completed backtest run.")
-    ).toBeTruthy();
+    const dialog = screen.getByRole("dialog", { name: "Mean Reversion FX" });
+    expect(dialog).toHaveAccessibleDescription("Mean Reversion FX is Running in PAPER mode.");
+    expect(screen.getByText("Primary paper candidate.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Selected strategy run evidence")).toBeInTheDocument();
+    expect(screen.getByText("run-1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close Mean Reversion FX run detail" })).toBeInTheDocument();
+  });
+
+  it("closes the run detail dialog with Escape", async () => {
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
+
+    const closeButton = screen.getByRole("button", { name: "Close Mean Reversion FX run detail" });
+    closeButton.focus();
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog", { name: "Mean Reversion FX" })).not.toBeInTheDocument();
   });
 
   it("shows paper mode badge", () => {

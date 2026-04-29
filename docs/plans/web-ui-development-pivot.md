@@ -41,9 +41,16 @@ Use the narrowest validation for the files touched:
 
 ```bash
 cd src/Meridian.Ui/dashboard
+npm run dev
+npm run preview
 npm run test
 npm run build
 ```
+
+The Vite dev server hosts the browser shell under `/workstation/`; Vite preview serves the built
+assets from `src/Meridian.Ui/wwwroot/workstation/`. Both commands proxy `/api` to
+`MERIDIAN_API_BASE_URL` or `http://localhost:8080`, and the dashboard uses typed dev fixtures only
+for the initial dashboard bootstrap GETs when the API host is absent.
 
 Broaden to .NET validation when web changes touch shared contracts or endpoints:
 

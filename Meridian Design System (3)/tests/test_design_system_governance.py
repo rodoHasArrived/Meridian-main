@@ -32,6 +32,15 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         violations = self.run_on_files({"index.html": '<a href="missing.html">Broken</a>'})
         self.assertTrue(any(v.code == "local-link" for v in violations))
 
+    def test_local_upload_link_is_reported_even_when_file_exists(self):
+        violations = self.run_on_files(
+            {
+                "index.html": '<img src="uploads/reference.png" alt="">',
+                "uploads/reference.png": "local-only image",
+            }
+        )
+        self.assertTrue(any(v.code == "local-upload-reference" for v in violations))
+
     def test_raw_hex_is_reported_outside_baseline(self):
         violations = self.run_on_files({"preview/new.html": "<style>.x{color:#FFFFFF}</style>"})
         self.assertTrue(any(v.code == "raw-hex" for v in violations))

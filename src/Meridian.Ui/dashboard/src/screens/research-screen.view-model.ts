@@ -68,8 +68,28 @@ export interface ResearchRunTableRow {
 }
 
 export interface ResearchRunDetailState {
+  dialogTitleId: string;
+  dialogDescriptionId: string;
+  description: string;
+  eyebrow: string;
   title: string;
+  subtitle: string;
+  modeBadgeLabel: string;
+  modeBadgeVariant: ResearchRunDetailBadgeVariant;
+  summaryLabel: string;
+  summaryRows: ResearchRunDetailSummaryRow[];
+  notesLabel: string;
   notesText: string;
+  closeButtonLabel: string;
+  closeButtonAriaLabel: string;
+}
+
+export type ResearchRunDetailBadgeVariant = "research" | "paper" | "live";
+
+export interface ResearchRunDetailSummaryRow {
+  id: string;
+  label: string;
+  value: string;
 }
 
 export interface ResearchComparisonTableRow {
@@ -174,6 +194,15 @@ export function useResearchRunLibraryViewModel(
     setSelectedRun(null);
   }, []);
 
+  const closeRunDetailForKey = useCallback((key: string) => {
+    if (!shouldCloseRunDetailForKey(key)) {
+      return false;
+    }
+
+    setSelectedRun(null);
+    return true;
+  }, []);
+
   const loadPromotionHistory = useCallback(async () => {
     setActiveCommand("history");
     setActionError(null);
@@ -238,6 +267,7 @@ export function useResearchRunLibraryViewModel(
     toggleRun,
     openRunDetail,
     closeRunDetail,
+    closeRunDetailForKey,
     loadPromotionHistory,
     compareSelectedRuns,
     diffSelectedRuns
@@ -413,9 +443,31 @@ export function buildPromotionHistoryTable(
 }
 
 export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
+  const title = formatText(run.strategyName);
+  const modeLabel = formatText(run.mode).toUpperCase();
+  const statusText = formatText(run.status);
+
   return {
-    title: formatText(run.strategyName),
-    notesText: formatText(run.notes)
+    dialogTitleId: `strategy-run-detail-${sanitizeDomId(run.id)}-title`,
+    dialogDescriptionId: `strategy-run-detail-${sanitizeDomId(run.id)}-description`,
+    description: `${title} is ${statusText} in ${modeLabel} mode.`,
+    eyebrow: "Run detail",
+    title,
+    subtitle: `${formatText(run.engine)} - ${formatText(run.dataset)} - ${formatText(run.window)}`,
+    modeBadgeLabel: modeLabel,
+    modeBadgeVariant: modeBadgeVariantFor(run.mode),
+    summaryLabel: "Selected strategy run evidence",
+    summaryRows: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) },
+      { id: "status", label: "Status", value: statusText },
+      { id: "pnl", label: "P&L", value: formatText(run.pnl) },
+      { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
+      { id: "updated", label: "Updated", value: formatText(run.lastUpdated) }
+    ],
+    notesLabel: "Operator notes",
+    notesText: formatOptionalNotes(run.notes),
+    closeButtonLabel: "Close",
+    closeButtonAriaLabel: `Close ${title} run detail`
   };
 }
 
@@ -425,6 +477,10 @@ export function toggleRunSelection(currentIds: string[], runId: string): string[
   }
 
   return [...currentIds, runId].slice(-2);
+}
+
+export function shouldCloseRunDetailForKey(key: string): boolean {
+  return key === "Escape" || key === "Esc";
 }
 
 function buildSelectionText(selectedRuns: ResearchRunRecord[]): string {
@@ -444,10 +500,32 @@ function formatText(value: string | null | undefined): string {
   return trimmed ? trimmed : "Unavailable";
 }
 
+function formatOptionalNotes(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : "No operator notes were recorded for this run.";
+}
+
 function formatNullableNumber(value: number | null | undefined, digits: number): string {
   return typeof value === "number" && Number.isFinite(value)
     ? value.toFixed(digits)
     : "Unavailable";
+}
+
+function modeBadgeVariantFor(mode: ResearchRunRecord["mode"]): ResearchRunDetailBadgeVariant {
+  if (mode === "paper") {
+    return "paper";
+  }
+
+  if (mode === "live") {
+    return "live";
+  }
+
+  return "research";
+}
+
+function sanitizeDomId(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "run";
 }
 
 function buildResearchStatusAnnouncement({

@@ -1,8 +1,10 @@
 # Inspiration Brief
 
 This brief translates the uploaded reference images into Meridian-specific design guidance. The
-references are inspiration only; do not copy third-party branding, product names, navigation labels,
-or proprietary screen structure into Meridian UI.
+local `uploads/` images are source material only and are not part of the tracked distributable
+package; HTML previews must use tracked files under `assets/`. The references are inspiration only;
+do not copy third-party branding, product names, navigation labels, or proprietary screen structure
+into Meridian UI.
 
 ## Uploaded references used
 

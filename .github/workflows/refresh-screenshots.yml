@@ -1,8 +1,9 @@
-# Refresh WPF Desktop Screenshots
+# Refresh UI Screenshots
 #
 # Builds the Meridian WPF workstation in fixture mode, captures the desktop
-# screenshot catalog with scripts/dev/run-desktop-workflow.ps1, and commits
-# updated PNGs under docs/screenshots/desktop/.
+# screenshot catalog with scripts/dev/run-desktop-workflow.ps1, captures the
+# browser workstation dashboard with scripts/dev/capture-web-screenshots.mjs,
+# and commits updated PNGs under docs/screenshots/desktop/ and docs/screenshots/web/.
 #
 # Triggered:
 #   - Weekly on Monday at 06:00 UTC
@@ -28,6 +29,10 @@ on:
       - 'scripts/dev/validate-workflow-profile.ps1'
       - 'scripts/dev/run-desktop-workflow.ps1'
       - 'scripts/dev/capture-desktop-screenshots.ps1'
+      - 'scripts/dev/capture-web-screenshots.mjs'
+      - 'scripts/dev/web-screenshot-routes.json'
+      - 'src/Meridian.Ui/dashboard/**'
+      - 'src/Meridian.Ui/wwwroot/workstation/**'
       - 'src/Meridian.Ui.Services/**'
       - 'src/Meridian.Ui.Shared/**'
       - 'src/Meridian.Wpf/**'
@@ -37,8 +42,16 @@ on:
         description: 'Commit updated screenshots back to the repository.'
         type: boolean
         default: true
+      surfaces:
+        description: 'Which UI surfaces to capture.'
+        type: choice
+        default: all
+        options:
+          - all
+          - desktop
+          - web
       workflows:
-        description: 'Which screenshot workflows to run.'
+        description: 'Which desktop screenshot workflows to run.'
         type: choice
         default: all
         options:
@@ -56,6 +69,10 @@ on:
         description: 'Root directory for desktop screenshots.'
         type: string
         default: docs/screenshots/desktop
+      web_output_root:
+        description: 'Root directory for web dashboard screenshots.'
+        type: string
+        default: docs/screenshots/web
       approve_review_needed:
         description: 'Allow committing review-needed screenshot deltas from this run.'
         type: boolean
@@ -74,6 +91,7 @@ concurrency:
 
 env:
   DOTNET_VERSION: '9.0.x'
+  NODE_VERSION: '20'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -81,6 +99,8 @@ env:
   WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
   WPF_CONFIGURATION: Release
   WPF_FRAMEWORK: net9.0-windows10.0.19041.0
+  WEB_DASHBOARD_DIR: src/Meridian.Ui/dashboard
+  WEB_SCREENSHOT_PORT: 5173
   SCREENSHOT_TIMING_BASELINE_MINUTES: 25
   SCREENSHOT_TIMING_REGRESSION_PERCENT: 20
 
@@ -91,7 +111,11 @@ jobs:
     timeout-minutes: 20
 
     # Prevent recursive runs from the bot commit.
-    if: github.actor != 'github-actions[bot]'
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.surfaces == 'all' ||
+      inputs.surfaces == 'desktop')
 
     defaults:
       run:
@@ -139,7 +163,11 @@ jobs:
     needs: build-wpf
 
     # Prevent recursive runs from the bot commit.
-    if: github.actor != 'github-actions[bot]'
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.surfaces == 'all' ||
+      inputs.surfaces == 'desktop')
 
     defaults:
       run:
@@ -262,14 +290,99 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+  web-screenshots:
+    name: Take web dashboard screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Prevent recursive runs from the bot commit.
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.surfaces == 'all' ||
+      inputs.surfaces == 'web')
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        working-directory: ${{ env.WEB_DASHBOARD_DIR }}
+        run: npm ci
+
+      - name: Build web dashboard
+        working-directory: ${{ env.WEB_DASHBOARD_DIR }}
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: ${{ env.WEB_DASHBOARD_DIR }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture web dashboard screenshots
+        env:
+          WEB_OUTPUT_ROOT: ${{ inputs.web_output_root || 'docs/screenshots/web' }}
+        run: |
+          started_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+          npm --prefix "${WEB_DASHBOARD_DIR}" run screenshots -- \
+            --output-dir "${WEB_OUTPUT_ROOT}" \
+            --manifest "artifacts/web-screenshots/manifest.json" \
+            --port "${WEB_SCREENSHOT_PORT}"
+
+          finished_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          duration_seconds=$(( $(date -d "${finished_utc}" +%s) - $(date -d "${started_utc}" +%s) ))
+
+          mkdir -p artifacts/screenshot-runtime
+          node -e "const fs=require('fs'); fs.writeFileSync('artifacts/screenshot-runtime/web-dashboard.json', JSON.stringify({ workflow: 'web-dashboard', startedUtc: process.argv[1], finishedUtc: process.argv[2], durationSeconds: Number(process.argv[3]) }, null, 2) + '\n')" "${started_utc}" "${finished_utc}" "${duration_seconds}"
+
+      - name: Upload web workflow runtime report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-runtime-web-dashboard
+          path: artifacts/screenshot-runtime/web-dashboard.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload web screenshot diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-dashboard-screenshots
+          path: |
+            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*.png
+            artifacts/web-screenshots/manifest.json
+          if-no-files-found: warn
+          retention-days: 7
+
   commit-screenshots:
     name: Commit screenshots
     runs-on: windows-latest
     timeout-minutes: 20
-    needs: desktop-screenshots
+    needs:
+      - build-wpf
+      - desktop-screenshots
+      - web-screenshots
 
     # Prevent recursive runs from the bot commit.
-    if: github.actor != 'github-actions[bot]'
+    if: |
+      always() &&
+      github.actor != 'github-actions[bot]' &&
+      !cancelled() &&
+      !contains(needs.*.result, 'failure')
 
     permissions:
       contents: write
@@ -299,9 +412,23 @@ jobs:
 
       - name: Merge downloaded PNGs into workspace
         run: |
-          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
-          $normalizedOutputRoot = $outputRoot.Replace('\\','/').Trim('/')
-          New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $outputRoots = @()
+          if ($surfaceSelection -in @('all', 'desktop')) {
+            $outputRoots += $desktopOutputRoot
+          }
+          if ($surfaceSelection -in @('all', 'web')) {
+            $outputRoots += $webOutputRoot
+          }
+          if ($outputRoots.Count -eq 0) {
+            throw "No screenshot roots selected for surface mode '$surfaceSelection'."
+          }
+
+          foreach ($outputRoot in $outputRoots) {
+            New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+          }
 
           $pngs = Get-ChildItem -Path _artifacts -Recurse -Filter *.png -ErrorAction SilentlyContinue
           Write-Host "Downloaded PNG count: $($pngs.Count)"
@@ -313,16 +440,20 @@ jobs:
 
             # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
             # Find the first occurrence of the output root inside that path and copy from there.
-            $idx = $relNormalized.ToLower().IndexOf($normalizedOutputRoot.ToLower())
-            if ($idx -lt 0) {
-              continue
+            foreach ($outputRoot in $outputRoots) {
+              $normalizedOutputRoot = $outputRoot.Replace('\\','/').Trim('/')
+              $idx = $relNormalized.ToLower().IndexOf($normalizedOutputRoot.ToLower())
+              if ($idx -lt 0) {
+                continue
+              }
+
+              $subPath = $relNormalized.Substring($idx + $normalizedOutputRoot.Length).TrimStart('/')
+              $dest = Join-Path $outputRoot $subPath
+
+              New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
+              Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
+              break
             }
-
-            $subPath = $relNormalized.Substring($idx + $normalizedOutputRoot.Length).TrimStart('/')
-            $dest = Join-Path $outputRoot $subPath
-
-            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
-            Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
           }
 
       - name: Prune stale screenshots (dry-run/enforce)
@@ -330,43 +461,54 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
 
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
           $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
           $selectedMode = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
           $cleanupMode = "${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_mode || 'dry-run' }}"
+          $includeDesktop = $surfaceSelection -in @('all', 'desktop')
+          $includeWeb = $surfaceSelection -in @('all', 'web')
 
+          Write-Host "Selected surface mode: $surfaceSelection"
           Write-Host "Selected workflow mode: $selectedMode"
           Write-Host "Cleanup mode: $cleanupMode"
 
-          $workflowConfigPath = 'scripts/dev/desktop-workflows.json'
-          if (-not (Test-Path -LiteralPath $workflowConfigPath)) {
-            throw "Workflow definition file not found: $workflowConfigPath"
-          }
-
-          $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
-          if ($null -eq $workflowConfig.workflows) {
-            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
-          }
-
-          $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
-          if ($allDefinitions.Count -eq 0) {
-            throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
-          }
-
           $selectedDefinitions = @()
-          switch ($selectedMode) {
-            'catalog' {
-              $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' })
+          if ($includeDesktop) {
+            $workflowConfigPath = 'scripts/dev/desktop-workflows.json'
+            if (-not (Test-Path -LiteralPath $workflowConfigPath)) {
+              throw "Workflow definition file not found: $workflowConfigPath"
             }
-            'manuals' {
-              $selectedDefinitions = @($allDefinitions | Where-Object { [bool]$_.includeInManual })
+
+            $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
+            if ($null -eq $workflowConfig.workflows) {
+              throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
             }
-            default {
-              $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' -or [bool]$_.includeInManual })
+
+            $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
+            if ($allDefinitions.Count -eq 0) {
+              throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+            }
+
+            switch ($selectedMode) {
+              'catalog' {
+                $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' })
+              }
+              'manuals' {
+                $selectedDefinitions = @($allDefinitions | Where-Object { [bool]$_.includeInManual })
+              }
+              default {
+                $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' -or [bool]$_.includeInManual })
+              }
+            }
+
+            if ($selectedDefinitions.Count -eq 0) {
+              throw "No workflows selected for mode '$selectedMode'."
             }
           }
 
-          if ($selectedDefinitions.Count -eq 0) {
-            throw "No workflows selected for mode '$selectedMode'."
+          if (-not $includeDesktop -and -not $includeWeb) {
+            throw "No screenshot surfaces selected for mode '$surfaceSelection'."
           }
 
           $expectedFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -399,6 +541,38 @@ jobs:
               }
 
               $expectedPath = Join-Path $workflowDir "$captureName.png"
+              $normalizedExpectedPath = [System.IO.Path]::GetFullPath($expectedPath)
+              $null = $expectedFiles.Add($normalizedExpectedPath)
+            }
+          }
+
+          if ($includeWeb) {
+            $webRoutesPath = 'scripts/dev/web-screenshot-routes.json'
+            if (-not (Test-Path -LiteralPath $webRoutesPath)) {
+              throw "Web screenshot route file not found: $webRoutesPath"
+            }
+
+            $webRoutes = Get-Content -LiteralPath $webRoutesPath -Raw | ConvertFrom-Json
+            if ($null -eq $webRoutes.captures) {
+              throw 'No web screenshot captures found in scripts/dev/web-screenshot-routes.json'
+            }
+
+            $resolvedWebDir = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $webOutputRoot).FullName).Path
+            $webScopeKey = '{0}|{1}' -f $resolvedWebDir, $false
+            if ($managedScopeKeys.Add($webScopeKey)) {
+              $managedScopes.Add([PSCustomObject]@{
+                Path = $resolvedWebDir
+                Recurse = $false
+              }) | Out-Null
+            }
+
+            foreach ($capture in @($webRoutes.captures)) {
+              $captureName = [string]$capture.name
+              if ([string]::IsNullOrWhiteSpace($captureName)) {
+                continue
+              }
+
+              $expectedPath = Join-Path $webOutputRoot "$captureName.png"
               $normalizedExpectedPath = [System.IO.Path]::GetFullPath($expectedPath)
               $null = $expectedFiles.Add($normalizedExpectedPath)
             }
@@ -455,8 +629,11 @@ jobs:
           $deletedRelative = @($deleted | ForEach-Object { & $toRelativePath $_ $repoRoot })
 
           $pruneSummary = [ordered]@{
+            surfaceMode = $surfaceSelection
             selectedMode = $selectedMode
             cleanupMode = $cleanupMode
+            desktopOutputRoot = $outputRoot
+            webOutputRoot = $webOutputRoot
             expectedCount = $expectedFiles.Count
             staleCandidateCount = $candidates.Count
             deletedCount = $deleted.Count
@@ -468,6 +645,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Split-Path -Parent $pruneSummaryPath) | Out-Null
           $pruneSummary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pruneSummaryPath -Encoding utf8
 
+          "surface_mode=$surfaceSelection" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           "selected_mode=$selectedMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           "cleanup_mode=$cleanupMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           "expected_count=$($expectedFiles.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
@@ -477,20 +655,41 @@ jobs:
       - name: Validate screenshot outputs and workflow manifests
         id: validate_outputs
         run: |
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
           $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
           $selection = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
-          $normalizedOutputRoot = $outputRoot.Replace('\', '/').Trim('/')
+          $includeDesktop = $surfaceSelection -in @('all', 'desktop')
+          $includeWeb = $surfaceSelection -in @('all', 'web')
 
           $includeManuals = $selection -in @('all', 'manuals')
           $includeCatalog = $selection -in @('all', 'catalog')
 
-          $trackedPngs = git ls-files "$outputRoot/**/*.png"
           $expectedFiles = @()
-          foreach ($file in $trackedPngs) {
-            $normalizedFile = $file.Replace('\', '/')
-            $isManual = $normalizedFile -like "$normalizedOutputRoot/manuals/*"
-            if (($isManual -and $includeManuals) -or (-not $isManual -and $includeCatalog)) {
-              $expectedFiles += $file
+          if ($includeDesktop) {
+            $normalizedOutputRoot = $outputRoot.Replace('\', '/').Trim('/')
+            $trackedPngs = git ls-files "$outputRoot/**/*.png"
+            foreach ($file in $trackedPngs) {
+              $normalizedFile = $file.Replace('\', '/')
+              $isManual = $normalizedFile -like "$normalizedOutputRoot/manuals/*"
+              if (($isManual -and $includeManuals) -or (-not $isManual -and $includeCatalog)) {
+                $expectedFiles += $file
+              }
+            }
+          }
+
+          if ($includeWeb) {
+            $webRoutesPath = 'scripts/dev/web-screenshot-routes.json'
+            if (-not (Test-Path -LiteralPath $webRoutesPath)) {
+              throw "Web screenshot route file not found: $webRoutesPath"
+            }
+
+            $webRoutes = Get-Content -LiteralPath $webRoutesPath -Raw | ConvertFrom-Json
+            foreach ($capture in @($webRoutes.captures)) {
+              $captureName = [string]$capture.name
+              if (-not [string]::IsNullOrWhiteSpace($captureName)) {
+                $expectedFiles += (Join-Path $webOutputRoot "$captureName.png")
+              }
             }
           }
 
@@ -570,7 +769,7 @@ jobs:
             $summary = @(
               '## Screenshot validation failed',
               '',
-              "Expected PNG set checked: **$($expectedFiles.Count)** file(s) for selection ``$selection`` under ``$outputRoot``."
+              "Expected PNG set checked: **$($expectedFiles.Count)** file(s) for surface ``$surfaceSelection`` and desktop selection ``$selection``."
             )
 
             if ($missingFiles.Count -gt 0) {
@@ -601,24 +800,46 @@ jobs:
       - name: Detect screenshot changes
         id: detect_changes
         run: |
-          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
-          $changed = git status --porcelain -- "$outputRoot" | Measure-Object | Select-Object -ExpandProperty Count
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $outputRoots = @()
+          if ($surfaceSelection -in @('all', 'desktop')) {
+            $outputRoots += $desktopOutputRoot
+          }
+          if ($surfaceSelection -in @('all', 'web')) {
+            $outputRoots += $webOutputRoot
+          }
+
+          $changed = 0
+          foreach ($outputRoot in $outputRoots) {
+            $changed += (git status --porcelain --untracked-files=all -- "$outputRoot" | Measure-Object | Select-Object -ExpandProperty Count)
+          }
           if ($changed -gt 0) {
             "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             "changed_count=$changed" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-            Write-Host "Detected $changed changed file(s) under $outputRoot"
+            Write-Host "Detected $changed changed file(s) under selected screenshot roots"
           }
           else {
             "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             "changed_count=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-            Write-Host "No changes detected under $outputRoot"
+            Write-Host "No changes detected under selected screenshot roots"
           }
 
       - name: Classify screenshot diffs
         id: classify_diffs
         if: steps.detect_changes.outputs.changed == 'true'
         run: |
-          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $outputRoots = @()
+          if ($surfaceSelection -in @('all', 'desktop')) {
+            $outputRoots += $desktopOutputRoot
+          }
+          if ($surfaceSelection -in @('all', 'web')) {
+            $outputRoots += $webOutputRoot
+          }
           $approvalState = if ("${{ github.event_name == 'workflow_dispatch' && inputs.approve_review_needed || 'false' }}" -eq 'true') { 'approved' } else { 'pending' }
           $approvalReason = "${{ github.event_name == 'workflow_dispatch' && inputs.review_approval_note || '' }}"
 
@@ -628,7 +849,29 @@ jobs:
 
           New-Item -ItemType Directory -Force -Path artifacts/screenshot-diff | Out-Null
           $changedFilesPath = 'artifacts/screenshot-diff/changed-files.txt'
-          $diffFiles = @(git diff --name-only -- "$outputRoot/**/*.png")
+          $diffFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+          foreach ($outputRoot in $outputRoots) {
+            foreach ($file in @(git diff --name-only -- "$outputRoot/**/*.png")) {
+              if ($file) {
+                $null = $diffFiles.Add($file.Replace('\', '/'))
+              }
+            }
+
+            foreach ($statusLine in @(git status --porcelain --untracked-files=all -- "$outputRoot")) {
+              if ([string]::IsNullOrWhiteSpace($statusLine)) {
+                continue
+              }
+
+              $pathText = $statusLine.Substring(3).Trim()
+              if ($pathText.Contains(' -> ')) {
+                $pathText = ($pathText -split ' -> ')[-1]
+              }
+              $pathText = $pathText.Trim('"').Replace('\', '/')
+              if ($pathText.EndsWith('.png')) {
+                $null = $diffFiles.Add($pathText)
+              }
+            }
+          }
           $diffFiles | Set-Content -LiteralPath $changedFilesPath -Encoding utf8
 
           $baselineRoot = Join-Path (Resolve-Path .).Path '_baseline'
@@ -636,7 +879,12 @@ jobs:
             Remove-Item -LiteralPath $baselineRoot -Recurse -Force
           }
           New-Item -ItemType Directory -Force -Path $baselineRoot | Out-Null
-          git archive HEAD -- "$outputRoot" | tar -xf - -C $baselineRoot
+          foreach ($outputRoot in $outputRoots) {
+            $trackedInHead = @(git ls-tree -r --name-only HEAD -- "$outputRoot" | Select-Object -First 1)
+            if ($trackedInHead.Count -gt 0) {
+              git archive HEAD -- "$outputRoot" | tar -xf - -C $baselineRoot
+            }
+          }
 
           $jsonPath = 'artifacts/screenshot-diff/diff-summary.json'
           $reportDir = 'artifacts/screenshot-diff/report'
@@ -679,7 +927,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Commit WPF desktop screenshots
+      - name: Commit UI screenshots
         if: |
           steps.validate_outputs.outputs.passed == 'true' &&
           steps.detect_changes.outputs.changed == 'true' &&
@@ -687,24 +935,32 @@ jobs:
           (github.event_name != 'workflow_dispatch' || inputs.commit == true)
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: 'docs(screenshots): refresh WPF desktop screenshots'
-          file_pattern: ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
+          commit_message: 'docs(screenshots): refresh UI screenshots'
+          file_pattern: |
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
+            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*.png
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Write workflow summary
         if: always()
         run: |
-          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
           $pngCount = 0
-          if (Test-Path "$outputRoot") {
-            $pngCount = (Get-ChildItem -Path "$outputRoot" -Recurse -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+          foreach ($outputRoot in @($desktopOutputRoot, $webOutputRoot)) {
+            if (Test-Path "$outputRoot") {
+              $pngCount += (Get-ChildItem -Path "$outputRoot" -Recurse -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+            }
           }
 
           $lines = @(
             '## UI Screenshot Refresh (commit job)'
             ''
-            "Output root: ``$outputRoot``"
+            "Surface mode: **$surfaceSelection**"
+            "Desktop output root: ``$desktopOutputRoot``"
+            "Web output root: ``$webOutputRoot``"
             "PNG files found: **$pngCount**"
             "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
             "Workflow mode: **${{ steps.prune.outputs.selected_mode }}**"
@@ -756,8 +1012,17 @@ jobs:
     name: Workflow timing summary
     runs-on: windows-latest
     timeout-minutes: 10
-    needs: desktop-screenshots
-    if: always() && github.actor != 'github-actions[bot]'
+    needs:
+      - build-wpf
+      - desktop-screenshots
+      - web-screenshots
+    if: |
+      always() &&
+      github.actor != 'github-actions[bot]' &&
+      !cancelled() &&
+      !contains(needs.*.result, 'failure') &&
+      (needs['desktop-screenshots'].result == 'success' ||
+      needs['web-screenshots'].result == 'success')
 
     defaults:
       run:

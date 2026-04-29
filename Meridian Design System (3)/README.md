@@ -79,7 +79,10 @@ See `VISUAL_FOUNDATIONS.md`. In short:
 
 ## Image-inspired refinement
 
-The `uploads/` folder is a reference board for this package. It contains:
+The local `uploads/` folder is the source reference board for this package. It is intentionally
+ignored by Git, so distributable HTML must use tracked files under `assets/` and treat
+`INSPIRATION_BRIEF.md` as the durable summary of the image-derived guidance. The local board
+contains:
 
 - a target Meridian workstation render with KPI cards, chart/table pairing, and persistent masthead/rail structure;
 - custody, portfolio-reporting, and trade-manager screens that demonstrate table density, filter bars, selected-row details, and status windows;

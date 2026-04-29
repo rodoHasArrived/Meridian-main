@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildOverviewStatusState } from "@/screens/overview-screen.view-model";
+import {
+  buildOverviewStatusState,
+  buildOverviewWorkspaceLinks
+} from "@/screens/overview-screen.view-model";
 import type { SystemOverviewResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
@@ -43,6 +46,16 @@ describe("overview-screen view model", () => {
       value: "1",
       tone: "warning"
     });
+    expect(state.workspaceSummary).toBe("7 canonical operator routes. Legacy routes redirect to their canonical workspaces.");
+    expect(state.workspaceLinks.map((workspace) => workspace.label)).toEqual([
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ]);
   });
 
   it("surfaces refresh failures while keeping stale data available", () => {
@@ -72,5 +85,26 @@ describe("overview-screen view model", () => {
     expect(state.refreshAriaLabel).toBe("Refreshing system status");
     expect(state.refreshAnnouncement).toBe("Refreshing system status.");
     expect(state.activityEmptyText).toBe("Loading activity feed...");
+  });
+
+  it("builds canonical workspace links instead of legacy overview cards", () => {
+    const links = buildOverviewWorkspaceLinks();
+
+    expect(links).toHaveLength(7);
+    expect(links.map((link) => link.href)).toEqual([
+      "/trading",
+      "/portfolio",
+      "/accounting",
+      "/reporting",
+      "/strategy",
+      "/data",
+      "/settings"
+    ]);
+    expect(links.some((link) => link.label === "Research")).toBe(false);
+    expect(links.some((link) => link.href === "/data-operations")).toBe(false);
+    expect(links.find((link) => link.id === "trading")?.badgeVariant).toBe("warning");
+    expect(links.find((link) => link.id === "strategy")?.badgeVariant).toBe("paper");
+    expect(links.find((link) => link.id === "data")?.badgeVariant).toBe("live");
+    expect(links[0].ariaLabel).toContain("Open Trading workspace");
   });
 });

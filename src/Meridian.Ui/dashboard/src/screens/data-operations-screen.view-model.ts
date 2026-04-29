@@ -52,9 +52,20 @@ export interface DataOperationsProviderRow {
   provider: string;
   status: DataOperationsProviderRecord["status"];
   capability: string;
+  latencyText: string;
   note: string;
-  statusTone: "success" | "warning";
+  statusTone: "success" | "warning" | "danger";
+  trustFields: DataOperationsProviderTrustField[];
+  reasonCodeText: string;
+  recommendedActionText: string;
+  gateImpactText: string;
   ariaLabel: string;
+}
+
+export interface DataOperationsProviderTrustField {
+  id: string;
+  label: string;
+  value: string;
 }
 
 export interface DataOperationsBackfillRow {
@@ -258,19 +269,64 @@ export function buildProviderSection(
   providers: DataOperationsProviderRecord[]
 ): DataOperationsSectionState<DataOperationsProviderRow> {
   return {
-    rows: providers.map((provider) => ({
-      provider: provider.provider,
-      status: provider.status,
-      capability: provider.capability,
-      note: provider.note,
-      statusTone: provider.status === "Healthy" ? "success" : "warning",
-      ariaLabel: `${provider.provider} provider ${provider.status}. ${provider.capability}. ${provider.note}`
-    })),
+    rows: providers.map(buildProviderRow),
     hasRows: providers.length > 0,
     emptyState: {
       title: "No providers reported",
       description: "Check provider configuration or run provider detection before relying on live, backfill, or export data."
     }
+  };
+}
+
+export function buildProviderRow(provider: DataOperationsProviderRecord): DataOperationsProviderRow {
+  const latencyText = formatProviderValue(provider.latency, "Latency not reported");
+  const trustScoreText = formatProviderValue(provider.trustScore, "Trust score not reported");
+  const signalSourceText = formatProviderValue(provider.signalSource, "Signal source not reported");
+  const reasonCodeText = formatProviderValue(provider.reasonCode, "Reason code not reported");
+  const recommendedActionText = formatProviderValue(provider.recommendedAction, "No operator action reported");
+  const gateImpactText = formatProviderValue(provider.gateImpact, "No gate impact reported");
+
+  return {
+    provider: provider.provider,
+    status: provider.status,
+    capability: provider.capability,
+    latencyText,
+    note: provider.note,
+    statusTone: provider.status === "Healthy" ? "success" : provider.status === "Degraded" ? "danger" : "warning",
+    trustFields: [
+      {
+        id: "latency",
+        label: "Latency",
+        value: latencyText
+      },
+      {
+        id: "trust-score",
+        label: "Trust score",
+        value: trustScoreText
+      },
+      {
+        id: "signal-source",
+        label: "Signal source",
+        value: signalSourceText
+      },
+      {
+        id: "gate-impact",
+        label: "Gate impact",
+        value: gateImpactText
+      }
+    ],
+    reasonCodeText,
+    recommendedActionText,
+    gateImpactText,
+    ariaLabel: [
+      `${provider.provider} provider ${provider.status}`,
+      provider.capability,
+      provider.note,
+      `Latency ${latencyText}`,
+      `Trust score ${trustScoreText}`,
+      `Gate impact ${gateImpactText}`,
+      `Recommended action ${recommendedActionText}`
+    ].join(". ")
   };
 }
 
@@ -427,6 +483,11 @@ function parseSymbols(value: string): string[] {
 function isValidDateInput(value: string): boolean {
   const trimmed = value.trim();
   return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) && !Number.isNaN(Date.parse(trimmed));
+}
+
+function formatProviderValue(value: string | null | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
 }
 
 function buildBackfillStatusAnnouncement({

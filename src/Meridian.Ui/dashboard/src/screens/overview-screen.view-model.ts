@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { getSystemStatus } from "@/lib/api";
-import type { MetricSnapshot, SystemEventRecord, SystemOverviewResponse } from "@/types";
+import { WORKSPACES, workspacePath } from "@/lib/workspace";
+import type { MetricSnapshot, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 export type OverviewRefreshFetcher = () => Promise<SystemOverviewResponse>;
 
@@ -13,11 +14,23 @@ export interface OverviewFallbackStat {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export interface OverviewWorkspaceLink {
+  id: WorkspaceKey;
+  label: string;
+  description: string;
+  href: string;
+  status: string;
+  badgeVariant: "outline" | "warning" | "paper" | "live";
+  ariaLabel: string;
+}
+
 export interface OverviewStatusState {
   current: SystemOverviewResponse | null;
   metrics: MetricSnapshot[];
   events: SystemEventRecord[];
   fallbackStats: OverviewFallbackStat[];
+  workspaceLinks: OverviewWorkspaceLink[];
+  workspaceSummary: string;
   hasMetrics: boolean;
   hasEvents: boolean;
   statusLabel: string;
@@ -56,6 +69,8 @@ export function buildOverviewStatusState({
     metrics,
     events,
     fallbackStats: buildFallbackStats(current),
+    workspaceLinks: buildOverviewWorkspaceLinks(),
+    workspaceSummary: "7 canonical operator routes. Legacy routes redirect to their canonical workspaces.",
     hasMetrics: metrics.length > 0,
     hasEvents: events.length > 0,
     statusLabel: current ? statusLabels[current.systemStatus] : "Connecting to system...",
@@ -110,6 +125,18 @@ export function useOverviewStatusViewModel(
   };
 }
 
+export function buildOverviewWorkspaceLinks(): OverviewWorkspaceLink[] {
+  return WORKSPACES.map((workspace) => ({
+    id: workspace.key,
+    label: workspace.label,
+    description: workspace.description,
+    href: workspacePath(workspace.key),
+    status: workspace.status,
+    badgeVariant: badgeVariantForWorkspaceStatus(workspace.status),
+    ariaLabel: `Open ${workspace.label} workspace. ${workspace.description} Status ${workspace.status}.`
+  }));
+}
+
 const statusLabels: Record<SystemOverviewResponse["systemStatus"], string> = {
   Healthy: "All Systems Healthy",
   Degraded: "System Degraded",
@@ -155,6 +182,22 @@ function buildFallbackStats(current: SystemOverviewResponse | null): OverviewFal
       tone: current && current.activeBackfills > 0 ? "warning" : "default"
     }
   ];
+}
+
+function badgeVariantForWorkspaceStatus(status: string): OverviewWorkspaceLink["badgeVariant"] {
+  if (status === "Live") {
+    return "live";
+  }
+
+  if (status === "Paper") {
+    return "paper";
+  }
+
+  if (status === "Review") {
+    return "warning";
+  }
+
+  return "outline";
 }
 
 function formatTime(value: string | Date): string {

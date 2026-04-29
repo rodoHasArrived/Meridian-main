@@ -22,6 +22,7 @@ GRADIENT_PATTERN = re.compile(r"\b(?:linear|radial)-gradient\(", re.IGNORECASE)
 TAG_ATTR_PATTERN = re.compile(r"(?:href|src)=\"([^\"]+)\"", re.IGNORECASE)
 TD_PATTERN = re.compile(r"<td(?P<attrs>[^>]*)>(?P<body>.*?)</td>", re.IGNORECASE | re.DOTALL)
 NUMERIC_TEXT_PATTERN = re.compile(r"(?:[$−-]?\d[\d,.]*%?|[A-Z]{1,6}\d{2,})")
+LOCAL_UPLOAD_PREFIX = "uploads/"
 
 
 @dataclass(frozen=True)
@@ -91,6 +92,17 @@ def check_local_links(root: Path, path: Path, text: str) -> list[Violation]:
             continue
         clean = link.split("#", 1)[0].split("?", 1)[0]
         if not clean:
+            continue
+        normalized = clean.replace("\\", "/")
+        if normalized.lower().startswith(LOCAL_UPLOAD_PREFIX):
+            violations.append(
+                Violation(
+                    "local-upload-reference",
+                    rel_path(root, path),
+                    line_number(text, match.start()),
+                    f"Use tracked assets/ instead of local-only `{link}`",
+                )
+            )
             continue
         target = (path.parent / Path(*clean.split("/"))).resolve()
         if not target.exists():

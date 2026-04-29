@@ -1,6 +1,6 @@
 # Meridian UI Screenshots
 
-Screenshots of Meridian operator surfaces. The authoritative current catalog is the WPF desktop set under `desktop/`; the older web/API captures in this file are retained as historical reference.
+Screenshots of Meridian operator surfaces. The current refresh workflow captures both the retained WPF desktop catalog under `desktop/` and the browser workstation dashboard under `web/`; the older root-level web/API captures in this file are retained as historical reference.
 
 ## Current Desktop Highlight
 
@@ -17,6 +17,16 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
 ```
 
 Desktop screenshots are stored under `desktop/` and are captured using Windows UI Automation against the desktop shell.
+
+## How to run (web dashboard)
+
+```powershell
+npm --prefix src/Meridian.Ui/dashboard ci
+npm --prefix src/Meridian.Ui/dashboard run build
+npm --prefix src/Meridian.Ui/dashboard run screenshots -- --output-dir docs/screenshots/web
+```
+
+The web screenshot runner starts the Vite dashboard on `127.0.0.1`, captures the canonical workstation routes listed in `scripts/dev/web-screenshot-routes.json`, writes a manifest under `artifacts/web-screenshots/`, and fails if a capture has no workstation shell, too little rendered text, or a suspiciously small PNG.
 
 ---
 

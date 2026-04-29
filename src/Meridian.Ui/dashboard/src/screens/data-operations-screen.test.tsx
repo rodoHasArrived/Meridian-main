@@ -19,7 +19,12 @@ const data: DataOperationsWorkspaceResponse = {
       status: "Healthy",
       capability: "Streaming equities",
       latency: "18ms p50",
-      note: "Realtime subscriptions are stable."
+      note: "Realtime subscriptions are stable.",
+      trustScore: "98%",
+      signalSource: "Provider heartbeat",
+      reasonCode: "TRUST_OK",
+      recommendedAction: "Keep provider active.",
+      gateImpact: "No gate impact"
     }
   ],
   backfills: [
@@ -64,6 +69,11 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
     expect(screen.getByText("Polygon")).toBeInTheDocument();
+    expect(screen.getByLabelText("Polygon trust evidence")).toBeInTheDocument();
+    expect(screen.getByText("Trust score")).toBeInTheDocument();
+    expect(screen.getByText("98%")).toBeInTheDocument();
+    expect(screen.getByText("Keep provider active.")).toBeInTheDocument();
+    expect(screen.getByText("Reason: TRUST_OK")).toBeInTheDocument();
   });
 
   it("renders explicit empty guidance when provider, backfill, and export arrays are empty", () => {

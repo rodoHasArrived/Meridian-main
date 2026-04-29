@@ -1,5 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { approvePromotion, clearExecutionManualOverride, createExecutionManualOverride, evaluatePromotion, getExecutionControls, getPaperSessionDetail, getReplayStatus, getTradingReadiness, pauseReplay, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay } from "@/lib/api";
+import {
+  approvePromotion,
+  clearExecutionManualOverride,
+  createExecutionManualOverride,
+  evaluatePromotion,
+  getDataOperationsWorkspace,
+  getExecutionControls,
+  getGovernanceWorkspace,
+  getPaperSessionDetail,
+  getReplayStatus,
+  getResearchWorkspace,
+  getSession,
+  getSystemStatus,
+  getTradingReadiness,
+  getTradingWorkspace,
+  pauseReplay,
+  resumeReplay,
+  seekReplay,
+  setReplaySpeed,
+  startReplay,
+  stopReplay,
+  submitOrder
+} from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
   const fetchMock = vi.fn();
@@ -75,5 +97,29 @@ describe("trading endpoint wiring", () => {
       "/api/execution/controls/manual-overrides/ovr-1/clear",
       expect.objectContaining({ method: "POST" })
     );
+  });
+
+  it("uses dev fixtures for workstation bootstrap GETs when the API host is missing", async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 404, json: async () => ({}), text: async () => "" });
+
+    await expect(getSession()).resolves.toMatchObject({ displayName: "Ops Desk" });
+    await expect(getSystemStatus()).resolves.toMatchObject({ providersTotal: 4 });
+    await expect(getResearchWorkspace()).resolves.toMatchObject({ runs: expect.any(Array) });
+    await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
+    await expect(getDataOperationsWorkspace()).resolves.toMatchObject({ backfills: expect.any(Array) });
+    await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
+  });
+
+  it("does not use dev fixtures for order mutations", async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 404, text: async () => "not found" });
+
+    await expect(
+      submitOrder({
+        symbol: "AAPL",
+        side: "Buy",
+        type: "Market",
+        quantity: 1
+      })
+    ).rejects.toThrow("Request failed for /api/execution/orders/submit (404)");
   });
 });

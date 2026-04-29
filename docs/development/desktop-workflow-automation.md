@@ -155,9 +155,10 @@ Supported step fields:
 
 `refresh-screenshots.yml` now classifies changed screenshots into:
 
-- `blocking-regression` (major layout/structure loss, missing route/component evidence, missing image baseline/current image, or threshold breach),
+- `blocking-regression` (major layout/structure loss, missing route/component evidence, missing current image, deleted baseline image, or threshold breach),
 - `review-needed` (moderate visual delta that needs a human decision),
-- `non-blocking-noise` (small anti-aliasing/theme variance).
+- `non-blocking-noise` (small anti-aliasing/theme variance, or a brand-new screenshot file with
+  no prior baseline).
 
 Thresholds, pixel tolerance, and per-image mask rectangles are versioned in:
 

@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "outputRoot": "docs/screenshots/web",
+  "basePath": "/workstation",
+  "defaultViewport": {
+    "width": 1440,
+    "height": 1100
+  },
+  "captures": [
+    {
+      "id": "W01",
+      "name": "web-trading-workspace",
+      "path": "/trading",
+      "docLabel": "Trading",
+      "waitForText": "Trading"
+    },
+    {
+      "id": "W02",
+      "name": "web-portfolio-workspace",
+      "path": "/portfolio",
+      "docLabel": "Portfolio",
+      "waitForText": "Portfolio"
+    },
+    {
+      "id": "W03",
+      "name": "web-accounting-workspace",
+      "path": "/accounting",
+      "docLabel": "Accounting",
+      "waitForText": "Accounting"
+    },
+    {
+      "id": "W04",
+      "name": "web-reporting-workspace",
+      "path": "/reporting",
+      "docLabel": "Reporting",
+      "waitForText": "Reporting"
+    },
+    {
+      "id": "W05",
+      "name": "web-strategy-workspace",
+      "path": "/strategy",
+      "docLabel": "Strategy",
+      "waitForText": "Strategy"
+    },
+    {
+      "id": "W06",
+      "name": "web-data-workspace",
+      "path": "/data",
+      "docLabel": "Data",
+      "waitForText": "Data"
+    },
+    {
+      "id": "W07",
+      "name": "web-settings-workspace",
+      "path": "/settings",
+      "docLabel": "Settings",
+      "waitForText": "Settings"
+    }
+  ]
+}

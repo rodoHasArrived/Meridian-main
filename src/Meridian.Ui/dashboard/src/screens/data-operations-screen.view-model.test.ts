@@ -6,6 +6,7 @@ import {
   buildBackfillTriggerState,
   buildDataOperationsPresentationState,
   buildExportSection,
+  buildProviderRow,
   buildProviderSection,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
@@ -56,7 +57,12 @@ const providers: DataOperationsProviderRecord[] = [
     status: "Healthy",
     capability: "Streaming equities",
     latency: "18ms p50",
-    note: "Realtime subscriptions are stable."
+    note: "Realtime subscriptions are stable.",
+    trustScore: "98%",
+    signalSource: "Provider heartbeat",
+    reasonCode: "TRUST_OK",
+    recommendedAction: "Keep provider active.",
+    gateImpact: "No gate impact"
   }
 ];
 
@@ -146,6 +152,12 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.hasRows).toBe(true);
     expect(providerSection.rows[0].statusTone).toBe("success");
     expect(providerSection.rows[0].ariaLabel).toContain("Polygon provider Healthy");
+    expect(providerSection.rows[0].trustFields).toContainEqual({
+      id: "trust-score",
+      label: "Trust score",
+      value: "98%"
+    });
+    expect(providerSection.rows[0].recommendedActionText).toBe("Keep provider active.");
     expect(buildProviderSection([]).emptyState.title).toBe("No providers reported");
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
@@ -156,6 +168,34 @@ describe("data-operations-screen view model", () => {
     const exportSection = buildExportSection(exports);
     expect(exportSection.rows[0].summaryText).toBe("research pack - 124k");
     expect(buildExportSection([]).emptyState.title).toBe("No exports available");
+  });
+
+  it("derives degraded provider trust evidence with explicit fallback copy", () => {
+    const row = buildProviderRow({
+      provider: "Databento",
+      status: "Degraded",
+      capability: "Backfill bars",
+      latency: "",
+      note: "Checkpoint delay exceeded the review threshold.",
+      signalSource: "Provider calibration",
+      reasonCode: "CHECKPOINT_DELAY",
+      recommendedAction: "Review checkpoint freshness before accepting DK evidence.",
+      gateImpact: "Blocks provider trust gate"
+    });
+
+    expect(row.statusTone).toBe("danger");
+    expect(row.trustFields).toContainEqual({
+      id: "latency",
+      label: "Latency",
+      value: "Latency not reported"
+    });
+    expect(row.trustFields).toContainEqual({
+      id: "trust-score",
+      label: "Trust score",
+      value: "Trust score not reported"
+    });
+    expect(row.gateImpactText).toBe("Blocks provider trust gate");
+    expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
   });
 
   it("derives a data operations presentation state for empty workspace arrays", () => {

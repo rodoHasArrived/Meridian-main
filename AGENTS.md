@@ -371,12 +371,14 @@ TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but 
 `pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
 builds unless the Make target is restored.
 
-`.github/workflows/refresh-screenshots.yml` is a WPF-only screenshot lane. It runs
-`screenshot-catalog` plus the `manual-*` workflows through
-`scripts/dev/run-desktop-workflow.ps1` in fixture mode; `workflow_dispatch` can choose `all`,
-`catalog`, or `manuals`, override `output_root`, and skip the final commit with `commit=false`.
-The workflow commits screenshots once in the follow-up `commit-screenshots` job; do not restore
-the removed `--ui` web-dashboard path for screenshot refreshes.
+`.github/workflows/refresh-screenshots.yml` refreshes both retained WPF desktop screenshots and
+browser workstation dashboard screenshots. Desktop captures run `screenshot-catalog` plus the
+`manual-*` workflows through `scripts/dev/run-desktop-workflow.ps1` in fixture mode; web captures
+run `scripts/dev/capture-web-screenshots.mjs` against the Vite dashboard routes listed in
+`scripts/dev/web-screenshot-routes.json`. `workflow_dispatch` can choose `surfaces=all`,
+`desktop`, or `web`, choose desktop `workflows=all`, `catalog`, or `manuals`, override
+`output_root` and `web_output_root`, and skip the final commit with `commit=false`.
+The workflow commits screenshots once in the follow-up `commit-screenshots` job.
 
 ## Paper Trading Readiness
 

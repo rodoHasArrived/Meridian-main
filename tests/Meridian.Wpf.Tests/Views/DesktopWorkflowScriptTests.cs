@@ -72,6 +72,20 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void SharedBuildScript_ShouldResolveAbsoluteProjectBinaryPathWithoutRepoPrefix()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
+
+        script.Should().Contain("function Get-MeridianProjectBinaryPath");
+        script.Should().Contain("$projectDirectory = Split-Path -Parent $ProjectPath");
+        script.Should().Contain("[System.IO.Path]::IsPathRooted($projectDirectory)");
+        script.Should().Contain("Join-Path $projectDirectory \"bin/$Configuration/$Framework\"");
+        script.Should().Contain("Join-Path $RepoRoot (Join-Path $projectDirectory \"bin/$Configuration/$Framework\")");
+        script.Should().Contain("return [System.IO.Path]::GetFullPath((Join-Path $projectOutputDirectory $BinaryName))");
+        script.Should().NotContain("Join-Path $RepoRoot (Join-Path $projectDirectory \"bin/$Configuration/$Framework/$BinaryName\")");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldImportCheckpointHelpersBeforeWorkflowExecution()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));

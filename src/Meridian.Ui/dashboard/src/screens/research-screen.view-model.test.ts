@@ -6,6 +6,7 @@ import {
   buildResearchRunLibraryState,
   buildRunDetail,
   buildRunTable,
+  shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
 import type { PromotionRecord, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
@@ -239,6 +240,21 @@ describe("research-screen view model", () => {
   });
 
   it("derives modal detail copy with unavailable fallback", () => {
-    expect(buildRunDetail({ ...runs[0], notes: "  " }).notesText).toBe("Unavailable");
+    const detail = buildRunDetail({ ...runs[0], notes: "  " });
+
+    expect(detail.dialogTitleId).toBe("strategy-run-detail-run-1-title");
+    expect(detail.dialogDescriptionId).toBe("strategy-run-detail-run-1-description");
+    expect(detail.description).toBe("Mean Reversion FX is Running in PAPER mode.");
+    expect(detail.modeBadgeLabel).toBe("PAPER");
+    expect(detail.modeBadgeVariant).toBe("paper");
+    expect(detail.summaryRows).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
+    expect(detail.notesText).toBe("No operator notes were recorded for this run.");
+    expect(detail.closeButtonAriaLabel).toBe("Close Mean Reversion FX run detail");
+  });
+
+  it("keeps run detail keyboard-close decisions testable outside the view", () => {
+    expect(shouldCloseRunDetailForKey("Escape")).toBe(true);
+    expect(shouldCloseRunDetailForKey("Esc")).toBe(true);
+    expect(shouldCloseRunDetailForKey("Enter")).toBe(false);
   });
 });
