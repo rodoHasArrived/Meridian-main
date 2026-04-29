@@ -39,6 +39,43 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Resolve base ref and collect scoped diff
+        id: diff
+        shell: bash
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          BASE_REF="${GITHUB_BASE_REF:-main}"
+          REMOTE_BASE="origin/${BASE_REF}"
+
+          git fetch --no-tags --prune --depth=200 origin "${BASE_REF}:${REMOTE_BASE}" || \
+            git fetch --no-tags --prune origin "${BASE_REF}:${REMOTE_BASE}"
+
+          DIFF_RANGE="${REMOTE_BASE}...HEAD"
+          mapfile -t CHANGED_FILES < <(git diff --name-only --diff-filter=ACMR "${DIFF_RANGE}" || true)
+
+          MAX_FILES=80
+          if (( ${#CHANGED_FILES[@]} > MAX_FILES )); then
+            CHANGED_FILES=("${CHANGED_FILES[@]:0:MAX_FILES}")
+            TRUNCATED=true
+          else
+            TRUNCATED=false
+          fi
+
+          {
+            echo "base_ref=${REMOTE_BASE}"
+            echo "diff_range=${DIFF_RANGE}"
+            echo "changed_count=${#CHANGED_FILES[@]}"
+            echo "truncated=${TRUNCATED}"
+            echo "changed_files<<EOF"
+            printf '%s\n' "${CHANGED_FILES[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build Copilot run brief
         id: brief
@@ -48,6 +85,14 @@ jobs:
             const eventName = context.eventName;
             const actor = context.actor;
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const baseRef = `${{ steps.diff.outputs.base_ref }}`;
+            const diffRange = `${{ steps.diff.outputs.diff_range }}`;
+            const changedFilesCount = `${{ steps.diff.outputs.changed_count }}` || '0';
+            const changedFiles = `${{ steps.diff.outputs.changed_files }}`
+              .split('\n')
+              .map(x => x.trim())
+              .filter(Boolean);
+            const truncated = `${{ steps.diff.outputs.truncated }}` === 'true';
             const issueNumberInput = context.payload.inputs?.issue_number;
             const issueNumber = Number(issueNumberInput || context.payload.issue?.number || 0);
             const target = issueNumber > 0 ? `#${issueNumber}` : 'ad-hoc run';
@@ -91,6 +136,21 @@ jobs:
               '```text',
               requestText.trim(),
               '```',
+              '',
+              '## Scoped Repository Context',
+              `- Base ref: ${baseRef}`,
+              `- Diff range: ${diffRange}`,
+              `- Changed files captured: ${changedFilesCount}${truncated ? ' (truncated to first 80 files)' : ''}`,
+              '',
+              changedFiles.length
+                ? [
+                    '### Changed Files',
+                    '```text',
+                    ...changedFiles,
+                    '```',
+                    '',
+                  ].join('\n')
+                : '### Changed Files\n_No changed files detected for the selected diff range._\n',
               '',
               '## Linked Artifact and Visibility Plan',
               '- This run uploads a markdown artifact with the run brief and context.',
