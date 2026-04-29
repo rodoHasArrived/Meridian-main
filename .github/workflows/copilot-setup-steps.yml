@@ -54,7 +54,14 @@ jobs:
 
       - name: Restore .NET dependencies
         shell: bash
-        run: dotnet restore Meridian.sln -p:EnableWindowsTargeting=true --verbosity minimal
+        run: |
+          set -euo pipefail
+          if dotnet restore Meridian.sln -p:EnableWindowsTargeting=true --verbosity minimal; then
+            exit 0
+          fi
+
+          echo "Primary restore with EnableWindowsTargeting=true failed; retrying without Windows targeting to keep Copilot setup usable on Linux-only runners."
+          dotnet restore Meridian.sln --verbosity minimal
 
       - name: Build solution
         id: build
