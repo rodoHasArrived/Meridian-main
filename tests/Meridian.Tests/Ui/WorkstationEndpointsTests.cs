@@ -881,6 +881,47 @@ public sealed class WorkstationEndpointsTests
             item.Label == "Promotion decision required");
     }
 
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_WithFundAccountId_ShouldSurfaceBrokerageSyncFreshnessAndDivergencePosture()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-readiness", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            var status = await brokerageSync.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+
+            var readiness = await app
+                .GetTestClient()
+                .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                    $"/api/workstation/trading/readiness?fundAccountId={fundAccountId:D}",
+                    ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.BrokerageSync.Should().NotBeNull();
+            readiness.BrokerageSync!.FundAccountId.Should().Be(fundAccountId);
+            readiness.BrokerageSync.Health.Should().Be(WorkstationBrokerageSyncHealth.Failed);
+            readiness.BrokerageSync.SecurityMissingCount.Should().BeGreaterThanOrEqualTo(0);
+            readiness.BrokerageSync.Warnings.Should().Contain(w => w.Contains("missing", StringComparison.OrdinalIgnoreCase));
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == fundAccountId &&
+                item.TargetRoute == UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldProjectTradingReadinessWorkItemsWithNavigation()
     {
