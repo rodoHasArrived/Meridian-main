@@ -19,6 +19,10 @@ The next six weeks should focus on four outcomes:
 3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while moving new operator UI validation through the active web dashboard and retaining WPF as support evidence
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
 
+The commercial filter for these outcomes is the **Meridian Assurance Loop**: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack. This filter should sharpen the six-week scope; it should not create a new wave or allow planned commercial modules to be described as complete before shared contracts, retained evidence, and browser-visible workflows exist.
+
+The accounting-led extension for this window is narrow: use Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, buyer demo mode, and evidence packet actions as prioritization language only. Six-week work should favor shared-contract definitions and browser-dashboard readiness previews over new module claims.
+
 Explicit non-goals in this window:
 
 - Wave 5 Backtest Studio unification
@@ -33,8 +37,9 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the web dashboard in `src/Meridian.Ui/dashboard/` is now the active operator UI lane, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`; the retained WPF shell remains support evidence for compatibility and shared-contract regression checks
+- buyer-facing demo paths, role-based views, readiness dashboards, close workflow previews, and evidence packet actions should be planned for the web dashboard after shared contracts exist; retained WPF coverage should stay limited to support and regression validation
 - the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, component/view-model coverage, and refreshed built assets; canonical seven-workspace web navigation, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
-- the WPF workstation shell is already organized around `Research`, `Trading`, `Data Operations`, and `Governance`; it remains useful support evidence for retained desktop workflows and shared workstation contracts rather than the default lane for new operator features
+- the retained WPF workstation shell is already organized around compatibility workspace groupings such as `Research`, `Trading`, `Data Operations`, and `Governance`; it remains useful support evidence for retained desktop workflows and shared workstation contracts rather than the default lane for new operator features
 - the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest results empty-state guidance, Position Blotter, Notification Center history recovery, Trading Hours session and holiday-calendar guidance, Welcome, Storage archive posture, System Health triage, Activity Log triage/export/clear state, Watchlist posture plus pinned-first display, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation and comparison guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing states, workspace queue tone styles, the workspace shell context strip, route-aware operator queue button state with shell-context attention cues, the Trading desk briefing hero's stale-replay count detail, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the Data Operations desk briefing hero's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
 - the latest shell-support evidence adds Welcome readiness progress for connection/symbol/storage posture, Storage archive posture for daily growth/capacity/last-scan handoffs, Storage preview scope/guidance for archive-path decisions, OrderBook order-flow posture for depth/tape/spread monitoring, compact shared deep-page command chrome that preserves related-workflow and trust-state context, actionable shell-context attention details, a provider-degradation next action that opens `ProviderHealth`, brokerage-sync queue routing into `AccountPortfolio`, bounded run review-packet queue items, and Trading hero attention states for warning or critical shared work items; treat these as validation support for operator orientation and routing, not as separate readiness exits
 - fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores shared project assets without pinning the WPF target framework before building the desktop shell with the pinned WPF framework and confirming page tags, so test evidence should distinguish demo-state validation from operational readiness
@@ -64,7 +69,7 @@ This plan starts from the current repo state:
 - keep desktop launch/deep-link routing, screenshot workflows, single-instance forwarding, UI-automation page-state markers, and fixture/demo-mode cues aligned to the four workspace shell routes so automation verifies the same surfaces operators use; screenshot-refresh CI should remain a validation evidence lane with diagnostic artifact retention and a single final commit step
 - keep validation and documentation synchronized with executable evidence, not summary language; the DK1 `pilotReplaySampleSet` is now part of that evidence contract
 - keep shared DTOs, read models, workflow services, and export seams as the integration boundary across active work
-- treat current shell workflow validation as open until the delivered shell/navigation baseline is clearly wired into run-centered workflows
+- treat current web-dashboard workflow validation as open until the delivered shell/navigation baseline is clearly wired into run-centered workflows, with retained WPF validation limited to compatibility and shared-contract regression coverage
 
 ### Explicitly deferred beyond this window
 
@@ -111,6 +116,7 @@ This plan starts from the current repo state:
 
 - Security Master remains the delivered baseline while account/entity, reconciliation, cash-flow, multi-ledger, and reporting-adjacent workflows deepen on top of it
 - the next governance slice is defined in terms of shared DTOs, read models, export seams, account/provider-routing evidence, reconciliation break-queue state, calibration-summary rollups, seeded exception-route/tolerance/sign-off metadata, and operator surfaces rather than a parallel governance stack
+- accounting-led commercial slices should start as shared acceptance definitions for accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness
 
 ---
 
@@ -166,14 +172,15 @@ Priorities:
 
 - keep Security Master authoritative while extending its use across governance workflows
 - define the next concrete slices for account/entity, multi-ledger, cash-flow, calibrated reconciliation, and reporting work
+- keep Books Before Broker, Transaction Lab, insurance accounting, Close the Books, broker statement reconciliation, shadow books, and controls as roadmap targets unless a slice has shared contracts, retained evidence, and browser-visible workflow support
 - treat the Fund Accounts operator brief as Wave 4 support evidence only while it remains a projection of shared account, provider-routing, retained balance-history, and shared-data-access state
 - keep governance work grounded in shared DTOs, read models, and export seams rather than a separate subsystem
 
-### Supporting discipline: Workflow-first WPF consolidation and validation
+### Supporting discipline: Retained WPF consolidation and validation
 
 Priorities:
 
-- prioritize high-traffic WPF pages and shell surfaces that directly support active cockpit, shared-model, or governance work
+- limit WPF page and shell work to retained support, compatibility, and shared-contract regression coverage for active cockpit, shared-model, or governance work
 - continue MVVM extraction where pages still depend heavily on code-behind orchestration in active areas
 - keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used by the WPF shell and retained desktop-local API contracts
 - treat the Trading desk briefing hero, OrderBook posture strip, and Position Blotter selection-review rail as Wave 2 support evidence only when they continue to reflect shared execution, readiness, replay, controls, trust-gate, depth/tape, and brokerage-sync posture without duplicating service logic
@@ -233,5 +240,6 @@ Mitigation:
 - the paper-trading cockpit has a tighter, more dependable operator story
 - shared run, portfolio, ledger, cash-flow, and reconciliation flows are easier to follow across workspaces
 - the active web dashboard direction is better validated against real workflows, and retained WPF support remains clearly subordinate to Waves 1-4 rather than becoming a parallel program
+- accounting-led commercial additions remain scoped to shared-contract and browser-dashboard readiness targets unless evidence proves a narrower implemented slice
 - at least one concrete governance slice is clearly defined or landed on top of the delivered Security Master baseline
 - the next follow-on slice remains clearly bounded to Waves 1-4, with Wave 5+, broader live-readiness claims, and optional advanced research / scale tracks still deferred

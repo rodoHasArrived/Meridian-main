@@ -15,6 +15,13 @@
       "waitForText": "Trading"
     },
     {
+      "id": "W01A",
+      "name": "web-operator-readiness-console",
+      "path": "/trading/readiness",
+      "docLabel": "Operator Readiness Console",
+      "waitForText": "Operator Readiness Console"
+    },
+    {
       "id": "W02",
       "name": "web-portfolio-workspace",
       "path": "/portfolio",

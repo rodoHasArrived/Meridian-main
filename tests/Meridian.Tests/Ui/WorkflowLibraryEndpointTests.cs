@@ -167,7 +167,7 @@ public sealed class WorkflowLibraryEndpointTests
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => store.LoadAsync(cts.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => store.LoadAsync(cts.Token));
     }
 
     private static async Task<WebApplication> CreateWorkflowPresetAppAsync(string root)

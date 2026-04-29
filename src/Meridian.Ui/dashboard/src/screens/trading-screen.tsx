@@ -1,6 +1,6 @@
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -1493,6 +1493,9 @@ function AcceptanceStatusCard({
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/trading/readiness">Open console</Link>
+            </Button>
             <Button
               size="sm"
               variant="outline"

@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
+import { renderWithRouter } from "@/test/render";
 import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
 
 const data: DataOperationsWorkspaceResponse = {
@@ -59,11 +59,7 @@ const data: DataOperationsWorkspaceResponse = {
 
 describe("DataOperationsScreen", () => {
   it("renders provider, backfill, and export summaries", () => {
-    render(
-      <MemoryRouter initialEntries={["/data"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
@@ -84,11 +80,7 @@ describe("DataOperationsScreen", () => {
       exports: []
     };
 
-    render(
-      <MemoryRouter initialEntries={["/data/backfills"]}>
-        <DataOperationsScreen data={emptyData} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={emptyData} />, { initialEntries: ["/data/backfills"] });
 
     expect(screen.getByText("No providers reported")).toBeInTheDocument();
     expect(screen.getByText("No backfills queued")).toBeInTheDocument();
@@ -98,11 +90,7 @@ describe("DataOperationsScreen", () => {
   });
 
   it("adapts the hero copy for deep-link routes", () => {
-    render(
-      <MemoryRouter initialEntries={["/data/backfills"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     expect(screen.getByText("Backfill queue focus")).toBeInTheDocument();
     expect(screen.getByText("Backfill Detail")).toBeInTheDocument();
@@ -112,11 +100,7 @@ describe("DataOperationsScreen", () => {
   it("switches the detail panel when a backfill row is selected", async () => {
     const user = userEvent.setup();
 
-    render(
-      <MemoryRouter initialEntries={["/data/backfills"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /BF-1044/i }));
 
@@ -127,11 +111,7 @@ describe("DataOperationsScreen", () => {
   it("opens the trigger backfill dialog when the Trigger backfill button is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
-      <MemoryRouter initialEntries={["/data"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
@@ -143,11 +123,7 @@ describe("DataOperationsScreen", () => {
   it("keeps preview disabled until the backfill symbols are valid", async () => {
     const user = userEvent.setup();
 
-    render(
-      <MemoryRouter initialEntries={["/data"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
@@ -175,11 +151,7 @@ describe("DataOperationsScreen", () => {
 
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
 
-    render(
-      <MemoryRouter initialEntries={["/data"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
@@ -222,11 +194,7 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "triggerBackfill").mockResolvedValueOnce(mockResult);
     vi.spyOn(api, "getBackfillProgress").mockResolvedValue(mockProgress);
 
-    render(
-      <MemoryRouter initialEntries={["/data"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "MSFT");
@@ -247,11 +215,7 @@ describe("DataOperationsScreen", () => {
 
     vi.spyOn(api, "previewBackfill").mockRejectedValueOnce(new Error("Provider offline"));
 
-    render(
-      <MemoryRouter initialEntries={["/data"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "SPY");

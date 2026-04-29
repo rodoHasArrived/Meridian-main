@@ -51,6 +51,24 @@ The golden-path pilot workflow now gives those waves one product filter: trusted
 
 ---
 
+## Commercial Positioning
+
+Meridian's commercial thesis is that it becomes an evidence-backed investment operations platform: the system of record for investment decision evidence. The sellable story should be the **Meridian Assurance Loop**:
+
+```text
+Data Trust Passport
+-> Run Evidence Graph
+-> Promotion Passport
+-> Accounting-Grade Paper Trading
+-> Governed Report Pack
+```
+
+That loop maps directly onto the active Waves 2-4 path. Existing support evidence includes the DK1 provider-trust packet, shared run/read-model seams, promotion approval checklist state, paper replay/audit metadata, reconciliation break queues, report-pack schema/version checks, and the web Operator Readiness Console. The roadmap should treat the named modules as commercial targets until shared contracts, retained evidence, browser-visible workflows, and governed outputs close the loop.
+
+The accounting-led commercial wedge for the same path is: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, and evidence packet actions should sharpen Waves 2-4 as planned product modules. They should not be described as implemented until shared contracts, retained evidence, browser workflows, and governed outputs prove them end to end.
+
+---
+
 ## Current State
 
 Use the canonical wave table in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) for all status labels and target dates.
@@ -111,11 +129,11 @@ Delivery Kernel governance to avoid piecemeal adoption:
 
 ## Target End Product
 
-Meridian's target end state is a self-hosted trading workstation and fund-operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
+Meridian's target end state is a self-hosted evidence-backed investment operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
 `Data` establishes evidence-backed provider trust, `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting account, portfolio, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
 
-The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
+The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context. That continuity is the commercial claim: Meridian becomes the system of record for investment decision evidence.
 
 ---
 

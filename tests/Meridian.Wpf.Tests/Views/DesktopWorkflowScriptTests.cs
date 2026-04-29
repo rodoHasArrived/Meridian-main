@@ -205,6 +205,9 @@ public sealed class DesktopWorkflowScriptTests
         workflow.Should().Contain("'scripts/dev/SharedCheckpoint.ps1'");
         workflow.Should().Contain("pwsh -File scripts/dev/run-desktop-workflow.ps1");
         workflow.Should().Contain("-SkipBuild");
+        workflow.Should().Contain("run: npm ci --include=optional");
+        workflow.Should().Contain("name: wpf-build-binaries");
+        workflow.Should().Contain("path: src");
     }
 
     [Fact]

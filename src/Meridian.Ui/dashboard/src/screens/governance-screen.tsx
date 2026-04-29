@@ -471,7 +471,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 Identifier conflicts
                 {securityMaster.openConflictCount > 0 && (
                   <span className="ml-2 inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
-                    {securityMaster.openConflictCount} open
+                    {securityMaster.conflictCountLabel}
                   </span>
                 )}
               </CardTitle>
@@ -491,62 +491,55 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   {securityMaster.conflictActionErrorText}
                 </div>
               )}
-              {!securityMaster.conflictsLoading && securityMaster.conflicts !== null && securityMaster.conflicts.length === 0 && (
-                <p className="text-sm text-muted-foreground">No identifier conflicts detected.</p>
+              {!securityMaster.conflictsLoading && securityMaster.conflicts !== null && !securityMaster.hasConflicts && (
+                <p className="text-sm text-muted-foreground">{securityMaster.conflictEmptyText}</p>
               )}
-              {securityMaster.conflicts && securityMaster.conflicts.length > 0 && (
-                <div className="space-y-3">
-                  {securityMaster.conflicts.map((conflict) => (
+              {securityMaster.hasConflicts && (
+                <div className="space-y-3" aria-label={securityMaster.conflictSectionAriaLabel}>
+                  {securityMaster.conflictRows.map((conflict) => (
                     <div
                       key={conflict.conflictId}
+                      role="group"
+                      aria-label={conflict.ariaLabel}
                       className={cn(
-                        "rounded-xl border p-4",
-                        conflict.status === "Open" ? "border-warning/40 bg-warning/5" : "border-border/60 bg-secondary/20"
+                        "rounded-lg border p-4",
+                        conflict.statusTone === "warning" ? "border-warning/40 bg-warning/5" : "border-border/60 bg-secondary/20"
                       )}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-sm">{conflict.fieldPath}</span>
-                            <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", conflict.status === "Open" ? "border-warning/35 bg-warning/10 text-warning" : "border-border/70 bg-secondary text-muted-foreground")}>
-                              {conflict.status}
+                            <span className="text-sm font-semibold">{conflict.fieldLabel}</span>
+                            <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", conflict.statusTone === "warning" ? "border-warning/35 bg-warning/10 text-warning" : "border-border/70 bg-secondary text-muted-foreground")}>
+                              {conflict.statusLabel}
                             </span>
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                            <span><span className="font-semibold text-foreground">Provider A:</span> {conflict.providerA} → security {conflict.valueA.substring(0, 8)}…</span>
-                            <span><span className="font-semibold text-foreground">Provider B:</span> {conflict.providerB} → security {conflict.valueB.substring(0, 8)}…</span>
-                            <span className="font-mono text-xs">Detected {new Date(conflict.detectedAt).toLocaleDateString()}</span>
+                            <span><span className="font-semibold text-foreground">Provider A:</span> {conflict.providerASummary}</span>
+                            <span><span className="font-semibold text-foreground">Provider B:</span> {conflict.providerBSummary}</span>
+                            <span className="font-mono text-xs">{conflict.detectedLabel}</span>
                           </div>
                         </div>
-                        {conflict.status === "Open" && (
+                        {conflict.actions.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={securityMaster.conflictResolvingId === conflict.conflictId}
-                              onClick={() => void securityMaster.resolveConflict(conflict.conflictId, "AcceptA")}
-                            >
-                              Accept A
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={securityMaster.conflictResolvingId === conflict.conflictId}
-                              onClick={() => void securityMaster.resolveConflict(conflict.conflictId, "AcceptB")}
-                            >
-                              Accept B
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              disabled={securityMaster.conflictResolvingId === conflict.conflictId}
-                              onClick={() => void securityMaster.resolveConflict(conflict.conflictId, "Dismiss")}
-                            >
-                              Dismiss
-                            </Button>
+                            {conflict.actions.map((action) => (
+                              <Button
+                                key={action.resolution}
+                                size="sm"
+                                variant={action.variant}
+                                disabled={action.disabled}
+                                aria-label={action.ariaLabel}
+                                onClick={() => void securityMaster.resolveConflict(conflict.conflictId, action.resolution)}
+                              >
+                                {action.label}
+                              </Button>
+                            ))}
                           </div>
                         )}
                       </div>
+                      {conflict.resolutionStatusText && (
+                        <p role="status" className="mt-3 text-xs text-muted-foreground">{conflict.resolutionStatusText}</p>
+                      )}
                     </div>
                   ))}
                 </div>

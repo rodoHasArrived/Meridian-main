@@ -14,10 +14,11 @@ that matters most.
 
 The product emphasis is:
 
-> Governed investment operations for research-to-ledger-to-reporting continuity.
+> Evidence-backed investment operations for research-to-ledger-to-reporting continuity.
 
 Meridian already has broad platform foundations. The next highest-return work is to make one
-operator lifecycle clear, dependable, and defensible before expanding sideways.
+operator lifecycle clear, dependable, and defensible before expanding sideways. Commercially,
+that lifecycle should establish Meridian as the system of record for investment decision evidence.
 
 ---
 
@@ -36,6 +37,25 @@ Trusted data
 
 Every release should improve at least one stage in this path, unblock a later stage, or reduce
 scope that distracts from it.
+
+The commercial name for this path is the **Meridian Assurance Loop**:
+
+```text
+Data Trust Passport
+-> Run Evidence Graph
+-> Promotion Passport
+-> Accounting-Grade Paper Trading
+-> Governed Report Pack
+```
+
+Those names are roadmap targets, not current completion claims. Implementation should land shared
+contracts and retained evidence first, then expose the workflow through the browser dashboard and
+retained support surfaces.
+
+The accounting-led extension of the same path is: prove, book, reconcile, approve, and report the
+investment decision. Books Before Broker, Transaction Lab, Close the Books, broker statement
+reconciliation, controls, and evidence packet actions are useful names for future slices, but they
+remain planned until shared contracts, durable evidence, and browser-visible workflows exist.
 
 ---
 
@@ -73,6 +93,21 @@ operator shell.
 | Portfolio / ledger review | Portfolio state, account posture, ledger journals, trial balance, cash-flow view, and continuity warnings | Portfolio and accounting views tell the same run/session story. |
 | Reconciliation | Break queue, tolerance profile, exception route, owner, status, sign-off role, and audit trail | Open breaks are visible as casework with owner, reason, and next action. |
 | Governed report pack | Report definition, period, artifact version, lineage links, approval state, and restatement posture | A retained report pack can prove which evidence and decisions it summarizes. |
+
+---
+
+## Sellable Module Mapping
+
+| Product package | Pilot stages | Current posture |
+| --- | --- | --- |
+| Meridian Core | Trusted data, Security Master, account/entity context, portfolio posture, audit trail direction | Strong provider, Security Master, storage, and account support evidence exists; commercial package boundaries remain planning language. |
+| Meridian Research Assurance | Trusted data, research run, run comparison, promotion readiness | Support evidence exists; Data Trust Passport and Run Evidence Graph remain planned projections. |
+| Meridian PaperOps | Paper promotion, paper session, replay verification, Books Before Broker, paper books direction | Partial support exists through readiness/replay/audit metadata; accounting-grade paper books and accounting-impact previews remain open. |
+| Meridian FundOps | Portfolio / ledger review, Transaction Lab, reconciliation, statement reconciliation, close workflow, report-pack inputs | Partial support exists through ledger, reconciliation, and account posture seams; durable casework, statement import, insurance accounting, shadow books, and close workflow remain open. |
+| Meridian Controls | Approval history, promotion rationale, policy controls, audit events, governed report pack | Partial support exists through approval checklist and report-pack checks; Controls-as-Code, policy mapping, evidence vault, restatement tracker, and explorer modules remain planned. |
+| Meridian Command Center | Readiness console, buyer demo mode, role-based demo views, blocker queue, report-pack readiness, operational health | Partial browser support exists through the read-only Operator Readiness Console; SLA aging, role-based demos, evidence packet actions, and full command-center scope remain planned. |
+
+Future implementation should favor shared-contract additions such as `EvidenceCompletenessSummary`, Run Evidence Graph lineage, Promotion/Data Trust Passport projections, accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-as-code policy summaries, evidence packet readiness, reconciliation casework, and governed report-pack readiness before expanding client-specific UI.
 
 ---
 

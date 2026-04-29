@@ -240,6 +240,15 @@ export interface OperatorWorkItem {
   targetPageTag?: string | null;
 }
 
+export interface OperatorInbox {
+  asOf: string;
+  items: OperatorWorkItem[];
+  criticalCount: number;
+  warningCount: number;
+  reviewCount: number;
+  summary: string;
+}
+
 export interface TradingAcceptanceGate {
   gateId: string;
   label: string;

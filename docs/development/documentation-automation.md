@@ -346,6 +346,7 @@ The dashboard generators (`generate-health-dashboard.py` and `generate-metrics-d
 2. Markdown rendering (`--output`) loads that JSON payload and renders deterministically from it.
 3. Automation should always pass both flags for dashboards, so Markdown cannot drift from the machine-readable payload.
 4. Required evidence inputs are validated; missing evidence causes a non-zero exit to surface automation drift early.
+
 ## Status Dashboard Evidence Surfaces
 
 Use the dashboards below as the canonical generated status surfaces for readiness evidence triage. Each dashboard includes both a Markdown operator view (`.md`) and machine-readable sidecar (`.json`) path so automation and human review stay aligned.
@@ -389,6 +390,7 @@ Use the dashboards below as the canonical generated status surfaces for readines
 - Treat dated evidence as **stale** when it predates the latest related workflow run, packet, or replay audit.
 - For stale evidence, rerun the narrowest supporting workflow first (provider validation, replay verification, reconciliation export, or contract check) and then regenerate docs automation summaries.
 - Do not claim readiness from a dashboard whose `.md` and `.json` sidecars disagree; rerun automation and resolve drift before sign-off.
+- The CI dashboard-delta gate only fails on new severe blocker or contract-drift counts when the previous dashboard baseline is readable; if the push baseline is unavailable, the run records that gap and skips the severe-regression failure instead of comparing against an all-zero baseline.
 - When a dashboard remains blocked after rerun, escalate with the failing command, artifact path, and owning lane in the summary report.
 
 ### Artifact Generation Commands (Full + Targeted)

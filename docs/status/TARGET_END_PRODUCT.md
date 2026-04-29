@@ -7,11 +7,13 @@
 
 ## Snapshot
 
-Meridian's target end state is a self-hosted trading workstation and fund-operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
+Meridian's target end state is a self-hosted evidence-backed investment operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
 `Data` establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, and operator-visible sign-off posture. `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting positions, account posture, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
 
-The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context. New operator UI delivery should prove that continuity in the web dashboard, while retained WPF surfaces remain compatibility and support evidence.
+The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context. Commercially, Meridian should become the system of record for investment decision evidence. New operator UI delivery should prove that continuity in the web dashboard, while retained WPF surfaces remain compatibility and support evidence.
+
+The accounting-led product question is: can Meridian prove, book, reconcile, approve, and report an investment decision? Books Before Broker, Transaction Lab, insurance accounting views, Close the Books, broker statement reconciliation, report restatement tracking, controls, and evidence packets should be treated as planned product modules unless the roadmap already names partial support evidence.
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 
@@ -58,6 +60,21 @@ Reporting is where operators preview, generate, approve, retain, and restate gov
 ### Settings
 
 Settings is where operators manage credentials, environment posture, storage roots, provider setup, and evidence paths that make the pilot workflow reproducible.
+
+---
+
+## Commercial Product Packages
+
+These package names clarify the sellable product story without changing the canonical wave order:
+
+- **Meridian Core:** Security Master, account/entity setup, provider/data trust, portfolio views, and audit-trail direction.
+- **Meridian Research Assurance:** data trust, run comparison, Run Evidence Graph, Data Trust Passport, and promotion evidence for research teams.
+- **Meridian PaperOps:** paper-session dashboarding, replay verification, order/fill/ledger consistency, promotion readiness, Books Before Broker direction, and accounting-grade paper evidence.
+- **Meridian FundOps:** portfolio accounting, Transaction Lab direction, reconciliation casework, shadow-book direction, insurance accounting pack direction, fund-close workflow direction, broker statement reconciliation, and governed report-pack support for accounting and operations teams.
+- **Meridian Controls:** strategy promotion records, Controls-as-Code direction, approval workflow, policy mapping, evidence vault direction, immutable decision-ledger direction, audit trail exploration, report restatement tracking, and governed report packs for oversight teams.
+- **Meridian Command Center:** web-first readiness console, buyer demo mode direction, role-based demo views, blocker queue, SLA/aging direction, report-pack status, and operational health for managers.
+
+Only the underlying support evidence already described in the roadmap should be treated as current implementation. Package names are commercial grouping language until their shared contracts, browser workflows, evidence retention, and governed outputs are accepted.
 
 ---
 
@@ -127,4 +144,4 @@ These improve Meridian's ceiling, but they are not required for the core end-sta
 
 ## One-Paragraph Narrative
 
-When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect account, portfolio, and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` are separate workspaces, but they share one model of runs, instruments, account posture, portfolio state, and audit evidence.
+When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect account, portfolio, and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings` are separate workspaces, but they share one model of runs, instruments, account posture, portfolio state, and audit evidence. That shared evidence model is the commercial product: Meridian becomes the system of record for investment decision evidence.

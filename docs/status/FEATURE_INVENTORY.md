@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.3
-**Date:** 2026-04-28
+**Version:** 1.7.5
+**Date:** 2026-04-29
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -17,6 +17,40 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 | 🔑 | Requires external credentials / build flag |
 | 🔄 | Framework in place, one or more sub-features pending |
 | 📝 | Planned, not yet started |
+
+---
+
+## Commercial Product Modules
+
+These modules describe Meridian's sellable product direction. They are conservative status markers, not new completion claims.
+
+| Module | Status | Current evidence and remaining work |
+| --- | --- | --- |
+| Meridian Assurance Loop | 🔄 | Product framing for trusted data -> research -> paper trading -> ledger/reconciliation -> governed report pack. Support evidence exists across DK1, readiness, shared run, reconciliation, and report-pack seams; end-to-end acceptance remains open. |
+| Run Evidence Graph | 📝 | Planned canonical lineage graph across provider evidence, dataset snapshot, run parameters, fills/orders, positions, cash flows, ledger entries, reconciliation breaks, approvals, and report packs. Existing run/readiness/evidence seams are inputs, not a completed graph. |
+| Governed Report Pack Studio | 🔄 | Early support exists through report-pack schema/version checks, export/reporting seams, and governed output direction. Browser studio workflow and retained approval/restatement lifecycle remain open. |
+| Reconciliation Casework Module | 🔄 | Early in progress through file-backed break queues, seeded owner/tolerance/sign-off metadata, audit history, and calibration-summary rollups. Durable generalized casework, SLA/aging, comments, and full close workflow remain open. |
+| Accounting-Grade Paper Trading | 🔄 | Support evidence exists through paper sessions, replay/audit metadata, order/fill/ledger count checks, and readiness gates. Paper books, journal-entry review, trial-balance impact, and reconciliation-ready accounting views remain open. |
+| Books Before Broker Mode | 📝 | Planned accounting-first promotion preview that estimates trade entries, cash/position impact, fees, financing, trial-balance movement, and reconciliation expectations before paper or live movement. Current execution and ledger seams are prerequisites, not a completed mode. |
+| Investment Accounting Sandbox / Transaction Lab | 📝 | Planned sandbox where a trade, dividend, accrual, fee, corporate action, or broker reconciliation example can flow through accounting entries, position updates, cash movement, trial-balance impact, and expected reconciliation. |
+| Insurance Investment Accounting Pack | 📝 | Planned specialized package for book value, market value, unrealized gain/loss, income accrual, classification, impairment/watchlist, and insurance-style exports. Ledger, Security Master, and reporting foundations exist, but the pack is not delivered. |
+| Close the Books Workflow | 📝 | Planned guided close workflow for Security Master validation, external position/cash import, price validation, accruals, realized gain/loss review, trial balance review, exception resolution, close package, and sign-off. |
+| Broker Statement Reconciliation | 📝 | Planned statement-import and mapping workflow for positions, cash, and transactions that can create reconciliation cases linked back to internal positions, ledger entries, orders/fills, and run evidence. |
+| Evidence Completeness Score | 📝 | Planned shared readiness summary for runs, promotions, paper sessions, reconciliation cases, and report-pack previews. Should start as `EvidenceCompletenessSummary` before screen-specific badges or scoring UI. |
+| Operator Readiness Console | 🔄 | Read-only browser support exists at `/trading/readiness` using shared readiness payloads. Manager command-center scope, SLA aging, and report-pack readiness controls remain open. |
+| Strategy / Promotion Passport | 🔄 | Promotion checklist and review-packet support exist. A canonical passport projection with owner, approved use, required evidence, open exceptions, and approval history remains planned. |
+| Data Trust Passport | 🔄 | DK1 provider trust packets, validation evidence, freshness/completeness posture, and data-quality services provide support evidence. Dataset-level passport projection remains planned. |
+| Security Master Confidence Score | 📝 | Planned confidence projection based on identifier completeness, source agreement, pricing availability, corporate-action coverage, classification completeness, account usage, reconciliation history, and unresolved conflicts. |
+| Shadow NAV / Shadow Books | 📝 | Planned on top of ledger, portfolio, reconciliation, and report-pack foundations. Shadow-book generation and close-comparison workflow are not yet delivered. |
+| Fund Close Checklist | 📝 | Planned on top of accounting, reconciliation, cash-flow, trial-balance, and report-pack seams. Period-close workflow orchestration remains open. |
+| Audit Trail Explorer | 📝 | Planned searchable cross-object timeline. Audit metadata exists in several lanes, but a unified explorer remains open. |
+| Portfolio Impact Simulator | 📝 | Planned after shared portfolio/ledger continuity is stable. Pre-approval exposure, cash, liquidity, ledger, and report-pack impact modeling remains open. |
+| Report Restatement Tracker | 📝 | Planned governed report-pack version history that records original and corrected outputs, restatement reason, changed values, affected sections, approver, timestamp, and evidence links. |
+| Controls-as-Code / Policy Mapping | 📝 | Planned configurable control layer for promotion, reconciliation, reporting, materiality, dual review, period locking, evidence expiration, policy references, and evidence-based permissions. Current approval/readiness checks are inputs, not a policy engine. |
+| Evidence Packet Actions | 📝 | Planned universal action from runs, promotions, paper sessions, reconciliation cases, report packs, and Security Master conflicts. Should depend on retained evidence links and readiness summaries before UI expansion. |
+| Buyer Demo Mode / Role-Based Demo Views | 📝 | Planned browser-first demo packaging with seeded funds, accounts, strategies, paper sessions, breaks, approvals, evidence packets, and role views for CIO, trader, controller, operations, compliance, and auditor personas. Existing fixture/demo-mode cues are support evidence only. |
+
+Evidence-backed narrative and client-ready commentary drafting remain future parking-lot concepts. They should not be treated as active commercial modules until the evidence graph, passport, reconciliation, and report-pack structures can ground generated text in Meridian evidence.
 
 ---
 
@@ -234,7 +268,8 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
-| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, research, trading, data-operations, and governance paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation and full cockpit/governance acceptance remain open |
+| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, strategy, trading, data, accounting/reporting, and retained legacy paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation is present, while full cockpit/governance acceptance remains open |
+| Operator Readiness Console | ⚠️ | Browser-first read-only console at `/trading/readiness` aggregates latest runs, active paper session, DK1/provider trust, reconciliation breaks, promotion blockers, governance report-pack readiness, and operator-inbox work items from `/api/workstation/*` payloads; it is the first API-first web readiness surface, not a WPF replacement |
 | Web Research run library | ⚠️ | `ResearchScreen` and `useResearchRunLibraryViewModel` expose retained run review, two-run compare/diff readiness, promotion-history loading, accessible command-error alerts, and component/view-model coverage; Backtest Studio unification and strategy-aware launch/preflight remain open |
 | HTML dashboard (auto-refreshing) | ✅ | `HtmlTemplateGenerator`; SSE-powered live updates |
 | Server-Sent Events stream | ✅ | `/api/events/stream`; 2-second push cycle |

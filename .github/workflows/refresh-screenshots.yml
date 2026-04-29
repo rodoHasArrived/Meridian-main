@@ -220,7 +220,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: wpf-build-binaries
-          path: .
+          path: src
 
       - name: Copy sample config
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force

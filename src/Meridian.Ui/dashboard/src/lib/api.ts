@@ -9,6 +9,7 @@ import type {
   GovernanceWorkspaceResponse,
   LedgerSummary,
   LedgerTrialBalanceLine,
+  OperatorInbox,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
@@ -110,6 +111,11 @@ export function getTradingWorkspace() {
 
 export function getTradingReadiness() {
   return getJson<TradingOperatorReadiness>("/api/workstation/trading/readiness");
+}
+
+export function getOperatorInbox(fundAccountId?: string) {
+  const params = fundAccountId ? `?fundAccountId=${encodeURIComponent(fundAccountId)}` : "";
+  return getJson<OperatorInbox>(`/api/workstation/operator/inbox${params}`);
 }
 
 export function getDataOperationsWorkspace() {

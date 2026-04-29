@@ -13,6 +13,7 @@ import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { legacyWorkspaceRedirect, workspaceForKey } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
+import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
 import { ResearchScreen } from "@/screens/research-screen";
 import { TradingScreen } from "@/screens/trading-screen";
 import { WorkspacePlaceholderScreen } from "@/screens/workspace-placeholder-screen";
@@ -90,6 +91,14 @@ export function App() {
             {shell.canRenderRoutes ? (
               <Routes>
                 <Route path="/" element={<Navigate to="/trading" replace />} />
+                <Route path="/trading/readiness" element={(
+                  <OperatorReadinessConsole
+                    research={research}
+                    trading={trading}
+                    dataOperations={dataOperations}
+                    governance={governance}
+                  />
+                )} />
                 <Route path="/trading/*" element={<TradingScreen data={trading} />} />
                 <Route path="/portfolio/*" element={<Placeholder workspaceKey="portfolio" session={session} overview={overview} />} />
                 <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />

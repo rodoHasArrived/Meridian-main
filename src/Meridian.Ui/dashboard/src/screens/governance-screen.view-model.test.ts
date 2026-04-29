@@ -3,6 +3,7 @@ import {
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationNarrative,
+  buildSecurityConflictRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveGovernanceWorkstream,
@@ -201,6 +202,48 @@ describe("governance-screen view model", () => {
     expect(failed.statusAnnouncement).toBe("Security search failed: Provider offline");
     expect(countOpenSecurityConflicts(conflicts)).toBe(1);
     expect(countOpenSecurityConflicts(null)).toBe(0);
+  });
+
+  it("derives provider-specific conflict actions and row accessibility copy", () => {
+    const rows = buildSecurityConflictRows(conflicts, "conflict-1");
+
+    expect(rows[0]).toMatchObject({
+      conflictId: "conflict-1",
+      statusTone: "warning",
+      isOpen: true,
+      isResolving: true,
+      providerASummary: "Bloomberg -> security sec-1",
+      providerBSummary: "Refinitiv -> security sec-2",
+      detectedLabel: "Detected 2026-01-01",
+      resolutionStatusText: "Resolving identifier conflict conflict-1."
+    });
+    expect(rows[0].ariaLabel).toContain("Identifier conflict conflict-1 on identifiers.CUSIP: Open.");
+    expect(rows[0].actions).toEqual([
+      expect.objectContaining({
+        resolution: "AcceptA",
+        label: "Use Bloomberg",
+        disabled: true,
+        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+      }),
+      expect.objectContaining({
+        resolution: "AcceptB",
+        label: "Use Refinitiv",
+        disabled: true,
+        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Refinitiv value sec-2"
+      }),
+      expect.objectContaining({
+        resolution: "Dismiss",
+        label: "Dismiss conflict",
+        disabled: true,
+        ariaLabel: "Dismiss identifier conflict conflict-1 on identifiers.CUSIP"
+      })
+    ]);
+    expect(rows[1]).toMatchObject({
+      conflictId: "conflict-2",
+      statusTone: "neutral",
+      isOpen: false,
+      actions: []
+    });
   });
 
   it("derives reconciliation break action state and live announcements", () => {

@@ -27,12 +27,53 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 
 ---
 
+## Commercial Viability Ranking
+
+This ranking is a product-positioning overlay, not a completion claim. It names the most sellable additions and places them inside the existing Waves 2-4 path.
+
+| Rank | Addition | Commercial fit | Current repo posture | Placement |
+| ---: | --- | --- | --- | --- |
+| 1 | Run Evidence Graph | Very high | Planned; support evidence exists through provider packets, shared run continuity, promotion checklist state, paper replay metadata, reconciliation work items, and report-pack references | Wave 3 backbone |
+| 2 | Governed Report Pack Studio | Very high | Partial support evidence through governed report-pack schema/version checks and retained reporting/export seams | Wave 4 |
+| 3 | Reconciliation Casework Module | Very high | Early in progress through file-backed reconciliation break queues, seeded owner/tolerance/sign-off metadata, audit history, and calibration-summary rollups | Wave 4 |
+| 4 | Accounting-Grade Paper Trading | High | Partial support evidence through paper sessions, fills/orders, replay audit metadata, ledger count checks, and readiness gates; paper books/trial balance views remain open | Wave 2 into Wave 3 |
+| 5 | Operator Readiness Console | High | Partial browser support evidence through the read-only `/trading/readiness` console and shared workstation readiness payloads | Wave 2 support surface |
+| 6 | Strategy / Promotion Passport | High | Partial support through `PromotionApprovalChecklist`; a canonical passport projection remains planned | Wave 2 into Wave 3 |
+| 7 | Data Trust Passport | High | Partial support through DK1 provider trust evidence, validation packets, and data-quality posture; dataset-level passport projection remains planned | Wave 1 maintenance into Wave 3 |
+| 8 | Shadow NAV / Shadow Books | High | Planned; ledger and reconciliation foundations exist, but shadow-book close workflow is not yet delivered | Wave 4 later slice |
+| 9 | Fund Close Checklist | High | Planned; account, ledger, reconciliation, and report-pack seams exist, but close workflow orchestration remains open | Wave 4 later slice |
+| 10 | Audit Trail Explorer | Medium-high | Partial evidence exists in audit trails and decision metadata; searchable cross-object explorer remains planned | Wave 4 support capability |
+| 11 | Portfolio Impact Simulator | Medium-high | Planned; portfolio/ledger/account posture seams exist, but pre-approval impact simulation remains open | After Wave 3 continuity |
+
+The most differentiated bundle is the **Meridian Assurance Loop**: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack.
+
+## Next Commercial Differentiation Layer
+
+This layer adds the accounting, close, controls, and demo packaging ideas that make the Assurance Loop easier to sell. It is still a planning overlay: new rows below are not implementation claims.
+
+| Priority | Addition | Commercial reason | Current repo posture | Placement |
+| ---: | --- | --- | --- | --- |
+| 1 | Insurance Investment Accounting Pack | Gives Meridian a specific buyer wedge around book value, market value, unrealized gain/loss, income accrual, classification, and impairment evidence | Planned; ledger, Security Master, portfolio, and reporting seams are prerequisites, not a delivered insurance pack | Wave 4 later slice |
+| 2 | Close the Books Workflow | Turns fund operations into a recurring month-end or quarter-end workflow with task status, owner, blocker, evidence, sign-off, and close package | Planned; reconciliation, ledger, cash-flow, trial-balance, and report-pack seams provide support evidence | Wave 4 later slice |
+| 3 | Run Evidence Graph | Remains the cross-module backbone for trusted data, run evidence, paper evidence, ledger/reconciliation, decisions, and report packs | Planned; support evidence exists, but the canonical graph remains open | Wave 3 backbone |
+| 4 | Investment Committee Packet Builder | Converts a strategy or portfolio change into a decision-ready packet that can be reviewed, approved, retained, and later audited | Planned; report-pack and promotion-checklist support evidence exists, but IC packet generation remains open | Wave 3 into Wave 4 |
+| 5 | Accounting-Grade Paper Trading | Extends paper trading from execution simulation into expected journal, cash, position, fee, trial-balance, and reconciliation impact | Partial support evidence through paper sessions, replay audit, readiness gates, and ledger count checks; paper books remain open | Wave 2 into Wave 3 |
+| 6 | Reconciliation Casework Module | Turns breaks into owned operational cases with severity, aging, tolerance, evidence, comments, decisions, and sign-off | Early in progress through file-backed break queues, metadata, audit history, and calibration rollups | Wave 4 |
+| 7 | Evidence Completeness Score | Makes readiness visible across runs, promotions, paper sessions, reconciliation cases, and report-pack previews | Planned; should start with shared `EvidenceCompletenessSummary` before UI expansion | Wave 3 into Wave 4 |
+| 8 | Controls-as-Code | Lets firms express promotion, reconciliation, reporting, materiality, and approval policies as configurable controls | Planned; existing readiness and approval checks are inputs, not a policy engine | Wave 4 support capability |
+| 9 | Shadow Books / Shadow NAV | Lets Meridian compare internal books against external accounting, custodian, or fund-admin records | Planned on top of ledger, reconciliation, statement import, and close workflows | Wave 4 later slice |
+| 10 | Buyer Demo Mode | Makes the browser dashboard commercially demonstrable with seeded funds, accounts, strategies, paper sessions, breaks, approvals, and report packs | Planned; fixture/demo-mode cues exist, but buyer demo packs and role-based views are open | Web dashboard support track |
+
+Evidence-backed narrative and client-ready commentary ideas remain a future parking-lot concept. They should not be ranked as active modules until the evidence graph, passport, reconciliation, and governed report-pack structures are stable enough to ground every sentence in Meridian evidence.
+
+---
+
 ## Top Opportunities
 
-### 0. Make the Meridian pilot workflow the release filter
+### 0. Make the Meridian Assurance Loop the release filter
 
 - **Category:** workflow completion
-- **Gap:** The active docs already agree that Meridian has broad foundations and now needs coherence, operator trust, and governance continuity. The missing product discipline is one end-to-end scenario that every page, API, validation run, and report-pack output serves.
+- **Gap:** The active docs already agree that Meridian has broad foundations and now needs coherence, operator trust, and governance continuity. The missing product discipline is one end-to-end commercial scenario that every page, API, validation run, and report-pack output serves: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack.
 - **User or operator value:** Operators and reviewers get one explainable lifecycle from trusted data through research, paper operation, accounting review, reconciliation, and governed output.
 - **Dependency it unlocks:** Cleaner scope control across provider/broker work, web dashboard priorities, retained WPF surface decisions, generated readiness dashboards, evidence graph modeling, reconciliation casework, and report-pack productization.
 - **Placement:** Cross-wave release filter for Waves 2-4; it should shape the work below rather than become a separate wave.

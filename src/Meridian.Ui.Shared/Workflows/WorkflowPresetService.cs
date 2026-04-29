@@ -91,7 +91,7 @@ public sealed class WorkflowPresetService
         }, ct).ConfigureAwait(false);
 
         return updated is null
-            ? WorkflowPresetMutationResult.NotFound(presetId)
+            ? WorkflowPresetMutationResult.Missing(presetId)
             : WorkflowPresetMutationResult.Ok(updated);
     }
 
@@ -123,7 +123,7 @@ public sealed class WorkflowPresetService
         }, ct).ConfigureAwait(false);
 
         return updated is null
-            ? WorkflowPresetMutationResult.NotFound(presetId)
+            ? WorkflowPresetMutationResult.Missing(presetId)
             : WorkflowPresetMutationResult.Ok(updated);
     }
 
@@ -266,6 +266,6 @@ public sealed record WorkflowPresetMutationResult(
     public static WorkflowPresetMutationResult Fail(string error)
         => new(Success: false, Preset: null, Error: error, NotFound: false);
 
-    public static WorkflowPresetMutationResult NotFound(string presetId)
+    public static WorkflowPresetMutationResult Missing(string presetId)
         => new(Success: false, Preset: null, Error: $"Workflow preset '{presetId}' was not found.", NotFound: true);
 }

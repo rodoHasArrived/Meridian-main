@@ -13,6 +13,26 @@ The active roadmap therefore centers on four outcomes:
 - make shared run / portfolio / ledger continuity the default integration path across `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting`
 - productize governance and fund-operations on top of the delivered Security Master baseline
 
+## Commercial Positioning
+
+Meridian should be positioned as an evidence-backed investment operations platform and the system of record for investment decision evidence. The commercial wedge is not "another trading workstation"; it is the ability to prove what happened across trusted data, research, paper trading, accounting, reconciliation, and governed outputs.
+
+The flagship product story is the **Meridian Assurance Loop**:
+
+```text
+Data Trust Passport
+-> Run Evidence Graph
+-> Promotion Passport
+-> Accounting-Grade Paper Trading
+-> Governed Report Pack
+```
+
+This framing sharpens Waves 2-4 without creating a new wave. The current repo has support evidence for pieces of the loop, including provider trust packets, shared run continuity, paper-session replay/audit metadata, promotion checklist state, reconciliation break queues, report-pack schema/version checks, and the read-only web Operator Readiness Console. The named commercial modules remain roadmap targets until shared contracts, retained evidence, and browser-visible workflows prove them end to end.
+
+The next accounting-led commercial wedge should be: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Ideas such as Books Before Broker, an investment accounting Transaction Lab, Close the Books workflow, broker statement reconciliation, Controls-as-Code, and one-click evidence packets should be treated as roadmap targets layered onto Waves 2-4. They are not current implementation claims; future delivery should start with shared evidence/accounting/readiness contracts and browser-dashboard workflows before any client-specific UI expands.
+
+---
+
 Use this document with:
 
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) - current capability status
@@ -58,7 +78,7 @@ Meridian's platform foundations are already broad enough that roadmap priority s
 - shared `StrategyRun`, portfolio, ledger, and reconciliation read paths in `src/Meridian.Strategies/Services/` and `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
 - execution, paper-trading, strategy lifecycle, and promotion seams, including wired `/api/execution/*`, `/api/promotion/*`, and `/api/strategies/*` surfaces
 - a retained WPF workstation baseline with run-centered pages, Security Master drill-ins, and desktop shell modernization already landed
-- a browser dashboard lane in `src/Meridian.Ui/dashboard/` that is now the active UI implementation path, including a React/Vite Research run library that can review retained runs, cap compare selection to two runs, call shared compare/diff/promotion-history APIs, surface command failures as operator-visible alerts, and ship built workstation assets from `src/Meridian.Ui/wwwroot/workstation/`
+- a browser dashboard lane in `src/Meridian.Ui/dashboard/` that is now the active UI implementation path, including a read-only Operator Readiness Console at `/trading/readiness` that aggregates latest runs, active paper session, DK1/provider trust, reconciliation breaks, promotion blockers, governance report-pack readiness, and operator-inbox work items from shared API payloads; the same lane includes a React/Vite Research run library that can review retained runs, cap compare selection to two runs, call shared compare/diff/promotion-history APIs, surface command failures as operator-visible alerts, and ship built workstation assets from `src/Meridian.Ui/wwwroot/workstation/`
 - a delivered Security Master platform seam with shared coverage and provenance flowing across research, trading, portfolio, ledger, reconciliation, governance, and WPF drill-ins
 
 The meaningful repo delta since the April 8 planning refresh is no longer only WPF workflow consolidation. On 2026-04-29, new operator UI work pivots to the browser dashboard. Existing WPF evidence should be treated as retained support and shared-contract regression coverage, while new workflow value should be proven through web dashboard paths for cockpit, shared-model, data-operations, and governance use cases. The first web Research support slice is present as a run-library view model plus component coverage for two-run compare/diff readiness, selected-run copy, promotion-history loading state, accessible error alerts, and refreshed built workstation assets. The web shell also has a `buildAppShellViewState` seam for active workspace resolution, loading status, partial-bootstrap degradation, failed-slice retry copy, and full-bootstrap failure handling. These are support evidence for Wave 3 continuity and browser-shell resilience, not closure of Backtest Studio unification or Wave 2 cockpit acceptance.
@@ -135,11 +155,11 @@ For implementation detail and evidence, use:
 
 ## Target End Product
 
-Meridian's target end state is a self-hosted browser-first trading workstation and fund-operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
+Meridian's target end state is a self-hosted browser-first evidence-backed investment operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
 `Data` establishes evidence-backed provider trust, `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting account, portfolio, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
 
-The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
+The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context. Commercially, that makes Meridian the system of record for investment decision evidence, with the Assurance Loop as the sellable through-line.
 
 ---
 
@@ -173,7 +193,7 @@ Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage
 
 - tighten positions, orders, fills, replay, sessions, and risk workflows into a dependable operator lane
 - keep promotion evaluation, approval, and rejection rationale explicitly tied to operator review, with outcome severity and history refresh behavior visible in the cockpit
-- use the new trading-readiness contract as the acceptance surface for session state, replay consistency and freshness, audit/control evidence, risk/control explainability warnings, promotion review, DK1 trust-gate packet/sign-off posture, overall readiness, brokerage-sync posture, and stable operator work items that can be refreshed by the web cockpit and the shared operator-inbox endpoint without random ID churn; account operating contexts should preserve account-scoped brokerage/readiness blockers through `fundAccountId`, and run review-packet queue items should stay bounded to actionable warning/critical latest-run blockers
+- use the new trading-readiness contract as the acceptance surface for session state, replay consistency and freshness, audit/control evidence, risk/control explainability warnings, promotion review, DK1 trust-gate packet/sign-off posture, overall readiness, brokerage-sync posture, and stable operator work items that can be refreshed by the web cockpit, the `/trading/readiness` Operator Readiness Console, and the shared operator-inbox endpoint without random ID churn; account operating contexts should preserve account-scoped brokerage/readiness blockers through `fundAccountId`, and run review-packet queue items should stay bounded to actionable warning/critical latest-run blockers
 - validate the web Trading cockpit against context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight operator states without treating retained WPF hero coverage as cockpit completion
 - verify session persistence, replay behavior, and stale-replay recovery under realistic scenarios
 - align cockpit behavior with brokerage-adapter and provider-confidence evidence

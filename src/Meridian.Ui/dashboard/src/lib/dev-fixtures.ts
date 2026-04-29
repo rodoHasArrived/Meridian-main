@@ -1,9 +1,11 @@
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  OperatorInbox,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
+  TradingOperatorReadiness,
   TradingWorkspaceResponse
 } from "@/types";
 
@@ -79,6 +81,163 @@ const fixtureResearchWorkspace: ResearchWorkspaceResponse = {
   ]
 };
 
+const fixtureTradingReadiness: TradingOperatorReadiness = {
+  asOf: "2026-04-28T18:15:00Z",
+  overallStatus: "ReviewRequired",
+  readyForPaperOperation: false,
+  activeSession: {
+    sessionId: "paper-dev-42",
+    strategyId: "strat-mean-reversion",
+    strategyName: "Mean Reversion FX",
+    isActive: true,
+    initialCash: 100000,
+    createdAt: "2026-04-28T17:30:00Z",
+    closedAt: null,
+    symbolCount: 4,
+    orderCount: 3,
+    positionCount: 2,
+    portfolioValue: 101240
+  },
+  sessions: [],
+  replay: {
+    sessionId: "paper-dev-42",
+    replaySource: "fixtures/paper-dev-42.jsonl",
+    isConsistent: true,
+    comparedFillCount: 9,
+    comparedOrderCount: 3,
+    comparedLedgerEntryCount: 11,
+    verifiedAt: "2026-04-28T18:12:00Z",
+    lastPersistedFillAt: "2026-04-28T18:10:00Z",
+    lastPersistedOrderUpdateAt: "2026-04-28T18:10:30Z",
+    verificationAuditId: "audit-replay-dev-42",
+    mismatchReasons: []
+  },
+  controls: {
+    circuitBreakerOpen: false,
+    circuitBreakerReason: null,
+    circuitBreakerChangedBy: null,
+    circuitBreakerChangedAt: null,
+    manualOverrideCount: 1,
+    symbolLimitCount: 3,
+    defaultMaxPositionSize: 50000
+  },
+  promotion: {
+    state: "ReviewRequired",
+    reason: "Promotion checklist still needs portfolio and ledger continuity review.",
+    requiresReview: true,
+    sourceRunId: "run-dev-1",
+    targetRunId: null,
+    suggestedNextMode: "paper",
+    auditReference: "audit-promo-dev-1",
+    approvalStatus: "pending",
+    manualOverrideId: null,
+    approvedBy: null,
+    approvalChecklist: ["DK1 trust packet", "Replay consistency", "Portfolio continuity", "Ledger continuity"]
+  },
+  trustGate: {
+    gateId: "dk1-provider-trust",
+    status: "signed",
+    readyForOperatorReview: true,
+    operatorSignoffRequired: true,
+    operatorSignoffStatus: "signed",
+    generatedAt: "2026-04-27T21:00:00Z",
+    packetPath: "artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json",
+    sourceSummary: "wave1-validation-summary.json",
+    requiredSampleCount: 4,
+    readySampleCount: 4,
+    validatedEvidenceDocumentCount: 4,
+    requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
+    blockers: [],
+    detail: "Signed DK1 parity packet is available for readiness projection.",
+    operatorSignoff: {
+      status: "signed",
+      requiredBeforeDk1Exit: true,
+      requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
+      signedOwners: ["Data Operations", "Provider Reliability", "Trading"],
+      missingOwners: [],
+      completedAt: "2026-04-27T22:10:00Z",
+      sourcePath: "artifacts/provider-validation/_automation/2026-04-27/dk1-operator-signoff.json"
+    }
+  },
+  brokerageSync: {
+    fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+    providerId: "alpaca",
+    externalAccountId: "PA-DEMO",
+    health: "Stale",
+    isLinked: true,
+    isStale: true,
+    lastAttemptedSyncAt: "2026-04-28T18:00:00Z",
+    lastSuccessfulSyncAt: "2026-04-28T16:00:00Z",
+    lastError: null,
+    positionCount: 2,
+    openOrderCount: 1,
+    fillCount: 9,
+    cashTransactionCount: 3,
+    securityMissingCount: 0,
+    warnings: ["Brokerage sync is older than the active paper session."]
+  },
+  acceptanceGates: [
+    {
+      gateId: "paper-session",
+      label: "Paper session",
+      status: "Ready",
+      detail: "Active paper session is present.",
+      sessionId: "paper-dev-42",
+      runId: "run-dev-1",
+      auditReference: "audit-replay-dev-42"
+    },
+    {
+      gateId: "brokerage-sync",
+      label: "Brokerage sync",
+      status: "ReviewRequired",
+      detail: "Refresh brokerage sync before treating paper operation as ready.",
+      sessionId: "paper-dev-42",
+      runId: "run-dev-1",
+      auditReference: null
+    },
+    {
+      gateId: "promotion-checklist",
+      label: "Promotion checklist",
+      status: "ReviewRequired",
+      detail: "Portfolio and ledger continuity checklist items are not complete.",
+      sessionId: "paper-dev-42",
+      runId: "run-dev-1",
+      auditReference: "audit-promo-dev-1"
+    }
+  ],
+  workItems: [
+    {
+      workItemId: "promotion-review-run-dev-1",
+      kind: "PromotionReview",
+      label: "Promotion checklist incomplete",
+      detail: "Portfolio and ledger continuity review must be finished before paper-operation readiness is accepted.",
+      tone: "Warning",
+      createdAt: "2026-04-28T18:15:00Z",
+      runId: "run-dev-1",
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      auditReference: "audit-promo-dev-1",
+      workspace: "Trading",
+      targetRoute: "/trading/readiness",
+      targetPageTag: "TradingReadinessConsole"
+    },
+    {
+      workItemId: "brokerage-sync-stale-53bf0251",
+      kind: "BrokerageSync",
+      label: "Brokerage sync stale",
+      detail: "Refresh brokerage account sync so position and cash evidence matches the active paper session.",
+      tone: "Warning",
+      createdAt: "2026-04-28T18:15:00Z",
+      runId: null,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      auditReference: null,
+      workspace: "Trading",
+      targetRoute: "/trading/readiness",
+      targetPageTag: "TradingReadinessConsole"
+    }
+  ],
+  warnings: ["Brokerage sync is older than the active paper session."]
+};
+
 const fixtureTradingWorkspace: TradingWorkspaceResponse = {
   metrics: [
     { id: "pnl", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
@@ -141,7 +300,8 @@ const fixtureTradingWorkspace: TradingWorkspaceResponse = {
     orderIngress: "healthy",
     fillFeed: "healthy",
     notes: "Adapter wiring preview from local development fixtures."
-  }
+  },
+  readiness: fixtureTradingReadiness
 };
 
 const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
@@ -157,14 +317,24 @@ const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
       status: "Healthy",
       capability: "Streaming equities",
       latency: "18ms p50",
-      note: "Realtime subscriptions are stable."
+      note: "Realtime subscriptions are stable.",
+      trustScore: "0.96",
+      signalSource: "wave1-validation-summary",
+      reasonCode: "provider-ready",
+      recommendedAction: "Keep provider in the active trust set.",
+      gateImpact: "Supports DK1"
     },
     {
       provider: "Databento",
       status: "Warning",
       capability: "Backfill bars",
       latency: "42ms p50",
-      note: "One options-chain backfill is waiting on operator review."
+      note: "One options-chain backfill is waiting on operator review.",
+      trustScore: "0.82",
+      signalSource: "backfill-monitor",
+      reasonCode: "review-backfill",
+      recommendedAction: "Review queued options-chain backfill before report-pack use.",
+      gateImpact: "Review required"
     }
   ],
   backfills: [
@@ -274,17 +444,44 @@ const fixtureGovernanceWorkspace: GovernanceWorkspaceResponse = {
   }
 };
 
+const fixtureOperatorInbox: OperatorInbox = {
+  asOf: "2026-04-28T18:15:00Z",
+  criticalCount: 0,
+  warningCount: 3,
+  reviewCount: 3,
+  summary: "3 operator review items need attention before paper-operation readiness is accepted.",
+  items: [
+    ...fixtureTradingReadiness.workItems,
+    {
+      workItemId: "reconciliation-break-run-42-cash",
+      kind: "ReconciliationBreak",
+      label: "Reconciliation break open",
+      detail: "Cash variance over tolerance remains open on Paper Index Mean Reversion.",
+      tone: "Warning",
+      createdAt: "2026-04-28T18:15:00Z",
+      runId: "run-42",
+      fundAccountId: null,
+      auditReference: null,
+      workspace: "Accounting",
+      targetRoute: "/accounting/reconciliation",
+      targetPageTag: "FundReconciliation"
+    }
+  ]
+};
+
 const fixtures = {
   "/api/status": fixtureSystemOverview,
   "/api/workstation/session": fixtureSession,
   "/api/workstation/research": fixtureResearchWorkspace,
   "/api/workstation/trading": fixtureTradingWorkspace,
+  "/api/workstation/trading/readiness": fixtureTradingReadiness,
+  "/api/workstation/operator/inbox": fixtureOperatorInbox,
   "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
   "/api/workstation/governance": fixtureGovernanceWorkspace
 } satisfies Record<string, unknown>;
 
 export function resolveDevFixture<T>(path: string): T | undefined {
-  const fixture = fixtures[path as keyof typeof fixtures];
+  const fixture = fixtures[path.split("?")[0] as keyof typeof fixtures];
   return fixture === undefined ? undefined : cloneFixture(fixture as T);
 }
 

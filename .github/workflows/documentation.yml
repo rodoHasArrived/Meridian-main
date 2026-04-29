@@ -925,13 +925,22 @@ jobs:
                   'readiness_states': {k: len(re.findall(re.escape(k.lower()), lowered)) for k in status_tokens},
               }
 
-          current = ''
-          previous = ''
+          current_parts = []
+          previous_parts = []
+          missing_previous = []
           for f in files:
               fp = Path(f)
               if fp.exists():
-                  current += '\n' + fp.read_text(encoding='utf-8', errors='ignore')
-              previous += '\n' + read_at(base, f)
+                  current_parts.append('\n' + fp.read_text(encoding='utf-8', errors='ignore'))
+              previous_text = read_at(base, f)
+              if previous_text:
+                  previous_parts.append('\n' + previous_text)
+              elif base:
+                  missing_previous.append(f)
+
+          current = ''.join(current_parts)
+          previous = ''.join(previous_parts)
+          baseline_available = bool(previous.strip())
 
           cur = metrics(current)
           prev = metrics(previous)
@@ -948,6 +957,8 @@ jobs:
               'replay_reliability_mismatch_delta': delta('replay_mismatch'),
               'governance_approval_reconciliation_report_pack_blocking_delta': delta('governance_blocks'),
               'api_contract_coverage_drift_alert_delta': delta('contract_drift_alerts'),
+              'baseline_available': baseline_available,
+              'missing_previous_files': missing_previous,
               'current': cur,
               'previous': prev,
           }
@@ -963,8 +974,13 @@ jobs:
               fh.write(f"| Replay reliability/mismatch | {diff['replay_reliability_mismatch_delta']:+d} |\n")
               fh.write(f"| Governance approval/reconciliation/report-pack blocking | {diff['governance_approval_reconciliation_report_pack_blocking_delta']:+d} |\n")
               fh.write(f"| API contract coverage/drift alerts | {diff['api_contract_coverage_drift_alert_delta']:+d} |\n")
+              if not baseline_available:
+                  fh.write('\nBaseline dashboard source was unavailable; severe regression gating was skipped for this comparison.\n')
 
-          severe = diff['blocker_count_delta'] > 0 or diff['api_contract_coverage_drift_alert_delta'] > 0
+          severe = baseline_available and (
+              diff['blocker_count_delta'] > 0 or
+              diff['api_contract_coverage_drift_alert_delta'] > 0
+          )
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as out:
               out.write(f"severe_regression={'true' if severe else 'false'}\n")
           PY

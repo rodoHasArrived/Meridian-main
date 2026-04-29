@@ -1,8 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
+import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
@@ -275,16 +275,25 @@ beforeEach(() => {
   vi.mocked(api.getTradingReadiness).mockResolvedValue(serverReadinessData.readiness!);
 });
 
+async function renderTradingScreen(
+  screenData: TradingWorkspaceResponse = data,
+  initialEntry = "/trading"
+) {
+  const result = renderWithRouter(<TradingScreen data={screenData} />, { initialEntries: [initialEntry] });
+  await waitForAsyncEffects();
+  return result;
+}
+
 describe("TradingScreen", () => {
-  it("renders cockpit tables and wiring state", () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+  it("renders cockpit tables and wiring state", async () => {
+    await renderTradingScreen();
     expect(screen.getByText("Live positions")).toBeInTheDocument();
     expect(screen.getByText("Session replay controls")).toBeInTheDocument();
     expect(screen.getByText("Backtest → Paper promotion gate")).toBeInTheDocument();
   });
 
   it("fetches and renders execution controls snapshot", async () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
     expect(screen.getByText(/Breaker Closed/i)).toBeInTheDocument();
@@ -293,7 +302,7 @@ describe("TradingScreen", () => {
   });
 
   it("surfaces cockpit readiness against operator acceptance gates", async () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
 
     expect(screen.getByText("Paper cockpit readiness")).toBeInTheDocument();
     await screen.findByText("2/4 ready");
@@ -303,8 +312,8 @@ describe("TradingScreen", () => {
     expect(screen.getByText(/Approved by operator-7: Meets risk constraints\. Audit audit-promo-1\./i)).toBeInTheDocument();
   });
 
-  it("uses server acceptance gates when the readiness contract provides them", () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={serverReadinessData} /></MemoryRouter>);
+  it("uses server acceptance gates when the readiness contract provides them", async () => {
+    await renderTradingScreen(serverReadinessData);
 
     expect(screen.getByText("2/5 ready")).toBeInTheDocument();
     expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
@@ -364,7 +373,7 @@ describe("TradingScreen", () => {
       warnings: ["Portfolio snapshot failed."]
     });
 
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={serverReadinessData} /></MemoryRouter>);
+    await renderTradingScreen(serverReadinessData);
     await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
 
     await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
@@ -378,7 +387,10 @@ describe("TradingScreen", () => {
 
   it("handles promotion happy path", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
+    vi.mocked(api.getPromotionHistory).mockClear();
     await user.type(screen.getByLabelText("Run id"), "run-1");
     await user.type(screen.getByLabelText("Operator id"), "operator-7");
     await user.type(screen.getByLabelText("Approval reason"), "Meets risk constraints");
@@ -395,6 +407,7 @@ describe("TradingScreen", () => {
       reviewNotes: "Checked replay consistency",
       manualOverrideId: "override-9"
     });
+    await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
     await screen.findByText(/by operator-7/i);
     await screen.findByText(/reason: Meets risk constraints/i);
     await screen.findByText(/audit: audit-promo-1/i);
@@ -404,7 +417,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -420,7 +433,7 @@ describe("TradingScreen", () => {
   it("shows error path when promotion evaluation fails", async () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await user.type(screen.getByLabelText("Run id"), "run-bad");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText("eval failed");
@@ -428,7 +441,7 @@ describe("TradingScreen", () => {
 
   it("supports rejecting a promotion with a required rationale", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await screen.findByText(/reason: Meets risk constraints/i);
     vi.mocked(api.getPromotionHistory).mockClear();
     vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
@@ -481,7 +494,7 @@ describe("TradingScreen", () => {
       reason: "Run not found or has no metrics available for rejection trace."
     });
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await screen.findByText(/reason: Meets risk constraints/i);
     vi.mocked(api.getPromotionHistory).mockClear();
 
@@ -499,7 +512,7 @@ describe("TradingScreen", () => {
 
   it("supports replay start and restore session for reconnect/resume workflows", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
 
     await user.click(screen.getByRole("button", { name: "Start" }));
     await screen.findByText(/Replay running/i);
@@ -513,7 +526,7 @@ describe("TradingScreen", () => {
   it("shows replay verification and execution audit for the selected session", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getTradingReadiness).mockResolvedValueOnce(null);
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
 
     await user.click(await screen.findByRole("button", { name: /verify replay/i }));
 
@@ -525,8 +538,8 @@ describe("TradingScreen", () => {
     await screen.findByText("4/4 ready");
   });
 
-  it("opens confirmation dialog when Cancel order button is clicked", () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+  it("opens confirmation dialog when Cancel order button is clicked", async () => {
+    await renderTradingScreen();
     fireEvent.click(screen.getByTitle("Cancel order"));
     expect(screen.getByText(/cancel order PO-1/i)).toBeInTheDocument();
   });

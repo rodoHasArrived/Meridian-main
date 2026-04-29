@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
-import type { GovernanceWorkspaceResponse } from "@/types";
+import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import type { GovernanceWorkspaceResponse, SecurityMasterConflict } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -97,13 +97,31 @@ const data: GovernanceWorkspaceResponse = {
   }
 };
 
+const securityConflict: SecurityMasterConflict = {
+  conflictId: "conflict-1",
+  securityId: "sec-1",
+  conflictKind: "IdentifierCollision",
+  fieldPath: "identifiers.CUSIP",
+  providerA: "Bloomberg",
+  valueA: "sec-1",
+  providerB: "Refinitiv",
+  valueB: "sec-2",
+  detectedAt: "2026-01-01T00:00:00Z",
+  status: "Open"
+};
+
+async function renderGovernanceScreen(
+  screenData: GovernanceWorkspaceResponse = data,
+  initialEntry = "/accounting"
+) {
+  const result = renderWithRouter(<GovernanceScreen data={screenData} />, { initialEntries: [initialEntry] });
+  await waitForAsyncEffects();
+  return result;
+}
+
 describe("GovernanceScreen", () => {
-  it("renders reconciliation, cash-flow, and reporting summaries", () => {
-    render(
-      <MemoryRouter initialEntries={["/accounting"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+  it("renders reconciliation, cash-flow, and reporting summaries", async () => {
+    await renderGovernanceScreen();
 
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
@@ -111,12 +129,8 @@ describe("GovernanceScreen", () => {
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
   });
 
-  it("adapts the hero copy for security-master deep links", () => {
-    render(
-      <MemoryRouter initialEntries={["/accounting/security-master"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+  it("adapts the hero copy for security-master deep links", async () => {
+    await renderGovernanceScreen(data, "/accounting/security-master");
 
     expect(screen.getByText("Security coverage")).toBeInTheDocument();
   });
@@ -125,11 +139,7 @@ describe("GovernanceScreen", () => {
     const user = userEvent.setup();
     vi.mocked(api.searchSecurities).mockRejectedValueOnce(new Error("Provider offline"));
 
-    render(
-      <MemoryRouter initialEntries={["/accounting/security-master"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+    await renderGovernanceScreen(data, "/accounting/security-master");
 
     await user.type(screen.getByLabelText("Search securities"), "AAPL");
 
@@ -196,11 +206,7 @@ describe("GovernanceScreen", () => {
       ]
     });
 
-    render(
-      <MemoryRouter initialEntries={["/accounting/security-master"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+    await renderGovernanceScreen(data, "/accounting/security-master");
 
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
     const securityRow = await screen.findByText("Apple Inc.");
@@ -212,14 +218,38 @@ describe("GovernanceScreen", () => {
     expect(screen.getByText("Collector")).toBeInTheDocument();
   });
 
+  it("renders provider-specific security conflict actions", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getSecurityConflicts).mockResolvedValueOnce([securityConflict]);
+    vi.mocked(api.resolveSecurityConflict).mockResolvedValueOnce({
+      ...securityConflict,
+      status: "Resolved"
+    });
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    expect(await screen.findByRole("group", { name: /Identifier conflict conflict-1/i })).toBeInTheDocument();
+    expect(screen.getByText("Bloomberg -> security sec-1")).toBeInTheDocument();
+    expect(screen.getByText("Refinitiv -> security sec-2")).toBeInTheDocument();
+
+    const useBloomberg = screen.getByRole("button", {
+      name: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+    });
+    expect(useBloomberg).toHaveTextContent("Use Bloomberg");
+
+    await user.click(useBloomberg);
+
+    expect(api.resolveSecurityConflict).toHaveBeenCalledWith({
+      conflictId: "conflict-1",
+      resolution: "AcceptA",
+      resolvedBy: "operator"
+    });
+  });
+
   it("renders reconciliation detail on deep-link routes and updates selection", async () => {
     const user = userEvent.setup();
 
-    render(
-      <MemoryRouter initialEntries={["/accounting/reconciliation"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     expect(screen.getByText("Reconciliation Detail")).toBeInTheDocument();
     expect(screen.getByText(/Open reconciliation breaks remain on this run/)).toBeInTheDocument();
@@ -242,11 +272,7 @@ describe("GovernanceScreen", () => {
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
     vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(updatedBreak);
 
-    render(
-      <MemoryRouter initialEntries={["/accounting/reconciliation"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
 
@@ -264,11 +290,7 @@ describe("GovernanceScreen", () => {
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
     vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new Error("Ledger write rejected"));
 
-    render(
-      <MemoryRouter initialEntries={["/accounting/reconciliation"]}>
-        <GovernanceScreen data={data} />
-      </MemoryRouter>
-    );
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
 

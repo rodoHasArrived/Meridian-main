@@ -23,6 +23,7 @@ import type {
 
 export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
+export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 
 export interface SecurityMasterServices {
   search: (query: string) => Promise<SecurityMasterEntry[]>;
@@ -45,6 +46,28 @@ export interface SecuritySearchState {
   searchStatusText: string | null;
   searchErrorText: string | null;
   statusAnnouncement: string;
+}
+
+export interface SecurityConflictActionViewModel {
+  resolution: SecurityConflictResolution;
+  label: string;
+  ariaLabel: string;
+  variant: "outline" | "ghost";
+  disabled: boolean;
+}
+
+export interface SecurityConflictRowViewModel extends SecurityMasterConflict {
+  statusLabel: string;
+  statusTone: "warning" | "neutral";
+  isOpen: boolean;
+  isResolving: boolean;
+  fieldLabel: string;
+  providerASummary: string;
+  providerBSummary: string;
+  detectedLabel: string;
+  ariaLabel: string;
+  resolutionStatusText: string | null;
+  actions: SecurityConflictActionViewModel[];
 }
 
 export interface ReconciliationBreakAction {
@@ -238,6 +261,11 @@ export function useSecurityMasterViewModel(
     }),
     [identityError, identityLoading, query, results, searchError, searching]
   );
+  const conflictRows = useMemo(
+    () => buildSecurityConflictRows(conflicts, conflictResolvingId),
+    [conflictResolvingId, conflicts]
+  );
+  const openConflictCount = countOpenSecurityConflicts(conflicts);
 
   return {
     query,
@@ -250,12 +278,17 @@ export function useSecurityMasterViewModel(
     identityLoading,
     identityErrorText: identityError,
     conflicts,
+    conflictRows,
+    hasConflicts: conflictRows.length > 0,
+    conflictEmptyText: "No identifier conflicts detected.",
+    conflictSectionAriaLabel: "Security Master identifier conflict queue",
     conflictsLoading,
     conflictsErrorText: conflictsError,
     conflictResolvingId,
     conflictActionErrorText: conflictActionError,
     resolveConflict,
-    openConflictCount: countOpenSecurityConflicts(conflicts),
+    openConflictCount,
+    conflictCountLabel: `${openConflictCount} open`,
     ...searchState
   };
 }
@@ -510,6 +543,40 @@ export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] |
   return conflicts?.filter((conflict) => conflict.status === "Open").length ?? 0;
 }
 
+export function buildSecurityConflictRows(
+  conflicts: SecurityMasterConflict[] | null,
+  resolvingConflictId: string | null
+): SecurityConflictRowViewModel[] {
+  return (conflicts ?? []).map((conflict) => {
+    const isOpen = conflict.status === "Open";
+    const isResolving = resolvingConflictId === conflict.conflictId;
+    const canResolve = isOpen && !isResolving;
+    const providerASummary = `${conflict.providerA} -> security ${formatSecurityReferenceValue(conflict.valueA)}`;
+    const providerBSummary = `${conflict.providerB} -> security ${formatSecurityReferenceValue(conflict.valueB)}`;
+
+    return {
+      ...conflict,
+      statusLabel: conflict.status,
+      statusTone: isOpen ? "warning" : "neutral",
+      isOpen,
+      isResolving,
+      fieldLabel: conflict.fieldPath,
+      providerASummary,
+      providerBSummary,
+      detectedLabel: `Detected ${formatConflictDate(conflict.detectedAt)}`,
+      ariaLabel: `Identifier conflict ${conflict.conflictId} on ${conflict.fieldPath}: ${conflict.status}. ${providerASummary}. ${providerBSummary}.`,
+      resolutionStatusText: isResolving ? `Resolving identifier conflict ${conflict.conflictId}.` : null,
+      actions: isOpen
+        ? [
+            buildSecurityConflictAction(conflict, "AcceptA", `Use ${conflict.providerA}`, canResolve, "outline"),
+            buildSecurityConflictAction(conflict, "AcceptB", `Use ${conflict.providerB}`, canResolve, "outline"),
+            buildSecurityConflictAction(conflict, "Dismiss", "Dismiss conflict", canResolve, "ghost")
+          ]
+        : []
+    };
+  });
+}
+
 export function buildReconciliationBreakQueueState({
   breakQueue,
   loading,
@@ -597,6 +664,40 @@ export function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["
   }
 
   return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";
+}
+
+function buildSecurityConflictAction(
+  conflict: SecurityMasterConflict,
+  resolution: SecurityConflictResolution,
+  label: string,
+  enabled: boolean,
+  variant: "outline" | "ghost"
+): SecurityConflictActionViewModel {
+  const choice =
+    resolution === "AcceptA"
+      ? `${conflict.providerA} value ${formatSecurityReferenceValue(conflict.valueA)}`
+      : resolution === "AcceptB"
+        ? `${conflict.providerB} value ${formatSecurityReferenceValue(conflict.valueB)}`
+        : "no provider value";
+
+  return {
+    resolution,
+    label,
+    ariaLabel: resolution === "Dismiss"
+      ? `Dismiss identifier conflict ${conflict.conflictId} on ${conflict.fieldPath}`
+      : `Resolve identifier conflict ${conflict.conflictId} on ${conflict.fieldPath} with ${choice}`,
+    variant,
+    disabled: !enabled
+  };
+}
+
+function formatSecurityReferenceValue(value: string): string {
+  return value.length > 8 ? `${value.substring(0, 8)}...` : value;
+}
+
+function formatConflictDate(value: string): string {
+  const match = /^\d{4}-\d{2}-\d{2}/.exec(value);
+  return match?.[0] ?? value;
 }
 
 function buildSecurityStatusAnnouncement({
