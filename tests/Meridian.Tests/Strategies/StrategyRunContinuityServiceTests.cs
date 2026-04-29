@@ -2,7 +2,9 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Xunit;
@@ -11,6 +13,75 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunContinuityServiceTests
 {
+    [Fact]
+    public async Task GetRunContinuityAsync_WithParentAndMismatchedPromotionSource_EmitsLineageMismatchWarning()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildContinuityRun("lineage-source-mismatch") with { ParentRunId = "expected-parent" };
+        await store.RecordRunAsync(run);
+
+        var continuityService = BuildContinuityService(
+            store,
+            [BuildPromotionRecord("lineage-source-mismatch", "different-parent", "paper-target")]);
+        var continuity = await continuityService.GetRunContinuityAsync("lineage-source-mismatch");
+
+        continuity.Should().NotBeNull();
+        continuity!.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .Contain("lineage-parent-source-mismatch");
+    }
+
+    [Fact]
+    public async Task GetRunContinuityAsync_WithoutParentAndPromotionSource_EmitsMissingParentWarning()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildContinuityRun("lineage-parent-missing"));
+
+        var continuityService = BuildContinuityService(
+            store,
+            [BuildPromotionRecord("lineage-parent-missing", "claimed-parent", "paper-target")]);
+        var continuity = await continuityService.GetRunContinuityAsync("lineage-parent-missing");
+
+        continuity.Should().NotBeNull();
+        continuity!.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .Contain("lineage-missing-parent-with-source");
+    }
+
+    [Fact]
+    public async Task GetRunContinuityAsync_PromotionCandidateWithoutTarget_EmitsMissingTargetWarning()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildContinuityRun("lineage-target-missing"));
+
+        var continuityService = BuildContinuityService(
+            store,
+            [BuildPromotionRecord("lineage-target-missing", "lineage-target-missing", targetRunId: null)]);
+        var continuity = await continuityService.GetRunContinuityAsync("lineage-target-missing");
+
+        continuity.Should().NotBeNull();
+        continuity!.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .Contain("promotion-target-run-missing");
+    }
+
+    [Fact]
+    public async Task GetRunContinuityAsync_CandidateForLiveWithoutParent_EmitsLineageShapeWarning()
+    {
+        var store = new StrategyRunStore();
+        var paperRun = BuildContinuityRun("lineage-shape-paper") with { RunType = RunType.Paper };
+        await store.RecordRunAsync(paperRun);
+
+        var continuityService = BuildContinuityService(store);
+        var continuity = await continuityService.GetRunContinuityAsync("lineage-shape-paper");
+
+        continuity.Should().NotBeNull();
+        continuity!.Run.Summary.Promotion!.State.Should().Be(StrategyRunPromotionState.CandidateForLive);
+        continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .Contain("promotion-lineage-shape-inconsistent");
+    }
+
     [Fact]
     public async Task GetRunContinuityAsync_BuildsRunCenteredSnapshotAcrossSharedSeams()
     {
@@ -211,6 +282,47 @@ public sealed class StrategyRunContinuityServiceTests
             FundProfileId: "alpha-credit",
             FundDisplayName: "Alpha Credit",
             PromotionState: promotionState);
+    }
+
+    private static StrategyRunContinuityService BuildContinuityService(
+        StrategyRunStore store,
+        IReadOnlyList<StrategyPromotionRecord>? promotionRecords = null)
+    {
+        var readService = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService(),
+            new StubPromotionRecordStore(promotionRecords ?? []));
+        return new StrategyRunContinuityService(
+            readService,
+            new CashFlowProjectionService(store),
+            new ReconciliationRunService(
+                readService,
+                new ReconciliationProjectionService(),
+                new InMemoryReconciliationRunRepository()));
+    }
+
+    private static StrategyPromotionRecord BuildPromotionRecord(string runId, string sourceRunId, string? targetRunId)
+        => new(
+            PromotionId: $"promotion-{runId}",
+            TimestampUtc: new DateTimeOffset(2026, 4, 2, 16, 0, 0, TimeSpan.Zero),
+            StrategyId: "continuity-strategy",
+            StrategyName: "Continuity Strategy",
+            SourceRunId: sourceRunId,
+            TargetRunId: targetRunId,
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            Decision: PromotionDecisionKinds.Approved,
+            ApprovedBy: "test-operator",
+            Reason: "test fixture");
+
+    private sealed class StubPromotionRecordStore(IReadOnlyList<StrategyPromotionRecord> records) : IPromotionRecordStore
+    {
+        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default) =>
+            Task.FromResult(records);
+
+        public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default) =>
+            Task.CompletedTask;
     }
 
     private static global::Meridian.Ledger.Ledger CreateLedger(DateTimeOffset startedAt, DateTimeOffset completedAt)
