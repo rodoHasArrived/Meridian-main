@@ -6627,7 +6627,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── metric-card.view-model.test.ts
+│   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -6640,6 +6643,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── button.tsx
 │   │   │   │   │       ├── card.tsx
+│   │   │   │   │       ├── dialog.test.tsx
 │   │   │   │   │       └── dialog.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── hooks
@@ -6661,6 +6665,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── operator-readiness-console.tsx
+│   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
+│   │   │   │   │   ├── operator-readiness-console.view-model.ts
 │   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── overview-screen.view-model.test.ts
 │   │   │   │   │   ├── overview-screen.view-model.ts
@@ -6678,6 +6685,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
+│   │   │   │   │   ├── render.tsx
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── vite-config.test.ts
@@ -6689,8 +6697,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-Bo8YC_kb.css
-│   │           │   └── index-GKFaONS2.js
+│   │           │   ├── index-DN1W91Kc.js
+│   │           │   └── index-UFtGYQsd.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6896,10 +6904,13 @@ Use these documents together when planning or implementing new work:
 │   │   ├── UserProfileRegistry.cs
 │   │   └── Workflows
 │   │       ├── BuiltInWorkflowDefinitionProvider.cs
+│   │       ├── FileWorkflowPresetStore.cs
 │   │       ├── IWorkflowActionCatalog.cs
 │   │       ├── IWorkflowDefinitionProvider.cs
+│   │       ├── IWorkflowPresetStore.cs
 │   │       ├── WorkflowActionIds.cs
 │   │       ├── WorkflowLibraryService.cs
+│   │       ├── WorkflowPresetService.cs
 │   │       ├── WorkflowRegistry.cs
 │   │       └── WorkflowServiceCollectionExtensions.cs
 │   └── Meridian.Wpf
@@ -8130,6 +8141,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
+│   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_documentation_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
@@ -8137,6 +8150,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_setup_dotnet_cache_action.py
 │   │   └── test_shared_build_retention.py
@@ -8144,6 +8158,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-615 directories, 7354 files
+615 directories, 7368 files
 ```
 <!-- readme-tree end -->
