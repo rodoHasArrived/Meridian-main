@@ -18,6 +18,7 @@ This directory contains Python scripts for automating documentation tasks in the
 Interactive tool to help developers add well-formatted TODO comments to the codebase.
 
 **Features:**
+
 - Interactive prompts for TODO details
 - Automatic comment style detection
 - GitHub issue integration
@@ -51,6 +52,7 @@ python3 add-todos.py \
 Scans codebase for TODO/FIXME/HACK/NOTE comments with enhanced tracking.
 
 **New features:**
+
 - Assignee detection via @username
 - Age tracking via git history
 - Stale item detection (>90 days)
@@ -101,6 +103,7 @@ python3 update-claude-md.py --claude-md CLAUDE.md
 Tracks build, test, and workflow execution metrics over time.
 
 **Features:**
+
 - Workflow success/failure rates
 - Test execution statistics
 - Build timing trends
@@ -120,6 +123,7 @@ python3 generate-metrics-dashboard.py \
 ```
 
 **Output includes:**
+
 - Overall success rates
 - Per-workflow metrics table
 - Test pass rates
@@ -131,6 +135,7 @@ python3 generate-metrics-dashboard.py \
 Validates that API documentation matches actual endpoint implementations.
 
 **Features:**
+
 - Extracts HTTP endpoints from C# source
 - Cross-references with API documentation
 - Identifies undocumented endpoints
@@ -152,6 +157,7 @@ python3 validate-api-docs.py \
 ```
 
 **Output includes:**
+
 - Documentation coverage percentage
 - Undocumented endpoints table
 - Deprecated documentation table
@@ -162,6 +168,7 @@ python3 validate-api-docs.py \
 Updates README.md badges with current project metrics.
 
 **Features:**
+
 - Version badge from Directory.Build.props
 - Test count from test files
 - Coverage from reports
@@ -183,6 +190,7 @@ python3 sync-readme-badges.py \
 ```
 
 **Badge types:**
+
 - Version (from Directory.Build.props)
 - Tests (count from test files)
 - Coverage (from coverage reports)
@@ -284,7 +292,7 @@ python3 generate-prompts.py \
 All scripts support these common flags:
 
 | Flag | Description |
-|------|-------------|
+| ------ | ----------- |
 | `--root`, `-r` | Repository root directory (default: current) |
 | `--output`, `-o` | Output file for Markdown report |
 | `--json-output`, `-j` | Output file for JSON data |
@@ -349,6 +357,7 @@ if __name__ == '__main__':
 ### Conventions
 
 **Required:**
+
 - Shebang: `#!/usr/bin/env python3`
 - Module docstring with usage examples
 - Type hints on functions
@@ -358,6 +367,7 @@ if __name__ == '__main__':
 - Return 0 on success, 1 on error
 
 **Recommended:**
+
 - `--json-output` for machine-readable output
 - Auto-generated notice in markdown output
 - Timestamp in output headers
@@ -388,6 +398,7 @@ cat /tmp/test.md
 ## Contributing
 
 For detailed development guidelines, see:
+
 - `docs/guides/documentation-automation.md` - User guide for the automation system
 - `docs/guides/expanding-scripts.md` - Developer guide for adding new scripts
 
@@ -402,7 +413,7 @@ If you encounter issues with these scripts:
 
 ---
 
-*This directory is part of the Meridian documentation automation system.*
+_This directory is part of the Meridian documentation automation system._
 
 ### Readiness and Coverage Dashboards
 
@@ -437,6 +448,7 @@ python3 generate-api-contract-coverage-dashboard.py \
 ```
 
 **Expected outputs:**
+
 - `docs/status/pilot-readiness-dashboard.md` + `.json`
 - `docs/status/paper-replay-reliability-dashboard.md` + `.json`
 - `docs/status/evidence-continuity-dashboard.md` + `.json`
