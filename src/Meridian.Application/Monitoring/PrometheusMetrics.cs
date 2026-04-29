@@ -379,7 +379,7 @@ public static class PrometheusMetrics
 
     private static readonly Gauge KernelThroughputPerMinute = Prometheus.Metrics.CreateGauge(
         "mdc_kernel_throughput_per_minute",
-        "Observed kernel throughput per minute by domain",
+        "Kernel executions per minute by domain",
         new GaugeConfiguration { LabelNames = new[] { "domain" } });
 
     private static readonly Gauge KernelLatencyPercentileMs = Prometheus.Metrics.CreateGauge(
@@ -416,6 +416,11 @@ public static class PrometheusMetrics
         "mdc_kernel_critical_severity_jump_alerts_total",
         "Total alerts raised for sudden jumps in kernel critical-severity rate by domain",
         new CounterConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Gauge KernelCriticalSeverityJumpActive = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_critical_severity_jump_active",
+        "Whether a critical-severity jump alert is currently active (0/1) by domain",
+        new GaugeConfiguration { LabelNames = new[] { "domain" } });
 
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
@@ -598,6 +603,20 @@ public static class PrometheusMetrics
         var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
         KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
         KernelCriticalSeverityJumpActive.WithLabels(safeDomain).Set(jumpAlertActive ? 1 : 0);
+        if (raiseJumpAlert)
+        {
+            KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
+        }
+    }
+
+    /// <summary>
+    /// Sets current critical severity rate and jump activity state for a domain, with optional alert increment.
+    /// </summary>
+    public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool jumpActive, bool raiseJumpAlert)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
+        KernelCriticalSeverityJumpActive.WithLabels(safeDomain).Set(jumpActive ? 1 : 0);
         if (raiseJumpAlert)
         {
             KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
