@@ -53,10 +53,13 @@ export default {
         xl: "var(--radius-xl)",
         lg: "var(--radius-lg)",
         md: "var(--radius-md)",
-        sm: "var(--radius-sm)"
+        sm: "var(--radius-sm)",
+        xs: "var(--radius-xs)"
       },
       boxShadow: {
-        workstation: "0 24px 80px rgba(0, 0, 0, 0.28)"
+        workstation: "var(--shadow-workstation)",
+        panel: "var(--shadow-panel)",
+        float: "var(--shadow-float)"
       }
     }
   },

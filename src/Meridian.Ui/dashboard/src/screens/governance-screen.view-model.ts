@@ -478,6 +478,8 @@ export function buildSecuritySearchState({
     searchStatusText = "Enter a ticker, ISIN, CUSIP, FIGI, or display name.";
   } else if (searching) {
     searchStatusText = `Searching Security Master for "${trimmedQuery}"...`;
+  } else if (results === null) {
+    searchStatusText = `Security Master search queued for "${trimmedQuery}".`;
   } else if (searchErrorText) {
     searchStatusText = searchErrorText;
   } else if (results !== null && resultCount === 0) {
@@ -628,6 +630,10 @@ function buildSecurityStatusAnnouncement({
 
   if (searching) {
     return `Searching Security Master for ${trimmedQuery}.`;
+  }
+
+  if (results === null) {
+    return `Security Master search queued for ${trimmedQuery}.`;
   }
 
   if (searchErrorText) {

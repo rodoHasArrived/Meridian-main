@@ -107,7 +107,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             <div className="eyebrow-label">Cash Flow</div>
             <CardTitle>{data.cashFlow.summary}</CardTitle>
             <CardDescription className="text-slate-300">
-              Route focus at <code className="rounded bg-white/10 px-1 py-0.5">{pathname}</code> reuses the same accounting/reporting summary payload.
+              Route focus at <code className="rounded-sm bg-background/70 px-1 py-0.5">{pathname}</code> reuses the same accounting/reporting summary payload.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -172,12 +172,12 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <GovernanceValue label="Break count" value={String(selectedReconciliation.breakCount)} />
               <GovernanceValue label="Open breaks" value={String(selectedReconciliation.openBreakCount)} tone={selectedReconciliation.openBreakCount === 0 ? "text-success" : "text-warning"} />
               <GovernanceValue label="Last updated" value={selectedReconciliation.lastUpdated} />
-              <div className="rounded-xl bg-white/10 p-4 text-slate-200">
+              <div className="rounded-lg border border-border/70 bg-background/70 p-4 text-slate-200">
                 {buildReconciliationNarrative(selectedReconciliation)}
               </div>
               <div className="flex gap-3">
                 <Button variant="secondary">Open break checklist</Button>
-                <Button variant="outline" className="border-white/20 bg-transparent text-slate-50 hover:bg-white/10">
+                <Button variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
                   Review audit packet
                 </Button>
               </div>
@@ -470,7 +470,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 Identifier conflicts
                 {securityMaster.openConflictCount > 0 && (
-                  <span className="ml-2 inline-flex items-center rounded-full bg-warning/20 px-2 py-0.5 text-xs font-semibold text-warning">
+                  <span className="ml-2 inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
                     {securityMaster.openConflictCount} open
                   </span>
                 )}
@@ -508,7 +508,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm">{conflict.fieldPath}</span>
-                            <span className={cn("rounded-full px-2 py-0.5 text-xs font-mono uppercase tracking-wide", conflict.status === "Open" ? "bg-warning/20 text-warning" : "bg-secondary text-muted-foreground")}>
+                            <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", conflict.status === "Open" ? "border-warning/35 bg-warning/10 text-warning" : "border-border/70 bg-secondary text-muted-foreground")}>
                               {conflict.status}
                             </span>
                           </div>
@@ -651,7 +651,7 @@ function GovernanceHighlight({
 
 function GovernanceValue({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-50", tone)}>{value}</span>
     </div>

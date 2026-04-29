@@ -17,6 +17,7 @@ export interface WorkspaceNavViewModel {
   brandSubtitle: string;
   modelEyebrow: string;
   modelDescription: string;
+  navEyebrow: string;
   deliveryEyebrow: string;
   deliveryTitle: string;
   deliveryDescription: string;
@@ -50,6 +51,7 @@ export function buildWorkspaceNavViewModel(
     modelEyebrow: "Operating model",
     modelDescription:
       "Workflow-centric shell for trading, portfolio, accounting, reporting, strategy, data, and settings posture.",
+    navEyebrow: "Workspaces",
     deliveryEyebrow: "Web delivery",
     deliveryTitle: "Seven-workspace operator lane",
     deliveryDescription:

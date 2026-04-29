@@ -10,12 +10,12 @@ const toneClass: Record<MetricSnapshot["tone"], string> = {
 
 export function MetricCard({ label, value, delta, tone }: MetricSnapshot) {
   return (
-    <div className="rounded-lg border border-border/70 bg-secondary/30 p-4">
+    <div className="metric-tile">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-        <span className={cn("font-mono text-xs", toneClass[tone])}>{delta}</span>
+        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+        <span className={cn("font-mono text-[10px]", toneClass[tone])}>{delta}</span>
       </div>
-      <p className={cn("mt-3 font-mono text-2xl font-semibold", toneClass[tone])}>{value}</p>
+      <p className={cn("mt-2 font-mono text-[1.3125rem] font-medium leading-none", toneClass[tone])}>{value}</p>
     </div>
   );
 }

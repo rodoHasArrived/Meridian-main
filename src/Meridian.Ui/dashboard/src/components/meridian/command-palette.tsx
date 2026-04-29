@@ -38,7 +38,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 px-4 py-24">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 px-4 py-24 backdrop-blur-sm">
       <div
         ref={dialogRef}
         role="dialog"
@@ -46,7 +46,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         aria-labelledby="command-palette-title"
         aria-describedby="command-palette-route-context"
         tabIndex={-1}
-        className="w-full max-w-xl rounded-lg border border-border bg-card p-4 shadow-workstation outline-none"
+        className="w-full max-w-xl rounded-lg border border-border bg-card p-4 shadow-float outline-none"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
           <div>
@@ -96,7 +96,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   <span className="block font-semibold">{item.commandLabel}</span>
                   <span className="mt-1 block text-muted-foreground">{item.description}</span>
                 </span>
-                <span className="shrink-0 rounded-full border border-border/70 bg-secondary/55 px-2 py-1 text-xs text-muted-foreground">
+                <span className="shrink-0 rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   {item.statusLabel}
                 </span>
               </span>

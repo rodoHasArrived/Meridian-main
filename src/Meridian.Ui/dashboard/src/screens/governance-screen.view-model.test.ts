@@ -160,6 +160,18 @@ describe("governance-screen view model", () => {
     expect(searching.searchStatusText).toBe('Searching Security Master for "aapl"...');
     expect(searching.statusAnnouncement).toBe("Searching Security Master for aapl.");
 
+    const queued = buildSecuritySearchState({
+      query: "AAPL",
+      searching: false,
+      results: null,
+      searchError: null,
+      identityLoading: false,
+      identityError: null
+    });
+
+    expect(queued.searchStatusText).toBe('Security Master search queued for "AAPL".');
+    expect(queued.statusAnnouncement).toBe("Security Master search queued for AAPL.");
+
     const complete = buildSecuritySearchState({
       query: "AAPL",
       searching: false,

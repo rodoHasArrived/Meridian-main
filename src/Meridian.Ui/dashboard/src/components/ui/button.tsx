@@ -16,14 +16,14 @@ const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
 };
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
-  default: "min-h-10 px-4 py-2 text-sm",
+  default: "min-h-9 px-4 py-2 text-sm",
   sm: "min-h-8 px-3 py-1.5 text-xs"
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ asChild = false, children, className, variant = "default", size = "default", ...props }, ref) => {
     const classes = cn(
-      "inline-flex items-center justify-center gap-2 rounded-md border font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+      "inline-flex items-center justify-center gap-2 rounded-md border font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
       variantClasses[variant],
       sizeClasses[size],
       className

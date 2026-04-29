@@ -27,9 +27,9 @@ export function WorkspaceHeader({
   });
 
   return (
-    <header className="rounded-[10px] border border-border bg-panel-strong/80 p-5 lg:p-6" aria-busy={viewModel.ariaBusy}>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-4">
+    <header className="border-b border-border bg-[#0B1520] px-4 py-4 lg:px-6" aria-busy={viewModel.ariaBusy}>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             {viewModel.badges.map((badge) => (
               <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
@@ -39,17 +39,17 @@ export function WorkspaceHeader({
           </div>
           <div className="space-y-2">
             <div className="eyebrow-label">{viewModel.eyebrow}</div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-foreground">{viewModel.title}</h1>
+            <h1 className="font-display text-[2rem] font-semibold leading-tight text-foreground">{viewModel.title}</h1>
             <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <div
-            className="rounded-md border border-border bg-secondary/60 px-4 py-2 text-sm shadow-sm"
+            className="toolbar-chip"
             aria-label={viewModel.sessionPillAriaLabel}
           >
-            <span className="font-medium">
+            <span className="font-mono">
               {viewModel.sessionLabel}
               {viewModel.sessionRoleLabel ? (
                 <span className="ml-2 text-muted-foreground">{viewModel.sessionRoleLabel}</span>

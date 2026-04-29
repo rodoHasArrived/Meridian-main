@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
+  dot?: boolean;
 }
 
 const variantClasses: Record<NonNullable<BadgeProps["variant"]>, string> = {
@@ -15,15 +16,18 @@ const variantClasses: Record<NonNullable<BadgeProps["variant"]>, string> = {
   research: "border-primary/35 bg-primary/12 text-primary"
 };
 
-export function Badge({ className, variant = "default", ...props }: BadgeProps) {
+export function Badge({ children, className, dot = false, variant = "default", ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
+        "inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
         variantClasses[variant],
         className
       )}
       {...props}
-    />
+    >
+      {dot ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" /> : null}
+      {children}
+    </span>
   );
 }

@@ -13,6 +13,9 @@ Pause new desktop-app feature development and continue operator UI delivery thro
 - `src/Meridian.Ui/wwwroot/workstation/`: built workstation assets served by `Meridian.Ui`.
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation API contract source.
 - `src/Meridian.Ui.Services/`: read-model and service support for workstation payloads.
+- `Meridian Design System (3)/`: design-system contract for the web workstation shell, including
+  cockpit color tokens, tight surface radii, shallow workstation shadows, the brand mark, line-icon
+  usage, and operator-to-operator copy rules now reflected in shared dashboard primitives.
 
 ## Owners
 
@@ -26,10 +29,11 @@ Pause new desktop-app feature development and continue operator UI delivery thro
 
 1. Restore and keep the dashboard runnable with local `npm install`, `npm run test`, and `npm run build`. Current evidence includes a refreshed workstation asset build, app-shell view-model coverage for loading/partial-degradation/bootstrap-failure status panels, canonical `WORKSPACES` metadata for `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`, route-aware command-palette and placeholder-route view-model coverage, and Research run-library component/view-model coverage for two-run compare/diff readiness, promotion-history loading, and command-error alerts.
 2. Keep the dashboard shell first-class: route the seven canonical workspaces from shared workspace metadata, preserve legacy aliases for `/overview`, `/research`, `/data-operations`, and `/governance`, and replace placeholder routes as dedicated web screens are implemented.
-3. Move Wave 2 cockpit acceptance into the web UI: session restore, replay verification, execution controls, promotion rationale, and operator work items should all consume shared workstation endpoints.
-4. Move data and governance operator workflows next: provider posture, backfill preview/trigger, export/report-pack preview, Security Master, reconciliation, and ledger review.
-5. Keep WPF tests only where shared contracts or retained desktop compatibility would otherwise regress.
-6. Treat the existing web Research run library as Wave 3 support evidence only; it does not close strategy-aware launch/preflight, persisted sweep grouping, or Backtest Studio unification.
+3. Keep the shared dashboard shell aligned with `Meridian Design System (3)/`: use the documented masthead plus left-rail workstation frame, restrained ambient background, tokenized surfaces, square badges/chips, mono data, and the copied Meridian brand mark before adding screen-specific visual treatments.
+4. Move Wave 2 cockpit acceptance into the web UI: session restore, replay verification, execution controls, promotion rationale, and operator work items should all consume shared workstation endpoints.
+5. Move data and governance operator workflows next: provider posture, backfill preview/trigger, export/report-pack preview, Security Master, reconciliation, and ledger review.
+6. Keep WPF tests only where shared contracts or retained desktop compatibility would otherwise regress.
+7. Treat the existing web Research run library as Wave 3 support evidence only; it does not close strategy-aware launch/preflight, persisted sweep grouping, or Backtest Studio unification.
 
 ## Validation
 

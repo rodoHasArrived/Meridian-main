@@ -11,10 +11,10 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { usePromotionGateViewModel, type PromotionOutcomeLevel } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import { useOrderTicketViewModel, usePromotionGateViewModel, type PromotionOutcomeLevel } from "@/screens/trading-screen.view-model";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -46,14 +46,6 @@ const focusCopy: Record<string, { title: string; description: string }> = {
     description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
   }
 };
-
-type OrderPhase = "idle" | "submitting" | "submitted" | "error";
-
-interface OrderState {
-  phase: OrderPhase;
-  orderId: string | null;
-  error: string | null;
-}
 
 type AcceptanceLevel = "ready" | "review" | "atRisk";
 
@@ -125,15 +117,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
     return "orders";
   }, [pathname]);
 
-  const [showOrderForm, setShowOrderForm] = useState(false);
-  const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
-    symbol: "",
-    side: "Buy",
-    type: "Market",
-    quantity: 0,
-    limitPrice: null
-  });
-  const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
+  const orderTicket = useOrderTicketViewModel({ onOrderAccepted: refreshExecutionControls });
 
   // --- Shared confirmation dialog state ---
   const [confirm, setConfirm] = useState<ConfirmState>({
@@ -250,28 +234,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
     void refreshExecutionAudit();
     void refreshExecutionControls();
   }, []);
-
-  async function handleSubmitOrder(e: React.FormEvent) {
-    e.preventDefault();
-    setOrderState({ phase: "submitting", orderId: null, error: null });
-    try {
-      const result = await submitOrder(orderForm);
-      if (result.success) {
-        setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
-        setShowOrderForm(false);
-        setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
-        await refreshExecutionControls();
-      } else {
-        setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
-      }
-    } catch (err) {
-      setOrderState({
-        phase: "error",
-        orderId: null,
-        error: err instanceof Error ? err.message : "Order submission failed."
-      });
-    }
-  }
 
   async function handleCreateSession(e: React.FormEvent) {
     e.preventDefault();
@@ -452,7 +414,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardTitle>Current workstream</CardTitle>
             <CardDescription className="text-slate-300">
               Deep links under{" "}
-              <code className="rounded bg-white/10 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
@@ -622,34 +584,44 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <Trash2 className="mr-2 h-4 w-4" />
                   Cancel all
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={orderTicket.toggleTicket}
+                  aria-expanded={orderTicket.open}
+                  aria-controls="trading-order-ticket"
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  New order
+                  {orderTicket.openButtonLabel}
                 </Button>
               </div>
             </div>
           </CardHeader>
-          {showOrderForm && (
-            <CardContent className="border-b border-border/60 pb-6">
-              <form onSubmit={handleSubmitOrder} className="space-y-4">
+          {orderTicket.open && (
+            <CardContent id="trading-order-ticket" className="border-b border-border/60 pb-6">
+              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby="order-ticket-requirements">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
+                    <label htmlFor="order-ticket-symbol" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
                     <input
+                      id="order-ticket-symbol"
                       type="text"
                       placeholder="AAPL"
-                      value={orderForm.symbol}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value }))}
-                      onBlur={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                      value={orderTicket.form.symbol}
+                      onChange={(e) => orderTicket.updateField("symbol", e.target.value)}
+                      onBlur={orderTicket.normalizeSymbol}
+                      aria-describedby="order-ticket-requirements"
+                      aria-invalid={orderTicket.invalidField === "symbol" ? true : undefined}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       required
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
+                    <label htmlFor="order-ticket-side" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
                     <select
-                      value={orderForm.side}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, side: e.target.value as "Buy" | "Sell" }))}
+                      id="order-ticket-side"
+                      value={orderTicket.form.side}
+                      onChange={(e) => orderTicket.updateField("side", e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="Buy">Buy</option>
@@ -657,10 +629,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
+                    <label htmlFor="order-ticket-type" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
                     <select
-                      value={orderForm.type}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, type: e.target.value as "Market" | "Limit" | "Stop" }))}
+                      id="order-ticket-type"
+                      value={orderTicket.form.type}
+                      onChange={(e) => orderTicket.updateField("type", e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="Market">Market</option>
@@ -669,28 +642,34 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
+                    <label htmlFor="order-ticket-quantity" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
                     <input
+                      id="order-ticket-quantity"
                       type="number"
                       min={1}
                       step={1}
-                      value={orderForm.quantity || ""}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
+                      value={orderTicket.form.quantity || ""}
+                      onChange={(e) => orderTicket.updateField("quantity", e.target.value)}
+                      aria-describedby="order-ticket-requirements"
+                      aria-invalid={orderTicket.invalidField === "quantity" ? true : undefined}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       required
                     />
                   </div>
-                  {(orderForm.type === "Limit" || orderForm.type === "Stop") && (
+                  {orderTicket.requiresLimitPrice && (
                     <div className="space-y-1">
-                      <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {orderForm.type} Price
+                      <label htmlFor="order-ticket-limit-price" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {orderTicket.priceLabel}
                       </label>
                       <input
+                        id="order-ticket-limit-price"
                         type="number"
                         min={0}
                         step={0.01}
-                        value={orderForm.limitPrice ?? ""}
-                        onChange={(e) => setOrderForm((prev) => ({ ...prev, limitPrice: e.target.value ? Number(e.target.value) : null }))}
+                        value={orderTicket.form.limitPrice ?? ""}
+                        onChange={(e) => orderTicket.updateField("limitPrice", e.target.value)}
+                        aria-describedby="order-ticket-requirements"
+                        aria-invalid={orderTicket.invalidField === "limitPrice" ? true : undefined}
                         className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                         required
                       />
@@ -698,37 +677,47 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   )}
                 </div>
 
-                {orderState.error && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
-                    <XCircle className="h-4 w-4 shrink-0" />
-                    {orderState.error}
-                  </div>
-                )}
+                <p id="order-ticket-requirements" className="text-xs text-muted-foreground">
+                  {orderTicket.requirementText}
+                </p>
+                <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
 
-                {orderState.phase === "submitted" && (
-                  <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 shrink-0" />
-                    Order submitted{orderState.orderId ? ` — ${orderState.orderId}` : ""}.
+                {orderTicket.errorText && (
+                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
+                    <XCircle className="h-4 w-4 shrink-0" />
+                    {orderTicket.errorText}
                   </div>
                 )}
 
                 <div className="flex gap-3">
-                  <Button type="submit" size="sm" disabled={orderState.phase === "submitting"}>
-                    {orderState.phase === "submitting" ? "Submitting…" : "Submit order"}
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!orderTicket.canSubmit}
+                    aria-label={orderTicket.submitAriaLabel}
+                    aria-describedby="order-ticket-requirements"
+                  >
+                    {orderTicket.submitButtonLabel}
                   </Button>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setShowOrderForm(false);
-                      setOrderState({ phase: "idle", orderId: null, error: null });
-                    }}
+                    onClick={orderTicket.closeTicket}
+                    disabled={!orderTicket.canClose}
                   >
                     Cancel
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          )}
+          {!orderTicket.open && orderTicket.successText && (
+            <CardContent className="border-b border-border/60 pb-4">
+              <div role="status" className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 shrink-0" />
+                {orderTicket.successText}
+              </div>
             </CardContent>
           )}
           <CardContent>
@@ -922,7 +911,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   </div>
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
+                      "rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
                       selectedSessionDetail.summary.isActive
                         ? "bg-success/10 text-success"
                         : "bg-secondary text-muted-foreground"
@@ -1490,7 +1479,7 @@ function AcceptanceStatusCard({
               Session, replay, audit, and promotion signals for the current paper workflow.
             </CardDescription>
           </div>
-          <span className={cn("rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
+          <span className={cn("rounded-sm border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
             {readyCount}/{totalCount} ready
           </span>
         </div>
@@ -1517,7 +1506,7 @@ function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
           <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
           <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
         </div>
-        <span className="rounded-full bg-background/70 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground">
+        <span className="rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-foreground">
           {acceptanceLabel[item.level]}
         </span>
       </div>
@@ -1545,7 +1534,7 @@ function OperatorWorkItemList({
           </p>
         </div>
         {primaryWorkItem && (
-          <span className="rounded-full border border-border/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
             {primaryWorkItem.kind}
           </span>
         )}
@@ -1756,7 +1745,7 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 
 function WiringRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
     </div>
@@ -1777,7 +1766,7 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
 
 function ContextRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className="font-mono text-slate-100">{value}</span>
     </div>

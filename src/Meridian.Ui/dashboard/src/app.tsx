@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle, Search } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
@@ -36,11 +38,45 @@ export function App() {
   });
 
   return (
-    <div className="min-h-screen p-4 lg:p-6">
-      <div className="mx-auto flex max-w-[1720px] flex-col gap-4 lg:flex-row">
+    <div className="workstation-frame">
+      <header className="workstation-masthead">
+        <div className="workstation-brand">
+          <img src={meridianMarkUrl} alt="" aria-hidden="true" />
+          <div className="min-w-0">
+            <div className="name">Meridian</div>
+            <div className="sub">Operator workstation</div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          onClick={() => setCommandOpen(true)}
+          aria-label="Open workstation command palette"
+        >
+          <Search className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="truncate">
+            <b>{shell.activeWorkspace.label}</b> · {shell.activeWorkspace.status} · Command palette
+          </span>
+        </button>
+
+        <div className="workstation-actions">
+          {session ? (
+            <>
+              <Badge variant={session.environment}>{session.environment}</Badge>
+              <span>{session.displayName}</span>
+              <span className="text-muted-foreground">{session.role}</span>
+            </>
+          ) : (
+            <span>Session loading</span>
+          )}
+        </div>
+      </header>
+
+      <div className="workstation-shell">
         <WorkspaceNav />
 
-        <main className="panel-surface min-h-[calc(100vh-3rem)] flex-1 overflow-hidden p-6 lg:p-8">
+        <main className="workbench grid grid-rows-[auto_minmax(0,1fr)]">
           <WorkspaceHeader
             workspace={shell.activeWorkspace}
             session={session}
@@ -49,7 +85,7 @@ export function App() {
             refreshing={loading}
           />
 
-          <div className="mt-8">
+          <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
               <Routes>

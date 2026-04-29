@@ -1,7 +1,328 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import type { PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord } from "@/types";
+import type { OrderResult, OrderSubmitRequest, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord } from "@/types";
+
+export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
+export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "error";
+
+export interface OrderTicketServices {
+  submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+}
+
+export interface OrderTicketState {
+  form: OrderSubmitRequest;
+  open: boolean;
+  phase: OrderTicketPhase;
+  orderId: string | null;
+  errorText: string | null;
+  validationError: string | null;
+  invalidField: OrderTicketField | null;
+  canSubmit: boolean;
+  canClose: boolean;
+  requiresLimitPrice: boolean;
+  priceLabel: string;
+  openButtonLabel: string;
+  submitButtonLabel: string;
+  submitAriaLabel: string;
+  requirementText: string;
+  successText: string | null;
+  statusAnnouncement: string;
+}
+
+export interface BuildOrderTicketStateOptions {
+  form: OrderSubmitRequest;
+  open: boolean;
+  phase: OrderTicketPhase;
+  orderId: string | null;
+  errorText: string | null;
+}
+
+export const emptyOrderTicketForm: OrderSubmitRequest = {
+  symbol: "",
+  side: "Buy",
+  type: "Market",
+  quantity: 0,
+  limitPrice: null
+};
+
+const defaultOrderTicketServices: OrderTicketServices = {
+  submitOrder: (request) => workstationApi.submitOrder(request)
+};
+
+export function useOrderTicketViewModel({
+  services = defaultOrderTicketServices,
+  onOrderAccepted
+}: {
+  services?: OrderTicketServices;
+  onOrderAccepted?: () => Promise<void> | void;
+} = {}) {
+  const [form, setForm] = useState<OrderSubmitRequest>(emptyOrderTicketForm);
+  const [open, setOpen] = useState(false);
+  const [phase, setPhase] = useState<OrderTicketPhase>("idle");
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  const state = useMemo(
+    () => buildOrderTicketState({ form, open, phase, orderId, errorText }),
+    [errorText, form, open, orderId, phase]
+  );
+
+  const openTicket = useCallback(() => {
+    setOpen(true);
+    setErrorText(null);
+    if (phase !== "submitted") {
+      return;
+    }
+
+    setPhase("idle");
+    setOrderId(null);
+  }, [phase]);
+
+  const closeTicket = useCallback(() => {
+    if (phase === "submitting") {
+      return;
+    }
+
+    setOpen(false);
+    setPhase("idle");
+    setOrderId(null);
+    setErrorText(null);
+  }, [phase]);
+
+  const toggleTicket = useCallback(() => {
+    if (open) {
+      closeTicket();
+      return;
+    }
+
+    openTicket();
+  }, [closeTicket, open, openTicket]);
+
+  const updateField = useCallback((field: OrderTicketField, value: string) => {
+    setForm((current) => updateOrderTicketForm(current, field, value));
+    setPhase((current) => current === "submitted" ? "idle" : current);
+    setOrderId(null);
+    setErrorText(null);
+  }, []);
+
+  const normalizeSymbol = useCallback(() => {
+    setForm((current) => ({
+      ...current,
+      symbol: normalizeOrderSymbol(current.symbol)
+    }));
+  }, []);
+
+  const submitOrderTicket = useCallback(async () => {
+    const validationError = validateOrderTicketForm(form);
+    if (validationError) {
+      setPhase("error");
+      setOrderId(null);
+      setErrorText(validationError);
+      return;
+    }
+
+    setPhase("submitting");
+    setOrderId(null);
+    setErrorText(null);
+
+    try {
+      const result = await services.submitOrder(buildOrderSubmitRequest(form));
+      if (result.success) {
+        setPhase("submitted");
+        setOrderId(result.orderId);
+        setErrorText(null);
+        setOpen(false);
+        setForm(emptyOrderTicketForm);
+        await onOrderAccepted?.();
+        return;
+      }
+
+      setPhase("error");
+      setErrorText(result.reason ?? "Order failed.");
+    } catch (err) {
+      setPhase("error");
+      setErrorText(toErrorMessage(err, "Order submission failed."));
+    }
+  }, [form, onOrderAccepted, services]);
+
+  return {
+    ...state,
+    openTicket,
+    closeTicket,
+    toggleTicket,
+    updateField,
+    normalizeSymbol,
+    submitOrder: submitOrderTicket
+  };
+}
+
+export function buildOrderTicketState({
+  form,
+  open,
+  phase,
+  orderId,
+  errorText
+}: BuildOrderTicketStateOptions): OrderTicketState {
+  const validationError = validateOrderTicketForm(form);
+  const requiresLimitPrice = orderTypeRequiresPrice(form.type);
+  const successText = phase === "submitted"
+    ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
+    : null;
+
+  return {
+    form,
+    open,
+    phase,
+    orderId,
+    errorText,
+    validationError,
+    invalidField: getOrderTicketInvalidField(form),
+    canSubmit: phase !== "submitting" && validationError === null,
+    canClose: phase !== "submitting",
+    requiresLimitPrice,
+    priceLabel: `${form.type} price`,
+    openButtonLabel: open ? "Close order ticket" : "New order",
+    submitButtonLabel: phase === "submitting" ? "Submitting..." : "Submit order",
+    submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
+    requirementText: buildOrderRequirementText(form, phase, validationError),
+    successText,
+    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId })
+  };
+}
+
+export function updateOrderTicketForm(
+  current: OrderSubmitRequest,
+  field: OrderTicketField,
+  value: string
+): OrderSubmitRequest {
+  if (field === "symbol") {
+    return { ...current, symbol: value };
+  }
+
+  if (field === "side") {
+    return { ...current, side: value === "Sell" ? "Sell" : "Buy" };
+  }
+
+  if (field === "type") {
+    const type = value === "Limit" || value === "Stop" ? value : "Market";
+    return {
+      ...current,
+      type,
+      limitPrice: orderTypeRequiresPrice(type) ? current.limitPrice : null
+    };
+  }
+
+  if (field === "quantity") {
+    return { ...current, quantity: parsePositiveNumber(value) ?? 0 };
+  }
+
+  return { ...current, limitPrice: parsePositiveNumber(value) };
+}
+
+export function buildOrderSubmitRequest(form: OrderSubmitRequest): OrderSubmitRequest {
+  const request: OrderSubmitRequest = {
+    symbol: normalizeOrderSymbol(form.symbol),
+    side: form.side,
+    type: form.type,
+    quantity: form.quantity
+  };
+
+  if (orderTypeRequiresPrice(form.type)) {
+    request.limitPrice = form.limitPrice;
+  }
+
+  return request;
+}
+
+export function validateOrderTicketForm(form: OrderSubmitRequest): string | null {
+  if (!normalizeOrderSymbol(form.symbol)) {
+    return "Enter a symbol before submitting an order.";
+  }
+
+  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
+    return "Enter an order quantity greater than zero.";
+  }
+
+  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
+    return `Enter a ${form.type.toLowerCase()} price greater than zero.`;
+  }
+
+  return null;
+}
+
+function getOrderTicketInvalidField(form: OrderSubmitRequest): OrderTicketField | null {
+  if (!normalizeOrderSymbol(form.symbol)) {
+    return "symbol";
+  }
+
+  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
+    return "quantity";
+  }
+
+  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
+    return "limitPrice";
+  }
+
+  return null;
+}
+
+function buildOrderRequirementText(
+  form: OrderSubmitRequest,
+  phase: OrderTicketPhase,
+  validationError: string | null
+): string {
+  if (phase === "submitting") {
+    return "Submitting order request to the execution layer.";
+  }
+
+  if (validationError) {
+    return validationError;
+  }
+
+  const symbol = normalizeOrderSymbol(form.symbol);
+  const priceText = orderTypeRequiresPrice(form.type) && form.limitPrice
+    ? ` at ${form.limitPrice}`
+    : "";
+  return `${form.side} ${form.quantity} ${symbol} ${form.type.toLowerCase()}${priceText}.`;
+}
+
+function buildOrderTicketStatusAnnouncement({
+  phase,
+  errorText,
+  orderId
+}: {
+  phase: OrderTicketPhase;
+  errorText: string | null;
+  orderId: string | null;
+}): string {
+  if (phase === "submitting") {
+    return "Submitting order request.";
+  }
+
+  if (errorText) {
+    return `Order submission failed: ${errorText}`;
+  }
+
+  if (phase === "submitted") {
+    return `Order submitted${orderId ? ` with id ${orderId}` : ""}.`;
+  }
+
+  return "";
+}
+
+function normalizeOrderSymbol(symbol: string): string {
+  return symbol.trim().toUpperCase();
+}
+
+function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
+  return type === "Limit" || type === "Stop";
+}
+
+function parsePositiveNumber(value: string): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 export type PromotionGateField =
   | "runId"

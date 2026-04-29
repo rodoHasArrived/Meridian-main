@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   DatabaseZap,
   FileCheck2,
   FlaskConical,
@@ -28,26 +27,16 @@ export function WorkspaceNav() {
   const viewModel = buildWorkspaceNavViewModel(location.pathname);
 
   return (
-    <aside className="panel-surface-strong flex min-h-[calc(100vh-3rem)] w-full flex-col gap-6 p-5 lg:w-[320px]">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-primary/30 bg-primary/12 text-primary">
-            <BarChart3 className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="font-display text-lg font-semibold">{viewModel.brandTitle}</div>
-            <div className="text-sm text-muted-foreground">{viewModel.brandSubtitle}</div>
-          </div>
-        </div>
-        <div className="rounded-lg border border-border/80 bg-secondary/35 px-4 py-4">
-          <div className="eyebrow-label">{viewModel.modelEyebrow}</div>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {viewModel.modelDescription}
-          </p>
-        </div>
+    <aside className="operator-rail" aria-label={`${viewModel.brandTitle} ${viewModel.brandSubtitle}`}>
+      <div className="operator-rail-section">{viewModel.modelEyebrow}</div>
+      <div className="mx-2 mb-3 rounded-lg border border-border/80 bg-card px-3 py-3 shadow-panel">
+        <p className="text-xs leading-5 text-muted-foreground">
+          {viewModel.modelDescription}
+        </p>
       </div>
 
-      <nav className="space-y-2" aria-label="Workspaces">
+      <nav className="space-y-1" aria-label="Workspaces">
+        <div className="operator-rail-section">{viewModel.navEyebrow}</div>
         {viewModel.items.map((item) => {
           const Icon = icons[item.key];
           return (
@@ -57,26 +46,27 @@ export function WorkspaceNav() {
               aria-current={item.ariaCurrent}
               aria-label={item.ariaLabel}
               className={cn(
-                "flex items-start gap-3 rounded-lg border px-4 py-3 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "operator-nav-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 item.active
-                  ? "border-primary/30 bg-primary/10 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                  : "border-transparent bg-transparent text-muted-foreground hover:border-border hover:bg-secondary/55 hover:text-foreground"
+                  ? "active"
+                  : ""
               )}
             >
-              <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="space-y-1">
-                <span className="block text-sm font-semibold">{item.label}</span>
-                <span className="block text-xs leading-5">{item.statusLabel}</span>
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{item.label}</span>
+                <span className="block truncate text-[11px] leading-4 text-muted-foreground">{item.description}</span>
               </span>
+              <span className="operator-nav-status">{item.statusLabel}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto rounded-lg border border-border bg-secondary/45 px-4 py-5 text-sm text-slate-50">
+      <div className="mx-2 mt-5 rounded-lg border border-border bg-secondary/35 px-3 py-3 text-sm">
         <div className="eyebrow-label">{viewModel.deliveryEyebrow}</div>
-        <div className="mt-3 font-semibold text-foreground">{viewModel.deliveryTitle}</div>
-        <p className="mt-2 leading-6 text-muted-foreground">
+        <div className="mt-2 font-semibold text-foreground">{viewModel.deliveryTitle}</div>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
           {viewModel.deliveryDescription}
         </p>
       </div>

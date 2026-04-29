@@ -271,7 +271,7 @@ function DataHighlight({ icon: Icon, title, description }: { icon: typeof Databa
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className="font-mono text-slate-50">{value}</span>
     </div>
