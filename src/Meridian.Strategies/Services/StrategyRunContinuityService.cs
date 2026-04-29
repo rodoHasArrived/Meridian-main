@@ -116,9 +116,15 @@ public sealed class StrategyRunContinuityService
         RunCashFlowSummary? cashFlow,
         ReconciliationRunDetail? reconciliation)
     {
+        var promotion = run.Summary.Promotion;
+        var hasParent = !string.IsNullOrWhiteSpace(run.Summary.ParentRunId);
+        var promotionSource = promotion?.SourceRunId;
+        var promotionTarget = promotion?.TargetRunId;
+        var promotionState = promotion?.State ?? StrategyRunPromotionState.None;
         var hasPortfolio = run.Portfolio is not null;
         var hasLedger = run.Ledger is not null;
         var hasCashFlow = cashFlow is { TotalEntries: > 0 };
+        var hasFills = (run.Execution?.FillCount ?? run.Summary.FillCount) > 0;
         var hasReconciliation = reconciliation is not null;
         var hasRun = run.Summary is not null;
         var hasFills = run.Summary.FillCount > 0;
@@ -144,6 +150,13 @@ public sealed class StrategyRunContinuityService
                 Severity: StrategyRunContinuityWarningSeverity.Warning,
                 Message: "Run has no recorded cash flows for cash-financing continuity.",
                 SourceSeam: "cash-flow"));
+        }
+
+        if (!hasFills)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "missing-fills",
+                Message: "Run has no execution fills recorded for continuity review."));
         }
 
         if (!hasReconciliation)
@@ -190,6 +203,50 @@ public sealed class StrategyRunContinuityService
                 SourceSeam: "security-master"));
         }
 
+        if (run.Summary.Promotion?.State is StrategyRunPromotionState.CandidateForLive && run.Summary.Mode is StrategyRunMode.Backtest)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-promotion-gap",
+                Message: "Run is promoted toward live operations from a backtest lineage; validate paper lineage continuity."));
+        if (hasParent
+            && !string.IsNullOrWhiteSpace(promotionSource)
+            && !string.Equals(run.Summary.ParentRunId, promotionSource, StringComparison.Ordinal))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-parent-source-mismatch",
+                Message: "Run has a parent link, but promotion source does not match the recorded parent run."));
+        }
+
+        if (!hasParent && !string.IsNullOrWhiteSpace(promotionSource))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-missing-parent-with-source",
+                Message: "Run has no parent link, but promotion source claims upstream ancestry."));
+        }
+
+        if ((promotionState is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive)
+            && string.IsNullOrWhiteSpace(promotionTarget))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "promotion-target-run-missing",
+                Message: "Promotion candidate is missing an expected target run identifier."));
+        }
+
+        var lineageInconsistent = promotionState switch
+        {
+            StrategyRunPromotionState.CandidateForPaper => hasParent,
+            StrategyRunPromotionState.CandidateForLive => !hasParent,
+            StrategyRunPromotionState.LiveManaged => !hasParent,
+            _ => false
+        };
+
+        if (lineageInconsistent)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "promotion-lineage-shape-inconsistent",
+                Message: $"Promotion state '{promotionState}' is inconsistent with the run lineage shape."));
+        }
+
         return new StrategyRunContinuityStatus(
             HasRun: hasRun,
             RunHealth: runHealth,
@@ -201,6 +258,7 @@ public sealed class StrategyRunContinuityService
             LedgerHealth: ledgerHealth,
             HasCashFlow: hasCashFlow,
             CashFlowHealth: cashFlowHealth,
+            HasFills: hasFills,
             HasReconciliation: hasReconciliation,
             ReconciliationHealth: reconciliationHealth,
             AsOfDriftMinutes: asOfDriftMinutes,

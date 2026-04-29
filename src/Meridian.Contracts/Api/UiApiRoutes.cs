@@ -472,6 +472,9 @@ public static class UiApiRoutes
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
+    /// <summary>
+    /// Canonical strategy run continuity drill-in route shared by workstation surfaces.
+    /// </summary>
     public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
     public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";

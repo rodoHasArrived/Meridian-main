@@ -39,6 +39,27 @@ This matrix defines compatibility commitments for:
 2. New request fields must be optional for at least one full deprecation window.
 3. Endpoint handlers must continue accepting prior payload shapes during the deprecation window.
 
+
+## Continuity DTO/API Route Change Policy (Run/Portfolio/Ledger/Cash-Flow/Reconciliation)
+
+The following continuity contract families are shared between workstation clients and service boundaries:
+
+- Run continuity DTOs (execution session/replay and run status payloads).
+- Portfolio continuity DTOs (position, exposure, account summary, and snapshot payloads).
+- Ledger continuity DTOs (entries, balances, posting snapshots, and ledger health summaries).
+- Cash-flow continuity DTOs (cash ladder/event projections and run cash-flow projections).
+- Reconciliation continuity DTOs and API routes (break queues, operator inbox/review routes, and sign-off projections).
+
+Policy requirements:
+
+1. **Additive changes are preferred.** New optional/nullable members are allowed when old clients can ignore them safely.
+2. **Non-additive changes require migration notes.** Any DTO member removal, rename, type narrowing, enum member removal, route removal, or route parameter rename is treated as potential breaking continuity impact.
+3. **Migration notes must be explicit.** For each non-additive change, add a dated entry in **Migration Notes** documenting:
+   - impacted continuity DTOs/routes,
+   - compatibility shim/deprecation window (or waiver reference),
+   - downstream consumer action required (desktop, web, automation, or external integrations).
+4. **PR evidence is mandatory.** PRs with non-additive continuity changes must include a contract-review packet artifact link plus a PR-body migration-note snippet summarizing consumer impact and rollout guidance.
+
 ## Deprecation and Migration Policy
 
 | Change type | Minimum deprecation window | Required mitigation |

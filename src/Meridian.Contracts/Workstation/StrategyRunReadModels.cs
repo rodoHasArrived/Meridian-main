@@ -525,6 +525,11 @@ public sealed record StrategyRunCashFlowDigest(
 
 /// <summary>
 /// Machine-readable continuity warning for shared run-centered workflows.
+/// Known warning codes include:
+/// missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift,
+/// open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch,
+/// lineage-missing-parent-with-source, promotion-target-run-missing, and
+/// promotion-lineage-shape-inconsistent.
 /// </summary>
 public sealed record StrategyRunContinuityWarning(
     string Code,
@@ -562,6 +567,7 @@ public sealed record StrategyRunContinuityStatus(
     StrategyRunContinuitySeamHealthStatus LedgerHealth,
     bool HasCashFlow,
     StrategyRunContinuitySeamHealthStatus CashFlowHealth,
+    bool HasFills,
     bool HasReconciliation,
     StrategyRunContinuitySeamHealthStatus ReconciliationHealth,
     int AsOfDriftMinutes,
@@ -571,14 +577,25 @@ public sealed record StrategyRunContinuityStatus(
     IReadOnlyList<StrategyRunContinuityWarning> Warnings);
 
 /// <summary>
-/// Shared continuity drill-in that bundles the run-centered seams used across workspaces.
+/// Canonical shared continuity drill-in contract used by Research, Trading, and Governance run drill-ins.
+/// </summary>
+public sealed record StrategyRunContinuityDto(
+    StrategyRunDetail Run,
+    StrategyRunContinuityLineage Lineage,
+    StrategyRunCashFlowDigest? CashFlow,
+    ReconciliationRunSummary? Reconciliation,
+    StrategyRunContinuityStatus ContinuityStatus);
+
+/// <summary>
+/// Backward-compatible alias for <see cref="StrategyRunContinuityDto"/>.
 /// </summary>
 public sealed record StrategyRunContinuityDetail(
     StrategyRunDetail Run,
     StrategyRunContinuityLineage Lineage,
     StrategyRunCashFlowDigest? CashFlow,
     ReconciliationRunSummary? Reconciliation,
-    StrategyRunContinuityStatus ContinuityStatus);
+    StrategyRunContinuityStatus ContinuityStatus)
+    : StrategyRunContinuityDto(Run, Lineage, CashFlow, Reconciliation, ContinuityStatus);
 
 // ---------------------------------------------------------------------------
 // Lot-level tracking read models
