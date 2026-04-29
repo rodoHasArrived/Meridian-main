@@ -8013,6 +8013,7 @@ Meridian-main
 ├── LICENSE
 ├── Makefile
 ├── Meridian.sln
+├── NuGet.Config
 ├── package-lock.json
 ├── package.json
 └── README.md

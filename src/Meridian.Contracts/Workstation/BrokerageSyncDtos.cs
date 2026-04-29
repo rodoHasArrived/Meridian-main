@@ -51,6 +51,7 @@ public sealed record WorkstationBrokerageSyncStatusDto(
     int SecurityMissingCount,
     IReadOnlyList<string> Warnings);
 
+[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
 public sealed record WorkstationBrokerageBalanceSnapshotDto(
     decimal Cash,
     decimal Equity,
@@ -58,6 +59,7 @@ public sealed record WorkstationBrokerageBalanceSnapshotDto(
     string Currency,
     decimal MarginBalance);
 
+[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
 public sealed record WorkstationBrokeragePositionDto(
     string Symbol,
     decimal Quantity,
@@ -71,6 +73,7 @@ public sealed record WorkstationBrokeragePositionDto(
     string? PositionId = null,
     string? Currency = null);
 
+[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
 public sealed record WorkstationBrokerageOrderDto(
     string OrderId,
     string? ClientOrderId,
@@ -85,6 +88,7 @@ public sealed record WorkstationBrokerageOrderDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt = null);
 
+[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
 public sealed record WorkstationBrokerageFillDto(
     string FillId,
     string? OrderId,
@@ -96,6 +100,7 @@ public sealed record WorkstationBrokerageFillDto(
     string? Venue = null,
     decimal? Commission = null);
 
+[Obsolete("Use fund-account scoped workstation payloads and continuity/governance DTOs for sync posture. This standalone sync projection DTO is deprecated.")]
 public sealed record WorkstationBrokerageCashTransactionDto(
     string TransactionId,
     string TransactionType,
@@ -105,6 +110,7 @@ public sealed record WorkstationBrokerageCashTransactionDto(
     string? Symbol = null,
     string? Description = null);
 
+[Obsolete("Use WorkstationBrokerageSyncStatusDto via fund-account scoped readiness/work-item/governance flows. This standalone sync projection DTO is deprecated.")]
 public sealed record WorkstationBrokerageSyncViewDto(
     Guid FundAccountId,
     WorkstationBrokerageAccountLinkDto Link,

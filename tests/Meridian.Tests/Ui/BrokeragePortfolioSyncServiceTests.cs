@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Meridian.Application.FundAccounts;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
@@ -21,13 +23,25 @@ public sealed class BrokeragePortfolioSyncServiceTests
         var root = CreateTempRoot();
         try
         {
-            var service = CreateService(
+            var (service, serviceProvider) = CreateService(
                 root,
                 new FixedPortfolioAdapter("alpaca"),
                 new FixedActivityAdapter("alpaca"),
                 includeSecurityLookup: true);
             var fundAccountId = Guid.NewGuid();
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-001",
+                    "Primary Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests"),
+                cts.Token);
 
             var status = await service.RunSyncAsync(
                 fundAccountId,
@@ -63,6 +77,15 @@ public sealed class BrokeragePortfolioSyncServiceTests
             var restoredStatus = await service.GetStatusAsync(fundAccountId, cts.Token);
             restoredStatus.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
             restoredStatus.LastSuccessfulSyncAt.Should().Be(status.LastSuccessfulSyncAt);
+
+            var latestBalance = await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, cts.Token);
+            latestBalance.Should().NotBeNull();
+            latestBalance!.CashBalance.Should().Be(50000m);
+            latestBalance.SecuritiesMarketValue.Should().Be(75000m);
+
+            var reconciliationRuns = await fundAccountService.GetReconciliationRunsAsync(fundAccountId, cts.Token);
+            reconciliationRuns.Should().ContainSingle();
+            reconciliationRuns[0].Status.Should().NotBeNullOrWhiteSpace();
         }
         finally
         {
@@ -76,7 +99,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
         var root = CreateTempRoot();
         try
         {
-            var service = CreateService(
+            var (service, _) = CreateService(
                 root,
                 new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing."),
                 new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing."),
@@ -110,7 +133,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
         var root = CreateTempRoot();
         try
         {
-            var service = CreateService(
+            var (service, _) = CreateService(
                 root,
                 new FixedPortfolioAdapter("alpaca"),
                 new FixedActivityAdapter("alpaca"),
@@ -134,25 +157,28 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
-    private static BrokeragePortfolioSyncService CreateService(
+    private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,
         IBrokerageActivitySync activityAdapter,
         bool includeSecurityLookup)
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
         if (includeSecurityLookup)
         {
             services.AddSingleton<ISecurityReferenceLookup>(new StaticSecurityReferenceLookup());
         }
+        var serviceProvider = services.BuildServiceProvider();
 
-        return new BrokeragePortfolioSyncService(
+        var syncService = new BrokeragePortfolioSyncService(
             new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
             catalogs: [],
             portfolioAdapters: [portfolioAdapter],
             activityAdapters: [activityAdapter],
-            services: services.BuildServiceProvider(),
+            services: serviceProvider,
             logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
+        return (syncService, serviceProvider);
     }
 
     private static string CreateTempRoot()
