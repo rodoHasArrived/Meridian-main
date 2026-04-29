@@ -117,6 +117,7 @@ public sealed class StrategyRunContinuityService
     {
         var hasPortfolio = run.Portfolio is not null;
         var hasLedger = run.Ledger is not null;
+        var hasFills = run.Summary.FillCount > 0;
         var hasCashFlow = cashFlow is { TotalEntries: > 0 };
         var hasReconciliation = reconciliation is not null;
         var asOfDriftMinutes = CalculateAsOfDriftMinutes(run.Portfolio?.AsOf, run.Ledger?.AsOf);
@@ -144,6 +145,13 @@ public sealed class StrategyRunContinuityService
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "missing-cash-flow",
                 Message: "Run has no recorded cash flows for cash-financing continuity."));
+        }
+
+        if (!hasFills)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "missing-fills",
+                Message: "Run has no recorded fills to anchor run / portfolio / ledger continuity."));
         }
 
         if (!hasReconciliation)
@@ -174,9 +182,17 @@ public sealed class StrategyRunContinuityService
                 Message: $"Run has {securityCoverageIssues} security coverage issue(s) across continuity surfaces."));
         }
 
+        if (!string.IsNullOrWhiteSpace(run.Summary.ParentRunId) && run.Summary.Promotion?.SourceRunId is null)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-promotion-gap",
+                Message: "Parent/child lineage exists but promotion linkage metadata is incomplete."));
+        }
+
         return new StrategyRunContinuityStatus(
             HasPortfolio: hasPortfolio,
             HasLedger: hasLedger,
+            HasFills: hasFills,
             HasCashFlow: hasCashFlow,
             HasReconciliation: hasReconciliation,
             AsOfDriftMinutes: asOfDriftMinutes,
