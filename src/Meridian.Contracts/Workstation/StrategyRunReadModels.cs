@@ -525,6 +525,11 @@ public sealed record StrategyRunCashFlowDigest(
 
 /// <summary>
 /// Machine-readable continuity warning for shared run-centered workflows.
+/// Known warning codes include:
+/// missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift,
+/// open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch,
+/// lineage-missing-parent-with-source, promotion-target-run-missing, and
+/// promotion-lineage-shape-inconsistent.
 /// </summary>
 public sealed record StrategyRunContinuityWarning(
     string Code,
