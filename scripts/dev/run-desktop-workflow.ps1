@@ -80,6 +80,49 @@ function Get-ConfigBool {
     return $Fallback
 }
 
+function Resolve-DesktopExecutablePath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PreferredPath,
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectPath,
+        [Parameter(Mandatory = $true)]
+        [string]$Configuration,
+        [Parameter(Mandatory = $true)]
+        [string]$ExeName
+    )
+
+    if (Test-Path -LiteralPath $PreferredPath -PathType Leaf) {
+        return [System.IO.Path]::GetFullPath($PreferredPath)
+    }
+
+    $projectDirectory = Split-Path -Parent $ProjectPath
+    $projectRoot = if ([System.IO.Path]::IsPathRooted($projectDirectory)) {
+        [System.IO.Path]::GetFullPath($projectDirectory)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path $repoRoot $projectDirectory))
+    }
+
+    $configurationRoot = Join-Path $projectRoot "bin/$Configuration"
+    if (-not (Test-Path -LiteralPath $configurationRoot -PathType Container)) {
+        return [System.IO.Path]::GetFullPath($PreferredPath)
+    }
+
+    $candidates = @(
+        Get-ChildItem -LiteralPath $configurationRoot -Filter $ExeName -Recurse -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending
+    )
+
+    if ($candidates.Count -gt 0) {
+        $resolvedCandidate = [System.IO.Path]::GetFullPath($candidates[0].FullName)
+        Write-Warn "Expected desktop executable path '$PreferredPath' was not found; using discovered binary '$resolvedCandidate'."
+        return $resolvedCandidate
+    }
+
+    return [System.IO.Path]::GetFullPath($PreferredPath)
+}
+
 function Get-MeridianWindowFromProcess {
     param(
         [System.Diagnostics.Process]$Process
@@ -844,6 +887,7 @@ New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screens
 $stdoutPath = Join-Path $logDirectory 'stdout.log'
 $stderrPath = Join-Path $logDirectory 'stderr.log'
 $exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $resolvedConfiguration -Framework $resolvedFramework -BinaryName $resolvedExeName -IsolationKey $buildIsolationKey
+$exePath = Resolve-DesktopExecutablePath -PreferredPath $exePath -ProjectPath $resolvedProjectPath -Configuration $resolvedConfiguration -ExeName $resolvedExeName
 $manifest = [ordered]@{
     workflow = [ordered]@{
         name = $workflowDefinition.name
