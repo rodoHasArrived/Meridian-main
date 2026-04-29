@@ -1798,6 +1798,32 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ContinuityDrillInsAcrossSurfaces_ShouldUseCanonicalRouteAndSharedSchema()
+    {
+        await using var app = await CreateAppAsync(RegisterRunReadServices);
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await store.RecordRunAsync(BuildContinuityRun("run-continuity-shared"));
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-continuity-shared"));
+
+        var client = app.GetTestClient();
+        var canonicalContinuityRoute = UiApiRoutes.RunsContinuity.Replace("{runId}", "run-continuity-shared", StringComparison.Ordinal);
+
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+        using var briefing = await ReadJsonAsync(client, "/api/workstation/research/briefing");
+
+        ContainsStringValue(research.RootElement, canonicalContinuityRoute).Should().BeTrue();
+        ContainsStringValue(trading.RootElement, canonicalContinuityRoute).Should().BeTrue();
+        ContainsStringValue(briefing.RootElement, canonicalContinuityRoute).Should().BeTrue();
+
+        using var continuity = await ReadJsonAsync(client, canonicalContinuityRoute);
+        var propertyNames = continuity.RootElement.EnumerateObject().Select(static property => property.Name).ToArray();
+        propertyNames.Should().BeEquivalentTo(["run", "lineage", "cashFlow", "reconciliation", "continuityStatus"]);
+        continuity.RootElement.TryGetProperty("continuity", out _).Should().BeFalse("surfaces must not emit continuity-only envelope fields outside the shared DTO contract");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_RunReviewPacket_ShouldReturnStableActionableWorkItems()
     {
         await using var app = await CreateAppAsync(services =>
@@ -2950,6 +2976,17 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var stream = await response.Content.ReadAsStreamAsync();
         return await JsonDocument.ParseAsync(stream);
+    }
+
+    private static bool ContainsStringValue(JsonElement element, string expectedValue)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => string.Equals(element.GetString(), expectedValue, StringComparison.Ordinal),
+            JsonValueKind.Object => element.EnumerateObject().Any(property => ContainsStringValue(property.Value, expectedValue)),
+            JsonValueKind.Array => element.EnumerateArray().Any(item => ContainsStringValue(item, expectedValue)),
+            _ => false
+        };
     }
 
     private static async Task<OperatorWorkflowHomeSummary> ReadWorkflowSummaryAsync(HttpClient client, string path)

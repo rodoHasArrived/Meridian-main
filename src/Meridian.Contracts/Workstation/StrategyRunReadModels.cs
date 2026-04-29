@@ -545,14 +545,25 @@ public sealed record StrategyRunContinuityStatus(
     IReadOnlyList<StrategyRunContinuityWarning> Warnings);
 
 /// <summary>
-/// Shared continuity drill-in that bundles the run-centered seams used across workspaces.
+/// Canonical shared continuity drill-in contract used by Research, Trading, and Governance run drill-ins.
+/// </summary>
+public sealed record StrategyRunContinuityDto(
+    StrategyRunDetail Run,
+    StrategyRunContinuityLineage Lineage,
+    StrategyRunCashFlowDigest? CashFlow,
+    ReconciliationRunSummary? Reconciliation,
+    StrategyRunContinuityStatus ContinuityStatus);
+
+/// <summary>
+/// Backward-compatible alias for <see cref="StrategyRunContinuityDto"/>.
 /// </summary>
 public sealed record StrategyRunContinuityDetail(
     StrategyRunDetail Run,
     StrategyRunContinuityLineage Lineage,
     StrategyRunCashFlowDigest? CashFlow,
     ReconciliationRunSummary? Reconciliation,
-    StrategyRunContinuityStatus ContinuityStatus);
+    StrategyRunContinuityStatus ContinuityStatus)
+    : StrategyRunContinuityDto(Run, Lineage, CashFlow, Reconciliation, ContinuityStatus);
 
 // ---------------------------------------------------------------------------
 // Lot-level tracking read models
