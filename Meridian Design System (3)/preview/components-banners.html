@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Banners</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
+  .banner { display: flex; gap: 10px; align-items: center; border: 1px solid; border-radius: 6px; padding: 9px 12px; margin-bottom: 8px; font-size: 12px; }
+  .banner svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .t { font-weight: 500; }
+  .sub { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); margin-top: 1px; }
+  .success { background: rgba(38,191,134,.04); border-color: rgba(38,191,134,.30); color: #26BF86; }
+  .warning { background: rgba(214,158,56,.04); border-color: rgba(214,158,56,.30); color: #D69E38; }
+  .danger  { background: rgba(222,88,120,.04); border-color: rgba(222,88,120,.30); color: #DE5878; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="banner success">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+    <div><div class="t">All systems healthy</div><div class="sub">5 / 5 providers online · storage OK · heartbeat 14:32:07</div></div>
+  </div>
+  <div class="banner warning">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div><div class="t">System degraded</div><div class="sub">Prefetch summaries did not load — latency elevated on 2 providers.</div></div>
+  </div>
+  <div class="banner danger">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    <div><div class="t">System offline</div><div class="sub">Execution layer unreachable — orders disabled.</div></div>
+  </div>
+</body>
+</html>

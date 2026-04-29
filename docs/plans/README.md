@@ -1,10 +1,10 @@
 # Plans
 
-**Last Reviewed:** 2026-04-28
+**Last Reviewed:** 2026-04-29
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
 
-Current roadmap refresh note: the 2026-04-28 project delta is validation-support and support-surface hardening, not a wave-status change. The WPF screenshot-refresh workflow now supports scheduled/push/manual catalog and manual capture groups with diagnostics and one final screenshot commit; Storage now projects archive growth/capacity/last-scan posture; and the operator inbox now carries actionable latest-run review-packet blockers, while Waves 2-4 still require cockpit, shared-model, and governance acceptance evidence.
+Current roadmap refresh note: the 2026-04-29 direction pivots new operator UI work to the browser dashboard in `src/Meridian.Ui/dashboard/`. Treat WPF plans and automation as retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Waves 2-4 still require cockpit, shared-model, and governance acceptance evidence, now with web-first UI delivery.
 
 ## Core Operator-Ready Path (Waves 1-4)
 
@@ -16,9 +16,10 @@ These are the plan documents that directly support the current path to the core 
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner-lane, dependency, and exit-criteria addendum for the active Waves 2-4 path |
 | [provider-reliability-data-confidence-wave-1-blueprint.md](provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 provider-confidence and checkpoint-evidence blueprint |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability sprint blueprint for replay confidence, session persistence, risk auditability, and promotion traceability |
-| [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Historical browser-workstation checklist; re-scope any remaining items to WPF plus retained local APIs |
+| [web-ui-development-pivot.md](web-ui-development-pivot.md) | Active plan for pausing desktop feature work and making the browser dashboard the operator UI lane |
+| [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Historical browser-workstation checklist; reuse remaining items only when they support the active web dashboard |
 | [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint backlog for workstation delivery |
-| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation productization blueprint for the primary WPF shell and retained local API support surface |
+| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Historical WPF-first migration blueprint; re-scope open items to web-first workstation delivery |
 | [meridian-analytics-productization-blueprint.md](meridian-analytics-productization-blueprint.md) | Research -> Trading -> Governance analytics productization blueprint for notebooks, comparison, exports, handoff, and governed artifacts |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, reconciliation, and reporting blueprint on top of shared seams |
 | [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sequenced Wave 4 governance and fund-operations slices |

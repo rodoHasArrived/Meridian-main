@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — State patterns</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .sheet { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+  .top { padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid var(--border-color);
+         display: flex; align-items: baseline; justify-content: space-between; }
+  .top h1 { font-family: var(--font-display); font-size: 20px; color: #FFF; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+  .top .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.16em; }
+
+  .panel { background: #0B1520; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
+  .phead { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+           padding: 10px 16px; background: #05101B; border-bottom: 1px solid var(--border-color);
+           font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; }
+  .phead .num { color: #2AB2D4; font-weight: 600; }
+  .phead .title { color: #FFF; }
+  .phead .token { color: var(--fg-muted); }
+
+  /* ----- State matrix: 7 states × 4 surfaces ----- */
+  .matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .matrix .col-head { padding: 10px 14px; background: #05101B; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .matrix .col-head:last-child { border-right: 0; }
+  .matrix .cell { padding: 12px 14px; border-right: 1px solid var(--border-color); border-bottom: 1px solid #142036; display: flex; flex-direction: column; gap: 8px; }
+  .matrix .cell:last-child, .matrix .cell:nth-child(4n) { border-right: 0; }
+
+  /* State badge */
+  .sbadge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; }
+  .sbadge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* State banner */
+  .sbanner { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 4px; font-size: 12px; border: 1px solid; }
+  .sbanner .icon { font-size: 12px; flex-shrink: 0; }
+  .sbanner .body { display: flex; flex-direction: column; gap: 1px; }
+  .sbanner .label { font-weight: 500; }
+  .sbanner .detail { font-family: var(--font-mono); font-size: 10px; opacity: 0.75; }
+
+  /* State row (table use) */
+  .srow { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 3px; font-size: 12px; }
+  .srow .bar { width: 2px; height: 20px; border-radius: 1px; }
+
+  /* State KPI */
+  .skpi { padding: 10px 12px; border-radius: 4px; border: 1px solid; display: flex; flex-direction: column; gap: 4px; }
+  .skpi .k { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; }
+  .skpi .v { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; font-weight: 500; }
+
+  /* State cell label row */
+  .cell-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); margin-bottom: 4px; }
+
+  /* ----- Focus ring demo ----- */
+  .focus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px 14px; }
+  .focus-item { display: flex; flex-direction: column; gap: 6px; }
+  .focus-demo { padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--fg); }
+  .focus-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+
+  /* ----- Dense table demo ----- */
+  .table-wrap { border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin: 0; }
+
+  /* ----- Workspace colors ----- */
+  .ws-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
+  .ws-cell { padding: 14px 16px; border-right: 1px solid var(--border-color); }
+  .ws-cell:last-child { border-right: 0; }
+  .ws-cell .name { font-family: var(--font-display); font-size: 14px; color: #FFF; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.005em; }
+  .ws-cell .accent { width: 100%; height: 3px; border-radius: 1px; margin-bottom: 10px; }
+  .ws-cell .items { display: flex; flex-direction: column; gap: 4px; }
+  .ws-cell .item { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); display: flex; align-items: center; gap: 6px; }
+  .ws-cell .item .sw { width: 8px; height: 8px; border-radius: 1px; flex-shrink: 0; }
+  .ws-cell .token { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <div class="sub">Design tokens · state system</div>
+      <h1>Semantic state patterns</h1>
+    </div>
+    <div class="sub">7 states · 4 surfaces · 1 structure</div>
+  </div>
+
+  <!-- ===== 01 STATE MATRIX ===== -->
+  <div class="panel">
+    <div class="phead">
+      <span class="num">01</span>
+      <span class="title">State matrix — badge · banner · row · KPI</span>
+      <span class="token">--state-{name}-fg/bd/bg</span>
+    </div>
+    <div class="matrix">
+      <div class="col-head">State</div>
+      <div class="col-head">Badge</div>
+      <div class="col-head">Banner</div>
+      <div class="col-head">KPI card</div>
+
+      <!-- HEALTHY -->
+      <div class="cell"><div class="cell-label">Healthy</div>
+        <span class="sbadge" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border:1px solid var(--state-healthy-bd);"><span class="dot"></span>Healthy</span></div>
+      <div class="cell">
+        <div class="sbanner" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border-color:var(--state-healthy-bd);">
+          <span class="icon">✓</span><div class="body"><div class="label">All systems healthy</div><div class="detail">5 / 5 providers online · 14:02:37</div></div>
+        </div></div>
+      <div class="cell">
+        <div class="srow" style="background:var(--state-healthy-bg);"><div class="bar" style="background:var(--state-healthy-fg);"></div><span style="color:var(--fg);">Storage healthy</span><span style="color:var(--state-healthy-fg); font-family:var(--font-mono); font-size:11px;">OK</span></div></div>
+      <div class="cell">
+        <div class="skpi" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border-color:var(--state-healthy-bd);">
+          <div class="k">Net P&L</div><div class="v">+12,430</div></div></div>
+
+      <!-- WARN -->
+      <div class="cell"><div class="cell-label">Observe</div>
+        <span class="sbadge" style="color:var(--state-warn-fg);background:var(--state-warn-bg);border:1px solid var(--state-warn-bd);"><span class="dot"></span>Observe</span></div>
+      <div class="cell">
+        <div class="sbanner" style="color:var(--state-warn-fg);background:var(--state-warn-bg);border-color:var(--state-warn-bd);">
+          <span class="icon">⚠</span><div class="body"><div class="label">System degraded</div><div class="detail">Prefetch summaries did not load</div></div>
+        </div></div>
+      <div class="cell">
+        <div class="srow" style="background:var(--state-warn-bg);"><div class="bar" style="background:var(--state-warn-fg);"></div><span style="color:var(--fg);">Latency elevated</span><span style="color:var(--state-warn-fg); font-family:var(--font-mono); font-size:11px;">182ms</span></div></div>
+      <div class="cell">
+        <div class="skpi" style="color:var(--state-warn-fg);background:var(--state-warn-bg);border-color:var(--state-warn-bd);">
+          <div class="k">Max Drawdown</div><div class="v">−2.41%</div></div></div>
+
+      <!-- DANGER -->
+      <div class="cell"><div class="cell-label">Critical</div>
+        <span class="sbadge" style="color:var(--state-danger-fg);background:var(--state-danger-bg);border:1px solid var(--state-danger-bd);"><span class="dot"></span>Critical</span></div>
+      <div class="cell">
+        <div class="sbanner" style="color:var(--state-danger-fg);background:var(--state-danger-bg);border-color:var(--state-danger-bd);">
+          <span class="icon">✕</span><div class="body"><div class="label">System offline</div><div class="detail">Execution layer unreachable</div></div>
+        </div></div>
+      <div class="cell">
+        <div class="srow" style="background:var(--state-danger-bg);"><div class="bar" style="background:var(--state-danger-fg);"></div><span style="color:var(--fg);">Breaker open</span><span style="color:var(--state-danger-fg); font-family:var(--font-mono); font-size:11px;">OPEN</span></div></div>
+      <div class="cell">
+        <div class="skpi" style="color:var(--state-danger-fg);background:var(--state-danger-bg);border-color:var(--state-danger-bd);">
+          <div class="k">Exposure</div><div class="v">$2.1M</div></div></div>
+
+      <!-- PAPER -->
+      <div class="cell"><div class="cell-label">Paper</div>
+        <span class="sbadge" style="color:var(--state-paper-fg);background:var(--state-paper-bg);border:1px solid var(--state-paper-bd);"><span class="dot"></span>Paper</span></div>
+      <div class="cell">
+        <div class="sbanner" style="color:var(--state-paper-fg);background:var(--state-paper-bg);border-color:var(--state-paper-bd);">
+          <span class="icon">◉</span><div class="body"><div class="label">Paper environment active</div><div class="detail">sess-0e431 · $100,000 initial</div></div>
+        </div></div>
+      <div class="cell">
+        <div class="srow" style="background:var(--state-paper-bg);"><div class="bar" style="background:var(--state-paper-fg);"></div><span style="color:var(--fg);">Session active</span><span style="color:var(--state-paper-fg); font-family:var(--font-mono); font-size:11px;">PAPER</span></div></div>
+      <div class="cell">
+        <div class="skpi" style="color:var(--state-paper-fg);background:var(--state-paper-bg);border-color:var(--state-paper-bd);">
+          <div class="k">Cash</div><div class="v">$98,240</div></div></div>
+
+      <!-- RESEARCH -->
+      <div class="cell"><div class="cell-label">Research</div>
+        <span class="sbadge" style="color:var(--state-research-fg);background:var(--state-research-bg);border:1px solid var(--state-research-bd);"><span class="dot"></span>Research</span></div>
+      <div class="cell">
+        <div class="sbanner" style="color:var(--state-research-fg);background:var(--state-research-bg);border-color:var(--state-research-bd);">
+          <span class="icon">⚗</span><div class="body"><div class="label">Research environment</div><div class="detail">Run MRD-ALPHA-02 · backtest mode</div></div>
+        </div></div>
+      <div class="cell">
+        <div class="srow" style="background:var(--state-research-bg);"><div class="bar" style="background:var(--state-research-fg);"></div><span style="color:var(--fg);">Backtest run</span><span style="color:var(--state-research-fg); font-family:var(--font-mono); font-size:11px;">RUN</span></div></div>
+      <div class="cell">
+        <div class="skpi" style="color:var(--state-research-fg);background:var(--state-research-bg);border-color:var(--state-research-bd);">
+          <div class="k">Sharpe</div><div class="v">1.84</div></div></div>
+
+      <!-- PENDING -->
+      <div class="cell"><div class="cell-label">Pending</div>
+        <span class="sbadge" style="color:var(--state-pending-fg);background:var(--state-pending-bg);border:1px solid var(--state-pending-bd);"><span class="dot"></span>Pending</span></div>
+      <div class="cell">
+        <div class="sbanner" style="color:var(--state-pending-fg);background:var(--state-pending-bg);border-color:var(--state-pending-bd);">
+          <span class="icon">◌</span><div class="body"><div class="label">Replay verification in progress…</div><div class="detail">Comparing 2,184 fills</div></div>
+        </div></div>
+      <div class="cell">
+        <div class="srow" style="background:var(--state-pending-bg);"><div class="bar" style="background:var(--state-pending-fg);"></div><span style="color:var(--fg);">Backfill queued</span><span style="color:var(--state-pending-fg); font-family:var(--font-mono); font-size:11px;">WAIT</span></div></div>
+      <div class="cell">
+        <div class="skpi" style="color:var(--state-pending-fg);background:var(--state-pending-bg);border-color:var(--state-pending-bd);">
+          <div class="k">Queue depth</div><div class="v">14</div></div></div>
+
+      <!-- MUTED -->
+      <div class="cell" style="border-bottom:0;"><div class="cell-label">Inactive</div>
+        <span class="sbadge" style="color:var(--state-muted-fg);background:var(--state-muted-bg);border:1px solid var(--state-muted-bd);"><span class="dot"></span>Inactive</span></div>
+      <div class="cell" style="border-bottom:0;">
+        <div class="sbanner" style="color:var(--state-muted-fg);background:var(--state-muted-bg);border-color:var(--state-muted-bd);">
+          <span class="icon">—</span><div class="body"><div class="label">No active sessions</div><div class="detail">Create one above to begin</div></div>
+        </div></div>
+      <div class="cell" style="border-bottom:0;">
+        <div class="srow" style="background:var(--state-muted-bg);"><div class="bar" style="background:var(--state-muted-bd);"></div><span style="color:var(--fg-muted);">Provider offline</span><span style="color:var(--fg-muted); font-family:var(--font-mono); font-size:11px;">—</span></div></div>
+      <div class="cell" style="border-bottom:0;">
+        <div class="skpi" style="color:var(--state-muted-fg);background:var(--state-muted-bg);border-color:var(--state-muted-bd);">
+          <div class="k">Active runs</div><div class="v">0</div></div></div>
+    </div>
+  </div>
+
+  <!-- ===== 02 FOCUS RING ===== -->
+  <div class="panel">
+    <div class="phead">
+      <span class="num">02</span>
+      <span class="title">Focus ring — keyboard navigation only</span>
+      <span class="token">--cyan-focus: #20D3F7 · ring 2px · offset 0</span>
+    </div>
+    <div class="focus-grid">
+      <div class="focus-item">
+        <div class="focus-label">Input · focus</div>
+        <div class="focus-demo" style="background:#08101A; border:1px solid #20D3F7; box-shadow:0 0 0 3px rgba(32,211,247,0.18); border-radius:4px; font-family:var(--font-mono); font-size:12px;">187.42<span style="display:inline-block;width:7px;height:13px;background:#20D3F7;vertical-align:middle;margin-left:2px;"></span></div>
+      </div>
+      <div class="focus-item">
+        <div class="focus-label">Button · focus</div>
+        <div style="padding:8px 12px; border-radius:4px; background:#2AB2D4; color:#05101B; font-family:var(--font-mono); font-size:11px; display:inline-block; outline:2px solid #20D3F7; outline-offset:2px;">Submit order</div>
+      </div>
+      <div class="focus-item">
+        <div class="focus-label">Nav item · focus</div>
+        <div style="padding:8px 12px; border-radius:4px; background:rgba(42,178,212,0.10); border:1px solid rgba(42,178,212,0.30); font-size:12px; color:#FFF; outline:2px solid #20D3F7; outline-offset:1px;">Trading</div>
+      </div>
+      <div class="focus-item">
+        <div class="focus-label">Select · focus</div>
+        <div style="padding:7px 10px; border-radius:4px; background:#08101A; border:1px solid #20D3F7; box-shadow:0 0 0 3px rgba(32,211,247,0.18); font-family:var(--font-mono); font-size:12px; color:var(--fg-muted);">Market ▾</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 03 WORKSPACE DIFFERENTIATION ===== -->
+  <div class="panel">
+    <div class="phead">
+      <span class="num">03</span>
+      <span class="title">Workspace color differentiation — accent accents, not full rebrand</span>
+      <span class="token">nav inset · eyebrow · icon tint</span>
+    </div>
+    <div class="ws-grid">
+      <div class="ws-cell">
+        <div class="accent" style="background:#A8B5C4;"></div>
+        <div class="name">Overview</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#A8B5C4;"></div><span>Nav inset: bone</span></div>
+          <div class="item"><div class="sw" style="background:#A8B5C4;"></div><span>Eyebrow: muted</span></div>
+          <div class="item"><div class="sw" style="background:#A8B5C4;"></div><span>Icon: muted</span></div>
+        </div>
+        <div class="token">--fg-muted</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#60A5FA;"></div>
+        <div class="name">Research</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Nav inset: blue</span></div>
+          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Badge: --paper</span></div>
+          <div class="item"><div class="sw" style="background:#60A5FA;"></div><span>Icon: blue-400</span></div>
+        </div>
+        <div class="token">--state-paper-fg</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#2AB2D4;"></div>
+        <div class="name">Trading</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#2AB2D4;"></div><span>Nav inset: cyan</span></div>
+          <div class="item"><div class="sw" style="background:#2AB2D4;"></div><span>Badge: --live</span></div>
+          <div class="item"><div class="sw" style="background:#2AB2D4;"></div><span>Icon: primary</span></div>
+        </div>
+        <div class="token">--cyan-primary</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#A78BFA;"></div>
+        <div class="name">Data Ops</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Nav inset: violet</span></div>
+          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Badge: pending</span></div>
+          <div class="item"><div class="sw" style="background:#A78BFA;"></div><span>Icon: violet</span></div>
+        </div>
+        <div class="token">--state-pending-fg</div>
+      </div>
+      <div class="ws-cell">
+        <div class="accent" style="background:#D69E38;"></div>
+        <div class="name">Governance</div>
+        <div class="items">
+          <div class="item"><div class="sw" style="background:#D69E38;"></div><span>Nav inset: amber</span></div>
+          <div class="item"><div class="sw" style="background:#D69E38;"></div><span>Badge: warn</span></div>
+          <div class="item"><div class="sw" style="background:#D69E38;"></div><span>Icon: accent</span></div>
+        </div>
+        <div class="token">--state-warn-fg</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 04 DENSE DATA TABLE ===== -->
+  <div class="panel">
+    <div class="phead">
+      <span class="num">04</span>
+      <span class="title">Dense data readability — table anatomy</span>
+      <span class="token">row-h 28px · cell 7/12px · mono 12px · header 10px</span>
+    </div>
+    <div style="padding: 0;">
+      <div class="table-wrap" style="border-radius:0; border:0; border-top: 1px solid var(--border-color);">
+        <table class="data-table">
+          <thead><tr>
+            <th>Symbol</th><th>Side</th><th class="r">Qty</th><th class="r">Avg px</th><th class="r">Mark</th><th class="r">Day P&L</th><th class="r">Unrealized</th><th class="r">Exposure</th><th>Status</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono">AAPL</td>
+              <td><span class="sbadge" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border:1px solid var(--state-healthy-bd);">Long</span></td>
+              <td class="r mono">100</td><td class="r mono">184.22</td><td class="r mono">187.42</td>
+              <td class="r mono" style="color:var(--state-healthy-fg);">+320.00</td>
+              <td class="r mono" style="color:var(--state-healthy-fg);">+320.00</td>
+              <td class="r mono">$18,742</td>
+              <td><span class="sbadge" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border:1px solid var(--state-healthy-bd);">Filled</span></td>
+            </tr>
+            <tr>
+              <td class="mono">TSLA</td>
+              <td><span class="sbadge" style="color:var(--state-danger-fg);background:var(--state-danger-bg);border:1px solid var(--state-danger-bd);">Short</span></td>
+              <td class="r mono">40</td><td class="r mono">174.20</td><td class="r mono">176.55</td>
+              <td class="r mono" style="color:var(--state-danger-fg);">−94.00</td>
+              <td class="r mono" style="color:var(--state-danger-fg);">−94.00</td>
+              <td class="r mono">$7,062</td>
+              <td><span class="sbadge" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border:1px solid var(--state-healthy-bd);">Filled</span></td>
+            </tr>
+            <tr>
+              <td class="mono">SPY</td>
+              <td><span class="sbadge" style="color:var(--state-warn-fg);background:var(--state-warn-bg);border:1px solid var(--state-warn-bd);">Long</span></td>
+              <td class="r mono">120</td><td class="r mono">512.30</td><td class="r mono">510.80</td>
+              <td class="r mono" style="color:var(--state-healthy-fg);">+180.00</td>
+              <td class="r mono" style="color:var(--state-danger-fg);">−180.00</td>
+              <td class="r mono">$61,296</td>
+              <td><span class="sbadge" style="color:var(--state-warn-fg);background:var(--state-warn-bg);border:1px solid var(--state-warn-bd);">Partial</span></td>
+            </tr>
+            <tr>
+              <td class="mono">NVDA</td>
+              <td><span class="sbadge" style="color:var(--state-healthy-fg);background:var(--state-healthy-bg);border:1px solid var(--state-healthy-bd);">Long</span></td>
+              <td class="r mono">25</td><td class="r mono">820.15</td><td class="r mono">844.92</td>
+              <td class="r mono" style="color:var(--state-healthy-fg);">+619.25</td>
+              <td class="r mono" style="color:var(--state-healthy-fg);">+619.25</td>
+              <td class="r mono">$21,123</td>
+              <td><span class="sbadge" style="color:var(--state-pending-fg);background:var(--state-pending-bg);border:1px solid var(--state-pending-bd);">Pending</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

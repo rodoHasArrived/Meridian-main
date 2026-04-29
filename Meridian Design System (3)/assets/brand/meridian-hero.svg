@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Meridian hero visual</title>
+  <desc id="desc">An abstract Meridian background with orbital guides, grid lines, and a rising signal path.</desc>
+  <defs>
+    <linearGradient id="bg" x1="160" y1="40" x2="1380" y2="860" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#07101C"></stop>
+      <stop offset="0.45" stop-color="#0F1B28"></stop>
+      <stop offset="1" stop-color="#111C28"></stop>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(1180 220) rotate(90) scale(260 360)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A6BB5" stop-opacity="0.42"></stop>
+      <stop offset="1" stop-color="#1A6BB5" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="signal" x1="360" y1="620" x2="1210" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A6BB5"></stop>
+      <stop offset="0.52" stop-color="#0EA5E9"></stop>
+      <stop offset="1" stop-color="#16A34A"></stop>
+    </linearGradient>
+    <linearGradient id="beam" x1="812" y1="120" x2="812" y2="774" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"></stop>
+      <stop offset="0.5" stop-color="#67E8F9"></stop>
+      <stop offset="1" stop-color="#86EFAC"></stop>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"></rect>
+  <rect width="1600" height="900" fill="url(#glow)"></rect>
+
+  <g stroke="#29425C" stroke-opacity="0.55" fill="none">
+    <path d="M0 140H1600"></path>
+    <path d="M0 280H1600"></path>
+    <path d="M0 420H1600"></path>
+    <path d="M0 560H1600"></path>
+    <path d="M0 700H1600"></path>
+    <path d="M220 0V900"></path>
+    <path d="M520 0V900"></path>
+    <path d="M820 0V900"></path>
+    <path d="M1120 0V900"></path>
+    <path d="M1420 0V900"></path>
+  </g>
+
+  <circle cx="812" cy="456" r="292" fill="none" stroke="#21405D" stroke-width="2"></circle>
+  <circle cx="812" cy="456" r="370" fill="none" stroke="#1B334B" stroke-width="2"></circle>
+  <circle cx="812" cy="456" r="446" fill="none" stroke="#152838" stroke-width="2"></circle>
+
+  <path d="M812 136V772" fill="none" stroke="url(#beam)" stroke-width="8" stroke-linecap="round"></path>
+  <path d="M366 620L540 566L702 450L822 496L1036 368L1210 282" fill="none" stroke="url(#signal)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M356 702C514 598 684 598 846 702C1002 800 1160 800 1320 702" fill="none" stroke="#3B82F6" stroke-opacity="0.24" stroke-width="8" stroke-linecap="round"></path>
+
+  <g>
+    <circle cx="812" cy="122" r="18" fill="#84F3B6"></circle>
+    <circle cx="812" cy="122" r="36" fill="none" stroke="#84F3B6" stroke-opacity="0.22" stroke-width="10"></circle>
+    <circle cx="366" cy="620" r="10" fill="#1A6BB5"></circle>
+    <circle cx="702" cy="450" r="10" fill="#0EA5E9"></circle>
+    <circle cx="1036" cy="368" r="10" fill="#16A34A"></circle>
+    <circle cx="1210" cy="282" r="12" fill="#84F3B6"></circle>
+  </g>
+</svg>

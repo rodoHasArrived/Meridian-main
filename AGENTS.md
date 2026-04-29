@@ -11,6 +11,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
 - `docs/development/desktop-testing-guide.md` for WPF test slices and shell-first regression bundles.
 - `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
+- `docs/plans/web-ui-development-pivot.md` for the active browser-first operator UI pivot.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
@@ -24,8 +25,9 @@ Keep it short and prefer the canonical Meridian guidance sources:
 ## Current Direction
 
 - Meridian is a .NET 9 fund-management and trading-platform codebase.
-- `src/Meridian.Wpf/` is the primary operator shell. Prefer desktop-first workflow guidance.
-- Treat `src/Meridian.Ui/` as a retained local diagnostics/API support surface, not the primary operator shell.
+- New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
+- `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.
+- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the web dashboard and retained desktop shell.
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - Use the narrowest validation command that covers the files changed.
 
@@ -196,6 +198,18 @@ dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -
 python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
 python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 ```
+
+## Web UI Workflows
+
+```bash
+cd src/Meridian.Ui/dashboard
+npm install
+npm run test
+npm run build
+```
+
+Prefer these dashboard commands for browser-operator UI changes. Broaden to `tests/Meridian.Ui.Tests`
+or shared API endpoint tests when a web change touches DTOs, workstation endpoints, or UI services.
 
 For concurrent automation, use an isolation key so builds write under `artifacts/bin/<key>/`
 and `artifacts/obj/<key>/` instead of shared project output folders:

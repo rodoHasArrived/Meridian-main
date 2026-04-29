@@ -438,7 +438,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setPromotionOutcome({
         level: result.success ? "success" : "error",
         message: result.success
-          ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit: ${result.auditReference}` : ""}`
+          ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit reference ${result.auditReference}` : ""}`
           : result.reason
       });
       const history = await getPromotionHistory();
@@ -470,7 +470,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       });
       setPromotionOutcome({
         level: result.success ? "warning" : "error",
-        message: `${result.reason}${result.auditReference ? ` · Audit: ${result.auditReference}` : ""}`
+        message: `${result.reason}${result.auditReference ? ` · Audit reference ${result.auditReference}` : ""}`
       });
       const history = await getPromotionHistory();
       setPromotionHistory(history);
@@ -1104,7 +1104,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         <span className="font-mono text-muted-foreground">{entry.outcome}</span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {entry.message ?? "No operator message recorded."}
+                        {entry.action === "ReplayPaperSession" && sessionReplayVerification?.isConsistent
+                          ? "Replay verification audit recorded for paper session."
+                          : entry.message ?? "No operator message recorded."}
                       </p>
                       <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                         {entry.occurredAt}
@@ -1440,8 +1442,8 @@ function buildCockpitAcceptance({
         ? {
             label: "Audit + controls",
             value: "Ready",
-            detail: `${executionAudit.length || serverAuditEvidenceCount} audit ${executionAudit.length + serverAuditEvidenceCount === 1 ? "entry is" : "entries are"} linked; ${manualOverrideCount} manual override(s) active.`,
-            level: manualOverrideCount > 0 ? "review" : "ready"
+            detail: `${executionAudit.length || serverAuditEvidenceCount} recent execution audit ${executionAudit.length + serverAuditEvidenceCount === 1 ? "entry is" : "entries are"} visible; ${manualOverrideCount} manual override(s) active.`,
+            level: "ready"
           }
         : {
             label: "Audit + controls",
@@ -1463,6 +1465,19 @@ function buildCockpitAcceptance({
             detail: readinessPromotion.reason || "Promotion decision is missing operator, lineage, rationale, or audit linkage.",
             level: "review"
           }
+      : promotionEval
+          ? {
+              label: "Promotion review",
+              value: promotionEval.isEligible
+                ? promotionReviewPrepared ? "Trace pending" : "Rationale required"
+                : "Gate blocked",
+              detail: promotionEval.isEligible
+                ? promotionReviewPrepared
+                  ? "Confirm promotion to write the durable audit-linked decision record."
+                  : "Add operator and approval reason before confirming promotion."
+                : promotionEval.blockingReasons?.[0] ?? promotionEval.reason,
+              level: promotionEval.isEligible ? "review" : "atRisk"
+            }
       : latestPromotionTraceComplete
         ? {
             label: "Promotion review",
@@ -1476,19 +1491,6 @@ function buildCockpitAcceptance({
               value: "Trace incomplete",
               detail: "Latest promotion decision has rationale but is missing operator, lineage, or audit linkage.",
               level: "review"
-            }
-        : promotionEval
-          ? {
-              label: "Promotion review",
-              value: promotionEval.isEligible
-                ? promotionReviewPrepared ? "Trace pending" : "Rationale required"
-                : "Gate blocked",
-              detail: promotionEval.isEligible
-                ? promotionReviewPrepared
-                  ? "Confirm promotion to write the durable audit-linked decision record."
-                  : "Add operator and approval reason before confirming promotion."
-                : promotionEval.blockingReasons?.[0] ?? promotionEval.reason,
-              level: promotionEval.isEligible ? "review" : "atRisk"
             }
       : {
           label: "Promotion review",

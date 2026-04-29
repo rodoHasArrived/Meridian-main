@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img">
+  <title>Meridian app tile</title>
+  
+  <rect width="256" height="256" rx="48" fill="#08101A"></rect>
+  <rect x="0.5" y="0.5" width="255" height="255" rx="47.5" fill="none" stroke="#1F344C" stroke-width="1"></rect>
+  
+  <g transform="translate(32 32) scale(0.75)">
+    <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"></circle>
+    <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+    <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+    <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10" stroke-linecap="square"></line>
+    <circle cx="128" cy="128" r="8" fill="#2AB2D4"></circle>
+  </g>
+</svg>

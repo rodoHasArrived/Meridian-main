@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Charts: Order book depth</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
+  .card { background: #0B1520; border: 1px solid #2A4566; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #2A4566; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .title b { color: #FFF; margin-right: 10px; }
+  .spread { font-family: var(--font-mono); font-size: 11px; color: #A8B5C4; }
+  .spread b { color: #2AB2D4; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; font-family: var(--font-mono); font-size: 11px; }
+  .col { padding: 0 4px; }
+  .col h4 { margin: 0 0 4px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .row { position: relative; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 3px 6px; font-variant-numeric: tabular-nums; overflow: hidden; }
+  .row .bar { position: absolute; top: 0; bottom: 0; opacity: 0.18; }
+  .bids .bar { right: 0; background: #26BF86; }
+  .asks .bar { left: 0; background: #DE5878; }
+  .bids { text-align: right; }
+  .bids .row { direction: rtl; }
+  .bids .row > * { direction: ltr; }
+  .px { color: #FFF; }
+  .bids .px { color: #26BF86; }
+  .asks .px { color: #DE5878; }
+  .sz, .tot { color: #A8B5C4; }
+  .mid { text-align: center; padding: 6px 0; color: #2AB2D4; font-family: var(--font-mono); font-size: 14px; border-top: 1px solid #2A4566; border-bottom: 1px solid #2A4566; margin: 4px 0; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="bg-app">
+<div class="card">
+  <div class="head">
+    <div class="title"><b>ORDER BOOK</b>AAPL · L2 · 10 levels</div>
+    <div class="spread">SPREAD <b>0.02</b> · MID <b>187.42</b></div>
+  </div>
+  <div class="grid">
+    <div class="col bids">
+      <h4 style="text-align:right;">BID · SIZE · TOTAL</h4>
+      <div class="row"><span class="bar" style="width:96%;"></span><span class="tot">3,240</span><span class="sz">3,240</span><span class="px">187.41</span></div>
+      <div class="row"><span class="bar" style="width:78%;"></span><span class="tot">6,125</span><span class="sz">2,885</span><span class="px">187.40</span></div>
+      <div class="row"><span class="bar" style="width:62%;"></span><span class="tot">8,530</span><span class="sz">2,405</span><span class="px">187.39</span></div>
+      <div class="row"><span class="bar" style="width:48%;"></span><span class="tot">10,470</span><span class="sz">1,940</span><span class="px">187.38</span></div>
+      <div class="row"><span class="bar" style="width:36%;"></span><span class="tot">11,890</span><span class="sz">1,420</span><span class="px">187.37</span></div>
+      <div class="row"><span class="bar" style="width:28%;"></span><span class="tot">12,980</span><span class="sz">1,090</span><span class="px">187.36</span></div>
+      <div class="row"><span class="bar" style="width:22%;"></span><span class="tot">13,820</span><span class="sz">840</span><span class="px">187.35</span></div>
+      <div class="row"><span class="bar" style="width:16%;"></span><span class="tot">14,460</span><span class="sz">640</span><span class="px">187.34</span></div>
+      <div class="row"><span class="bar" style="width:12%;"></span><span class="tot">14,940</span><span class="sz">480</span><span class="px">187.33</span></div>
+      <div class="row"><span class="bar" style="width:8%;"></span><span class="tot">15,265</span><span class="sz">325</span><span class="px">187.32</span></div>
+    </div>
+    <div class="col asks">
+      <h4>ASK · SIZE · TOTAL</h4>
+      <div class="row"><span class="bar" style="width:92%;"></span><span class="px">187.43</span><span class="sz">2,980</span><span class="tot">2,980</span></div>
+      <div class="row"><span class="bar" style="width:74%;"></span><span class="px">187.44</span><span class="sz">2,420</span><span class="tot">5,400</span></div>
+      <div class="row"><span class="bar" style="width:58%;"></span><span class="px">187.45</span><span class="sz">1,960</span><span class="tot">7,360</span></div>
+      <div class="row"><span class="bar" style="width:46%;"></span><span class="px">187.46</span><span class="sz">1,580</span><span class="tot">8,940</span></div>
+      <div class="row"><span class="bar" style="width:34%;"></span><span class="px">187.47</span><span class="sz">1,240</span><span class="tot">10,180</span></div>
+      <div class="row"><span class="bar" style="width:26%;"></span><span class="px">187.48</span><span class="sz">960</span><span class="tot">11,140</span></div>
+      <div class="row"><span class="bar" style="width:20%;"></span><span class="px">187.49</span><span class="sz">740</span><span class="tot">11,880</span></div>
+      <div class="row"><span class="bar" style="width:15%;"></span><span class="px">187.50</span><span class="sz">560</span><span class="tot">12,440</span></div>
+      <div class="row"><span class="bar" style="width:10%;"></span><span class="px">187.51</span><span class="sz">420</span><span class="tot">12,860</span></div>
+      <div class="row"><span class="bar" style="width:6%;"></span><span class="px">187.52</span><span class="sz">280</span><span class="tot">13,140</span></div>
+    </div>
+  </div>
+  <div class="mid">187.42 ◂ MID ▸ 0.02 spread</div>
+</div>
+</body>
+</html>

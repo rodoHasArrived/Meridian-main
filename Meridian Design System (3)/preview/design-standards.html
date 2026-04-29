@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Design Standards</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 28px; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+  .sheet { max-width: 1200px; margin: 0 auto; }
+
+  /* header */
+  .top { display: grid; grid-template-columns: 1fr auto; align-items: end; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+  .top h1 { font-family: var(--font-display); font-size: 26px; color: #FFF; margin: 0 0 4px; font-weight: 600; letter-spacing: -0.01em; }
+  .top .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.16em; }
+  .top .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; }
+  .top .meta b { color: #2AB2D4; font-weight: 500; }
+
+  /* rule block */
+  .rule { display: grid; grid-template-columns: 280px 1fr; gap: 0; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+  .rule-left { background: #05101B; padding: 20px 22px; border-right: 1px solid var(--border-color); }
+  .rule-right { background: #0B1520; padding: 20px 24px; }
+  .rule-num { font-family: var(--font-mono); font-size: 10px; color: #2AB2D4; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 8px; }
+  .rule-title { font-family: var(--font-display); font-size: 16px; color: #FFF; font-weight: 600; letter-spacing: -0.005em; margin-bottom: 10px; }
+  .rule-body { font-size: 12.5px; line-height: 1.65; color: #D4DCE6; }
+  .rule-body p { margin: 0 0 8px; }
+  .rule-body p:last-child { margin: 0; }
+  code { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; background: #08101A; padding: 1px 5px; border: 1px solid var(--border-color); border-radius: 3px; }
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .tag.do { background: rgba(38,191,134,0.12); color: #26BF86; border: 1px solid rgba(38,191,134,0.35); }
+  .tag.dont { background: rgba(222,88,120,0.12); color: #DE5878; border: 1px solid rgba(222,88,120,0.35); }
+
+  /* demo containers */
+  .demo { background: #08101A; border: 1px solid var(--border-color); border-radius: 4px; padding: 14px 16px; margin-top: 12px; }
+  .demo-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .demo-row:last-child { margin-bottom: 0; }
+  .demo-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); min-width: 60px; }
+
+  /* comparison grid */
+  .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .cmp-col { background: #08101A; border-radius: 4px; padding: 12px 14px; }
+  .cmp-col .lbl { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px; }
+  .cmp-col.good .lbl { color: #26BF86; }
+  .cmp-col.bad  .lbl { color: #DE5878; }
+  .strike { text-decoration: line-through; opacity: 0.45; }
+
+  /* radius demos */
+  .rad-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .rad-block { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .rad-block .box { width: 48px; height: 48px; background: #162334; border: 1px solid var(--border-color); }
+  .rad-block .lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
+
+  /* cyan demo */
+  .cyan-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .cyan-cell { padding: 10px 12px; border-radius: 4px; background: #08101A; border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 11px; }
+  .cyan-cell .k { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); margin-bottom: 5px; }
+  .cyan-cell .v { font-size: 12px; color: #FFF; font-variant-numeric: tabular-nums; }
+  .cyan-cell .use { font-size: 10px; color: var(--fg-muted); margin-top: 4px; line-height: 1.4; }
+
+  /* chart rule */
+  .chart-tokens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+  .ct { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #08101A; border-radius: 3px; border: 1px solid var(--border-color); }
+  .ct .sw { width: 14px; height: 14px; border-radius: 2px; flex-shrink: 0; }
+  .ct .body { display: flex; flex-direction: column; gap: 2px; }
+  .ct .name { font-family: var(--font-mono); font-size: 10px; color: #FFF; }
+  .ct .hex  { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
+
+  /* dense-data examples */
+  .density-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .density-cmp .col { background: #08101A; border-radius: 4px; overflow: hidden; }
+  .density-cmp .col-head { padding: 7px 12px; font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; border-bottom: 1px solid var(--border-color); }
+  .density-cmp .col-head.good { color: #26BF86; background: rgba(38,191,134,0.06); }
+  .density-cmp .col-head.bad  { color: #DE5878; background: rgba(222,88,120,0.06); }
+  .density-cmp table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
+  .density-cmp td, .density-cmp th { padding: 6px 12px; text-align: left; border-bottom: 1px solid hsl(208 38% 22% / 0.35); color: var(--fg); font-variant-numeric: tabular-nums; }
+  .density-cmp th { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); background: #0B1520; }
+
+  /* command palette mini mockup */
+  .cmd-palette { background: #05101B; border: 1px solid var(--border-hi); border-radius: 6px; overflow: hidden; max-width: 480px; box-shadow: var(--shadow-float); }
+  .cmd-input { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid var(--border-color); }
+  .cmd-input .icon { color: var(--fg-muted); }
+  .cmd-input input { background: transparent; border: 0; outline: none; font-family: var(--font-mono); font-size: 13px; color: #FFF; flex: 1; }
+  .cmd-result { padding: 4px; }
+  .cmd-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; color: #DEE6EF; }
+  .cmd-row.sel { background: rgba(42,178,212,0.10); color: #FFF; }
+  .cmd-row .ico { width: 20px; height: 20px; border-radius: 3px; background: #162334; display: grid; place-items: center; flex-shrink: 0; }
+  .cmd-row .ico svg { width: 12px; height: 12px; stroke: currentColor; color: var(--fg-muted); }
+  .cmd-row.sel .ico { background: rgba(42,178,212,0.14); }
+  .cmd-row.sel .ico svg { color: #2AB2D4; }
+  .cmd-row .right { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .cmd-row.sel .right { color: #2AB2D4; }
+  .cmd-footer { padding: 8px 14px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .cmd-footer kbd { background: #162334; border: 1px solid var(--border-color); padding: 1px 5px; border-radius: 3px; color: #DEE6EF; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <div class="sub">Design rules · all platforms</div>
+      <h1>Meridian Design Standards</h1>
+    </div>
+    <div class="meta">v2.0 · 2026.04 · <b>8 rules</b></div>
+  </div>
+
+  <!-- ===== RULE 1: Surface model ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 01 / 08</div>
+      <div class="rule-title">Surface model & radii</div>
+      <div class="rule-body">
+        <p>Use exactly 5 surface tiers. Panels are never more than 10px radius — the tightest allowed is 3px for tags and labels. Never exceed <code>--radius-xl</code> (10px).</p>
+        <p><span class="tag do">Do</span> Use the tier that matches depth — deeper element gets a lighter background.</p>
+        <p><span class="tag dont">Don't</span> Mix large radius (>12px) with dense data surfaces.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="rad-row">
+        <div class="rad-block"><div class="box" style="border-radius:3px;"></div><div class="lbl">xs · 3px<br>tag / label</div></div>
+        <div class="rad-block"><div class="box" style="border-radius:4px;"></div><div class="lbl">sm · 4px<br>chip / pill</div></div>
+        <div class="rad-block"><div class="box" style="border-radius:6px; width:56px; height:56px;"></div><div class="lbl">md · 6px<br>button / input</div></div>
+        <div class="rad-block"><div class="box" style="border-radius:8px; width:64px; height:64px;"></div><div class="lbl">lg · 8px<br>card</div></div>
+        <div class="rad-block"><div class="box" style="border-radius:10px; width:72px; height:72px;"></div><div class="lbl">xl · 10px<br>major panel</div></div>
+      </div>
+      <div class="demo" style="margin-top:12px;">
+        <div class="demo-row">
+          <span class="demo-label">Tokens</span>
+          <code>--radius-xs: 3px</code>
+          <code>--radius-sm: 4px</code>
+          <code>--radius-md: 6px</code>
+          <code>--radius-lg: 8px</code>
+          <code>--radius-xl: 10px</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 2: Cyan aliases ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 02 / 08</div>
+      <div class="rule-title">Cyan normalization</div>
+      <div class="rule-body">
+        <p>Canonical primary: <code>#2AB2D4</code>. WPF uses <code>#20D3F7</code> and <code>#2D9CDB</code> in specific slots — these are not interchangeable.</p>
+        <p><span class="tag do">Do</span> Use <code>--cyan-primary</code> for all default interactive tints. Use <code>--cyan-focus</code> for keyboard focus rings only.</p>
+        <p><span class="tag dont">Don't</span> Use raw hex in components. Don't use <code>#20D3F7</code> as a general primary — it's too bright.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="cyan-row">
+        <div class="cyan-cell">
+          <div class="k">PRIMARY · default</div>
+          <div class="v" style="color:#2AB2D4;">■ #2AB2D4</div>
+          <div class="use">Nav active, chart lines, CTA tint, badges, crosshair</div>
+        </div>
+        <div class="cyan-cell">
+          <div class="k">FOCUS · keyboard only</div>
+          <div class="v" style="color:#20D3F7;">■ #20D3F7</div>
+          <div class="use">Focus ring on inputs, buttons, nav rows. WPF FocusBrush.</div>
+        </div>
+        <div class="cyan-cell">
+          <div class="k">PRESSED · hover/active</div>
+          <div class="v" style="color:#2D9CDB;">■ #2D9CDB</div>
+          <div class="use">Hover/pressed state on cyan interactive elements. WPF HoverBrush.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 3: Workspace colors ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 03 / 08</div>
+      <div class="rule-title">Workspace differentiation</div>
+      <div class="rule-body">
+        <p>Each workspace gets one accent color used for nav inset, active badge, and icon tint only. It does not change the surface palette.</p>
+        <p><span class="tag do">Do</span> Apply the workspace accent to the active nav item inset (2–3px left border) and the status badge.</p>
+        <p><span class="tag dont">Don't</span> Paint entire panels in the workspace accent. Don't use amber in Research or cyan in Governance.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="demo">
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+          <div style="text-align:center;"><div style="height:4px; background:#A8B5C4; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Overview</div><div style="font-family:var(--font-mono); font-size:9px; color:#A8B5C4; margin-top:2px;">--fg-muted</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#60A5FA; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Research</div><div style="font-family:var(--font-mono); font-size:9px; color:#60A5FA; margin-top:2px;">--state-paper</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#2AB2D4; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Trading</div><div style="font-family:var(--font-mono); font-size:9px; color:#2AB2D4; margin-top:2px;">--cyan-primary</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#A78BFA; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Data Ops</div><div style="font-family:var(--font-mono); font-size:9px; color:#A78BFA; margin-top:2px;">--state-pending</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#D69E38; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Governance</div><div style="font-family:var(--font-mono); font-size:9px; color:#D69E38; margin-top:2px;">--state-warn</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 4: Dense data ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 04 / 08</div>
+      <div class="rule-title">Dense data readability</div>
+      <div class="rule-body">
+        <p>All data — prices, counts, IDs, timestamps — is IBM Plex Mono, 12px, tabular figures, right-aligned where numeric. Column headers are 10px mono, uppercase, 0.12em tracked.</p>
+        <p><span class="tag do">Do</span> Right-align all numeric columns. Use <code>font-variant-numeric: tabular-nums</code> everywhere numbers appear.</p>
+        <p><span class="tag dont">Don't</span> Mix proportional and tabular numerals in the same column. Don't use sans-serif for price display.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="density-cmp">
+        <div class="col">
+          <div class="col-head good">✓ Correct</div>
+          <table><thead><tr><th>Symbol</th><th style="text-align:right;">Price</th><th style="text-align:right;">P&L</th></tr></thead>
+          <tbody>
+            <tr><td>AAPL</td><td style="text-align:right; color:#FFF;">187.42</td><td style="text-align:right; color:#26BF86;">+3.20</td></tr>
+            <tr><td>TSLA</td><td style="text-align:right; color:#FFF;">176.55</td><td style="text-align:right; color:#DE5878;">−2.41</td></tr>
+          </tbody></table>
+        </div>
+        <div class="col">
+          <div class="col-head bad">✕ Wrong</div>
+          <table style="font-family:var(--font-sans);"><thead><tr><th>Symbol</th><th>Price</th><th>P&L</th></tr></thead>
+          <tbody>
+            <tr><td>AAPL</td><td style="color:#FFF;">187.42</td><td style="color:#26BF86;">+3.20</td></tr>
+            <tr><td>TSLA</td><td style="color:#FFF;">176.55</td><td style="color:#DE5878;">−2.41</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+      <div class="demo" style="margin-top:10px;">
+        <div class="demo-row">
+          <span class="demo-label">Tokens</span>
+          <code>--data-font-size: 12px</code>
+          <code>--data-micro-size: 10px</code>
+          <code>--data-cell-px: 12px</code>
+          <code>--data-cell-py: 7px</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 5: State patterns ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 05 / 08</div>
+      <div class="rule-title">Semantic state patterns</div>
+      <div class="rule-body">
+        <p>Every state uses the same three-token structure: <code>-fg</code> for text/icon color, <code>-bd</code> for border, <code>-bg</code> for fill. Never invent a new color — express a new state as a variant of an existing tone.</p>
+        <p>States: <code>healthy</code> · <code>warn</code> · <code>danger</code> · <code>paper</code> · <code>research</code> · <code>pending</code> · <code>muted</code></p>
+        <p><span class="tag do">Do</span> Use <code>.state-{name}</code> utility classes for badges and banners.</p>
+        <p><span class="tag dont">Don't</span> Write inline hex for state colors. Don't use <code>color: green</code>.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="demo">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="sbadge state-healthy" style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Healthy</span>
+          <span class="sbadge state-warn"    style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Observe</span>
+          <span class="sbadge state-danger"  style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Critical</span>
+          <span class="sbadge state-paper"   style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Paper</span>
+          <span class="sbadge state-research" style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Research</span>
+          <span class="sbadge state-pending" style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Pending</span>
+          <span class="sbadge state-muted"   style="font-family:var(--font-mono); font-size:10px; padding:3px 9px; border-radius:3px; display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:0.1em;">● Inactive</span>
+        </div>
+        <div style="margin-top:10px; font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">Structure: <code>color: var(--state-{x}-fg)</code> · <code>background: var(--state-{x}-bg)</code> · <code>border: 1px solid var(--state-{x}-bd)</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 6: Command palette ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 06 / 08</div>
+      <div class="rule-title">Command palette polish</div>
+      <div class="rule-body">
+        <p>The command palette is the primary keyboard surface. It uses <code>--border-hi</code> (#2A4566) border, <code>--shadow-float</code> elevation, and the focus ring token on its input.</p>
+        <p>Results use a 4px left inset on selection, no full background change. Keyboard shortcuts are mono, 10px, in a <code>kbd</code> element.</p>
+        <p><span class="tag do">Do</span> Post <code>slideIndexChanged</code> and hook keyboard nav to <code>Ctrl+K</code>.</p>
+        <p><span class="tag dont">Don't</span> Show more than 6 results without section headers. Don't use hover-only selection.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="cmd-palette">
+        <div class="cmd-input">
+          <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input value="trading" readonly>
+          <span style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted); border:1px solid var(--border-color); padding:2px 6px; border-radius:3px;">Esc</span>
+        </div>
+        <div class="cmd-result">
+          <div style="padding:5px 12px 3px; font-family:var(--font-mono); font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:var(--fg-muted);">Workspaces</div>
+          <div class="cmd-row sel">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M3 17l6-6 4 4 8-8"/></svg></div>
+            <span>Trading workstation</span>
+            <span class="right">↵ open</span>
+          </div>
+          <div class="cmd-row">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+            <span>Trading · positions</span>
+            <span class="right">→</span>
+          </div>
+          <div class="cmd-row">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <span>Trading · risk guardrails</span>
+            <span class="right">→</span>
+          </div>
+        </div>
+        <div class="cmd-footer">
+          <span><kbd>↑↓</kbd> navigate</span>
+          <span><kbd>↵</kbd> open</span>
+          <span><kbd>Ctrl K</kbd> toggle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 7: No legacy terminal cues ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 07 / 08</div>
+      <div class="rule-title">Replace legacy terminal cues</div>
+      <div class="rule-body">
+        <p>Meridian is not a Bloomberg terminal clone. Avoid blinking cursors in non-interactive surfaces, all-caps body text, and green-on-black color schemes.</p>
+        <p><span class="tag do">Do</span> Use mono type for data. Use the full Meridian palette. Use uppercase only for eyebrow labels and column headers.</p>
+        <p><span class="tag dont">Don't</span> Use <code>color: #00FF00</code>, <code>background: black</code>, blinking elements, or scrolling tickers as decoration. These read as parody.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="cmp">
+        <div class="cmp-col good">
+          <div class="lbl">✓ Meridian style</div>
+          <div style="font-family:var(--font-mono); font-size:12px; color:#FFF; background:#0B1520; padding:10px 12px; border-radius:4px; border:1px solid var(--border-color);">
+            <div style="color:var(--fg-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:6px;">LAST PRICE</div>
+            <div style="font-size:20px; letter-spacing:-0.01em; font-variant-numeric:tabular-nums; color:#FFF;">187.42</div>
+            <div style="color:#26BF86; font-size:11px; margin-top:4px;">+3.20 · +1.74%</div>
+          </div>
+        </div>
+        <div class="cmp-col bad">
+          <div class="lbl">✕ Terminal parody</div>
+          <div style="font-family:'Courier New', monospace; font-size:12px; color:#00FF00; background:#000; padding:10px 12px; border-radius:4px; border:1px solid #00FF00;">
+            <div class="strike">LAST&gt; 187.42</div>
+            <div class="strike" style="color:#0F0;">+3.20 [+1.74%] ██</div>
+            <div class="strike" style="opacity:0.4;">BID 187.40 · ASK 187.44</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RULE 8: Chart standards ===== -->
+  <div class="rule">
+    <div class="rule-left">
+      <div class="rule-num">Rule 08 / 08</div>
+      <div class="rule-title">Chart-specific standards</div>
+      <div class="rule-body">
+        <p>All financial charts share one set of tokens. Grid lines are <code>--chart-grid</code> (very dark). Bull/bear candles use <code>--chart-up</code> and <code>--chart-dn</code>. Overlays follow a strict stack: MA(20) cyan → MA(50) amber → benchmark blue → Bollinger transparent fill.</p>
+        <p><span class="tag do">Do</span> Show price labels in cyan boxes at the right axis. Use dashed lines for projections and targets.</p>
+        <p><span class="tag dont">Don't</span> Use red/green as the only signal — always pair with numeric value. Never use filled circles for points on a line chart — use open circles <code>r=4, stroke=color, fill=bg</code>.</p>
+      </div>
+    </div>
+    <div class="rule-right">
+      <div class="chart-tokens">
+        <div class="ct"><div class="sw" style="background:#1A2D44;"></div><div class="body"><div class="name">grid</div><div class="hex">#1A2D44</div></div></div>
+        <div class="ct"><div class="sw" style="background:#26BF86;"></div><div class="body"><div class="name">up / bull</div><div class="hex">#26BF86</div></div></div>
+        <div class="ct"><div class="sw" style="background:#DE5878;"></div><div class="body"><div class="name">dn / bear</div><div class="hex">#DE5878</div></div></div>
+        <div class="ct"><div class="sw" style="background:#2AB2D4;"></div><div class="body"><div class="name">MA(20)</div><div class="hex">#2AB2D4</div></div></div>
+        <div class="ct"><div class="sw" style="background:#F2C94C;"></div><div class="body"><div class="name">MA(50)</div><div class="hex">#F2C94C</div></div></div>
+        <div class="ct"><div class="sw" style="background:#60A5FA;"></div><div class="body"><div class="name">benchmark</div><div class="hex">#60A5FA</div></div></div>
+        <div class="ct"><div class="sw" style="background:rgba(96,165,250,0.15);border:1px dashed rgba(96,165,250,0.6);"></div><div class="body"><div class="name">band fill</div><div class="hex">rgba 15%</div></div></div>
+        <div class="ct"><div class="sw" style="background:rgba(222,88,120,0.35);"></div><div class="body"><div class="name">drawdown</div><div class="hex">rgba 35%</div></div></div>
+      </div>
+      <div class="demo" style="margin-top:10px;">
+        <div class="demo-row">
+          <span class="demo-label">Price tag</span>
+          <span style="background:#2AB2D4; color:#05101B; font-family:var(--font-mono); font-size:11px; font-weight:600; padding:3px 8px; border-radius:3px;">187.42</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">at right axis · always mono · always cyan bg</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-label">Crosshair</span>
+          <span style="display:inline-block; width:60px; height:1px; background:#2AB2D4; vertical-align:middle; border-top:1px dashed #2AB2D4;"></span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">dashed · 0.6 opacity · 2px dash 3px gap</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

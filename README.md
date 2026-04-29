@@ -1,8 +1,8 @@
 # Meridian
 
-Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a desktop-local API host, and a Windows WPF workstation shell. The current delivery focus is turning that breadth into a more cohesive operator product across research, trading, data operations, governance, and fund-operations workflows.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into a cohesive web-first operator product across research, trading, data operations, governance, and fund-operations workflows.
 
-> **Desktop-only UI direction:** `src/Meridian.Wpf/` is the Windows desktop shell. `src/Meridian.Ui.Shared/` and `src/Meridian.Ui.Services/` contain the shared desktop-facing API and service layers that support the local workstation experience.
+> **Web UI active direction:** New operator UI development is focused on `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets. `src/Meridian.Wpf/` is retained for compatibility, regression fixes, and shared-contract support rather than new desktop-first feature work.
 
 ## Start Here
 
@@ -12,6 +12,7 @@ Meridian is a .NET 9 fund-management and trading-platform codebase in active del
 - [Improvements Tracker](docs/status/IMPROVEMENTS.md)
 - [Trading Workstation Migration Blueprint](docs/plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](docs/plans/governance-fund-ops-blueprint.md)
+- [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
 
 ## Current Product Direction
 
@@ -37,7 +38,8 @@ The solution currently includes these major areas:
 - `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
 - `src/Meridian.QuantScript` for scripting and charting-oriented tooling
 - `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
-- `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, and `src/Meridian.Wpf` for desktop-facing UI and local API layers
+- `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, and `src/Meridian.Ui.Shared` for the active web workstation and shared UI/API layers
+- `src/Meridian.Wpf` for the retained Windows desktop shell
 - `tests/` and `benchmarks/` for automated validation and performance work
 
 ## Verified Entry Points
@@ -69,6 +71,18 @@ When you launch the desktop-local API host from the repository root, Meridian bi
 
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
+### Web workstation dashboard — `src/Meridian.Ui/dashboard`
+
+The browser-based operator dashboard is the active UI delivery lane. It builds static workstation
+assets that are served from `src/Meridian.Ui/wwwroot/workstation/`.
+
+```bash
+cd src/Meridian.Ui/dashboard
+npm install
+npm run test
+npm run build
+```
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
@@ -87,9 +101,9 @@ dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --confi
 
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
-### Windows WPF desktop app — `src/Meridian.Wpf`
+### Retained Windows WPF desktop app — `src/Meridian.Wpf`
 
-The full Windows workstation shell. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
+The retained Windows workstation shell. Use it for compatibility support, regression fixes, and shared-contract validation. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1
@@ -108,6 +122,8 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 ```bash
 make help           # List all task targets
 make build-quick    # Shared restore-once, sequential Debug build
+npm run ui:dashboard:test   # Web workstation Vitest suite
+npm run ui:dashboard:build  # Web workstation production build
 pwsh ./scripts/dev/run-desktop.ps1  # WPF desktop + local host (Windows)
 make desktop-build  # Build WPF desktop project
 make desktop-test   # Run WPF desktop tests

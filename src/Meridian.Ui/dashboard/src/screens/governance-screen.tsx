@@ -1,27 +1,24 @@
 import { BookCheck, Landmark, Search, ShieldCheck, WalletCards } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getSecurityIdentity,
   getReconciliationBreakQueue,
   getRunTrialBalance,
-  getSecurityConflicts,
   resolveReconciliationBreak,
-  resolveSecurityConflict,
-  reviewReconciliationBreak,
-  searchSecurities
+  reviewReconciliationBreak
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import {
+  resolveGovernanceWorkstream,
+  resolveSelectedReconciliation,
+  useSecurityMasterViewModel
+} from "@/screens/governance-screen.view-model";
 import type {
   GovernanceWorkspaceResponse,
-  ReconciliationBreakQueueItem,
-  ResolveConflictRequest,
-  SecurityIdentityDrillIn,
-  SecurityMasterConflict,
-  SecurityMasterEntry
+  ReconciliationBreakQueueItem
 } from "@/types";
 
 interface GovernanceScreenProps {
@@ -53,19 +50,10 @@ const focusCopy: Record<string, { title: string; description: string }> = {
 
 export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const { pathname } = useLocation();
-  const workstream = useMemo(() => {
-    if (pathname.includes("/reconciliation")) {
-      return "reconciliation";
-    }
-
-    if (pathname.includes("/security-master")) {
-      return "security-master";
-    }
-
-    return "ledger";
-  }, [pathname]);
+  const workstream = resolveGovernanceWorkstream(pathname);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const selectedReconciliation = data?.reconciliationQueue.find((item) => item.runId === selectedRunId) ?? data?.reconciliationQueue[0] ?? null;
+  const selectedReconciliation = resolveSelectedReconciliation(data?.reconciliationQueue ?? [], selectedRunId);
+  const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
 
   useEffect(() => {
     if (!data || selectedRunId || data.reconciliationQueue.length === 0) {
@@ -75,31 +63,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     setSelectedRunId(data.reconciliationQueue[0].runId);
   }, [data, selectedRunId]);
 
-  // --- Security Master search state ---
-  const [securityQuery, setSecurityQuery] = useState("");
-  const [securityResults, setSecurityResults] = useState<SecurityMasterEntry[] | null>(null);
-  const [securitySearching, setSecuritySearching] = useState(false);
-  const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
-  const [securityIdentity, setSecurityIdentity] = useState<SecurityIdentityDrillIn | null>(null);
-  const [securityIdentityLoading, setSecurityIdentityLoading] = useState(false);
-  const securitySearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // --- Security Master conflicts state ---
-  const [conflicts, setConflicts] = useState<SecurityMasterConflict[] | null>(null);
-  const [conflictsLoading, setConflictsLoading] = useState(false);
-  const [conflictResolvingId, setConflictResolvingId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>([]);
   const [breakActionId, setBreakActionId] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<Array<{ accountName: string; accountType: string; balance: number; entryCount: number }>>([]);
-
-  useEffect(() => {
-    if (workstream !== "security-master") return;
-    setConflictsLoading(true);
-    getSecurityConflicts()
-      .then(setConflicts)
-      .catch(() => setConflicts([]))
-      .finally(() => setConflictsLoading(false));
-  }, [workstream]);
 
   useEffect(() => {
     if (workstream !== "reconciliation") return;
@@ -112,40 +78,6 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       .then((rows) => setTrialBalance(rows))
       .catch(() => setTrialBalance([]));
   }, [selectedReconciliation, workstream]);
-
-  function handleSecurityQueryChange(q: string) {
-    setSecurityQuery(q);
-    setSelectedSecurityId(null);
-    setSecurityIdentity(null);
-    if (securitySearchRef.current) clearTimeout(securitySearchRef.current);
-    if (!q.trim()) { setSecurityResults(null); return; }
-    securitySearchRef.current = setTimeout(() => {
-      setSecuritySearching(true);
-      searchSecurities(q.trim())
-        .then(setSecurityResults)
-        .catch(() => setSecurityResults([]))
-        .finally(() => setSecuritySearching(false));
-    }, 350);
-  }
-
-  function handleSelectSecurity(securityId: string) {
-    setSelectedSecurityId(securityId);
-    setSecurityIdentityLoading(true);
-    getSecurityIdentity(securityId)
-      .then(setSecurityIdentity)
-      .catch(() => setSecurityIdentity(null))
-      .finally(() => setSecurityIdentityLoading(false));
-  }
-
-  async function handleResolveConflict(conflictId: string, resolution: ResolveConflictRequest["resolution"]) {
-    setConflictResolvingId(conflictId);
-    try {
-      const updated = await resolveSecurityConflict({ conflictId, resolution, resolvedBy: "operator" });
-      setConflicts((prev) => prev?.map((c) => c.conflictId === conflictId ? updated : c) ?? prev);
-    } finally {
-      setConflictResolvingId(null);
-    }
-  }
 
   async function handleAssignBreak(breakId: string) {
     setBreakActionId(breakId);
@@ -423,20 +355,46 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <input
-                type="text"
-                value={securityQuery}
-                onChange={(e) => handleSecurityQueryChange(e.target.value)}
-                placeholder="Search securities…"
-                className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-              {securitySearching && <p className="text-sm text-muted-foreground">Searching…</p>}
-              {securityResults !== null && !securitySearching && securityResults.length === 0 && (
-                <p className="text-sm text-muted-foreground">No securities found for &ldquo;{securityQuery}&rdquo;.</p>
+              <div className="space-y-2">
+                <label htmlFor="security-master-search" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Search securities
+                </label>
+                <input
+                  id="security-master-search"
+                  type="text"
+                  value={securityMaster.query}
+                  onChange={(e) => securityMaster.updateQuery(e.target.value)}
+                  placeholder="Search securities…"
+                  aria-controls={securityMaster.hasResults ? "security-master-results" : undefined}
+                  aria-describedby="security-master-search-help security-master-search-status"
+                  aria-invalid={securityMaster.searchErrorText ? true : undefined}
+                  className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <p id="security-master-search-help" className="text-xs text-muted-foreground">
+                  Search by ticker, ISIN, CUSIP, FIGI, or display name.
+                </p>
+              </div>
+
+              <span className="sr-only" aria-live="polite">{securityMaster.statusAnnouncement}</span>
+              {securityMaster.searchStatusText && (
+                <p
+                  id="security-master-search-status"
+                  role={securityMaster.searching ? "status" : undefined}
+                  className="text-sm text-muted-foreground"
+                >
+                  {securityMaster.searchStatusText}
+                </p>
               )}
-              {securityResults && securityResults.length > 0 && (
+              {securityMaster.searchErrorText && (
+                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {securityMaster.searchErrorText}
+                </div>
+              )}
+
+              {securityMaster.results && securityMaster.results.length > 0 && (
                 <div className="overflow-x-auto rounded-xl border border-border/70">
-                  <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                  <table id="security-master-results" aria-label="Security search results" className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                    <caption className="sr-only">{securityMaster.searchStatusText}</caption>
                     <thead className="bg-secondary/30">
                       <tr>
                         {["Name", "Asset Class", "Primary ID", "Currency", "Status"].map((col) => (
@@ -445,16 +403,25 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
-                      {securityResults.map((s) => (
+                      {securityMaster.results.map((s) => (
                         <tr
                           key={s.securityId}
                           className={cn(
-                            "cursor-pointer bg-background/20 transition-colors hover:bg-secondary/30",
-                            selectedSecurityId === s.securityId ? "bg-primary/10" : ""
+                            "bg-background/20 transition-colors hover:bg-secondary/30",
+                            securityMaster.selectedSecurityId === s.securityId ? "bg-primary/10" : ""
                           )}
-                          onClick={() => handleSelectSecurity(s.securityId)}
                         >
-                          <td className="px-3 py-2 font-semibold text-foreground">{s.displayName}</td>
+                          <td className="px-3 py-2">
+                            <button
+                              type="button"
+                              className="rounded-sm text-left font-semibold text-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+                              aria-pressed={securityMaster.selectedSecurityId === s.securityId}
+                              aria-label={`Open identity drill-in for ${s.displayName}`}
+                              onClick={() => void securityMaster.selectSecurity(s.securityId)}
+                            >
+                              {s.displayName}
+                            </button>
+                          </td>
                           <td className="px-3 py-2 text-muted-foreground">{s.classification.assetClass}</td>
                           <td className="px-3 py-2 font-mono text-muted-foreground">
                             {s.classification.primaryIdentifierKind ? `${s.classification.primaryIdentifierKind}: ${s.classification.primaryIdentifierValue}` : "—"}
@@ -467,13 +434,18 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   </table>
                 </div>
               )}
-              {securityIdentityLoading && <p className="text-sm text-muted-foreground">Loading identity drill-in…</p>}
-              {securityIdentity && (
+              {securityMaster.identityLoading && <p role="status" className="text-sm text-muted-foreground">Loading identity drill-in…</p>}
+              {securityMaster.identityErrorText && (
+                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {securityMaster.identityErrorText}
+                </div>
+              )}
+              {securityMaster.identity && (
                 <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 p-4">
                   <div>
-                    <h4 className="font-semibold text-foreground">Identity drill-in · {securityIdentity.displayName}</h4>
+                    <h4 className="font-semibold text-foreground">Identity drill-in · {securityMaster.identity.displayName}</h4>
                     <p className="text-xs text-muted-foreground">
-                      {securityIdentity.securityId} · v{securityIdentity.version} · {securityIdentity.assetClass}
+                      {securityMaster.identity.securityId} · v{securityMaster.identity.version} · {securityMaster.identity.assetClass}
                     </p>
                   </div>
 
@@ -485,7 +457,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                           <tr>{["Kind", "Value", "Provider", "Primary", "Valid"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
                         </thead>
                         <tbody className="divide-y divide-border/40">
-                          {securityIdentity.identifiers.map((identifier) => (
+                          {securityMaster.identity.identifiers.map((identifier) => (
                             <tr key={`${identifier.kind}-${identifier.value}`}>
                               <td className="px-3 py-2 font-mono">{identifier.kind}</td>
                               <td className="px-3 py-2 font-mono">{identifier.value}</td>
@@ -501,7 +473,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
                   <div>
                     <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Aliases</div>
-                    {securityIdentity.aliases.length === 0 ? (
+                    {securityMaster.identity.aliases.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No aliases found.</p>
                     ) : (
                       <div className="overflow-x-auto rounded-lg border border-border/60">
@@ -510,7 +482,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                             <tr>{["Kind", "Alias", "Provider", "Scope", "Enabled", "Valid From"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
                           </thead>
                           <tbody className="divide-y divide-border/40">
-                            {securityIdentity.aliases.map((alias) => (
+                            {securityMaster.identity.aliases.map((alias) => (
                               <tr key={alias.aliasId}>
                                 <td className="px-3 py-2 font-mono">{alias.aliasKind}</td>
                                 <td className="px-3 py-2 font-mono">{alias.aliasValue}</td>
@@ -536,9 +508,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 Identifier conflicts
-                {conflicts && conflicts.filter((c) => c.status === "Open").length > 0 && (
+                {securityMaster.openConflictCount > 0 && (
                   <span className="ml-2 inline-flex items-center rounded-full bg-warning/20 px-2 py-0.5 text-xs font-semibold text-warning">
-                    {conflicts.filter((c) => c.status === "Open").length} open
+                    {securityMaster.openConflictCount} open
                   </span>
                 )}
               </CardTitle>
@@ -547,13 +519,23 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {conflictsLoading && <p className="text-sm text-muted-foreground">Loading conflicts…</p>}
-              {!conflictsLoading && conflicts !== null && conflicts.length === 0 && (
+              {securityMaster.conflictsLoading && <p role="status" className="text-sm text-muted-foreground">Loading conflicts…</p>}
+              {securityMaster.conflictsErrorText && (
+                <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {securityMaster.conflictsErrorText}
+                </div>
+              )}
+              {securityMaster.conflictActionErrorText && (
+                <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {securityMaster.conflictActionErrorText}
+                </div>
+              )}
+              {!securityMaster.conflictsLoading && securityMaster.conflicts !== null && securityMaster.conflicts.length === 0 && (
                 <p className="text-sm text-muted-foreground">No identifier conflicts detected.</p>
               )}
-              {conflicts && conflicts.length > 0 && (
+              {securityMaster.conflicts && securityMaster.conflicts.length > 0 && (
                 <div className="space-y-3">
-                  {conflicts.map((conflict) => (
+                  {securityMaster.conflicts.map((conflict) => (
                     <div
                       key={conflict.conflictId}
                       className={cn(
@@ -580,24 +562,24 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              disabled={conflictResolvingId === conflict.conflictId}
-                              onClick={() => void handleResolveConflict(conflict.conflictId, "AcceptA")}
+                              disabled={securityMaster.conflictResolvingId === conflict.conflictId}
+                              onClick={() => void securityMaster.resolveConflict(conflict.conflictId, "AcceptA")}
                             >
                               Accept A
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              disabled={conflictResolvingId === conflict.conflictId}
-                              onClick={() => void handleResolveConflict(conflict.conflictId, "AcceptB")}
+                              disabled={securityMaster.conflictResolvingId === conflict.conflictId}
+                              onClick={() => void securityMaster.resolveConflict(conflict.conflictId, "AcceptB")}
                             >
                               Accept B
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              disabled={conflictResolvingId === conflict.conflictId}
-                              onClick={() => void handleResolveConflict(conflict.conflictId, "Dismiss")}
+                              disabled={securityMaster.conflictResolvingId === conflict.conflictId}
+                              onClick={() => void securityMaster.resolveConflict(conflict.conflictId, "Dismiss")}
                             >
                               Dismiss
                             </Button>

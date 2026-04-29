@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Sidebar nav</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 14px; font-family: var(--font-sans); color: var(--fg); }
+  .nav { width: 272px; background: #101C2B; border: 1px solid #1F344C; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 2px; }
+  .brand { display:flex; gap:10px; align-items:center; padding: 6px 6px 12px; border-bottom: 1px solid #1F344C; margin-bottom: 8px; }
+  .brand .logo { width: 28px; height: 28px; border-radius: 4px; background: rgba(42,178,212,.10); border: 1px solid rgba(42,178,212,.25); display:flex; align-items:center; justify-content:center; }
+  .brand .t { font-family: var(--font-display); font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+  .brand .s { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .item { display: flex; gap: 9px; padding: 7px 10px; border-radius: 5px; border: 1px solid transparent; color: var(--fg-muted); font-size: 12px; align-items: center; }
+  .item svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .item .label { font-weight: 500; color: inherit; }
+  .item .status { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .item.active { background: rgba(42,178,212,.08); border-color: rgba(42,178,212,.25); color: var(--fg); }
+  .item.active .status { color: #2AB2D4; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="nav">
+    <div class="brand">
+      <div class="logo"><img src="../assets/brand/meridian-mark.svg" width="18" height="18" alt=""></div>
+      <div><div class="t">Meridian</div><div class="s">Workstation</div></div>
+    </div>
+    <div class="item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      <span class="label">Overview</span><span class="status">OK</span>
+    </div>
+    <div class="item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.3a4 4 0 0 1-.5 1.9L4.1 19.7A1 1 0 0 0 5 21h14a1 1 0 0 0 .9-1.3l-5.4-8.5a4 4 0 0 1-.5-1.9V2"/></svg>
+      <span class="label">Research</span><span class="status">ACTIVE</span>
+    </div>
+    <div class="item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+      <span class="label">Trading</span><span class="status">LIVE · PAPER</span>
+    </div>
+    <div class="item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 11v6c0 1.7 4 3 9 3s9-1.3 9-3v-6"/></svg>
+      <span class="label">Data Operations</span><span class="status">OK</span>
+    </div>
+    <div class="item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M6 21V10"/><path d="M18 21V10"/><path d="M2 10h20L12 3z"/></svg>
+      <span class="label">Governance</span><span class="status" style="color:#D69E38;">OBS</span>
+    </div>
+  </div>
+</body>
+</html>

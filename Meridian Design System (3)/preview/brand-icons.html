@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Icons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
+
+  .head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid #1F344C; }
+  .head .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .head .id { font-family: var(--font-mono); font-size: 10px; color: #2AB2D4; letter-spacing: 0.14em; }
+
+  .section-label { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.18em; margin: 16px 0 6px; display: flex; align-items: center; gap: 8px; }
+  .section-label::after { content: ""; flex: 1; border-top: 1px solid hsl(208 38% 22% / .4); }
+
+  .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: #2A4566; border: 1px solid #2A4566; border-radius: 4px; overflow: hidden; }
+  .cell { background: #0B1520; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px 8px 12px; gap: 12px; min-height: 84px; position: relative; }
+  .cell:hover { background: #13253A; }
+  .cell:hover img { filter: none; color: #2AB2D4; }
+  .cell:hover .name { color: #FFFFFF; }
+  .cell:hover::before { content: ""; position: absolute; inset: 0; border: 1px solid #2AB2D4; pointer-events: none; }
+
+  .cell img { width: 20px; height: 20px; filter: brightness(0) invert(1); opacity: 1; }
+
+  .name { font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-align: center; line-height: 1.3; letter-spacing: 0.02em; }
+
+  .meta { display: flex; gap: 18px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); margin-top: 14px; padding-top: 10px; border-top: 1px solid hsl(208 38% 22% / .4); }
+  .meta span b { color: #DEE6EF; font-weight: 500; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="head">
+    <span class="t">ICONOGRAPHY · LINE · 24×24 · currentColor</span>
+    <span class="id">SET 01 / 47</span>
+  </div>
+
+  <div class="section-label"><span>01 · Workspaces</span></div>
+  <div class="grid" data-group="workspaces"></div>
+
+  <div class="section-label"><span>02 · Research</span></div>
+  <div class="grid" data-group="research"></div>
+
+  <div class="section-label"><span>03 · Trading</span></div>
+  <div class="grid" data-group="trading"></div>
+
+  <div class="section-label"><span>04 · Data Operations</span></div>
+  <div class="grid" data-group="dataops"></div>
+
+  <div class="section-label"><span>05 · Governance &amp; System</span></div>
+  <div class="grid" data-group="gov"></div>
+
+  <div class="meta">
+    <span>SIZE <b>24×24</b></span>
+    <span>STROKE <b>1.5pt</b></span>
+    <span>CAPS <b>round</b></span>
+    <span>FILL <b>currentColor</b></span>
+    <span>TOTAL <b>47 glyphs</b></span>
+  </div>
+
+<script>
+  const groups = {
+    workspaces: ['dashboard','research','trading','data-operations','governance'],
+    research:   ['live-data','order-book','charting','data-browser','data-sampling','symbol-storage'],
+    trading:    ['backtest','strategy-runs','run-detail','run-ledger','run-portfolio','run-mat','trading-hours'],
+    dataops:    ['symbols','backfill','provider-health','data-sources','data-quality','data-calendar','data-export','storage','storage-optimization','archive-health','event-replay','index-subscription','watchlist','schedule-manager','collection-sessions','portfolio-import','account-portfolio','aggregate-portfolio'],
+    gov:        ['security-master','settings','diagnostics','service-manager','admin-maintenance','retention-assurance','lean-integration','system-health','help','keyboard-shortcuts']
+  };
+  Object.entries(groups).forEach(([k, arr]) => {
+    const g = document.querySelector(`[data-group="${k}"]`);
+    arr.forEach(n => {
+      const d = document.createElement('div');
+      d.className = 'cell';
+      d.innerHTML = `<img src="../assets/icons/${n}.svg" alt=""><div class="name">${n}</div>`;
+      g.appendChild(d);
+    });
+  });
+</script>
+</body>
+</html>

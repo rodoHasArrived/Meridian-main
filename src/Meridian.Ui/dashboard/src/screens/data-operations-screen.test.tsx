@@ -60,9 +60,9 @@ describe("DataOperationsScreen", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText("Provider health")).toBeInTheDocument();
-    expect(screen.getByText("Backfill queue")).toBeInTheDocument();
-    expect(screen.getByText("Recent exports")).toBeInTheDocument();
+    expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
     expect(screen.getByText("Polygon")).toBeInTheDocument();
   });
 
@@ -105,8 +105,26 @@ describe("DataOperationsScreen", () => {
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Trigger backfill")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/AAPL MSFT SPY/i)).toBeInTheDocument();
+  });
+
+  it("keeps preview disabled until the backfill symbols are valid", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/data-operations"]}>
+        <DataOperationsScreen data={data} />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+
+    expect(screen.getByRole("button", { name: /^preview$/i })).toBeDisabled();
+
+    await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
+
+    expect(screen.getByRole("button", { name: /^preview$/i })).toBeEnabled();
   });
 
   it("calls previewBackfill and shows preview result", async () => {
@@ -138,7 +156,7 @@ describe("DataOperationsScreen", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/preview — polygon/i)).toBeInTheDocument();
-      expect(screen.getByText("2,100")).toBeInTheDocument();
+      expect(screen.getByText(/Bars:\s*2,100/i)).toBeInTheDocument();
     });
   });
 
@@ -189,7 +207,7 @@ describe("DataOperationsScreen", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/backfill complete — polygon/i)).toBeInTheDocument();
-      expect(screen.getByText("512")).toBeInTheDocument();
+      expect(screen.getByText(/Bars:\s*512/i)).toBeInTheDocument();
     });
   });
 

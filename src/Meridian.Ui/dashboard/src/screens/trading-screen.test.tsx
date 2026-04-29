@@ -145,6 +145,10 @@ const data: TradingWorkspaceResponse = {
   brokerage: { provider: "Interactive Brokers", account: "DU1009034", environment: "paper", connection: "Connected", lastHeartbeat: "2s ago", orderIngress: "healthy", fillFeed: "healthy", notes: "Adapter is wired." }
 };
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 const serverReadinessData: TradingWorkspaceResponse = {
   ...data,
   readiness: {
@@ -450,7 +454,7 @@ describe("TradingScreen", () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
-    await user.click(screen.getByRole("button", { name: /verify replay/i }));
+    await user.click(await screen.findByRole("button", { name: /verify replay/i }));
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();

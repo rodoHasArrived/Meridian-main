@@ -14,14 +14,14 @@ import {
   TrendingUp,
   XCircle
 } from "lucide-react";
-import { useState } from "react";
+import type { ElementType } from "react";
 import { Link } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSystemStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useOverviewStatusViewModel, type OverviewFallbackStatId } from "@/screens/overview-screen.view-model";
 import type { SessionInfo, SystemEventRecord, SystemOverviewResponse } from "@/types";
 
 interface OverviewScreenProps {
@@ -31,19 +31,16 @@ interface OverviewScreenProps {
 
 const systemStatusConfig = {
   Healthy: {
-    label: "All Systems Healthy",
     icon: CheckCircle2,
     className: "text-success",
     bannerClass: "border-success/30 bg-success/5"
   },
   Degraded: {
-    label: "System Degraded",
     icon: AlertCircle,
     className: "text-warning",
     bannerClass: "border-warning/30 bg-warning/5"
   },
   Offline: {
-    label: "System Offline",
     icon: XCircle,
     className: "text-danger",
     bannerClass: "border-danger/30 bg-danger/5"
@@ -51,9 +48,9 @@ const systemStatusConfig = {
 } as const;
 
 const storageHealthConfig = {
-  Healthy: { label: "Healthy", className: "text-success" },
-  Warning: { label: "Warning", className: "text-warning" },
-  Critical: { label: "Critical", className: "text-danger" }
+  Healthy: { className: "text-success" },
+  Warning: { className: "text-warning" },
+  Critical: { className: "text-danger" }
 } as const;
 
 const eventTypeConfig = {
@@ -97,25 +94,18 @@ const workspaceLinks = [
   }
 ] as const;
 
-export function OverviewScreen({ data, session }: OverviewScreenProps) {
-  const [refreshing, setRefreshing] = useState(false);
-  const [liveData, setLiveData] = useState<SystemOverviewResponse | null>(data);
+const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
+  providers: Globe,
+  runs: LineChart,
+  symbols: BarChart3,
+  backfills: Activity
+};
 
-  const current = liveData ?? data;
+export function OverviewScreen({ data, session }: OverviewScreenProps) {
+  const vm = useOverviewStatusViewModel(data);
+  const current = vm.current;
   const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
   const StatusIcon = statusConfig?.icon ?? Radio;
-
-  async function handleRefresh() {
-    setRefreshing(true);
-    try {
-      const fresh = await getSystemStatus();
-      setLiveData(fresh);
-    } catch {
-      // silently ignore — stale data remains visible
-    } finally {
-      setRefreshing(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -129,70 +119,57 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         <StatusIcon className={cn("size-5 shrink-0", statusConfig?.className)} />
         <div className="flex-1">
           <p className={cn("text-sm font-medium", statusConfig?.className)}>
-            {statusConfig?.label ?? "Connecting to system…"}
+            {vm.statusLabel}
           </p>
-          {current && (
+          {current && vm.providerSummary && vm.storageLabel && vm.lastHeartbeatLabel && (
             <p className="text-xs text-muted-foreground mt-0.5">
-              {current.providersOnline} of {current.providersTotal} providers online
+              {vm.providerSummary}
               {" · "}
               Storage: <span className={storageHealthConfig[current.storageHealth].className}>
-                {storageHealthConfig[current.storageHealth].label}
+                {vm.storageLabel}
               </span>
               {" · "}
-              Last heartbeat: {new Date(current.lastHeartbeatUtc).toLocaleTimeString()}
+              Last heartbeat: {vm.lastHeartbeatLabel}
             </p>
           )}
         </div>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => { void handleRefresh(); }}
-          disabled={refreshing}
+          onClick={() => { void vm.refresh(); }}
+          disabled={vm.refreshing}
+          aria-label={vm.refreshAriaLabel}
           className="shrink-0"
         >
-          <RefreshCcw className={cn("size-4 mr-1.5", refreshing && "animate-spin")} />
-          {refreshing ? "Refreshing…" : "Refresh"}
+          <RefreshCcw className={cn("size-4 mr-1.5", vm.refreshing && "animate-spin")} />
+          {vm.refreshButtonLabel}
         </Button>
       </div>
+      <span className="sr-only" aria-live="polite">{vm.refreshAnnouncement}</span>
+      {vm.refreshErrorText && (
+        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {vm.refreshErrorText}
+        </div>
+      )}
 
       {/* Metrics grid */}
-      {current?.metrics && current.metrics.length > 0 ? (
+      {vm.hasMetrics ? (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {current.metrics.map((metric) => (
+          {vm.metrics.map((metric) => (
             <MetricCard key={metric.id} {...metric} />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard
-            icon={Globe}
-            label="Providers Online"
-            value={current ? `${current.providersOnline} / ${current.providersTotal}` : "—"}
-            tone={
-              !current ? "default"
-              : current.providersOnline === current.providersTotal ? "success"
-              : current.providersOnline === 0 ? "danger"
-              : "warning"
-            }
-          />
-          <StatCard
-            icon={LineChart}
-            label="Active Runs"
-            value={current ? String(current.activeRuns) : "—"}
-            tone={current && current.activeRuns > 0 ? "success" : "default"}
-          />
-          <StatCard
-            icon={BarChart3}
-            label="Monitored Symbols"
-            value={current ? String(current.symbolsMonitored) : "—"}
-            tone="default"
-          />
-          <StatCard
-            icon={Activity}
-            label="Active Backfills"
-            value={current ? String(current.activeBackfills) : "—"}
-            tone={current && current.activeBackfills > 0 ? "warning" : "default"}
-          />
+          {vm.fallbackStats.map((stat) => (
+            <StatCard
+              key={stat.id}
+              icon={fallbackStatIcons[stat.id]}
+              label={stat.label}
+              value={stat.value}
+              tone={stat.tone}
+            />
+          ))}
         </div>
       )}
 
@@ -205,15 +182,15 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
             <CardDescription>Latest system events across all workspaces.</CardDescription>
           </CardHeader>
           <CardContent>
-            {current?.recentEvents && current.recentEvents.length > 0 ? (
+            {vm.hasEvents ? (
               <ul className="space-y-2">
-                {current.recentEvents.map((event) => (
+                {vm.events.map((event) => (
                   <EventRow key={event.id} event={event} />
                 ))}
               </ul>
             ) : (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                {current ? "No recent events." : "Loading activity feed…"}
+                {vm.activityEmptyText}
               </p>
             )}
           </CardContent>
@@ -288,7 +265,7 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
 // --- Sub-components ---
 
 interface StatCardProps {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   value: string;
   tone: "default" | "success" | "warning" | "danger";
