@@ -65,7 +65,7 @@ Data Trust Passport
 
 That loop maps directly onto the active Waves 2-4 path. Existing support evidence includes the DK1 provider-trust packet, shared run/read-model seams, promotion approval checklist state, paper replay/audit metadata, reconciliation break queues, report-pack schema/version checks, and the web Operator Readiness Console. The roadmap should treat the named modules as commercial targets until shared contracts, retained evidence, browser-visible workflows, and governed outputs close the loop.
 
-The accounting-led commercial wedge for the same path is: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, and evidence packet actions should sharpen Waves 2-4 as planned product modules. They should not be described as implemented until shared contracts, retained evidence, browser workflows, and governed outputs prove them end to end.
+The accounting-led commercial wedge for the same path is: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, and evidence packet actions should sharpen Waves 2-4 as planned product modules. They should not be described as current capabilities until shared contracts, retained evidence, browser workflows, and governed outputs prove them end to end.
 
 ---
 

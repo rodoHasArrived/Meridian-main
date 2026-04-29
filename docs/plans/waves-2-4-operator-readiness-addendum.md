@@ -71,7 +71,7 @@ It should be read with:
 - broad Wave 5 Backtest Studio unification work
 - broad Wave 6 live-readiness expansion
 - optional advanced research, scale-out, or performance tracks
-- claims that Books Before Broker, insurance accounting, Close the Books, broker statement reconciliation, Controls-as-Code, shadow books, or demo packs are implemented before accepted evidence exists
+- claims that Books Before Broker, insurance accounting, Close the Books, broker statement reconciliation, Controls-as-Code, shadow books, or demo packs are current capabilities before accepted evidence exists
 
 ### Assumptions
 
