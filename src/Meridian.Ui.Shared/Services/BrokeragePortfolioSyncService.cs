@@ -7,6 +7,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -235,6 +236,7 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+        await EnrichSharedReadServicesAsync(fundAccountId, attemptedAt, projection, ct).ConfigureAwait(false);
         return projection.Status;
     }
 
@@ -415,6 +417,40 @@ public sealed class BrokeragePortfolioSyncService
                 LastSuccessfulSyncAt: projection.Status.LastSuccessfulSyncAt,
                 LastRawSnapshotPath: projection.RawSnapshotPath,
                 LastProjectionPath: projection.ProjectionPath),
+            ct).ConfigureAwait(false);
+    }
+
+    private async Task EnrichSharedReadServicesAsync(
+        Guid fundAccountId,
+        DateTimeOffset attemptedAt,
+        WorkstationBrokerageSyncViewDto projection,
+        CancellationToken ct)
+    {
+        var fundAccountService = _services.GetService<IFundAccountService>();
+        if (fundAccountService is null || projection.Balance is null)
+        {
+            return;
+        }
+
+        await fundAccountService.RecordBalanceSnapshotAsync(
+            new RecordAccountBalanceSnapshotRequest(
+                AccountId: fundAccountId,
+                AsOfDate: DateOnly.FromDateTime(attemptedAt.UtcDateTime),
+                Currency: projection.Balance.Currency,
+                CashBalance: projection.Balance.Cash,
+                SecuritiesMarketValue: projection.Balance.Equity - projection.Balance.Cash,
+                AccruedInterest: 0m,
+                PendingSettlement: 0m,
+                Source: $"brokerage-sync:{projection.Link.ProviderId}",
+                CapturedBy: projection.Link.LinkedBy ?? "brokerage-sync",
+                ExternalReference: projection.Link.ExternalAccountId),
+            ct).ConfigureAwait(false);
+
+        await fundAccountService.ReconcileAccountAsync(
+            new ReconcileAccountRequest(
+                fundAccountId,
+                DateOnly.FromDateTime(attemptedAt.UtcDateTime),
+                projection.Link.LinkedBy ?? "brokerage-sync"),
             ct).ConfigureAwait(false);
     }
 
