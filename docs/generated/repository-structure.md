@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-29 05:32:04 UTC. Do not edit manually.
+> Auto-generated on 2026-04-29 06:30:45 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4684,6 +4684,7 @@ Meridian-main
 │   │   │   ├── wpf-provider-health.png
 │   │   │   ├── wpf-providers.png
 │   │   │   ├── wpf-quant-script.png
+│   │   │   ├── wpf-research-workspace.png
 │   │   │   ├── wpf-security-master.png
 │   │   │   ├── wpf-settings.png
 │   │   │   ├── wpf-storage.png
@@ -4849,6 +4850,7 @@ Meridian-main
 │   ├── preview
 │   │   ├── brand-icons.html
 │   │   ├── brand-marks.html
+│   │   ├── chart-table-standards.html
 │   │   ├── charts-candlestick.html
 │   │   ├── charts-correlation.html
 │   │   ├── charts-equity-print.html
@@ -4864,6 +4866,7 @@ Meridian-main
 │   │   ├── colors-brand.html
 │   │   ├── colors-semantic.html
 │   │   ├── colors-surfaces.html
+│   │   ├── component-state-matrix.html
 │   │   ├── components-badges.html
 │   │   ├── components-banners.html
 │   │   ├── components-buttons.html
@@ -4873,6 +4876,7 @@ Meridian-main
 │   │   ├── components-table.html
 │   │   ├── design-standards.html
 │   │   ├── institutional-workstation.html
+│   │   ├── screen-recipes.html
 │   │   ├── spacing-radii.html
 │   │   ├── spacing-scale.html
 │   │   ├── spacing-shadows.html
@@ -4880,6 +4884,10 @@ Meridian-main
 │   │   ├── type-body.html
 │   │   ├── type-display.html
 │   │   └── type-mono.html
+│   ├── scripts
+│   │   └── check_design_system_governance.py
+│   ├── tests
+│   │   └── test_design_system_governance.py
 │   ├── ui_kits
 │   │   ├── dashboard
 │   │   │   ├── components.jsx
@@ -4890,6 +4898,7 @@ Meridian-main
 │   │   └── security_master.html
 │   ├── colors_and_type.css
 │   ├── CONTENT_FUNDAMENTALS.md
+│   ├── governance-baseline.json
 │   ├── ICONOGRAPHY.md
 │   ├── index.html
 │   ├── INSPIRATION_BRIEF.md
@@ -6359,6 +6368,9 @@ Meridian-main
 │   ├── Meridian.Ui
 │   │   ├── dashboard
 │   │   │   ├── src
+│   │   │   │   ├── assets
+│   │   │   │   │   └── brand
+│   │   │   │   │       └── meridian-mark.svg
 │   │   │   │   ├── components
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── command-palette.test.tsx
@@ -6366,7 +6378,10 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
 │   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
+│   │   │   │   │   │   ├── workspace-header.view-model.test.ts
+│   │   │   │   │   │   ├── workspace-header.view-model.ts
 │   │   │   │   │   │   ├── workspace-nav.test.tsx
 │   │   │   │   │   │   ├── workspace-nav.tsx
 │   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
@@ -6414,6 +6429,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
 │   │   │   │   ├── app.tsx
+│   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── types.ts
 │   │   │   │   └── vite-env.d.ts
@@ -6428,8 +6444,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CcpVz9_t.js
-│   │           │   └── index-DNevvesn.css
+│   │           │   ├── index-CAwKqfhv.css
+│   │           │   └── index-CChzBFbU.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
