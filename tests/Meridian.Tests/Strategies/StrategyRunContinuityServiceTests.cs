@@ -175,6 +175,43 @@ public sealed class StrategyRunContinuityServiceTests
             .Contain(["missing-cash-flow", "missing-fills", "missing-reconciliation"]);
     }
 
+    [Theory]
+    [InlineData(false, true, true, "missing-portfolio")]
+    [InlineData(true, false, true, "missing-ledger")]
+    [InlineData(true, true, false, "missing-cash-flow")]
+    public async Task GetRunContinuityAsync_MissingSeam_EmitsExpectedWarning(
+        bool includePortfolio,
+        bool includeLedger,
+        bool includeCashFlows,
+        string expectedWarningCode)
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildContinuityRun(
+            "continuity-seam-warning",
+            includeCashFlows: includeCashFlows,
+            includePortfolio: includePortfolio,
+            includeLedger: includeLedger));
+
+        var readService = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var continuityService = new StrategyRunContinuityService(
+            readService,
+            new CashFlowProjectionService(store),
+            new ReconciliationRunService(
+                readService,
+                new ReconciliationProjectionService(),
+                new InMemoryReconciliationRunRepository()));
+
+        var continuity = await continuityService.GetRunContinuityAsync("continuity-seam-warning");
+
+        continuity.Should().NotBeNull();
+        continuity!.ContinuityStatus.Warnings.Select(static warning => warning.Code).Should().Contain(expectedWarningCode);
+    }
+
+    private static StrategyRunEntry BuildContinuityRun(
+        string runId,
+        bool includeCashFlows = true,
+        bool includePortfolio = true,
+        bool includeLedger = true)
     private static StrategyRunEntry BuildContinuityRun(string runId, bool includeCashFlows = true, bool includeFills = false, StrategyRunPromotionState promotionState = StrategyRunPromotionState.None)
     {
         var startedAt = new DateTimeOffset(2026, 4, 2, 9, 30, 0, TimeSpan.Zero);
@@ -251,13 +288,13 @@ public sealed class StrategyRunContinuityServiceTests
                 InitialCash: 1_000m,
                 DataRoot: "./data"),
             Universe: new HashSet<string>(["AAPL"], StringComparer.OrdinalIgnoreCase),
-            Snapshots: [snapshot],
+            Snapshots: includePortfolio ? [snapshot] : [],
             CashFlows: cashFlows,
             Fills: includeFills
                 ? [new FillEvent(Guid.NewGuid(), "AAPL", "buy", 10L, 40m, 0.5m, startedAt.AddMinutes(15), "ORD-1")]
                 : [],
             Metrics: metrics,
-            Ledger: CreateLedger(startedAt, completedAt),
+            Ledger: includeLedger ? CreateLedger(startedAt, completedAt) : null,
             ElapsedTime: TimeSpan.FromHours(2),
             TotalEventsProcessed: 32);
 

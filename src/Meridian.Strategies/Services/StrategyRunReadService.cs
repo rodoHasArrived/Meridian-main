@@ -19,6 +19,9 @@ public sealed class StrategyRunReadService
     private readonly LedgerReadService _ledgerReadService;
     private readonly IPromotionRecordStore? _promotionRecordStore;
 
+    internal PortfolioReadService PortfolioReadService => _portfolioReadService;
+    internal LedgerReadService LedgerReadService => _ledgerReadService;
+
     public StrategyRunReadService(
         IStrategyRepository repository,
         PortfolioReadService portfolioReadService,
@@ -283,6 +286,12 @@ public sealed class StrategyRunReadService
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
             AuditReference: run.AuditReference);
     }
+
+    internal IReadOnlyList<StrategyRunContinuityWarning> GetPortfolioContinuityWarnings(StrategyRunDetail run) =>
+        _portfolioReadService.BuildContinuityWarnings(run.Summary.RunId, run.Portfolio);
+
+    internal IReadOnlyList<StrategyRunContinuityWarning> GetLedgerContinuityWarnings(StrategyRunDetail run) =>
+        _ledgerReadService.BuildContinuityWarnings(run.Summary.RunId, run.Ledger);
 
     private static StrategyRunPromotionSummary BuildPromotionSummary(
         StrategyRunEntry run,
