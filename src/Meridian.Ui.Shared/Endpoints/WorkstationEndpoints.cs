@@ -426,7 +426,7 @@ public static class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/continuity", async (string runId, HttpContext context) =>
+        group.MapGet(UiApiRoutes.RunsContinuity, async (string runId, HttpContext context) =>
         {
             var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
             if (continuityService is null)
@@ -437,10 +437,15 @@ public static class WorkstationEndpoints
             var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
-                : Results.Json(detail, jsonOptions);
+                : Results.Json(new StrategyRunContinuityDto(
+                    detail.Run,
+                    detail.Lineage,
+                    detail.CashFlow,
+                    detail.Reconciliation,
+                    detail.ContinuityStatus), jsonOptions);
         })
         .WithName("GetRunContinuity")
-        .Produces<StrategyRunContinuityDetail>(200)
+        .Produces<StrategyRunContinuityDto>(200)
         .Produces(404)
         .Produces(501);
 
@@ -2819,7 +2824,7 @@ public static class WorkstationEndpoints
             Attribution: $"/api/workstation/runs/{run.RunId}/attribution",
             Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
             CashFlows: $"/api/portfolio/{run.RunId}/cash-flows",
-            Continuity: $"/api/workstation/runs/{run.RunId}/continuity");
+            Continuity: UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal));
 
     private static object BuildTimelineCard(StrategyRunSummary run) => new
     {
@@ -2864,6 +2869,7 @@ public static class WorkstationEndpoints
         attribution = $"/api/workstation/runs/{run.RunId}/attribution",
         ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
         cashFlows = $"/api/portfolio/{run.RunId}/cash-flows",
+        continuity = UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal),
         comparison = "/api/workstation/runs/compare"
     };
 
