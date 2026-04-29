@@ -528,16 +528,42 @@ public sealed record StrategyRunCashFlowDigest(
 /// </summary>
 public sealed record StrategyRunContinuityWarning(
     string Code,
-    string Message);
+    StrategyRunContinuityWarningSeverity Severity,
+    string Message,
+    string SourceSeam);
+
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunContinuityWarningSeverity>))]
+public enum StrategyRunContinuityWarningSeverity : byte
+{
+    Info,
+    Warning,
+    Critical
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunContinuitySeamHealthStatus>))]
+public enum StrategyRunContinuitySeamHealthStatus : byte
+{
+    Healthy,
+    Missing,
+    Stale
+}
 
 /// <summary>
 /// Continuity posture across run, portfolio, ledger, cash-flow, and reconciliation seams.
 /// </summary>
 public sealed record StrategyRunContinuityStatus(
+    bool HasRun,
+    StrategyRunContinuitySeamHealthStatus RunHealth,
+    bool HasFills,
+    StrategyRunContinuitySeamHealthStatus FillsHealth,
     bool HasPortfolio,
+    StrategyRunContinuitySeamHealthStatus PortfolioHealth,
     bool HasLedger,
+    StrategyRunContinuitySeamHealthStatus LedgerHealth,
     bool HasCashFlow,
+    StrategyRunContinuitySeamHealthStatus CashFlowHealth,
     bool HasReconciliation,
+    StrategyRunContinuitySeamHealthStatus ReconciliationHealth,
     int AsOfDriftMinutes,
     int OpenReconciliationBreaks,
     int SecurityCoverageIssueCount,
