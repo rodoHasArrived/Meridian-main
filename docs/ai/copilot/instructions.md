@@ -6873,6 +6873,7 @@ Meridian-main
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
+│       │   ├── SymbolMappingViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
@@ -7736,10 +7737,13 @@ Meridian-main
 │   │   │   ├── BackfillViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
+│   │   │   ├── ChartingPageViewModelTests.cs
+│   │   │   ├── CollectionSessionViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
 │   │   │   ├── DataSamplingViewModelTests.cs
+│   │   │   ├── DataSourcesViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
@@ -7760,6 +7764,7 @@ Meridian-main
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── SymbolMappingViewModelTests.cs
 │   │   │   ├── SymbolsPageViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
 │   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
