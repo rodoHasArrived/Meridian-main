@@ -121,6 +121,21 @@ describe("GovernanceScreen", () => {
     expect(screen.getByText("Security coverage")).toBeInTheDocument();
   });
 
+  it("announces security search failures as alerts", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockRejectedValueOnce(new Error("Provider offline"));
+
+    render(
+      <MemoryRouter initialEntries={["/governance/security-master"]}>
+        <GovernanceScreen data={data} />
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByLabelText("Search securities"), "AAPL");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Security search failed: Provider offline");
+  });
+
   it("accepts and renders alias rows inside identity drill-in for governance workflows", async () => {
     const user = userEvent.setup();
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([

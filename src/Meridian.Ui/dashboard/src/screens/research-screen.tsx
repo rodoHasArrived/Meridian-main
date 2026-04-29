@@ -1,21 +1,16 @@
-import { useState } from "react";
-import { compareRuns, diffRuns, getPromotionHistory } from "@/lib/api";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
+import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
+import type { ResearchWorkspaceResponse } from "@/types";
 
 interface ResearchScreenProps {
   data: ResearchWorkspaceResponse | null;
 }
 
 export function ResearchScreen({ data }: ResearchScreenProps) {
-  const [selectedRun, setSelectedRun] = useState<ResearchRunRecord | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
-  const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
-  const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
+  const vm = useResearchRunLibraryViewModel(data);
 
   if (!data) {
     return (
@@ -26,35 +21,6 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </CardHeader>
       </Card>
     );
-  }
-
-  function toggleRun(runId: string) {
-    setSelectedIds((current) => (
-      current.includes(runId)
-        ? current.filter((id) => id !== runId)
-        : [...current, runId].slice(-2)
-    ));
-  }
-
-  async function handleCompare() {
-    const rows = await compareRuns(selectedIds);
-    setComparison(rows);
-    setRunDiff(null);
-  }
-
-  async function handleDiff() {
-    if (selectedIds.length !== 2) {
-      return;
-    }
-
-    const result = await diffRuns(selectedIds[0], selectedIds[1]);
-    setRunDiff(result);
-    setComparison([]);
-  }
-
-  async function handlePromotionHistory() {
-    const rows = await getPromotionHistory();
-    setPromotionHistory(rows);
   }
 
   return (
@@ -70,21 +36,30 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => void handlePromotionHistory()}>
-              Promotion history
-            </Button>
-            {selectedIds.length === 2 && (
-              <>
-                <Button variant="outline" onClick={() => void handleCompare()}>
-                  Compare 2 runs
-                </Button>
-                <Button variant="outline" onClick={() => void handleDiff()}>
-                  Diff 2 runs
-                </Button>
-              </>
-            )}
+          <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="eyebrow-label">Selection</div>
+              <p className="mt-1 text-sm font-semibold">{vm.selectionText}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{vm.selectionDetail}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => void vm.loadPromotionHistory()} disabled={!vm.canLoadPromotionHistory}>
+                {vm.promotionHistoryButtonLabel}
+              </Button>
+              <Button variant="outline" onClick={() => void vm.compareSelectedRuns()} disabled={!vm.canCompare}>
+                {vm.compareButtonLabel}
+              </Button>
+              <Button variant="outline" onClick={() => void vm.diffSelectedRuns()} disabled={!vm.canDiff}>
+                {vm.diffButtonLabel}
+              </Button>
+            </div>
           </div>
+          <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+          {vm.actionError && (
+            <div role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {vm.actionError}
+            </div>
+          )}
 
           <div className="overflow-x-auto rounded-lg border border-border/70">
             <table className="min-w-full divide-y divide-border/60 text-left text-sm">
@@ -96,14 +71,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {data.runs.map((run) => (
+                {vm.runs.map((run) => (
                   <tr key={run.id}>
                     <td className="px-3 py-2">
                       <input
                         type="checkbox"
                         aria-label={`Select ${run.strategyName}`}
-                        checked={selectedIds.includes(run.id)}
-                        onChange={() => toggleRun(run.id)}
+                        checked={vm.selectedIds.includes(run.id)}
+                        onChange={() => vm.toggleRun(run.id)}
                       />
                     </td>
                     <td className="px-3 py-2 font-semibold">{run.strategyName}</td>
@@ -114,7 +89,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     <td className="px-3 py-2 font-mono">{run.sharpe}</td>
                     <td className="px-3 py-2">{run.lastUpdated}</td>
                     <td className="px-3 py-2">
-                      <Button size="sm" variant="outline" onClick={() => setSelectedRun(run)}>
+                      <Button size="sm" variant="outline" onClick={() => vm.openRunDetail(run)}>
                         Open
                       </Button>
                     </td>
@@ -126,7 +101,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </CardContent>
       </Card>
 
-      {comparison.length > 0 && (
+      {vm.comparison.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Run comparison</CardTitle>
@@ -139,7 +114,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   <tr>{["Strategy", "Mode", "Status", "Sharpe", "Fills"].map((column) => <th key={column} className="px-3 py-2">{column}</th>)}</tr>
                 </thead>
                 <tbody>
-                  {comparison.map((row) => (
+                  {vm.comparison.map((row) => (
                     <tr key={row.runId}>
                       <td className="px-3 py-2">{row.strategyName}</td>
                       <td className="px-3 py-2">{row.mode}</td>
@@ -155,17 +130,17 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       )}
 
-      {runDiff && (
+      {vm.runDiff && (
         <Card>
           <CardHeader>
             <CardTitle>Position & parameter diff</CardTitle>
-            <CardDescription>{runDiff.baseStrategyName} compared with {runDiff.targetStrategyName}.</CardDescription>
+            <CardDescription>{vm.runDiff.baseStrategyName} compared with {vm.runDiff.targetStrategyName}.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border border-border/70 p-4">
               <div className="text-sm font-semibold">Position changes</div>
               <ul className="mt-3 space-y-2 text-sm">
-                {[...runDiff.addedPositions, ...runDiff.removedPositions, ...runDiff.modifiedPositions].map((item) => (
+                {[...vm.runDiff.addedPositions, ...vm.runDiff.removedPositions, ...vm.runDiff.modifiedPositions].map((item) => (
                   <li key={`${item.symbol}-${item.changeType}`} className="font-mono">{item.symbol} {item.changeType}</li>
                 ))}
               </ul>
@@ -173,7 +148,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             <div className="rounded-lg border border-border/70 p-4">
               <div className="text-sm font-semibold">Parameter changes</div>
               <ul className="mt-3 space-y-2 text-sm">
-                {runDiff.parameterChanges.map((item) => (
+                {vm.runDiff.parameterChanges.map((item) => (
                   <li key={item.key} className="font-mono">
                     <span>{item.key}</span>
                     <span>: {item.baseValue ?? "n/a"} {"->"} {item.targetValue ?? "n/a"}</span>
@@ -185,7 +160,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       )}
 
-      {promotionHistory.length > 0 && (
+      {vm.promotionHistory.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Promotion history</CardTitle>
@@ -193,7 +168,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
-              {promotionHistory.map((record) => (
+              {vm.promotionHistory.map((record) => (
                 <li key={record.promotionId} className="rounded-lg border border-border/70 p-3">
                   <span className="font-semibold">{record.strategyName}</span>
                   <span className="ml-3 font-mono">{record.qualifyingSharpe.toFixed(3)}</span>
@@ -204,17 +179,17 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       )}
 
-      {selectedRun && (
+      {vm.selectedRun && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4">
           <div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-lg border border-border bg-card p-5 shadow-workstation">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="eyebrow-label">Run detail</div>
-                <h2 className="mt-1 text-lg font-semibold">{selectedRun.strategyName}</h2>
+                <h2 className="mt-1 text-lg font-semibold">{vm.selectedRun.strategyName}</h2>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedRun(null)}>Close</Button>
+              <Button variant="ghost" size="sm" onClick={vm.closeRunDetail}>Close</Button>
             </div>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">{selectedRun.notes}</p>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">{vm.selectedRun.notes}</p>
           </div>
         </div>
       )}
