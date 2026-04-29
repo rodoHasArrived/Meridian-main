@@ -933,6 +933,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
+│   │   ├── workflow-library.md
 │   │   ├── wpf-shell-mvvm.md
 │   │   └── wpf-workstation-shell-ux.md
 │   ├── audits
@@ -4819,6 +4820,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── meridian-pilot-workflow.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── portfolio-level-backtesting-composer-blueprint.md
@@ -5707,6 +5709,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       ├── StrategyRunReadModels.cs
 │   │       ├── TradingOperatorReadinessDtos.cs
+│   │       ├── WorkflowLibraryDtos.cs
 │   │       └── WorkflowSummaryDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -6682,7 +6685,15 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
-│   │   └── UserProfileRegistry.cs
+│   │   ├── UserProfileRegistry.cs
+│   │   └── Workflows
+│   │       ├── BuiltInWorkflowDefinitionProvider.cs
+│   │       ├── IWorkflowActionCatalog.cs
+│   │       ├── IWorkflowDefinitionProvider.cs
+│   │       ├── WorkflowActionIds.cs
+│   │       ├── WorkflowLibraryService.cs
+│   │       ├── WorkflowRegistry.cs
+│   │       └── WorkflowServiceCollectionExtensions.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
 │       ├── App.xaml.cs
@@ -6984,6 +6995,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TradingWorkspaceShellViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
+│       │   ├── WorkflowLibraryViewModel.cs
 │       │   ├── WorkspacePageViewModel.cs
 │       │   └── WorkspaceShellViewModelBase.cs
 │       └── Views
@@ -7172,6 +7184,8 @@ Use these documents together when planning or implementing new work:
 │           ├── WatchlistPage.xaml.cs
 │           ├── WelcomePage.xaml
 │           ├── WelcomePage.xaml.cs
+│           ├── WorkflowLibraryPage.xaml
+│           ├── WorkflowLibraryPage.xaml.cs
 │           ├── WorkspaceCapabilityHomePage.cs
 │           ├── WorkspaceCommandBarControl.xaml
 │           ├── WorkspaceCommandBarControl.xaml.cs
@@ -7309,6 +7323,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
+│   │   │   │   ├── AppSettingsSampleTests.cs
 │   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -7700,6 +7715,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
+│   │       ├── WorkflowLibraryEndpointTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -7821,6 +7837,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── AdminMaintenanceViewModelTests.cs
 │   │   │   ├── AdvancedAnalyticsViewModelTests.cs
 │   │   │   ├── AgentViewModelTests.cs
 │   │   │   ├── AggregatePortfolioViewModelTests.cs
@@ -7860,6 +7877,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── TradingWorkspaceShellViewModelTests.cs
 │   │   │   ├── WatchlistViewModelTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
+│   │   │   ├── WorkflowLibraryViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   └── Views
 │   │       ├── DashboardPageSmokeTests.cs
@@ -7912,6 +7930,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-598 directories, 7163 files
+599 directories, 7180 files
 ```
 <!-- readme-tree end -->
