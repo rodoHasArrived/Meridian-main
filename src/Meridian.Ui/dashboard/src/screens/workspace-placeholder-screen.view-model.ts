@@ -1,25 +1,36 @@
 import { workspacePath } from "@/lib/workspace";
 import type { SessionInfo, SystemOverviewResponse, WorkspaceKey, WorkspaceSummary } from "@/types";
 
-export interface PlaceholderAction {
+interface PlaceholderActionDefinition {
   id: string;
   label: string;
   detail: string;
   route: string;
 }
 
+export interface PlaceholderAction extends PlaceholderActionDefinition {
+  detailId: string;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
 export interface PlaceholderStatusCell {
   id: string;
   label: string;
   value: string;
+  ariaLabel: string;
 }
 
 export interface WorkspacePlaceholderViewModel {
   route: string;
   title: string;
   description: string;
+  routeRegionLabel: string;
   pendingTitle: string;
   pendingDescription: string;
+  pendingRegionLabel: string;
+  actionsLabel: string;
+  telemetryLabel: string;
   routeStatus: string;
   statusCells: PlaceholderStatusCell[];
   telemetryCells: PlaceholderStatusCell[];
@@ -38,7 +49,7 @@ const placeholderGuidance: Partial<
     {
       pendingTitle: string;
       pendingDescription: string;
-      actions: PlaceholderAction[];
+      actions: PlaceholderActionDefinition[];
     }
   >
 > = {
@@ -94,7 +105,7 @@ const placeholderGuidance: Partial<
   }
 };
 
-const fallbackActions: PlaceholderAction[] = [
+const fallbackActions: PlaceholderActionDefinition[] = [
   {
     id: "trading-readiness",
     label: "Review trading readiness",
@@ -122,41 +133,43 @@ export function buildWorkspacePlaceholderViewModel({
     route,
     title: `${workspace.label} route is available`,
     description: workspace.description,
+    routeRegionLabel: `${workspace.label} route status`,
     pendingTitle: guidance?.pendingTitle ?? "Dedicated workspace surface pending",
     pendingDescription:
       guidance?.pendingDescription ??
       "This route is reserved in the canonical navigation while the web workstation moves remaining operator workflows into dedicated surfaces.",
+    pendingRegionLabel: `${workspace.label} pending workspace guidance`,
+    actionsLabel: `${workspace.label} temporary workflow actions`,
+    telemetryLabel: `${workspace.label} route telemetry`,
     routeStatus,
     statusCells: [
-      {
-        id: "route",
-        label: "Route",
-        value: route
-      },
-      {
-        id: "route-status",
-        label: "Route status",
-        value: routeStatus
-      },
-      {
-        id: "session",
-        label: "Session",
-        value: session ? `${session.displayName} - ${session.role}` : "Session loading"
-      }
+      buildStatusCell("route", "Route", route),
+      buildStatusCell("route-status", "Route status", routeStatus),
+      buildStatusCell("session", "Session", session ? `${session.displayName} - ${session.role}` : "Session loading")
     ],
     telemetryCells: [
-      {
-        id: "system-status",
-        label: "System status",
-        value: overview?.systemStatus ?? "Not loaded"
-      },
-      {
-        id: "last-heartbeat",
-        label: "Last heartbeat",
-        value: formatHeartbeat(overview?.lastHeartbeatUtc)
-      }
+      buildStatusCell("system-status", "System status", overview?.systemStatus ?? "Not loaded"),
+      buildStatusCell("last-heartbeat", "Last heartbeat", formatHeartbeat(overview?.lastHeartbeatUtc))
     ],
-    actions: guidance?.actions ?? fallbackActions
+    actions: buildPlaceholderActions(guidance?.actions ?? fallbackActions)
+  };
+}
+
+function buildPlaceholderActions(actions: PlaceholderActionDefinition[]): PlaceholderAction[] {
+  return actions.map((action) => ({
+    ...action,
+    detailId: `placeholder-action-${sanitizeDomId(action.id)}-detail`,
+    routeLabel: `Route ${action.route}`,
+    ariaLabel: `${action.label}. ${action.detail} Opens ${action.route}.`
+  }));
+}
+
+function buildStatusCell(id: string, label: string, value: string): PlaceholderStatusCell {
+  return {
+    id,
+    label,
+    value,
+    ariaLabel: `${label}: ${value}`
   };
 }
 
@@ -179,4 +192,9 @@ export function formatHeartbeat(heartbeatUtc: string | null | undefined): string
   const minute = String(heartbeat.getUTCMinutes()).padStart(2, "0");
 
   return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
+}
+
+function sanitizeDomId(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "action";
 }

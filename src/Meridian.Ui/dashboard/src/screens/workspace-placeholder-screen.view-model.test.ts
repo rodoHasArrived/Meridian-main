@@ -42,14 +42,26 @@ describe("workspace placeholder view model", () => {
     expect(model.statusCells).toContainEqual({
       id: "session",
       label: "Session",
-      value: "Ops Desk - Operator"
+      value: "Ops Desk - Operator",
+      ariaLabel: "Session: Ops Desk - Operator"
     });
     expect(model.telemetryCells).toContainEqual({
       id: "last-heartbeat",
       label: "Last heartbeat",
-      value: "Jan 02, 2026 03:04 UTC"
+      value: "Jan 02, 2026 03:04 UTC",
+      ariaLabel: "Last heartbeat: Jan 02, 2026 03:04 UTC"
     });
+    expect(model.routeRegionLabel).toBe("Portfolio route status");
+    expect(model.pendingRegionLabel).toBe("Portfolio pending workspace guidance");
+    expect(model.actionsLabel).toBe("Portfolio temporary workflow actions");
+    expect(model.telemetryLabel).toBe("Portfolio route telemetry");
     expect(model.actions.map((action) => action.route)).toEqual(["/trading", "/accounting", "/strategy"]);
+    expect(model.actions[0]).toMatchObject({
+      detailId: "placeholder-action-trading-readiness-detail",
+      routeLabel: "Route /trading",
+      ariaLabel:
+        "Review trading readiness. Check active sessions, orders, fills, replay evidence, and promotion blockers. Opens /trading."
+    });
   });
 
   it("builds settings-specific setup and control recommendations", () => {
@@ -63,12 +75,14 @@ describe("workspace placeholder view model", () => {
     expect(model.statusCells).toContainEqual({
       id: "session",
       label: "Session",
-      value: "Session loading"
+      value: "Session loading",
+      ariaLabel: "Session: Session loading"
     });
     expect(model.telemetryCells).toContainEqual({
       id: "last-heartbeat",
       label: "Last heartbeat",
-      value: "No heartbeat loaded"
+      value: "No heartbeat loaded",
+      ariaLabel: "Last heartbeat: No heartbeat loaded"
     });
     expect(model.actions.map((action) => action.label)).toEqual([
       "Review provider setup",
