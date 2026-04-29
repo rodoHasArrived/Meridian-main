@@ -16,6 +16,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+. (Join-Path $PSScriptRoot 'shared/retry.ps1')
 $null = & (Join-Path $PSScriptRoot 'validate-workflow-profile.ps1') -Profile $Profile -ProfileRoot $ProfileRoot -EmitJson
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 $profileEnvelope = Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot

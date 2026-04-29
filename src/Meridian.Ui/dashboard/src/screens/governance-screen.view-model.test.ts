@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildReconciliationBreakQueueState,
+  buildReconciliationBreakRows,
+  buildReconciliationNarrative,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveGovernanceWorkstream,
@@ -7,6 +10,7 @@ import {
 } from "@/screens/governance-screen.view-model";
 import type {
   GovernanceWorkspaceResponse,
+  ReconciliationBreakQueueItem,
   SecurityMasterConflict,
   SecurityMasterEntry
 } from "@/types";
@@ -82,6 +86,43 @@ const conflicts: SecurityMasterConflict[] = [
   }
 ];
 
+const breakQueue: ReconciliationBreakQueueItem[] = [
+  {
+    breakId: "run-42:cash",
+    runId: "run-42",
+    strategyName: "Paper Index Mean Reversion",
+    category: "AmountMismatch",
+    status: "Open",
+    variance: 500,
+    reason: "Cash variance over tolerance.",
+    assignedTo: null,
+    detectedAt: "2026-01-01T00:00:00Z",
+    lastUpdatedAt: "2026-01-01T00:00:00Z",
+    reviewedBy: null,
+    reviewedAt: null,
+    resolvedBy: null,
+    resolvedAt: null,
+    resolutionNote: null
+  },
+  {
+    breakId: "run-57:fees",
+    runId: "run-57",
+    strategyName: "Intraday Vol Carry",
+    category: "FeeMismatch",
+    status: "Resolved",
+    variance: 0,
+    reason: "Fee variance resolved.",
+    assignedTo: "ops.gov",
+    detectedAt: "2026-01-02T00:00:00Z",
+    lastUpdatedAt: "2026-01-02T00:00:00Z",
+    reviewedBy: "ops.gov",
+    reviewedAt: "2026-01-02T00:05:00Z",
+    resolvedBy: "ops.gov",
+    resolvedAt: "2026-01-02T00:10:00Z",
+    resolutionNote: "Reviewed in governance panel."
+  }
+];
+
 describe("governance-screen view model", () => {
   it("derives the governance workstream and selected reconciliation run", () => {
     expect(resolveGovernanceWorkstream("/accounting/security-master")).toBe("security-master");
@@ -148,5 +189,67 @@ describe("governance-screen view model", () => {
     expect(failed.statusAnnouncement).toBe("Security search failed: Provider offline");
     expect(countOpenSecurityConflicts(conflicts)).toBe(1);
     expect(countOpenSecurityConflicts(null)).toBe(0);
+  });
+
+  it("derives reconciliation break action state and live announcements", () => {
+    const rows = buildReconciliationBreakRows(breakQueue, { breakId: "run-42:cash", command: "assign" });
+
+    expect(rows[0]).toMatchObject({
+      breakId: "run-42:cash",
+      actionBusy: true,
+      assignLabel: "Assigning...",
+      canAssign: false,
+      canResolve: false,
+      canDismiss: false
+    });
+    expect(rows[1]).toMatchObject({
+      breakId: "run-57:fees",
+      resolveLabel: "Resolve",
+      canAssign: false,
+      canResolve: false,
+      canDismiss: false
+    });
+
+    const state = buildReconciliationBreakQueueState({
+      breakQueue,
+      loading: false,
+      loadError: null,
+      action: { breakId: "run-42:cash", command: "assign" },
+      actionError: null
+    });
+
+    expect(state.hasBreaks).toBe(true);
+    expect(state.statusAnnouncement).toBe("Assigning reconciliation break run-42:cash.");
+  });
+
+  it("derives reconciliation empty and failure copy", () => {
+    const empty = buildReconciliationBreakQueueState({
+      breakQueue: [],
+      loading: false,
+      loadError: null,
+      action: null,
+      actionError: null
+    });
+
+    expect(empty.hasBreaks).toBe(false);
+    expect(empty.emptyText).toBe("No reconciliation breaks in the current queue.");
+    expect(empty.statusAnnouncement).toBe("No reconciliation breaks in the current queue.");
+
+    const failed = buildReconciliationBreakQueueState({
+      breakQueue,
+      loading: false,
+      loadError: "Provider offline",
+      action: null,
+      actionError: "Review endpoint rejected"
+    });
+
+    expect(failed.errorText).toBe("Reconciliation break queue failed: Provider offline");
+    expect(failed.actionErrorText).toBe("Break action failed: Review endpoint rejected");
+    expect(failed.statusAnnouncement).toBe("Break action failed: Review endpoint rejected");
+  });
+
+  it("keeps reconciliation narratives in the view model", () => {
+    expect(buildReconciliationNarrative(reconciliationQueue[0])).toContain("Open reconciliation breaks remain");
+    expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "Balanced" })).toContain("currently balanced");
   });
 });

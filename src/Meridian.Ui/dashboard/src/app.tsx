@@ -46,6 +46,7 @@ export function App() {
             session={session}
             onOpenCommandPalette={() => setCommandOpen(true)}
             onRefresh={refresh}
+            refreshing={loading}
           />
 
           <div className="mt-8">

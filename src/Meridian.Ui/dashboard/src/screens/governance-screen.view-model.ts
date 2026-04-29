@@ -1,25 +1,41 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getReconciliationBreakQueue,
+  getRunTrialBalance,
   getSecurityConflicts,
   getSecurityIdentity,
+  resolveReconciliationBreak,
   resolveSecurityConflict,
+  reviewReconciliationBreak,
   searchSecurities
 } from "@/lib/api";
 import type {
   GovernanceWorkspaceResponse,
+  LedgerTrialBalanceLine,
+  ReconciliationBreakQueueItem,
   ResolveConflictRequest,
+  ResolveReconciliationBreakRequest,
+  ReviewReconciliationBreakRequest,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry
 } from "@/types";
 
 export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
+export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 
 export interface SecurityMasterServices {
   search: (query: string) => Promise<SecurityMasterEntry[]>;
   getIdentity: (securityId: string) => Promise<SecurityIdentityDrillIn>;
   getConflicts: () => Promise<SecurityMasterConflict[]>;
   resolveConflict: (request: ResolveConflictRequest) => Promise<SecurityMasterConflict>;
+}
+
+export interface GovernanceReconciliationServices {
+  getBreakQueue: () => Promise<ReconciliationBreakQueueItem[]>;
+  reviewBreak: (request: ReviewReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
+  resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
+  getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
 }
 
 export interface SecuritySearchState {
@@ -31,11 +47,46 @@ export interface SecuritySearchState {
   statusAnnouncement: string;
 }
 
+export interface ReconciliationBreakAction {
+  breakId: string;
+  command: ReconciliationBreakCommand;
+}
+
+export interface ReconciliationBreakRowViewModel extends ReconciliationBreakQueueItem {
+  actionBusy: boolean;
+  assignLabel: string;
+  resolveLabel: string;
+  dismissLabel: string;
+  assignAriaLabel: string;
+  resolveAriaLabel: string;
+  dismissAriaLabel: string;
+  canAssign: boolean;
+  canResolve: boolean;
+  canDismiss: boolean;
+}
+
+export interface ReconciliationBreakQueueState {
+  rows: ReconciliationBreakRowViewModel[];
+  hasBreaks: boolean;
+  loadingText: string | null;
+  emptyText: string;
+  errorText: string | null;
+  actionErrorText: string | null;
+  statusAnnouncement: string;
+}
+
 const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
   getIdentity: (securityId) => getSecurityIdentity(securityId),
   getConflicts: () => getSecurityConflicts(),
   resolveConflict: (request) => resolveSecurityConflict(request)
+};
+
+const defaultGovernanceReconciliationServices: GovernanceReconciliationServices = {
+  getBreakQueue: () => getReconciliationBreakQueue(),
+  reviewBreak: (request) => reviewReconciliationBreak(request),
+  resolveBreak: (request) => resolveReconciliationBreak(request),
+  getTrialBalance: (runId) => getRunTrialBalance(runId)
 };
 
 export function useSecurityMasterViewModel(
@@ -209,6 +260,172 @@ export function useSecurityMasterViewModel(
   };
 }
 
+export function useGovernanceReconciliationViewModel(
+  data: GovernanceWorkspaceResponse | null,
+  workstream: GovernanceWorkstream,
+  services: GovernanceReconciliationServices = defaultGovernanceReconciliationServices
+) {
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
+  const [breakQueueLoading, setBreakQueueLoading] = useState(false);
+  const [breakQueueError, setBreakQueueError] = useState<string | null>(null);
+  const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
+  const [breakActionError, setBreakActionError] = useState<string | null>(null);
+  const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
+  const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
+  const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
+
+  const reconciliationQueue = data?.reconciliationQueue ?? [];
+  const selectedReconciliation = useMemo(
+    () => resolveSelectedReconciliation(reconciliationQueue, selectedRunId),
+    [reconciliationQueue, selectedRunId]
+  );
+
+  useEffect(() => {
+    if (reconciliationQueue.length === 0) {
+      setSelectedRunId(null);
+      return;
+    }
+
+    if (!selectedRunId || !reconciliationQueue.some((item) => item.runId === selectedRunId)) {
+      setSelectedRunId(reconciliationQueue[0].runId);
+    }
+  }, [reconciliationQueue, selectedRunId]);
+
+  useEffect(() => {
+    setBreakQueue(data?.breakQueue ?? []);
+  }, [data?.breakQueue]);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") {
+      return;
+    }
+
+    let cancelled = false;
+    setBreakQueueLoading(true);
+    setBreakQueueError(null);
+
+    services.getBreakQueue()
+      .then((rows) => {
+        if (!cancelled) {
+          setBreakQueue(rows);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBreakQueue(data?.breakQueue ?? []);
+          setBreakQueueError(toErrorMessage(err, "Reconciliation break queue failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setBreakQueueLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [data?.breakQueue, services, workstream]);
+
+  useEffect(() => {
+    if (!selectedReconciliation || workstream !== "ledger") {
+      setTrialBalance([]);
+      setTrialBalanceError(null);
+      setTrialBalanceLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setTrialBalanceLoading(true);
+    setTrialBalanceError(null);
+
+    services.getTrialBalance(selectedReconciliation.runId)
+      .then((rows) => {
+        if (!cancelled) {
+          setTrialBalance(rows);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setTrialBalance([]);
+          setTrialBalanceError(toErrorMessage(err, "Trial balance failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTrialBalanceLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedReconciliation, services, workstream]);
+
+  const assignBreak = useCallback(async (breakId: string) => {
+    setBreakAction({ breakId, command: "assign" });
+    setBreakActionError(null);
+
+    try {
+      const updated = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      setBreakQueue((current) => replaceBreakQueueItem(current, updated));
+    } catch (err) {
+      setBreakActionError(toErrorMessage(err, "Break assignment failed."));
+    } finally {
+      setBreakAction(null);
+    }
+  }, [services]);
+
+  const resolveBreak = useCallback(async (
+    breakId: string,
+    status: ResolveReconciliationBreakRequest["status"]
+  ) => {
+    const command: ReconciliationBreakCommand = status === "Resolved" ? "resolve" : "dismiss";
+    setBreakAction({ breakId, command });
+    setBreakActionError(null);
+
+    try {
+      const updated = await services.resolveBreak({
+        breakId,
+        status,
+        resolvedBy: "ops.gov",
+        resolutionNote: "Reviewed in governance panel."
+      });
+      setBreakQueue((current) => replaceBreakQueueItem(current, updated));
+    } catch (err) {
+      setBreakActionError(toErrorMessage(err, "Break resolution failed."));
+    } finally {
+      setBreakAction(null);
+    }
+  }, [services]);
+
+  const breakQueueState = useMemo(
+    () => buildReconciliationBreakQueueState({
+      breakQueue,
+      loading: breakQueueLoading,
+      loadError: breakQueueError,
+      action: breakAction,
+      actionError: breakActionError
+    }),
+    [breakAction, breakActionError, breakQueue, breakQueueError, breakQueueLoading]
+  );
+
+  return {
+    reconciliationQueue,
+    selectedRunId,
+    selectedReconciliation,
+    selectRun: setSelectedRunId,
+    trialBalance,
+    trialBalanceLoading,
+    trialBalanceErrorText: trialBalanceError,
+    breakAction,
+    assignBreak,
+    resolveBreak,
+    ...breakQueueState
+  };
+}
+
 export function resolveGovernanceWorkstream(pathname: string): GovernanceWorkstream {
   if (pathname.startsWith("/reporting")) {
     return "reporting";
@@ -291,6 +508,95 @@ export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] |
   return conflicts?.filter((conflict) => conflict.status === "Open").length ?? 0;
 }
 
+export function buildReconciliationBreakQueueState({
+  breakQueue,
+  loading,
+  loadError,
+  action,
+  actionError
+}: {
+  breakQueue: ReconciliationBreakQueueItem[];
+  loading: boolean;
+  loadError: string | null;
+  action: ReconciliationBreakAction | null;
+  actionError: string | null;
+}): ReconciliationBreakQueueState {
+  const rows = buildReconciliationBreakRows(breakQueue, action);
+  const loadingText = loading ? "Loading reconciliation break queue..." : null;
+  const errorText = loadError
+    ? loadError.startsWith("Reconciliation break queue failed")
+      ? loadError
+      : `Reconciliation break queue failed: ${loadError}`
+    : null;
+  const actionErrorText = actionError
+    ? actionError.startsWith("Break ")
+      ? actionError
+      : `Break action failed: ${actionError}`
+    : null;
+
+  return {
+    rows,
+    hasBreaks: rows.length > 0,
+    loadingText,
+    emptyText: "No reconciliation breaks in the current queue.",
+    errorText,
+    actionErrorText,
+    statusAnnouncement: buildReconciliationBreakStatusAnnouncement({
+      loading,
+      action,
+      loadError: errorText,
+      actionError: actionErrorText,
+      breakCount: rows.length
+    })
+  };
+}
+
+export function buildReconciliationBreakRows(
+  breakQueue: ReconciliationBreakQueueItem[],
+  action: ReconciliationBreakAction | null
+): ReconciliationBreakRowViewModel[] {
+  return breakQueue.map((item) => {
+    const actionBusy = action?.breakId === item.breakId;
+    const assignBusy = actionBusy && action?.command === "assign";
+    const resolveBusy = actionBusy && action?.command === "resolve";
+    const dismissBusy = actionBusy && action?.command === "dismiss";
+
+    return {
+      ...item,
+      actionBusy,
+      assignLabel: assignBusy ? "Assigning..." : "Assign",
+      resolveLabel: resolveBusy ? "Resolving..." : "Resolve",
+      dismissLabel: dismissBusy ? "Dismissing..." : "Dismiss",
+      assignAriaLabel: `Assign reconciliation break ${item.breakId}`,
+      resolveAriaLabel: `Resolve reconciliation break ${item.breakId}`,
+      dismissAriaLabel: `Dismiss reconciliation break ${item.breakId}`,
+      canAssign: !action && item.status === "Open",
+      canResolve: !action && item.status !== "Resolved",
+      canDismiss: !action && item.status !== "Dismissed"
+    };
+  });
+}
+
+export function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["reconciliationQueue"][number]) {
+  if (item.reconciliationStatus === "Balanced") {
+    return "This run is currently balanced. Audit review should focus on evidence completeness and timing freshness rather than open break remediation.";
+  }
+
+  if (item.reconciliationStatus === "SecurityCoverageOpen") {
+    return "Break counts are secondary here. The main task is resolving Security Master coverage so downstream ledger and reporting workflows are trustworthy.";
+  }
+
+  if (item.reconciliationStatus === "Resolved") {
+    return "Historical breaks have been worked through, but the run still needs operator review before it can be treated as fully balanced.";
+  }
+
+  if (item.reconciliationStatus === "NotStarted") {
+    return "No reconciliation pass has been recorded yet. This run should be queued behind currently active governance review work.";
+  }
+
+  return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";
+}
+
 function buildSecurityStatusAnnouncement({
   searching,
   trimmedQuery,
@@ -337,6 +643,61 @@ function buildSecurityStatusAnnouncement({
   }
 
   return "";
+}
+
+function buildReconciliationBreakStatusAnnouncement({
+  loading,
+  action,
+  loadError,
+  actionError,
+  breakCount
+}: {
+  loading: boolean;
+  action: ReconciliationBreakAction | null;
+  loadError: string | null;
+  actionError: string | null;
+  breakCount: number;
+}): string {
+  if (loading) {
+    return "Loading reconciliation break queue.";
+  }
+
+  if (action?.command === "assign") {
+    return `Assigning reconciliation break ${action.breakId}.`;
+  }
+
+  if (action?.command === "resolve") {
+    return `Resolving reconciliation break ${action.breakId}.`;
+  }
+
+  if (action?.command === "dismiss") {
+    return `Dismissing reconciliation break ${action.breakId}.`;
+  }
+
+  if (actionError) {
+    return actionError;
+  }
+
+  if (loadError) {
+    return loadError;
+  }
+
+  if (breakCount === 0) {
+    return "No reconciliation breaks in the current queue.";
+  }
+
+  return `${breakCount} reconciliation ${breakCount === 1 ? "break" : "breaks"} loaded.`;
+}
+
+function replaceBreakQueueItem(
+  current: ReconciliationBreakQueueItem[],
+  updated: ReconciliationBreakQueueItem
+): ReconciliationBreakQueueItem[] {
+  if (!current.some((item) => item.breakId === updated.breakId)) {
+    return [updated, ...current];
+  }
+
+  return current.map((item) => (item.breakId === updated.breakId ? updated : item));
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

@@ -32,6 +32,7 @@ Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedCheckpoint.ps1')
 . (Join-Path $PSScriptRoot 'SharedPreflight.ps1')
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
+. (Join-Path $PSScriptRoot 'shared/retry.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
@@ -779,7 +780,7 @@ $resolvedOutputRoot = Resolve-RepoPath $outputRootInput
 $retentionDays = [int](Get-MeridianWorkflowProfileValue -Table $profileRetention -Key 'maxAgeDays' -Fallback 14)
 $retentionLatest = [int](Get-MeridianWorkflowProfileValue -Table $profileRetention -Key 'retainLatest' -Fallback 10)
 Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot -MaxAgeDays $retentionDays -RetainLatest $retentionLatest
-$buildIsolationKey = New-MeridianBuildIsolationKey -Prefix ("desktop-workflow-" + $Workflow)
+$buildIsolationKey = if ($SkipBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix ("desktop-workflow-" + $Workflow) }
 $resolvedScreenshotDirectory = if ($PSBoundParameters.ContainsKey('ScreenshotDirectory')) {
     Resolve-RepoPath $ScreenshotDirectory
 }

@@ -62,7 +62,8 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           )}
 
           <div className="overflow-x-auto rounded-lg border border-border/70">
-            <table className="min-w-full divide-y divide-border/60 text-left text-sm">
+            <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run library">
+              <caption className="sr-only">{vm.runTable.caption}</caption>
               <thead className="bg-secondary/30">
                 <tr>
                   {["", "Strategy", "Mode", "Engine", "Status", "P&L", "Sharpe", "Updated", ""].map((column, index) => (
@@ -71,37 +72,43 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {vm.runs.map((run) => (
+                {vm.runTable.hasRows ? vm.runTable.rows.map((run) => (
                   <tr key={run.id}>
                     <td className="px-3 py-2">
                       <input
                         type="checkbox"
-                        aria-label={`Select ${run.strategyName}`}
+                        aria-label={run.selectAriaLabel}
                         checked={vm.selectedIds.includes(run.id)}
                         onChange={() => vm.toggleRun(run.id)}
                       />
                     </td>
                     <td className="px-3 py-2 font-semibold">{run.strategyName}</td>
-                    <td className="px-3 py-2"><Badge variant={run.mode === "paper" ? "paper" : "outline"}>{run.mode.toUpperCase()}</Badge></td>
-                    <td className="px-3 py-2">{run.engine}</td>
-                    <td className="px-3 py-2">{run.status}</td>
-                    <td className="px-3 py-2 font-mono">{run.pnl}</td>
-                    <td className="px-3 py-2 font-mono">{run.sharpe}</td>
-                    <td className="px-3 py-2">{run.lastUpdated}</td>
+                    <td className="px-3 py-2"><Badge variant={run.mode === "paper" ? "paper" : "outline"}>{run.modeLabel}</Badge></td>
+                    <td className="px-3 py-2">{run.engineText}</td>
+                    <td className="px-3 py-2">{run.statusText}</td>
+                    <td className="px-3 py-2 font-mono">{run.pnlText}</td>
+                    <td className="px-3 py-2 font-mono">{run.sharpeText}</td>
+                    <td className="px-3 py-2">{run.lastUpdatedText}</td>
                     <td className="px-3 py-2">
-                      <Button size="sm" variant="outline" onClick={() => vm.openRunDetail(run)}>
+                      <Button size="sm" variant="outline" aria-label={run.openDetailLabel} onClick={() => vm.openRunDetail(run.raw)}>
                         Open
                       </Button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
+                      {vm.runTable.emptyText}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
 
-      {vm.comparison.length > 0 && (
+      {vm.showComparisonPanel && (
         <Card>
           <CardHeader>
             <CardTitle>Run comparison</CardTitle>
@@ -110,19 +117,26 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           <CardContent>
             <div className="overflow-x-auto rounded-lg border border-border/70">
               <table className="min-w-full divide-y divide-border/60 text-left text-sm">
+                <caption className="sr-only">{vm.comparisonTable.caption}</caption>
                 <thead className="bg-secondary/30">
                   <tr>{["Strategy", "Mode", "Status", "Sharpe", "Fills"].map((column) => <th key={column} className="px-3 py-2">{column}</th>)}</tr>
                 </thead>
                 <tbody>
-                  {vm.comparison.map((row) => (
+                  {vm.comparisonTable.hasRows ? vm.comparisonTable.rows.map((row) => (
                     <tr key={row.runId}>
                       <td className="px-3 py-2">{row.strategyName}</td>
-                      <td className="px-3 py-2">{row.mode}</td>
-                      <td className="px-3 py-2">{row.status}</td>
-                      <td className="px-3 py-2 font-mono">{row.sharpeRatio?.toFixed(3) ?? "n/a"}</td>
-                      <td className="px-3 py-2 font-mono">{row.fillCount}</td>
+                      <td className="px-3 py-2">{row.modeText}</td>
+                      <td className="px-3 py-2">{row.statusText}</td>
+                      <td className="px-3 py-2 font-mono">{row.sharpeRatioText}</td>
+                      <td className="px-3 py-2 font-mono">{row.fillCountText}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                        {vm.comparisonTable.emptyText}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -130,66 +144,86 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
         </Card>
       )}
 
-      {vm.runDiff && (
+      {vm.showDiffPanel && (
         <Card>
           <CardHeader>
-            <CardTitle>Position & parameter diff</CardTitle>
-            <CardDescription>{vm.runDiff.baseStrategyName} compared with {vm.runDiff.targetStrategyName}.</CardDescription>
+            <CardTitle>{vm.diffPanel.title}</CardTitle>
+            <CardDescription>{vm.diffPanel.description}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border border-border/70 p-4">
               <div className="text-sm font-semibold">Position changes</div>
               <ul className="mt-3 space-y-2 text-sm">
-                {[...vm.runDiff.addedPositions, ...vm.runDiff.removedPositions, ...vm.runDiff.modifiedPositions].map((item) => (
-                  <li key={`${item.symbol}-${item.changeType}`} className="font-mono">{item.symbol} {item.changeType}</li>
-                ))}
+                {vm.diffPanel.positionChanges.length > 0 ? vm.diffPanel.positionChanges.map((item) => (
+                  <li key={item.key} className="font-mono">{item.text}</li>
+                )) : (
+                  <li className="text-muted-foreground">{vm.diffPanel.positionEmptyText}</li>
+                )}
               </ul>
             </div>
             <div className="rounded-lg border border-border/70 p-4">
               <div className="text-sm font-semibold">Parameter changes</div>
               <ul className="mt-3 space-y-2 text-sm">
-                {vm.runDiff.parameterChanges.map((item) => (
+                {vm.diffPanel.parameterChanges.length > 0 ? vm.diffPanel.parameterChanges.map((item) => (
                   <li key={item.key} className="font-mono">
                     <span>{item.key}</span>
-                    <span>: {item.baseValue ?? "n/a"} {"->"} {item.targetValue ?? "n/a"}</span>
+                    <span>: {item.baseValueText} {"->"} {item.targetValueText}</span>
                   </li>
-                ))}
+                )) : (
+                  <li className="text-muted-foreground">{vm.diffPanel.parameterEmptyText}</li>
+                )}
               </ul>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {vm.promotionHistory.length > 0 && (
+      {vm.showPromotionHistoryPanel && (
         <Card>
           <CardHeader>
             <CardTitle>Promotion history</CardTitle>
             <CardDescription>Latest paper and live promotion decisions.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm">
-              {vm.promotionHistory.map((record) => (
-                <li key={record.promotionId} className="rounded-lg border border-border/70 p-3">
-                  <span className="font-semibold">{record.strategyName}</span>
-                  <span className="ml-3 font-mono">{record.qualifyingSharpe.toFixed(3)}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-x-auto rounded-lg border border-border/70">
+              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
+                <caption className="sr-only">{vm.promotionHistoryTable.caption}</caption>
+                <thead className="bg-secondary/30">
+                  <tr>{["Strategy", "Route", "Sharpe", "Promoted"].map((column) => <th key={column} className="px-3 py-2">{column}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {vm.promotionHistoryTable.hasRows ? vm.promotionHistoryTable.rows.map((record) => (
+                    <tr key={record.promotionId}>
+                      <td className="px-3 py-2 font-semibold">{record.strategyName}</td>
+                      <td className="px-3 py-2">{record.routeText}</td>
+                      <td className="px-3 py-2 font-mono">{record.qualifyingSharpeText}</td>
+                      <td className="px-3 py-2">{record.promotedAtText}</td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
+                        {vm.promotionHistoryTable.emptyText}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {vm.selectedRun && (
+      {vm.selectedRunDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4">
           <div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-lg border border-border bg-card p-5 shadow-workstation">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="eyebrow-label">Run detail</div>
-                <h2 className="mt-1 text-lg font-semibold">{vm.selectedRun.strategyName}</h2>
+                <h2 className="mt-1 text-lg font-semibold">{vm.selectedRunDetail.title}</h2>
               </div>
               <Button variant="ghost" size="sm" onClick={vm.closeRunDetail}>Close</Button>
             </div>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">{vm.selectedRun.notes}</p>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
           </div>
         </div>
       )}

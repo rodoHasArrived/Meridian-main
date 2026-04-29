@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildComparisonTable,
+  buildDiffPanel,
+  buildPromotionHistoryTable,
   buildResearchRunLibraryState,
+  buildRunDetail,
+  buildRunTable,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
 import type { PromotionRecord, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
@@ -125,6 +130,7 @@ describe("research-screen view model", () => {
     expect(state.canDiff).toBe(true);
     expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
     expect(state.selectionDetail).toBe("Ready to compare or diff the selected run pair.");
+    expect(state.runTable.rows[0].selectAriaLabel).toBe("Select Mean Reversion FX");
   });
 
   it("derives busy labels, errors, and result announcements", () => {
@@ -181,5 +187,58 @@ describe("research-screen view model", () => {
     });
 
     expect(diffed.statusAnnouncement).toBe("Run diff ready for Mean Reversion FX and Index Momentum.");
+  });
+
+  it("derives result table captions, empty copy, and unavailable placeholders", () => {
+    const runTable = buildRunTable([]);
+    expect(runTable.caption).toBe("Strategy runs available for compare, diff, and detail review.");
+    expect(runTable.emptyText).toContain("No strategy runs available");
+
+    const comparisonTable = buildComparisonTable([
+      {
+        ...comparison[0],
+        sharpeRatio: null,
+        fillCount: Number.NaN
+      }
+    ]);
+    expect(comparisonTable.caption).toBe("Run comparison results returned by the workstation API.");
+    expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
+    expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
+    expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
+
+    const emptyDiff = buildDiffPanel(diff);
+    expect(emptyDiff.positionEmptyText).toBe("No position changes returned for this diff.");
+    expect(emptyDiff.parameterEmptyText).toBe("No parameter changes returned for this diff.");
+
+    const historyTable = buildPromotionHistoryTable(history);
+    expect(historyTable.rows[0].routeText).toBe("backtest to paper");
+    expect(historyTable.rows[0].qualifyingSharpeText).toBe("1.820");
+    expect(buildPromotionHistoryTable([]).emptyText).toBe("No promotion history records returned.");
+  });
+
+  it("tracks empty command result panels after successful commands return no rows", () => {
+    const compared = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      comparisonLoaded: true,
+      runDiffLoaded: false,
+      promotionHistoryLoaded: true,
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(compared.showComparisonPanel).toBe(true);
+    expect(compared.comparisonTable.hasRows).toBe(false);
+    expect(compared.showPromotionHistoryPanel).toBe(true);
+    expect(compared.promotionHistoryTable.emptyText).toBe("No promotion history records returned.");
+    expect(compared.statusAnnouncement).toBe("No comparison rows returned for the selected pair.");
+  });
+
+  it("derives modal detail copy with unavailable fallback", () => {
+    expect(buildRunDetail({ ...runs[0], notes: "  " }).notesText).toBe("Unavailable");
   });
 });

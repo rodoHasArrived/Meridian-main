@@ -54,14 +54,19 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
 
+        script.Should().Contain("$buildIsolationKey = if ($SkipBuild) { '' } else { New-MeridianBuildIsolationKey");
         script.Should().Contain("$desktopRestoreArgs = @(");
         script.Should().Contain("$desktopBuildArgs = @(");
         script.Should().Contain("-AdditionalProperties @(\"Configuration=$resolvedConfiguration\")");
         script.Should().Contain("& dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs");
         script.Should().Contain("& dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs");
 
+        var isolationIndex = script.IndexOf("$buildIsolationKey = if ($SkipBuild)", StringComparison.Ordinal);
+        var exePathIndex = script.IndexOf("$exePath = Get-MeridianProjectBinaryPath", StringComparison.Ordinal);
         var restoreArgsStart = script.IndexOf("$desktopRestoreArgs = @(", StringComparison.Ordinal);
         var buildArgsStart = script.IndexOf("$desktopBuildArgs = @(", StringComparison.Ordinal);
+        isolationIndex.Should().BeGreaterThan(0);
+        exePathIndex.Should().BeGreaterThan(isolationIndex);
         script.Substring(restoreArgsStart, buildArgsStart - restoreArgsStart).Should().NotContain("-TargetFramework");
         script[buildArgsStart..].Should().Contain("-TargetFramework $resolvedFramework");
     }
@@ -77,6 +82,8 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("Start-MeridianCheckpointStep -Context $checkpoint");
         script.Should().Contain("Complete-MeridianCheckpointStep -Context $checkpoint");
         script.Should().Contain("Fail-MeridianCheckpointStep -Context $checkpoint");
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
+        script.Should().Contain("Invoke-MeridianRetry");
         script.Should().Contain("Test-MeridianDictionaryContainsKey -Dictionary $checkpoint.Data.metadata -Key 'runDirectory'");
         script.Should().Contain("Test-MeridianDictionaryContainsKey -Dictionary $StageData -Key 'outputs'");
         script.Should().Contain("Test-MeridianDictionaryContainsKey -Dictionary $outputs -Key 'requiredFiles'");
@@ -89,6 +96,21 @@ public sealed class DesktopWorkflowScriptTests
 
         importIndex.Should().BeGreaterThan(0);
         initializeIndex.Should().BeGreaterThan(importIndex);
+    }
+
+    [Fact]
+    public void CaptureDesktopScreenshotsScript_ShouldImportRetryHelperBeforeCapture()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\capture-desktop-screenshots.ps1"));
+
+        script.Should().Contain(". (Join-Path $PSScriptRoot 'shared/retry.ps1')");
+        script.Should().Contain("Invoke-MeridianRetry");
+
+        var importIndex = script.IndexOf(". (Join-Path $PSScriptRoot 'shared/retry.ps1')", StringComparison.Ordinal);
+        var retryIndex = script.IndexOf("Invoke-MeridianRetry", StringComparison.Ordinal);
+
+        importIndex.Should().BeGreaterThan(0);
+        retryIndex.Should().BeGreaterThan(importIndex);
     }
 
     [Fact]

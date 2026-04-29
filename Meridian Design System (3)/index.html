@@ -100,6 +100,7 @@
         <div class="links">
           <a class="link-chip primary" href="INSPIRATION_BRIEF.md">Inspiration brief</a>
           <a class="link-chip" href="preview/institutional-workstation.html">Workstation preview</a>
+          <a class="link-chip" href="preview/component-state-matrix.html">State matrix</a>
           <a class="link-chip" href="colors_and_type.css">Token CSS</a>
         </div>
       </div>
@@ -139,7 +140,15 @@
       </div>
     </div>
 
-    <h2 class="sec"><span>System notes</span><span class="idx">03 / 04</span></h2>
+    <h2 class="sec"><span>Implementation Guides</span><span class="idx">03 / 05</span></h2>
+    <div class="docs">
+      <a href="preview/component-state-matrix.html"><div class="n">§4 · STATES</div><div class="t">Component state matrix</div><div class="d">Badges, banners, KPIs, toolbar chips, nav rows, tables, inputs, buttons, and entity fields.</div></a>
+      <a href="preview/screen-recipes.html"><div class="n">§5 · RECIPES</div><div class="t">Workspace screen recipes</div><div class="d">Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings implementation recipes.</div></a>
+      <a href="preview/chart-table-standards.html"><div class="n">§6 · EVIDENCE</div><div class="t">Chart &amp; table standards</div><div class="d">Projection, scatter, order-book, dense table, status-window, and row-detail patterns.</div></a>
+      <a href="scripts/check_design_system_governance.py"><div class="n">§7 · GOVERNANCE</div><div class="t">Token governance</div><div class="d">Local script for links, tokens, workspace names, radii, gradients, and table numerics.</div></a>
+    </div>
+
+    <h2 class="sec"><span>System notes</span><span class="idx">04 / 05</span></h2>
 
     <div class="system">
       <div class="lead">Palette</div>
@@ -158,12 +167,12 @@
       <div class="body">Use <code>.workstation-frame</code>, <code>.workstation-masthead</code>, <code>.operator-rail</code>, <code>.toolbar-strip</code>, <code>.metric-strip</code>, <code>.split-workbench</code>, <code>.dense-table</code>, and <code>.entity-summary</code> for image-inspired operator pages. Summary metrics must connect to chart/table/detail evidence.</div>
     </div>
 
-    <h2 class="sec"><span>Kits</span><span class="idx">04 / 04</span></h2>
+    <h2 class="sec"><span>Kits</span><span class="idx">05 / 05</span></h2>
     <div class="docs">
       <a href="colors_and_type.css"><div class="n">§4 · TOKENS</div><div class="t">colors_and_type.css</div><div class="d">CSS variables, typography, state classes, workstation primitives.</div></a>
       <a href="ui_kits/dashboard/README.md"><div class="n">§5 · REACT</div><div class="t">Dashboard kit</div><div class="d">JSX primitives for panels, buttons, badges, metrics, dense tables, and workstation shell.</div></a>
       <a href="preview/institutional-workstation.html"><div class="n">§6 · PREVIEW</div><div class="t">Institutional workstation</div><div class="d">Image-inspired masthead, rail, KPI strip, dense table, and entity inspector.</div></a>
-      <a href="preview/design-standards.html"><div class="n">§7 · STANDARDS</div><div class="t">Design standards</div><div class="d">Rules for tokens, data density, state patterns, and command surfaces.</div></a>
+      <a href="tests/test_design_system_governance.py"><div class="n">§8 · TESTS</div><div class="t">Governance tests</div><div class="d">Regression coverage for local links, raw hex, workspace names, and table numerics.</div></a>
     </div>
 
     <footer>

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import { useDataOperationsViewModel } from "@/screens/data-operations-screen.view-model";
 import type { BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
+import type { DataOperationsEmptyState } from "@/screens/data-operations-screen.view-model";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
@@ -52,7 +53,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </CardContent>
         </Card>
 
-        {vm.selectedBackfill && vm.selectedBackfillNarrative && (
+        {vm.selectedBackfill && vm.selectedBackfillNarrative ? (
           <Card className="bg-panel-strong text-slate-50">
             <CardHeader>
               <div className="eyebrow-label">Backfill Detail</div>
@@ -65,34 +66,44 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
               <DetailRow label="Progress" value={vm.selectedBackfill.progress} />
             </CardContent>
           </Card>
-        )}
+        ) : vm.backfillDetailEmptyState ? (
+          <Card>
+            <CardHeader>
+              <div className="eyebrow-label">Backfill Detail</div>
+              <CardTitle>{vm.backfillDetailEmptyState.title}</CardTitle>
+              <CardDescription>{vm.backfillDetailEmptyState.description}</CardDescription>
+            </CardHeader>
+          </Card>
+        ) : null}
       </section>
 
       <section className="grid gap-4 xl:grid-cols-3">
-        <Card>
+        <Card aria-labelledby="data-provider-health-title">
           <CardHeader>
-            <CardTitle>Provider health</CardTitle>
+            <CardTitle id="data-provider-health-title">Provider health</CardTitle>
             <CardDescription>Current data-source posture.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {data.providers.map((provider) => (
-              <div key={provider.provider} className="rounded-lg border border-border/70 p-3">
+            {vm.providerSection.hasRows ? vm.providerSection.rows.map((provider) => (
+              <div key={provider.provider} role="group" className="rounded-lg border border-border/70 p-3" aria-label={provider.ariaLabel}>
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-semibold">{provider.provider}</span>
-                  <span className={cn("font-mono text-xs", provider.status === "Healthy" ? "text-success" : "text-warning")}>{provider.status}</span>
+                  <span className={cn("font-mono text-xs", provider.statusTone === "success" ? "text-success" : "text-warning")}>{provider.status}</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{provider.capability}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{provider.note}</p>
               </div>
-            ))}
+            )) : (
+              <EmptyState state={vm.providerSection.emptyState} />
+            )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card aria-labelledby="data-backfill-queue-title">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle>Backfill queue</CardTitle>
+                <CardTitle id="data-backfill-queue-title">Backfill queue</CardTitle>
                 <CardDescription>Run or inspect historical repairs.</CardDescription>
               </div>
               <Button size="sm" onClick={vm.openBackfillDialog}>
@@ -101,13 +112,14 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {data.backfills.map((backfill) => (
+            {vm.backfillSection.hasRows ? vm.backfillSection.rows.map((backfill) => (
               <button
                 key={backfill.jobId}
                 type="button"
+                aria-label={backfill.ariaLabel}
                 className={cn(
                   "w-full rounded-lg border px-3 py-3 text-left text-sm",
-                  vm.selectedBackfill?.jobId === backfill.jobId ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/25"
+                  backfill.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/25"
                 )}
                 onClick={() => vm.selectBackfill(backfill.jobId)}
               >
@@ -117,25 +129,29 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                 </div>
                 <p className="mt-1 text-muted-foreground">{backfill.scope}</p>
               </button>
-            ))}
+            )) : (
+              <EmptyState state={vm.backfillSection.emptyState} />
+            )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card aria-labelledby="data-recent-exports-title">
           <CardHeader>
-            <CardTitle>Recent exports</CardTitle>
+            <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
             <CardDescription>Latest package and reporting outputs.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {data.exports.map((item) => (
-              <div key={item.exportId} className="rounded-lg border border-border/70 p-3">
+            {vm.exportSection.hasRows ? vm.exportSection.rows.map((item) => (
+              <div key={item.exportId} role="group" className="rounded-lg border border-border/70 p-3" aria-label={item.ariaLabel}>
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-semibold">{item.profile}</span>
                   <span className="font-mono text-xs">{item.status}</span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{item.target} · {item.rows}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{item.summaryText}</p>
               </div>
-            ))}
+            )) : (
+              <EmptyState state={vm.exportSection.emptyState} />
+            )}
           </CardContent>
         </Card>
       </section>
@@ -230,6 +246,15 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function EmptyState({ state }: { state: DataOperationsEmptyState }) {
+  return (
+    <div role="status" className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4">
+      <div className="text-sm font-semibold">{state.title}</div>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{state.description}</p>
     </div>
   );
 }

@@ -228,4 +228,50 @@ describe("GovernanceScreen", () => {
 
     expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
   });
+
+  it("assigns reconciliation breaks through the view model workflow", async () => {
+    const user = userEvent.setup();
+    const updatedBreak = {
+      ...data.breakQueue[0],
+      status: "InReview" as const,
+      assignedTo: "ops.gov",
+      reviewedBy: "ops.gov",
+      reviewedAt: "2026-01-01T00:05:00Z"
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(updatedBreak);
+
+    render(
+      <MemoryRouter initialEntries={["/accounting/reconciliation"]}>
+        <GovernanceScreen data={data} />
+      </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
+
+    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({
+      breakId: "run-42:cash",
+      assignedTo: "ops.gov",
+      reviewedBy: "ops.gov"
+    });
+    expect(await screen.findByText("InReview")).toBeInTheDocument();
+  });
+
+  it("announces reconciliation break action failures", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new Error("Ledger write rejected"));
+
+    render(
+      <MemoryRouter initialEntries={["/accounting/reconciliation"]}>
+        <GovernanceScreen data={data} />
+      </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Break action failed: Ledger write rejected");
+  });
 });

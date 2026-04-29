@@ -1,26 +1,17 @@
 import { BookCheck, Landmark, Search, ShieldCheck, WalletCards } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getReconciliationBreakQueue,
-  getRunTrialBalance,
-  resolveReconciliationBreak,
-  reviewReconciliationBreak
-} from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
+  buildReconciliationNarrative,
   resolveGovernanceWorkstream,
-  resolveSelectedReconciliation,
+  useGovernanceReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
-import type {
-  GovernanceWorkspaceResponse,
-  ReconciliationBreakQueueItem
-} from "@/types";
+import type { GovernanceWorkspaceResponse } from "@/types";
 
 interface GovernanceScreenProps {
   data: GovernanceWorkspaceResponse | null;
@@ -57,53 +48,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const { pathname } = useLocation();
   const workstream = resolveGovernanceWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const selectedReconciliation = resolveSelectedReconciliation(data?.reconciliationQueue ?? [], selectedRunId);
+  const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
+  const selectedReconciliation = reconciliation.selectedReconciliation;
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
-
-  useEffect(() => {
-    if (!data || selectedRunId || data.reconciliationQueue.length === 0) {
-      return;
-    }
-
-    setSelectedRunId(data.reconciliationQueue[0].runId);
-  }, [data, selectedRunId]);
-
-  const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>([]);
-  const [breakActionId, setBreakActionId] = useState<string | null>(null);
-  const [trialBalance, setTrialBalance] = useState<Array<{ accountName: string; accountType: string; balance: number; entryCount: number }>>([]);
-
-  useEffect(() => {
-    if (workstream !== "reconciliation") return;
-    getReconciliationBreakQueue().then(setBreakQueue).catch(() => setBreakQueue(data?.breakQueue ?? []));
-  }, [workstream, data?.breakQueue]);
-
-  useEffect(() => {
-    if (!selectedReconciliation || workstream !== "ledger") return;
-    getRunTrialBalance(selectedReconciliation.runId)
-      .then((rows) => setTrialBalance(rows))
-      .catch(() => setTrialBalance([]));
-  }, [selectedReconciliation, workstream]);
-
-  async function handleAssignBreak(breakId: string) {
-    setBreakActionId(breakId);
-    try {
-      const updated = await reviewReconciliationBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
-      setBreakQueue((prev) => prev.map((item) => (item.breakId === breakId ? updated : item)));
-    } finally {
-      setBreakActionId(null);
-    }
-  }
-
-  async function handleResolveBreak(breakId: string, status: "Resolved" | "Dismissed") {
-    setBreakActionId(breakId);
-    try {
-      const updated = await resolveReconciliationBreak({ breakId, status, resolvedBy: "ops.gov", resolutionNote: "Reviewed in governance panel." });
-      setBreakQueue((prev) => prev.map((item) => (item.breakId === breakId ? updated : item)));
-    } finally {
-      setBreakActionId(null);
-    }
-  }
 
   if (!data) {
     return (
@@ -187,7 +134,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 <button
                   key={item.runId}
                   type="button"
-                  onClick={() => setSelectedRunId(item.runId)}
+                  onClick={() => reconciliation.selectRun(item.runId)}
                   className={cn(
                     "w-full rounded-xl border px-4 py-4 text-left transition-colors",
                     item.runId === selectedReconciliation.runId
@@ -253,7 +200,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                     <tr>{["Account", "Type", "Balance", "Entries"].map((c) => <th key={c} className="px-3 py-2">{c}</th>)}</tr>
                   </thead>
                   <tbody className="divide-y divide-border/50">
-                    {trialBalance.map((line) => (
+                    {reconciliation.trialBalance.map((line) => (
                       <tr key={`${line.accountName}-${line.accountType}`}>
                         <td className="px-3 py-2">{line.accountName}</td>
                         <td className="px-3 py-2 font-mono">{line.accountType}</td>
@@ -264,6 +211,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   </tbody>
                 </table>
               </div>
+              {reconciliation.trialBalanceLoading && (
+                <p role="status" className="mt-3 text-sm text-muted-foreground">Loading trial balance...</p>
+              )}
+              {reconciliation.trialBalanceErrorText && (
+                <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {reconciliation.trialBalanceErrorText}
+                </div>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -609,7 +564,26 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <CardDescription>Review/resolve workflow with assignment and audit metadata.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {breakQueue.map((item) => (
+              <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
+              {reconciliation.loadingText && (
+                <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
+              )}
+              {reconciliation.errorText && (
+                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {reconciliation.errorText}
+                </div>
+              )}
+              {reconciliation.actionErrorText && (
+                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {reconciliation.actionErrorText}
+                </div>
+              )}
+              {!reconciliation.loadingText && !reconciliation.hasBreaks && (
+                <p className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                  {reconciliation.emptyText}
+                </p>
+              )}
+              {reconciliation.rows.map((item) => (
                 <div key={item.breakId} className="rounded-lg border border-border/70 p-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -619,9 +593,33 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                     <div className="font-mono text-xs">{item.status}</div>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" disabled={breakActionId === item.breakId || item.status !== "Open"} onClick={() => void handleAssignBreak(item.breakId)}>Assign</Button>
-                    <Button size="sm" variant="outline" disabled={breakActionId === item.breakId || item.status === "Resolved"} onClick={() => void handleResolveBreak(item.breakId, "Resolved")}>Resolve</Button>
-                    <Button size="sm" variant="ghost" disabled={breakActionId === item.breakId || item.status === "Dismissed"} onClick={() => void handleResolveBreak(item.breakId, "Dismissed")}>Dismiss</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!item.canAssign}
+                      aria-label={item.assignAriaLabel}
+                      onClick={() => void reconciliation.assignBreak(item.breakId)}
+                    >
+                      {item.assignLabel}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!item.canResolve}
+                      aria-label={item.resolveAriaLabel}
+                      onClick={() => void reconciliation.resolveBreak(item.breakId, "Resolved")}
+                    >
+                      {item.resolveLabel}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!item.canDismiss}
+                      aria-label={item.dismissAriaLabel}
+                      onClick={() => void reconciliation.resolveBreak(item.breakId, "Dismissed")}
+                    >
+                      {item.dismissLabel}
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -663,24 +661,4 @@ function GovernanceValue({ label, value, tone }: { label: string; value: string;
 function formatCurrency(value: number) {
   const prefix = value >= 0 ? "$" : "-$";
   return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-}
-
-function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["reconciliationQueue"][number]) {
-  if (item.reconciliationStatus === "Balanced") {
-    return "This run is currently balanced. Audit review should focus on evidence completeness and timing freshness rather than open break remediation.";
-  }
-
-  if (item.reconciliationStatus === "SecurityCoverageOpen") {
-    return "Break counts are secondary here. The main task is resolving Security Master coverage so downstream ledger and reporting workflows are trustworthy.";
-  }
-
-  if (item.reconciliationStatus === "Resolved") {
-    return "Historical breaks have been worked through, but the run still needs operator review before it can be treated as fully balanced.";
-  }
-
-  if (item.reconciliationStatus === "NotStarted") {
-    return "No reconciliation pass has been recorded yet. This run should be queued behind currently active governance review work.";
-  }
-
-  return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";
 }

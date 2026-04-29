@@ -18,12 +18,20 @@ export interface ResearchRunLibraryServices {
 
 export interface ResearchRunLibraryState {
   runs: ResearchRunRecord[];
+  runTable: ResearchResultTableState<ResearchRunTableRow>;
   selectedIds: string[];
   selectedRuns: ResearchRunRecord[];
   selectedRun: ResearchRunRecord | null;
+  selectedRunDetail: ResearchRunDetailState | null;
   comparison: RunComparisonRow[];
+  comparisonTable: ResearchResultTableState<ResearchComparisonTableRow>;
   runDiff: RunDiff | null;
+  diffPanel: ResearchDiffPanelState;
   promotionHistory: PromotionRecord[];
+  promotionHistoryTable: ResearchResultTableState<ResearchPromotionHistoryRow>;
+  showComparisonPanel: boolean;
+  showDiffPanel: boolean;
+  showPromotionHistoryPanel: boolean;
   activeCommand: ResearchCommand | null;
   actionError: string | null;
   canCompare: boolean;
@@ -35,6 +43,70 @@ export interface ResearchRunLibraryState {
   diffButtonLabel: string;
   promotionHistoryButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchResultTableState<T> {
+  rows: T[];
+  hasRows: boolean;
+  caption: string;
+  emptyText: string;
+}
+
+export interface ResearchRunTableRow {
+  id: string;
+  strategyName: string;
+  engineText: string;
+  mode: ResearchRunRecord["mode"];
+  modeLabel: string;
+  statusText: string;
+  pnlText: string;
+  sharpeText: string;
+  lastUpdatedText: string;
+  selectAriaLabel: string;
+  openDetailLabel: string;
+  raw: ResearchRunRecord;
+}
+
+export interface ResearchRunDetailState {
+  title: string;
+  notesText: string;
+}
+
+export interface ResearchComparisonTableRow {
+  runId: string;
+  strategyName: string;
+  modeText: string;
+  statusText: string;
+  sharpeRatioText: string;
+  fillCountText: string;
+}
+
+export interface ResearchDiffChangeRow {
+  key: string;
+  text: string;
+}
+
+export interface ResearchParameterChangeRow {
+  key: string;
+  baseValueText: string;
+  targetValueText: string;
+}
+
+export interface ResearchDiffPanelState {
+  title: string;
+  description: string;
+  positionChanges: ResearchDiffChangeRow[];
+  parameterChanges: ResearchParameterChangeRow[];
+  positionEmptyText: string;
+  parameterEmptyText: string;
+}
+
+export interface ResearchPromotionHistoryRow {
+  promotionId: string;
+  strategyName: string;
+  qualifyingSharpeText: string;
+  routeText: string;
+  promotedAtText: string;
 }
 
 const defaultResearchServices: ResearchRunLibraryServices = {
@@ -52,6 +124,9 @@ export function useResearchRunLibraryViewModel(
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
+  const [comparisonLoaded, setComparisonLoaded] = useState(false);
+  const [runDiffLoaded, setRunDiffLoaded] = useState(false);
+  const [promotionHistoryLoaded, setPromotionHistoryLoaded] = useState(false);
   const [activeCommand, setActiveCommand] = useState<ResearchCommand | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -65,10 +140,25 @@ export function useResearchRunLibraryViewModel(
       comparison,
       runDiff,
       promotionHistory,
+      comparisonLoaded,
+      runDiffLoaded,
+      promotionHistoryLoaded,
       activeCommand,
       actionError
     }),
-    [actionError, activeCommand, comparison, promotionHistory, runDiff, runs, selectedIds, selectedRun]
+    [
+      actionError,
+      activeCommand,
+      comparison,
+      comparisonLoaded,
+      promotionHistory,
+      promotionHistoryLoaded,
+      runDiff,
+      runDiffLoaded,
+      runs,
+      selectedIds,
+      selectedRun
+    ]
   );
 
   const toggleRun = useCallback((runId: string) => {
@@ -91,6 +181,7 @@ export function useResearchRunLibraryViewModel(
     try {
       const rows = await services.getPromotionHistory();
       setPromotionHistory(rows);
+      setPromotionHistoryLoaded(true);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Promotion history failed.");
     } finally {
@@ -111,6 +202,8 @@ export function useResearchRunLibraryViewModel(
       const rows = await services.compareRuns(selectedIds);
       setComparison(rows);
       setRunDiff(null);
+      setComparisonLoaded(true);
+      setRunDiffLoaded(false);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Run comparison failed.");
     } finally {
@@ -131,6 +224,8 @@ export function useResearchRunLibraryViewModel(
       const result = await services.diffRuns(selectedIds[0], selectedIds[1]);
       setRunDiff(result);
       setComparison([]);
+      setRunDiffLoaded(true);
+      setComparisonLoaded(false);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Run diff failed.");
     } finally {
@@ -156,6 +251,9 @@ export function buildResearchRunLibraryState({
   comparison,
   runDiff,
   promotionHistory,
+  comparisonLoaded = false,
+  runDiffLoaded = false,
+  promotionHistoryLoaded = false,
   activeCommand,
   actionError
 }: {
@@ -165,6 +263,9 @@ export function buildResearchRunLibraryState({
   comparison: RunComparisonRow[];
   runDiff: RunDiff | null;
   promotionHistory: PromotionRecord[];
+  comparisonLoaded?: boolean;
+  runDiffLoaded?: boolean;
+  promotionHistoryLoaded?: boolean;
   activeCommand: ResearchCommand | null;
   actionError: string | null;
 }): ResearchRunLibraryState {
@@ -173,15 +274,27 @@ export function buildResearchRunLibraryState({
     .filter((run): run is ResearchRunRecord => run !== undefined);
   const hasTwoRuns = selectedIds.length === 2;
   const busy = activeCommand !== null;
+  const runTable = buildRunTable(runs);
+  const comparisonTable = buildComparisonTable(comparison);
+  const diffPanel = buildDiffPanel(runDiff);
+  const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory);
 
   return {
     runs,
+    runTable,
     selectedIds,
     selectedRuns,
     selectedRun,
+    selectedRunDetail: selectedRun ? buildRunDetail(selectedRun) : null,
     comparison,
+    comparisonTable,
     runDiff,
+    diffPanel,
     promotionHistory,
+    promotionHistoryTable,
+    showComparisonPanel: comparisonLoaded || comparison.length > 0,
+    showDiffPanel: runDiffLoaded || runDiff !== null,
+    showPromotionHistoryPanel: promotionHistoryLoaded || promotionHistory.length > 0,
     activeCommand,
     actionError,
     canCompare: hasTwoRuns && !busy,
@@ -199,8 +312,110 @@ export function buildResearchRunLibraryState({
       actionError,
       comparison,
       runDiff,
-      promotionHistory
+      promotionHistory,
+      comparisonLoaded,
+      runDiffLoaded,
+      promotionHistoryLoaded
     })
+  };
+}
+
+export function buildRunTable(runs: ResearchRunRecord[]): ResearchResultTableState<ResearchRunTableRow> {
+  return {
+    rows: runs.map((run) => ({
+      id: run.id,
+      strategyName: formatText(run.strategyName),
+      engineText: formatText(run.engine),
+      mode: run.mode,
+      modeLabel: formatText(run.mode).toUpperCase(),
+      statusText: formatText(run.status),
+      pnlText: formatText(run.pnl),
+      sharpeText: formatText(run.sharpe),
+      lastUpdatedText: formatText(run.lastUpdated),
+      selectAriaLabel: `Select ${formatText(run.strategyName)}`,
+      openDetailLabel: `Open ${formatText(run.strategyName)} run detail`,
+      raw: run
+    })),
+    hasRows: runs.length > 0,
+    caption: "Strategy runs available for compare, diff, and detail review.",
+    emptyText: "No strategy runs available. Start a backtest or paper session, then refresh Strategy."
+  };
+}
+
+export function buildComparisonTable(
+  comparison: RunComparisonRow[]
+): ResearchResultTableState<ResearchComparisonTableRow> {
+  return {
+    rows: comparison.map((row) => ({
+      runId: row.runId,
+      strategyName: formatText(row.strategyName),
+      modeText: formatText(row.mode),
+      statusText: formatText(row.status),
+      sharpeRatioText: formatNullableNumber(row.sharpeRatio, 3),
+      fillCountText: Number.isFinite(row.fillCount) ? row.fillCount.toLocaleString() : "Unavailable"
+    })),
+    hasRows: comparison.length > 0,
+    caption: "Run comparison results returned by the workstation API.",
+    emptyText: "No comparison rows returned for the selected pair."
+  };
+}
+
+export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState {
+  if (!runDiff) {
+    return {
+      title: "Position & parameter diff",
+      description: "No run diff has been loaded for the selected pair.",
+      positionChanges: [],
+      parameterChanges: [],
+      positionEmptyText: "No position diff result is available.",
+      parameterEmptyText: "No parameter diff result is available."
+    };
+  }
+
+  const positionChanges = [
+    ...runDiff.addedPositions,
+    ...runDiff.removedPositions,
+    ...runDiff.modifiedPositions
+  ].map((item) => ({
+    key: `${item.symbol}-${item.changeType}`,
+    text: `${formatText(item.symbol)} ${item.changeType}`
+  }));
+
+  return {
+    title: "Position & parameter diff",
+    description: `${runDiff.baseStrategyName} compared with ${runDiff.targetStrategyName}.`,
+    positionChanges,
+    parameterChanges: runDiff.parameterChanges.map((item) => ({
+      key: item.key,
+      baseValueText: formatText(item.baseValue),
+      targetValueText: formatText(item.targetValue)
+    })),
+    positionEmptyText: "No position changes returned for this diff.",
+    parameterEmptyText: "No parameter changes returned for this diff."
+  };
+}
+
+export function buildPromotionHistoryTable(
+  promotionHistory: PromotionRecord[]
+): ResearchResultTableState<ResearchPromotionHistoryRow> {
+  return {
+    rows: promotionHistory.map((record) => ({
+      promotionId: record.promotionId,
+      strategyName: formatText(record.strategyName),
+      qualifyingSharpeText: formatNullableNumber(record.qualifyingSharpe, 3),
+      routeText: `${formatText(record.sourceRunType)} to ${formatText(record.targetRunType)}`,
+      promotedAtText: formatText(record.promotedAt)
+    })),
+    hasRows: promotionHistory.length > 0,
+    caption: "Promotion history decisions returned for Strategy runs.",
+    emptyText: "No promotion history records returned."
+  };
+}
+
+export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
+  return {
+    title: formatText(run.strategyName),
+    notesText: formatText(run.notes)
   };
 }
 
@@ -224,18 +439,35 @@ function buildSelectionText(selectedRuns: ResearchRunRecord[]): string {
   return `${selectedRuns[0].strategyName} vs ${selectedRuns[1].strategyName}`;
 }
 
+function formatText(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : "Unavailable";
+}
+
+function formatNullableNumber(value: number | null | undefined, digits: number): string {
+  return typeof value === "number" && Number.isFinite(value)
+    ? value.toFixed(digits)
+    : "Unavailable";
+}
+
 function buildResearchStatusAnnouncement({
   activeCommand,
   actionError,
   comparison,
   runDiff,
-  promotionHistory
+  promotionHistory,
+  comparisonLoaded = false,
+  runDiffLoaded = false,
+  promotionHistoryLoaded = false
 }: {
   activeCommand: ResearchCommand | null;
   actionError: string | null;
   comparison: RunComparisonRow[];
   runDiff: RunDiff | null;
   promotionHistory: PromotionRecord[];
+  comparisonLoaded?: boolean;
+  runDiffLoaded?: boolean;
+  promotionHistoryLoaded?: boolean;
 }): string {
   if (activeCommand === "compare") {
     return "Comparing selected research runs.";
@@ -257,12 +489,24 @@ function buildResearchStatusAnnouncement({
     return `Run diff ready for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}.`;
   }
 
+  if (runDiffLoaded) {
+    return "No run diff returned for the selected pair.";
+  }
+
   if (comparison.length > 0) {
     return `${comparison.length} comparison ${comparison.length === 1 ? "row" : "rows"} loaded.`;
   }
 
+  if (comparisonLoaded) {
+    return "No comparison rows returned for the selected pair.";
+  }
+
   if (promotionHistory.length > 0) {
     return `${promotionHistory.length} promotion history ${promotionHistory.length === 1 ? "record" : "records"} loaded.`;
+  }
+
+  if (promotionHistoryLoaded) {
+    return "No promotion history records returned.";
   }
 
   return "";

@@ -34,7 +34,12 @@ You don't need access to the repo to use this design system — everything is co
 - **`assets/brand/`** — Meridian logo marks, wordmark, tile
 - **`assets/icons/`** — 47 custom 24×24 stroke icons
 - **`preview/`** — Design System review cards
+- **`preview/component-state-matrix.html`** — component states across operator state semantics
+- **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff
+- **`preview/chart-table-standards.html`** — chart, dense-table, status-window, and row-detail standards
 - **`ui_kits/dashboard/`** — React component kit for the web dashboard
+- **`scripts/check_design_system_governance.py`** — local governance checks for links, tokens, workspace names, radii, gradients, and table numerics
+- **`tests/test_design_system_governance.py`** — unittest coverage for the governance script
 - **`SKILL.md`** — skill manifest for using this as a Claude Skill
 - **`INSPIRATION_BRIEF.md`** — image-derived guidance from uploaded workstation, custody, reporting, charting, and security-master references
 - **`CONTENT_FUNDAMENTALS.md`** — voice, tone, copy rules
@@ -83,6 +88,21 @@ The `uploads/` folder is a reference board for this package. It contains:
 
 Use those images to refine structure and density. Do not copy third-party branding, labels, marks,
 or product-specific layouts. Meridian keeps its own navy/cyan semantic system and operator copy.
+
+---
+
+## Governance checks
+
+Run these before promoting design-system changes:
+
+```bash
+python "Meridian Design System (3)/scripts/check_design_system_governance.py"
+python -m unittest "Meridian Design System (3)/tests/test_design_system_governance.py"
+```
+
+The checker intentionally baselines older preview exceptions so new files must use tokens, current
+workspace names, tight radii, approved gradients, valid links, and mono/right-aligned numeric table
+cells.
 
 ---
 

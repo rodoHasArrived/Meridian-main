@@ -1,13 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildBackfillSection,
   buildBackfillNarrative,
   buildBackfillRequest,
   buildBackfillTriggerState,
+  buildDataOperationsPresentationState,
+  buildExportSection,
+  buildProviderSection,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
   validateBackfillForm
 } from "@/screens/data-operations-screen.view-model";
-import type { BackfillTriggerResult, DataOperationsBackfillRecord } from "@/types";
+import type {
+  BackfillTriggerResult,
+  DataOperationsBackfillRecord,
+  DataOperationsExportRecord,
+  DataOperationsProviderRecord,
+  DataOperationsWorkspaceResponse
+} from "@/types";
 
 const backfills: DataOperationsBackfillRecord[] = [
   {
@@ -39,6 +49,27 @@ const preview: BackfillTriggerResult = {
   completedUtc: "2024-01-31T10:00:05Z",
   error: null
 };
+
+const providers: DataOperationsProviderRecord[] = [
+  {
+    provider: "Polygon",
+    status: "Healthy",
+    capability: "Streaming equities",
+    latency: "18ms p50",
+    note: "Realtime subscriptions are stable."
+  }
+];
+
+const exports: DataOperationsExportRecord[] = [
+  {
+    exportId: "EX-2201",
+    profile: "python-pandas",
+    target: "research pack",
+    status: "Ready",
+    rows: "124k",
+    updatedAt: "4m ago"
+  }
+];
 
 describe("data-operations-screen view model", () => {
   it("derives route focus, selected backfill, and detail narrative", () => {
@@ -108,5 +139,38 @@ describe("data-operations-screen view model", () => {
 
     expect(running.runButtonLabel).toBe("Running...");
     expect(running.statusAnnouncement).toBe("Running backfill request.");
+  });
+
+  it("derives provider, backfill, and export section rows with empty guidance", () => {
+    const providerSection = buildProviderSection(providers);
+    expect(providerSection.hasRows).toBe(true);
+    expect(providerSection.rows[0].statusTone).toBe("success");
+    expect(providerSection.rows[0].ariaLabel).toContain("Polygon provider Healthy");
+    expect(buildProviderSection([]).emptyState.title).toBe("No providers reported");
+
+    const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
+    expect(backfillSection.rows[1].selected).toBe(true);
+    expect(backfillSection.rows[1].ariaLabel).toContain("Inspect backfill BF-1044");
+    expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
+
+    const exportSection = buildExportSection(exports);
+    expect(exportSection.rows[0].summaryText).toBe("research pack - 124k");
+    expect(buildExportSection([]).emptyState.title).toBe("No exports available");
+  });
+
+  it("derives a data operations presentation state for empty workspace arrays", () => {
+    const emptyData: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers: [],
+      backfills: [],
+      exports: []
+    };
+
+    const presentation = buildDataOperationsPresentationState(emptyData, null, "backfills");
+
+    expect(presentation.providerSection.hasRows).toBe(false);
+    expect(presentation.backfillSection.hasRows).toBe(false);
+    expect(presentation.exportSection.hasRows).toBe(false);
+    expect(presentation.backfillDetailEmptyState?.title).toBe("No backfill activity yet");
   });
 });

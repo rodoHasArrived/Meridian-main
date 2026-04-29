@@ -5,6 +5,8 @@ import type {
   BackfillTriggerRequest,
   BackfillTriggerResult,
   DataOperationsBackfillRecord,
+  DataOperationsExportRecord,
+  DataOperationsProviderRecord,
   DataOperationsWorkspaceResponse
 } from "@/types";
 
@@ -33,6 +35,56 @@ export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   getProgress: () => Promise<BackfillProgressResponse>;
+}
+
+export interface DataOperationsEmptyState {
+  title: string;
+  description: string;
+}
+
+export interface DataOperationsSectionState<T> {
+  rows: T[];
+  hasRows: boolean;
+  emptyState: DataOperationsEmptyState;
+}
+
+export interface DataOperationsProviderRow {
+  provider: string;
+  status: DataOperationsProviderRecord["status"];
+  capability: string;
+  note: string;
+  statusTone: "success" | "warning";
+  ariaLabel: string;
+}
+
+export interface DataOperationsBackfillRow {
+  jobId: string;
+  scope: string;
+  provider: string;
+  status: DataOperationsBackfillRecord["status"];
+  progress: string;
+  updatedAt: string;
+  selected: boolean;
+  detailText: string;
+  ariaLabel: string;
+}
+
+export interface DataOperationsExportRow {
+  exportId: string;
+  profile: string;
+  target: string;
+  status: DataOperationsExportRecord["status"];
+  rows: string;
+  updatedAt: string;
+  summaryText: string;
+  ariaLabel: string;
+}
+
+export interface DataOperationsPresentationState {
+  providerSection: DataOperationsSectionState<DataOperationsProviderRow>;
+  backfillSection: DataOperationsSectionState<DataOperationsBackfillRow>;
+  exportSection: DataOperationsSectionState<DataOperationsExportRow>;
+  backfillDetailEmptyState: DataOperationsEmptyState | null;
 }
 
 const defaultBackfillServices: BackfillTriggerServices = {
@@ -68,6 +120,10 @@ export function useDataOperationsViewModel(
     [data, selectedBackfillId]
   );
   const selectedBackfillNarrative = selectedBackfill ? buildBackfillNarrative(selectedBackfill) : null;
+  const presentation = useMemo(
+    () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream),
+    [data, selectedBackfill?.jobId, workstream]
+  );
 
   const triggerState = useMemo(
     () => buildBackfillTriggerState({ form, busy, phase, error, preview, result }),
@@ -155,6 +211,7 @@ export function useDataOperationsViewModel(
     selectedBackfillNarrative,
     selectedBackfillId,
     selectBackfill: setSelectedBackfillId,
+    ...presentation,
     dialogOpen,
     openBackfillDialog,
     closeBackfillDialog,
@@ -173,6 +230,105 @@ export function useDataOperationsViewModel(
 
 export function resolveDataOperationsWorkstream(pathname: string): "overview" | "backfills" {
   return pathname.includes("/backfills") ? "backfills" : "overview";
+}
+
+export function buildDataOperationsPresentationState(
+  data: DataOperationsWorkspaceResponse | null,
+  selectedBackfillId: string | null,
+  workstream: "overview" | "backfills" = "overview"
+): DataOperationsPresentationState {
+  const providers = data?.providers ?? [];
+  const backfills = data?.backfills ?? [];
+  const exports = data?.exports ?? [];
+
+  return {
+    providerSection: buildProviderSection(providers),
+    backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
+    exportSection: buildExportSection(exports),
+    backfillDetailEmptyState: backfills.length === 0
+      ? {
+          title: "No backfill activity yet",
+          description: "Preview a historical repair or wait for queued jobs to appear before using this detail panel."
+        }
+      : null
+  };
+}
+
+export function buildProviderSection(
+  providers: DataOperationsProviderRecord[]
+): DataOperationsSectionState<DataOperationsProviderRow> {
+  return {
+    rows: providers.map((provider) => ({
+      provider: provider.provider,
+      status: provider.status,
+      capability: provider.capability,
+      note: provider.note,
+      statusTone: provider.status === "Healthy" ? "success" : "warning",
+      ariaLabel: `${provider.provider} provider ${provider.status}. ${provider.capability}. ${provider.note}`
+    })),
+    hasRows: providers.length > 0,
+    emptyState: {
+      title: "No providers reported",
+      description: "Check provider configuration or run provider detection before relying on live, backfill, or export data."
+    }
+  };
+}
+
+export function buildBackfillSection(
+  backfills: DataOperationsBackfillRecord[],
+  selectedBackfillId: string | null,
+  workstream: "overview" | "backfills" = "overview"
+): DataOperationsSectionState<DataOperationsBackfillRow> {
+  return {
+    rows: backfills.map((backfill) => {
+      const detailText = `${backfill.scope}. ${backfill.status}; ${backfill.progress}; updated ${backfill.updatedAt}.`;
+
+      return {
+        jobId: backfill.jobId,
+        scope: backfill.scope,
+        provider: backfill.provider,
+        status: backfill.status,
+        progress: backfill.progress,
+        updatedAt: backfill.updatedAt,
+        selected: selectedBackfillId === backfill.jobId,
+        detailText,
+        ariaLabel: `Inspect backfill ${backfill.jobId}: ${detailText}`
+      };
+    }),
+    hasRows: backfills.length > 0,
+    emptyState: {
+      title: "No backfills queued",
+      description: workstream === "backfills"
+        ? "Use Trigger backfill to preview a historical repair; queued and review-required jobs will appear here."
+        : "Historical repair jobs will appear here after a previewed backfill is submitted."
+    }
+  };
+}
+
+export function buildExportSection(
+  exports: DataOperationsExportRecord[]
+): DataOperationsSectionState<DataOperationsExportRow> {
+  return {
+    rows: exports.map((item) => {
+      const summaryText = `${item.target} - ${item.rows}`;
+
+      return {
+        exportId: item.exportId,
+        profile: item.profile,
+        target: item.target,
+        status: item.status,
+        rows: item.rows,
+        updatedAt: item.updatedAt,
+        summaryText,
+        ariaLabel: `${item.profile} export ${item.status}. ${summaryText}. Updated ${item.updatedAt}.`
+      };
+    }),
+    hasRows: exports.length > 0,
+    emptyState: {
+      title: "No exports available",
+      description: "Generated packages and reporting outputs will appear here with target, row count, and readiness status."
+    }
+  };
 }
 
 export function resolveSelectedBackfill(

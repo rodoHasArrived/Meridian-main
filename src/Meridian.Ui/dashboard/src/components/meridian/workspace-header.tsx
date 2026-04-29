@@ -1,6 +1,7 @@
 import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
 
 interface WorkspaceHeaderProps {
@@ -8,50 +9,78 @@ interface WorkspaceHeaderProps {
   session: SessionInfo | null;
   onOpenCommandPalette: () => void;
   onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-export function WorkspaceHeader({ workspace, session, onOpenCommandPalette, onRefresh }: WorkspaceHeaderProps) {
-  return (
-    <header className="rounded-[1.75rem] border border-border bg-panel-strong/80 p-5 lg:p-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline">{workspace.label}</Badge>
-          {session ? (
-            <Badge variant={session.environment === "research" ? "default" : session.environment}>
-              {session.environment.toUpperCase()}
-            </Badge>
-          ) : null}
-          <Badge variant={workspace.status === "Live" ? "success" : "warning"}>{workspace.status}</Badge>
-        </div>
-        <div className="space-y-2">
-          <div className="eyebrow-label">Meridian Workspace</div>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground">{workspace.label} Workstation</h1>
-          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{workspace.description}</p>
-        </div>
-      </div>
+export function WorkspaceHeader({
+  workspace,
+  session,
+  onOpenCommandPalette,
+  onRefresh,
+  refreshing = false
+}: WorkspaceHeaderProps) {
+  const viewModel = buildWorkspaceHeaderViewModel({
+    workspace,
+    session,
+    canRefresh: Boolean(onRefresh),
+    refreshing
+  });
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="rounded-full border border-border bg-secondary/60 px-4 py-2 text-sm shadow-sm">
-          {session ? (
-            <span className="font-medium">
-              {session.displayName}
-              <span className="ml-2 text-muted-foreground">{session.role}</span>
-            </span>
-          ) : (
-            <span className="text-muted-foreground">Loading session</span>
-          )}
+  return (
+    <header className="rounded-[10px] border border-border bg-panel-strong/80 p-5 lg:p-6" aria-busy={viewModel.ariaBusy}>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {viewModel.badges.map((badge) => (
+              <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
+                {badge.label}
+              </Badge>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <div className="eyebrow-label">{viewModel.eyebrow}</div>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-foreground">{viewModel.title}</h1>
+            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
+          </div>
         </div>
-        {onRefresh && (
-          <Button variant="ghost" size="sm" onClick={onRefresh} title="Refresh all workspace data">
-            <RefreshCcw className="size-4" />
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div
+            className="rounded-md border border-border bg-secondary/60 px-4 py-2 text-sm shadow-sm"
+            aria-label={viewModel.sessionPillAriaLabel}
+          >
+            <span className="font-medium">
+              {viewModel.sessionLabel}
+              {viewModel.sessionRoleLabel ? (
+                <span className="ml-2 text-muted-foreground">{viewModel.sessionRoleLabel}</span>
+              ) : null}
+            </span>
+          </div>
+          {viewModel.refreshAction && onRefresh ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRefresh}
+              title={viewModel.refreshAction.title}
+              aria-label={viewModel.refreshAction.ariaLabel}
+              disabled={viewModel.refreshAction.disabled}
+            >
+              <RefreshCcw className={`size-4 ${viewModel.refreshAction.disabled ? "animate-spin" : ""}`} />
+              {viewModel.refreshAction.label}
+            </Button>
+          ) : null}
+          <Button
+            variant="secondary"
+            onClick={onOpenCommandPalette}
+            title={viewModel.commandAction.title}
+            aria-label={viewModel.commandAction.ariaLabel}
+            disabled={viewModel.commandAction.disabled}
+          >
+            {viewModel.commandAction.label}
           </Button>
-        )}
-        <Button variant="secondary" onClick={onOpenCommandPalette}>
-          Open Command Palette
-        </Button>
+        </div>
       </div>
-      </div>
+      <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>
     </header>
   );
 }

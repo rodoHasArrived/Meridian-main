@@ -66,6 +66,27 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("Polygon")).toBeInTheDocument();
   });
 
+  it("renders explicit empty guidance when provider, backfill, and export arrays are empty", () => {
+    const emptyData: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers: [],
+      backfills: [],
+      exports: []
+    };
+
+    render(
+      <MemoryRouter initialEntries={["/data/backfills"]}>
+        <DataOperationsScreen data={emptyData} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("No providers reported")).toBeInTheDocument();
+    expect(screen.getByText("No backfills queued")).toBeInTheDocument();
+    expect(screen.getByText("No exports available")).toBeInTheDocument();
+    expect(screen.getByText("No backfill activity yet")).toBeInTheDocument();
+    expect(screen.getAllByRole("status").length).toBe(3);
+  });
+
   it("adapts the hero copy for deep-link routes", () => {
     render(
       <MemoryRouter initialEntries={["/data/backfills"]}>
