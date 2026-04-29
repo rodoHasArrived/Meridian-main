@@ -407,20 +407,10 @@ public static class PrometheusMetrics
         "Current critical-severity rate (0-1) by domain",
         new GaugeConfiguration { LabelNames = new[] { "domain" } });
 
-    private static readonly Gauge KernelCriticalSeverityJumpActive = Prometheus.Metrics.CreateGauge(
-        "mdc_kernel_critical_severity_jump_active",
-        "Whether a critical-severity jump alert is currently active for a kernel domain (0 or 1)",
-        new GaugeConfiguration { LabelNames = new[] { "domain" } });
-
     private static readonly Counter KernelCriticalSeverityJumpAlertsTotal = Prometheus.Metrics.CreateCounter(
         "mdc_kernel_critical_severity_jump_alerts_total",
         "Total alerts raised for sudden jumps in kernel critical-severity rate by domain",
         new CounterConfiguration { LabelNames = new[] { "domain" } });
-
-    private static readonly Gauge KernelCriticalSeverityJumpActive = Prometheus.Metrics.CreateGauge(
-        "mdc_kernel_critical_severity_jump_active",
-        "Whether a critical-severity jump alert is currently active (0/1) by domain",
-        new GaugeConfiguration { LabelNames = new[] { "domain" } });
 
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
@@ -588,35 +578,9 @@ public static class PrometheusMetrics
     /// Sets current critical severity rate for a domain and optionally records alert count.
     /// </summary>
     public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool raiseJumpAlert)
-        => SetKernelCriticalSeverityRate(domain, criticalRate, jumpAlertActive: raiseJumpAlert, raiseJumpAlert);
-
-    /// <summary>
-    /// Sets current critical severity rate for a domain, tracks whether the jump alert is active,
-    /// and optionally records a newly triggered alert.
-    /// </summary>
-    public static void SetKernelCriticalSeverityRate(
-        string domain,
-        double criticalRate,
-        bool jumpAlertActive,
-        bool raiseJumpAlert)
     {
         var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
         KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
-        KernelCriticalSeverityJumpActive.WithLabels(safeDomain).Set(jumpAlertActive ? 1 : 0);
-        if (raiseJumpAlert)
-        {
-            KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
-        }
-    }
-
-    /// <summary>
-    /// Sets current critical severity rate and jump activity state for a domain, with optional alert increment.
-    /// </summary>
-    public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool jumpActive, bool raiseJumpAlert)
-    {
-        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
-        KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
-        KernelCriticalSeverityJumpActive.WithLabels(safeDomain).Set(jumpActive ? 1 : 0);
         if (raiseJumpAlert)
         {
             KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
