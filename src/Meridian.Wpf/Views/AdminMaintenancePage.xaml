@@ -182,6 +182,33 @@
                                       Foreground="{StaticResource ConsoleTextBrush}" />
                         </StackPanel>
 
+                        <Border AutomationProperties.AutomationId="AdminMaintenanceScheduleReadiness"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock AutomationProperties.AutomationId="AdminMaintenanceScheduleReadinessTitle"
+                                           Text="{Binding ScheduleReadinessTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextBrush}" />
+                                <TextBlock AutomationProperties.AutomationId="AdminMaintenanceScheduleReadinessDetail"
+                                           Text="{Binding ScheduleReadinessDetail}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           FontSize="12"
+                                           Margin="0,4,0,0" />
+                                <TextBlock AutomationProperties.AutomationId="AdminMaintenanceScheduleOperationSummary"
+                                           Text="{Binding ScheduleOperationSummary}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           FontSize="11"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+
                         <Border Background="{StaticResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="Next Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
@@ -191,7 +218,10 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Content="Save Schedule" Click="SaveSchedule_Click" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="Save Schedule"
+                                Command="{Binding SaveScheduleCommand}"
+                                AutomationProperties.AutomationId="AdminMaintenanceSaveScheduleButton"
+                                Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </Border>
 

@@ -106,9 +106,13 @@ Content Frame
 
 **Data Sampling readiness** — `DataSamplingPage` now binds symbol add, sample generation, and preset save actions to `DataSamplingViewModel` commands instead of page click handlers. The view model owns sample readiness title/detail text, symbol-scope copy, validation state, command enablement, and retained recent-sample state, so invalid sample requests are explained before launch without adding service calls, timers, or persistence writes.
 
+**Data Sources edit readiness** — `DataSourcesPage` now binds provider, data type, feed, provider options, symbol scope, source-row actions, and save enablement through `DataSourcesViewModel`. The view model owns edit-readiness title/detail copy, field validation visibility, source scope text, and command gating so invalid source setup is explained before save and provider options persist without page event relays.
+
 **Time Series Alignment action readiness** — `TimeSeriesAlignmentPage` now binds alignment setup, symbol chips, preset application, validation, run progress, results, and recent alignment history through `TimeSeriesAlignmentViewModel`. The view model owns command enablement and inline readiness copy for missing symbols, dates, or selected fields, then maps the bound setup into the existing `TimeSeriesAlignmentService` request without adding backend behavior, polling, or persistence writes.
 
 **Symbols filter recovery** — `SymbolsPage` now binds search text, subscription scope, exchange scope, visible-row copy, filter-aware empty-state copy, and the `Clear Filters` action through `SymbolsPageViewModel`. Bulk action buttons bind to the view-model-owned selection state, so filtered-out lists and selected rows recover without another backend read or page-owned filter logic.
+
+**Symbol Mapping MVVM workflow** — `SymbolMappingPage` now binds provider catalogs, provider options, test results, add-mapping readiness, mapping counts, empty-state visibility, and remove-confirmation state through `SymbolMappingViewModel`. Import/export still owns the native file dialogs in the view, but CSV content, mapping mutations, validation copy, and command gating flow through the view model without adding service calls, timers, or persistence behavior.
 
 **Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 
@@ -151,6 +155,8 @@ Content Frame
 **Schedule Manager MVVM state** — `ScheduleManagerPage` now binds backfill, maintenance, template refresh, empty/error copy, and cron validation through `ScheduleManagerViewModel`. The page code-behind only wires construction and first-load initialization, while the view model owns command enablement and UTC next-run presentation without adding backend calls, timers, or persistence writes.
 
 **Admin Maintenance cleanup readiness** — `AdminMaintenancePage` now renders a cleanup readiness card with preview, execution, and confirmation actions bound through `AdminMaintenanceViewModel`. The view model owns preview scope, empty/error copy, destructive-action gating, inline confirmation state, and cleanup execution reset behavior while the page keeps cleanup rendering and layout concerns in XAML.
+
+**Admin Maintenance schedule readiness** — `AdminMaintenancePage` now renders a schedule readiness strip and binds Save Schedule through `AdminMaintenanceViewModel`. The view model owns selected-operation summary, frequency copy, validation, and save command enablement so an enabled schedule cannot be saved without at least one maintenance operation.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
@@ -449,6 +455,13 @@ Shell implementation now shares descriptor-driven infrastructure:
 3. **Market Briefing** — Pinned insights, watchlists, change feed, and saved comparisons
 4. **Run Studio + Recent Runs** — Run context, inspector guidance, and the run-history rail
 5. **Promotion Pipeline** — Candidates for paper promotion (sourced from `StrategyRunPromotionState`)
+
+### `ChartingPage` (`Views/ChartingPage.xaml`)
+
+`ChartingPageViewModel` owns chart setup presentation state for symbol, timeframe, date range,
+indicator toggles, refresh command enablement, and the setup-readiness card. The page should stay
+limited to rendering the toolbar, chart panels, and loading overlay; avoid reintroducing page event
+handlers for toolbar selection, date validation, indicator state, or refresh readiness.
 
 ### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
 

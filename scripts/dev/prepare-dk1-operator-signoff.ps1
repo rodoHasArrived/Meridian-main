@@ -25,7 +25,6 @@ else {
     $OutputPath = [System.IO.Path]::GetFullPath($OutputPath)
 }
 if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
-<<<<<<< HEAD
     $checkpointFileName = if ($Validate) {
         "dk1-operator-signoff.validate.checkpoint.json"
     }
@@ -33,9 +32,6 @@ if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
         "dk1-operator-signoff.checkpoint.json"
     }
     $CheckpointPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $OutputPath) $checkpointFileName))
-=======
-    $CheckpointPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $OutputPath) "dk1-operator-signoff.checkpoint.json"))
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
 }
 $checkpoint = Initialize-MeridianCheckpoint `
     -Workflow "prepare-dk1-operator-signoff" `
@@ -60,10 +56,6 @@ $preflight = Invoke-MeridianPreflight `
     -Scenario 'dk1-operator-signoff' `
     -RequiredPaths $requiredPaths `
     -WritableDirectories @($outputDirectory) `
-<<<<<<< HEAD
-=======
-    -EmitJson `
->>>>>>> b5c7c82199e6c9c4f6326de878307e78c9d5e790
     -AllowWarnings
 
 if ($preflight.status -eq 'blocked') {

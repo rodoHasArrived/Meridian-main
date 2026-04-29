@@ -64,7 +64,7 @@ function Test-MeridianWorkflowProfile {
 
     $build = Get-MeridianWorkflowProfileValue -Table $ProfileData -Key 'build' -Fallback @{}
     $fixture = Get-MeridianWorkflowProfileValue -Table $ProfileData -Key 'fixture' -Fallback @{}
-    $host = Get-MeridianWorkflowProfileValue -Table $ProfileData -Key 'host' -Fallback @{}
+    $hostProfile = Get-MeridianWorkflowProfileValue -Table $ProfileData -Key 'host' -Fallback @{}
     $screenshots = Get-MeridianWorkflowProfileValue -Table $ProfileData -Key 'screenshots' -Fallback @{}
 
     foreach ($key in @('projectPath', 'configuration', 'framework', 'exeName')) {
@@ -78,7 +78,7 @@ function Test-MeridianWorkflowProfile {
         $errors.Add('Profile requires fixture mode, but -NoFixture was specified.')
     }
 
-    $baseUrl = [string](Get-MeridianWorkflowProfileValue -Table $host -Key 'baseUrl' -Fallback '')
+    $baseUrl = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'baseUrl' -Fallback '')
     if ([string]::IsNullOrWhiteSpace($baseUrl)) {
         $errors.Add('host.baseUrl is required.')
     }
@@ -89,7 +89,7 @@ function Test-MeridianWorkflowProfile {
         }
     }
 
-    $healthPath = [string](Get-MeridianWorkflowProfileValue -Table $host -Key 'healthPath' -Fallback '')
+    $healthPath = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'healthPath' -Fallback '')
     if ([string]::IsNullOrWhiteSpace($healthPath)) {
         $errors.Add('host.healthPath is required.')
     }

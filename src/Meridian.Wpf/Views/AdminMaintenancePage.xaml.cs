@@ -44,12 +44,6 @@ public partial class AdminMaintenancePage : Page
             await _viewModel.SaveScheduleAsync();
     }
 
-    private async void SaveSchedule_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.SaveScheduleAsync();
-        _viewModel.ShowSuccess("Schedule saved successfully.");
-    }
-
     private async void RunMaintenance_Click(object sender, RoutedEventArgs e)
     {
         await _viewModel.RunMaintenanceNowAsync();

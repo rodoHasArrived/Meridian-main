@@ -21,6 +21,10 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private bool _runTierMigration;
     private string _nextRunText = "Not scheduled";
     private string _lastRunText = "Never";
+    private string _scheduleReadinessTitle = "Schedule paused";
+    private string _scheduleReadinessDetail = "Scheduled maintenance is disabled. Enable it when routine lifecycle work should run automatically.";
+    private string _scheduleOperationSummary = "Operations: Compress older files, clean up temp files, verify data integrity";
+    private bool _canSaveSchedule = true;
 
     // ---- Quick-check state ----
     private bool _isQuickCheckBusy;
@@ -54,12 +58,14 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public AdminMaintenanceViewModel(IAdminMaintenanceService adminService)
     {
         _adminService = adminService;
+        SaveScheduleCommand = new AsyncRelayCommand(SaveScheduleWithFeedbackAsync, () => CanSaveSchedule);
         PreviewCleanupCommand = new AsyncRelayCommand(PreviewCleanupAsync, () => !IsCleanupBusy);
         RequestExecuteCleanupCommand = new RelayCommand(RequestExecuteCleanup, () => CanExecuteCleanup && !IsCleanupBusy);
         ConfirmExecuteCleanupCommand = new AsyncRelayCommand(ConfirmExecuteCleanupAsync, () =>
             CanExecuteCleanup && IsCleanupConfirmationVisible && !IsCleanupBusy);
         CancelExecuteCleanupCommand = new RelayCommand(CancelExecuteCleanup, () =>
             IsCleanupConfirmationVisible && !IsCleanupBusy);
+        RefreshSchedulePresentation();
     }
 
     // ---- Collections ----
@@ -71,6 +77,7 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
     // ---- Commands ----
 
+    public IAsyncRelayCommand SaveScheduleCommand { get; }
     public IAsyncRelayCommand PreviewCleanupCommand { get; }
     public IRelayCommand RequestExecuteCleanupCommand { get; }
     public IAsyncRelayCommand ConfirmExecuteCleanupCommand { get; }
@@ -80,49 +87,105 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public bool ScheduleEnabled
     {
         get => _scheduleEnabled;
-        set => SetProperty(ref _scheduleEnabled, value);
+        set
+        {
+            if (SetProperty(ref _scheduleEnabled, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public string CronExpression
     {
         get => _cronExpression;
-        set => SetProperty(ref _cronExpression, value);
+        set
+        {
+            if (SetProperty(ref _cronExpression, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunCompression
     {
         get => _runCompression;
-        set => SetProperty(ref _runCompression, value);
+        set
+        {
+            if (SetProperty(ref _runCompression, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunCleanup
     {
         get => _runCleanup;
-        set => SetProperty(ref _runCleanup, value);
+        set
+        {
+            if (SetProperty(ref _runCleanup, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunIntegrityCheck
     {
         get => _runIntegrityCheck;
-        set => SetProperty(ref _runIntegrityCheck, value);
+        set
+        {
+            if (SetProperty(ref _runIntegrityCheck, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunTierMigration
     {
         get => _runTierMigration;
-        set => SetProperty(ref _runTierMigration, value);
+        set
+        {
+            if (SetProperty(ref _runTierMigration, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public string NextRunText
     {
         get => _nextRunText;
-        private set => SetProperty(ref _nextRunText, value);
+        private set
+        {
+            if (SetProperty(ref _nextRunText, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public string LastRunText
     {
         get => _lastRunText;
         private set => SetProperty(ref _lastRunText, value);
+    }
+
+    public string ScheduleReadinessTitle
+    {
+        get => _scheduleReadinessTitle;
+        private set => SetProperty(ref _scheduleReadinessTitle, value);
+    }
+
+    public string ScheduleReadinessDetail
+    {
+        get => _scheduleReadinessDetail;
+        private set => SetProperty(ref _scheduleReadinessDetail, value);
+    }
+
+    public string ScheduleOperationSummary
+    {
+        get => _scheduleOperationSummary;
+        private set => SetProperty(ref _scheduleOperationSummary, value);
+    }
+
+    public bool CanSaveSchedule
+    {
+        get => _canSaveSchedule;
+        private set
+        {
+            if (SetProperty(ref _canSaveSchedule, value))
+                SaveScheduleCommand.NotifyCanExecuteChanged();
+        }
     }
 
     // ---- Quick-check properties ----
@@ -397,8 +460,28 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
     public async Task SaveScheduleAsync(CancellationToken ct = default)
     {
+        await SaveScheduleCoreAsync(showSuccess: false, ct);
+    }
+
+    private async Task SaveScheduleWithFeedbackAsync()
+    {
+        await SaveScheduleCoreAsync(showSuccess: true, CancellationToken.None);
+    }
+
+    private async Task SaveScheduleCoreAsync(bool showSuccess, CancellationToken ct)
+    {
         try
         {
+            if (!CanSaveSchedule)
+            {
+                ShowError(
+                    "Schedule incomplete",
+                    ScheduleEnabled && !HasSelectedScheduleOperations()
+                        ? "Select at least one maintenance operation before saving an enabled schedule."
+                        : "Choose a valid schedule frequency before saving.");
+                return;
+            }
+
             var config = new MaintenanceScheduleConfig
             {
                 Enabled = ScheduleEnabled,
@@ -409,13 +492,88 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                 RunTierMigration = RunTierMigration
             };
 
-            await _adminService.UpdateMaintenanceScheduleAsync(config, ct);
+            var result = await _adminService.UpdateMaintenanceScheduleAsync(config, ct);
+            if (result.Success)
+            {
+                if (showSuccess)
+                    ShowSuccess("Schedule saved successfully.");
+            }
+            else
+            {
+                ShowError("Failed to save schedule", result.Error ?? result.Message ?? "Unknown error");
+            }
         }
         catch (Exception ex)
         {
             ShowError("Failed to save schedule", ex.Message);
         }
     }
+
+    private void RefreshSchedulePresentation()
+    {
+        var hasOperations = HasSelectedScheduleOperations();
+        var hasFrequency = !string.IsNullOrWhiteSpace(CronExpression);
+
+        ScheduleOperationSummary = hasOperations
+            ? $"Operations: {string.Join(", ", GetSelectedScheduleOperationLabels())}"
+            : "Operations: none selected";
+
+        CanSaveSchedule = !ScheduleEnabled || (hasFrequency && hasOperations);
+
+        if (!ScheduleEnabled)
+        {
+            ScheduleReadinessTitle = "Schedule paused";
+            ScheduleReadinessDetail = "Scheduled maintenance is disabled. Selected operations are retained for the next time automation is enabled.";
+            return;
+        }
+
+        if (!hasOperations)
+        {
+            ScheduleReadinessTitle = "Schedule needs an operation";
+            ScheduleReadinessDetail = "Select at least one maintenance operation before saving an enabled schedule.";
+            return;
+        }
+
+        if (!hasFrequency)
+        {
+            ScheduleReadinessTitle = "Schedule needs a frequency";
+            ScheduleReadinessDetail = "Choose a frequency before saving the maintenance schedule.";
+            return;
+        }
+
+        ScheduleReadinessTitle = "Schedule ready";
+        ScheduleReadinessDetail = $"Runs {FormatCronExpression(CronExpression)}. {FormatNextRunDetail()}";
+    }
+
+    private bool HasSelectedScheduleOperations() =>
+        RunCompression || RunCleanup || RunIntegrityCheck || RunTierMigration;
+
+    private IEnumerable<string> GetSelectedScheduleOperationLabels()
+    {
+        if (RunCompression)
+            yield return "Compress older files";
+        if (RunCleanup)
+            yield return "clean up temp files";
+        if (RunIntegrityCheck)
+            yield return "verify data integrity";
+        if (RunTierMigration)
+            yield return "migrate to archive tier";
+    }
+
+    private string FormatNextRunDetail() =>
+        string.IsNullOrWhiteSpace(NextRunText) || NextRunText == "Not scheduled"
+            ? "Next run will update after save."
+            : $"Next run: {NextRunText}.";
+
+    private static string FormatCronExpression(string cronExpression) => cronExpression switch
+    {
+        "0 2 * * *" => "daily at 2 AM",
+        "0 4 * * *" => "daily at 4 AM",
+        "0 3 * * 0" => "weekly on Sunday at 3 AM",
+        "0 3 * * 6" => "weekly on Saturday at 3 AM",
+        "0 3 1 * *" => "monthly on the 1st at 3 AM",
+        _ => cronExpression
+    };
 
     // ---- Maintenance run ----
 

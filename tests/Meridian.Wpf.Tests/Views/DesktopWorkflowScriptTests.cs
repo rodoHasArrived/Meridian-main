@@ -117,6 +117,26 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void SharedWorkflowProfilesScript_ShouldNotAssignPowerShellHostVariable()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedWorkflowProfiles.ps1"));
+
+        script.Should().Contain("$hostProfile = Get-MeridianWorkflowProfileValue -Table $ProfileData -Key 'host'");
+        script.Should().NotContain("$host =");
+    }
+
+    [Fact]
+    public void ReusableDotnetBuildWorkflow_ShouldEnableFullWpfTestsForSolutionBuildAndTest()
+    {
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\reusable-dotnet-build.yml"));
+
+        workflow.Should().Contain("default: 'Category!=Integration|FullyQualifiedName!~Integration'");
+        workflow.Should().Contain("dotnet restore Meridian.sln -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
+        workflow.Should().Contain("dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true");
+        workflow.Should().Contain("-p:EnableFullWpfBuild=true \\");
+    }
+
+    [Fact]
     public void FocusedValidationScripts_ShouldPruneWorkflowArtifactsBeforeCreatingSummaryDirectory()
     {
         foreach (var relativePath in new[]

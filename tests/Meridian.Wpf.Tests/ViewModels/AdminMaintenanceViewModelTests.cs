@@ -119,11 +119,86 @@ public sealed class AdminMaintenanceViewModelTests
     }
 
     [Fact]
+    public void SchedulePresentation_WithEnabledScheduleAndOperations_ShouldDescribeReadyScope()
+    {
+        var viewModel = new AdminMaintenanceViewModel(new FakeAdminMaintenanceService())
+        {
+            ScheduleEnabled = true,
+            CronExpression = "0 3 * * 6",
+            RunTierMigration = true
+        };
+
+        viewModel.ScheduleReadinessTitle.Should().Be("Schedule ready");
+        viewModel.ScheduleReadinessDetail.Should().Contain("weekly on Saturday at 3 AM");
+        viewModel.ScheduleOperationSummary.Should().Contain("Compress older files");
+        viewModel.ScheduleOperationSummary.Should().Contain("migrate to archive tier");
+        viewModel.CanSaveSchedule.Should().BeTrue();
+        viewModel.SaveScheduleCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SaveScheduleAsync_WithEnabledScheduleAndNoOperations_ShouldBlockServiceCall()
+    {
+        var service = new FakeAdminMaintenanceService();
+        var viewModel = new AdminMaintenanceViewModel(service)
+        {
+            ScheduleEnabled = true,
+            RunCompression = false,
+            RunCleanup = false,
+            RunIntegrityCheck = false,
+            RunTierMigration = false
+        };
+
+        await viewModel.SaveScheduleAsync();
+
+        service.ScheduleUpdateCalls.Should().Be(0);
+        viewModel.CanSaveSchedule.Should().BeFalse();
+        viewModel.SaveScheduleCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ScheduleReadinessTitle.Should().Be("Schedule needs an operation");
+        viewModel.ScheduleOperationSummary.Should().Be("Operations: none selected");
+        viewModel.StatusTitle.Should().Be("Schedule incomplete");
+    }
+
+    [Fact]
+    public async Task SaveScheduleCommand_WithValidSchedule_ShouldPersistConfigAndShowFeedback()
+    {
+        var service = new FakeAdminMaintenanceService();
+        var viewModel = new AdminMaintenanceViewModel(service)
+        {
+            ScheduleEnabled = true,
+            CronExpression = "0 4 * * *",
+            RunCompression = false,
+            RunCleanup = true,
+            RunIntegrityCheck = false,
+            RunTierMigration = true
+        };
+
+        await viewModel.SaveScheduleCommand.ExecuteAsync(null);
+
+        service.ScheduleUpdateCalls.Should().Be(1);
+        service.LastScheduleConfig.Should().NotBeNull();
+        service.LastScheduleConfig!.Enabled.Should().BeTrue();
+        service.LastScheduleConfig.CronExpression.Should().Be("0 4 * * *");
+        service.LastScheduleConfig.RunCompression.Should().BeFalse();
+        service.LastScheduleConfig.RunCleanup.Should().BeTrue();
+        service.LastScheduleConfig.RunIntegrityCheck.Should().BeFalse();
+        service.LastScheduleConfig.RunTierMigration.Should().BeTrue();
+        viewModel.StatusTitle.Should().Be("Success");
+        viewModel.StatusMessage.Should().Be("Schedule saved successfully.");
+    }
+
+    [Fact]
     public void AdminMaintenancePageSource_ShouldBindCleanupActionsThroughViewModel()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\AdminMaintenancePage.xaml"));
         var codeBehind = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\AdminMaintenancePage.xaml.cs"));
 
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"AdminMaintenanceScheduleReadiness\"");
+        xaml.Should().Contain("Text=\"{Binding ScheduleReadinessTitle}\"");
+        xaml.Should().Contain("Text=\"{Binding ScheduleReadinessDetail}\"");
+        xaml.Should().Contain("Text=\"{Binding ScheduleOperationSummary}\"");
+        xaml.Should().Contain("Command=\"{Binding SaveScheduleCommand}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"AdminMaintenanceSaveScheduleButton\"");
         xaml.Should().Contain("AutomationProperties.Name=\"Admin maintenance cleanup readiness\"");
         xaml.Should().Contain("Text=\"{Binding CleanupReadinessTitle}\"");
         xaml.Should().Contain("Text=\"{Binding CleanupReadinessDetail}\"");
@@ -133,11 +208,13 @@ public sealed class AdminMaintenanceViewModelTests
         xaml.Should().Contain("Visibility=\"{Binding IsCleanupConfirmationVisible");
         xaml.Should().Contain("Command=\"{Binding ConfirmExecuteCleanupCommand}\"");
         xaml.Should().Contain("Command=\"{Binding CancelExecuteCleanupCommand}\"");
+        xaml.Should().NotContain("Click=\"SaveSchedule_Click\"");
         xaml.Should().NotContain("Click=\"PreviewCleanup_Click\"");
         xaml.Should().NotContain("Click=\"ExecuteCleanup_Click\"");
 
         codeBehind.Should().Contain("new AdminMaintenanceViewModel");
         codeBehind.Should().Contain("DataContext = _viewModel");
+        codeBehind.Should().NotContain("SaveSchedule_Click");
         codeBehind.Should().NotContain("PreviewCleanup_Click");
         codeBehind.Should().NotContain("ExecuteCleanup_Click");
     }
@@ -163,15 +240,32 @@ public sealed class AdminMaintenanceViewModelTests
     {
         public CleanupPreviewResult PreviewResult { get; set; } = new() { Success = true };
         public MaintenanceCleanupResult ExecuteResult { get; set; } = new() { Success = true };
+        public OperationResult ScheduleUpdateResult { get; set; } = new() { Success = true };
         public int PreviewCalls { get; private set; }
         public int ExecuteCalls { get; private set; }
+        public int ScheduleUpdateCalls { get; private set; }
         public CleanupOptions? LastPreviewOptions { get; private set; }
         public CleanupOptions? LastExecuteOptions { get; private set; }
+        public MaintenanceScheduleConfig? LastScheduleConfig { get; private set; }
 
-        public Task<MaintenanceScheduleResult> GetMaintenanceScheduleAsync(CancellationToken ct = default) => NotUsed<MaintenanceScheduleResult>();
+        public Task<MaintenanceScheduleResult> GetMaintenanceScheduleAsync(CancellationToken ct = default) =>
+            Task.FromResult(new MaintenanceScheduleResult
+            {
+                Success = true,
+                Schedule = new MaintenanceScheduleResponse
+                {
+                    Enabled = false,
+                    CronExpression = "0 2 * * *",
+                    EnabledOperations = ["compression", "cleanup", "integrity"]
+                }
+            });
 
-        public Task<OperationResult> UpdateMaintenanceScheduleAsync(MaintenanceScheduleConfig schedule, CancellationToken ct = default) =>
-            NotUsed<OperationResult>();
+        public Task<OperationResult> UpdateMaintenanceScheduleAsync(MaintenanceScheduleConfig schedule, CancellationToken ct = default)
+        {
+            ScheduleUpdateCalls++;
+            LastScheduleConfig = schedule;
+            return Task.FromResult(ScheduleUpdateResult);
+        }
 
         public Task<MaintenanceRunResult> RunMaintenanceNowAsync(MaintenanceRunOptions? options = null, CancellationToken ct = default) =>
             NotUsed<MaintenanceRunResult>();
@@ -238,6 +332,6 @@ public sealed class AdminMaintenanceViewModelTests
         public Task<QuickCheckResult> RunQuickCheckAsync(CancellationToken ct = default) => NotUsed<QuickCheckResult>();
 
         private static Task<T> NotUsed<T>() =>
-            Task.FromException<T>(new NotSupportedException("This fake only supports cleanup calls."));
+            Task.FromException<T>(new NotSupportedException("This fake only supports schedule and cleanup calls."));
     }
 }
