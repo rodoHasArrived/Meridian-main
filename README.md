@@ -736,10 +736,12 @@ Use these documents together when planning or implementing new work:
 │   │       ├── 15-workstation-trading-orders.png
 │   │       ├── 20-workstation-data-operations-exports.png
 │   │       └── 21-workstation-governance-ledger.png
+│   ├── governance-baseline.json
 │   ├── index.html
 │   ├── preview
 │   │   ├── brand-icons.html
 │   │   ├── brand-marks.html
+│   │   ├── chart-table-standards.html
 │   │   ├── charts-candlestick.html
 │   │   ├── charts-correlation.html
 │   │   ├── charts-equity-print.html
@@ -755,6 +757,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── colors-brand.html
 │   │   ├── colors-semantic.html
 │   │   ├── colors-surfaces.html
+│   │   ├── component-state-matrix.html
 │   │   ├── components-badges.html
 │   │   ├── components-banners.html
 │   │   ├── components-buttons.html
@@ -764,6 +767,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── components-table.html
 │   │   ├── design-standards.html
 │   │   ├── institutional-workstation.html
+│   │   ├── screen-recipes.html
 │   │   ├── spacing-radii.html
 │   │   ├── spacing-scale.html
 │   │   ├── spacing-shadows.html
@@ -771,6 +775,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── type-body.html
 │   │   ├── type-display.html
 │   │   └── type-mono.html
+│   ├── scripts
+│   │   └── check_design_system_governance.py
+│   ├── tests
+│   │   └── test_design_system_governance.py
 │   └── ui_kits
 │       ├── dashboard
 │       │   ├── README.md
@@ -5076,6 +5084,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── wpf-provider-health.png
 │   │       ├── wpf-providers.png
 │   │       ├── wpf-quant-script.png
+│   │       ├── wpf-research-workspace.png
 │   │       ├── wpf-security-master.png
 │   │       ├── wpf-settings.png
 │   │       ├── wpf-storage.png
@@ -6607,6 +6616,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
 │   │   │   │   ├── app.tsx
+│   │   │   │   ├── assets
+│   │   │   │   │   └── brand
+│   │   │   │   │       └── meridian-mark.svg
 │   │   │   │   ├── components
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── command-palette.test.tsx
@@ -6614,7 +6626,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
 │   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
+│   │   │   │   │   │   ├── workspace-header.view-model.test.ts
+│   │   │   │   │   │   ├── workspace-header.view-model.ts
 │   │   │   │   │   │   ├── workspace-nav.test.tsx
 │   │   │   │   │   │   ├── workspace-nav.tsx
 │   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
@@ -6624,6 +6639,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── button.tsx
 │   │   │   │   │       ├── card.tsx
 │   │   │   │   │       └── dialog.tsx
+│   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
@@ -6669,8 +6685,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CcpVz9_t.js
-│   │           │   └── index-DNevvesn.css
+│   │           │   ├── index-CAwKqfhv.css
+│   │           │   └── index-CChzBFbU.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8124,6 +8140,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-611 directories, 7338 files
+615 directories, 7350 files
 ```
 <!-- readme-tree end -->
