@@ -86,7 +86,7 @@ public sealed class StrategyRunContinuityServiceTests
     public async Task GetRunContinuityAsync_BuildsRunCenteredSnapshotAcrossSharedSeams()
     {
         var store = new StrategyRunStore();
-        var parentRun = BuildContinuityRun("continuity-root");
+        var parentRun = BuildContinuityRun("continuity-root", includeFills: true, promotionState: StrategyRunPromotionState.CandidateForLive);
         var childRun = StrategyRunEntry.Start("continuity-strategy", "Continuity Strategy", RunType.Paper) with
         {
             RunId = "continuity-paper",
@@ -138,11 +138,12 @@ public sealed class StrategyRunContinuityServiceTests
         continuity.ContinuityStatus.HasPortfolio.Should().BeTrue();
         continuity.ContinuityStatus.HasLedger.Should().BeTrue();
         continuity.ContinuityStatus.HasCashFlow.Should().BeTrue();
+        continuity.ContinuityStatus.HasFills.Should().BeFalse();
         continuity.ContinuityStatus.HasReconciliation.Should().BeTrue();
         continuity.ContinuityStatus.HasWarnings.Should().BeTrue();
         continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
             .Should()
-            .Contain("security-coverage");
+            .Contain(["security-coverage", "lineage-promotion-gap"]);
         continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
             .Should()
             .NotContain(["missing-reconciliation", "as-of-drift", "open-reconciliation-breaks"]);
@@ -171,10 +172,10 @@ public sealed class StrategyRunContinuityServiceTests
         continuity.ContinuityStatus.HasWarnings.Should().BeTrue();
         continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
             .Should()
-            .Contain(["missing-cash-flow", "missing-reconciliation"]);
+            .Contain(["missing-cash-flow", "missing-fills", "missing-reconciliation"]);
     }
 
-    private static StrategyRunEntry BuildContinuityRun(string runId, bool includeCashFlows = true)
+    private static StrategyRunEntry BuildContinuityRun(string runId, bool includeCashFlows = true, bool includeFills = false, StrategyRunPromotionState promotionState = StrategyRunPromotionState.None)
     {
         var startedAt = new DateTimeOffset(2026, 4, 2, 9, 30, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddHours(2);
@@ -252,7 +253,9 @@ public sealed class StrategyRunContinuityServiceTests
             Universe: new HashSet<string>(["AAPL"], StringComparer.OrdinalIgnoreCase),
             Snapshots: [snapshot],
             CashFlows: cashFlows,
-            Fills: [],
+            Fills: includeFills
+                ? [new FillEvent(Guid.NewGuid(), "AAPL", "buy", 10L, 40m, 0.5m, startedAt.AddMinutes(15), "ORD-1")]
+                : [],
             Metrics: metrics,
             Ledger: CreateLedger(startedAt, completedAt),
             ElapsedTime: TimeSpan.FromHours(2),
@@ -277,7 +280,8 @@ public sealed class StrategyRunContinuityServiceTests
                 ["rebalance"] = "weekly"
             },
             FundProfileId: "alpha-credit",
-            FundDisplayName: "Alpha Credit");
+            FundDisplayName: "Alpha Credit",
+            PromotionState: promotionState);
     }
 
     private static StrategyRunContinuityService BuildContinuityService(

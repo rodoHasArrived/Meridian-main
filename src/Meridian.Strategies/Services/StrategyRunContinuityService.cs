@@ -123,6 +123,7 @@ public sealed class StrategyRunContinuityService
         var hasPortfolio = run.Portfolio is not null;
         var hasLedger = run.Ledger is not null;
         var hasCashFlow = cashFlow is { TotalEntries: > 0 };
+        var hasFills = (run.Execution?.FillCount ?? run.Summary.FillCount) > 0;
         var hasReconciliation = reconciliation is not null;
         var asOfDriftMinutes = CalculateAsOfDriftMinutes(run.Portfolio?.AsOf, run.Ledger?.AsOf);
         var openBreaks = reconciliation?.Summary.OpenBreakCount ?? 0;
@@ -149,6 +150,13 @@ public sealed class StrategyRunContinuityService
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "missing-cash-flow",
                 Message: "Run has no recorded cash flows for cash-financing continuity."));
+        }
+
+        if (!hasFills)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "missing-fills",
+                Message: "Run has no execution fills recorded for continuity review."));
         }
 
         if (!hasReconciliation)
@@ -179,6 +187,11 @@ public sealed class StrategyRunContinuityService
                 Message: $"Run has {securityCoverageIssues} security coverage issue(s) across continuity surfaces."));
         }
 
+        if (run.Summary.Promotion?.State is StrategyRunPromotionState.CandidateForLive && run.Summary.Mode is StrategyRunMode.Backtest)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-promotion-gap",
+                Message: "Run is promoted toward live operations from a backtest lineage; validate paper lineage continuity."));
         if (hasParent
             && !string.IsNullOrWhiteSpace(promotionSource)
             && !string.Equals(run.Summary.ParentRunId, promotionSource, StringComparison.Ordinal))
@@ -222,6 +235,7 @@ public sealed class StrategyRunContinuityService
             HasPortfolio: hasPortfolio,
             HasLedger: hasLedger,
             HasCashFlow: hasCashFlow,
+            HasFills: hasFills,
             HasReconciliation: hasReconciliation,
             AsOfDriftMinutes: asOfDriftMinutes,
             OpenReconciliationBreaks: openBreaks,
