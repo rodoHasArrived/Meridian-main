@@ -34,12 +34,12 @@ Total items: **87**
 | `AGENTS.md` | 141 | `TODO` | ❌ | TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently |
 | `AGENTS.md` | 145 | `TODO` | ❌ | TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but |
 | `AGENTS.md` | 149 | `TODO` | ❌ | TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI |
-| `AGENTS.md` | 353 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
-| `AGENTS.md` | 357 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
-| `AGENTS.md` | 361 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
-| `AGENTS.md` | 369 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
-| `AGENTS.md` | 531 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
-| `AGENTS.md` | 535 | `TODO` | ❌ | TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive` |
+| `AGENTS.md` | 354 | `TODO` | ❌ | TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`, |
+| `AGENTS.md` | 358 | `TODO` | ❌ | TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`, |
+| `AGENTS.md` | 362 | `TODO` | ❌ | TODO: `docs/development/desktop-testing-guide.md` still references `make desktop-dev-bootstrap`, |
+| `AGENTS.md` | 370 | `TODO` | ❌ | TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current |
+| `AGENTS.md` | 532 | `TODO` | ❌ | TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet |
+| `AGENTS.md` | 536 | `TODO` | ❌ | TODO: `make ai-docs-archive-execute` exists, but it moves stale docs. Run `make ai-docs-archive` |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 369 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 378 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
@@ -73,11 +73,11 @@ Total items: **87**
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 320 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 332 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 60 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 179 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 56 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 294 | `NOTE` | ❌ | note: provider.note, |
-| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 183 | `NOTE` | ❌ | note: "Ready", |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 61 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 253 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 73 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 328 | `NOTE` | ❌ | note: provider.note, |
+| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 184 | `NOTE` | ❌ | note: "Ready", |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 431 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
