@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -10,18 +11,17 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.DependencyInjection;
+using Meridian.Ui.Services;
+using Meridian.Ui.Services.Contracts;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
-using WpfServices = Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
-using Meridian.Ui.Services;
-using Meridian.Ui.Services.Contracts;
-using Meridian.Ui.Services.Services;
+using Microsoft.Extensions.DependencyInjection;
 using SysNavigation = System.Windows.Navigation;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf;
 
@@ -142,6 +142,9 @@ public partial class MainWindow : Window
         GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
         GlobalHotkeyService.Instance.Initialize(hwnd);
 
+        var launchArgs = App.GetLaunchArgs();
+        var launchRequest = DesktopLaunchArguments.Parse(launchArgs);
+
         await _workspaceService.LoadWorkspacesAsync();
         await _fundContextService.LoadAsync();
         await _operatingContextService.LoadAsync();
@@ -150,6 +153,17 @@ public partial class MainWindow : Window
         if (_operatingContextService.CurrentContext is not null)
         {
             await EnterOperatingContextAsync(_operatingContextService.CurrentContext);
+            if (launchRequest.HasActions)
+            {
+                await HandleLaunchArgsAsync(launchArgs);
+            }
+
+            return;
+        }
+
+        if (launchRequest.HasActions)
+        {
+            await HandleLaunchArgsAsync(launchArgs);
             return;
         }
 
@@ -301,7 +315,17 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnLaunchArgsReceived(object? sender, string[] args) => _viewModel.HandleLaunchArgs(args);
+    private async void OnLaunchArgsReceived(object? sender, string[] args)
+    {
+        try
+        {
+            await HandleLaunchArgsAsync(args);
+        }
+        catch (Exception ex)
+        {
+            Meridian.Wpf.Services.LoggingService.Instance.LogError("[MainWindow] Failed to handle forwarded launch args", ex);
+        }
+    }
 
     private void OnNotificationReceived(object? sender, NotificationEventArgs e)
     {
@@ -314,7 +338,8 @@ public partial class MainWindow : Window
     {
         // Only surface the banner when Meridian is the active window to avoid
         // interrupting the user's work in other applications.
-        if (!IsActive) return;
+        if (!IsActive)
+            return;
 
         _viewModel.ShowClipboardSymbols(e.Symbols);
     }
@@ -390,7 +415,8 @@ public partial class MainWindow : Window
 
     private void OnAlertRaised(object? sender, AlertEventArgs e)
     {
-        if (e.IsUpdate) return; // Only show notification for new alerts
+        if (e.IsUpdate)
+            return; // Only show notification for new alerts
 
         if (!Dispatcher.CheckAccess())
         {
@@ -409,7 +435,8 @@ public partial class MainWindow : Window
         }
 
         var alert = e.Alert;
-        if (alert.IsSuppressed || alert.IsSnoozed) return;
+        if (alert.IsSuppressed || alert.IsSnoozed)
+            return;
 
         var notificationType = alert.Severity switch
         {
@@ -452,8 +479,8 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-     /// Restores the last workspace session state (active workspace, last page, etc.)
-     /// </summary>
+    /// Restores the last workspace session state (active workspace, last page, etc.)
+    /// </summary>
     private async Task RestoreWorkspaceSessionForContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
     {
         try
@@ -639,6 +666,30 @@ public partial class MainWindow : Window
     private async Task EnterOperatingContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
     {
         await _workspaceService.SetLastSelectedOperatingContextKeyAsync(context.ContextKey, ct);
+        await EnsureMainPageShellReadyAsync(ct);
+        await RestoreWorkspaceSessionForContextAsync(context, ct);
+        EnsureShellVisibleOnStartup();
+    }
+
+    private async Task HandleLaunchArgsAsync(string[] args, CancellationToken ct = default)
+    {
+        var request = DesktopLaunchArguments.Parse(args);
+        if (!request.HasActions)
+        {
+            return;
+        }
+
+        if (request.HasPageNavigation)
+        {
+            await EnsureMainPageShellReadyAsync(ct);
+        }
+
+        _viewModel.HandleLaunchArgs(args);
+        EnsureShellVisibleOnStartup();
+    }
+
+    private async Task EnsureMainPageShellReadyAsync(CancellationToken ct = default)
+    {
         if (RootFrame.Content is not MainPage)
         {
             RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
@@ -652,8 +703,6 @@ public partial class MainWindow : Window
         }
 
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded, ct);
-        await RestoreWorkspaceSessionForContextAsync(context, ct);
-        EnsureShellVisibleOnStartup();
     }
 
     private async Task ShowContextSelectionAsync(bool saveCurrentSession, CancellationToken ct = default)
@@ -724,15 +773,19 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (!File.Exists(WindowStateFilePath)) return;
+            if (!File.Exists(WindowStateFilePath))
+                return;
 
             var json = File.ReadAllText(WindowStateFilePath);
             var state = JsonSerializer.Deserialize(json, WindowStateJsonContext.Default.PersistedWindowState);
-            if (state == null) return;
+            if (state == null)
+                return;
 
             // Validate dimensions are reasonable
-            if (state.Width < MinWidth || state.Height < MinHeight) return;
-            if (state.Width > 10000 || state.Height > 10000) return;
+            if (state.Width < MinWidth || state.Height < MinHeight)
+                return;
+            if (state.Width > 10000 || state.Height > 10000)
+                return;
 
             // Validate position is on a visible monitor
             if (!IsPositionOnScreen(state.Left, state.Top, state.Width, state.Height))
@@ -1056,4 +1109,3 @@ public partial class MainWindow : Window
     }
 
 }
-

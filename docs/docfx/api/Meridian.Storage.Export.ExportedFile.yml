@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportedFile
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 167
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 169
   assemblies:
   - Meridian.Storage
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 172
   assemblies:
   - Meridian.Storage
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 175
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 178
   assemblies:
   - Meridian.Storage
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 181
   assemblies:
   - Meridian.Storage
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 184
   assemblies:
   - Meridian.Storage
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 187
   assemblies:
   - Meridian.Storage
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumSha256
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 190
   assemblies:
   - Meridian.Storage
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimestamp
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 193
   assemblies:
   - Meridian.Storage
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestamp
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 196
   assemblies:
   - Meridian.Storage

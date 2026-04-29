@@ -250,7 +250,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
                 if (atm > 0)
                 {
                     var strikeList = allStrikesSorted.ToList();
-                    var atmIndex  = strikeList.IndexOf(atm);
+                    var atmIndex = strikeList.IndexOf(atm);
                     var lo = Math.Max(0, atmIndex - strikeRange.Value);
                     var hi = Math.Min(strikeList.Count - 1, atmIndex + strikeRange.Value);
                     var allowedStrikes = new HashSet<decimal>(strikeList.GetRange(lo, hi - lo + 1));
@@ -518,7 +518,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
                 continue;
 
             var joinedUrls = string.Join(',', batchUrls);
-            var encoded    = Uri.EscapeDataString(joinedUrls);
+            var encoded = Uri.EscapeDataString(joinedUrls);
             var response = await client.GetAsync(
                 $"{BaseUrl}/marketdata/options/?instruments={encoded}", ct).ConfigureAwait(false);
 

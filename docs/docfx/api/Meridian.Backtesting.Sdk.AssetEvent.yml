@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetEvent
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 25
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 25
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveAt
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 26
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 27
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 28
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashPerShare
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 29
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionFactor
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 30
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetSymbol
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 31
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReferencePrice
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 32
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 33
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DestinationSymbol
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 36
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -426,7 +426,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasPositionTransformation
-    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
     startLine: 39
   assemblies:
   - Meridian.Backtesting.Sdk

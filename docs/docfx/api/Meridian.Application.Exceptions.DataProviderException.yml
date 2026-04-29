@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataProviderException
-    path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
+    path: src/Meridian.Core/Exceptions/DataProviderException.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
+    path: src/Meridian.Core/Exceptions/DataProviderException.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
+    path: src/Meridian.Core/Exceptions/DataProviderException.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
+    path: src/Meridian.Core/Exceptions/DataProviderException.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
+    path: src/Meridian.Core/Exceptions/DataProviderException.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
+    path: src/Meridian.Core/Exceptions/DataProviderException.cs
     startLine: 21
   assemblies:
   - Meridian.Core

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: L3OrderBookCollector
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 22
   assemblies:
   - Meridian.Domain
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 38
   assemblies:
   - Meridian.Domain
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentSnapshot
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 53
   assemblies:
   - Meridian.Domain
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedSymbols
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 63
   assemblies:
   - Meridian.Domain
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderAdd
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 70
   assemblies:
   - Meridian.Domain
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderModify
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 92
   assemblies:
   - Meridian.Domain
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderCancel
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 114
   assemblies:
   - Meridian.Domain
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderExecute
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 136
   assemblies:
   - Meridian.Domain
@@ -359,7 +359,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderReplace
-    path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
+    path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
     startLine: 158
   assemblies:
   - Meridian.Domain

@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapAnalyzer
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnGapDetected
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolLiquidity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolLiquidity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordEvent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeGaps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 114
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapsForSymbolDate
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 141
   assemblies:
   - Meridian.Application
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapsForDate
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 157
   assemblies:
   - Meridian.Application
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentGaps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 169
   assemblies:
   - Meridian.Application
@@ -400,7 +400,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 181
   assemblies:
   - Meridian.Application
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolsWithSignificantGaps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 230
   assemblies:
   - Meridian.Application
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateTimeline
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 242
   assemblies:
   - Meridian.Application
@@ -508,7 +508,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 304
   assemblies:
   - Meridian.Application
@@ -544,7 +544,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGapsDetected
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -575,7 +575,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsProcessed
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 325
   assemblies:
   - Meridian.Application
@@ -606,7 +606,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
     startLine: 438
   assemblies:
   - Meridian.Application

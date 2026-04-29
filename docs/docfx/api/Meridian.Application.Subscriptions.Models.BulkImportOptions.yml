@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkImportOptions
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipExisting
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 34
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateExisting
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasHeader
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 38
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Defaults
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 40
   assemblies:
   - Meridian.Core
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 42
   assemblies:
   - Meridian.Core

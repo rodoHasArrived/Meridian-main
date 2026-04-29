@@ -39,7 +39,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBacktestContext
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTime
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentDate
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 18
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 21
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 24
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 27
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 30
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastPrice
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 33
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 40
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceBracketOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 46
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -398,7 +398,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceMarketOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 49
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceMarketOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 52
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceLimitOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 55
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -516,7 +516,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceLimitOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 58
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -558,7 +558,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopMarketOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 61
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -598,7 +598,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopMarketOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 64
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -640,7 +640,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopLimitOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 67
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -682,7 +682,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopLimitOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 70
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -726,7 +726,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrder
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 73
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -757,7 +757,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelContingentOrders
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 79
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -791,7 +791,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
-    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
     startLine: 86
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -518,11 +518,17 @@ let ``SecurityMasterCommandFacade surfaces snapshots on success and errors on va
 let ``SecurityMasterSnapshotWrapper serializes current equity payload and identifiers`` () =
     let record = createSecurityRecord None
     let wrapper = SecurityMasterSnapshotWrapper(record)
-    use document = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
-    let payload = document.RootElement
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    use commonDocument = JsonDocument.Parse(wrapper.CommonTermsJson)
+    let payload = assetDocument.RootElement
+    let commonPayload = commonDocument.RootElement
 
     payload.GetProperty("schemaVersion").GetInt32() |> should equal 1
     payload.GetProperty("shareClass").GetString() |> should equal "A"
+    commonPayload.GetProperty("primaryListingMic").GetString() |> should equal "XNAS"
+    commonPayload.GetProperty("countryOfIncorporation").GetString() |> should equal "US"
+    commonPayload.GetProperty("settlementCycleDays").GetInt32() |> should equal 2
+    commonPayload.GetProperty("holidayCalendarId").GetString() |> should equal "NYSE"
     wrapper.PrimaryIdentifierKind |> should equal "Ticker"
     wrapper.PrimaryIdentifierValue |> should equal "ACPRA"
     wrapper.Currency |> should equal "USD"

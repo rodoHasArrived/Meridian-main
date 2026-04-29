@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionReconciliationService
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 39
   assemblies:
   - Meridian.Execution
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastReconciliationReport
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 50
   assemblies:
   - Meridian.Execution
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 52
   assemblies:
   - Meridian.Execution
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAsync
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 72
   assemblies:
   - Meridian.Execution

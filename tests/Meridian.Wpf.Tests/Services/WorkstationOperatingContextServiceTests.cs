@@ -68,6 +68,29 @@ public sealed class WorkstationOperatingContextServiceTests
     }
 
     [Fact]
+    public async Task LoadAsync_WhenConcurrent_ShouldAwaitInFlightLoad()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var runtimeService = new BlockingEnvironmentRuntimeProjectionService();
+        var service = new WorkstationOperatingContextService(
+            fundContext,
+            environmentRuntimeProjectionService: runtimeService,
+            storagePath: BuildStoragePath("operating-context"));
+
+        var firstLoad = service.LoadAsync();
+        await runtimeService.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var secondLoad = service.LoadAsync();
+
+        secondLoad.IsCompleted.Should().BeFalse("startup callers must not observe operating context load as complete before restore finishes");
+
+        runtimeService.Release();
+        await Task.WhenAll(firstLoad, secondLoad);
+
+        service.Contexts.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task LoadAsync_WithPublishedEnvironmentRuntime_ShouldApplyLaneMetadata()
     {
         var fundContext = await CreateFundContextAsync();
@@ -143,4 +166,26 @@ public sealed class WorkstationOperatingContextServiceTests
             "meridian-operating-context-tests",
             category,
             $"{Guid.NewGuid():N}.json");
+
+    private sealed class BlockingEnvironmentRuntimeProjectionService : IEnvironmentRuntimeProjectionService
+    {
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Entered => _entered;
+
+        public async Task<PublishedEnvironmentRuntimeDto?> GetCurrentRuntimeAsync(
+            Guid? organizationId = null,
+            CancellationToken ct = default)
+        {
+            _entered.TrySetResult();
+            await _release.Task.WaitAsync(ct);
+            return null;
+        }
+
+        public Task<PublishedEnvironmentRuntimeDto?> GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default)
+            => Task.FromResult<PublishedEnvironmentRuntimeDto?>(null);
+
+        public void Release() => _release.TrySetResult();
+    }
 }

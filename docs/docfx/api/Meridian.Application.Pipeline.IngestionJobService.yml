@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionJobService
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobStateChanged
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointUpdated
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadJobsAsync
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 63
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateJobAsync
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 96
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransitionAsync
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 133
   assemblies:
   - Meridian.Application
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCheckpointAsync
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 209
   assemblies:
   - Meridian.Application
@@ -334,7 +334,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSymbolProgressAsync
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 243
   assemblies:
   - Meridian.Application
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJob
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 295
   assemblies:
   - Meridian.Application
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJobs
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 303
   assemblies:
   - Meridian.Application
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetResumableJobs
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 321
   assemblies:
   - Meridian.Application
@@ -483,7 +483,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 332
   assemblies:
   - Meridian.Application
@@ -513,7 +513,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteJobAsync
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 355
   assemblies:
   - Meridian.Application
@@ -551,7 +551,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    path: src/Meridian.Application/Pipeline/IngestionJobService.cs
     startLine: 406
   assemblies:
   - Meridian.Application

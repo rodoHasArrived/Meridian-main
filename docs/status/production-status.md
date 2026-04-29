@@ -1,8 +1,8 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-21
-**Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
+**Last Updated:** 2026-04-29
+**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the web dashboard becomes the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
 
@@ -10,26 +10,28 @@ This document summarizes Meridian's current readiness posture and active deliver
 
 ## Canonical Program State
 
-Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only. Generated ownership and escalation routing for status summaries is published in [`program-state-summary.md`](program-state-summary.md).
 
 <!-- program-state:begin -->
-| Wave | Owner | Status | Target Date | Evidence Link |
-| --- | --- | --- | --- | --- |
-| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
-| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
-| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
-| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
-| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+| Wave | Owner | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
 <!-- program-state:end -->
 
 ---
 
 ## Executive Summary
 
-Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
+Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, an active web workstation dashboard, retained WPF/local API support surfaces, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
-The current working tree reinforces that direction rather than changing it. WPF workspace-shell consolidation is actively moving through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, and new shell smoke tests, but that work should still be treated as in-flight support for Waves 2-4 rather than as a closed migration milestone.
+The current repository reinforces that direction rather than changing it. The web dashboard now includes app-shell view-state handling for loading, partial-degradation, retry, and bootstrap-failure panels plus a Research run-library first cut with retained-run review, two-run compare/diff readiness, promotion-history loading, operator-visible command errors, focused tests, and refreshed built workstation assets. The retained WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, shell smoke tests, the Trading desk briefing hero with stale-replay count detail, Trading Hours session briefing, OrderBook order-flow posture, the Research desk briefing hero, the Data Operations desk briefing hero, Provider Health posture briefing, System Health triage briefing, Notification Center history recovery, Activity Log triage strip with export/clear header actions, the main-shell operator queue button backed by `/api/workstation/operator/inbox` with active-account `fundAccountId` propagation, actionable run review-packet work items, Account Portfolio routing for brokerage-sync blockers, and shell-context attention cues, Messaging Hub delivery-posture state with refresh recency, StrategyRuns filter recovery, route-aware run review-packet work items, BatchBacktest results empty guidance, QuantScript local run-history handoffs, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing state, Storage archive growth/capacity/last-scan posture, focused tests for Batch Backtest, Trading Hours, Position Blotter, Fund Accounts, QuantScript, Notification Center, Welcome, Storage posture, System Health triage behavior, Activity Log triage/export/clear behavior, workspace queue tone styles, workspace shell context-strip behavior, Trading hero state selection, Research run/promotion handoffs, Provider Health posture states, hidden-but-present workflow page-state markers, deterministic isolated workflow restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
+
+The current shell evidence also includes Welcome readiness progress for first-run connection/symbol/storage checks, Storage archive posture plus preview scope/guidance for archive-path decisions, OrderBook depth/tape/spread posture, compact shared deep-page command chrome with related-workflow and trust-state context, actionable shell-context attention detail, provider-degradation workflow summaries that route directly to `ProviderHealth`, and Trading hero attention states for warning or critical shared work items. The screenshot-refresh workflow now supports scheduled, push, and manual catalog/manual WPF captures with diagnostic artifacts and a single post-matrix commit job. These are orientation, handoff, and validation-support improvements; production readiness still depends on the wave gates below.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
@@ -39,14 +41,14 @@ The current working tree reinforces that direction rather than changing it. WPF 
 | Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
-| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, and promotion seam are in code |
+| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, replay-audit metadata, promotion seam, risk/control audit explainability, canonical promotion approval checklist, DK1 trust-gate projection, acceptance gates, and the shared trading-readiness contract are in code |
 | Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; broader runtime proof remains open |
-| Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
+| Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, reconciliation, and stable route-aware review-packet work-item seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |
-| Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
-| Web and WPF workstation shells | Partial | Both surfaces expose meaningful workspace flows; workflow hardening and deeper workflow-first consolidation remain |
+| Governance product surfaces | Partial | Security coverage, Fund Accounts account/routing/balance-evidence posture, reconciliation drill-ins with seeded exception-route/tolerance/sign-off metadata and calibration-summary rollups, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, durable casework, operator-approved calibration, and governed reporting workflows remain incomplete |
+| Web workstation dashboard + retained WPF/local API support surfaces | Partial | The active web dashboard now exposes overview/research/trading/data-operations/governance routes and the Research run-library first cut; retained WPF surfaces project Trading, Trading Hours, OrderBook posture, Research, Data Operations, Storage archive posture, Provider Health, System Health, Notification Center, Activity Log, Watchlist pinned-first staging, StrategyRuns, QuantScript, Fund Accounts account and balance-evidence posture, operator queue, and Messaging Hub support surfaces from shared readiness/run/provider/depth/account/calendar/storage/local history/messaging inputs; workflow hardening, canonical web workspace navigation, and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
-| Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by committed artifacts, and deferred providers stay outside the active closure target |
+| Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by regenerated or attached broker-session evidence, and deferred providers stay outside the active closure target |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
 
 ---
@@ -55,28 +57,32 @@ The current working tree reinforces that direction rather than changing it. WPF 
 
 - mature ingestion, replay, storage, export, and data-quality foundations
 - shared composition and host startup patterns
-- shared workstation shell in web plus materially aligned WPF workstation surfaces
+- active web workstation dashboard plus retained WPF/local API support surfaces that consume shared workstation contracts
 - paper trading, execution, lifecycle, and promotion seams already exposed through stable REST surfaces
 - Security Master as the shared instrument-definition baseline across Research, Trading, Portfolio, Ledger, Reconciliation, Governance, and WPF
 - direct lending, reconciliation, and governance-facing export/report-adjacent seams already present in the repo
 - existing shared run, portfolio, and ledger read services that give Meridian a real cross-workspace integration seam
-- workflow guide and screenshot-refresh tooling for ongoing operator-facing validation
+- workflow guide, screenshot-refresh tooling with scheduled/manual catalog capture, Provider Health and System Health posture cues, page-state automation markers, and single-instance launch forwarding for ongoing operator-facing validation
 
 ---
 
 ## Active Gaps By Wave
 
 Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
+
 ### Wave 1: Closed provider confidence and checkpoint gate
 
-- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
+- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by broker-session scenarios that must be regenerated or attached for review
 - backfill checkpoint reliability and Parquet L2 flush behavior are closed Wave 1 sub-gates backed by repo tests, including retry-safe L2 flush retention on failed or cancelled writes
 - Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
-- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, and the latest generated validation summary instead of architecture intent
+- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `run-wave1-provider-validation.ps1`, generated `artifacts/provider-validation/` run outputs, the signed 2026-04-27 DK1 parity packet, packet-bound sign-off evidence, and the latest generated validation summary instead of architecture intent; future DK1 reviews must use a fresh date-stamped packet and matching sign-off whenever evidence changes
 
 ### Wave 2: Paper-trading cockpit hardening
 
-- the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
+- the shared workstation cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
+- `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, recent risk/control audit evidence, missing-field explainability warnings, DK1 trust-gate packet/sign-off posture, promotion approval checklist state, brokerage sync posture, acceptance-gate/overall-readiness posture, and operator work items; `/api/workstation/operator/inbox` now aggregates those work items with actionable warning/critical run review-packet items from the latest runs, open/in-review reconciliation breaks, and navigation targets as an initial shared operator-inbox contract
+- local replay-audit hardening now records replay consistency, compared fill/order/ledger counts, last-persisted timestamps, and primary mismatch reason into execution-audit metadata so readiness can reconstruct replay evidence after restart or service-layer verification
+- the WPF Trading desk briefing hero consumes active-run, workflow-summary, replay/readiness, controls, DK1 trust-gate, and brokerage-sync signals to route operators toward context selection, audit trail, portfolio, blotter, risk rail, account portfolio, or alerts, while OrderBook now contributes order-flow posture for depth/tape monitoring; this is shell evidence rather than a completed Wave 2 gate
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
 
@@ -95,13 +101,14 @@ Operator-readiness language for Wave 2 should stay “in progress” until the f
 ### Wave 3: Shared run / portfolio / ledger continuity
 
 - the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
+- RunCashFlow now has WPF empty-state guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries, which improves the shared-run drill-in but does not finish broader cash-flow modeling
 - portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
-- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration
+- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration; the Research desk briefing hero and stable route-aware run review-packet work items are useful Wave 3 support evidence only while they stay tied to shared run, portfolio, and promotion-review data
 
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 
 - Security Master is a delivered baseline, not an open foundation item
-- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
+- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows; the Fund Accounts workbench now projects account-queue, provider-routing, shared-data, retained balance-evidence, and ready-for-reconciliation states from loaded evidence, and the first reconciliation break-queue slice is file-backed with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and calibration-summary rollups, but operator-approved calibration, external-account acceptance, and generalized governance casework remain open
 - the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
 
 
@@ -128,7 +135,7 @@ Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the prim
 | Provider | Posture | Notes |
 | --- | --- | --- |
 | Alpaca | Complete | Checked-in provider suites plus the stable `/api/execution/*` seam close the active core-provider row in repo evidence |
-| Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded and must be regenerated or attached for the review run because old provider-validation packets are no longer retained in git |
 | Yahoo | Complete | Deterministic historical-provider and intraday contract evidence close the historical-only core-provider row |
 
 Deferred from the active Wave 1 gate: Polygon, Interactive Brokers, NYSE, and StockSharp remain part of broader provider inventory, but they are not current closure blockers.
@@ -139,8 +146,8 @@ Deferred from the active Wave 1 gate: Polygon, Interactive Brokers, NYSE, and St
 
 Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-1. **Wave 1 gates:** the matrix in `provider-validation-matrix.md` points to executable suites or committed artifact folders for every row, and `run-wave1-provider-validation.ps1` can reproduce the offline gate.
-2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
+1. **Wave 1 gates:** the matrix in `provider-validation-matrix.md` points to executable suites plus generated runtime attachments for bounded rows, and `run-wave1-provider-validation.ps1` can reproduce the offline gate.
+2. **Wave 2 gates:** the workstation exposes a dependable paper-trading cockpit through the shared readiness contract, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
 
@@ -154,7 +161,7 @@ Waves 5 and 6 deepen the product and widen later claims, but they are not prereq
 
 - [x] Keep provider claims synchronized with executable evidence in [`provider-validation-matrix.md`](provider-validation-matrix.md)
 - [x] Keep Robinhood runtime-bounded evidence and deferred-provider labels consistent with the closed Wave 1 gate
-- [x] Keep `artifacts/provider-validation/` and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
+- [x] Keep generated `artifacts/provider-validation/` outputs and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
 - [ ] Harden the paper-trading cockpit against realistic operator scenarios before widening live-readiness language
 - [ ] Keep `Backtest -> Paper` explicit, auditable, and operator-visible through the workstation
 - [ ] Extend shared run / portfolio / ledger / reconciliation continuity across `Research`, `Trading`, and `Governance`

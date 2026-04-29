@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResearchRunDrillInLinks
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquityCurve
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fills
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Attribution
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 44
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashFlows
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 46
   assemblies:
   - Meridian.Contracts
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Continuity
-    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
     startLine: 47
   assemblies:
   - Meridian.Contracts

@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equity
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquityOption
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOption
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Future
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 26
   assemblies:
   - Meridian.Contracts
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SingleStockFuture
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Forex
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commodity
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Crypto
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 46
   assemblies:
   - Meridian.Contracts
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bond
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 51
   assemblies:
   - Meridian.Contracts
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FuturesOption
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 56
   assemblies:
   - Meridian.Contracts
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CFD
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warrant
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 71
   assemblies:
   - Meridian.Contracts
@@ -429,7 +429,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Swap
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 76
   assemblies:
   - Meridian.Contracts
@@ -457,7 +457,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLoan
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 81
   assemblies:
   - Meridian.Contracts
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Repo
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -513,7 +513,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deposit
-    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
     startLine: 91
   assemblies:
   - Meridian.Contracts

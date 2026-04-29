@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketResiliencePolicy
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateReceivePipeline
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateConnectionPipeline
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCircuitBreakerPipeline
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 104
   assemblies:
   - Meridian.Infrastructure
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateTimeoutPipeline
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 148
   assemblies:
   - Meridian.Infrastructure
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateComprehensivePipeline
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
     startLine: 172
   assemblies:
   - Meridian.Infrastructure

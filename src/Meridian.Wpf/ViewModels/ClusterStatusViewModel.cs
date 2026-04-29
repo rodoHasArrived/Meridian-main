@@ -41,7 +41,7 @@ public sealed class ClusterStatusViewModel : BindableBase, IDisposable
 
         _isMeshEnabled = leaseManager?.Enabled ?? false;
         _localNodeId = leaseManager?.InstanceId ?? Environment.MachineName;
-        
+
         if (!_isMeshEnabled)
         {
             _statusMessage = "Mesh mode disabled — running standalone";
@@ -124,7 +124,7 @@ public sealed class ClusterStatusViewModel : BindableBase, IDisposable
         try
         {
             var snapshot = await _leaseManager.GetSnapshotAsync(ct).ConfigureAwait(false);
-            
+
             // Group leases by owner instance (extract instance from resource paths or lease owner)
             var nodeGroups = snapshot.HeldLeases
                 .GroupBy(l => l.InstanceId, StringComparer.OrdinalIgnoreCase)
@@ -132,12 +132,12 @@ public sealed class ClusterStatusViewModel : BindableBase, IDisposable
 
             // Build cluster node items
             var nodes = new ObservableCollection<ClusterNodeItem>();
-            
+
             foreach (var (nodeId, leases) in nodeGroups)
             {
                 var symbolLeases = leases.Count(l => l.ResourceId.StartsWith("symbols/", StringComparison.OrdinalIgnoreCase));
                 var isLocal = string.Equals(nodeId, LocalNodeId, StringComparison.OrdinalIgnoreCase);
-                
+
                 // Calculate time since last renewal
                 var lastRenewed = leases.Max(l => l.LastRenewedAtUtc);
                 var ageSpan = DateTimeOffset.UtcNow - lastRenewed;

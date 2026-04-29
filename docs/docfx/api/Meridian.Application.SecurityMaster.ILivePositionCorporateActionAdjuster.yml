@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ILivePositionCorporateActionAdjuster
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustPositionAsync
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 30
   assemblies:
   - Meridian.Application

@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 
@@ -21,11 +22,18 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     private string _statusMessage = string.Empty;
     private string _preExportReport = string.Empty;
     private string _estimatedSize = string.Empty;
+    private string _currentStepTitle = "Select export scope";
+    private string _currentStepDetail = string.Empty;
+    private string _wizardScopeText = string.Empty;
+    private string _actionReadinessTitle = string.Empty;
+    private string _actionReadinessDetail = string.Empty;
     private bool _preExportPassed;
 
     public AnalysisExportWizardViewModel()
     {
         SelectedSymbols = new ObservableCollection<string>();
+        SelectedSymbols.CollectionChanged += SelectedSymbols_CollectionChanged;
+
         Formats = new ObservableCollection<string> { "CSV", "Parquet", "JSON", "Excel" };
         Metrics = new ObservableCollection<MetricOption>
         {
@@ -36,6 +44,18 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
             new("Gap Analysis"),
             new("Performance Attribution")
         };
+
+        foreach (var metric in Metrics)
+        {
+            metric.PropertyChanged += Metric_PropertyChanged;
+        }
+
+        AddSymbolCommand = new RelayCommand(AddSymbol, () => CanAddSymbol);
+        BackCommand = new RelayCommand(GoBack, () => CanGoBack);
+        PrimaryActionCommand = new RelayCommand(GoNext, () => CanRunPrimaryAction);
+        CancelCommand = new RelayCommand(CancelWizard);
+
+        RefreshPresentationState();
     }
 
     public ObservableCollection<string> SelectedSymbols { get; }
@@ -43,6 +63,14 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     public ObservableCollection<string> Formats { get; }
 
     public ObservableCollection<MetricOption> Metrics { get; }
+
+    public IRelayCommand AddSymbolCommand { get; }
+
+    public IRelayCommand BackCommand { get; }
+
+    public IRelayCommand PrimaryActionCommand { get; }
+
+    public IRelayCommand CancelCommand { get; }
 
     public int CurrentStep
     {
@@ -54,6 +82,7 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
                 RaisePropertyChanged(nameof(CanGoBack));
                 RaisePropertyChanged(nameof(PrimaryActionLabel));
                 UpdateReviewSummary();
+                RefreshPresentationState();
             }
         }
     }
@@ -61,7 +90,15 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     public string SymbolInput
     {
         get => _symbolInput;
-        set => SetProperty(ref _symbolInput, value);
+        set
+        {
+            if (SetProperty(ref _symbolInput, value))
+            {
+                RaisePropertyChanged(nameof(CanAddSymbol));
+                AddSymbolCommand.NotifyCanExecuteChanged();
+                RefreshPresentationState();
+            }
+        }
     }
 
     public DateTime? FromDate
@@ -71,8 +108,8 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _fromDate, value))
             {
-                UpdateValidationSummary();
                 UpdateReviewSummary();
+                RefreshPresentationState();
             }
         }
     }
@@ -84,8 +121,8 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _toDate, value))
             {
-                UpdateValidationSummary();
                 UpdateReviewSummary();
+                RefreshPresentationState();
             }
         }
     }
@@ -98,6 +135,7 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
             if (SetProperty(ref _selectedFormat, value))
             {
                 UpdateReviewSummary();
+                RefreshPresentationState();
             }
         }
     }
@@ -109,7 +147,8 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         {
             if (SetProperty(ref _destination, value))
             {
-                UpdateValidationSummary();
+                UpdateReviewSummary();
+                RefreshPresentationState();
             }
         }
     }
@@ -117,16 +156,40 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     public bool IncludeCharts
     {
         get => _includeCharts;
-        set => SetProperty(ref _includeCharts, value);
+        set
+        {
+            if (SetProperty(ref _includeCharts, value))
+            {
+                UpdateReviewSummary();
+                RefreshPresentationState();
+            }
+        }
     }
 
     public bool IncludeSummary
     {
         get => _includeSummary;
-        set => SetProperty(ref _includeSummary, value);
+        set
+        {
+            if (SetProperty(ref _includeSummary, value))
+            {
+                UpdateReviewSummary();
+                RefreshPresentationState();
+            }
+        }
     }
 
     public bool CanGoBack => CurrentStep > 1;
+
+    public bool CanAddSymbol => !string.IsNullOrWhiteSpace(SymbolInput);
+
+    public bool CanRunPrimaryAction => CurrentStep switch
+    {
+        1 => CanLeaveScopeStep(),
+        2 => CanLeaveConfigurationStep(),
+        3 => _preExportPassed,
+        _ => false
+    };
 
     public string PrimaryActionLabel => CurrentStep < 3 ? "Next" : "Queue Export";
 
@@ -135,14 +198,34 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     public string ValidationSummary
     {
         get => _validationSummary;
-        private set => SetProperty(ref _validationSummary, value);
+        private set
+        {
+            if (SetProperty(ref _validationSummary, value))
+            {
+                RaisePropertyChanged(nameof(ValidationVisibility));
+            }
+        }
     }
+
+    public Visibility ValidationVisibility => string.IsNullOrWhiteSpace(ValidationSummary)
+        ? Visibility.Collapsed
+        : Visibility.Visible;
 
     public string StatusMessage
     {
         get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
+        private set
+        {
+            if (SetProperty(ref _statusMessage, value))
+            {
+                RaisePropertyChanged(nameof(StatusVisibility));
+            }
+        }
     }
+
+    public Visibility StatusVisibility => string.IsNullOrWhiteSpace(StatusMessage)
+        ? Visibility.Collapsed
+        : Visibility.Visible;
 
     /// <summary>Pre-export validation report displayed on the review step.</summary>
     public string PreExportReport
@@ -156,6 +239,36 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     {
         get => _estimatedSize;
         private set => SetProperty(ref _estimatedSize, value);
+    }
+
+    public string CurrentStepTitle
+    {
+        get => _currentStepTitle;
+        private set => SetProperty(ref _currentStepTitle, value);
+    }
+
+    public string CurrentStepDetail
+    {
+        get => _currentStepDetail;
+        private set => SetProperty(ref _currentStepDetail, value);
+    }
+
+    public string WizardScopeText
+    {
+        get => _wizardScopeText;
+        private set => SetProperty(ref _wizardScopeText, value);
+    }
+
+    public string ActionReadinessTitle
+    {
+        get => _actionReadinessTitle;
+        private set => SetProperty(ref _actionReadinessTitle, value);
+    }
+
+    public string ActionReadinessDetail
+    {
+        get => _actionReadinessDetail;
+        private set => SetProperty(ref _actionReadinessDetail, value);
     }
 
     public string Error => string.Empty;
@@ -182,17 +295,35 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         }
 
         UpdateReviewSummary();
+        RefreshPresentationState();
     }
 
     public void AddSymbol()
     {
         var symbol = SymbolInput.Trim().ToUpperInvariant();
-        if (!string.IsNullOrWhiteSpace(symbol) && !SelectedSymbols.Contains(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            RefreshPresentationState();
+            return;
+        }
+
+        if (SelectedSymbols.Contains(symbol))
+        {
+            SymbolInput = string.Empty;
+            StatusMessage = $"{symbol} is already selected.";
+            RefreshPresentationState();
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(symbol))
         {
             SelectedSymbols.Add(symbol);
             SymbolInput = string.Empty;
+            StatusMessage = string.Empty;
             UpdateReviewSummary();
         }
+
+        RefreshPresentationState();
     }
 
     public void GoBack()
@@ -206,17 +337,10 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
 
     public void GoNext()
     {
-        UpdateValidationSummary();
-        if (!string.IsNullOrEmpty(ValidationSummary))
+        RefreshPresentationState();
+        if (!CanRunPrimaryAction)
         {
             StatusMessage = "Resolve validation issues before continuing.";
-            return;
-        }
-
-        if (CurrentStep == 2 && !Metrics.Any(metric => metric.IsSelected))
-        {
-            ValidationSummary = "Select at least one metric.";
-            StatusMessage = "Pick metrics to continue.";
             return;
         }
 
@@ -230,16 +354,12 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
                 RunPreExportValidation();
             }
 
-            return;
-        }
-
-        if (!_preExportPassed)
-        {
-            StatusMessage = "Pre-export validation failed. Resolve the issues above before exporting.";
+            RefreshPresentationState();
             return;
         }
 
         StatusMessage = "Analysis export queued successfully.";
+        RefreshPresentationState();
     }
 
     public void CancelWizard()
@@ -248,6 +368,8 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         StatusMessage = "Wizard reset.";
         PreExportReport = string.Empty;
         EstimatedSize = string.Empty;
+        _preExportPassed = false;
+        RefreshPresentationState();
     }
 
     /// <summary>
@@ -420,12 +542,133 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
 
     private void UpdateValidationSummary()
     {
-        var errors = new[]
+        ValidationSummary = string.Join(" ", GetCurrentStepValidationErrors());
+    }
+
+    private IEnumerable<string> GetCurrentStepValidationErrors()
+    {
+        if (CurrentStep == 1 && SelectedSymbols.Count == 0)
         {
-            this[nameof(ToDate)],
-            this[nameof(Destination)]
+            yield return "Add at least one symbol.";
+        }
+
+        var dateError = this[nameof(ToDate)];
+        if (!string.IsNullOrWhiteSpace(dateError))
+        {
+            yield return dateError;
+        }
+
+        if (CurrentStep >= 2)
+        {
+            var destinationError = this[nameof(Destination)];
+            if (!string.IsNullOrWhiteSpace(destinationError))
+            {
+                yield return destinationError;
+            }
+
+            if (!Metrics.Any(metric => metric.IsSelected))
+            {
+                yield return "Select at least one metric.";
+            }
+        }
+
+        if (CurrentStep == 3 && !_preExportPassed)
+        {
+            yield return "Pre-export validation must pass before queuing the export.";
+        }
+    }
+
+    private bool CanLeaveScopeStep()
+        => SelectedSymbols.Count > 0 && string.IsNullOrWhiteSpace(this[nameof(ToDate)]);
+
+    private bool CanLeaveConfigurationStep()
+        => CanLeaveScopeStep()
+           && !string.IsNullOrWhiteSpace(Destination)
+           && Metrics.Any(metric => metric.IsSelected);
+
+    private void RefreshPresentationState()
+    {
+        UpdateValidationSummary();
+        UpdateStepCopy();
+
+        RaisePropertyChanged(nameof(CanGoBack));
+        RaisePropertyChanged(nameof(CanAddSymbol));
+        RaisePropertyChanged(nameof(CanRunPrimaryAction));
+        AddSymbolCommand.NotifyCanExecuteChanged();
+        BackCommand.NotifyCanExecuteChanged();
+        PrimaryActionCommand.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateStepCopy()
+    {
+        CurrentStepTitle = CurrentStep switch
+        {
+            1 => "Select export scope",
+            2 => "Configure output package",
+            3 => "Review validation evidence",
+            _ => "Configure export"
         };
 
-        ValidationSummary = string.Join(" ", errors.Where(error => !string.IsNullOrWhiteSpace(error)));
+        CurrentStepDetail = CurrentStep switch
+        {
+            1 => "Choose at least one symbol and an optional date range before configuring metrics.",
+            2 => "Pick output metrics, format, and a destination path before the wizard runs validation.",
+            3 => "Review the validation report before queueing the export package.",
+            _ => string.Empty
+        };
+
+        var symbolScope = SelectedSymbols.Count == 0
+            ? "No symbols selected"
+            : $"{SelectedSymbols.Count} symbol{(SelectedSymbols.Count == 1 ? string.Empty : "s")} selected";
+        var metricScope = Metrics.Count(metric => metric.IsSelected) == 0
+            ? "No metrics selected"
+            : $"{Metrics.Count(metric => metric.IsSelected)} metric{(Metrics.Count(metric => metric.IsSelected) == 1 ? string.Empty : "s")} selected";
+        WizardScopeText = $"Step {CurrentStep} of 3 - {symbolScope} - {metricScope}";
+
+        if (CanRunPrimaryAction)
+        {
+            ActionReadinessTitle = CurrentStep switch
+            {
+                1 => "Scope ready",
+                2 => "Package setup ready",
+                3 => "Export ready to queue",
+                _ => "Ready"
+            };
+            ActionReadinessDetail = CurrentStep switch
+            {
+                1 => "Continue to choose metrics and package output details.",
+                2 => "Continue to review the pre-export validation evidence.",
+                3 => "Queue the analysis export package with the validated scope.",
+                _ => string.Empty
+            };
+            return;
+        }
+
+        ActionReadinessTitle = CurrentStep switch
+        {
+            1 => "Scope setup incomplete",
+            2 => "Package setup incomplete",
+            3 => "Validation must pass",
+            _ => "Setup incomplete"
+        };
+
+        ActionReadinessDetail = string.IsNullOrWhiteSpace(ValidationSummary)
+            ? "Complete the required fields before continuing."
+            : ValidationSummary;
+    }
+
+    private void SelectedSymbols_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateReviewSummary();
+        RefreshPresentationState();
+    }
+
+    private void Metric_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MetricOption.IsSelected))
+        {
+            UpdateReviewSummary();
+            RefreshPresentationState();
+        }
     }
 }

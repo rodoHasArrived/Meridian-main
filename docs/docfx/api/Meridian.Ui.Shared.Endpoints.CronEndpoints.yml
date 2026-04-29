@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCronEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared

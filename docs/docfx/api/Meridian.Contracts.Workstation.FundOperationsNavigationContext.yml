@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundOperationsNavigationContext
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tab
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 26
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts

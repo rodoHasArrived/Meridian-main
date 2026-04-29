@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotPathBatchSerializer
-    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
     startLine: 54
   assemblies:
   - Meridian.Application
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializeTrades
-    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
     startLine: 77
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializeQuotes
-    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
     startLine: 110
   assemblies:
   - Meridian.Application

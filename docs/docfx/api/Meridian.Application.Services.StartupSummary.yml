@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupSummary
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Display
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayCompact
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 251
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerformQuickCheck
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 262
   assemblies:
   - Meridian.Application
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayQuickCheck
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 339
   assemblies:
   - Meridian.Application

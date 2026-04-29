@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationStatusValues
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 103
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 108
   assemblies:
   - Meridian.Contracts
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Verified
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 113
   assemblies:
   - Meridian.Contracts
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 118
   assemblies:
   - Meridian.Contracts

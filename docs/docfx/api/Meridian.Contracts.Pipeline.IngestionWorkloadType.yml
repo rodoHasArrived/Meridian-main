@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionWorkloadType
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 207
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Realtime
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 211
   assemblies:
   - Meridian.Contracts
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 214
   assemblies:
   - Meridian.Contracts
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapFill
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 217
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledBackfill
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 220
   assemblies:
   - Meridian.Contracts

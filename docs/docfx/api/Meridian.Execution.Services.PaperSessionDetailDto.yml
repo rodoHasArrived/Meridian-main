@@ -23,8 +23,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionDetailDto
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 567
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 661
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -61,8 +61,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 567
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 661
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -101,8 +101,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 568
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 662
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -130,8 +130,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 569
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 663
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -159,8 +159,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 570
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 664
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -188,8 +188,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderHistory
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 571
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 665
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services

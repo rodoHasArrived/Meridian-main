@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NullSecurityMasterImportService
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 145
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 147
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 150
   assemblies:
   - Meridian.Application

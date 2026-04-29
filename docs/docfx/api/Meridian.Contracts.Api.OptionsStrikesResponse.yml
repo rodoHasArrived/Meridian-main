@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsStrikesResponse
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiration
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strikes
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts

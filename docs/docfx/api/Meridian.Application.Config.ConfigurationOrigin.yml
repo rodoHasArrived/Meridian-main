@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationOrigin
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 139
   assemblies:
   - Meridian.Core
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 142
   assemblies:
   - Meridian.Core
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 145
   assemblies:
   - Meridian.Core
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Wizard
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 148
   assemblies:
   - Meridian.Core
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoConfig
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 151
   assemblies:
   - Meridian.Core
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotReload
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 154
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Programmatic
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 157
   assemblies:
   - Meridian.Core

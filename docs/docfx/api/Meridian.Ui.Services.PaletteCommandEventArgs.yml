@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaletteCommandEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 418
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandId
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 420
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActionId
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 421
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 422
   assemblies:
   - Meridian.Ui.Services

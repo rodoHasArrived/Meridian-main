@@ -46,7 +46,8 @@ public static class BlockTradeAllocator
 
         foreach (var slice in result.Slices)
         {
-            if (slice.AllocatedQuantity == 0) continue;
+            if (slice.AllocatedQuantity == 0)
+                continue;
 
             var sleeveLedger = book.SleeveLedger(slice.DestinationId);
             var securitiesAccount = LedgerAccounts.Securities(result.Symbol);
@@ -94,7 +95,8 @@ public static class BlockTradeAllocator
 
         foreach (var slice in result.Slices)
         {
-            if (slice.AllocatedQuantity == 0) continue;
+            if (slice.AllocatedQuantity == 0)
+                continue;
 
             var entityLedger = book.EntityLedger(slice.DestinationId);
             var securitiesAccount = LedgerAccounts.Securities(result.Symbol);

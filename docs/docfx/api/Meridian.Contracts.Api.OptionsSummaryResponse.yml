@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsSummaryResponse
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackedContracts
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 146
   assemblies:
   - Meridian.Contracts
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackedChains
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 147
   assemblies:
   - Meridian.Contracts
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackedUnderlyings
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 148
   assemblies:
   - Meridian.Contracts
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractsWithGreeks
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 149
   assemblies:
   - Meridian.Contracts
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractsWithOpenInterest
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 150
   assemblies:
   - Meridian.Contracts
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderAvailable
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 151
   assemblies:
   - Meridian.Contracts
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 152
   assemblies:
   - Meridian.Contracts
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 153
   assemblies:
   - Meridian.Contracts
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 154
   assemblies:
   - Meridian.Contracts
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderMode
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 155
   assemblies:
   - Meridian.Contracts
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFallbackProvider
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 156
   assemblies:
   - Meridian.Contracts
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderStatusMessage
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts

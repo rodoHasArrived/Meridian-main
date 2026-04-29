@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticBundleService
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateAsync
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadBundle
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 142
   assemblies:
   - Meridian.Application

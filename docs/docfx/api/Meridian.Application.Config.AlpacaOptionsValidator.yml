@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaOptionsValidator
-    path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
+    path: src/Meridian.Application/Config/ConfigValidationHelper.cs
     startLine: 96
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
+    path: src/Meridian.Application/Config/ConfigValidationHelper.cs
     startLine: 98
   assemblies:
   - Meridian.Application

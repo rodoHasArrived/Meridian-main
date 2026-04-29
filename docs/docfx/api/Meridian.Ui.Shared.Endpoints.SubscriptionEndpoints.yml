@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSubscriptionEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared

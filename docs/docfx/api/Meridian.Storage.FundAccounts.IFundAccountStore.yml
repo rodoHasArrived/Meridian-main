@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IFundAccountStore
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 8
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAccountAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 12
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAccountsAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsertBalanceSnapshotAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalanceHistoryAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 17
   assemblies:
   - Meridian.Storage
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsertCustodianStatementBatchAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsertBankStatementBatchAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 21
   assemblies:
   - Meridian.Storage
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCustodianPositionsAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBankStatementLinesAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 23
   assemblies:
   - Meridian.Storage
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsertReconciliationRunAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 26
   assemblies:
   - Meridian.Storage
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationRunsAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 27
   assemblies:
   - Meridian.Storage
@@ -448,7 +448,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationResultsAsync
-    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
     startLine: 28
   assemblies:
   - Meridian.Storage

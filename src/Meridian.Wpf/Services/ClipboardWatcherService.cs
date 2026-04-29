@@ -97,9 +97,11 @@ public sealed class ClipboardWatcherService : IDisposable
     /// </summary>
     public void Initialize(IntPtr hwnd)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _hwndSource = HwndSource.FromHwnd(hwnd);
-        if (_hwndSource is null) return;
+        if (_hwndSource is null)
+            return;
         _hwndSource.AddHook(WndProc);
         AddClipboardFormatListener(hwnd);
     }
@@ -111,19 +113,23 @@ public sealed class ClipboardWatcherService : IDisposable
     /// </summary>
     public void HandleClipboardChanged()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         try
         {
             var text = System.Windows.Application.Current.Dispatcher.Invoke(static () =>
             {
-                try { return Clipboard.ContainsText() ? Clipboard.GetText() : null; }
+                try
+                { return Clipboard.ContainsText() ? Clipboard.GetText() : null; }
                 catch { return null; }
             });
 
-            if (string.IsNullOrWhiteSpace(text)) return;
+            if (string.IsNullOrWhiteSpace(text))
+                return;
 
             var symbols = ExtractSymbols(text);
-            if (symbols.Count == 0) return;
+            if (symbols.Count == 0)
+                return;
 
             SymbolsDetected?.Invoke(this, new SymbolsDetectedEventArgs
             {
@@ -149,10 +155,13 @@ public sealed class ClipboardWatcherService : IDisposable
         foreach (Match m in _tickerRegex.Matches(upper))
         {
             var candidate = m.Value;
-            if (_stopWords.Contains(candidate)) continue;
-            if (!seen.Add(candidate)) continue;
+            if (_stopWords.Contains(candidate))
+                continue;
+            if (!seen.Add(candidate))
+                continue;
             results.Add(candidate);
-            if (results.Count >= 10) break;
+            if (results.Count >= 10)
+                break;
         }
 
         return results;
@@ -168,7 +177,8 @@ public sealed class ClipboardWatcherService : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
 
         if (_hwndSource is not null)

@@ -25,7 +25,38 @@ public sealed class IBBrokerageGatewayTests
         sut.GatewayId.Should().Be("ib");
         sut.BrokerDisplayName.Should().Contain("Interactive Brokers");
         sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain(["equity", "bond"]);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnClose);
         sut.BrokerageCapabilities.Extensions["supportsFixedIncome"].Should().Be("true");
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_RejectsMarketOnCloseWithoutSendingToClient()
+    {
+        var placeOrderCalled = false;
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(1200),
+            OnPlaceOrder = (_, _, _) => placeOrderCalled = true
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.MarketOnClose,
+            Quantity = 1m,
+            ClientOrderId = "moc-reject"
+        });
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*MarketOnClose*session timing qualifier*");
+        placeOrderCalled.Should().BeFalse();
     }
 
     [Fact]

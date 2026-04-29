@@ -209,6 +209,75 @@ public sealed class StrategyRunWorkspaceServiceTests
         tradingSummary.ValidationStatus.Detail.Should().Contain("paper trading");
     }
 
+    [Fact]
+    public async Task GetTradingSummaryAsync_WithoutActiveRun_WithPaperRunReadyForLive_ShouldSurfaceAggregateBrokerValidationGap()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService(),
+            new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("paper-live-review", "Paper Live Review", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildResult(),
+            PortfolioId = "paper-live-review-portfolio",
+            LedgerReference = "paper-live-review-ledger",
+            AuditReference = "audit-paper-live-review"
+        };
+
+        await store.RecordRunAsync(run);
+        await service.SetActiveRunContextAsync(null);
+
+        var tradingSummary = await service.GetTradingSummaryAsync();
+
+        tradingSummary.ActiveRunContext.Should().BeNull();
+        tradingSummary.ValidationStatus.Label.Should().Be("Broker validation gap");
+        tradingSummary.ValidationStatus.Detail.Should().Contain("paper trading");
+    }
+
+    [Fact]
+    public async Task RecordBacktestRunAsync_WithPublicationOptions_MergesAdditionalParametersAndStrategyIdentity()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 3, 1),
+            To: new DateOnly(2026, 3, 20),
+            Symbols: ["AAPL"],
+            InitialCash: 100_000m,
+            DataRoot: "./data/test");
+
+        var runId = await service.RecordBacktestRunAsync(
+            request,
+            BuildResult(),
+            new BacktestRunPublicationOptions(
+                StrategyName: "QuantScript Alpha",
+                StrategyId: "quantscript-alpha",
+                AdditionalParameters: new Dictionary<string, string>
+                {
+                    ["documentKind"] = "Notebook",
+                    ["executionId"] = "exec-123"
+                }));
+
+        var detail = await service.GetRunDetailAsync(runId);
+
+        detail.Should().NotBeNull();
+        detail!.Summary.StrategyId.Should().Be("quantscript-alpha");
+        detail.Summary.StrategyName.Should().Be("QuantScript Alpha");
+        detail.Parameters.Should().Contain(new KeyValuePair<string, string>("documentKind", "Notebook"));
+        detail.Parameters.Should().Contain(new KeyValuePair<string, string>("executionId", "exec-123"));
+    }
+
     private static BacktestResult BuildResult()
     {
         var startedAt = new DateTimeOffset(2026, 3, 20, 14, 0, 0, TimeSpan.Zero);

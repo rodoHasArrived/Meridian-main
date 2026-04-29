@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCalibrationReportWriter
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 352
   assemblies:
   - Meridian.Application
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildMarkdown
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 354
   assemblies:
   - Meridian.Application

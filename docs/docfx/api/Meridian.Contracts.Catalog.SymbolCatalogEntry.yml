@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCatalogEntry
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 182
   assemblies:
   - Meridian.Contracts
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aliases
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 193
   assemblies:
   - Meridian.Contracts
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 199
   assemblies:
   - Meridian.Contracts
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 205
   assemblies:
   - Meridian.Contracts
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 211
   assemblies:
   - Meridian.Contracts
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 217
   assemblies:
   - Meridian.Contracts
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 223
   assemblies:
   - Meridian.Contracts
@@ -367,7 +367,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 229
   assemblies:
   - Meridian.Contracts
@@ -410,7 +410,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 235
   assemblies:
   - Meridian.Contracts
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 241
   assemblies:
   - Meridian.Contracts
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 247
   assemblies:
   - Meridian.Contracts
@@ -539,7 +539,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceRange
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 253
   assemblies:
   - Meridian.Contracts

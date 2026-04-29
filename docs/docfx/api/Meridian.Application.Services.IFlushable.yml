@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IFlushable
-    path: ../../src/Meridian.Core/Services/IFlushable.cs
+    path: src/Meridian.Core/Services/IFlushable.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Core/Services/IFlushable.cs
+    path: src/Meridian.Core/Services/IFlushable.cs
     startLine: 10
   assemblies:
   - Meridian.Core

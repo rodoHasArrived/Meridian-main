@@ -39,7 +39,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolConfig
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 26
   assemblies:
   - Meridian.Contracts
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryExchange
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LocalSymbol
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingClass
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConId
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -502,7 +502,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -531,7 +531,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidityProfile
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseRelaxedValidation
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -589,7 +589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -618,7 +618,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts
@@ -647,7 +647,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTradeDateOrContractMonth
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 50
   assemblies:
   - Meridian.Contracts
@@ -676,7 +676,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionStyle
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 51
   assemblies:
   - Meridian.Contracts
@@ -705,7 +705,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Multiplier
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 52
   assemblies:
   - Meridian.Contracts
@@ -734,7 +734,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
     startLine: 53
   assemblies:
   - Meridian.Contracts

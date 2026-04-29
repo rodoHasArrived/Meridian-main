@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecuritySearchRequest
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Query
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Take
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skip
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveOnly
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts

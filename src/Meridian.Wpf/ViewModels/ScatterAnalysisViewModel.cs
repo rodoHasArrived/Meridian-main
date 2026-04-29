@@ -48,7 +48,7 @@ public sealed class ScatterAnalysisViewModel : BindableBase
     private bool _isBusy;
     private string _chartTitle = "Scatter Analysis";
     private Visibility _noDataVisible = Visibility.Visible;
-    private Visibility _chartVisible  = Visibility.Collapsed;
+    private Visibility _chartVisible = Visibility.Collapsed;
     private Visibility _loadingVisible = Visibility.Collapsed;
     private string _statusMessage = "Enter symbols and click Plot to begin.";
 
@@ -94,8 +94,8 @@ public sealed class ScatterAnalysisViewModel : BindableBase
     public ScatterAnalysisViewModel(BackfillService backfillService)
     {
         _backfillService = backfillService ?? throw new ArgumentNullException(nameof(backfillService));
-        PlotCommand            = new AsyncRelayCommand(PlotAsync);
-        ApplyTemplateCommand   = new RelayCommand<QuickstartTemplate>(ApplyTemplate);
+        PlotCommand = new AsyncRelayCommand(PlotAsync);
+        ApplyTemplateCommand = new RelayCommand<QuickstartTemplate>(ApplyTemplate);
     }
 
     // ── Input properties ──────────────────────────────────────────────────────
@@ -183,14 +183,14 @@ public sealed class ScatterAnalysisViewModel : BindableBase
     // ── Statistics properties ─────────────────────────────────────────────────
 
     public string CorrelationText { get => _correlationText; private set => SetProperty(ref _correlationText, value); }
-    public string RSquaredText    { get => _rSquaredText;    private set => SetProperty(ref _rSquaredText, value); }
-    public string SlopeText       { get => _slopeText;       private set => SetProperty(ref _slopeText, value); }
-    public string InterceptText   { get => _interceptText;   private set => SetProperty(ref _interceptText, value); }
-    public string CountText       { get => _countText;       private set => SetProperty(ref _countText, value); }
-    public string XMeanText       { get => _xMeanText;       private set => SetProperty(ref _xMeanText, value); }
-    public string YMeanText       { get => _yMeanText;       private set => SetProperty(ref _yMeanText, value); }
-    public string XStdDevText     { get => _xStdDevText;     private set => SetProperty(ref _xStdDevText, value); }
-    public string YStdDevText     { get => _yStdDevText;     private set => SetProperty(ref _yStdDevText, value); }
+    public string RSquaredText { get => _rSquaredText; private set => SetProperty(ref _rSquaredText, value); }
+    public string SlopeText { get => _slopeText; private set => SetProperty(ref _slopeText, value); }
+    public string InterceptText { get => _interceptText; private set => SetProperty(ref _interceptText, value); }
+    public string CountText { get => _countText; private set => SetProperty(ref _countText, value); }
+    public string XMeanText { get => _xMeanText; private set => SetProperty(ref _xMeanText, value); }
+    public string YMeanText { get => _yMeanText; private set => SetProperty(ref _yMeanText, value); }
+    public string XStdDevText { get => _xStdDevText; private set => SetProperty(ref _xStdDevText, value); }
+    public string YStdDevText { get => _yStdDevText; private set => SetProperty(ref _yStdDevText, value); }
 
     // ── Data properties ───────────────────────────────────────────────────────
 
@@ -228,13 +228,14 @@ public sealed class ScatterAnalysisViewModel : BindableBase
 
     private void ApplyTemplate(QuickstartTemplate? template)
     {
-        if (template is null) return;
+        if (template is null)
+            return;
 
         // Batch-update backing fields so only one PlotAsync is triggered, not one per setter.
-        _xSymbol         = template.XSymbol;
-        _ySymbol         = template.YSymbol;
-        _xExpression     = template.XExpression;
-        _yExpression     = template.YExpression;
+        _xSymbol = template.XSymbol;
+        _ySymbol = template.YSymbol;
+        _xExpression = template.XExpression;
+        _yExpression = template.YExpression;
         _selectedTimeRange = template.TimeRange;
 
         OnPropertyChanged(nameof(XSymbol));
@@ -298,8 +299,8 @@ public sealed class ScatterAnalysisViewModel : BindableBase
             if (commonDates.Count == 0)
             {
                 StatusMessage = "No overlapping data for the selected symbols and range.";
-                NoDataVisible  = Visibility.Visible;
-                ChartVisible   = Visibility.Collapsed;
+                NoDataVisible = Visibility.Visible;
+                ChartVisible = Visibility.Collapsed;
                 return;
             }
 
@@ -319,21 +320,21 @@ public sealed class ScatterAnalysisViewModel : BindableBase
             ChartTitle = $"{xSym} vs {ySym} (Scatter)";
             StatusMessage = $"{allPoints.Count} points · {from:MMM yyyy} – {to:MMM yyyy}";
             NoDataVisible = Visibility.Collapsed;
-            ChartVisible  = Visibility.Visible;
+            ChartVisible = Visibility.Visible;
 
             ChartDataReady?.Invoke(this, EventArgs.Empty);
         }
         catch (OperationCanceledException)
         {
-            StatusMessage  = "Cancelled.";
-            NoDataVisible  = Visibility.Visible;
-            ChartVisible   = Visibility.Collapsed;
+            StatusMessage = "Cancelled.";
+            NoDataVisible = Visibility.Visible;
+            ChartVisible = Visibility.Collapsed;
         }
         catch (Exception ex)
         {
-            StatusMessage  = $"Error: {ex.Message}";
-            NoDataVisible  = Visibility.Visible;
-            ChartVisible   = Visibility.Collapsed;
+            StatusMessage = $"Error: {ex.Message}";
+            NoDataVisible = Visibility.Visible;
+            ChartVisible = Visibility.Collapsed;
         }
         finally
         {
@@ -347,12 +348,12 @@ public sealed class ScatterAnalysisViewModel : BindableBase
         var to = DateOnly.FromDateTime(DateTime.Today);
         var from = _selectedTimeRange switch
         {
-            "1M"  => to.AddMonths(-1),
-            "3M"  => to.AddMonths(-3),
-            "6M"  => to.AddMonths(-6),
-            "1Y"  => to.AddYears(-1),
-            "3Y"  => to.AddYears(-3),
-            _     => to.AddYears(-10) // MAX
+            "1M" => to.AddMonths(-1),
+            "3M" => to.AddMonths(-3),
+            "6M" => to.AddMonths(-6),
+            "1Y" => to.AddYears(-1),
+            "3Y" => to.AddYears(-3),
+            _ => to.AddYears(-10) // MAX
         };
         return (from, to);
     }
@@ -364,14 +365,14 @@ public sealed class ScatterAnalysisViewModel : BindableBase
         if (points.Count < 2)
         {
             CorrelationText = "--";
-            RSquaredText    = "--";
-            SlopeText       = "--";
-            InterceptText   = "--";
-            XMeanText       = "--";
-            YMeanText       = "--";
-            XStdDevText     = "--";
-            YStdDevText     = "--";
-            RegressionLine  = null;
+            RSquaredText = "--";
+            SlopeText = "--";
+            InterceptText = "--";
+            XMeanText = "--";
+            YMeanText = "--";
+            XStdDevText = "--";
+            YStdDevText = "--";
+            RegressionLine = null;
             return;
         }
 
@@ -381,7 +382,7 @@ public sealed class ScatterAnalysisViewModel : BindableBase
         var xMean = xs.Average();
         var yMean = ys.Average();
 
-        var cov  = xs.Zip(ys, (x, y) => (x - xMean) * (y - yMean)).Sum() / (xs.Length - 1);
+        var cov = xs.Zip(ys, (x, y) => (x - xMean) * (y - yMean)).Sum() / (xs.Length - 1);
         var xVar = xs.Select(x => (x - xMean) * (x - xMean)).Sum() / (xs.Length - 1);
         var yVar = ys.Select(y => (y - yMean) * (y - yMean)).Sum() / (ys.Length - 1);
 
@@ -389,18 +390,18 @@ public sealed class ScatterAnalysisViewModel : BindableBase
         var yStd = Math.Sqrt(yVar);
 
         var correlation = xStd > 0 && yStd > 0 ? cov / (xStd * yStd) : 0.0;
-        var slope       = xVar > 0 ? cov / xVar : 0.0;
-        var intercept   = yMean - slope * xMean;
-        var rSquared    = correlation * correlation;
+        var slope = xVar > 0 ? cov / xVar : 0.0;
+        var intercept = yMean - slope * xMean;
+        var rSquared = correlation * correlation;
 
         CorrelationText = $"{correlation:F4}";
-        RSquaredText    = $"{rSquared:F4}";
-        SlopeText       = $"{slope:F4}";
-        InterceptText   = $"{intercept:F4}";
-        XMeanText       = $"{xMean:F4}";
-        YMeanText       = $"{yMean:F4}";
-        XStdDevText     = $"{xStd:F4}";
-        YStdDevText     = $"{yStd:F4}";
+        RSquaredText = $"{rSquared:F4}";
+        SlopeText = $"{slope:F4}";
+        InterceptText = $"{intercept:F4}";
+        XMeanText = $"{xMean:F4}";
+        YMeanText = $"{yMean:F4}";
+        XStdDevText = $"{xStd:F4}";
+        YStdDevText = $"{yStd:F4}";
 
         // Regression line endpoints spanning the data range
         var x1 = xs.Min();

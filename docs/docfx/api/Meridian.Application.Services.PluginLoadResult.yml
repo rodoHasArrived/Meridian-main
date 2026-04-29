@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PluginLoadResult
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssemblyPath
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisteredTypes
-    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    path: src/Meridian.Application/Services/PluginLoaderService.cs
     startLine: 22
   assemblies:
   - Meridian.Application

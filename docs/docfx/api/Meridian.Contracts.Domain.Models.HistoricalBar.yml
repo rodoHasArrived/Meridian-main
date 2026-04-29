@@ -36,7 +36,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBar
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionDate
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 32
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 47
   assemblies:
   - Meridian.Contracts
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 52
   assemblies:
   - Meridian.Contracts
@@ -356,7 +356,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToTimestampUtc
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 109
   assemblies:
   - Meridian.Contracts
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Range
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 115
   assemblies:
   - Meridian.Contracts
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BodySize
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 121
   assemblies:
   - Meridian.Contracts
@@ -510,7 +510,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBullish
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 127
   assemblies:
   - Meridian.Contracts
@@ -544,7 +544,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBearish
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 133
   assemblies:
   - Meridian.Contracts
@@ -578,7 +578,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangePercent
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 139
   assemblies:
   - Meridian.Contracts
@@ -612,7 +612,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TypicalPrice
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 145
   assemblies:
   - Meridian.Contracts
@@ -646,7 +646,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notional
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
     startLine: 151
   assemblies:
   - Meridian.Contracts

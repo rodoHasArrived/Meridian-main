@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountRules
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowMargin
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowShortSelling
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualMarginRate
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 17
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualShortRebateRate
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 18
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualCashInterestRate
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 19
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotSelection
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 20
   assemblies:
   - Meridian.Backtesting.Sdk

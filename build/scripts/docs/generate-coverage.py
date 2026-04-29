@@ -571,7 +571,7 @@ def _recommendations(report: CoverageReport) -> List[str]:  # noqa: C901
             if count > 50:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented types. "
-                    "Consider generating API docs with DocFX (`docfx docs/docfx/docfx.json`) "
+                    "Consider generating API docs with DocFX (`docfx docfx.json`) "
                     "to cover the long tail of public types automatically."
                 )
             elif count > 0:
@@ -641,7 +641,7 @@ def generate_markdown(report: CoverageReport) -> str:
         f"(**{report.overall_pct:.1f}%**) &mdash; Grade: **{grade}**"
     )
     lines.append("")
-    lines.append("```")
+    lines.append("```text")
     lines.append(f"[{_coverage_bar(report.overall_pct)}] {report.overall_pct:.1f}%")
     lines.append("```")
     lines.append("")
@@ -650,7 +650,7 @@ def generate_markdown(report: CoverageReport) -> str:
     lines.append("## Coverage by Category")
     lines.append("")
     lines.append("| Category | Documented | Total | Coverage | Grade |")
-    lines.append("|----------|-----------|-------|----------|-------|")
+    lines.append("| ---------- | ----------- | ------- | ---------- | ------- |")
     for cat in report.categories:
         lines.append(
             f"| {cat.category} | {cat.documented} | {cat.total} "
@@ -671,7 +671,7 @@ def generate_markdown(report: CoverageReport) -> str:
             lines.append(f"### {cat.category} ({len(undoc)} undocumented)")
             lines.append("")
             lines.append("| Item | Location |")
-            lines.append("|------|----------|")
+            lines.append("| ------ | ---------- |")
             # Show up to 50 items per category to keep the report manageable
             display = undoc[:50]
             for item in display:
@@ -696,8 +696,8 @@ def generate_markdown(report: CoverageReport) -> str:
     lines.append("---")
     lines.append("")
     lines.append(
-        "*This report was generated automatically. "
-        "Do not edit manually.*"
+        "_This report was generated automatically. "
+        "Do not edit manually._"
     )
     lines.append("")
 
@@ -718,7 +718,7 @@ def generate_summary(report: CoverageReport) -> str:
     )
     lines.append("")
     lines.append("| Category | Coverage |")
-    lines.append("|----------|----------|")
+    lines.append("| ---------- | ---------- |")
     for cat in report.categories:
         lines.append(f"| {cat.category} | {cat.coverage_pct:.1f}% ({cat.documented}/{cat.total}) |")
     lines.append("")

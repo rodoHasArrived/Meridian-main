@@ -25,10 +25,10 @@ public sealed class IntToVisibilityConverter : IValueConverter
         {
             intValue = value switch
             {
-                int i    => i,
-                long l   => (int)l,
+                int i => i,
+                long l => (int)l,
                 double d => (int)d,
-                _        => System.Convert.ToInt32(value ?? 0)
+                _ => System.Convert.ToInt32(value ?? 0)
             };
         }
         catch

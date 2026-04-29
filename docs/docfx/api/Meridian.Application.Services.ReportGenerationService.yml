@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportGenerationService
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateAsync
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 29
   assemblies:
   - Meridian.Application

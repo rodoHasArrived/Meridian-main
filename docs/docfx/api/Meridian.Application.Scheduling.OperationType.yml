@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationType
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Maintenance
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityCheck
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reporting
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheck
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CacheRefresh
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialRefresh
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexRebuild
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 31
   assemblies:
   - Meridian.Application

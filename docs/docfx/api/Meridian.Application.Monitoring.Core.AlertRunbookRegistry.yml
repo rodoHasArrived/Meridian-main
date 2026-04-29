@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertRunbookRegistry
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 303
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByAlertName
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 312
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunbookUrl
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 328
   assemblies:
   - Meridian.Application
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBySeverity
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 336
   assemblies:
   - Meridian.Application
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnrichWithRunbook
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 348
   assemblies:
   - Meridian.Application

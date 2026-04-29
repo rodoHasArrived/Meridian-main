@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionJobEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapIngestionJobEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Shared

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Charts: Equity curve</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 22px; font-family: var(--font-sans); color: #FFF; background: var(--bg); background-image: var(--bg-ambient); }
+  .card { background: #0B1520; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+
+  .head { display: grid; grid-template-columns: 1fr auto; gap: 18px; padding: 16px 22px; background: #05101B; border-bottom: 1px solid var(--border-color); align-items: center; }
+  .meta { display: flex; flex-direction: column; gap: 4px; }
+  .meta .crumb { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.16em; }
+  .meta .crumb b { color: #2AB2D4; font-weight: 500; margin-right: 6px; }
+  .meta h1 { font-family: var(--font-display); font-size: 20px; color: #FFF; margin: 0; font-weight: 600; letter-spacing: -0.005em; }
+  .meta .pillrow { display: flex; gap: 6px; margin-top: 4px; }
+  .pill { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 3px; color: #DEE6EF; }
+  .pill.live { color: #26BF86; border-color: rgba(38,191,134,0.4); background: rgba(38,191,134,0.10); }
+
+  .actions { display: flex; gap: 6px; align-items: center; }
+  .btn { font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; background: #0B1520; border: 1px solid var(--border-color); color: #DEE6EF; border-radius: 4px; cursor: pointer; }
+  .btn:hover { border-color: #2A4566; color: #FFF; }
+  .seg { display: inline-flex; background: #0B1520; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
+  .seg button { background: transparent; border: 0; color: var(--fg-muted); padding: 6px 9px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; }
+  .seg button.on { background: rgba(42,178,212,0.14); color: #2AB2D4; }
+
+  /* KPI strip */
+  .kpis { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--border-color); }
+  .kpi { padding: 12px 16px; border-right: 1px solid #142036; }
+  .kpi:last-child { border-right: 0; }
+  .kpi .k { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.14em; }
+  .kpi .v { font-family: var(--font-mono); font-size: 17px; color: #FFF; margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -0.005em; }
+  .kpi .v.up { color: #26BF86; }
+  .kpi .v.dn { color: #DE5878; }
+  .kpi .sub { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); margin-top: 2px; }
+  .kpi .sub b { color: #BEC8D4; font-weight: 500; }
+
+  .legend { display: flex; gap: 14px; padding: 10px 22px; background: #0B1520; border-bottom: 1px solid var(--border-color); align-items: center; }
+  .legend-item { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 10px; color: #DEE6EF; }
+  .legend-item .sw { width: 14px; height: 2px; border-radius: 1px; }
+  .legend-item .sw.dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend .grow { flex: 1; }
+  .legend .right { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .legend .right b { color: #FFF; font-weight: 500; }
+
+  svg.chart { display: block; width: 100%; height: auto; background: #08131F; }
+
+  .footer { display: grid; grid-template-columns: 1fr auto; padding: 10px 22px; border-top: 1px solid var(--border-color); background: #05101B; align-items: center; }
+  .footer .scale-info { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .footer .scale-info b { color: #BEC8D4; font-weight: 500; }
+  .footer .tf button { background: transparent; border: 0; color: var(--fg-muted); font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+  .footer .tf button.on { background: rgba(42,178,212,0.14); color: #2AB2D4; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- header -->
+  <div class="head">
+    <div class="meta">
+      <div class="crumb"><b>STRATEGY</b>Backtest / Live · MRD-ALPHA-02</div>
+      <h1>Equity curve · MRD-ALPHA-02 <span style="font-family:var(--font-mono); font-size: 13px; color:#2AB2D4; margin-left: 6px;">v3.4</span></h1>
+      <div class="pillrow">
+        <span class="pill live">● LIVE · paper</span>
+        <span class="pill">Long/Short Equity</span>
+        <span class="pill">USD · gross</span>
+        <span class="pill">benchmark · S&amp;P 500</span>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="seg">
+        <button>1M</button>
+        <button>3M</button>
+        <button class="on">6M</button>
+        <button>YTD</button>
+        <button>1Y</button>
+        <button>ALL</button>
+      </div>
+      <button class="btn">⧉ Compare</button>
+      <button class="btn">⤓ Export CSV</button>
+    </div>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="kpis">
+    <div class="kpi"><div class="k">Total return</div><div class="v up">+1.95%</div><div class="sub">vs bench <b>+3.16%</b></div></div>
+    <div class="kpi"><div class="k">CAGR</div><div class="v">3.12%</div><div class="sub">annualized</div></div>
+    <div class="kpi"><div class="k">Sharpe</div><div class="v">4.72</div><div class="sub">30d rolling</div></div>
+    <div class="kpi"><div class="k">Sortino</div><div class="v">2.61</div><div class="sub">target 0%</div></div>
+    <div class="kpi"><div class="k">Max DD</div><div class="v dn">-6.16%</div><div class="sub">70 days ago</div></div>
+    <div class="kpi"><div class="k">Win rate</div><div class="v">58%</div><div class="sub"><b>104</b> / 179 trades</div></div>
+    <div class="kpi"><div class="k">Profit factor</div><div class="v">1.92</div><div class="sub">gross / loss</div></div>
+  </div>
+
+  <!-- legend -->
+  <div class="legend">
+    <span class="legend-item"><span class="sw" style="background:#26BF86;"></span>MRD-ALPHA-02</span>
+    <span class="legend-item"><span class="sw" style="background:#60A5FA; opacity:0.85;"></span>S&amp;P 500</span>
+    <span class="legend-item"><span class="sw dot" style="background:#0B1520; border:1.4px solid #26BF86;"></span>Long entry</span>
+    <span class="legend-item"><span class="sw dot" style="background:#0B1520; border:1.4px solid #DE5878;"></span>Short entry</span>
+    <span class="legend-item"><span class="sw" style="background:rgba(222,88,120,0.4);"></span>Drawdown</span>
+    <span class="legend-item"><span class="sw" style="background:#F2C94C;"></span>Rolling Sharpe (30d)</span>
+    <span class="grow"></span>
+    <span class="right">Hover · <b>Apr 24, 14:32 EDT</b> · day +0.84%</span>
+  </div>
+
+  <!-- chart -->
+  <svg class="chart" viewBox="0 0 1200 620" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#26BF86" stop-opacity="0.32"/>
+        <stop offset="1" stop-color="#26BF86" stop-opacity="0.00"/>
+      </linearGradient>
+      <linearGradient id="eqfillNeg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#DE5878" stop-opacity="0.00"/>
+        <stop offset="1" stop-color="#DE5878" stop-opacity="0.20"/>
+      </linearGradient>
+      <pattern id="grid" width="89.5" height="50" patternUnits="userSpaceOnUse">
+        <path d="M 89.5 0 L 0 0 0 50" fill="none" stroke="#142036" stroke-width="0.6"/>
+      </pattern>
+    </defs>
+
+    <!-- backgrounds for each panel -->
+    <rect x="58" y="30" width="1074" height="280" fill="url(#grid)"/>
+    <rect x="58" y="334" width="1074" height="70" fill="#05101B"/>
+    <rect x="58" y="428" width="1074" height="70" fill="#05101B"/>
+
+    <!-- panel labels -->
+    <text x="58" y="22.0" font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" letter-spacing="1.4">EQUITY · % RETURN FROM INCEPTION</text>
+    <text x="58" y="326.0" font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" letter-spacing="1.4">DRAWDOWN · %</text>
+    <text x="58" y="420.0" font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" letter-spacing="1.4">ROLLING SHARPE · 30D</text>
+
+    <!-- y gridlines / ticks (eq) -->
+    <g stroke="#1A2D44" stroke-width="0.6" stroke-dasharray="2 4">
+      <line x1="58" y1="310.0" x2="1132" y2="310.0"/><line x1="58" y1="263.3" x2="1132" y2="263.3"/><line x1="58" y1="216.7" x2="1132" y2="216.7"/><line x1="58" y1="170.0" x2="1132" y2="170.0"/><line x1="58" y1="123.3" x2="1132" y2="123.3"/><line x1="58" y1="76.7" x2="1132" y2="76.7"/><line x1="58" y1="30.0" x2="1132" y2="30.0"/>
+    </g>
+    <g font-family="IBM Plex Mono" font-size="10" fill="#A8B5C4" text-anchor="end">
+      <text x="50" y="313.0">-5.1%</text><text x="50" y="266.3">-2.8%</text><text x="50" y="219.7">-0.6%</text><text x="50" y="173.0">+1.6%</text><text x="50" y="126.3">+3.9%</text><text x="50" y="79.7">+6.1%</text><text x="50" y="33.0">+8.4%</text>
+    </g>
+
+    <!-- 0% baseline -->
+    <line x1="58" y1="204.1" x2="1132" y2="204.1" stroke="#2A4566" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- regime annotation -->
+    <line x1="718.0" y1="30" x2="718.0" y2="498.0" stroke="#F2C94C" stroke-width="0.8" stroke-dasharray="2 4" opacity="0.6"/>
+    <g transform="translate(724.0, 40.0)">
+      <rect x="0" y="0" width="116" height="20" fill="#0B1520" stroke="#F2C94C" stroke-width="0.8" rx="2"/>
+      <text x="8" y="13.5" font-family="IBM Plex Mono" font-size="9.5" fill="#F2C94C" letter-spacing="0.5">REGIME · momentum</text>
+    </g>
+
+    <!-- equity area + line -->
+    <path d="M 58.0 191.9 L 64.0 201.9 L 70.0 189.3 L 76.0 191.2 L 82.0 186.2 L 88.0 194.9 L 94.0 196.0 L 100.0 194.4 L 106.0 203.5 L 112.0 207.2 L 118.0 218.3 L 124.0 225.0 L 130.0 225.5 L 136.0 222.4 L 142.0 215.1 L 148.0 224.6 L 154.0 225.6 L 160.0 210.7 L 166.0 205.5 L 172.0 192.9 L 178.0 194.2 L 184.0 195.6 L 190.0 196.6 L 196.0 202.7 L 202.0 195.8 L 208.0 201.7 L 214.0 191.7 L 220.0 179.8 L 226.0 172.7 L 232.0 170.9 L 238.0 175.4 L 244.0 182.9 L 250.0 177.5 L 256.0 183.6 L 262.0 169.4 L 268.0 166.8 L 274.0 177.7 L 280.0 178.6 L 286.0 175.9 L 292.0 185.9 L 298.0 177.7 L 304.0 166.0 L 310.0 162.9 L 316.0 161.1 L 322.0 171.3 L 328.0 183.0 L 334.0 197.0 L 340.0 198.6 L 346.0 191.9 L 352.0 194.7 L 358.0 203.3 L 364.0 217.7 L 370.0 227.5 L 376.0 222.3 L 382.0 233.9 L 388.0 233.2 L 394.0 238.3 L 400.0 241.5 L 406.0 230.5 L 412.0 234.4 L 418.0 241.3 L 424.0 238.0 L 430.0 246.8 L 436.0 260.5 L 442.0 274.0 L 448.0 284.7 L 454.0 273.5 L 460.0 277.6 L 466.0 279.0 L 472.0 280.8 L 478.0 289.2 L 484.0 283.5 L 490.0 271.4 L 496.0 271.0 L 502.0 259.4 L 508.0 257.9 L 514.0 248.9 L 520.0 246.1 L 526.0 241.0 L 532.0 241.1 L 538.0 227.0 L 544.0 221.4 L 550.0 213.1 L 556.0 211.5 L 562.0 199.6 L 568.0 210.2 L 574.0 209.6 L 580.0 203.7 L 586.0 197.4 L 592.0 203.9 L 598.0 207.4 L 604.0 193.4 L 610.0 177.3 L 616.0 184.4 L 622.0 190.1 L 628.0 193.8 L 634.0 189.6 L 640.0 179.0 L 646.0 181.7 L 652.0 169.3 L 658.0 179.2 L 664.0 178.0 L 670.0 179.1 L 676.0 182.2 L 682.0 192.6 L 688.0 192.2 L 694.0 179.8 L 700.0 180.8 L 706.0 182.2 L 712.0 190.8 L 718.0 183.5 L 724.0 184.7 L 730.0 191.1 L 736.0 187.0 L 742.0 196.5 L 748.0 188.2 L 754.0 193.6 L 760.0 187.6 L 766.0 201.1 L 772.0 213.2 L 778.0 213.0 L 784.0 221.2 L 790.0 228.2 L 796.0 219.1 L 802.0 213.5 L 808.0 221.7 L 814.0 233.7 L 820.0 223.5 L 826.0 230.2 L 832.0 230.8 L 838.0 243.0 L 844.0 236.5 L 850.0 237.9 L 856.0 237.1 L 862.0 250.3 L 868.0 255.6 L 874.0 251.1 L 880.0 254.5 L 886.0 258.2 L 892.0 250.1 L 898.0 254.0 L 904.0 263.1 L 910.0 264.4 L 916.0 253.5 L 922.0 249.7 L 928.0 247.9 L 934.0 245.6 L 940.0 249.7 L 946.0 245.1 L 952.0 240.0 L 958.0 237.5 L 964.0 221.4 L 970.0 219.8 L 976.0 213.8 L 982.0 222.1 L 988.0 221.1 L 994.0 205.9 L 1000.0 212.1 L 1006.0 200.1 L 1012.0 187.9 L 1018.0 183.1 L 1024.0 166.1 L 1030.0 160.1 L 1036.0 153.6 L 1042.0 156.3 L 1048.0 150.8 L 1054.0 142.9 L 1060.0 125.7 L 1066.0 133.4 L 1072.0 142.9 L 1078.0 140.1 L 1084.0 136.4 L 1090.0 144.9 L 1096.0 153.7 L 1102.0 160.6 L 1108.0 168.4 L 1114.0 176.5 L 1120.0 178.8 L 1126.0 177.1 L 1132.0 163.5 L 1132.0 204.1 L 58.0 204.1 Z" fill="url(#eqfill)"/>
+    <path d="M 58.0 193.7 L 64.0 195.3 L 70.0 202.7 L 76.0 201.9 L 82.0 207.2 L 88.0 196.4 L 94.0 202.9 L 100.0 207.1 L 106.0 201.2 L 112.0 204.9 L 118.0 195.5 L 124.0 187.0 L 130.0 193.4 L 136.0 196.0 L 142.0 192.8 L 148.0 199.4 L 154.0 209.1 L 160.0 211.4 L 166.0 208.4 L 172.0 212.7 L 178.0 213.1 L 184.0 205.7 L 190.0 207.4 L 196.0 213.8 L 202.0 222.4 L 208.0 216.7 L 214.0 206.4 L 220.0 198.4 L 226.0 195.5 L 232.0 183.8 L 238.0 187.4 L 244.0 190.2 L 250.0 185.0 L 256.0 174.8 L 262.0 178.4 L 268.0 180.1 L 274.0 169.0 L 280.0 160.7 L 286.0 161.7 L 292.0 155.2 L 298.0 161.0 L 304.0 169.4 L 310.0 165.1 L 316.0 156.8 L 322.0 149.4 L 328.0 137.1 L 334.0 125.1 L 340.0 117.6 L 346.0 126.4 L 352.0 137.3 L 358.0 137.9 L 364.0 141.7 L 370.0 146.8 L 376.0 155.6 L 382.0 144.2 L 388.0 154.3 L 394.0 163.8 L 400.0 166.1 L 406.0 160.4 L 412.0 155.2 L 418.0 145.4 L 424.0 142.5 L 430.0 146.1 L 436.0 137.4 L 442.0 148.0 L 448.0 152.9 L 454.0 150.9 L 460.0 154.1 L 466.0 144.9 L 472.0 147.0 L 478.0 138.0 L 484.0 138.3 L 490.0 134.4 L 496.0 123.7 L 502.0 126.0 L 508.0 121.6 L 514.0 112.0 L 520.0 100.6 L 526.0 93.0 L 532.0 103.6 L 538.0 102.6 L 544.0 105.5 L 550.0 99.1 L 556.0 100.8 L 562.0 95.8 L 568.0 99.3 L 574.0 87.8 L 580.0 96.5 L 586.0 104.8 L 592.0 104.5 L 598.0 92.3 L 604.0 92.3 L 610.0 95.3 L 616.0 91.8 L 622.0 86.3 L 628.0 76.8 L 634.0 79.7 L 640.0 87.8 L 646.0 90.1 L 652.0 88.8 L 658.0 97.3 L 664.0 103.6 L 670.0 103.7 L 676.0 91.4 L 682.0 85.9 L 688.0 84.9 L 694.0 94.8 L 700.0 101.8 L 706.0 89.4 L 712.0 84.2 L 718.0 71.7 L 724.0 79.2 L 730.0 87.8 L 736.0 90.1 L 742.0 89.1 L 748.0 80.3 L 754.0 71.6 L 760.0 75.8 L 766.0 85.0 L 772.0 81.6 L 778.0 72.5 L 784.0 78.2 L 790.0 88.5 L 796.0 87.7 L 802.0 84.8 L 808.0 84.8 L 814.0 81.9 L 820.0 81.3 L 826.0 87.4 L 832.0 87.8 L 838.0 92.6 L 844.0 88.8 L 850.0 90.2 L 856.0 95.1 L 862.0 105.8 L 868.0 97.8 L 874.0 89.6 L 880.0 82.9 L 886.0 95.0 L 892.0 100.9 L 898.0 109.1 L 904.0 114.7 L 910.0 105.4 L 916.0 104.7 L 922.0 117.5 L 928.0 127.8 L 934.0 134.3 L 940.0 135.9 L 946.0 144.6 L 952.0 142.9 L 958.0 152.8 L 964.0 153.4 L 970.0 141.9 L 976.0 151.7 L 982.0 156.6 L 988.0 152.9 L 994.0 144.4 L 1000.0 132.9 L 1006.0 121.5 L 1012.0 115.9 L 1018.0 106.3 L 1024.0 111.2 L 1030.0 122.0 L 1036.0 125.4 L 1042.0 115.1 L 1048.0 123.9 L 1054.0 119.3 L 1060.0 125.7 L 1066.0 130.2 L 1072.0 136.2 L 1078.0 135.8 L 1084.0 125.6 L 1090.0 129.5 L 1096.0 138.2 L 1102.0 142.6 L 1108.0 147.0 L 1114.0 149.3 L 1120.0 142.2 L 1126.0 142.1 L 1132.0 138.4" fill="none" stroke="#60A5FA" stroke-width="1.4" opacity="0.85"/>
+    <path d="M 58.0 191.9 L 64.0 201.9 L 70.0 189.3 L 76.0 191.2 L 82.0 186.2 L 88.0 194.9 L 94.0 196.0 L 100.0 194.4 L 106.0 203.5 L 112.0 207.2 L 118.0 218.3 L 124.0 225.0 L 130.0 225.5 L 136.0 222.4 L 142.0 215.1 L 148.0 224.6 L 154.0 225.6 L 160.0 210.7 L 166.0 205.5 L 172.0 192.9 L 178.0 194.2 L 184.0 195.6 L 190.0 196.6 L 196.0 202.7 L 202.0 195.8 L 208.0 201.7 L 214.0 191.7 L 220.0 179.8 L 226.0 172.7 L 232.0 170.9 L 238.0 175.4 L 244.0 182.9 L 250.0 177.5 L 256.0 183.6 L 262.0 169.4 L 268.0 166.8 L 274.0 177.7 L 280.0 178.6 L 286.0 175.9 L 292.0 185.9 L 298.0 177.7 L 304.0 166.0 L 310.0 162.9 L 316.0 161.1 L 322.0 171.3 L 328.0 183.0 L 334.0 197.0 L 340.0 198.6 L 346.0 191.9 L 352.0 194.7 L 358.0 203.3 L 364.0 217.7 L 370.0 227.5 L 376.0 222.3 L 382.0 233.9 L 388.0 233.2 L 394.0 238.3 L 400.0 241.5 L 406.0 230.5 L 412.0 234.4 L 418.0 241.3 L 424.0 238.0 L 430.0 246.8 L 436.0 260.5 L 442.0 274.0 L 448.0 284.7 L 454.0 273.5 L 460.0 277.6 L 466.0 279.0 L 472.0 280.8 L 478.0 289.2 L 484.0 283.5 L 490.0 271.4 L 496.0 271.0 L 502.0 259.4 L 508.0 257.9 L 514.0 248.9 L 520.0 246.1 L 526.0 241.0 L 532.0 241.1 L 538.0 227.0 L 544.0 221.4 L 550.0 213.1 L 556.0 211.5 L 562.0 199.6 L 568.0 210.2 L 574.0 209.6 L 580.0 203.7 L 586.0 197.4 L 592.0 203.9 L 598.0 207.4 L 604.0 193.4 L 610.0 177.3 L 616.0 184.4 L 622.0 190.1 L 628.0 193.8 L 634.0 189.6 L 640.0 179.0 L 646.0 181.7 L 652.0 169.3 L 658.0 179.2 L 664.0 178.0 L 670.0 179.1 L 676.0 182.2 L 682.0 192.6 L 688.0 192.2 L 694.0 179.8 L 700.0 180.8 L 706.0 182.2 L 712.0 190.8 L 718.0 183.5 L 724.0 184.7 L 730.0 191.1 L 736.0 187.0 L 742.0 196.5 L 748.0 188.2 L 754.0 193.6 L 760.0 187.6 L 766.0 201.1 L 772.0 213.2 L 778.0 213.0 L 784.0 221.2 L 790.0 228.2 L 796.0 219.1 L 802.0 213.5 L 808.0 221.7 L 814.0 233.7 L 820.0 223.5 L 826.0 230.2 L 832.0 230.8 L 838.0 243.0 L 844.0 236.5 L 850.0 237.9 L 856.0 237.1 L 862.0 250.3 L 868.0 255.6 L 874.0 251.1 L 880.0 254.5 L 886.0 258.2 L 892.0 250.1 L 898.0 254.0 L 904.0 263.1 L 910.0 264.4 L 916.0 253.5 L 922.0 249.7 L 928.0 247.9 L 934.0 245.6 L 940.0 249.7 L 946.0 245.1 L 952.0 240.0 L 958.0 237.5 L 964.0 221.4 L 970.0 219.8 L 976.0 213.8 L 982.0 222.1 L 988.0 221.1 L 994.0 205.9 L 1000.0 212.1 L 1006.0 200.1 L 1012.0 187.9 L 1018.0 183.1 L 1024.0 166.1 L 1030.0 160.1 L 1036.0 153.6 L 1042.0 156.3 L 1048.0 150.8 L 1054.0 142.9 L 1060.0 125.7 L 1066.0 133.4 L 1072.0 142.9 L 1078.0 140.1 L 1084.0 136.4 L 1090.0 144.9 L 1096.0 153.7 L 1102.0 160.6 L 1108.0 168.4 L 1114.0 176.5 L 1120.0 178.8 L 1126.0 177.1 L 1132.0 163.5" fill="none" stroke="#26BF86" stroke-width="2"/>
+
+    <!-- trade markers -->
+    <g><circle cx="208.0" cy="201.7" r="3.2" fill="#0B1520" stroke="#26BF86" stroke-width="1.4"/><circle cx="346.0" cy="191.9" r="3.2" fill="#0B1520" stroke="#DE5878" stroke-width="1.4"/><circle cx="490.0" cy="271.4" r="3.2" fill="#0B1520" stroke="#26BF86" stroke-width="1.4"/><circle cx="628.0" cy="193.8" r="3.2" fill="#0B1520" stroke="#26BF86" stroke-width="1.4"/><circle cx="766.0" cy="201.1" r="3.2" fill="#0B1520" stroke="#DE5878" stroke-width="1.4"/><circle cx="886.0" cy="258.2" r="3.2" fill="#0B1520" stroke="#26BF86" stroke-width="1.4"/><circle cx="1006.0" cy="200.1" r="3.2" fill="#0B1520" stroke="#26BF86" stroke-width="1.4"/></g>
+
+    <!-- last point markers -->
+    <circle cx="138.40946722639111" cy="138.4" r="0"/>
+    <circle cx="1132.0" cy="138.4" r="3" fill="#60A5FA"/>
+    <circle cx="1132.0" cy="163.5" r="4.5" fill="#26BF86" stroke="#05101B" stroke-width="1.5"/>
+
+    <!-- last value tags -->
+    <g>
+      <rect x="1138.0" y="154.5" width="62" height="18" fill="#26BF86" rx="2"/>
+      <text x="1169.0" y="167.5" font-family="IBM Plex Mono" font-size="10" fill="#05101B" text-anchor="middle" font-weight="600">+1.95%</text>
+    </g>
+    <g>
+      <rect x="1138.0" y="129.4" width="62" height="18" fill="#60A5FA" rx="2"/>
+      <text x="1169.0" y="142.4" font-family="IBM Plex Mono" font-size="10" fill="#05101B" text-anchor="middle" font-weight="600">+3.16%</text>
+    </g>
+
+    <!-- drawdown panel -->
+    <g stroke="#1A2D44" stroke-width="0.4" stroke-dasharray="1 3">
+      <line x1="58" y1="334.0" x2="1132" y2="334.0"/><line x1="58" y1="369.0" x2="1132" y2="369.0"/><line x1="58" y1="404.0" x2="1132" y2="404.0"/>
+    </g>
+    <g font-family="IBM Plex Mono" font-size="9" fill="#A8B5C4" text-anchor="end">
+      <text x="50" y="337.0">0.0%</text><text x="50" y="372.0">-3.2%</text><text x="50" y="407.0">-6.5%</text>
+    </g>
+    <path d="M 58.0 334.0 L 58.0 334.0 L 64.0 339.2 L 70.0 334.0 L 76.0 335.0 L 82.0 334.0 L 88.0 338.5 L 94.0 339.1 L 100.0 338.3 L 106.0 343.0 L 112.0 345.0 L 118.0 350.7 L 124.0 354.2 L 130.0 354.5 L 136.0 352.9 L 142.0 349.1 L 148.0 354.0 L 154.0 354.6 L 160.0 346.8 L 166.0 344.1 L 172.0 337.5 L 178.0 338.2 L 184.0 338.9 L 190.0 339.4 L 196.0 342.6 L 202.0 339.0 L 208.0 342.1 L 214.0 336.9 L 220.0 334.0 L 226.0 334.0 L 232.0 334.0 L 238.0 336.4 L 244.0 340.3 L 250.0 337.5 L 256.0 340.6 L 262.0 334.0 L 268.0 334.0 L 274.0 339.7 L 280.0 340.2 L 286.0 338.8 L 292.0 344.0 L 298.0 339.7 L 304.0 334.0 L 310.0 334.0 L 316.0 334.0 L 322.0 339.3 L 328.0 345.4 L 334.0 352.7 L 340.0 353.5 L 346.0 350.1 L 352.0 351.5 L 358.0 356.0 L 364.0 363.5 L 370.0 368.6 L 376.0 365.9 L 382.0 371.9 L 388.0 371.5 L 394.0 374.2 L 400.0 375.9 L 406.0 370.2 L 412.0 372.2 L 418.0 375.8 L 424.0 374.1 L 430.0 378.6 L 436.0 385.8 L 442.0 392.8 L 448.0 398.4 L 454.0 392.6 L 460.0 394.7 L 466.0 395.5 L 472.0 396.4 L 478.0 400.7 L 484.0 397.8 L 490.0 391.5 L 496.0 391.3 L 502.0 385.2 L 508.0 384.5 L 514.0 379.7 L 520.0 378.3 L 526.0 375.6 L 532.0 375.7 L 538.0 368.3 L 544.0 365.4 L 550.0 361.1 L 556.0 360.2 L 562.0 354.1 L 568.0 359.6 L 574.0 359.2 L 580.0 356.2 L 586.0 352.9 L 592.0 356.3 L 598.0 358.1 L 604.0 350.8 L 610.0 342.4 L 616.0 346.1 L 622.0 349.1 L 628.0 351.0 L 634.0 348.8 L 640.0 343.3 L 646.0 344.7 L 652.0 338.3 L 658.0 343.4 L 664.0 342.8 L 670.0 343.4 L 676.0 345.0 L 682.0 350.4 L 688.0 350.2 L 694.0 343.7 L 700.0 344.2 L 706.0 345.0 L 712.0 349.5 L 718.0 345.6 L 724.0 346.3 L 730.0 349.6 L 736.0 347.5 L 742.0 352.4 L 748.0 348.1 L 754.0 350.9 L 760.0 347.8 L 766.0 354.8 L 772.0 361.1 L 778.0 361.0 L 784.0 365.3 L 790.0 368.9 L 796.0 364.2 L 802.0 361.3 L 808.0 365.5 L 814.0 371.8 L 820.0 366.5 L 826.0 370.0 L 832.0 370.3 L 838.0 376.7 L 844.0 373.3 L 850.0 374.0 L 856.0 373.6 L 862.0 380.5 L 868.0 383.3 L 874.0 380.9 L 880.0 382.7 L 886.0 384.6 L 892.0 380.4 L 898.0 382.4 L 904.0 387.2 L 910.0 387.8 L 916.0 382.1 L 922.0 380.1 L 928.0 379.2 L 934.0 378.0 L 940.0 380.1 L 946.0 377.8 L 952.0 375.1 L 958.0 373.8 L 964.0 365.4 L 970.0 364.6 L 976.0 361.4 L 982.0 365.7 L 988.0 365.2 L 994.0 357.3 L 1000.0 360.6 L 1006.0 354.3 L 1012.0 347.9 L 1018.0 345.5 L 1024.0 336.6 L 1030.0 334.0 L 1036.0 334.0 L 1042.0 335.4 L 1048.0 334.0 L 1054.0 334.0 L 1060.0 334.0 L 1066.0 338.0 L 1072.0 343.0 L 1078.0 341.5 L 1084.0 339.6 L 1090.0 344.0 L 1096.0 348.6 L 1102.0 352.2 L 1108.0 356.3 L 1114.0 360.5 L 1120.0 361.7 L 1126.0 360.8 L 1132.0 353.7 L 1132.0 334.0 Z" fill="rgba(222,88,120,0.35)" stroke="#DE5878" stroke-width="1.2"/>
+
+    <!-- max DD callout -->
+    <g>
+      <line x1="478.0" y1="400.7" x2="478.0" y2="406.2" stroke="#DE5878" stroke-width="0.8"/>
+      <text x="483.0" y="410.7" font-family="IBM Plex Mono" font-size="9" fill="#DE5878">max -6.16%</text>
+    </g>
+
+    <!-- rolling sharpe -->
+    <g stroke="#1A2D44" stroke-width="0.4" stroke-dasharray="1 3">
+      <line x1="58" y1="428.0" x2="1132" y2="428.0"/><line x1="58" y1="465.0" x2="1132" y2="465.0"/><line x1="58" y1="498.0" x2="1132" y2="498.0"/>
+    </g>
+    <g font-family="IBM Plex Mono" font-size="9" fill="#A8B5C4" text-anchor="end">
+      <text x="50" y="431.0">9.5</text><text x="50" y="468.0">0.0</text><text x="50" y="501.0">-8.4</text>
+    </g>
+    <line x1="58" y1="461.1" x2="1132" y2="461.1" stroke="#F2C94C" stroke-width="0.7" stroke-dasharray="3 3" opacity="0.5"/>
+    <text x="66.0" y="458.1" font-family="IBM Plex Mono" font-size="8.5" fill="#F2C94C" opacity="0.7">target = 1.0</text>
+    <path d="M 238.0 460.4 L 244.0 459.6 L 250.0 461.5 L 256.0 462.8 L 262.0 460.4 L 268.0 457.0 L 274.0 460.0 L 280.0 460.7 L 286.0 457.2 L 292.0 459.2 L 298.0 453.6 L 304.0 448.6 L 310.0 447.6 L 316.0 447.9 L 322.0 453.1 L 328.0 453.9 L 334.0 457.8 L 340.0 461.8 L 346.0 461.5 L 352.0 465.5 L 358.0 467.5 L 364.0 470.7 L 370.0 472.7 L 376.0 469.9 L 382.0 474.4 L 388.0 472.8 L 394.0 476.9 L 400.0 481.5 L 406.0 480.1 L 412.0 481.7 L 418.0 482.2 L 424.0 479.4 L 430.0 483.2 L 436.0 484.6 L 442.0 493.0 L 448.0 496.5 L 454.0 489.4 L 460.0 490.3 L 466.0 491.6 L 472.0 489.7 L 478.0 494.9 L 484.0 498.0 L 490.0 493.7 L 496.0 494.2 L 502.0 487.4 L 508.0 484.3 L 514.0 478.4 L 520.0 477.2 L 526.0 477.7 L 532.0 477.0 L 538.0 470.9 L 544.0 466.0 L 550.0 461.3 L 556.0 462.2 L 562.0 456.0 L 568.0 459.2 L 574.0 457.6 L 580.0 455.3 L 586.0 456.4 L 592.0 457.1 L 598.0 456.1 L 604.0 453.8 L 610.0 447.9 L 616.0 445.5 L 622.0 442.3 L 628.0 439.4 L 634.0 440.8 L 640.0 436.7 L 646.0 437.1 L 652.0 433.6 L 658.0 434.3 L 664.0 435.6 L 670.0 438.8 L 676.0 440.0 L 682.0 446.7 L 688.0 447.0 L 694.0 446.4 L 700.0 447.5 L 706.0 449.3 L 712.0 451.9 L 718.0 453.3 L 724.0 455.1 L 730.0 459.1 L 736.0 458.4 L 742.0 464.2 L 748.0 458.9 L 754.0 460.7 L 760.0 460.6 L 766.0 466.0 L 772.0 467.4 L 778.0 466.4 L 784.0 472.4 L 790.0 479.7 L 796.0 474.8 L 802.0 471.6 L 808.0 472.7 L 814.0 476.9 L 820.0 477.0 L 826.0 478.0 L 832.0 482.5 L 838.0 482.9 L 844.0 481.1 L 850.0 481.2 L 856.0 480.1 L 862.0 480.6 L 868.0 482.2 L 874.0 485.3 L 880.0 486.0 L 886.0 486.7 L 892.0 481.5 L 898.0 485.2 L 904.0 487.2 L 910.0 485.8 L 916.0 483.1 L 922.0 479.6 L 928.0 481.8 L 934.0 479.6 L 940.0 482.8 L 946.0 478.0 L 952.0 473.2 L 958.0 472.5 L 964.0 465.1 L 970.0 462.6 L 976.0 463.5 L 982.0 467.5 L 988.0 464.8 L 994.0 457.0 L 1000.0 461.7 L 1006.0 456.4 L 1012.0 453.2 L 1018.0 447.5 L 1024.0 445.7 L 1030.0 443.7 L 1036.0 442.2 L 1042.0 437.4 L 1048.0 433.5 L 1054.0 432.7 L 1060.0 428.0 L 1066.0 430.0 L 1072.0 436.3 L 1078.0 434.0 L 1084.0 428.7 L 1090.0 432.2 L 1096.0 438.4 L 1102.0 441.9 L 1108.0 444.9 L 1114.0 448.0 L 1120.0 447.5 L 1126.0 448.2 L 1132.0 446.6 " fill="none" stroke="#F2C94C" stroke-width="1.4"/>
+
+    <!-- crosshair -->
+    <line x1="898.0" y1="30" x2="898.0" y2="498.0" stroke="#2AB2D4" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.6"/>
+
+    <!-- crosshair card -->
+    <g transform="translate(906.0, 54.0)">
+      <rect x="0" y="0" width="180" height="98" fill="#05101B" stroke="#2A4566" stroke-width="0.8" rx="3"/>
+      <text x="10" y="16" font-family="IBM Plex Mono" font-size="9" fill="#A8B5C4" letter-spacing="1.2">JAN 28, 2026</text>
+      <line x1="10" y1="22" x2="170" y2="22" stroke="#1F344C" stroke-width="0.6"/>
+      <g font-family="IBM Plex Mono" font-size="10">
+        <text x="10" y="36" fill="#A8B5C4">Strategy</text><text x="170" y="36" fill="#26BF86" text-anchor="end" font-weight="600">+-2.40%</text>
+        <text x="10" y="50" fill="#A8B5C4">Benchmark</text><text x="170" y="50" fill="#60A5FA" text-anchor="end">+4.57%</text>
+        <text x="10" y="64" fill="#A8B5C4">Excess</text><text x="170" y="64" fill="#FFF" text-anchor="end">+-6.97%</text>
+        <text x="10" y="78" fill="#A8B5C4">Drawdown</text><text x="170" y="78" fill="#DE5878" text-anchor="end">-4.47%</text>
+        <text x="10" y="92" fill="#A8B5C4">Rolling Sharpe</text><text x="170" y="92" fill="#F2C94C" text-anchor="end">-5.18</text>
+      </g>
+    </g>
+
+    <!-- x-axis -->
+    <g font-family="IBM Plex Mono" font-size="9" fill="#A8B5C4" text-anchor="middle">
+      <text x="58.0" y="516.0">Aug</text><text x="238.0" y="516.0">Sep</text><text x="418.0" y="516.0">Oct</text><text x="598.0" y="516.0">Nov</text><text x="778.0" y="516.0">Dec</text><text x="958.0" y="516.0">Jan</text><text x="1132.0" y="516.0">Apr</text>
+    </g>
+  </svg>
+
+  <!-- footer -->
+  <div class="footer">
+    <div class="scale-info">Linear · USD · <b>180</b> sessions · gross of fees · benchmark S&amp;P 500 TR · last update <b>2s ago</b></div>
+    <div class="tf">
+      <button>Linear</button>
+      <button>Log</button>
+      <span style="display:inline-block; width:1px; height:14px; background:var(--border-color); margin: 0 6px; vertical-align: middle;"></span>
+      <button class="on">% return</button>
+      <button>Equity (USD)</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

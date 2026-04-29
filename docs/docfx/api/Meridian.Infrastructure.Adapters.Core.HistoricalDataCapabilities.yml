@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataCapabilities
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 12
   assemblies:
   - Meridian.ProviderSdk
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustedPrices
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 15
   assemblies:
   - Meridian.ProviderSdk
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Intraday
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 18
   assemblies:
   - Meridian.ProviderSdk
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dividends
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 21
   assemblies:
   - Meridian.ProviderSdk
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Splits
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 24
   assemblies:
   - Meridian.ProviderSdk
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 27
   assemblies:
   - Meridian.ProviderSdk
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 30
   assemblies:
   - Meridian.ProviderSdk
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Auctions
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 33
   assemblies:
   - Meridian.ProviderSdk
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 36
   assemblies:
   - Meridian.ProviderSdk
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 39
   assemblies:
   - Meridian.ProviderSdk
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsOnly
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 42
   assemblies:
   - Meridian.ProviderSdk
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullFeatured
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 50
   assemblies:
   - Meridian.ProviderSdk
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMarkets
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 62
   assemblies:
   - Meridian.ProviderSdk
@@ -459,7 +459,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarket
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 66
   assemblies:
   - Meridian.ProviderSdk
@@ -495,7 +495,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasTickData
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 70
   assemblies:
   - Meridian.ProviderSdk
@@ -526,7 +526,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCorporateActions
-    path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
+    path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
     startLine: 73
   assemblies:
   - Meridian.ProviderSdk

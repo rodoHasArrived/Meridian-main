@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterLedgerBridge
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostCorporateActionsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
     startLine: 19
   assemblies:
   - Meridian.Application

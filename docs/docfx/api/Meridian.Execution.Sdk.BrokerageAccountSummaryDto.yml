@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageAccountSummaryDto
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 48
   assemblies:
   - Meridian.Execution.Sdk
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 48
   assemblies:
   - Meridian.Execution.Sdk
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 49
   assemblies:
   - Meridian.Execution.Sdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 50
   assemblies:
   - Meridian.Execution.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 51
   assemblies:
   - Meridian.Execution.Sdk
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 52
   assemblies:
   - Meridian.Execution.Sdk

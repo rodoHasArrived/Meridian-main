@@ -19,8 +19,8 @@
             <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="999" />
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Margin" Value="0,0,6,6" />
         </Style>
 
         <Style x:Key="MetaBadgeTextStyle" TargetType="TextBlock">
@@ -30,7 +30,7 @@
         </Style>
     </Page.Resources>
 
-    <Grid Margin="24,18,24,24">
+    <Grid Margin="18,12,18,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -40,45 +40,54 @@
 
         <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
                                                  Grid.Row="0"
-                                                 Margin="0,0,0,18"
+                                                 Margin="0,0,0,10"
                                                  Visibility="Collapsed" />
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                           Grid.Row="1"
-                                          Margin="0,0,0,18"
+                                          Margin="0,0,0,8"
+                                          IsCompactSurface="True"
                                           Visibility="Collapsed"
                                           CommandInvoked="OnCommandBarCommandInvoked" />
 
         <Border x:Name="SummaryCard"
                 Grid.Row="2"
                 Style="{StaticResource SectionCardStyle}"
-                Margin="0,0,0,18">
+                Padding="14"
+                Margin="0,0,0,10">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="0,0,18,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="42"
-                                Height="42"
-                                CornerRadius="14"
+                <StackPanel Grid.Row="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Width="36"
+                                Height="36"
+                                CornerRadius="12"
                                 Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
                                 BorderBrush="{StaticResource ConsoleAccentBlueAlpha20Brush}"
                                 BorderThickness="1">
                             <TextBlock x:Name="PageGlyphText"
                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="22"
+                                       FontSize="19"
                                        Foreground="{StaticResource InfoColorBrush}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
                                        Text="&#xE8A5;" />
                         </Border>
 
-                        <StackPanel Margin="12,0,0,0">
+                        <StackPanel Grid.Column="1"
+                                    Margin="12,0,0,0">
                             <TextBlock x:Name="PageTitleText"
                                        Style="{StaticResource PageTitleStyle}"
+                                       TextWrapping="Wrap"
                                        AutomationProperties.AutomationId="WorkspaceDeepPageHostTitle"
                                        Text="Workflow" />
                             <TextBlock x:Name="PageSubtitleText"
@@ -87,7 +96,7 @@
                                        TextWrapping="Wrap"
                                        Text="Shared workspace shell host" />
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
 
                     <TextBlock x:Name="ShellHintText"
                                Margin="0,14,0,0"
@@ -98,9 +107,10 @@
                                Text="This workflow is being hosted inside the shared workstation shell so context and related routes stay nearby." />
                 </StackPanel>
 
-                <WrapPanel Grid.Column="1"
+                <WrapPanel Grid.Row="1"
+                           Margin="48,8,0,0"
                            VerticalAlignment="Top"
-                           HorizontalAlignment="Right">
+                           HorizontalAlignment="Left">
                     <Border Style="{StaticResource MetaBadgeStyle}">
                         <TextBlock x:Name="WorkspaceBadgeText"
                                    Style="{StaticResource MetaBadgeTextStyle}"

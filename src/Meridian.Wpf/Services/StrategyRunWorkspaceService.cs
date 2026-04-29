@@ -11,6 +11,16 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+public sealed record BacktestRunPublicationOptions(
+    string StrategyName,
+    string? StrategyId = null,
+    string? ParentRunId = null,
+    IReadOnlyDictionary<string, string>? AdditionalParameters = null,
+    string? PortfolioId = null,
+    string? LedgerReference = null,
+    string? AuditReference = null,
+    string? Engine = null);
+
 /// <summary>
 /// Desktop-facing workstation service for strategy run browsing and drill-in pages.
 /// Mirrors completed backtests into the shared Phase 12 run store and exposes
@@ -174,7 +184,8 @@ public sealed class StrategyRunWorkspaceService
         foreach (var run in activeTradingRuns)
         {
             var detail = await _readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
-            if (detail?.Portfolio?.Positions is null) continue;
+            if (detail?.Portfolio?.Positions is null)
+                continue;
 
             foreach (var pos in detail.Portfolio.Positions)
             {
@@ -210,7 +221,10 @@ public sealed class StrategyRunWorkspaceService
             AuditStatus = auditStatus,
             ValidationStatus = validationStatus,
             ActiveRunContext = activeRunContext,
-            ActivePositions = positions
+            ActivePositions = positions,
+            ActivePositionsQueueState = positions.Count == 0
+                ? WorkspaceQueueRegionState.Empty("No active positions", "Start a paper/live run or switch context to populate active positions.", "Switch Context", "SwitchContext", "Open Portfolio", "RunPortfolio")
+                : WorkspaceQueueRegionState.None
         };
     }
 
@@ -286,30 +300,45 @@ public sealed class StrategyRunWorkspaceService
         string strategyName,
         BacktestResult result,
         CancellationToken ct = default)
+        => await RecordBacktestRunAsync(
+            request,
+            result,
+            new BacktestRunPublicationOptions(strategyName),
+            ct).ConfigureAwait(false);
+
+    public async Task<string> RecordBacktestRunAsync(
+        BacktestRequest request,
+        BacktestResult result,
+        BacktestRunPublicationOptions publication,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentException.ThrowIfNullOrWhiteSpace(strategyName);
         ArgumentNullException.ThrowIfNull(result);
+        ArgumentNullException.ThrowIfNull(publication);
+        ArgumentException.ThrowIfNullOrWhiteSpace(publication.StrategyName);
 
-        var strategyId = SlugifyStrategyName(strategyName);
+        var strategyId = string.IsNullOrWhiteSpace(publication.StrategyId)
+            ? SlugifyStrategyName(publication.StrategyName)
+            : publication.StrategyId.Trim();
         var completedAt = DateTimeOffset.UtcNow;
         var startedAt = completedAt - result.ElapsedTime;
 
         var entry = new StrategyRunEntry(
             RunId: Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
-            StrategyName: strategyName,
+            StrategyName: publication.StrategyName,
             RunType: RunType.Backtest,
             StartedAt: startedAt,
             EndedAt: completedAt,
             Metrics: result,
             DatasetReference: request.DataRoot,
             FeedReference: BuildFeedReference(request),
-            PortfolioId: $"{strategyId}-backtest-portfolio",
-            LedgerReference: $"{strategyId}-backtest-ledger",
-            AuditReference: $"audit-{strategyId}-{completedAt:yyyyMMddHHmmss}",
-            Engine: "MeridianNative",
-            ParameterSet: BuildParameterSet(request, result));
+            PortfolioId: publication.PortfolioId ?? $"{strategyId}-backtest-portfolio",
+            LedgerReference: publication.LedgerReference ?? $"{strategyId}-backtest-ledger",
+            AuditReference: publication.AuditReference ?? $"audit-{strategyId}-{completedAt:yyyyMMddHHmmss}",
+            Engine: publication.Engine ?? "MeridianNative",
+            ParameterSet: BuildParameterSet(request, result, publication.AdditionalParameters),
+            ParentRunId: publication.ParentRunId);
 
         await _store.RecordRunAsync(entry, ct).ConfigureAwait(false);
 
@@ -710,7 +739,10 @@ public sealed class StrategyRunWorkspaceService
         return "Local archive";
     }
 
-    private static IReadOnlyDictionary<string, string> BuildParameterSet(BacktestRequest request, BacktestResult result)
+    private static IReadOnlyDictionary<string, string> BuildParameterSet(
+        BacktestRequest request,
+        BacktestResult result,
+        IReadOnlyDictionary<string, string>? additionalParameters = null)
     {
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -738,10 +770,21 @@ public sealed class StrategyRunWorkspaceService
             parameters["strategyAssemblyPath"] = request.StrategyAssemblyPath;
         }
 
+        if (additionalParameters is not null)
+        {
+            foreach (var (key, value) in additionalParameters)
+            {
+                if (string.IsNullOrWhiteSpace(key))
+                    continue;
+
+                parameters[key] = value;
+            }
+        }
+
         return parameters;
     }
 
-    private static string SlugifyStrategyName(string strategyName)
+    internal static string SlugifyStrategyName(string strategyName)
     {
         var buffer = new List<char>(strategyName.Length);
         var lastWasDash = false;

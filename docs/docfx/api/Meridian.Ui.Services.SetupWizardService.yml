@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetupWizardService
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunPreflightChecksAsync
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestProviderConnectivityAsync
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 49
   assemblies:
   - Meridian.Ui.Services
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSetupPresets
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 502
   assemblies:
   - Meridian.Ui.Services
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPresetAsync
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 602
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCredentialsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 629
   assemblies:
   - Meridian.Ui.Services

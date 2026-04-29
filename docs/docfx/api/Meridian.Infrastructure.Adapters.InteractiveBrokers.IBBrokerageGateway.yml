@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBBrokerageGateway
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 78
   assemblies:
   - Meridian.Infrastructure
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 81
   assemblies:
   - Meridian.Infrastructure
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 84
   assemblies:
   - Meridian.Infrastructure
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 114
   assemblies:
   - Meridian.Infrastructure
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 135
   assemblies:
   - Meridian.Infrastructure
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 147
   assemblies:
   - Meridian.Infrastructure
@@ -410,7 +410,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 182
   assemblies:
   - Meridian.Infrastructure
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 200
   assemblies:
   - Meridian.Infrastructure
@@ -492,7 +492,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 226
   assemblies:
   - Meridian.Infrastructure
@@ -527,7 +527,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 236
   assemblies:
   - Meridian.Infrastructure
@@ -562,7 +562,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 257
   assemblies:
   - Meridian.Infrastructure
@@ -597,7 +597,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 282
   assemblies:
   - Meridian.Infrastructure
@@ -632,7 +632,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 306
   assemblies:
   - Meridian.Infrastructure
@@ -670,7 +670,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
     startLine: 324
   assemblies:
   - Meridian.Infrastructure

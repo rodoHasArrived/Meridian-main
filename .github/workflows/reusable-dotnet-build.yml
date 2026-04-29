@@ -72,10 +72,10 @@ on:
         type: boolean
         default: false
       test-filter:
-        description: 'dotnet test --filter expression (default: Category!=Integration)'
+        description: 'dotnet test --filter expression (default excludes integration tests while keeping untagged WPF tests)'
         required: false
         type: string
-        default: 'Category!=Integration'
+        default: 'Category!=Integration|FullyQualifiedName!~Integration'
       test-results-prefix:
         description: 'Prefix applied to test result artifact names for disambiguation'
         required: false
@@ -118,18 +118,17 @@ jobs:
           cache-suffix: ${{ inputs.cache-suffix }}
 
       - name: Restore dependencies
-        run: dotnet restore Meridian.sln -p:EnableWindowsTargeting=true --verbosity minimal
+        run: dotnet restore Meridian.sln -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true --verbosity minimal
 
       - name: Build
         id: build
         shell: bash
         run: |
-          dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
+          dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true --verbosity minimal
 
       - name: Run tests
         id: run-tests
         if: inputs.run-tests
-        id: test
         shell: bash
         env:
           MSYS_NO_PATHCONV: 1
@@ -139,6 +138,7 @@ jobs:
             -c ${{ inputs.configuration }} \
             --no-build \
             -p:EnableWindowsTargeting=true \
+            -p:EnableFullWpfBuild=true \
             --verbosity minimal \
             --logger "trx;LogFileName=test-results.trx" \
             --results-directory ./artifacts/test-results \
@@ -200,7 +200,7 @@ jobs:
             echo "|------|--------|"
             echo "| Build | $(outcome_label '${{ steps.build.outcome }}') |"
             if [[ "${{ inputs.run-tests }}" == "true" ]]; then
-              echo "| Tests | $(outcome_label '${{ steps.test.outcome }}') |"
+              echo "| Tests | $(outcome_label '${{ steps.run-tests.outcome }}') |"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

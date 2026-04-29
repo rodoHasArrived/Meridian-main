@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPositionTracker
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 6
   assemblies:
   - Meridian.Execution.Sdk
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPosition
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 9
   assemblies:
   - Meridian.Execution.Sdk
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllPositions
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 12
   assemblies:
   - Meridian.Execution.Sdk
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPortfolioValue
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 15
   assemblies:
   - Meridian.Execution.Sdk
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCash
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 18
   assemblies:
   - Meridian.Execution.Sdk
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUnrealizedPnl
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 21
   assemblies:
   - Meridian.Execution.Sdk
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRealizedPnl
-    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    path: src/Meridian.Execution.Sdk/IPositionTracker.cs
     startLine: 24
   assemblies:
   - Meridian.Execution.Sdk

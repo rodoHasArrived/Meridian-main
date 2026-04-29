@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountKind
-    path: ../../src/Meridian.Execution/Models/AccountKind.cs
+    path: src/Meridian.Execution/Models/AccountKind.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brokerage
-    path: ../../src/Meridian.Execution/Models/AccountKind.cs
+    path: src/Meridian.Execution/Models/AccountKind.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bank
-    path: ../../src/Meridian.Execution/Models/AccountKind.cs
+    path: src/Meridian.Execution/Models/AccountKind.cs
     startLine: 19
   assemblies:
   - Meridian.Execution

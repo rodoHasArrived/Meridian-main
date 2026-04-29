@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenApiPathItem
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 537
   assemblies:
   - Meridian.Application
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 539
   assemblies:
   - Meridian.Application
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Post
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 540
   assemblies:
   - Meridian.Application
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Put
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 541
   assemblies:
   - Meridian.Application
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delete
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 542
   assemblies:
   - Meridian.Application

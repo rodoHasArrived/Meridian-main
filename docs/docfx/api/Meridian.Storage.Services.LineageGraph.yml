@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LineageGraph
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 288
   assemblies:
   - Meridian.Storage
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 290
   assemblies:
   - Meridian.Storage
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAtUtc
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 291
   assemblies:
   - Meridian.Storage
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdatedUtc
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 292
   assemblies:
   - Meridian.Storage
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeletedAtUtc
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 293
   assemblies:
   - Meridian.Storage
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeletionReason
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 294
   assemblies:
   - Meridian.Storage
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upstream
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 295
   assemblies:
   - Meridian.Storage
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Downstream
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 296
   assemblies:
   - Meridian.Storage
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ingestions
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 297
   assemblies:
   - Meridian.Storage
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Transformations
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 298
   assemblies:
   - Meridian.Storage
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Migrations
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 299
   assemblies:
   - Meridian.Storage

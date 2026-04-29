@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderFlowStatistics
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuyVolume
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SellVolume
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnknownVolume
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VWAP
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imbalance
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts

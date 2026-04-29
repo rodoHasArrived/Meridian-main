@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionDataSummary
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 294
   assemblies:
   - Meridian.Domain
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 294
   assemblies:
   - Meridian.Domain
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackedContracts
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 295
   assemblies:
   - Meridian.Domain
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackedChains
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 296
   assemblies:
   - Meridian.Domain
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackedUnderlyings
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 297
   assemblies:
   - Meridian.Domain
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractsWithGreeks
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 298
   assemblies:
   - Meridian.Domain
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractsWithOpenInterest
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 299
   assemblies:
   - Meridian.Domain
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
     startLine: 300
   assemblies:
   - Meridian.Domain

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Configuration;
-using WpfServices = Meridian.Wpf.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
@@ -68,11 +68,13 @@ public partial class SetupWizardPage : Page
 
     private async void PresetCard_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button button || button.Tag is not string presetId) return;
+        if (sender is not Button button || button.Tag is not string presetId)
+            return;
 
         var presets = _setupWizardService.GetSetupPresets();
         var preset = presets.FirstOrDefault(p => p.Id == presetId);
-        if (preset == null) return;
+        if (preset == null)
+            return;
 
         PresetStatusText.Text = $"Applying \"{preset.Name}\" preset...";
 
@@ -277,10 +279,10 @@ public partial class SetupWizardPage : Page
             return;
         }
 
-        ValidationStatusText.Text = "Configuration saved and backend verified. Redirecting to dashboard...";
+        ValidationStatusText.Text = "Configuration saved and backend verified. Opening Research Workspace...";
         _notificationService.NotifySuccess("Setup Wizard", "Setup complete. Welcome!");
 
-        _navigationService.NavigateTo("Dashboard");
+        _navigationService.NavigateTo("ResearchShell");
     }
 
     private bool TryGetWizardInputs(out string provider, out string storageLocation)

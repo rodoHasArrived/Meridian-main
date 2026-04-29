@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SystemEvent
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 152
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 154
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 155
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 156
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 157
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 158
   assemblies:
   - Meridian.Ui.Services
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 159
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 160
   assemblies:
   - Meridian.Ui.Services

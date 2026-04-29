@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestCommissionKind
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerShare
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentage
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Free
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk

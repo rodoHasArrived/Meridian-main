@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEnvironmentRuntimeProjectionService
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentRuntimeProjectionService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentRuntimeProjectionService.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentRuntimeAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentRuntimeProjectionService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentRuntimeProjectionService.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRuntimeForVersionAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentRuntimeProjectionService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentRuntimeProjectionService.cs
     startLine: 8
   assemblies:
   - Meridian.Application

@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-29
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
 
 ---
@@ -31,12 +31,22 @@ The remaining delivery gap is not "add more primitives." The remaining gap is du
 - land brokerage and custodian sync as a first-class execution and fund-account seam
 - make governance casework and governed outputs durable instead of endpoint-local or preview-only
 
+The commercial product thesis for these workstreams is the **Meridian Assurance Loop**: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack. Treat that as a prioritization filter for Waves 2-4, not as a new wave or a claim that the named modules are already complete.
+
+The accounting-led commercial wedge asks whether Meridian can prove, book, reconcile, approve, and report an investment decision. Books Before Broker, Transaction Lab, Close the Books, broker statement reconciliation, Controls-as-Code, buyer demo mode, role-based demo views, readiness dashboards, and evidence packet actions belong in this addendum only as planned module direction until shared contracts, retained evidence, browser-dashboard workflows, and governed outputs prove a narrower slice.
+
+The Evidence OS umbrella adds proof certificates, accounting-aware backtesting, strategy-to-ledger drilldown, explain-the-break summaries, close readiness, instrument passports, fund operating model templates, Evidence Vault, Report Factory, Control Center, Report Line Provenance, Assurance Score, Evidence SLA, Decision Memory, and no-orphan-evidence validation as planned direction. These names should sharpen Waves 2-4, not create a new wave or imply a delivered evidence platform.
+
 This document therefore adds:
 
 1. explicit owner lanes
 2. per-wave workstreams
 3. concrete dependencies
 4. wave and workstream exit criteria
+
+**Current-state refresh (2026-04-27):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the former dashboard landing is standardized around `ResearchShell`, desktop launch/deep-link parsing now routes into canonical workspace tags, fixture mode is presented as neutral demo data, workflow automation now confirms page state through a hidden-but-present shell marker, isolated restore/build behavior avoids target-framework asset drift, local single-instance mutex and launch-argument forwarding behavior have focused coverage, the Trading shell now includes a desk briefing hero driven by active-run, workflow-summary, shared operator-readiness state, and stale replay count detail, Trading Hours now projects live-risk, pre-market staging, after-hours review, closed-planning session briefings, and holiday-calendar empty-state guidance from market-calendar state, OrderBook now projects depth, tape, spread, cumulative delta, and bid/ask pressure into one order-flow posture handoff, Data Operations now has a desk briefing hero for provider/backfill/storage/session/export handoffs, Provider Health now includes a provider-posture briefing for stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage, System Health now includes a diagnostics triage briefing for provider, storage, and retained event posture plus pending-scan versus confirmed-empty guidance, Notification Center now recovers retained history when search, unread-only, or severity filters hide it, Activity Log now includes triage posture for visible entries, retained errors/warnings, latest activity, active filters, and export/clear command state, Watchlist now includes symbol-set posture for saved lists, pinned lists, search scope, symbol coverage, pinned-first ordering, and pinned badges, Messaging Hub now projects delivery posture, refresh recency, and retained activity scope from the view model, StrategyRuns now recovers retained run rows hidden by search or mode filters while showing visible-versus-recorded scope and comparison guidance, BatchBacktest now exposes stateful results empty guidance, the shared run review packet now emits stable route-aware work items for promotion, Security Master, continuity, and brokerage blockers, QuantScript now exposes local Run History with Research handoffs for mirrored runs, Fund Accounts now projects fund-context, account-queue, provider-routing, blocked-route, shared-data-access, balance-evidence snapshot posture, and ready-for-reconciliation states from loaded account/provider/balance-history evidence, the Wave 1 trust gate remains closed, and the 2026-04-27 DK1 pilot parity packet is signed with valid packet binding, validated samples, validated evidence documents, and validated explainability/calibration contracts. DK1 state and risk/control audit explainability are now projected into the trading readiness lane, the initial operator-inbox endpoint aggregates readiness and reconciliation work items with navigation targets, the WPF shell queue button consumes that endpoint, propagates active account context as `fundAccountId`, routes brokerage-sync blockers into `AccountPortfolio`, routes the primary work item, and can surface active review attention in shell context, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, audit history, exception routing, tolerance profiles, sign-off status, and calibration-summary rollups. Wave 4 governance readiness remains dependent on generalized durable casework, operator-approved tolerance/severity calibration, external-account acceptance, governed output publication controls, end-to-end operator queue acceptance, and shared projection paths.
+
+Current shell-support evidence also includes Welcome readiness progress for provider/symbol/storage checks, Storage archive posture for growth/capacity/last-scan handoffs, Storage preview scope/guidance for archive-path decisions, OrderBook order-flow posture for depth/tape/spread monitoring, compact shared deep-page command chrome with related-workflow and trust-state context, actionable shell-context attention detail, provider-degradation workflow summaries that route to `ProviderHealth`, brokerage-sync queue routing into `AccountPortfolio`, actionable latest-run review-packet work items in the shared operator inbox, and Trading hero attention states for warning or critical shared work items. The WPF screenshot-refresh workflow now provides scheduled/push/manual catalog and manual capture groups, per-workflow diagnostics, and a single post-matrix screenshot commit step. Keep this evidence in the workflow-validation lane; it does not replace Wave 2 cockpit, Wave 3 continuity, or Wave 4 governance exit criteria.
 
 It should be read with:
 
@@ -55,6 +65,7 @@ It should be read with:
 - concrete ownership and dependency mapping for active Waves 2-4
 - workstreams that turn existing read models and operator surfaces into durable workflows
 - cross-wave validation and release disciplines required to keep the active roadmap credible
+- browser-dashboard delivery targets for readiness dashboards, close workflow previews, evidence packet actions, proof certificates, report-line provenance previews, buyer demo mode, and role-based demo views after shared contracts exist
 
 ### Out of scope
 
@@ -62,6 +73,8 @@ It should be read with:
 - broad Wave 5 Backtest Studio unification work
 - broad Wave 6 live-readiness expansion
 - optional advanced research, scale-out, or performance tracks
+- claims that Books Before Broker, insurance accounting, Close the Books, broker statement reconciliation, Controls-as-Code, shadow books, or demo packs are current capabilities before accepted evidence exists
+- claims that Evidence OS, Evidence Vault, Report Factory, report-line provenance, proof certificates, close readiness, Assurance Score, Evidence SLA, Decision Memory, or evidence-aware AI summaries are current capabilities before accepted evidence exists
 
 ### Assumptions
 
@@ -90,13 +103,13 @@ It should be read with:
 
 ### Workstation Shell and UX
 
-- Owns WPF shell consumption, operating-context switching, navigation, notification center, command palette, and workflow deep-linking.
-- Primary repo anchors: `src/Meridian.Wpf/Models/`, `src/Meridian.Wpf/ViewModels/`, `src/Meridian.Wpf/Services/`.
+- Owns browser-dashboard navigation and operator interaction patterns for new UI work, plus retained WPF shell consumption, operating-context switching, notification center, command palette, and workflow deep-linking where shared-contract regression coverage requires it.
+- Primary repo anchors: `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui.Shared/Endpoints/`, `src/Meridian.Wpf/Models/`, `src/Meridian.Wpf/ViewModels/`, `src/Meridian.Wpf/Services/`.
 
 ### Data Confidence and Validation
 
 - Owns Wave 1 trust-gate maintenance, scenario-based acceptance harnesses, and evidence/doc synchronization.
-- Primary repo anchors: `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, `artifacts/provider-validation/`, `tests/`.
+- Primary repo anchors: `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, generated `artifacts/provider-validation/` run outputs, `tests/`.
 
 ---
 
@@ -104,10 +117,14 @@ It should be read with:
 
 1. Wave 1 trust-gate evidence stays green before any Wave 2-4 readiness claim is promoted.
 2. Wave 2 durable promotion traceability is a prerequisite for Wave 3 continuity and Wave 4 governance handoff.
-3. Wave 3 shared run continuity must become the system of record before WPF shell consolidation is allowed to widen.
+3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; new operator UI scope belongs in the browser dashboard while WPF remains retained support.
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
-6. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
+6. Accounting-led commercial slices must start with shared contract/readiness definitions such as accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness before web dashboard workflow expansion.
+7. Evidence OS slices must start with shared evidence bundle identity, proof/certificate projections, report-line provenance, strategy-to-ledger lineage, instrument passport projections, close-readiness scoring, break explanation summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and Evidence Vault artifact metadata before UI expansion.
+8. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
+9. Desktop workflow automation must use canonical workspace tags, confirmed page-readiness markers, deterministic restore/build inputs, local single-instance behavior, diagnostic artifacts, and single-commit screenshot publication so screenshot/manual evidence does not drift from the shell routes operators actually use.
+10. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
 
 ---
 
@@ -127,6 +144,7 @@ Turn the current paper-trading cockpit from "visible" into "dependable" by makin
   - operator-visible replay verification gate
   - restart-safe session continuity proof
   - risk and control explainability from audited evidence
+  - WPF Trading desk briefing states that consume shared readiness/replay/control/trust-gate posture without creating a separate acceptance model
   - cockpit acceptance checklist grounded in service behavior rather than UI surface count
 - **Exit criteria:**
   - operators can create, restore, verify, and close a paper session without losing symbol scope, order history, or ledger continuity
@@ -154,14 +172,15 @@ Turn the current paper-trading cockpit from "visible" into "dependable" by makin
 - **Primary owner:** Workstation Shell and UX
 - **Supporting owners:** Shared Workflow and Contracts; Governance and Ledger
 - **Depends on:** W2-B durable promotion state; current shell context and notification center
-- **Repo anchors:** `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`, `src/Meridian.Wpf/Services/WorkspaceShellContextService.cs`, `src/Meridian.Wpf/ViewModels/NotificationCenterViewModel.cs`, `src/Meridian.Ui.Services/Services/NotificationServiceBase.cs`
+- **Repo anchors:** `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`, `src/Meridian.Wpf/Services/WorkstationOperatorInboxApiClient.cs`, `src/Meridian.Wpf/Services/WorkspaceShellContextService.cs`, `src/Meridian.Wpf/ViewModels/NotificationCenterViewModel.cs`, `src/Meridian.Ui.Services/Services/NotificationServiceBase.cs`
 - **Deliverables:**
   - shared operator-work-item projection for promotion review, failed runs, and security/continuity gaps
-  - shell badges driven by pending work items instead of mixed one-off counters
-  - notification-center deep links into the underlying workflow surface
+  - `GET /api/workstation/operator/inbox` as the first shared queue endpoint, seeded by trading readiness work items plus open or in-review reconciliation breaks with stable IDs and navigation hints
+  - shell queue-button counts, tone, and primary-item navigation driven by pending work items instead of mixed one-off counters
+  - notification-center deep links into the underlying workflow surface, building on retained-history filter recovery rather than one-off toast text
 - **Exit criteria:**
   - research and trading surfaces expose the same pending-review counts
-  - at least promotion review, failed runs, and continuity/security issues open from one operator queue
+  - at least promotion review, failed runs, continuity/security issues, and reconciliation breaks open from one operator queue
   - no critical Wave 2 action exists only as static copy or one-off toast text
 
 ### Wave 2 Exit Criteria
@@ -177,7 +196,9 @@ Turn the current paper-trading cockpit from "visible" into "dependable" by makin
 
 ### Objective
 
-Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, and the active WPF shell.
+Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser dashboard, and retained WPF support surfaces.
+
+Current WPF evidence now includes RunCashFlow guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Keep that in the Wave 3 continuity lane; governance-wide cash-flow projections and reporting still belong to Wave 4.
 
 ### W3-A: Shared Run Continuity as System of Record
 
@@ -208,6 +229,7 @@ Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel
   - the core workspace payload path is service-backed and testable rather than endpoint-local composition
   - fallback payloads remain dev-only and are not confused with production operator readiness
   - WPF shell context, related-workflow routing, and API summaries agree on active workflow state
+  - fixture/demo-mode payloads remain visibly non-operational and cannot satisfy readiness gates
 
 ### W3-C: Brokerage and Custodian Sync Control Plane
 
@@ -234,6 +256,7 @@ Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel
 - **Deliverables:**
   - consistent fund, entity, sleeve, vehicle, and account context propagation
   - shell deep-link and related-workflow routing that preserves operating scope
+  - desktop launch/deep-link argument handling, single-instance argument forwarding, automation page-tag confirmation, and local activity triage tied to canonical workspace routes
   - shell-status badges tied to the selected operating context
 - **Exit criteria:**
   - operators can change scope without losing the active run or account handoff context
@@ -263,8 +286,9 @@ Finish governance and fund-operations productization by making casework, report 
 - **Repo anchors:** `src/Meridian.Application/Services/ReconciliationEngineService.cs`, `src/Meridian.Application/Services/GovernanceExceptionService.cs`, `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
 - **Deliverables:**
   - persistent governance-exception repository
+  - expand the delivered file-backed reconciliation break queue beyond run-scoped seeded breaks
   - assignment, notes, reopen, dismiss, resolve, and SLA timestamps
-  - removal of endpoint-local break-queue state as the source of truth
+  - removal of endpoint-local or fixture break-queue state as the source of truth
 - **Exit criteria:**
   - reconciliation breaks survive restart with stable identifiers and state history
   - governance operators can assign, review, resolve, dismiss, and reopen exceptions durably
@@ -294,6 +318,7 @@ Finish governance and fund-operations productization by making casework, report 
 - **Deliverables:**
   - one shared fund-operations workspace projection for accounts, bank snapshots, brokerage freshness, cash ladders, reconciliation posture, NAV, and reporting
   - explicit account/entity/strategy structure drill-ins on the shared DTO path
+  - Fund Accounts operator and balance-evidence briefing that stays aligned with shared account, provider-routing, retained balance-history, and shared-data-access projections
   - removal of duplicated or page-local fund-ops posture builders where shared services can own the projection
 - **Exit criteria:**
   - governance shells can answer account posture, cash posture, reconciliation posture, and reporting posture from one shared query path
@@ -335,18 +360,29 @@ Finish governance and fund-operations productization by making casework, report 
 - **Deliverables:**
   - named scenario suites for `Backtest -> Paper`, paper-session restore, promotion review, run continuity, brokerage divergence, reconciliation break review, and report publish
   - command matrix that maps each scenario to the narrowest useful validation command
+  - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md))
 - **Exit criteria:**
   - each active wave has at least one repo-backed scenario suite tied to its own exit criteria
   - regression checks describe operator behavior, not only isolated method coverage
+
+### Wave 4 Evidence Template Baseline (Applied)
+
+The Wave 4 evidence template is now active in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md) and is seeded with the first three deterministic governance scenarios:
+
+1. `wave4-governance-identifier-conflict-resolution-v1`
+2. `wave4-governance-corporate-action-propagation-impact-v1`
+3. `wave4-governance-multi-ledger-reconciliation-break-classification-v1`
+
+These records establish the minimum acceptance payload for Wave 4 readiness proof and should be extended (not bypassed) as additional governance scenarios are onboarded.
 
 ### X2: Wave 1 Trust-Gate Preservation
 
 - **Primary owner:** Data Confidence and Validation
 - **Supporting owners:** Execution and Fund Accounts
 - **Depends on:** none beyond the existing closed gate
-- **Repo anchors:** `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, `artifacts/provider-validation/`
+- **Repo anchors:** `scripts/dev/run-wave1-provider-validation.ps1`, `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, generated `artifacts/provider-validation/` run outputs
 - **Deliverables:**
-  - synchronized evidence, docs, runtime artifacts, and automation summary
+  - synchronized evidence, docs, generated runtime outputs, and automation summary
   - contradiction checks whenever provider or checkpoint proof surfaces change
 - **Exit criteria:**
   - Wave 2-4 documentation does not overclaim provider or brokerage readiness

@@ -1,7 +1,11 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -14,21 +18,28 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class MainPageViewModel : BindableBase, IDisposable
 {
-    private const string DefaultWorkspace = "research";
-    private const string DefaultPageTag = "ResearchShell";
+    private const string DefaultWorkspace = "strategy";
+    private const string DefaultPageTag = "StrategyShell";
 
     private readonly INavigationService _navigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService? _workspaceShellContextService;
+    private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly IWorkstationOperatorInboxApiClient? _operatorInboxApiClient;
+    private readonly IWorkflowActionCatalog? _workflowActionCatalog;
+    private readonly SettingsConfigurationService _settingsConfigurationService;
     private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
     private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _secondaryNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _overflowNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _relatedWorkflowItems = [];
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
+    private readonly ObservableCollection<WorkspaceTileItem> _workspaceTiles = [];
     private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
+    private readonly ObservableCollection<WorkspaceWorkflowSummary> _workflowSummaries = [];
+    private readonly ObservableCollection<WorkspaceWorkflowSummary> _secondaryWorkflowSummaries = [];
     private readonly ObservableCollection<BoundedWindowMode> _windowModes =
     [
         BoundedWindowMode.Focused,
@@ -42,8 +53,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
-    private string _currentPageTitle = "Research Workspace";
-    private string _currentPageSubtitle = "Backtest studio shell with active run context, compare lanes, and promotion rails.";
+    private string _currentPageTitle = "Strategy Workspace";
+    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor strategy outcomes.";
     private bool _tickerStripVisible;
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
@@ -59,22 +70,37 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private Visibility _activeFundVisibility = Visibility.Collapsed;
     private WorkstationOperatingContext? _selectedOperatingContext;
     private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;
+    private ShellDensityMode _shellDensityMode = ShellDensityMode.Standard;
+    private WorkspaceWorkflowSummary? _primaryWorkflowSummary;
+    private bool _areSecondaryWorkflowSummariesExpanded;
     private WorkspaceShellContext _shellContext = new();
+    private OperatorInboxDto? _operatorInbox;
+    private string _operatorInboxError = "Operator queue has not refreshed yet.";
     private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
     private int _shellContextRevision;
+    private int _workflowSummaryRevision;
 
     public MainPageViewModel(
         INavigationService navigationService,
         FixtureModeDetector fixtureModeDetector,
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null,
-        WorkspaceShellContextService? workspaceShellContextService = null)
+        WorkspaceShellContextService? workspaceShellContextService = null,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
+        SettingsConfigurationService? settingsConfigurationService = null,
+        IWorkflowActionCatalog? workflowActionCatalog = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
         _workspaceShellContextService = workspaceShellContextService;
+        _workflowSummaryService = workflowSummaryService;
+        _operatorInboxApiClient = operatorInboxApiClient;
+        _workflowActionCatalog = workflowActionCatalog;
+        _settingsConfigurationService = settingsConfigurationService ?? SettingsConfigurationService.Instance;
+        _shellDensityMode = _settingsConfigurationService.GetShellDensityMode();
 
         SplitPane = new SplitPaneViewModel();
         CommandPalettePages = new ReadOnlyObservableCollection<ShellCommandPaletteEntry>(_commandPalettePages);
@@ -83,7 +109,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         OverflowNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_overflowNavigationItems);
         RelatedWorkflowItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_relatedWorkflowItems);
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
+        WorkspaceTiles = new ReadOnlyObservableCollection<WorkspaceTileItem>(_workspaceTiles);
         OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
+        WorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_workflowSummaries);
+        SecondaryWorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_secondaryWorkflowSummaries);
         WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
 
         SelectWorkspaceCommand = new RelayCommand<string>(workspace => SelectWorkspace(workspace, navigateToHome: true));
@@ -92,6 +121,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         HideCommandPaletteCommand = new RelayCommand(HideCommandPalette);
         OpenSelectedCommandPalettePageCommand = new RelayCommand(OpenSelectedCommandPalettePage, CanOpenSelectedCommandPalettePage);
         ClearCommandPaletteQueryCommand = new RelayCommand(ClearCommandPaletteQuery);
+        OpenOperatorInboxCommand = new RelayCommand(OpenOperatorInbox);
         OpenNotificationsCommand = new RelayCommand(() => NavigateToPage("NotificationCenter"));
         OpenHelpCommand = new RelayCommand(() => NavigateToPage("Help"));
         ToggleTickerStripCommand = new RelayCommand(ToggleTickerStrip);
@@ -99,10 +129,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshPageCommand = new RelayCommand(RefreshCurrentPage);
         DismissFixtureModeBannerCommand = new RelayCommand(() => FixtureModeBannerVisibility = Visibility.Collapsed);
         SwitchFundCommand = new RelayCommand(RequestContextSelection);
+        ToggleShellDensityCommand = new RelayCommand(ToggleShellDensity);
+        ToggleSecondaryWorkflowSummariesCommand = new RelayCommand(ToggleSecondaryWorkflowSummaries, () => HasSecondaryWorkflowSummaries);
 
         _navigationService.Navigated += OnNavigated;
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
+        _settingsConfigurationService.DesktopShellPreferencesChanged += OnDesktopShellPreferencesChanged;
         if (_operatingContextService is not null)
         {
             _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
@@ -110,6 +143,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             _operatingContextService.WindowModeChanged += OnWindowModeChanged;
         }
 
+        RefreshWorkspaceTiles();
         var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? DefaultPageTag;
         InitializeCurrentPageState(initialPage);
         RefreshCommandPalettePages();
@@ -139,7 +173,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public ReadOnlyObservableCollection<RecentPageEntry> RecentPages { get; }
 
+    public ReadOnlyObservableCollection<WorkspaceTileItem> WorkspaceTiles { get; }
+
     public ReadOnlyObservableCollection<WorkstationOperatingContext> OperatingContexts { get; }
+
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries { get; }
+
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries { get; }
 
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
 
@@ -155,6 +195,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public IRelayCommand ClearCommandPaletteQueryCommand { get; }
 
+    public IRelayCommand OpenOperatorInboxCommand { get; }
+
     public IRelayCommand OpenNotificationsCommand { get; }
 
     public IRelayCommand OpenHelpCommand { get; }
@@ -168,6 +210,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public IRelayCommand DismissFixtureModeBannerCommand { get; }
 
     public IRelayCommand SwitchFundCommand { get; }
+
+    public IRelayCommand ToggleShellDensityCommand { get; }
+
+    public IRelayCommand ToggleSecondaryWorkflowSummariesCommand { get; }
 
     public WorkstationOperatingContext? SelectedOperatingContext
     {
@@ -206,25 +252,105 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public string CurrentModeName => _operatingContextService?.GetCurrentModeDisplayName() ?? "Dock + Float";
 
+    public ShellDensityMode ShellDensityMode
+    {
+        get => _shellDensityMode;
+        private set
+        {
+            if (!SetProperty(ref _shellDensityMode, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(IsCompactShellDensity));
+            RaisePropertyChanged(nameof(ShellDensityLabel));
+            RaisePropertyChanged(nameof(ShellDensityButtonText));
+            RaisePropertyChanged(nameof(ShellDensityToggleTooltip));
+            RaisePropertyChanged(nameof(WorkflowSummaryDescriptionText));
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
+        }
+    }
+
+    public bool IsCompactShellDensity => ShellDensityMode == ShellDensityMode.Compact;
+
+    public string ShellDensityLabel => ShellDensityMode.ToString();
+
+    public string ShellDensityButtonText => $"Density: {ShellDensityLabel}";
+
+    public string ShellDensityToggleTooltip => IsCompactShellDensity
+        ? "Switch to standard shell density"
+        : "Switch to compact shell density";
+
     public WorkspaceShellContext ShellContext
     {
         get => _shellContext;
-        private set => SetProperty(ref _shellContext, value);
+        private set
+        {
+            if (!SetProperty(ref _shellContext, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(ShellContextVisibility));
+        }
     }
 
-    public string ShellStatusText => _fixtureModeDetector.IsOfflineMode
-        ? "Offline"
-        : _fixtureModeDetector.IsFixtureMode
-            ? "Fixture"
-            : "Live";
+    public Visibility ShellContextVisibility => HasShellContextContent(ShellContext)
+        && IsWorkflowPageActive
+        && !IsCompactShellDensity
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
-    public string ShellStatusTone => _fixtureModeDetector.IsOfflineMode
-        ? WorkspaceTone.Danger
-        : _fixtureModeDetector.IsFixtureMode
-            ? WorkspaceTone.Warning
-            : WorkspaceTone.Success;
+    public string ShellStatusText => _fixtureModeDetector.ModeKind switch
+    {
+        FixtureModeKind.Offline => "Offline",
+        FixtureModeKind.Fixture => "Demo data",
+        _ => "Live"
+    };
+
+    public string ShellStatusTone => _fixtureModeDetector.ModeKind switch
+    {
+        FixtureModeKind.Offline => WorkspaceTone.Warning,
+        FixtureModeKind.Fixture => WorkspaceTone.Info,
+        _ => WorkspaceTone.Success
+    };
 
     public string ShellLastRefreshText => FormatShellLastRefresh(_shellLastUpdatedAt);
+
+    public string OperatorInboxButtonText
+    {
+        get
+        {
+            if (_operatorInbox is null)
+            {
+                return "Queue";
+            }
+
+            if (_operatorInbox.ReviewCount > 0)
+            {
+                return $"Queue ({_operatorInbox.ReviewCount})";
+            }
+
+            return _operatorInbox.Items.Count > 0
+                ? $"Queue ({_operatorInbox.Items.Count})"
+                : "Queue";
+        }
+    }
+
+    public string OperatorInboxSummary => _operatorInbox?.Summary ?? _operatorInboxError;
+
+    public string OperatorInboxPrimaryLabel => GetPrimaryOperatorWorkItem(_operatorInbox)?.Label
+        ?? "No open operator work items";
+
+    public string OperatorInboxTargetText => ResolveOperatorInboxPageTag(GetPrimaryOperatorWorkItem(_operatorInbox))
+        ?? "NotificationCenter";
+
+    public int OperatorInboxReviewCount => _operatorInbox?.ReviewCount ?? 0;
+
+    public string OperatorInboxTone
+        => ResolveOperatorInboxTone(_operatorInbox);
 
     public string CurrentWorkspace
     {
@@ -242,13 +368,87 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public string RecentPagesHintText => $"Recent {WorkspaceHeading.ToLowerInvariant()} workflows.";
 
-    public bool IsResearchWorkspaceActive => string.Equals(_currentWorkspace, "research", StringComparison.OrdinalIgnoreCase);
+    public WorkspaceWorkflowSummary? PrimaryWorkflowSummary
+    {
+        get => _primaryWorkflowSummary;
+        private set
+        {
+            if (!SetProperty(ref _primaryWorkflowSummary, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(HasPrimaryWorkflowSummary));
+            RaisePropertyChanged(nameof(PrimaryWorkflowTargetText));
+            RaisePropertyChanged(nameof(PrimaryWorkflowDetailVisibility));
+        }
+    }
+
+    public bool HasPrimaryWorkflowSummary => PrimaryWorkflowSummary is not null;
+
+    public string PrimaryWorkflowTargetText => PrimaryWorkflowSummary is null
+        ? "Target page: -"
+        : $"Target page: {PrimaryWorkflowSummary.NextAction.TargetPageTag}";
+
+    public bool HasSecondaryWorkflowSummaries => _secondaryWorkflowSummaries.Count > 0;
+
+    public bool AreSecondaryWorkflowSummariesExpanded
+    {
+        get => _areSecondaryWorkflowSummariesExpanded;
+        private set
+        {
+            if (!SetProperty(ref _areSecondaryWorkflowSummariesExpanded, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(SecondaryWorkflowSummariesVisibility));
+            RaisePropertyChanged(nameof(SecondaryWorkflowToggleText));
+            RaisePropertyChanged(nameof(PrimaryWorkflowDetailVisibility));
+        }
+    }
+
+    public Visibility SecondaryWorkflowSummariesVisibility => HasSecondaryWorkflowSummaries && AreSecondaryWorkflowSummariesExpanded
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public string SecondaryWorkflowToggleText => AreSecondaryWorkflowSummariesExpanded
+        ? $"Hide {SecondaryWorkflowSummaries.Count} other workspace action{(SecondaryWorkflowSummaries.Count == 1 ? string.Empty : "s")}"
+        : $"Show {SecondaryWorkflowSummaries.Count} other workspace action{(SecondaryWorkflowSummaries.Count == 1 ? string.Empty : "s")}";
+
+    public string WorkflowSummaryDescriptionText => IsCompactShellDensity
+        ? "Current workspace action first. Other workspace actions stay one click away."
+        : "Current workspace action first, with blockers and target pages kept visible.";
+
+    public Visibility PrimaryWorkflowDetailVisibility => ShouldShowPrimaryWorkflowDetail(PrimaryWorkflowSummary)
+        || AreSecondaryWorkflowSummariesExpanded
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public bool IsWorkspaceHomePageActive
+        => string.Equals(CurrentPageTag, GetWorkspaceHomePageTag(CurrentWorkspace), StringComparison.OrdinalIgnoreCase);
+
+    public bool IsWorkflowPageActive => !IsWorkspaceHomePageActive;
+
+    public bool IsStrategyWorkspaceActive => string.Equals(_currentWorkspace, "strategy", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsResearchWorkspaceActive => IsStrategyWorkspaceActive;
 
     public bool IsTradingWorkspaceActive => string.Equals(_currentWorkspace, "trading", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsDataOperationsWorkspaceActive => string.Equals(_currentWorkspace, "data-operations", StringComparison.OrdinalIgnoreCase);
+    public bool IsPortfolioWorkspaceActive => string.Equals(_currentWorkspace, "portfolio", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsGovernanceWorkspaceActive => string.Equals(_currentWorkspace, "governance", StringComparison.OrdinalIgnoreCase);
+    public bool IsAccountingWorkspaceActive => string.Equals(_currentWorkspace, "accounting", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsReportingWorkspaceActive => string.Equals(_currentWorkspace, "reporting", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsDataWorkspaceActive => string.Equals(_currentWorkspace, "data", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsDataOperationsWorkspaceActive => IsDataWorkspaceActive;
+
+    public bool IsSettingsWorkspaceActive => string.Equals(_currentWorkspace, "settings", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsGovernanceWorkspaceActive => IsAccountingWorkspaceActive;
 
     public bool HasSecondaryNavigation => _secondaryNavigationItems.Count > 0;
 
@@ -268,6 +468,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             }
 
             UpdateCurrentPageContent(normalized);
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
             if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
             {
                 SelectWorkspace(inferredWorkspace);
@@ -445,6 +648,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _navigationService.Navigated -= OnNavigated;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
+        _settingsConfigurationService.DesktopShellPreferencesChanged -= OnDesktopShellPreferencesChanged;
         if (_operatingContextService is not null)
         {
             _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
@@ -455,6 +659,26 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private WorkspaceShellDescriptor CurrentWorkspaceDescriptor =>
         ShellNavigationCatalog.GetWorkspace(_currentWorkspace) ?? ShellNavigationCatalog.GetDefaultWorkspace();
+
+    private void RefreshWorkspaceTiles()
+    {
+        _workspaceTiles.Clear();
+        foreach (var workspace in ShellNavigationCatalog.Workspaces)
+        {
+            _workspaceTiles.Add(new WorkspaceTileItem(workspace, IsCurrentWorkspace(workspace.Id)));
+        }
+    }
+
+    private void RefreshWorkspaceTileSelection()
+    {
+        foreach (var tile in _workspaceTiles)
+        {
+            tile.IsActive = IsCurrentWorkspace(tile.WorkspaceId);
+        }
+    }
+
+    private bool IsCurrentWorkspace(string workspaceId)
+        => string.Equals(_currentWorkspace, workspaceId, StringComparison.OrdinalIgnoreCase);
 
     private void OnNavigated(object? sender, NavigationEventArgs e)
     {
@@ -502,6 +726,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         });
     }
 
+    private void OnDesktopShellPreferencesChanged(object? sender, DesktopShellPreferences preferences)
+    {
+        DispatchToUi(() => ShellDensityMode = preferences.ShellDensityMode);
+    }
+
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
         DispatchToUi(() =>
@@ -537,7 +766,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void SelectWorkspace(string? workspace, bool navigateToHome = false)
     {
-        var normalized = ShellNavigationCatalog.GetWorkspace(workspace)?.Id ?? DefaultWorkspace;
+        var normalized = ResolveWorkspaceId(workspace);
 
         if (SetProperty(ref _currentWorkspace, normalized))
         {
@@ -548,12 +777,24 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(RecentPagesHintText));
             RaisePropertyChanged(nameof(RecentPagesSummaryText));
             RaisePropertyChanged(nameof(CurrentWorkspaceHomePageTag));
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
+            RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
             RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
             RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsPortfolioWorkspaceActive));
+            RaisePropertyChanged(nameof(IsAccountingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsReportingWorkspaceActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceActive));
             RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
+            RaisePropertyChanged(nameof(IsSettingsWorkspaceActive));
             RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+            RefreshWorkspaceTileSelection();
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            RefreshRecentPages();
+            UpdateWorkflowPresentation();
             _ = RefreshShellContextAsync();
         }
 
@@ -567,6 +808,22 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
+    private static string ResolveWorkspaceId(string? workspace)
+    {
+        if (ShellNavigationCatalog.GetWorkspace(workspace) is { } descriptor)
+        {
+            return descriptor.Id;
+        }
+
+        return workspace?.Trim().ToLowerInvariant() switch
+        {
+            "research" => "strategy",
+            "data-operations" => "data",
+            "governance" => "accounting",
+            _ => DefaultWorkspace
+        };
+    }
+
     private static string? InferWorkspaceFromPage(string? pageTag)
         => ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag);
 
@@ -578,6 +835,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         CurrentPageTag = pageTag;
+    }
+
+    private void OpenOperatorInbox()
+    {
+        var workItem = GetPrimaryOperatorWorkItem(_operatorInbox);
+        var targetPageTag = ResolveOperatorInboxPageTag(workItem);
+        NavigateToPage(string.IsNullOrWhiteSpace(targetPageTag)
+            ? "NotificationCenter"
+            : targetPageTag);
     }
 
     private void ShowCommandPalette()
@@ -615,6 +881,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         TickerStripVisible = !TickerStripVisible;
     }
 
+    private void ToggleShellDensity()
+    {
+        var nextDensity = IsCompactShellDensity
+            ? ShellDensityMode.Standard
+            : ShellDensityMode.Compact;
+
+        _settingsConfigurationService.SetShellDensityMode(nextDensity);
+    }
+
     private void GoBack()
     {
         if (!_navigationService.CanGoBack)
@@ -633,6 +908,16 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _ = RefreshShellContextAsync();
     }
 
+    private void ToggleSecondaryWorkflowSummaries()
+    {
+        if (!HasSecondaryWorkflowSummaries)
+        {
+            return;
+        }
+
+        AreSecondaryWorkflowSummariesExpanded = !AreSecondaryWorkflowSummariesExpanded;
+    }
+
     private void ApplyCurrentPage(string pageTag)
     {
         var normalized = NormalizePageTag(pageTag);
@@ -646,6 +931,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsWorkflowPageActive));
+            RaisePropertyChanged(nameof(ShellContextVisibility));
             return;
         }
 
@@ -671,6 +959,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var normalized = NormalizePageTag(pageTag);
         _currentPageTag = normalized;
         UpdateCurrentPageContent(normalized);
+        RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+        RaisePropertyChanged(nameof(IsWorkflowPageActive));
+        RaisePropertyChanged(nameof(ShellContextVisibility));
 
         if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
         {
@@ -749,6 +1040,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var recent = _navigationService.GetBreadcrumbs()
             .Select(entry => entry.PageTag)
             .Where(pageTag => !string.IsNullOrWhiteSpace(pageTag))
+            .Where(pageTag => string.Equals(InferWorkspaceFromPage(pageTag), CurrentWorkspace, StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Where(pageTag => !string.Equals(pageTag, CurrentPageTag, StringComparison.OrdinalIgnoreCase))
             .Take(6)
@@ -762,9 +1054,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void UpdateFixtureModeBanner()
     {
-        FixtureModeBannerVisibility = _fixtureModeDetector.IsNonLiveMode
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        FixtureModeBannerVisibility = Visibility.Collapsed;
         FixtureModeBannerText = _fixtureModeDetector.ModeLabel;
     }
 
@@ -871,9 +1161,31 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private async Task RefreshShellContextAsync(CancellationToken ct = default)
     {
         var refreshRevision = System.Threading.Interlocked.Increment(ref _shellContextRevision);
-        var shellContext = _workspaceShellContextService is null
-            ? BuildFallbackShellContext()
-            : await _workspaceShellContextService.CreateAsync(BuildShellContextInput(), ct).ConfigureAwait(false);
+        var workflowRevision = System.Threading.Interlocked.Increment(ref _workflowSummaryRevision);
+        var fallbackShellContext = BuildFallbackShellContext();
+        DispatchToUi(() =>
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ShellContext = fallbackShellContext;
+            }
+        });
+
+        var (operatorInbox, operatorInboxError) = await BuildOperatorInboxAsync(ct).ConfigureAwait(false);
+        var shellContext = fallbackShellContext;
+        try
+        {
+            if (_workspaceShellContextService is not null)
+            {
+                shellContext = await _workspaceShellContextService.CreateAsync(BuildShellContextInput(operatorInbox), ct).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            shellContext = fallbackShellContext;
+        }
+
+        var workflowSummaries = await BuildWorkflowSummariesAsync(ct).ConfigureAwait(false);
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is null || dispatcher.CheckAccess())
@@ -881,6 +1193,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             if (refreshRevision == _shellContextRevision)
             {
                 ShellContext = shellContext;
+            }
+
+            if (workflowRevision == _workflowSummaryRevision)
+            {
+                ReplaceCollection(_workflowSummaries, workflowSummaries);
+                UpdateWorkflowPresentation();
+                ApplyOperatorInbox(operatorInbox, operatorInboxError);
             }
 
             return;
@@ -892,11 +1211,180 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 ShellContext = shellContext;
             }
+
+            if (workflowRevision == _workflowSummaryRevision)
+            {
+                ReplaceCollection(_workflowSummaries, workflowSummaries);
+                UpdateWorkflowPresentation();
+                ApplyOperatorInbox(operatorInbox, operatorInboxError);
+            }
         });
     }
 
-    private WorkspaceShellContextInput BuildShellContextInput()
+    private async Task<(OperatorInboxDto? Inbox, string? Error)> BuildOperatorInboxAsync(CancellationToken ct)
     {
+        if (_operatorInboxApiClient is null)
+        {
+            return (null, "Operator queue is unavailable in this shell.");
+        }
+
+        try
+        {
+            return (await _operatorInboxApiClient
+                .GetInboxAsync(ResolveOperatorInboxFundAccountId(), ct)
+                .ConfigureAwait(false), null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            return (null, "Operator queue is awaiting backend readiness.");
+        }
+    }
+
+    private Guid? ResolveOperatorInboxFundAccountId()
+    {
+        var context = _operatingContextService?.CurrentContext ?? SelectedOperatingContext;
+        if (context is null)
+        {
+            return null;
+        }
+
+        var accountId = context.AccountId;
+        if (string.IsNullOrWhiteSpace(accountId) &&
+            context.ScopeKind == OperatingContextScopeKind.Account)
+        {
+            accountId = context.ScopeId;
+        }
+
+        return Guid.TryParse(accountId, out var parsed)
+            ? parsed
+            : null;
+    }
+
+    private void ApplyOperatorInbox(OperatorInboxDto? inbox, string? error)
+    {
+        _operatorInbox = inbox;
+        _operatorInboxError = string.IsNullOrWhiteSpace(error)
+            ? "Operator queue has not refreshed yet."
+            : error;
+        RaiseOperatorInboxPropertiesChanged();
+    }
+
+    private void RaiseOperatorInboxPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(OperatorInboxButtonText));
+        RaisePropertyChanged(nameof(OperatorInboxSummary));
+        RaisePropertyChanged(nameof(OperatorInboxPrimaryLabel));
+        RaisePropertyChanged(nameof(OperatorInboxTargetText));
+        RaisePropertyChanged(nameof(OperatorInboxReviewCount));
+        RaisePropertyChanged(nameof(OperatorInboxTone));
+    }
+
+    private async Task<IReadOnlyCollection<WorkspaceWorkflowSummary>> BuildWorkflowSummariesAsync(CancellationToken ct)
+    {
+        if (_workflowSummaryService is null)
+        {
+            return BuildFallbackWorkflowSummaries();
+        }
+
+        try
+        {
+            var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
+            var operatingContextLabel = _operatingContextService?.CurrentContext?.DisplayName;
+            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
+            var fundDisplayName = _fundContextService.CurrentFundProfile?.DisplayName;
+
+            var summary = await _workflowSummaryService
+                .GetAsync(
+                    hasOperatingContext: hasOperatingContext,
+                    operatingContextDisplayName: operatingContextLabel,
+                    fundProfileId: fundProfileId,
+                    fundDisplayName: fundDisplayName,
+                    ct: ct)
+                .ConfigureAwait(false);
+
+            return summary.Workspaces;
+        }
+        catch
+        {
+            return BuildFallbackWorkflowSummaries();
+        }
+    }
+
+    private IReadOnlyCollection<WorkspaceWorkflowSummary> BuildFallbackWorkflowSummaries()
+    {
+        var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
+        var blocker = hasOperatingContext
+            ? new WorkflowBlockerSummary("fallback", "Fallback summary", "Shared workflow guidance is using deterministic fallback text.", WorkspaceTone.Info, false)
+            : new WorkflowBlockerSummary("choose-context", "No operating context selected", "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
+
+        return ShellNavigationCatalog.Workspaces
+            .Select(workspace => new WorkspaceWorkflowSummary(
+                workspace.Id,
+                workspace.Title,
+                hasOperatingContext ? $"Fallback {workspace.Title.ToLowerInvariant()} guidance" : "Context required",
+                hasOperatingContext
+                    ? $"Open the {workspace.Title.ToLowerInvariant()} workspace home."
+                    : $"{workspace.Title} guidance is waiting for a selected context.",
+                hasOperatingContext ? WorkspaceTone.Info : WorkspaceTone.Warning,
+                new WorkflowNextAction(
+                    hasOperatingContext ? $"Open {workspace.Title} Shell" : "Choose Context",
+                    $"Open the {workspace.Title.ToLowerInvariant()} workspace home.",
+                    workspace.HomePageTag,
+                    WorkspaceTone.Primary),
+                workspace.Id == "data"
+                    ? new WorkflowBlockerSummary("fallback", "Deterministic fallback", "Live data guidance is unavailable, so stable fallback text is shown.", WorkspaceTone.Info, false)
+                    : blocker,
+                []))
+            .ToArray();
+    }
+
+    private static bool ShouldShowPrimaryWorkflowDetail(WorkspaceWorkflowSummary? summary)
+        => summary is not null
+            && (summary.PrimaryBlocker.IsBlocking
+                || IsAttentionTone(summary.StatusTone)
+                || IsAttentionTone(summary.PrimaryBlocker.Tone));
+
+    private static bool IsAttentionTone(string? tone)
+        => string.Equals(tone, WorkspaceTone.Warning, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(tone, WorkspaceTone.Danger, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(tone, "Critical", StringComparison.OrdinalIgnoreCase);
+
+    private void UpdateWorkflowPresentation()
+    {
+        var primary = _workflowSummaries.FirstOrDefault(summary =>
+            string.Equals(summary.WorkspaceId, CurrentWorkspace, StringComparison.OrdinalIgnoreCase))
+            ?? _workflowSummaries.FirstOrDefault();
+
+        PrimaryWorkflowSummary = primary;
+
+        ReplaceCollection(
+            _secondaryWorkflowSummaries,
+            _workflowSummaries
+                .Where(summary => primary is null || !string.Equals(summary.WorkspaceId, primary.WorkspaceId, StringComparison.OrdinalIgnoreCase))
+                .ToArray());
+
+        if (!HasSecondaryWorkflowSummaries)
+        {
+            AreSecondaryWorkflowSummariesExpanded = false;
+        }
+
+        ToggleSecondaryWorkflowSummariesCommand.NotifyCanExecuteChanged();
+        RaisePropertyChanged(nameof(HasSecondaryWorkflowSummaries));
+        RaisePropertyChanged(nameof(SecondaryWorkflowSummariesVisibility));
+        RaisePropertyChanged(nameof(SecondaryWorkflowToggleText));
+    }
+
+    private WorkspaceShellContextInput BuildShellContextInput(OperatorInboxDto? operatorInbox = null)
+    {
+        operatorInbox ??= _operatorInbox;
+        var primaryWorkItem = GetPrimaryOperatorWorkItem(operatorInbox);
+        var hasOperatorQueueAttention = primaryWorkItem is not null && operatorInbox?.ReviewCount > 0;
+        var operatorInboxTone = ResolveOperatorInboxTone(operatorInbox);
+
         return new WorkspaceShellContextInput
         {
             WorkspaceTitle = CurrentPageTitle,
@@ -908,10 +1396,66 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ReviewStateTone = SelectedWindowMode == BoundedWindowMode.WorkbenchPreset
                 ? WorkspaceTone.Info
                 : WorkspaceTone.Neutral,
-            CriticalLabel = "Workflow",
-            CriticalValue = WorkspaceHeading,
-            CriticalTone = WorkspaceTone.Info
+            CriticalLabel = hasOperatorQueueAttention ? "Attention" : "Workflow",
+            CriticalValue = hasOperatorQueueAttention
+                ? BuildOperatorQueueAttentionValue(operatorInbox, primaryWorkItem!)
+                : WorkspaceHeading,
+            CriticalTone = hasOperatorQueueAttention ? operatorInboxTone : WorkspaceTone.Info,
+            AdditionalBadges = hasOperatorQueueAttention
+                ?
+                [
+                    new WorkspaceShellBadge
+                    {
+                        Label = "Queue action",
+                        Value = $"Open {ResolveOperatorInboxPageTag(primaryWorkItem!) ?? "NotificationCenter"}",
+                        Glyph = "\uE7F4",
+                        Tone = operatorInboxTone
+                    }
+                ]
+                : Array.Empty<WorkspaceShellBadge>()
         };
+    }
+
+    private static string ResolveOperatorInboxTone(OperatorInboxDto? inbox)
+    {
+        if (inbox is null)
+        {
+            return WorkspaceTone.Neutral;
+        }
+
+        if (inbox.CriticalCount > 0)
+        {
+            return WorkspaceTone.Danger;
+        }
+
+        if (inbox.WarningCount > 0)
+        {
+            return WorkspaceTone.Warning;
+        }
+
+        return inbox.Items.Count > 0
+            ? WorkspaceTone.Info
+            : WorkspaceTone.Success;
+    }
+
+    private string BuildOperatorQueueAttentionValue(OperatorInboxDto? operatorInbox, OperatorWorkItemDto primaryWorkItem)
+    {
+        var reviewCount = operatorInbox?.ReviewCount ?? 0;
+        var countText = reviewCount > 1 ? $"{reviewCount} reviews" : "1 review";
+        var severity = primaryWorkItem.Tone switch
+        {
+            OperatorWorkItemToneDto.Critical => "critical",
+            OperatorWorkItemToneDto.Warning => "warning",
+            OperatorWorkItemToneDto.Success => "success",
+            _ => "info"
+        };
+        var target = ResolveOperatorInboxPageTag(primaryWorkItem) ?? "NotificationCenter";
+        var targetWorkspace = ShellNavigationCatalog.GetWorkspace(ShellNavigationCatalog.InferWorkspaceIdForPageTag(target));
+        var owner = string.IsNullOrWhiteSpace(primaryWorkItem.Workspace)
+            ? targetWorkspace?.Title ?? WorkspaceHeading
+            : primaryWorkItem.Workspace.Trim();
+
+        return $"{countText}: {primaryWorkItem.Label} | {severity} | {owner} | open {target}";
     }
 
     private WorkspaceShellContext BuildFallbackShellContext()
@@ -987,6 +1531,114 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         return $"Updated {updatedAt.ToLocalTime():MMM dd HH:mm}";
     }
 
+    private static OperatorWorkItemDto? GetPrimaryOperatorWorkItem(OperatorInboxDto? inbox)
+        => inbox?.Items
+            .Where(static item =>
+                !string.IsNullOrWhiteSpace(item.TargetPageTag) ||
+                !string.IsNullOrWhiteSpace(item.TargetRoute))
+            .OrderByDescending(static item => item.Tone)
+            .ThenByDescending(static item => item.CreatedAt)
+            .FirstOrDefault()
+        ?? inbox?.Items.FirstOrDefault();
+
+    private string? ResolveOperatorInboxPageTag(OperatorWorkItemDto? workItem)
+    {
+        if (workItem is null)
+        {
+            return null;
+        }
+
+        var catalogTarget = _workflowActionCatalog?.ResolveOperatorWorkItem(workItem)?.TargetPageTag;
+        if (!string.IsNullOrWhiteSpace(catalogTarget))
+        {
+            return catalogTarget;
+        }
+
+        if (workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval)
+        {
+            return "FundReportPack";
+        }
+
+        var routeTarget = ResolveOperatorInboxRoutePageTag(workItem.TargetRoute);
+        if (!string.IsNullOrWhiteSpace(routeTarget))
+        {
+            return routeTarget;
+        }
+
+        var kindTarget = workItem.Kind switch
+        {
+            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
+            OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
+            OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
+            OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
+            OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
+            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
+            _ => null
+        };
+        if (!string.IsNullOrWhiteSpace(kindTarget))
+        {
+            return kindTarget;
+        }
+
+        return string.IsNullOrWhiteSpace(workItem.TargetPageTag)
+            ? null
+            : workItem.TargetPageTag;
+    }
+
+    private static string? ResolveOperatorInboxRoutePageTag(string? targetRoute)
+    {
+        if (string.IsNullOrWhiteSpace(targetRoute))
+        {
+            return null;
+        }
+
+        var normalizedRoute = targetRoute.Split('?', 2)[0].TrimEnd('/');
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
+        {
+            return "FundReconciliation";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
+        {
+            return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
+            normalizedRoute.Contains("/brokerage-sync", StringComparison.OrdinalIgnoreCase))
+        {
+            return "AccountPortfolio";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationTradingReadiness) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionSessions) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ExecutionControls))
+        {
+            return "TradingShell";
+        }
+
+        return null;
+    }
+
+    private static bool RouteEqualsOrStartsWith(string route, string knownRoute)
+    {
+        var normalizedKnownRoute = knownRoute.TrimEnd('/');
+        return string.Equals(route, normalizedKnownRoute, StringComparison.OrdinalIgnoreCase) ||
+               route.StartsWith($"{normalizedKnownRoute}/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasShellContextContent(WorkspaceShellContext? shellContext)
+    {
+        if (shellContext is null)
+        {
+            return false;
+        }
+
+        return !string.IsNullOrWhiteSpace(shellContext.WorkspaceTitle)
+               || !string.IsNullOrWhiteSpace(shellContext.WorkspaceSubtitle)
+               || shellContext.Badges.Count > 0;
+    }
+
     private void UpdateCommandPalettePresentation(string query)
     {
         var resultCount = _commandPalettePages.Count;
@@ -1057,6 +1709,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         yield return descriptor.Subtitle;
         yield return descriptor.SectionLabel;
         yield return workspaceTitle;
+        yield return GetVisibilityLabel(descriptor.VisibilityTier);
 
         foreach (var keyword in descriptor.SearchKeywords)
         {
@@ -1134,9 +1787,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private static string GetVisibilityLabel(ShellNavigationVisibilityTier visibilityTier)
         => visibilityTier switch
         {
-            ShellNavigationVisibilityTier.Primary => "Primary",
-            ShellNavigationVisibilityTier.Secondary => "Secondary",
-            ShellNavigationVisibilityTier.Overflow => "Overflow",
+            ShellNavigationVisibilityTier.Primary => string.Empty,
+            ShellNavigationVisibilityTier.Secondary => "Specialized",
+            ShellNavigationVisibilityTier.Overflow => "Support",
             _ => string.Empty
         };
 
@@ -1164,4 +1817,38 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public sealed record RecentPageEntry(string PageTag, string DisplayName);
+
+    public sealed class WorkspaceTileItem : BindableBase
+    {
+        private bool _isActive;
+
+        public WorkspaceTileItem(WorkspaceShellDescriptor workspace, bool isActive)
+        {
+            WorkspaceId = workspace.Id;
+            Title = workspace.Title;
+            TileSummary = workspace.TileSummary;
+            HomePageTag = workspace.HomePageTag;
+            AutomationId = $"Workspace{workspace.Title.Replace(" ", string.Empty, StringComparison.OrdinalIgnoreCase)}Button";
+            AutomationName = $"{workspace.Title} Workspace";
+            _isActive = isActive;
+        }
+
+        public string WorkspaceId { get; }
+
+        public string Title { get; }
+
+        public string TileSummary { get; }
+
+        public string HomePageTag { get; }
+
+        public string AutomationId { get; }
+
+        public string AutomationName { get; }
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set => SetProperty(ref _isActive, value);
+        }
+    }
 }

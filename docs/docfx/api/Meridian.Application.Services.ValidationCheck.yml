@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationCheck
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 583
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 585
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Passed
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 586
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Services/DryRunService.cs
+    path: src/Meridian.Application/Services/DryRunService.cs
     startLine: 587
   assemblies:
   - Meridian.Application

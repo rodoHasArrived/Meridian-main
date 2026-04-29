@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderMetricsStatus
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalProviders
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyProviders
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 9
   assemblies:
   - Meridian.Application

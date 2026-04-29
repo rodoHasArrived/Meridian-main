@@ -17,7 +17,7 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// Uses <see cref="NYSEDataSource.ProcessTestMessage"/> to inject raw WebSocket JSON payloads
 /// and verifies that the routing chain — <c>NYSEDataSource → Rx subject → NyseMarketDataClient.OnTrade/OnQuote/OnDepth → collector → publisher</c>
 /// — produces correctly populated events in <see cref="TestMarketEventPublisher"/>.
-/// These tests cover the gap left by the existing <see cref="NYSEMessageParsingTests"/>, which
+/// These tests cover the gap left by the existing <c>NYSEMessageParsingTests</c>, which
 /// validates JSON field extraction in isolation but does not exercise end-to-end routing.
 /// </para>
 /// </summary>

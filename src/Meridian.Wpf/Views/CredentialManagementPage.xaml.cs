@@ -48,10 +48,12 @@ public partial class CredentialManagementPage : Page
     /// </summary>
     private void CredentialField_PasswordChanged(object sender, RoutedEventArgs e)
     {
-        if (sender is not PasswordBox box) return;
+        if (sender is not PasswordBox box)
+            return;
 
         var envVarName = box.Tag as string;
-        if (string.IsNullOrEmpty(envVarName)) return;
+        if (string.IsNullOrEmpty(envVarName))
+            return;
 
         var field = _viewModel.EditFields.FirstOrDefault(f => f.EnvVarName == envVarName);
         if (field is not null)

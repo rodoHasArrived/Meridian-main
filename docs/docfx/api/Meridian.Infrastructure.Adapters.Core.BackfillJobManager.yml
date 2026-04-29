@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobManager
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnJobStatusChanged
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnJobProgressUpdated
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 30
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadJobsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateJobAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 84
   assemblies:
   - Meridian.Infrastructure
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartJobAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 118
   assemblies:
   - Meridian.Infrastructure
@@ -292,7 +292,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseJobAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 210
   assemblies:
   - Meridian.Infrastructure
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumeJobAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 232
   assemblies:
   - Meridian.Infrastructure
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelJobAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 254
   assemblies:
   - Meridian.Infrastructure
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateJobProgressAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 279
   assemblies:
   - Meridian.Infrastructure
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetJobRateLimitedAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 364
   assemblies:
   - Meridian.Infrastructure
@@ -483,7 +483,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJob
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 387
   assemblies:
   - Meridian.Infrastructure
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllJobs
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 396
   assemblies:
   - Meridian.Infrastructure
@@ -549,7 +549,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJobsByStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 404
   assemblies:
   - Meridian.Infrastructure
@@ -582,7 +582,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteJobAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 412
   assemblies:
   - Meridian.Infrastructure
@@ -620,7 +620,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
     startLine: 475
   assemblies:
   - Meridian.Infrastructure

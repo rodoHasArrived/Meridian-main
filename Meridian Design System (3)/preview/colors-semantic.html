@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Semantic colors</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .sw { padding: 14px 14px 12px; border-radius: 10px; border: 1px solid; min-height: 102px; display: flex; flex-direction: column; justify-content: space-between; }
+  .sw .label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .sw .hex { font-family: var(--font-mono); font-size: 11px; }
+  .sw .dot { height: 10px; width: 10px; border-radius: 999px; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="grid">
+    <div class="sw" style="background: rgba(38, 191, 134, 0.10); border-color: rgba(38, 191, 134, 0.30); color:#26BF86;">
+      <span class="dot" style="background:#26BF86;"></span>
+      <div><div class="label">Success</div><div class="hex">#26BF86</div></div>
+    </div>
+    <div class="sw" style="background: rgba(214, 158, 56, 0.10); border-color: rgba(214, 158, 56, 0.30); color:#D69E38;">
+      <span class="dot" style="background:#D69E38;"></span>
+      <div><div class="label">Warning</div><div class="hex">#D69E38</div></div>
+    </div>
+    <div class="sw" style="background: rgba(222, 88, 120, 0.10); border-color: rgba(222, 88, 120, 0.30); color:#DE5878;">
+      <span class="dot" style="background:#DE5878;"></span>
+      <div><div class="label">Danger</div><div class="hex">#DE5878</div></div>
+    </div>
+    <div class="sw" style="background: rgba(96, 165, 250, 0.10); border-color: rgba(96, 165, 250, 0.30); color:#60A5FA;">
+      <span class="dot" style="background:#60A5FA;"></span>
+      <div><div class="label">Paper</div><div class="hex">#60A5FA</div></div>
+    </div>
+    <div class="sw" style="background: rgba(42, 178, 212, 0.10); border-color: rgba(42, 178, 212, 0.30); color:#2AB2D4;">
+      <span class="dot" style="background:#2AB2D4;"></span>
+      <div><div class="label">Live</div><div class="hex">#2AB2D4</div></div>
+    </div>
+  </div>
+</body>
+</html>

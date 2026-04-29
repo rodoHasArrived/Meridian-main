@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceWindow
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 120
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 121
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedOperations
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 123
   assemblies:
   - Meridian.Application
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 124
   assemblies:
   - Meridian.Application

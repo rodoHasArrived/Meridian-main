@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntradayBar
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 159
   assemblies:
   - Meridian.ProviderSdk
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 159
   assemblies:
   - Meridian.ProviderSdk
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 160
   assemblies:
   - Meridian.ProviderSdk
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 161
   assemblies:
   - Meridian.ProviderSdk
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 162
   assemblies:
   - Meridian.ProviderSdk
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 163
   assemblies:
   - Meridian.ProviderSdk
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 164
   assemblies:
   - Meridian.ProviderSdk
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 165
   assemblies:
   - Meridian.ProviderSdk
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 166
   assemblies:
   - Meridian.ProviderSdk
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 167
   assemblies:
   - Meridian.ProviderSdk
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 168
   assemblies:
   - Meridian.ProviderSdk
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 169
   assemblies:
   - Meridian.ProviderSdk
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VWAP
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 170
   assemblies:
   - Meridian.ProviderSdk

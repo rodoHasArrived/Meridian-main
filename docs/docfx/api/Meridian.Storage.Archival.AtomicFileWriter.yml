@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Write
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 21
   assemblies:
   - Meridian.Storage
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 64
   assemblies:
   - Meridian.Storage
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 105
   assemblies:
   - Meridian.Storage
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 144
   assemblies:
   - Meridian.Storage
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 193
   assemblies:
   - Meridian.Storage
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendLinesAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 246
   assemblies:
   - Meridian.Storage
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteWithChecksumAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 276
   assemblies:
   - Meridian.Storage
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChecksumAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 335
   assemblies:
   - Meridian.Storage
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceAsync
-    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
     startLine: 368
   assemblies:
   - Meridian.Storage

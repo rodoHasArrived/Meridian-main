@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImportRequest
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 49
   assemblies:
   - Meridian.Core
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 49
   assemblies:
   - Meridian.Core
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Broker
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 50
   assemblies:
   - Meridian.Core
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Options
-    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
     startLine: 52
   assemblies:
   - Meridian.Core

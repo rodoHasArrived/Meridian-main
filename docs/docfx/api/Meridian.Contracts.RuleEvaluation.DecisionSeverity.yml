@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DecisionSeverity
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts

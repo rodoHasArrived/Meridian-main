@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigStoreExtensions
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 53
   assemblies:
   - Meridian.Ui.Shared
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseWebDefaultPath
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 55
   assemblies:
   - Meridian.Ui.Shared

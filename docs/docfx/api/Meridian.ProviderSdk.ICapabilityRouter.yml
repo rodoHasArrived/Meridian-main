@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICapabilityRouter
-    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
     startLine: 27
   assemblies:
   - Meridian.ProviderSdk
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RouteAsync
-    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
     startLine: 29
   assemblies:
   - Meridian.ProviderSdk

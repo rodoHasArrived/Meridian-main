@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TcaReport
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 71
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 71
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAtUtc
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 72
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyAssemblyPath
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 73
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostSummary
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 74
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSummaries
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 75
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Outliers
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 76
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDepthUpdate
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 10
   assemblies:
   - Meridian.Domain
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 10
   assemblies:
   - Meridian.Domain
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 11
   assemblies:
   - Meridian.Domain
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 12
   assemblies:
   - Meridian.Domain
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Position
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 13
   assemblies:
   - Meridian.Domain
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 14
   assemblies:
   - Meridian.Domain
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 15
   assemblies:
   - Meridian.Domain
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 16
   assemblies:
   - Meridian.Domain
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 17
   assemblies:
   - Meridian.Domain
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketMaker
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 18
   assemblies:
   - Meridian.Domain
@@ -368,7 +368,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 19
   assemblies:
   - Meridian.Domain
@@ -397,7 +397,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 20
   assemblies:
   - Meridian.Domain
@@ -426,7 +426,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
+    path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
     startLine: 21
   assemblies:
   - Meridian.Domain

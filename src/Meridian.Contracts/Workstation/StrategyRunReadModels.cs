@@ -78,7 +78,14 @@ public sealed record StrategyRunPromotionSummary(
     StrategyRunPromotionState State,
     StrategyRunMode? SuggestedNextMode,
     bool RequiresReview,
-    string Reason);
+    string Reason,
+    string? SourceRunId = null,
+    string? TargetRunId = null,
+    string? AuditReference = null,
+    string? ApprovalStatus = null,
+    string? ManualOverrideId = null,
+    string? ApprovedBy = null,
+    IReadOnlyList<string>? ApprovalChecklist = null);
 
 /// <summary>
 /// Shared governance summary used by audit and control surfaces.
@@ -164,7 +171,10 @@ public sealed record WorkstationSecurityReference(
     string? MatchedIdentifierKind = null,
     string? MatchedIdentifierValue = null,
     string? MatchedProvider = null,
-    string? ResolutionReason = null);
+    string? ResolutionReason = null,
+    string? LookupPath = null,
+    string? LookupSource = null,
+    bool IsInferredMatch = false);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -185,7 +195,15 @@ public sealed record PortfolioSummary(
     decimal Financing,
     IReadOnlyList<PortfolioPositionSummary> Positions,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0);
+    int SecurityMissingCount = 0,
+    [property: JsonPropertyName("accountScopeId")] string? AccountScopeId = null,
+    [property: JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null,
+    [property: JsonPropertyName("entityScopeId")] string? EntityScopeId = null,
+    [property: JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null,
+    [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
+    [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
+    [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -197,7 +215,15 @@ public sealed record PortfolioPositionSummary(
     decimal RealizedPnl,
     decimal UnrealizedPnl,
     bool IsShort,
-    WorkstationSecurityReference? Security = null);
+    WorkstationSecurityReference? Security = null,
+    [property: JsonPropertyName("accountScopeId")] string? AccountScopeId = null,
+    [property: JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null,
+    [property: JsonPropertyName("entityScopeId")] string? EntityScopeId = null,
+    [property: JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null,
+    [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
+    [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
+    [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared ledger rollup for workstation governance and audit surfaces.
@@ -216,7 +242,15 @@ public sealed record LedgerSummary(
     IReadOnlyList<LedgerTrialBalanceLine> TrialBalance,
     IReadOnlyList<LedgerJournalLine> Journal,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0);
+    int SecurityMissingCount = 0,
+    [property: JsonPropertyName("accountScopeId")] string? AccountScopeId = null,
+    [property: JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null,
+    [property: JsonPropertyName("entityScopeId")] string? EntityScopeId = null,
+    [property: JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null,
+    [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
+    [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
+    [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.
@@ -228,7 +262,15 @@ public sealed record LedgerTrialBalanceLine(
     string? FinancialAccountId,
     decimal Balance,
     int EntryCount,
-    WorkstationSecurityReference? Security = null);
+    WorkstationSecurityReference? Security = null,
+    [property: JsonPropertyName("accountScopeId")] string? AccountScopeId = null,
+    [property: JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null,
+    [property: JsonPropertyName("entityScopeId")] string? EntityScopeId = null,
+    [property: JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null,
+    [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
+    [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
+    [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.
@@ -239,7 +281,15 @@ public sealed record LedgerJournalLine(
     string Description,
     decimal TotalDebits,
     decimal TotalCredits,
-    int LineCount);
+    int LineCount,
+    [property: JsonPropertyName("accountScopeId")] string? AccountScopeId = null,
+    [property: JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null,
+    [property: JsonPropertyName("entityScopeId")] string? EntityScopeId = null,
+    [property: JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null,
+    [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
+    [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
+    [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Comparison row used when reviewing multiple runs side by side.

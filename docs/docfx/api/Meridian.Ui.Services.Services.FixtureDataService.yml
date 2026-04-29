@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FixtureDataService
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScenarioLabel
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockStatusResponse
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 40
   assemblies:
   - Meridian.Ui.Services
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockDisconnectedStatus
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 71
   assemblies:
   - Meridian.Ui.Services
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockTradeData
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 83
   assemblies:
   - Meridian.Ui.Services
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockQuoteData
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 97
   assemblies:
   - Meridian.Ui.Services
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockBackfillHealth
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 120
   assemblies:
   - Meridian.Ui.Services
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockSymbols
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 152
   assemblies:
   - Meridian.Ui.Services
@@ -385,7 +385,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockTradesResponse
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 161
   assemblies:
   - Meridian.Ui.Services
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SimulateNetworkDelayAsync
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
     startLine: 191
   assemblies:
   - Meridian.Ui.Services

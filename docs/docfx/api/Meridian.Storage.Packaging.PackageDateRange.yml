@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageDateRange
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 195
   assemblies:
   - Meridian.Storage
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 197
   assemblies:
   - Meridian.Storage
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: End
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 200
   assemblies:
   - Meridian.Storage
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingDays
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 203
   assemblies:
   - Meridian.Storage
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalendarDays
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 206
   assemblies:
   - Meridian.Storage

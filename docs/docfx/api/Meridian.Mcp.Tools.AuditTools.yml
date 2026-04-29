@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditTools
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 4
   assemblies:
   - mdc-mcp
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 4
   assemblies:
   - mdc-mcp
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunCodeAuditAsync
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 9
   assemblies:
   - mdc-mcp
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunProviderAuditAsync
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 21
   assemblies:
   - mdc-mcp
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunTestAuditAsync
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 26
   assemblies:
   - mdc-mcp
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDiffSummaryAsync
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 31
   assemblies:
   - mdc-mcp
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunFullAuditAsync
-    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    path: src/Meridian.Mcp/Tools/AuditTools.cs
     startLine: 36
   assemblies:
   - mdc-mcp

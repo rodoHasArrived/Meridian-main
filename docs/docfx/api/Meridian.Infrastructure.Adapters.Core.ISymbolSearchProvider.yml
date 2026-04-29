@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISymbolSearchProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 34
   assemblies:
   - Meridian.Infrastructure
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure

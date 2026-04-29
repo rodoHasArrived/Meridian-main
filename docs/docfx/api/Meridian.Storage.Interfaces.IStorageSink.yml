@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStorageSink
-    path: ../../src/Meridian.Storage/Interfaces/IStorageSink.cs
+    path: src/Meridian.Storage/Interfaces/IStorageSink.cs
     startLine: 6
   assemblies:
   - Meridian.Storage
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
-    path: ../../src/Meridian.Storage/Interfaces/IStorageSink.cs
+    path: src/Meridian.Storage/Interfaces/IStorageSink.cs
     startLine: 8
   assemblies:
   - Meridian.Storage
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Storage/Interfaces/IStorageSink.cs
+    path: src/Meridian.Storage/Interfaces/IStorageSink.cs
     startLine: 9
   assemblies:
   - Meridian.Storage

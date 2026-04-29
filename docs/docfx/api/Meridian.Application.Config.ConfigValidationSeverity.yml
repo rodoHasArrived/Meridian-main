@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigValidationSeverity
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 35
   assemblies:
   - Meridian.Application

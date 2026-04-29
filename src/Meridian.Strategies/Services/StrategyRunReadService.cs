@@ -1,5 +1,7 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 
 namespace Meridian.Strategies.Services;
 
@@ -8,18 +10,25 @@ namespace Meridian.Strategies.Services;
 /// </summary>
 public sealed class StrategyRunReadService
 {
+    private static readonly IReadOnlyDictionary<string, string> EmptyParameters = new Dictionary<string, string>();
+    private static readonly IReadOnlyDictionary<string, StrategyPromotionRecord> EmptyPromotionLookup =
+        new Dictionary<string, StrategyPromotionRecord>(StringComparer.Ordinal);
+
     private readonly IStrategyRepository _repository;
     private readonly PortfolioReadService _portfolioReadService;
     private readonly LedgerReadService _ledgerReadService;
+    private readonly IPromotionRecordStore? _promotionRecordStore;
 
     public StrategyRunReadService(
         IStrategyRepository repository,
         PortfolioReadService portfolioReadService,
-        LedgerReadService ledgerReadService)
+        LedgerReadService ledgerReadService,
+        IPromotionRecordStore? promotionRecordStore = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _portfolioReadService = portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService));
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
+        _promotionRecordStore = promotionRecordStore;
     }
 
     public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
@@ -27,22 +36,17 @@ public sealed class StrategyRunReadService
         RunType? runType = null,
         CancellationToken ct = default)
     {
-        var results = new List<StrategyRunSummary>();
+        var repositoryQuery = new StrategyRunRepositoryQuery(
+            StrategyId: string.IsNullOrWhiteSpace(strategyId) ? null : strategyId,
+            RunTypes: runType.HasValue ? [runType.Value] : null,
+            Limit: int.MaxValue);
+        var runs = await _repository.QueryRunsAsync(repositoryQuery, ct).ConfigureAwait(false);
+        var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
 
-        var runs = string.IsNullOrWhiteSpace(strategyId)
-            ? _repository.GetAllRunsAsync(ct)
-            : _repository.GetRunsAsync(strategyId, ct);
-
-        await foreach (var run in runs.WithCancellation(ct).ConfigureAwait(false))
-        {
-            if (runType.HasValue && run.RunType != runType.Value)
-                continue;
-
-            results.Add(ToSummary(run));
-        }
-
-        return results
+        return runs
+            .Select(run => ToSummary(run, promotionLookup))
             .OrderByDescending(static run => run.StartedAt)
+            .ThenBy(static run => run.RunId, StringComparer.Ordinal)
             .ToArray();
     }
 
@@ -52,38 +56,16 @@ public sealed class StrategyRunReadService
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var modeFilter = query.Modes is { Count: > 0 }
-            ? new HashSet<StrategyRunMode>(query.Modes)
-            : null;
-        var limit = Math.Clamp(query.Limit, 1, 500);
-        var results = new List<StrategyRunSummary>();
+        var repositoryQuery = new StrategyRunRepositoryQuery(
+            StrategyId: string.IsNullOrWhiteSpace(query.StrategyId) ? null : query.StrategyId,
+            RunTypes: MapModesToRunTypes(query.Modes),
+            Status: query.Status,
+            Limit: Math.Clamp(query.Limit, 1, 500));
+        var runs = await _repository.QueryRunsAsync(repositoryQuery, ct).ConfigureAwait(false);
+        var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
-        {
-            if (!string.IsNullOrWhiteSpace(query.StrategyId) &&
-                !string.Equals(run.StrategyId, query.StrategyId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var summary = ToSummary(run);
-            if (query.Status.HasValue && summary.Status != query.Status.Value)
-            {
-                continue;
-            }
-
-            if (modeFilter is not null && !modeFilter.Contains(summary.Mode))
-            {
-                continue;
-            }
-
-            results.Add(summary);
-        }
-
-        return results
-            .OrderByDescending(static run => run.LastUpdatedAt)
-            .ThenByDescending(static run => run.StartedAt)
-            .Take(limit)
+        return runs
+            .Select(run => ToSummary(run, promotionLookup))
             .ToArray();
     }
 
@@ -112,46 +94,36 @@ public sealed class StrategyRunReadService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
         {
-            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
-            var ledgerTask = _ledgerReadService.BuildSummaryAsync(run, ct);
-
-            await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
-
-            return new StrategyRunDetail(
-                Summary: ToSummary(run),
-                Parameters: run.ParameterSet ?? EmptyParameters,
-                Portfolio: await portfolioTask.ConfigureAwait(false),
-                Ledger: await ledgerTask.ConfigureAwait(false),
-                Execution: BuildExecutionSummary(run),
-                Promotion: BuildPromotionSummary(run),
-                Governance: BuildGovernanceSummary(run));
+            return null;
         }
 
-        return null;
+        var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
+        var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
+        var ledgerTask = _ledgerReadService.BuildSummaryAsync(run, ct);
+
+        await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
+
+        return new StrategyRunDetail(
+            Summary: ToSummary(run, promotionLookup),
+            Parameters: run.ParameterSet ?? EmptyParameters,
+            Portfolio: await portfolioTask.ConfigureAwait(false),
+            Ledger: await ledgerTask.ConfigureAwait(false),
+            Execution: BuildExecutionSummary(run),
+            Promotion: BuildPromotionSummary(run, promotionLookup),
+            Governance: BuildGovernanceSummary(run));
     }
 
     public async Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
-        {
-            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            return await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
-        }
-
-        return null;
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        return run is null
+            ? null
+            : await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
@@ -168,14 +140,12 @@ public sealed class StrategyRunReadService
             return Array.Empty<StrategyRunComparison>();
         }
 
-        var results = new List<StrategyRunComparison>();
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
-        {
-            if (!selectedIds.Contains(run.RunId))
-            {
-                continue;
-            }
+        var runs = await _repository.GetRunsByIdsAsync(selectedIds, ct).ConfigureAwait(false);
+        var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
+        var results = new List<StrategyRunComparison>(runs.Count);
 
+        foreach (var run in runs)
+        {
             var metrics = run.Metrics?.Metrics;
             results.Add(new StrategyRunComparison(
                 RunId: run.RunId,
@@ -190,7 +160,7 @@ public sealed class StrategyRunReadService
                 SharpeRatio: metrics?.SharpeRatio,
                 FillCount: run.Metrics?.Fills.Count ?? 0,
                 LastUpdatedAt: GetLastUpdatedAt(run),
-                PromotionState: BuildPromotionSummary(run).State,
+                PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
                 HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference)));
         }
@@ -216,16 +186,13 @@ public sealed class StrategyRunReadService
             return Array.Empty<RunComparisonDto>();
         }
 
-        var results = new List<RunComparisonDto>();
+        var runs = await _repository.GetRunsByIdsAsync(selectedIds, ct).ConfigureAwait(false);
+        var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
+        var results = new List<RunComparisonDto>(runs.Count);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        foreach (var run in runs)
         {
-            if (!selectedIds.Contains(run.RunId))
-                continue;
-
             var metrics = run.Metrics?.Metrics;
-            var curve = await GetEquityCurveAsync(run.RunId, ct).ConfigureAwait(false);
-
             results.Add(new RunComparisonDto(
                 RunId: run.RunId,
                 ParentRunId: run.ParentRunId,
@@ -255,20 +222,22 @@ public sealed class StrategyRunReadService
                 TotalMarginInterest: metrics?.TotalMarginInterest ?? 0m,
                 TotalShortRebates: metrics?.TotalShortRebates ?? 0m,
                 Xirr: metrics?.Xirr,
-                EquityCurve: curve,
+                EquityCurve: BuildEquityCurve(run),
                 LastUpdatedAt: GetLastUpdatedAt(run),
-                PromotionState: BuildPromotionSummary(run).State,
+                PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
                 HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference)));
         }
 
         return results
-            .OrderByDescending(static r => r.FinalEquity ?? decimal.MinValue)
-            .ThenBy(static r => r.RunId, StringComparer.Ordinal)
+            .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
+            .ThenBy(static run => run.RunId, StringComparer.Ordinal)
             .ToArray();
     }
 
-    private static StrategyRunSummary ToSummary(StrategyRunEntry run)
+    private StrategyRunSummary ToSummary(
+        StrategyRunEntry run,
+        IReadOnlyDictionary<string, StrategyPromotionRecord> promotionLookup)
     {
         var metrics = run.Metrics?.Metrics;
         return new StrategyRunSummary(
@@ -291,7 +260,7 @@ public sealed class StrategyRunReadService
             LastUpdatedAt: GetLastUpdatedAt(run),
             AuditReference: run.AuditReference,
             Execution: BuildExecutionSummary(run),
-            Promotion: BuildPromotionSummary(run),
+            Promotion: BuildPromotionSummary(run, promotionLookup),
             Governance: BuildGovernanceSummary(run),
             FundProfileId: run.FundProfileId,
             FundDisplayName: run.FundDisplayName,
@@ -315,43 +284,67 @@ public sealed class StrategyRunReadService
             AuditReference: run.AuditReference);
     }
 
-    private static StrategyRunPromotionSummary BuildPromotionSummary(StrategyRunEntry run)
+    private static StrategyRunPromotionSummary BuildPromotionSummary(
+        StrategyRunEntry run,
+        IReadOnlyDictionary<string, StrategyPromotionRecord> promotionLookup)
     {
+        promotionLookup.TryGetValue(run.RunId, out var matchedRecord);
+
+        StrategyRunPromotionSummary summary;
         if (run.RunType == RunType.Live)
         {
-            return new StrategyRunPromotionSummary(
+            summary = new StrategyRunPromotionSummary(
                 State: StrategyRunPromotionState.LiveManaged,
                 SuggestedNextMode: null,
                 RequiresReview: false,
                 Reason: "Live runs are already at the terminal operating mode.");
         }
-
-        if (!run.EndedAt.HasValue)
+        else if (!run.EndedAt.HasValue)
         {
-            return new StrategyRunPromotionSummary(
+            summary = new StrategyRunPromotionSummary(
                 State: StrategyRunPromotionState.RequiresCompletion,
                 SuggestedNextMode: null,
                 RequiresReview: true,
                 Reason: "Run completion is required before promotion review can begin.");
         }
-
-        return run.RunType switch
+        else
         {
-            RunType.Backtest => new StrategyRunPromotionSummary(
-                State: StrategyRunPromotionState.CandidateForPaper,
-                SuggestedNextMode: StrategyRunMode.Paper,
-                RequiresReview: true,
-                Reason: "Completed backtests can be reviewed for paper promotion."),
-            RunType.Paper => new StrategyRunPromotionSummary(
-                State: StrategyRunPromotionState.CandidateForLive,
-                SuggestedNextMode: StrategyRunMode.Live,
-                RequiresReview: true,
-                Reason: "Completed paper runs can be reviewed for live promotion."),
-            _ => new StrategyRunPromotionSummary(
-                State: StrategyRunPromotionState.None,
-                SuggestedNextMode: null,
-                RequiresReview: false,
-                Reason: "No promotion guidance is available for this run type.")
+            summary = run.RunType switch
+            {
+                RunType.Backtest => new StrategyRunPromotionSummary(
+                    State: StrategyRunPromotionState.CandidateForPaper,
+                    SuggestedNextMode: StrategyRunMode.Paper,
+                    RequiresReview: true,
+                    Reason: "Completed backtests can be reviewed for paper promotion."),
+                RunType.Paper => new StrategyRunPromotionSummary(
+                    State: StrategyRunPromotionState.CandidateForLive,
+                    SuggestedNextMode: StrategyRunMode.Live,
+                    RequiresReview: true,
+                    Reason: "Completed paper runs can be reviewed for live promotion."),
+                _ => new StrategyRunPromotionSummary(
+                    State: StrategyRunPromotionState.None,
+                    SuggestedNextMode: null,
+                    RequiresReview: false,
+                    Reason: "No promotion guidance is available for this run type.")
+            };
+        }
+
+        var sourceRunId = matchedRecord?.SourceRunId ?? run.ParentRunId;
+        var targetRunId = matchedRecord?.TargetRunId
+            ?? (run.ParentRunId is not null ? run.RunId : null);
+        var auditReference = matchedRecord?.AuditReference ?? run.AuditReference;
+        var approvalStatus = matchedRecord?.Decision
+            ?? (run.ParentRunId is not null ? PromotionDecisionKinds.Approved : null);
+
+        return summary with
+        {
+            SourceRunId = sourceRunId,
+            TargetRunId = targetRunId,
+            AuditReference = auditReference,
+            ApprovalStatus = approvalStatus,
+            ManualOverrideId = matchedRecord?.ManualOverrideId,
+            ApprovedBy = matchedRecord?.ApprovedBy,
+            ApprovalChecklist = matchedRecord?.ApprovalChecklist
         };
     }
 
@@ -368,7 +361,58 @@ public sealed class StrategyRunReadService
             FeedReference: run.FeedReference);
     }
 
-    private static DateTimeOffset GetLastUpdatedAt(StrategyRunEntry run) => run.EndedAt ?? run.StartedAt;
+    private async Task<IReadOnlyDictionary<string, StrategyPromotionRecord>> LoadPromotionLookupAsync(CancellationToken ct)
+    {
+        if (_promotionRecordStore is null)
+        {
+            return EmptyPromotionLookup;
+        }
+
+        var records = await _promotionRecordStore.LoadAllAsync(ct).ConfigureAwait(false);
+        if (records.Count == 0)
+        {
+            return EmptyPromotionLookup;
+        }
+
+        var lookup = new Dictionary<string, StrategyPromotionRecord>(records.Count, StringComparer.Ordinal);
+        foreach (var record in records)
+        {
+            UpdatePromotionLookup(lookup, record.SourceRunId, record);
+            UpdatePromotionLookup(lookup, record.TargetRunId, record);
+        }
+
+        return lookup;
+    }
+
+    private static void UpdatePromotionLookup(
+        Dictionary<string, StrategyPromotionRecord> lookup,
+        string? runId,
+        StrategyPromotionRecord record)
+    {
+        if (string.IsNullOrWhiteSpace(runId))
+        {
+            return;
+        }
+
+        if (!lookup.TryGetValue(runId, out var existing) ||
+            record.PromotedAt > existing.PromotedAt)
+        {
+            lookup[runId] = record;
+        }
+    }
+
+    private static IReadOnlyList<RunType>? MapModesToRunTypes(IReadOnlyList<StrategyRunMode>? modes)
+    {
+        if (modes is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        return modes
+            .Select(MapRunType)
+            .Distinct()
+            .ToArray();
+    }
 
     private static StrategyRunMode MapMode(RunType runType) => runType switch
     {
@@ -376,6 +420,14 @@ public sealed class StrategyRunReadService
         RunType.Paper => StrategyRunMode.Paper,
         RunType.Live => StrategyRunMode.Live,
         _ => StrategyRunMode.Backtest
+    };
+
+    private static RunType MapRunType(StrategyRunMode mode) => mode switch
+    {
+        StrategyRunMode.Backtest => RunType.Backtest,
+        StrategyRunMode.Paper => RunType.Paper,
+        StrategyRunMode.Live => RunType.Live,
+        _ => RunType.Backtest
     };
 
     private static StrategyRunEngine MapEngine(StrategyRunEntry run)
@@ -402,18 +454,11 @@ public sealed class StrategyRunReadService
         };
     }
 
-    private static StrategyRunStatus MapStatus(StrategyRunEntry run)
-    {
-        if (run.TerminalStatus.HasValue)
-            return run.TerminalStatus.Value;
+    private static StrategyRunStatus MapStatus(StrategyRunEntry run) =>
+        StrategyRunRepositoryOrdering.MapStatus(run);
 
-        if (run.EndedAt.HasValue)
-            return StrategyRunStatus.Completed;
-
-        return StrategyRunStatus.Running;
-    }
-
-    private static readonly IReadOnlyDictionary<string, string> EmptyParameters = new Dictionary<string, string>();
+    private static DateTimeOffset GetLastUpdatedAt(StrategyRunEntry run) =>
+        StrategyRunRepositoryOrdering.GetLastUpdatedAt(run);
 
     // -----------------------------------------------------------------------
     // Track C: drill-in surfaces
@@ -427,49 +472,53 @@ public sealed class StrategyRunReadService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        return run is null
+            ? null
+            : BuildEquityCurve(run);
+    }
+
+    private static EquityCurveSummary? BuildEquityCurve(StrategyRunEntry run)
+    {
+        var snapshots = run.Metrics?.Snapshots;
+        if (snapshots is not { Count: > 0 })
         {
-            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
-                continue;
-
-            var snapshots = run.Metrics?.Snapshots;
-            if (snapshots is not { Count: > 0 })
-                return null;
-
-            var metrics = run.Metrics!.Metrics;
-            var points = new List<EquityCurvePoint>(snapshots.Count);
-            var peak = snapshots[0].TotalEquity;
-
-            foreach (var snap in snapshots)
-            {
-                if (snap.TotalEquity > peak)
-                    peak = snap.TotalEquity;
-
-                var dd = peak - snap.TotalEquity;
-                var ddPct = peak > 0m ? dd / peak : 0m;
-
-                points.Add(new EquityCurvePoint(
-                    Date: snap.Date,
-                    TotalEquity: snap.TotalEquity,
-                    Cash: snap.Cash,
-                    DailyReturn: snap.DailyReturn,
-                    DrawdownFromPeak: dd,
-                    DrawdownFromPeakPercent: ddPct));
-            }
-
-            return new EquityCurveSummary(
-                RunId: run.RunId,
-                InitialEquity: snapshots[0].TotalEquity,
-                FinalEquity: snapshots[^1].TotalEquity,
-                MaxDrawdown: metrics.MaxDrawdown,
-                MaxDrawdownPercent: metrics.MaxDrawdownPercent,
-                MaxDrawdownRecoveryDays: metrics.MaxDrawdownRecoveryDays,
-                SharpeRatio: metrics.SharpeRatio,
-                SortinoRatio: metrics.SortinoRatio,
-                Points: points);
+            return null;
         }
 
-        return null;
+        var metrics = run.Metrics!.Metrics;
+        var points = new List<EquityCurvePoint>(snapshots.Count);
+        var peak = snapshots[0].TotalEquity;
+
+        foreach (var snapshot in snapshots)
+        {
+            if (snapshot.TotalEquity > peak)
+            {
+                peak = snapshot.TotalEquity;
+            }
+
+            var drawdown = peak - snapshot.TotalEquity;
+            var drawdownPercent = peak > 0m ? drawdown / peak : 0m;
+
+            points.Add(new EquityCurvePoint(
+                Date: snapshot.Date,
+                TotalEquity: snapshot.TotalEquity,
+                Cash: snapshot.Cash,
+                DailyReturn: snapshot.DailyReturn,
+                DrawdownFromPeak: drawdown,
+                DrawdownFromPeakPercent: drawdownPercent));
+        }
+
+        return new EquityCurveSummary(
+            RunId: run.RunId,
+            InitialEquity: snapshots[0].TotalEquity,
+            FinalEquity: snapshots[^1].TotalEquity,
+            MaxDrawdown: metrics.MaxDrawdown,
+            MaxDrawdownPercent: metrics.MaxDrawdownPercent,
+            MaxDrawdownRecoveryDays: metrics.MaxDrawdownRecoveryDays,
+            SharpeRatio: metrics.SharpeRatio,
+            SortinoRatio: metrics.SortinoRatio,
+            Points: points);
     }
 
     /// <summary>
@@ -480,34 +529,32 @@ public sealed class StrategyRunReadService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
         {
-            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
-                continue;
-
-            var fills = run.Metrics?.Fills ?? [];
-            var entries = fills
-                .OrderBy(static f => f.FilledAt)
-                .Select(static f => new RunFillEntry(
-                    FillId: f.FillId,
-                    OrderId: f.OrderId,
-                    Symbol: f.Symbol,
-                    FilledQuantity: f.FilledQuantity,
-                    FillPrice: f.FillPrice,
-                    Commission: f.Commission,
-                    FilledAt: f.FilledAt,
-                    AccountId: f.AccountId))
-                .ToArray();
-
-            return new RunFillSummary(
-                RunId: run.RunId,
-                Mode: MapMode(run.RunType),
-                TotalFills: entries.Length,
-                TotalCommissions: entries.Sum(static e => e.Commission),
-                Fills: entries);
+            return null;
         }
 
-        return null;
+        var fills = run.Metrics?.Fills ?? [];
+        var entries = fills
+            .OrderBy(static fill => fill.FilledAt)
+            .Select(static fill => new RunFillEntry(
+                FillId: fill.FillId,
+                OrderId: fill.OrderId,
+                Symbol: fill.Symbol,
+                FilledQuantity: fill.FilledQuantity,
+                FillPrice: fill.FillPrice,
+                Commission: fill.Commission,
+                FilledAt: fill.FilledAt,
+                AccountId: fill.AccountId))
+            .ToArray();
+
+        return new RunFillSummary(
+            RunId: run.RunId,
+            Mode: MapMode(run.RunType),
+            TotalFills: entries.Length,
+            TotalCommissions: entries.Sum(static entry => entry.Commission),
+            Fills: entries);
     }
 
     /// <summary>
@@ -518,36 +565,36 @@ public sealed class StrategyRunReadService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
         {
-            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
-                continue;
-
-            var attr = run.Metrics?.Metrics.SymbolAttribution;
-            if (attr is null)
-                return null;
-
-            var bySymbol = attr.Values
-                .OrderByDescending(static a => a.RealizedPnl + a.UnrealizedPnl)
-                .Select(static a => new SymbolAttributionEntry(
-                    Symbol: a.Symbol,
-                    RealizedPnl: a.RealizedPnl,
-                    UnrealizedPnl: a.UnrealizedPnl,
-                    TotalPnl: a.RealizedPnl + a.UnrealizedPnl,
-                    TradeCount: a.TradeCount,
-                    Commissions: a.Commissions,
-                    MarginInterestAllocated: a.MarginInterestAllocated))
-                .ToArray();
-
-            return new RunAttributionSummary(
-                RunId: run.RunId,
-                Mode: MapMode(run.RunType),
-                TotalRealizedPnl: bySymbol.Sum(static a => a.RealizedPnl),
-                TotalUnrealizedPnl: bySymbol.Sum(static a => a.UnrealizedPnl),
-                TotalCommissions: bySymbol.Sum(static a => a.Commissions),
-                BySymbol: bySymbol);
+            return null;
         }
 
-        return null;
+        var attribution = run.Metrics?.Metrics.SymbolAttribution;
+        if (attribution is null)
+        {
+            return null;
+        }
+
+        var bySymbol = attribution.Values
+            .OrderByDescending(static item => item.RealizedPnl + item.UnrealizedPnl)
+            .Select(static item => new SymbolAttributionEntry(
+                Symbol: item.Symbol,
+                RealizedPnl: item.RealizedPnl,
+                UnrealizedPnl: item.UnrealizedPnl,
+                TotalPnl: item.RealizedPnl + item.UnrealizedPnl,
+                TradeCount: item.TradeCount,
+                Commissions: item.Commissions,
+                MarginInterestAllocated: item.MarginInterestAllocated))
+            .ToArray();
+
+        return new RunAttributionSummary(
+            RunId: run.RunId,
+            Mode: MapMode(run.RunType),
+            TotalRealizedPnl: bySymbol.Sum(static item => item.RealizedPnl),
+            TotalUnrealizedPnl: bySymbol.Sum(static item => item.UnrealizedPnl),
+            TotalCommissions: bySymbol.Sum(static item => item.Commissions),
+            BySymbol: bySymbol);
     }
 }

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossStrategyExposureReport
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 42
   assemblies:
   - Meridian.Strategies
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 42
   assemblies:
   - Meridian.Strategies
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GrossExposure
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 43
   assemblies:
   - Meridian.Strategies
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetExposure
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 44
   assemblies:
   - Meridian.Strategies
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Top5Concentrations
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 45
   assemblies:
   - Meridian.Strategies
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 46
   assemblies:
   - Meridian.Strategies

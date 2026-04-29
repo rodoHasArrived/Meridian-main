@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionJobState
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 179
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Draft
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 183
   assemblies:
   - Meridian.Contracts
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Queued
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 186
   assemblies:
   - Meridian.Contracts
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 189
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paused
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 192
   assemblies:
   - Meridian.Contracts
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 195
   assemblies:
   - Meridian.Contracts
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 201
   assemblies:
   - Meridian.Contracts

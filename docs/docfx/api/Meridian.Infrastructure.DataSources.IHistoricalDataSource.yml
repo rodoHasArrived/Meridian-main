@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IHistoricalDataSource
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 9
   assemblies:
   - Meridian.ProviderSdk
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 20
   assemblies:
   - Meridian.ProviderSdk
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 29
   assemblies:
   - Meridian.ProviderSdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 40
   assemblies:
   - Meridian.ProviderSdk
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedBarIntervals
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 45
   assemblies:
   - Meridian.ProviderSdk
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIntradayBarsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 56
   assemblies:
   - Meridian.ProviderSdk
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 68
   assemblies:
   - Meridian.ProviderSdk
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 73
   assemblies:
   - Meridian.ProviderSdk
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDividendsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 78
   assemblies:
   - Meridian.ProviderSdk
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSplitsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 87
   assemblies:
   - Meridian.ProviderSdk

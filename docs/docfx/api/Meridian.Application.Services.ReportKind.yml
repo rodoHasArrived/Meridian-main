@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportKind
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 118
   assemblies:
   - Meridian.Application
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavSummary
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetAllocation
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 120
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationPack
-    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    path: src/Meridian.Application/Services/ReportGenerationService.cs
     startLine: 121
   assemblies:
   - Meridian.Application

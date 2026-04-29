@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerViewKind
-    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    path: src/Meridian.Ledger/LedgerViewKind.cs
     startLine: 7
   assemblies:
   - Meridian.Ledger
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Actual
-    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    path: src/Meridian.Ledger/LedgerViewKind.cs
     startLine: 9
   assemblies:
   - Meridian.Ledger
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
-    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    path: src/Meridian.Ledger/LedgerViewKind.cs
     startLine: 10
   assemblies:
   - Meridian.Ledger
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterizedPnL
-    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    path: src/Meridian.Ledger/LedgerViewKind.cs
     startLine: 11
   assemblies:
   - Meridian.Ledger
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMaster
-    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    path: src/Meridian.Ledger/LedgerViewKind.cs
     startLine: 12
   assemblies:
   - Meridian.Ledger
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
-    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    path: src/Meridian.Ledger/LedgerViewKind.cs
     startLine: 13
   assemblies:
   - Meridian.Ledger

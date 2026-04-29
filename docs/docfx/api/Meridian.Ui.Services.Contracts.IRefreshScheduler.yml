@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IRefreshScheduler
-    path: ../../src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+    path: src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+    path: src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stop
-    path: ../../src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+    path: src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services

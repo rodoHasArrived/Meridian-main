@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardContext
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedProviders
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectedUseCase
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSource
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Storage
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinalConfig
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 38
   assemblies:
   - Meridian.Application
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedConfigPath
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 49
   assemblies:
   - Meridian.Application
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCancelled
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 54
   assemblies:
   - Meridian.Application
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMeta
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 59
   assemblies:
   - Meridian.Application
@@ -420,7 +420,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetMeta
-    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    path: src/Meridian.Application/Wizard/Core/WizardContext.cs
     startLine: 63
   assemblies:
   - Meridian.Application

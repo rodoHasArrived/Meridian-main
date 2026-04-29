@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityEvent
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCode
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceGap
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -400,7 +400,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrder
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -446,7 +446,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidSymbol
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 56
   assemblies:
   - Meridian.Contracts
@@ -492,7 +492,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidSequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 73
   assemblies:
   - Meridian.Contracts
@@ -538,7 +538,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnresolvedSymbol
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -584,7 +584,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalizationHardFail
-    path: ../../src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/IntegrityEvent.cs
     startLine: 108
   assemblies:
   - Meridian.Contracts

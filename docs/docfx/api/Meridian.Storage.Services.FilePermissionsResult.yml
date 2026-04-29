@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePermissionsResult
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 409
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 411
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 412
   assemblies:
   - Meridian.Storage
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 413
   assemblies:
   - Meridian.Storage
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 415
   assemblies:
   - Meridian.Storage
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSuccess
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 421
   assemblies:
   - Meridian.Storage

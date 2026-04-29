@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderExecutionTranslator
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAcknowledgement
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAcceptedStatus
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 18
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToRejectedStatus
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToCancelledStatus
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 40
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToExecutionStatus
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure.CppTrader

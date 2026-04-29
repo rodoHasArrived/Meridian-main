@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 35
   assemblies:
   - Meridian.Infrastructure
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 98
   assemblies:
   - Meridian.Infrastructure
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 101
   assemblies:
   - Meridian.Infrastructure
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 121
   assemblies:
   - Meridian.Infrastructure
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 144
   assemblies:
   - Meridian.Infrastructure
@@ -334,7 +334,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 153
   assemblies:
   - Meridian.Infrastructure
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 156
   assemblies:
   - Meridian.Infrastructure
@@ -405,7 +405,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 165
   assemblies:
   - Meridian.Infrastructure
@@ -441,7 +441,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeQuotes
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 168
   assemblies:
   - Meridian.Infrastructure
@@ -474,7 +474,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeQuotes
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 178
   assemblies:
   - Meridian.Infrastructure
@@ -508,7 +508,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs
     startLine: 312
   assemblies:
   - Meridian.Infrastructure

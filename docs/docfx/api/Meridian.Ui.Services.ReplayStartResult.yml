@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayStartResult
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 319
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 321
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 322
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 323
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 324
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedDuration
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 325
   assemblies:
   - Meridian.Ui.Services

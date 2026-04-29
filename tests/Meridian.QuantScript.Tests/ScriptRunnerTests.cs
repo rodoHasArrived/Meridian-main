@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
@@ -14,7 +15,8 @@ public sealed class ScriptRunnerTests
     private static ScriptRunner BuildRunner(
         IQuantScriptCompiler? compiler = null,
         IQuantDataContext? dataContext = null,
-        PlotQueue? plotQueue = null)
+        PlotQueue? plotQueue = null,
+        int runTimeoutSeconds = 10)
     {
         compiler ??= new RoslynScriptCompiler(
             Options.Create(new QuantScriptOptions()),
@@ -27,7 +29,7 @@ public sealed class ScriptRunnerTests
             compiler,
             dataContext,
             plotQueue ?? new PlotQueue(),
-            Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
+            Options.Create(new QuantScriptOptions { RunTimeoutSeconds = runTimeoutSeconds }),
             NullLogger<ScriptRunner>.Instance,
             null);
     }
@@ -145,70 +147,74 @@ public sealed class ScriptRunnerTests
     // ── Cancellation ─────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task RunAsync_CancelledBeforeRun_ReturnsFailedOrCompletes()
+    public async Task RunAsync_PreCanceledToken_ThrowsOperationCanceledException()
     {
         var runner = BuildRunner();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        try
-        {
-            var result = await runner.RunAsync("Print(\"hi\");", NoParams, cts.Token);
-            result.Should().NotBeNull();
-        }
-        catch (OperationCanceledException)
-        {
-            // Acceptable: some code paths throw on immediate cancellation
-        }
-    }
+        var act = () => runner.RunAsync("Print(\"hi\");", NoParams, cts.Token);
 
-    [Fact]
-    public async Task RunAsync_CancellationToken_CancelsRun()
-    {
-        var runner = BuildRunner();
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // A pre-cancelled token throws OperationCanceledException from CompileAsync
-        try
-        {
-            var result = await runner.RunAsync("// should be cancelled", NoParams, cts.Token);
-            result.Should().NotBeNull();
-        }
-        catch (OperationCanceledException)
-        {
-            // Acceptable: compilation cancelled before run begins
-        }
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     // ── Timeout ───────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task RunAsync_Timeout_TerminatesAfterConfiguredDuration()
+    public async Task RunAsync_UserCancellationDuringRun_ReturnsCancelledRuntimeError_AndNoCheckpoint()
     {
-        var compiler = new RoslynScriptCompiler(
-            Options.Create(new QuantScriptOptions()),
-            NullLogger<RoslynScriptCompiler>.Instance);
-        var dataContext = new Mock<IQuantDataContext>().Object;
-        var shortTimeout = new QuantScriptOptions { RunTimeoutSeconds = 1 };
+        var runner = BuildRunner(runTimeoutSeconds: 10);
+        using var cts = new CancellationTokenSource();
 
-        var runner = new ScriptRunner(
-            compiler,
-            dataContext,
-            new PlotQueue(),
-            Options.Create(shortTimeout),
-            NullLogger<ScriptRunner>.Instance,
-            null);
+        cts.CancelAfter(TimeSpan.FromMilliseconds(200));
+        var elapsed = Stopwatch.StartNew();
 
-        // Use a tight spin-loop that respects the thread-pool cancellation token
-        // (Thread.Sleep cannot be interrupted, but a spin check can)
         var result = await runner.RunAsync(
-            "while(true) { if(System.Threading.Thread.Sleep(50) == false) {} }",
+            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            NoParams,
+            cts.Token);
+
+        elapsed.Stop();
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script cancelled by user.");
+        result.Checkpoint.Should().BeNull();
+        result.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
+    public async Task RunAsync_TimeoutDuringRun_ReturnsTimeoutRuntimeError_AndNoCheckpoint()
+    {
+        var runner = BuildRunner(runTimeoutSeconds: 1);
+        var elapsed = Stopwatch.StartNew();
+
+        var result = await runner.RunAsync(
+            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            NoParams);
+        elapsed.Stop();
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script timed out.");
+        result.Checkpoint.Should().BeNull();
+        result.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
+    public async Task ContinueWithAsync_TimeoutDuringRun_PreservesPreviousCheckpoint_AndReturnsTimeoutRuntimeError()
+    {
+        var runner = BuildRunner(runTimeoutSeconds: 1);
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+
+        var result = await runner.ContinueWithAsync(
+            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            first.Checkpoint!,
             NoParams);
 
-        // Should have been cancelled by the run timeout (success or cancelled are both acceptable
-        // depending on how the script terminates, but it should complete within the test)
-        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script timed out.");
+        result.Checkpoint.Should().BeSameAs(first.Checkpoint);
     }
 
     // ── Data access ───────────────────────────────────────────────────────────
@@ -292,11 +298,13 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x += 1; var y = x + 1; Print(y);", first.Checkpoint!, NoParams);
 
         first.Checkpoint.Should().NotBeNull();
         second.Success.Should().BeTrue();
-        second.ConsoleOutput.Should().Contain("42");
+        second.CompilationErrors.Should().BeEmpty();
+        second.CompileTime.Should().BeGreaterThanOrEqualTo(TimeSpan.Zero);
+        second.ConsoleOutput.Should().Contain("43");
     }
 
     [Fact]
@@ -305,10 +313,50 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x = ;", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x = \"wrong\";", first.Checkpoint!, NoParams);
 
         second.Success.Should().BeFalse();
         second.CompilationErrors.Should().NotBeEmpty();
+        second.RuntimeError.Should().BeNull();
         second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+
+        var third = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        third.Success.Should().BeTrue();
+        third.ConsoleOutput.Should().Contain("42");
+    }
+
+    [Fact]
+    public async Task RunAsync_UsesFreshPerInvocationPlotQueue_NotInjectedQueueState()
+    {
+        var injectedQueue = new PlotQueue();
+        injectedQueue.Enqueue(new PlotRequest("leftover", PlotType.Line));
+        injectedQueue.Complete();
+
+        var runner = BuildRunner(plotQueue: injectedQueue);
+        var result = await runner.RunAsync("Print(\"no plots\")", NoParams);
+
+        result.Success.Should().BeTrue();
+        result.Plots.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunAsync_PlotsDoNotLeakAcrossRuns()
+    {
+        var runner = BuildRunner();
+        const string emitPlotSource = """
+            var r = new ReturnSeries(
+                "T",
+                ReturnKind.Arithmetic,
+                new[] { new ReturnPoint(new DateOnly(2024, 1, 1), 0.01) });
+            r.Plot("run1");
+            """;
+
+        var first = await runner.RunAsync(emitPlotSource, NoParams);
+        var second = await runner.RunAsync("Print(\"second\")", NoParams);
+
+        first.Success.Should().BeTrue();
+        first.Plots.Should().ContainSingle(p => p.Title == "run1");
+        second.Success.Should().BeTrue();
+        second.Plots.Should().BeEmpty();
     }
 }

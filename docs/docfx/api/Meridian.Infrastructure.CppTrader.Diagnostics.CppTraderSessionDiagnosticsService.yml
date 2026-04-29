@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderSessionDiagnosticsService
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
     startLine: 2
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessions
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackSession
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSession
-    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure.CppTrader

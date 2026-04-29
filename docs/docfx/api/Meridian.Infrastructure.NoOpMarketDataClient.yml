@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoOpMarketDataClient
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 15
   assemblies:
   - Meridian.Infrastructure
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 34
   assemblies:
   - Meridian.Infrastructure
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure
@@ -400,7 +400,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -469,7 +469,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure

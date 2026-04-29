@@ -54,6 +54,46 @@
                         <TextBlock Text="of 3" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="6,6,0,0" />
                     </StackPanel>
 
+                    <Border AutomationProperties.AutomationId="AnalysisExportWizardReadinessCard"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14"
+                            Margin="0,0,0,18">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding CurrentStepTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="{Binding CurrentStepDetail}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                                <TextBlock AutomationProperties.AutomationId="AnalysisExportWizardScopeText"
+                                           Text="{Binding WizardScopeText}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           Margin="0,8,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1"
+                                        Width="300"
+                                        Margin="20,0,0,0">
+                                <TextBlock Text="{Binding ActionReadinessTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource InfoColorBrush}" />
+                                <TextBlock Text="{Binding ActionReadinessDetail}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
                     <StackPanel Style="{StaticResource StepPanelStyle}">
                         <TextBlock Text="1. Select symbols and date range" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,12" />
                         <Grid>
@@ -68,7 +108,8 @@
                                          Text="{Binding SymbolInput, UpdateSourceTrigger=PropertyChanged}" />
                                 <Button Content="Add Symbol"
                                         Style="{StaticResource SecondaryButtonStyle}"
-                                        Click="AddSymbol_Click"
+                                        Command="{Binding AddSymbolCommand}"
+                                        AutomationProperties.AutomationId="AnalysisExportWizardAddSymbolButton"
                                         Margin="0,8,0,0" />
                                 <ListBox ItemsSource="{Binding SelectedSymbols}" Height="100" Margin="0,8,0,0" />
                             </StackPanel>
@@ -160,28 +201,33 @@
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                         <Button Content="Back"
                                 Style="{StaticResource GhostButtonStyle}"
-                                Click="Back_Click"
-                                IsEnabled="{Binding CanGoBack}"
+                                Command="{Binding BackCommand}"
+                                AutomationProperties.AutomationId="AnalysisExportWizardBackButton"
                                 Margin="0,0,8,0" />
                         <Button Content="{Binding PrimaryActionLabel}"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="Next_Click"
+                                Command="{Binding PrimaryActionCommand}"
+                                AutomationProperties.AutomationId="AnalysisExportWizardPrimaryActionButton"
                                 Margin="0,0,8,0" />
                         <Button Content="Cancel"
                                 Style="{StaticResource GhostButtonStyle}"
-                                Click="Cancel_Click" />
+                                Command="{Binding CancelCommand}"
+                                AutomationProperties.AutomationId="AnalysisExportWizardCancelButton" />
                     </StackPanel>
 
-                    <TextBlock Text="{Binding StatusMessage}"
+                    <TextBlock AutomationProperties.AutomationId="AnalysisExportWizardStatusText"
+                               Text="{Binding StatusMessage}"
                                Foreground="{StaticResource InfoColorBrush}"
-                               Margin="0,12,0,0" />
+                               Margin="0,12,0,0"
+                               Visibility="{Binding StatusVisibility}" />
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="{Binding ValidationSummary}"
+            <TextBlock AutomationProperties.AutomationId="AnalysisExportWizardValidationText"
+                       Text="{Binding ValidationSummary}"
                        Foreground="{StaticResource ErrorColorBrush}"
                        Margin="0,12,0,0"
-                       Visibility="{Binding ValidationSummary, Converter={StaticResource StringToVisibilityConverter}}" />
+                       Visibility="{Binding ValidationVisibility}" />
         </StackPanel>
     </ScrollViewer>
 </Page>

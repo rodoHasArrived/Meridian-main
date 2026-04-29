@@ -178,14 +178,16 @@ public sealed class CredentialService : IDisposable
     /// </summary>
     public async Task InitializeAsync(CancellationToken ct = default)
     {
-        if (_metadataLoaded) return;
+        if (_metadataLoaded)
+            return;
         await LoadMetadataAsync();
         _metadataLoaded = true;
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _httpClient.Dispose();
         _disposed = true;
     }

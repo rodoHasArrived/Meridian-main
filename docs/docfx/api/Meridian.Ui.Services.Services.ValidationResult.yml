@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationResult
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 205
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 210
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWarning
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 215
   assemblies:
   - Meridian.Ui.Services
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 220
   assemblies:
   - Meridian.Ui.Services
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 227
   assemblies:
   - Meridian.Ui.Services
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 233
   assemblies:
   - Meridian.Ui.Services
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 239
   assemblies:
   - Meridian.Ui.Services
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 244
   assemblies:
   - Meridian.Ui.Services

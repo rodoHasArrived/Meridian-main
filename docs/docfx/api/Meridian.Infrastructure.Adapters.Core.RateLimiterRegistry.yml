@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimiterRegistry
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 134
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 140
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrCreate
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 148
   assemblies:
   - Meridian.Infrastructure
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 163
   assemblies:
   - Meridian.Infrastructure
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 171
   assemblies:
   - Meridian.Infrastructure

@@ -1,6 +1,6 @@
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
@@ -16,7 +16,7 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class MainWindowViewModel : BindableBase, IDisposable
 {
-    private static readonly Brush FixtureBrush = CreateBrush(0xFF, 0xB3, 0x00);
+    private static readonly Brush FixtureBrush = CreateBrush(0x25, 0x63, 0xEB);
     private static readonly Brush OfflineBrush = CreateBrush(0xF4, 0x43, 0x36);
 
     private readonly IConnectionService _connectionService;
@@ -149,7 +149,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         switch (actionId)
         {
             case "NavigateDashboard":
-                Navigate("Dashboard");
+                Navigate("ResearchShell");
                 break;
             case "NavigateSymbols":
                 Navigate("Symbols");
@@ -246,25 +246,20 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     public void HandleLaunchArgs(string[] args)
     {
-        if (args.Length == 0)
+        var request = DesktopLaunchArguments.Parse(args);
+        if (!request.HasActions)
         {
             return;
         }
 
-        foreach (var arg in args)
+        if (request.HasPageNavigation)
         {
-            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
-            {
-                var pageTag = arg["--page=".Length..];
-                if (!string.IsNullOrWhiteSpace(pageTag))
-                {
-                    Navigate(pageTag);
-                }
-            }
-            else if (arg.Equals("--start-collector", StringComparison.OrdinalIgnoreCase))
-            {
-                _ = StartCollectorAsync();
-            }
+            Navigate(request.PageTag);
+        }
+
+        if (request.StartCollector)
+        {
+            _ = StartCollectorAsync();
         }
     }
 
@@ -334,7 +329,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             ? Visibility.Visible
             : Visibility.Collapsed;
         FixtureModeText = _fixtureModeDetector.ModeLabel;
-        FixtureModeBannerBackground = _fixtureModeDetector.IsFixtureMode
+        FixtureModeBannerBackground = _fixtureModeDetector.ModeKind == FixtureModeKind.Fixture
             ? FixtureBrush
             : OfflineBrush;
     }

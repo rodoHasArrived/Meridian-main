@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlJobDefinitionStore
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListAsync
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteAsync
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 64
   assemblies:
   - Meridian.Application

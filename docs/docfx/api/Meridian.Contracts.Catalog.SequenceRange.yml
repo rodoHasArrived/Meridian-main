@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceRange
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 260
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstSequence
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 265
   assemblies:
   - Meridian.Contracts
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSequence
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 271
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 277
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedCount
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 283
   assemblies:
   - Meridian.Contracts
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualCount
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 289
   assemblies:
   - Meridian.Contracts

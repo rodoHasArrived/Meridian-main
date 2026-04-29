@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectFailedEventArgs
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 61
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AttemptNumber
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 63
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 64
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WillRetry
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services

@@ -227,7 +227,7 @@
             <TextBlock Margin="0,0,4,0"
                        VerticalAlignment="Center"
                        FontSize="11"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="&#128197;" />
             <DatePicker Width="110"
                         FontSize="11"
@@ -250,7 +250,7 @@
             <TextBlock Margin="0,0,4,0"
                        VerticalAlignment="Center"
                        FontSize="11"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="&#128197;" />
             <DatePicker Width="110"
                         FontSize="11"
@@ -413,7 +413,7 @@
       <!-- ──────────────────────────────────────────────────────────────────────
            Chart area: asset input → chart title → ScottPlot → legend strip
            ──────────────────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" Background="{StaticResource ChartSurfaceBrush}">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />   <!-- asset input -->
           <RowDefinition Height="Auto" />   <!-- chart selector -->
@@ -424,24 +424,24 @@
         <!-- Asset input row -->
         <Border Grid.Row="0"
                 Padding="12,8"
-                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderBrush="{StaticResource ChartBorderBrush}"
                 BorderThickness="0,0,0,1">
           <StackPanel Orientation="Horizontal">
             <StackPanel Margin="0,0,24,0">
               <TextBlock Margin="0,0,0,3"
                          FontSize="10"
-                         Foreground="{StaticResource ConsoleTextMutedBrush}"
+                         Foreground="{StaticResource ChartAxisLabelBrush}"
                          Text="Asset" />
               <Border Padding="8,4"
-                      Background="{StaticResource ConsoleBackgroundLightBrush}"
-                      BorderBrush="{StaticResource ConsoleBorderBrush}"
+                      Background="{StaticResource ChartPlotAreaBrush}"
+                      BorderBrush="{StaticResource ChartBorderBrush}"
                       BorderThickness="1"
                       CornerRadius="4">
                 <TextBox MinWidth="80"
                          FontSize="12"
                          Background="Transparent"
                          BorderThickness="0"
-                         Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                         Foreground="{StaticResource TopBarTextBrush}"
                          Text="{Binding AssetSymbol, UpdateSourceTrigger=PropertyChanged}" />
               </Border>
             </StackPanel>
@@ -450,8 +450,8 @@
 
         <Border Grid.Row="1"
                 Padding="8,6"
-                Background="{StaticResource ConsoleBackgroundDarkBrush}"
-                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                Background="{StaticResource ChartPlotAreaBrush}"
+                BorderBrush="{StaticResource ChartBorderBrush}"
                 BorderThickness="0,0,0,1"
                 Visibility="{Binding HasChart, Converter={StaticResource BoolVis}}">
           <Grid>
@@ -476,14 +476,14 @@
                 <Style TargetType="ListBoxItem">
                   <Setter Property="Margin" Value="0,0,6,0" />
                   <Setter Property="Padding" Value="8,4" />
-                  <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
-                  <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
-                  <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                  <Setter Property="Foreground" Value="{StaticResource ChartAxisLabelBrush}" />
+                  <Setter Property="Background" Value="{StaticResource ChartSurfaceBrush}" />
+                  <Setter Property="BorderBrush" Value="{StaticResource ChartBorderBrush}" />
                   <Setter Property="BorderThickness" Value="1" />
                   <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
-                      <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-                      <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                      <Setter Property="Foreground" Value="{StaticResource TopBarTextBrush}" />
+                      <Setter Property="BorderBrush" Value="{StaticResource ChartPrimaryLineBrush}" />
                     </Trigger>
                   </Style.Triggers>
                 </Style>
@@ -501,7 +501,7 @@
                        Margin="8,0,0,0"
                        VerticalAlignment="Center"
                        FontSize="10"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="{Binding ResultsContextText}" />
           </Grid>
         </Border>
@@ -515,17 +515,17 @@
                       Visibility="{Binding HasNoChart, Converter={StaticResource BoolVis}}">
             <TextBlock HorizontalAlignment="Center"
                        FontSize="28"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="&#128202;" />
             <TextBlock Margin="0,8,0,0"
                        HorizontalAlignment="Center"
                        FontSize="13"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="Run a script to see results" />
             <TextBlock Margin="0,4,0,0"
                        HorizontalAlignment="Center"
                        FontSize="11"
-                       Foreground="{StaticResource ConsoleTextDisabledBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="Charts, metrics and trade output will appear here" />
           </StackPanel>
 
@@ -536,11 +536,11 @@
                       Visibility="{Binding HasChart, Converter={StaticResource BoolVis}}">
             <TextBlock FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       Foreground="{StaticResource TopBarTextBrush}"
                        Text="{Binding PrimaryChartTitle}" />
             <TextBlock Margin="0,2,0,0"
                        FontSize="10"
-                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       Foreground="{StaticResource ChartAxisLabelBrush}"
                        Text="{Binding FromDate, StringFormat={}{0:d MMM yy}}" />
           </StackPanel>
 
@@ -551,10 +551,7 @@
 
         <!-- Legend strip -->
         <Border Grid.Row="3"
-                Padding="12,6"
-                Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                BorderThickness="0,1,0,0"
+                Style="{StaticResource ChartLegendStripStyle}"
                 Visibility="{Binding HasLegend, Converter={StaticResource BoolVis}}">
           <ItemsControl ItemsSource="{Binding LegendEntries}">
             <ItemsControl.ItemsPanel>
@@ -572,7 +569,7 @@
                              Fill="{Binding SeriesColorBrush}" />
                   <TextBlock VerticalAlignment="Center"
                              FontSize="11"
-                             Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Foreground="{StaticResource ChartAxisLabelBrush}"
                              Text="{Binding Label}" />
                 </StackPanel>
               </DataTemplate>
@@ -585,7 +582,7 @@
       <GridSplitter Grid.Row="1"
                     Height="5"
                     HorizontalAlignment="Stretch"
-                    Background="{StaticResource ConsoleBorderBrush}"
+                    Background="{StaticResource ChartBorderBrush}"
                     ResizeDirection="Rows" />
 
       <!-- ──────────────────────────────────────────────────────────────────────
@@ -613,13 +610,13 @@
 
             <avalonEdit:TextEditor x:Name="ScriptEditor"
                                    Grid.Row="0"
-                                   Background="#0D1117"
+                                   Background="{StaticResource ChartPlotAreaBrush}"
                                    behaviors:AvalonEditNotebookBehavior.Text="{Binding ScriptSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                    behaviors:AvalonEditNotebookBehavior.RunCommand="{Binding RunScriptCommand}"
                                    behaviors:AvalonEditNotebookBehavior.RunAndAdvanceCommand="{Binding RunAndAdvanceCommand}"
-                                   FontFamily="Cascadia Code, Consolas, Courier New"
+                                   FontFamily="{StaticResource MeridianDataFontFamily}"
                                    FontSize="13"
-                                   Foreground="#E6EDF3"
+                                   Foreground="{StaticResource TopBarTextBrush}"
                                    ShowLineNumbers="True"
                                    SyntaxHighlighting="C#"
                                    WordWrap="False" />
@@ -833,7 +830,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate DataType="{x:Type models:ConsoleEntry}">
                     <TextBlock Padding="8,1"
-                               FontFamily="Cascadia Code, Consolas"
+                               FontFamily="{StaticResource MeridianDataFontFamily}"
                                FontSize="11"
                                Text="{Binding Text}"
                                TextWrapping="Wrap">
@@ -855,6 +852,185 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
+          </Grid>
+        </TabItem>
+
+        <!-- Tab 5: Run History -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="{Binding RunHistoryTabHeader}" />
+          </TabItem.Header>
+          <Grid Margin="8"
+                AutomationProperties.AutomationId="QuantScriptRunHistoryTab">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Margin="0,0,0,8"
+                    Padding="10,8"
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                  <TextBlock FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             Text="Execution History" />
+                  <TextBlock Margin="0,3,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextMutedBrush}"
+                             Text="{Binding RunHistoryScopeText}"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryScopeText" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                  <Button Margin="0,0,6,0"
+                          Padding="10,5"
+                          Command="{Binding OpenRunBrowserCommand}"
+                          Style="{StaticResource SecondaryButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryOpenBrowserButton">
+                    <TextBlock FontSize="11" Text="Open Browser" />
+                  </Button>
+                  <Button Margin="0,0,6,0"
+                          Padding="10,5"
+                          Command="{Binding OpenRunDetailCommand}"
+                          Style="{StaticResource GhostButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryOpenDetailButton">
+                    <TextBlock FontSize="11" Text="Open Detail" />
+                  </Button>
+                  <Button Padding="10,5"
+                          Command="{Binding CompareInResearchCommand}"
+                          Style="{StaticResource GhostButtonStyle}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryCompareButton">
+                    <TextBlock FontSize="11" Text="Compare" />
+                  </Button>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="360" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" MinWidth="260" />
+              </Grid.ColumnDefinitions>
+
+              <DataGrid Grid.Column="0"
+                        AutoGenerateColumns="False"
+                        Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                        BorderThickness="0"
+                        FontSize="12"
+                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                        GridLinesVisibility="None"
+                        HeadersVisibility="Column"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding RunHistory}"
+                        RowBackground="{StaticResource ConsoleBackgroundDarkBrush}"
+                        SelectedItem="{Binding SelectedExecutionRecord, Mode=TwoWay}"
+                        Visibility="{Binding HasRunHistory, Converter={StaticResource BoolVis}}"
+                        AutomationProperties.AutomationId="QuantScriptRunHistoryGrid">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Width="130" Binding="{Binding ExecutedAtText}" Header="Executed" />
+                  <DataGridTextColumn Width="180" Binding="{Binding DocumentTitle}" Header="Document" />
+                  <DataGridTextColumn Width="80" Binding="{Binding StatusText}" Header="Status" />
+                  <DataGridTextColumn Width="120" Binding="{Binding DocumentKindLabel}" Header="Kind" />
+                  <DataGridTextColumn Width="150" Binding="{Binding MirroredRunLabel}" Header="Run Handoff" />
+                  <DataGridTextColumn Width="*" Binding="{Binding ParameterSummary}" Header="Parameters" />
+                </DataGrid.Columns>
+              </DataGrid>
+
+              <Border Grid.Column="2"
+                      Padding="12"
+                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                      BorderBrush="{StaticResource ConsoleBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="6"
+                      Visibility="{Binding HasRunHistory, Converter={StaticResource BoolVis}}"
+                      AutomationProperties.AutomationId="QuantScriptRunHistoryDetailPanel">
+                <StackPanel>
+                  <TextBlock FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             Text="{Binding SelectedHistoryTitle}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistorySelectedTitle" />
+                  <TextBlock Margin="0,6,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Text="{Binding SelectedHistoryDetail}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistorySelectedDetail" />
+
+                  <Rectangle Height="1"
+                             Margin="0,12,0,12"
+                             Fill="{StaticResource ConsoleBorderBrush}" />
+
+                  <TextBlock FontSize="11"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             Text="{Binding SelectedHistoryEvidenceText}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryEvidenceText" />
+                  <TextBlock Margin="0,8,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Text="{Binding SelectedHistoryRunLinkText}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryRunLinkText" />
+                  <TextBlock Margin="0,8,0,0"
+                             FontSize="11"
+                             Foreground="{StaticResource ConsoleTextMutedBrush}"
+                             Text="{Binding SelectedHistoryParameterText}"
+                             TextWrapping="Wrap"
+                             AutomationProperties.AutomationId="QuantScriptRunHistoryParameterText" />
+
+                  <Border Margin="0,12,0,0"
+                          Padding="10"
+                          Background="{StaticResource ConsoleBackgroundLightBrush}"
+                          BorderBrush="{StaticResource ConsoleBorderBrush}"
+                          BorderThickness="1"
+                          CornerRadius="4">
+                    <TextBlock FontFamily="{StaticResource MeridianDataFontFamily}"
+                               FontSize="11"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               Text="{Binding SelectedHistoryConsolePreview}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="QuantScriptRunHistoryConsolePreview" />
+                  </Border>
+                </StackPanel>
+              </Border>
+
+              <StackPanel Grid.ColumnSpan="3"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          MaxWidth="420"
+                          Visibility="{Binding HasNoRunHistory, Converter={StaticResource BoolVis}}"
+                          AutomationProperties.AutomationId="QuantScriptRunHistoryEmptyState">
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="30"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           Text="&#xE81C;" />
+                <TextBlock Margin="0,10,0,0"
+                           HorizontalAlignment="Center"
+                           Style="{StaticResource EmptyStateTitleStyle}"
+                           Text="{Binding HistoryEmptyStateTitle}" />
+                <TextBlock Margin="0,6,0,0"
+                           HorizontalAlignment="Center"
+                           Style="{StaticResource EmptyStateDescriptionStyle}"
+                           Text="{Binding HistoryEmptyStateDetail}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
           </Grid>
         </TabItem>
 

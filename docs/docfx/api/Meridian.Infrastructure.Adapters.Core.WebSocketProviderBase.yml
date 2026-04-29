@@ -43,7 +43,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketProviderBase
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Log
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscriptions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 79
   assemblies:
   - Meridian.Infrastructure
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 104
   assemblies:
   - Meridian.Infrastructure
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 111
   assemblies:
   - Meridian.Infrastructure
@@ -397,7 +397,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 114
   assemblies:
   - Meridian.Infrastructure
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 117
   assemblies:
   - Meridian.Infrastructure
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 120
   assemblies:
   - Meridian.Infrastructure
@@ -504,7 +504,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 125
   assemblies:
   - Meridian.Infrastructure
@@ -537,7 +537,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 128
   assemblies:
   - Meridian.Infrastructure
@@ -570,7 +570,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 131
   assemblies:
   - Meridian.Infrastructure
@@ -603,7 +603,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 134
   assemblies:
   - Meridian.Infrastructure
@@ -636,7 +636,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 137
   assemblies:
   - Meridian.Infrastructure
@@ -669,7 +669,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildWebSocketUri
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 144
   assemblies:
   - Meridian.Infrastructure
@@ -699,7 +699,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticateAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 150
   assemblies:
   - Meridian.Infrastructure
@@ -733,7 +733,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleMessageAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 157
   assemblies:
   - Meridian.Infrastructure
@@ -773,7 +773,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 164
   assemblies:
   - Meridian.Infrastructure
@@ -810,7 +810,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureWebSocket
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 172
   assemblies:
   - Meridian.Infrastructure
@@ -847,7 +847,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 179
   assemblies:
   - Meridian.Infrastructure
@@ -885,7 +885,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadOneMessageAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 187
   assemblies:
   - Meridian.Infrastructure
@@ -923,7 +923,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordActivity
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 194
   assemblies:
   - Meridian.Infrastructure
@@ -954,7 +954,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
     startLine: 232
   assemblies:
   - Meridian.Infrastructure

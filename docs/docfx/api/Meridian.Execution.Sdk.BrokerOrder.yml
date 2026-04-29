@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerOrder
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 220
   assemblies:
   - Meridian.Execution.Sdk
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 223
   assemblies:
   - Meridian.Execution.Sdk
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 226
   assemblies:
   - Meridian.Execution.Sdk
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 229
   assemblies:
   - Meridian.Execution.Sdk
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 232
   assemblies:
   - Meridian.Execution.Sdk
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 235
   assemblies:
   - Meridian.Execution.Sdk
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 238
   assemblies:
   - Meridian.Execution.Sdk
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 241
   assemblies:
   - Meridian.Execution.Sdk
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 244
   assemblies:
   - Meridian.Execution.Sdk
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 247
   assemblies:
   - Meridian.Execution.Sdk
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 250
   assemblies:
   - Meridian.Execution.Sdk
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 253
   assemblies:
   - Meridian.Execution.Sdk

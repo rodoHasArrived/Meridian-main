@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationEngineService
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    path: src/Meridian.Application/Services/ReconciliationEngineService.cs
     startLine: 31
   assemblies:
   - Meridian.Application

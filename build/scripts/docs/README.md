@@ -9,6 +9,7 @@ This directory contains Python scripts for automating documentation tasks in the
 - [Enhanced Scripts](#enhanced-scripts)
 - [Quick Reference](#quick-reference)
 - [Development](#development)
+- [Readiness and Coverage Dashboards](#readiness-and-coverage-dashboards)
 
 ## Core Scripts
 
@@ -17,6 +18,7 @@ This directory contains Python scripts for automating documentation tasks in the
 Interactive tool to help developers add well-formatted TODO comments to the codebase.
 
 **Features:**
+
 - Interactive prompts for TODO details
 - Automatic comment style detection
 - GitHub issue integration
@@ -50,6 +52,7 @@ python3 add-todos.py \
 Scans codebase for TODO/FIXME/HACK/NOTE comments with enhanced tracking.
 
 **New features:**
+
 - Assignee detection via @username
 - Age tracking via git history
 - Stale item detection (>90 days)
@@ -100,6 +103,7 @@ python3 update-claude-md.py --claude-md CLAUDE.md
 Tracks build, test, and workflow execution metrics over time.
 
 **Features:**
+
 - Workflow success/failure rates
 - Test execution statistics
 - Build timing trends
@@ -119,6 +123,7 @@ python3 generate-metrics-dashboard.py \
 ```
 
 **Output includes:**
+
 - Overall success rates
 - Per-workflow metrics table
 - Test pass rates
@@ -130,6 +135,7 @@ python3 generate-metrics-dashboard.py \
 Validates that API documentation matches actual endpoint implementations.
 
 **Features:**
+
 - Extracts HTTP endpoints from C# source
 - Cross-references with API documentation
 - Identifies undocumented endpoints
@@ -151,6 +157,7 @@ python3 validate-api-docs.py \
 ```
 
 **Output includes:**
+
 - Documentation coverage percentage
 - Undocumented endpoints table
 - Deprecated documentation table
@@ -161,6 +168,7 @@ python3 validate-api-docs.py \
 Updates README.md badges with current project metrics.
 
 **Features:**
+
 - Version badge from Directory.Build.props
 - Test count from test files
 - Coverage from reports
@@ -182,6 +190,7 @@ python3 sync-readme-badges.py \
 ```
 
 **Badge types:**
+
 - Version (from Directory.Build.props)
 - Tests (count from test files)
 - Coverage (from coverage reports)
@@ -219,6 +228,20 @@ Validates syntax of code examples in markdown files.
 
 ```bash
 python3 validate-examples.py --output example-validation.md
+```
+
+### check-ai-inventory.py
+
+Detects catalog drift across AI assistant entrypoints, Codex and Claude configuration, Copilot
+instructions, `.codex/`, `.claude/`, `.github/`, `docs/ai/`, and MCP prompt/resource/tool surfaces.
+Reports use a portable repository identity so generated Markdown or JSON does not record a local
+absolute checkout path.
+
+```bash
+python3 check-ai-inventory.py --summary
+python3 check-ai-inventory.py \
+  --output docs/status/ai-inventory-report.md \
+  --json-output docs/status/ai-inventory-report.json
 ```
 
 ### generate-coverage.py
@@ -269,7 +292,7 @@ python3 generate-prompts.py \
 All scripts support these common flags:
 
 | Flag | Description |
-|------|-------------|
+| ------ | ----------- |
 | `--root`, `-r` | Repository root directory (default: current) |
 | `--output`, `-o` | Output file for Markdown report |
 | `--json-output`, `-j` | Output file for JSON data |
@@ -287,6 +310,10 @@ These scripts are integrated into the `.github/workflows/documentation.yml` work
 5. **coverage-report** job - Runs generate-coverage.py
 6. **validate-examples** job - Runs validate-examples.py
 7. **generate-changelog** job - Runs generate-changelog.py
+8. **AI inventory check** - Runs check-ai-inventory.py through the local runner profiles
+9. **Readiness dashboards** - `run-docs-automation.py --profile core` and `--profile full`
+   include the pilot readiness, paper replay reliability, evidence continuity, governance
+   readiness, and API contract coverage dashboards.
 
 New scripts can be added by following the patterns in the workflow file.
 
@@ -330,6 +357,7 @@ if __name__ == '__main__':
 ### Conventions
 
 **Required:**
+
 - Shebang: `#!/usr/bin/env python3`
 - Module docstring with usage examples
 - Type hints on functions
@@ -339,6 +367,7 @@ if __name__ == '__main__':
 - Return 0 on success, 1 on error
 
 **Recommended:**
+
 - `--json-output` for machine-readable output
 - Auto-generated notice in markdown output
 - Timestamp in output headers
@@ -369,6 +398,7 @@ cat /tmp/test.md
 ## Contributing
 
 For detailed development guidelines, see:
+
 - `docs/guides/documentation-automation.md` - User guide for the automation system
 - `docs/guides/expanding-scripts.md` - Developer guide for adding new scripts
 
@@ -383,4 +413,44 @@ If you encounter issues with these scripts:
 
 ---
 
-*This directory is part of the Meridian documentation automation system.*
+_This directory is part of the Meridian documentation automation system._
+
+### Readiness and Coverage Dashboards
+
+The following generators emit canonical JSON first, render Markdown from that payload, and support
+`--summary` for one-line CLI diagnostics.
+
+```bash
+python3 generate-pilot-readiness-dashboard.py \
+  --output docs/status/pilot-readiness-dashboard.md \
+  --json-output docs/status/pilot-readiness-dashboard.json \
+  --summary
+
+python3 generate-paper-replay-reliability-dashboard.py \
+  --output docs/status/paper-replay-reliability-dashboard.md \
+  --json-output docs/status/paper-replay-reliability-dashboard.json \
+  --summary
+
+python3 generate-evidence-continuity-dashboard.py \
+  --output docs/status/evidence-continuity-dashboard.md \
+  --json-output docs/status/evidence-continuity-dashboard.json \
+  --summary
+
+python3 generate-governance-readiness-dashboard.py \
+  --output docs/status/governance-readiness-dashboard.md \
+  --json-output docs/status/governance-readiness-dashboard.json \
+  --summary
+
+python3 generate-api-contract-coverage-dashboard.py \
+  --output docs/status/api-contract-coverage-dashboard.md \
+  --json-output docs/status/api-contract-coverage-dashboard.json \
+  --summary
+```
+
+**Expected outputs:**
+
+- `docs/status/pilot-readiness-dashboard.md` + `.json`
+- `docs/status/paper-replay-reliability-dashboard.md` + `.json`
+- `docs/status/evidence-continuity-dashboard.md` + `.json`
+- `docs/status/governance-readiness-dashboard.md` + `.json`
+- `docs/status/api-contract-coverage-dashboard.md` + `.json`

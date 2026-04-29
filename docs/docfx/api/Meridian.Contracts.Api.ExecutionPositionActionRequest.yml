@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionPositionActionRequest
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 40
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 40
   assemblies:
   - Meridian.Contracts
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionKey
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts

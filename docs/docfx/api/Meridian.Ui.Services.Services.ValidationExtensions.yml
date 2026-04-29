@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationExtensions
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 250
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Combine
-    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
     startLine: 257
   assemblies:
   - Meridian.Ui.Services

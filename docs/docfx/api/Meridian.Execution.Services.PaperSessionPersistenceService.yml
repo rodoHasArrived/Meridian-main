@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionPersistenceService
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 21
   assemblies:
   - Meridian.Execution
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 28
   assemblies:
   - Meridian.Execution
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialiseAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 46
   assemblies:
   - Meridian.Execution
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSessionAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 98
   assemblies:
   - Meridian.Execution
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloseSessionAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 132
   assemblies:
   - Meridian.Execution
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessions
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 174
   assemblies:
   - Meridian.Execution
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSession
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 183
   assemblies:
   - Meridian.Execution
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActivePortfolio
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 211
   assemblies:
   - Meridian.Execution
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLedger
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 223
   assemblies:
   - Meridian.Execution
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordOrderUpdateAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 236
   assemblies:
   - Meridian.Execution
@@ -416,7 +416,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordFillAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 257
   assemblies:
   - Meridian.Execution
@@ -461,7 +461,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaySessionAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 282
   assemblies:
   - Meridian.Execution
@@ -510,7 +510,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyReplayAsync
-    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
     startLine: 319
   assemblies:
   - Meridian.Execution

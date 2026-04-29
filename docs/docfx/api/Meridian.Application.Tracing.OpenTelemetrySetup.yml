@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenTelemetrySetup
-    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivitySource
-    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
-    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOpenTelemetryTracing
-    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
     startLine: 115
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Shutdown
-    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
     startLine: 170
   assemblies:
   - Meridian.Application

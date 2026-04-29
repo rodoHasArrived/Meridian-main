@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssueSeverity
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 852
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 854
   assemblies:
   - Meridian.Storage
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 855
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
     startLine: 856
   assemblies:
   - Meridian.Storage

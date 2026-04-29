@@ -111,6 +111,88 @@
                 </Border>
             </Grid>
 
+            <!-- Provider posture briefing -->
+            <Border x:Name="ProviderPostureBriefingCard"
+                    Style="{StaticResource CardStyle}" Margin="0,0,0,24"
+                    Background="{Binding ProviderPostureBackgroundBrush}"
+                    BorderBrush="{Binding ProviderPostureAccentBrush}"
+                    AutomationProperties.AutomationId="ProviderPostureBriefingCard"
+                    AutomationProperties.Name="{Binding ProviderPostureTitle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="4" CornerRadius="4"
+                            Background="{Binding ProviderPostureAccentBrush}" Margin="0,0,16,0"/>
+
+                    <Border Grid.Column="1" Width="42" Height="42" CornerRadius="14"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{Binding ProviderPostureAccentBrush}" BorderThickness="1"
+                            VerticalAlignment="Center" Margin="0,0,14,0">
+                        <TextBlock Text="{Binding ProviderPostureIcon}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="20"
+                                   Foreground="{Binding ProviderPostureAccentBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding ProviderPostureTitle}"
+                                   FontSize="17"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   AutomationProperties.AutomationId="ProviderPostureTitleText"/>
+                        <TextBlock Text="{Binding ProviderPostureDetail}"
+                                   Margin="0,5,24,0"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="ProviderPostureDetailText"/>
+                        <TextBlock Text="{Binding ProviderPostureEvidenceText}"
+                                   Margin="0,8,0,0"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   AutomationProperties.AutomationId="ProviderPostureEvidenceText"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="3" CornerRadius="14" Padding="14,10"
+                            BorderBrush="{Binding ProviderPostureAccentBrush}" BorderThickness="1"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            VerticalAlignment="Center"
+                            MinWidth="180"
+                            MaxWidth="260"
+                            AutomationProperties.AutomationId="ProviderPostureHandoffPanel">
+                        <StackPanel>
+                            <TextBlock Text="Next handoff"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Text="{Binding ProviderPostureActionText}"
+                                       Margin="0,3,0,0"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding ProviderPostureAccentBrush}"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="ProviderPostureActionText"/>
+                            <TextBlock Text="Target"
+                                       Margin="0,8,0,0"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Text="{Binding ProviderPostureTargetText}"
+                                       Margin="0,3,0,0"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="ProviderPostureTargetText"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
             <!-- Provider Status Cards -->
             <TextBlock Text="Streaming Providers" FontWeight="SemiBold" FontSize="16"
                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,12"/>

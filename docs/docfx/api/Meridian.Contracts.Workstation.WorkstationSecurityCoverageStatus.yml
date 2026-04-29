@@ -22,8 +22,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationSecurityCoverageStatus
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 139
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 145
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -61,8 +61,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resolved
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 142
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 148
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -87,8 +87,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Partial
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 143
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 149
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -113,8 +113,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Missing
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 144
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 150
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -139,8 +139,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unavailable
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 145
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 151
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

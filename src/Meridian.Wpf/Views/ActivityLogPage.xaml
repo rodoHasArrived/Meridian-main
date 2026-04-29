@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -46,10 +47,19 @@
                               IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
                               Foreground="{StaticResource ConsoleTextMutedBrush}"
                               VerticalAlignment="Center" Margin="0,0,16,0"/>
-                    <Button Content="Export" Click="Export_Click" Margin="0,0,8,0"
-                            Style="{StaticResource SecondaryButtonStyle}"/>
-                    <Button Content="Clear" Click="Clear_Click"
-                            Style="{StaticResource GhostButtonStyle}"/>
+                    <Button Content="Export"
+                            Click="Export_Click"
+                            Margin="0,0,8,0"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            IsEnabled="{Binding CanExportVisibleLogs}"
+                            AutomationProperties.AutomationId="ActivityLogExportButton"
+                            AutomationProperties.Name="Export visible activity log entries"/>
+                    <Button Content="Clear"
+                            Click="Clear_Click"
+                            Style="{StaticResource GhostButtonStyle}"
+                            IsEnabled="{Binding CanClearLog}"
+                            AutomationProperties.AutomationId="ActivityLogClearButton"
+                            AutomationProperties.Name="Clear retained activity log entries"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -73,10 +83,14 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Text="Level:" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="LevelFilterCombo" Width="120" SelectionChanged="Filter_Changed"
+                    <ComboBox x:Name="LevelFilterCombo" Width="120"
+                              SelectedValuePath="Content"
+                              SelectedValue="{Binding LevelFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                               Foreground="{DynamicResource ConsoleTextBrush}"
-                              BorderThickness="1" Padding="8,4">
+                              BorderThickness="1" Padding="8,4"
+                              AutomationProperties.AutomationId="ActivityLogLevelFilterCombo"
+                              AutomationProperties.Name="Activity log level filter">
                         <ComboBoxItem Content="All" IsSelected="True"/>
                         <ComboBoxItem Content="Info"/>
                         <ComboBoxItem Content="Warning"/>
@@ -89,10 +103,14 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <TextBlock Text="Category:" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="CategoryFilterCombo" Width="140" SelectionChanged="Filter_Changed"
+                    <ComboBox x:Name="CategoryFilterCombo" Width="140"
+                              SelectedValuePath="Content"
+                              SelectedValue="{Binding CategoryFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                               Foreground="{DynamicResource ConsoleTextBrush}"
-                              BorderThickness="1" Padding="8,4">
+                              BorderThickness="1" Padding="8,4"
+                              AutomationProperties.AutomationId="ActivityLogCategoryFilterCombo"
+                              AutomationProperties.Name="Activity log category filter">
                         <ComboBoxItem Content="All" IsSelected="True"/>
                         <ComboBoxItem Content="Connection"/>
                         <ComboBoxItem Content="Data"/>
@@ -103,10 +121,13 @@
                 </StackPanel>
 
                 <!-- Search -->
-                <TextBox x:Name="SearchBox" Grid.Column="4" TextChanged="Search_Changed"
+                <TextBox x:Name="SearchBox" Grid.Column="4"
+                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                          Foreground="{DynamicResource ConsoleTextBrush}"
-                         BorderThickness="1" Padding="8,6">
+                         BorderThickness="1" Padding="8,6"
+                         AutomationProperties.AutomationId="ActivityLogSearchBox"
+                         AutomationProperties.Name="Search activity logs">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
                             <Style.Triggers>
@@ -127,11 +148,135 @@
             </Grid>
         </Border>
 
-        <!-- Log Entries -->
-        <Border Grid.Row="2" Margin="24,0,24,24" Style="{StaticResource CardStyle}">
+        <!-- Activity Triage -->
+        <Border Grid.Row="2"
+                Background="{StaticResource PremiumPanelBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                Margin="24,0,24,16"
+                Padding="18,14"
+                CornerRadius="12"
+                AutomationProperties.AutomationId="ActivityLogTriageStrip">
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="320"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="&#xE946;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="15"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding ActivityPostureTitle}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding ActivityPostureDetail}"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding ActiveFilterSummary}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <WrapPanel Grid.Column="1"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           ItemWidth="128"
+                           ItemHeight="64">
+                    <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding VisibleLogCountText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Current view"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleAccentRedAlpha10Brush}"
+                            BorderBrush="{StaticResource ErrorColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ErrorLogCountText}"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Retained"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                            BorderBrush="{StaticResource WarningColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding WarningLogCountText}"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Retained"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding LatestLogTimeText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"/>
+                            <TextBlock Text="Latest entry"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- Log Entries -->
+        <Border Grid.Row="3" Margin="24,0,24,24" Style="{StaticResource CardStyle}">
+            <Grid>
+                <TextBlock Text="{Binding LatestLogSummary}"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           FontSize="11"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="4,0,4,10"
+                           VerticalAlignment="Top"
+                           Panel.ZIndex="1"/>
                 <ListBox x:Name="LogList" Background="Transparent" BorderThickness="0"
                          ItemsSource="{Binding FilteredLogs}"
+                         Margin="0,24,0,0"
                          VirtualizingPanel.IsVirtualizing="True"
                          VirtualizingPanel.VirtualizationMode="Recycling"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -170,10 +315,40 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock Text="No log entries to display."
-                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding NoLogsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <StackPanel x:Name="ActivityLogEmptyStatePanel"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            MaxWidth="440"
+                            Visibility="{Binding NoLogsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="ActivityLogEmptyStatePanel">
+                    <TextBlock Text="&#xE946;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="42"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,14"/>
+                    <TextBlock Text="{Binding EmptyStateTitle}"
+                               Style="{StaticResource EmptyStateTitleStyle}"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding EmptyStateDetail}"
+                               Style="{StaticResource EmptyStateDescriptionStyle}"/>
+                    <Button x:Name="ActivityLogResetFiltersButton"
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Center"
+                            Visibility="{Binding HasFilterRecoveryAction, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="ActivityLogResetFiltersButton"
+                            AutomationProperties.Name="Reset activity log filters">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconRefresh}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="14"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="Reset Filters" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

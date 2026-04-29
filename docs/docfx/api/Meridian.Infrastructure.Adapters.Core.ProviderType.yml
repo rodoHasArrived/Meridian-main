@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 7
   assemblies:
   - Meridian.ProviderSdk
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streaming
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 10
   assemblies:
   - Meridian.ProviderSdk
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 13
   assemblies:
   - Meridian.ProviderSdk
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearch
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 16
   assemblies:
   - Meridian.ProviderSdk

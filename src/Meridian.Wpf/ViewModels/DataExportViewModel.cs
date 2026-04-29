@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -32,6 +33,10 @@ public sealed class DataExportViewModel : BindableBase
     private double _exportProgressValue;
     private string _exportProgressPercent = "0%";
     private string _exportProgressLabel = "Exporting...";
+    private string _exportReadinessTitle = string.Empty;
+    private string _exportReadinessDetail = string.Empty;
+    private string _exportScopeText = string.Empty;
+    private string _selectedSymbolCountText = string.Empty;
 
     // ── Export history empty-state ────────────────────────────────────────
     private bool _isNoExportHistoryVisible;
@@ -39,8 +44,13 @@ public sealed class DataExportViewModel : BindableBase
     // ── Schedule ──────────────────────────────────────────────────────────
     private bool _isScheduleEnabled;
     private string _scheduleTimeText = "08:00";
+    private string _scheduleDestinationPath = string.Empty;
     private string _scheduleTimeError = string.Empty;
     private bool _isScheduleTimeErrorVisible;
+    private string _scheduleReadinessTitle = string.Empty;
+    private string _scheduleReadinessDetail = string.Empty;
+    private string _scheduleScopeText = string.Empty;
+    private string _selectedScheduleFrequency = "daily";
 
     // ── Database ──────────────────────────────────────────────────────────
     private string _databaseHost = string.Empty;
@@ -65,10 +75,48 @@ public sealed class DataExportViewModel : BindableBase
     private bool _isActionInfoVisible;
 
     // ── Internal state set by code-behind (non-bindable controls) ─────────
-    internal string SelectedExportFormat { get; set; } = "CSV";
-    internal string SelectedCompression { get; set; } = "gzip";
+    private string _selectedExportFormat = "csv";
+    private string _selectedCompression = "gzip";
+
+    internal string SelectedExportFormat
+    {
+        get => _selectedExportFormat;
+        set
+        {
+            if (!string.Equals(_selectedExportFormat, value, StringComparison.OrdinalIgnoreCase))
+            {
+                _selectedExportFormat = value;
+                RefreshExportReadiness();
+            }
+        }
+    }
+
+    internal string SelectedCompression
+    {
+        get => _selectedCompression;
+        set
+        {
+            if (!string.Equals(_selectedCompression, value, StringComparison.OrdinalIgnoreCase))
+            {
+                _selectedCompression = value;
+                RefreshExportReadiness();
+            }
+        }
+    }
+
     internal string SelectedDatabaseType { get; set; } = "postgresql";
-    internal string SelectedScheduleFrequency { get; set; } = "daily";
+    internal string SelectedScheduleFrequency
+    {
+        get => _selectedScheduleFrequency;
+        set
+        {
+            if (!string.Equals(_selectedScheduleFrequency, value, StringComparison.OrdinalIgnoreCase))
+            {
+                _selectedScheduleFrequency = value;
+                RefreshScheduleReadiness();
+            }
+        }
+    }
     internal string SelectedWebhookFormat { get; set; } = "json";
     internal string SelectedWebhookBatch { get; set; } = "trade";
     internal string SelectedLeanResolution { get; set; } = "minute";
@@ -80,16 +128,22 @@ public sealed class DataExportViewModel : BindableBase
         SetWeekCommand = new RelayCommand(SetWeek);
         SetMonthCommand = new RelayCommand(SetMonth);
         AddSymbolCommand = new RelayCommand(AddSymbol);
-        ExportDataCommand = new AsyncRelayCommand(ExportDataAsync);
+        ExportDataCommand = new AsyncRelayCommand(ct => ExportDataAsync(ct), CanRunExportData);
         SetDatabaseCredentialsCommand = new RelayCommand(SetDatabaseCredentials);
         TestDatabaseConnectionCommand = new RelayCommand(TestDatabaseConnection);
         ConfigureDatabaseSyncCommand = new RelayCommand(ConfigureDatabaseSync);
+        ConfigureScheduledExportCommand = new RelayCommand(ConfigureScheduledExport, () => CanConfigureScheduledExport);
         TestWebhookCommand = new RelayCommand(TestWebhook);
         BrowseLeanPathCommand = new RelayCommand(BrowseLeanPath);
         ExportToLeanCommand = new RelayCommand(ExportToLean);
         VerifyLeanDataCommand = new RelayCommand(VerifyLeanData);
 
+        SelectedSymbols.CollectionChanged += (_, _) => RefreshExportReadiness();
+        ExportHistory.CollectionChanged += (_, _) => IsNoExportHistoryVisible = ExportHistory.Count == 0;
+
         SeedInitialData();
+        RefreshExportReadiness();
+        RefreshScheduleReadiness();
     }
 
     // ── Collections ───────────────────────────────────────────────────────
@@ -107,6 +161,7 @@ public sealed class DataExportViewModel : BindableBase
     public IRelayCommand SetDatabaseCredentialsCommand { get; }
     public IRelayCommand TestDatabaseConnectionCommand { get; }
     public IRelayCommand ConfigureDatabaseSyncCommand { get; }
+    public IRelayCommand ConfigureScheduledExportCommand { get; }
     public IRelayCommand TestWebhookCommand { get; }
     public IRelayCommand BrowseLeanPathCommand { get; }
     public IRelayCommand ExportToLeanCommand { get; }
@@ -117,13 +172,25 @@ public sealed class DataExportViewModel : BindableBase
     public DateTime? ExportFromDate
     {
         get => _exportFromDate;
-        set => SetProperty(ref _exportFromDate, value);
+        set
+        {
+            if (SetProperty(ref _exportFromDate, value))
+            {
+                RefreshExportReadiness();
+            }
+        }
     }
 
     public DateTime? ExportToDate
     {
         get => _exportToDate;
-        set => SetProperty(ref _exportToDate, value);
+        set
+        {
+            if (SetProperty(ref _exportToDate, value))
+            {
+                RefreshExportReadiness();
+            }
+        }
     }
 
     public string DateValidationError
@@ -163,7 +230,13 @@ public sealed class DataExportViewModel : BindableBase
     public bool IsExporting
     {
         get => _isExporting;
-        private set => SetProperty(ref _isExporting, value);
+        private set
+        {
+            if (SetProperty(ref _isExporting, value))
+            {
+                RefreshExportReadiness();
+            }
+        }
     }
 
     public bool IsExportProgressVisible
@@ -190,6 +263,32 @@ public sealed class DataExportViewModel : BindableBase
         private set => SetProperty(ref _exportProgressLabel, value);
     }
 
+    public string ExportReadinessTitle
+    {
+        get => _exportReadinessTitle;
+        private set => SetProperty(ref _exportReadinessTitle, value);
+    }
+
+    public string ExportReadinessDetail
+    {
+        get => _exportReadinessDetail;
+        private set => SetProperty(ref _exportReadinessDetail, value);
+    }
+
+    public string ExportScopeText
+    {
+        get => _exportScopeText;
+        private set => SetProperty(ref _exportScopeText, value);
+    }
+
+    public string SelectedSymbolCountText
+    {
+        get => _selectedSymbolCountText;
+        private set => SetProperty(ref _selectedSymbolCountText, value);
+    }
+
+    public bool CanExportData => CanRunExportData();
+
     public bool IsNoExportHistoryVisible
     {
         get => _isNoExportHistoryVisible;
@@ -204,7 +303,10 @@ public sealed class DataExportViewModel : BindableBase
         set
         {
             if (SetProperty(ref _isScheduleEnabled, value))
+            {
                 ValidateScheduleTime();
+                RefreshScheduleReadiness();
+            }
         }
     }
 
@@ -214,7 +316,22 @@ public sealed class DataExportViewModel : BindableBase
         set
         {
             if (SetProperty(ref _scheduleTimeText, value))
+            {
                 ValidateScheduleTime();
+                RefreshScheduleReadiness();
+            }
+        }
+    }
+
+    public string ScheduleDestinationPath
+    {
+        get => _scheduleDestinationPath;
+        set
+        {
+            if (SetProperty(ref _scheduleDestinationPath, value))
+            {
+                RefreshScheduleReadiness();
+            }
         }
     }
 
@@ -229,6 +346,29 @@ public sealed class DataExportViewModel : BindableBase
         get => _isScheduleTimeErrorVisible;
         private set => SetProperty(ref _isScheduleTimeErrorVisible, value);
     }
+
+    public string ScheduleReadinessTitle
+    {
+        get => _scheduleReadinessTitle;
+        private set => SetProperty(ref _scheduleReadinessTitle, value);
+    }
+
+    public string ScheduleReadinessDetail
+    {
+        get => _scheduleReadinessDetail;
+        private set => SetProperty(ref _scheduleReadinessDetail, value);
+    }
+
+    public string ScheduleScopeText
+    {
+        get => _scheduleScopeText;
+        private set => SetProperty(ref _scheduleScopeText, value);
+    }
+
+    public bool CanConfigureScheduledExport => CanConfigureScheduledExportForState(
+        IsScheduleEnabled,
+        ScheduleTimeText,
+        ScheduleDestinationPath);
 
     // ── Database properties ───────────────────────────────────────────────
 
@@ -362,7 +502,8 @@ public sealed class DataExportViewModel : BindableBase
 
     private async Task ExportDataAsync(CancellationToken ct = default)
     {
-        if (!ValidateExportInputs()) return;
+        if (!ValidateExportInputs())
+            return;
 
         IsExporting = true;
         IsExportProgressVisible = true;
@@ -432,6 +573,19 @@ public sealed class DataExportViewModel : BindableBase
         ShowInfo("Database sync configured. Scheduled exports will push data automatically.");
     }
 
+    private void ConfigureScheduledExport()
+    {
+        if (!CanConfigureScheduledExport)
+        {
+            RefreshScheduleReadiness();
+            ShowInfo(ScheduleReadinessDetail, isError: true);
+            return;
+        }
+
+        ShowInfo(
+            $"{FormatScheduleFrequency(SelectedScheduleFrequency)} export scheduled for {ScheduleTimeText.Trim()} local.");
+    }
+
     private void TestWebhook()
     {
         if (string.IsNullOrWhiteSpace(WebhookUrl))
@@ -471,6 +625,55 @@ public sealed class DataExportViewModel : BindableBase
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
+    public bool CanRunExportData()
+    {
+        return !IsExporting && !GetExportReadinessIssues().Any();
+    }
+
+    private void RefreshExportReadiness()
+    {
+        var issues = GetExportReadinessIssues().ToArray();
+
+        SelectedSymbolCountText = SelectedSymbols.Count switch
+        {
+            0 => "No symbols selected",
+            1 => "1 symbol selected",
+            _ => $"{SelectedSymbols.Count} symbols selected"
+        };
+
+        ExportScopeText = $"{SelectedSymbolCountText} • {FormatDateScope()}";
+
+        if (SelectedSymbols.Count > 0)
+        {
+            IsSymbolsValidationErrorVisible = false;
+        }
+
+        if (GetDateReadinessIssue() is null)
+        {
+            IsDateValidationErrorVisible = false;
+        }
+
+        if (IsExporting)
+        {
+            ExportReadinessTitle = "Export running";
+            ExportReadinessDetail = "Progress is shown below. Wait for this job to finish before queuing another export.";
+        }
+        else if (issues.Length > 0)
+        {
+            ExportReadinessTitle = "Export setup incomplete";
+            ExportReadinessDetail = string.Join(" ", issues);
+        }
+        else
+        {
+            ExportReadinessTitle = "Export ready";
+            ExportReadinessDetail =
+                $"{FormatExportFormat(SelectedExportFormat)} export will include {SelectedSymbolCountText.ToLowerInvariant()} across {FormatDateScope().ToLowerInvariant()} with {FormatCompression(SelectedCompression)}.";
+        }
+
+        RaisePropertyChanged(nameof(CanExportData));
+        ExportDataCommand.NotifyCanExecuteChanged();
+    }
+
     private bool ValidateExportInputs()
     {
         IsSymbolsValidationErrorVisible = false;
@@ -500,10 +703,68 @@ public sealed class DataExportViewModel : BindableBase
         return !hasError;
     }
 
+    private IEnumerable<string> GetExportReadinessIssues()
+    {
+        if (SelectedSymbols.Count == 0)
+        {
+            yield return "Add at least one symbol.";
+        }
+
+        var dateIssue = GetDateReadinessIssue();
+        if (dateIssue is not null)
+        {
+            yield return dateIssue;
+        }
+    }
+
+    private string? GetDateReadinessIssue()
+    {
+        if (!ExportFromDate.HasValue || !ExportToDate.HasValue)
+        {
+            return "Select both start and end dates.";
+        }
+
+        return ExportFromDate > ExportToDate
+            ? "Start date must be before end date."
+            : null;
+    }
+
+    private string FormatDateScope()
+    {
+        if (!ExportFromDate.HasValue || !ExportToDate.HasValue)
+        {
+            return "date range incomplete";
+        }
+
+        return $"{ExportFromDate.Value:MMM d, yyyy} to {ExportToDate.Value:MMM d, yyyy}";
+    }
+
+    private static string FormatExportFormat(string format)
+        => format.ToLowerInvariant() switch
+        {
+            "csv" => "CSV",
+            "parquet" => "Parquet",
+            "jsonl" => "JSON Lines",
+            "hdf5" => "HDF5",
+            "feather" => "Feather",
+            _ => format.ToUpperInvariant()
+        };
+
+    private static string FormatCompression(string compression)
+        => compression.ToLowerInvariant() switch
+        {
+            "none" => "no compression",
+            "gzip" => "gzip compression",
+            "lz4" => "LZ4 compression",
+            "zstd" => "Zstd compression",
+            _ => $"{compression} compression"
+        };
+
     private void ValidateScheduleTime()
     {
         IsScheduleTimeErrorVisible = false;
-        if (!IsScheduleEnabled) return;
+        if (!IsScheduleEnabled)
+            return;
 
         if (!TimeSpan.TryParse(ScheduleTimeText, out _))
         {
@@ -511,6 +772,46 @@ public sealed class DataExportViewModel : BindableBase
             IsScheduleTimeErrorVisible = true;
         }
     }
+
+    private void RefreshScheduleReadiness()
+    {
+        if (!IsScheduleEnabled)
+        {
+            ScheduleReadinessTitle = "Scheduled exports disabled";
+            ScheduleReadinessDetail = "Enable scheduled exports after choosing frequency, run time, and output destination.";
+            ScheduleScopeText = "Disabled";
+        }
+        else if (!TimeSpan.TryParse(ScheduleTimeText, out _))
+        {
+            ScheduleReadinessTitle = "Schedule setup incomplete";
+            ScheduleReadinessDetail = "Enter a valid local run time in HH:mm format.";
+            ScheduleScopeText = $"{FormatScheduleFrequency(SelectedScheduleFrequency)} - time requires review";
+        }
+        else if (string.IsNullOrWhiteSpace(ScheduleDestinationPath))
+        {
+            ScheduleReadinessTitle = "Schedule setup incomplete";
+            ScheduleReadinessDetail = "Set a destination path before saving this scheduled export.";
+            ScheduleScopeText = $"{FormatScheduleFrequency(SelectedScheduleFrequency)} - {ScheduleTimeText.Trim()} local";
+        }
+        else
+        {
+            ScheduleReadinessTitle = "Schedule ready";
+            ScheduleReadinessDetail =
+                $"{FormatScheduleFrequency(SelectedScheduleFrequency)} export will run at {ScheduleTimeText.Trim()} local and write to {ScheduleDestinationPath.Trim()}.";
+            ScheduleScopeText = $"{FormatScheduleFrequency(SelectedScheduleFrequency)} - {ScheduleTimeText.Trim()} local";
+        }
+
+        RaisePropertyChanged(nameof(CanConfigureScheduledExport));
+        ConfigureScheduledExportCommand.NotifyCanExecuteChanged();
+    }
+
+    public static bool CanConfigureScheduledExportForState(
+        bool isScheduleEnabled,
+        string? scheduleTimeText,
+        string? scheduleDestinationPath) =>
+        isScheduleEnabled
+        && TimeSpan.TryParse(scheduleTimeText, out _)
+        && !string.IsNullOrWhiteSpace(scheduleDestinationPath);
 
     private bool TryValidateDatabaseInputs(out string? error)
     {
@@ -542,6 +843,16 @@ public sealed class DataExportViewModel : BindableBase
 
         return true;
     }
+
+    private static string FormatScheduleFrequency(string frequency)
+        => frequency.ToLowerInvariant() switch
+        {
+            "hourly" => "Hourly",
+            "daily" => "Daily",
+            "weekly" => "Weekly",
+            "monthly" => "Monthly",
+            _ => frequency.ToUpperInvariant()
+        };
 
     private void ShowInfo(string message, bool isError = false)
     {

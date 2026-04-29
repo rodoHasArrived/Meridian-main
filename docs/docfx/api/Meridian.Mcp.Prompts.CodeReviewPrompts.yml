@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CodeReviewPrompts
-    path: ../../src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs
+    path: src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs
+    path: src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewCode
-    path: ../../src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs
+    path: src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs
     startLine: 5
   assemblies:
   - mdc-mcp

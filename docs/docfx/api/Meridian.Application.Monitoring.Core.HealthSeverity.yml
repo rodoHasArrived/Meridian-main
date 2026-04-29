@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthSeverity
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Degraded
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 13
   assemblies:
   - Meridian.Core
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unhealthy
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 19
   assemblies:
   - Meridian.Core

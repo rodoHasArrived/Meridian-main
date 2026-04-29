@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchResponse
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 143
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 143
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 145
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 148
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 151
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ElapsedMs
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 154
   assemblies:
   - Meridian.Core
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Query
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 157
   assemblies:
   - Meridian.Core

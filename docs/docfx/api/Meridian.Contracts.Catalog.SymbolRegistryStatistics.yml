@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolRegistryStatistics
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 381
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 386
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSymbols
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 392
   assemblies:
   - Meridian.Contracts
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DelistedSymbols
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 398
   assemblies:
   - Meridian.Contracts
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAliases
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 404
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCount
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 410
   assemblies:
   - Meridian.Contracts
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByAssetClass
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 416
   assemblies:
   - Meridian.Contracts
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByExchange
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 422
   assemblies:
   - Meridian.Contracts

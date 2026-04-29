@@ -46,7 +46,7 @@ public sealed class AggregatePortfolioServiceTests
         var (service, registry) = Build();
 
         var p1 = BuildPortfolioWithPosition("AAPL", qty: 10m, cost: 150m);
-        var p2 = BuildPortfolioWithPosition("AAPL", qty: 5m,  cost: 155m);
+        var p2 = BuildPortfolioWithPosition("AAPL", qty: 5m, cost: 155m);
         registry.Register("run-1", p1);
         registry.Register("run-2", p2);
 
@@ -61,8 +61,8 @@ public sealed class AggregatePortfolioServiceTests
     {
         var (service, registry) = Build();
 
-        var p1 = BuildPortfolioWithPosition("MSFT", qty:  20m, cost: 300m);
-        var p2 = BuildPortfolioWithPosition("MSFT", qty: -8m,  cost: 310m);
+        var p1 = BuildPortfolioWithPosition("MSFT", qty: 20m, cost: 300m);
+        var p2 = BuildPortfolioWithPosition("MSFT", qty: -8m, cost: 310m);
         registry.Register("run-1", p1);
         registry.Register("run-2", p2);
 

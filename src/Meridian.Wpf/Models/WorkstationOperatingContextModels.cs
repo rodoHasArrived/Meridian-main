@@ -1,5 +1,5 @@
-using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.EnvironmentDesign;
+using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Models;

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimeConfigOptions
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 976
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 976
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseCase
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 977
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPreset
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 978
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableBackfill
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 979
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableCompression
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 980
   assemblies:
   - Meridian.Application

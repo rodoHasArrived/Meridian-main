@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Result
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSuccess
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFailure
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 38
   assemblies:
   - Meridian.Application
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 39
   assemblies:
   - Meridian.Application
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Match
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Match
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Map
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 54
   assemblies:
   - Meridian.Application
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bind
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 59
   assemblies:
   - Meridian.Application
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapError
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 62
   assemblies:
   - Meridian.Application
@@ -481,7 +481,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetValueOrDefault
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 67
   assemblies:
   - Meridian.Application
@@ -514,7 +514,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetValueOrThrow
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 70
   assemblies:
   - Meridian.Application
@@ -544,7 +544,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Application/Results/Result.cs
+    path: src/Meridian.Application/Results/Result.cs
     startLine: 73
   assemblies:
   - Meridian.Application

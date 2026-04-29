@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerBook
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 7
   assemblies:
   - Meridian.Ledger
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 11
   assemblies:
   - Meridian.Ledger
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 20
   assemblies:
   - Meridian.Ledger
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedger
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 25
   assemblies:
   - Meridian.Ledger
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityLedger
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 29
   assemblies:
   - Meridian.Ledger
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveLedger
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 33
   assemblies:
   - Meridian.Ledger
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleLedger
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 37
   assemblies:
   - Meridian.Ledger
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedTrialBalance
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 43
   assemblies:
   - Meridian.Ledger
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedSnapshotAsOf
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 47
   assemblies:
   - Meridian.Ledger
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedJournalEntries
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 51
   assemblies:
   - Meridian.Ledger
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntitySnapshotsAsOf
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 57
   assemblies:
   - Meridian.Ledger
@@ -398,7 +398,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveSnapshotsAsOf
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 61
   assemblies:
   - Meridian.Ledger
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleSnapshotsAsOf
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 65
   assemblies:
   - Meridian.Ledger
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationSnapshot
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 74
   assemblies:
   - Meridian.Ledger

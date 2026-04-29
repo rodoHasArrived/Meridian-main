@@ -118,7 +118,10 @@ public sealed class EdgarSymbolSearchProviderTests
     public async Task SearchAsync_ByTicker_ReturnsMatchingResults()
     {
         var (provider, handler, tickersClient, subClient) = CreateProvider(SampleCompanyTickers);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             var results = await provider.SearchAsync("MSFT", 10, CancellationToken.None);
 
@@ -134,7 +137,10 @@ public sealed class EdgarSymbolSearchProviderTests
     public async Task SearchAsync_ByCompanyName_ReturnsMatchingResults()
     {
         var (provider, handler, tickersClient, subClient) = CreateProvider(SampleCompanyTickers);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             var results = await provider.SearchAsync("Apple", 10, CancellationToken.None);
             results.Should().ContainSingle(r => r.Symbol == "AAPL");
@@ -145,7 +151,10 @@ public sealed class EdgarSymbolSearchProviderTests
     public async Task SearchAsync_WithLimitLowerThanMatches_RespectsLimit()
     {
         var (provider, handler, tickersClient, subClient) = CreateProvider(SampleCompanyTickers);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             // "A" matches AAPL and AMZN
             var results = await provider.SearchAsync("A", limit: 1, CancellationToken.None);
@@ -171,7 +180,10 @@ public sealed class EdgarSymbolSearchProviderTests
     {
         var (provider, handler, tickersClient, subClient) =
             CreateProvider(string.Empty, HttpStatusCode.ServiceUnavailable);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
             results.Should().BeEmpty();
@@ -207,7 +219,10 @@ public sealed class EdgarSymbolSearchProviderTests
     public async Task IsAvailableAsync_WhenEndpointReachable_ReturnsTrue()
     {
         var (provider, handler, tickersClient, subClient) = CreateProvider(SampleCompanyTickers);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             var available = await provider.IsAvailableAsync(CancellationToken.None);
             available.Should().BeTrue();
@@ -219,7 +234,10 @@ public sealed class EdgarSymbolSearchProviderTests
     {
         var (provider, handler, tickersClient, subClient) =
             CreateProvider(string.Empty, HttpStatusCode.ServiceUnavailable);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             var available = await provider.IsAvailableAsync(CancellationToken.None);
             available.Should().BeFalse();
@@ -255,6 +273,7 @@ public sealed class EdgarSymbolSearchProviderTests
         details.Name.Should().Be("MICROSOFT CORP");
         details.Exchange.Should().Be("Nasdaq");
         details.Sector.Should().Be("Prepackaged Software");
+        details.Cusip.Should().BeNull("SEC EIN values are tax identifiers and must not be mapped to CUSIP");
         details.Source.Should().Be("edgar");
     }
 
@@ -262,7 +281,10 @@ public sealed class EdgarSymbolSearchProviderTests
     public async Task GetDetailsAsync_WithUnknownSymbol_ReturnsNull()
     {
         var (provider, handler, tickersClient, subClient) = CreateProvider(SampleCompanyTickers);
-        using (handler) using (tickersClient) using (subClient) using (provider)
+        using (handler)
+        using (tickersClient)
+        using (subClient)
+        using (provider)
         {
             var details = await provider.GetDetailsAsync(new SymbolId("UNKNOWN_XYZ"), CancellationToken.None);
             details.Should().BeNull();
@@ -367,6 +389,7 @@ public sealed class EdgarSecurityMasterIngestProviderTests
         {
             r.SourceSystem.Should().Be("edgar");
             r.Identifiers.Should().Contain(id => id.Kind == SecurityIdentifierKind.Ticker);
+            r.Identifiers.Should().Contain(id => id.Kind == SecurityIdentifierKind.Cik && id.Provider == "edgar");
         });
     }
 

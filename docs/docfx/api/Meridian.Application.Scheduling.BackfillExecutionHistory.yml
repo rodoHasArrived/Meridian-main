@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillExecutionHistory
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 226
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddExecution
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 235
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecution
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 259
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionsForSchedule
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 267
   assemblies:
   - Meridian.Application
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentExecutions
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 279
   assemblies:
   - Meridian.Application
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFailedExecutions
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 290
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionsInRange
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 302
   assemblies:
   - Meridian.Application
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScheduleSummary
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 317
   assemblies:
   - Meridian.Application
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSystemSummary
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 344
   assemblies:
   - Meridian.Application

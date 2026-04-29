@@ -44,33 +44,95 @@
             </Border>
 
             <!-- Current Market Status -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,24"
+                    AutomationProperties.AutomationId="TradingHoursMarketStatusCard">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                        <Ellipse Width="12" Height="12"
-                                 Fill="{Binding MarketStatusDotFill}"
-                                 VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding MarketStatusText}"
-                                   FontSize="18" FontWeight="Bold"
-                                   Foreground="{Binding MarketStatusTextForeground}"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding MarketStatusReasonText}"
-                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                   FontSize="13" />
-                        <TextBlock Text="{Binding NextSessionText}"
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Ellipse Width="12" Height="12"
+                                     Fill="{Binding MarketStatusDotFill}"
+                                     VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding MarketStatusText}"
+                                       FontSize="18" FontWeight="Bold"
+                                       Foreground="{Binding MarketStatusTextForeground}"
+                                       VerticalAlignment="Center"
+                                       AutomationProperties.AutomationId="TradingHoursMarketStatusText" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding MarketStatusReasonText}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       FontSize="13" />
+                            <TextBlock Text="{Binding NextSessionText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="12" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="{Binding MarketStatusTimeText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   FontSize="12" Margin="0,2,0,0" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="2" Text="{Binding MarketStatusTimeText}"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="11" VerticalAlignment="Center" />
+                                   FontSize="11" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Rectangle Grid.Row="1"
+                               Height="1"
+                               Fill="{StaticResource ConsoleBorderBrush}"
+                               Margin="0,18" />
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,18,0">
+                            <TextBlock Text="{Binding SessionBriefingToneLabel}"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="TradingHoursSessionBriefingTone" />
+                            <TextBlock Text="{Binding SessionBriefingTitle}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"
+                                       AutomationProperties.AutomationId="TradingHoursSessionBriefingTitle" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding SessionBriefingDetail}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   FontSize="13"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   AutomationProperties.AutomationId="TradingHoursSessionBriefingDetail" />
+                        <Border Grid.Column="2"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="10,6"
+                                MaxWidth="260"
+                                Margin="18,0,0,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding SessionBriefingTargetText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="TradingHoursSessionBriefingTarget" />
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
 
@@ -359,7 +421,9 @@
                     </Border>
 
                     <!-- Dynamic holiday rows -->
-                    <ItemsControl ItemsSource="{Binding Holidays}">
+                    <ItemsControl ItemsSource="{Binding Holidays}"
+                                  Visibility="{Binding HasHolidays, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  AutomationProperties.AutomationId="TradingHoursHolidayRows">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Padding="12,10">
@@ -379,6 +443,30 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <Border Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1,0,1,1"
+                            CornerRadius="0,0,8,8"
+                            Padding="18,22"
+                            Visibility="{Binding IsHolidayEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="TradingHoursHolidayEmptyState">
+                        <StackPanel HorizontalAlignment="Center" MaxWidth="560">
+                            <TextBlock Text="{Binding HolidayEmptyStateTitle}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       AutomationProperties.AutomationId="TradingHoursHolidayEmptyStateTitle" />
+                            <TextBlock Text="{Binding HolidayEmptyStateDetail}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="TradingHoursHolidayEmptyStateDetail" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
         </StackPanel>

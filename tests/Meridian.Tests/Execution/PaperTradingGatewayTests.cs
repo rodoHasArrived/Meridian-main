@@ -68,6 +68,42 @@ public sealed class PaperTradingGatewayTests
         gateway.Capabilities.SupportedTimeInForce.Should().Contain(TimeInForce.GoodTilCancelled);
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsMarketOnCloseBecauseTimingIsNotPreserved()
+    {
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);
+        var request = new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.MarketOnClose,
+            Quantity = 10
+        };
+
+        var result = await gateway.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("MarketOnClose");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsLimitOnOpenAsUnsupportedBeforePriceValidation()
+    {
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);
+        var request = new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.LimitOnOpen,
+            Quantity = 10
+        };
+
+        var result = await gateway.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("LimitOnOpen");
+    }
+
     // ── Lot-size validation tests ─────────────────────────────────────────
 
     [Fact]

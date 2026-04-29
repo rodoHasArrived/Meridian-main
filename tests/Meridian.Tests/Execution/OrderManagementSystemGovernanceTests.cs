@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.Models;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using ExecutionGateway = Meridian.Execution.PaperTradingGateway;

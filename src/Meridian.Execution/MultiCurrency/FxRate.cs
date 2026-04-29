@@ -23,7 +23,8 @@ public sealed record FxRate(
     /// </summary>
     public decimal ConvertInverse(decimal amount)
     {
-        if (Rate == 0m) throw new InvalidOperationException("Cannot invert a zero FX rate.");
+        if (Rate == 0m)
+            throw new InvalidOperationException("Cannot invert a zero FX rate.");
         return amount / Rate;
     }
 

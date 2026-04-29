@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
@@ -17,10 +18,16 @@ namespace Meridian.Ui.Services.Services;
 public sealed class SettingsConfigurationService
 {
     private static readonly Lazy<SettingsConfigurationService> LazyInstance = new(() => new SettingsConfigurationService());
+    private static string? _desktopPreferencesFilePathOverride;
     private readonly List<ConfigProfile> _profiles = new();
+    private readonly Lock _desktopPreferencesGate = new();
+    private DesktopShellPreferences _desktopShellPreferences = DesktopShellPreferences.Default;
+    private bool _desktopPreferencesLoaded;
 
     /// <summary>Gets the singleton instance.</summary>
     public static SettingsConfigurationService Instance => LazyInstance.Value;
+
+    public event EventHandler<DesktopShellPreferences>? DesktopShellPreferencesChanged;
 
     private SettingsConfigurationService()
     {
@@ -126,6 +133,51 @@ public sealed class SettingsConfigurationService
         return result;
     }
 
+    /// <summary>
+    /// Gets the persisted desktop shell preferences, migrating any legacy compact-mode payloads on first load.
+    /// </summary>
+    public DesktopShellPreferences GetDesktopShellPreferences()
+    {
+        lock (_desktopPreferencesGate)
+        {
+            EnsureDesktopShellPreferencesLoaded();
+            return _desktopShellPreferences;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current workstation shell density mode.
+    /// </summary>
+    public ShellDensityMode GetShellDensityMode() => GetDesktopShellPreferences().ShellDensityMode;
+
+    /// <summary>
+    /// Persists a new workstation shell density mode and raises a change event for live shell surfaces.
+    /// </summary>
+    public void SetShellDensityMode(ShellDensityMode densityMode)
+    {
+        DesktopShellPreferences updatedPreferences;
+        var changed = false;
+
+        lock (_desktopPreferencesGate)
+        {
+            EnsureDesktopShellPreferencesLoaded();
+            if (_desktopShellPreferences.ShellDensityMode == densityMode)
+            {
+                return;
+            }
+
+            updatedPreferences = _desktopShellPreferences with { ShellDensityMode = densityMode };
+            PersistDesktopShellPreferencesCore(updatedPreferences);
+            _desktopShellPreferences = updatedPreferences;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            DesktopShellPreferencesChanged?.Invoke(this, updatedPreferences);
+        }
+    }
+
     private static ProviderCatalogEntry MapProviderCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry entry)
     {
         var envCredentialFields = entry.CredentialFields
@@ -221,6 +273,24 @@ public sealed class SettingsConfigurationService
         return FormatHelpers.FormatBytes(totalBytes);
     }
 
+    internal static void SetDesktopPreferencesFilePathOverrideForTests(string? filePath)
+    {
+        _desktopPreferencesFilePathOverride = filePath;
+        if (LazyInstance.IsValueCreated)
+        {
+            LazyInstance.Value.ResetDesktopShellPreferencesForTests();
+        }
+    }
+
+    private void ResetDesktopShellPreferencesForTests()
+    {
+        lock (_desktopPreferencesGate)
+        {
+            _desktopShellPreferences = DesktopShellPreferences.Default;
+            _desktopPreferencesLoaded = false;
+        }
+    }
+
     private static string GetExtensionForCompression(string compression) =>
         compression?.ToLowerInvariant() switch
         {
@@ -286,6 +356,99 @@ public sealed class SettingsConfigurationService
             sb.AppendLine($"  \u251C\u2500\u2500 {sym}_trades_{date}{ext}");
             sb.AppendLine($"  \u251C\u2500\u2500 {sym}_quotes_{date}{ext}");
         }
+    }
+
+    private void EnsureDesktopShellPreferencesLoaded()
+    {
+        if (_desktopPreferencesLoaded)
+        {
+            return;
+        }
+
+        var path = GetDesktopPreferencesFilePath();
+        if (!File.Exists(path))
+        {
+            _desktopShellPreferences = DesktopShellPreferences.Default;
+            _desktopPreferencesLoaded = true;
+            return;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(path);
+            var model = JsonSerializer.Deserialize<DesktopShellPreferencesStorageModel>(json, DesktopShellJsonOptions);
+            _desktopShellPreferences = model is null
+                ? DesktopShellPreferences.Default
+                : new DesktopShellPreferences(ResolveShellDensityMode(model));
+        }
+        catch
+        {
+            _desktopShellPreferences = DesktopShellPreferences.Default;
+        }
+        finally
+        {
+            _desktopPreferencesLoaded = true;
+        }
+    }
+
+    private void PersistDesktopShellPreferencesCore(DesktopShellPreferences preferences)
+    {
+        var path = GetDesktopPreferencesFilePath();
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var model = new DesktopShellPreferencesStorageModel
+        {
+            ShellDensityMode = preferences.ShellDensityMode.ToString()
+        };
+        var json = JsonSerializer.Serialize(model, DesktopShellJsonOptions);
+        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        File.WriteAllText(temporaryPath, json, Encoding.UTF8);
+        File.Move(temporaryPath, path, overwrite: true);
+    }
+
+    private static ShellDensityMode ResolveShellDensityMode(DesktopShellPreferencesStorageModel model)
+    {
+        if (!string.IsNullOrWhiteSpace(model.ShellDensityMode) &&
+            Enum.TryParse<ShellDensityMode>(model.ShellDensityMode, ignoreCase: true, out var parsed))
+        {
+            return parsed;
+        }
+
+        return model.IsCompactMode switch
+        {
+            true => ShellDensityMode.Compact,
+            false => ShellDensityMode.Standard,
+            null => ShellDensityMode.Standard
+        };
+    }
+
+    private static string GetDesktopPreferencesFilePath()
+    {
+        if (!string.IsNullOrWhiteSpace(_desktopPreferencesFilePathOverride))
+        {
+            return _desktopPreferencesFilePathOverride!;
+        }
+
+        var root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        return Path.Combine(root, "Meridian", "desktop-shell-preferences.json");
+    }
+
+    private static JsonSerializerOptions DesktopShellJsonOptions { get; } = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private sealed class DesktopShellPreferencesStorageModel
+    {
+        public string? ShellDensityMode { get; init; }
+
+        public bool? IsCompactMode { get; init; }
     }
 }
 

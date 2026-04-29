@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackendRuntimeInfo
-    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessId
-    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAtUtc
-    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Services

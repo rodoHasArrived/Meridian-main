@@ -1,0 +1,337 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  commentId: T:Meridian.Strategies.Interfaces.IPromotionRecordStore
+  id: IPromotionRecordStore
+  parent: Meridian.Strategies.Interfaces
+  children:
+  - Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  - Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IPromotionRecordStore
+  nameWithType: IPromotionRecordStore
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPromotionRecordStore
+    path: src/Meridian.Strategies/Interfaces/IPromotionRecordStore.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: Durable append-only store for promotion decisions and audit metadata.
+  example: []
+  syntax:
+    content: public interface IPromotionRecordStore
+    content.vb: Public Interface IPromotionRecordStore
+  derivedClasses:
+  - Meridian.Strategies.Storage.JsonlPromotionRecordStore
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  id: LoadAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAllAsync(CancellationToken)
+  nameWithType: IPromotionRecordStore.LoadAllAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAllAsync
+    path: src/Meridian.Strategies/Interfaces/IPromotionRecordStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: Loads all recorded promotion decisions in append order.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+    content.vb: Function LoadAllAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  overload: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync*
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  id: AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(StrategyPromotionRecord, CancellationToken)
+  nameWithType: IPromotionRecordStore.AppendAsync(StrategyPromotionRecord, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: src/Meridian.Strategies/Interfaces/IPromotionRecordStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: Appends a new promotion decision to the durable history.
+  example: []
+  syntax:
+    content: Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
+    parameters:
+    - id: record
+      type: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AppendAsync(record As StrategyPromotionRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync*
+references:
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync*
+  commentId: Overload:Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_LoadAllAsync_System_Threading_CancellationToken_
+  name: LoadAllAsync
+  nameWithType: IPromotionRecordStore.LoadAllAsync
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<StrategyPromotionRecord>>
+  nameWithType: Task<IReadOnlyList<StrategyPromotionRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Promotions.StrategyPromotionRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Promotions.StrategyPromotionRecord))
+  name.vb: Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync*
+  commentId: Overload:Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_AppendAsync_Meridian_Strategies_Promotions_StrategyPromotionRecord_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: IPromotionRecordStore.AppendAsync
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  commentId: T:Meridian.Strategies.Promotions.StrategyPromotionRecord
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  name: StrategyPromotionRecord
+  nameWithType: StrategyPromotionRecord
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Strategies.Promotions
+  commentId: N:Meridian.Strategies.Promotions
+  href: Meridian.html
+  name: Meridian.Strategies.Promotions
+  nameWithType: Meridian.Strategies.Promotions
+  fullName: Meridian.Strategies.Promotions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html

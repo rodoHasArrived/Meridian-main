@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatus
-    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disconnected
-    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connecting
-    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
-    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconnecting
-    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Faulted
-    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts

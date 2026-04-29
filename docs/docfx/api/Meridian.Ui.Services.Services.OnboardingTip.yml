@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnboardingTip
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Content
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetElement
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Order
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services

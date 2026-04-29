@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -23,6 +24,15 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 {
     private const int MaxLogEntries = 1000;
 
+    private static readonly SolidColorBrush ErrorLevelBackground = CreateFrozenBrush(Color.FromArgb(40, 244, 67, 54));
+    private static readonly SolidColorBrush WarningLevelBackground = CreateFrozenBrush(Color.FromArgb(40, 255, 193, 7));
+    private static readonly SolidColorBrush InfoLevelBackground = CreateFrozenBrush(Color.FromArgb(40, 88, 166, 255));
+    private static readonly SolidColorBrush DebugLevelBackground = CreateFrozenBrush(Color.FromArgb(40, 139, 148, 158));
+    private static readonly SolidColorBrush ErrorLevelForeground = CreateFrozenBrush(Color.FromRgb(244, 67, 54));
+    private static readonly SolidColorBrush WarningLevelForeground = CreateFrozenBrush(Color.FromRgb(255, 193, 7));
+    private static readonly SolidColorBrush InfoLevelForeground = CreateFrozenBrush(Color.FromRgb(88, 166, 255));
+    private static readonly SolidColorBrush DebugLevelForeground = CreateFrozenBrush(Color.FromRgb(139, 148, 158));
+
     private readonly HttpClient _httpClient = new();
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
@@ -36,6 +46,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private string _categoryFilter = "All";
     private string _searchText = string.Empty;
     private bool _offlineIndicatorShown;
+    private bool _suppressFilterRefresh;
 
     // ── Public collections ────────────────────────────────────────────────────────
 
@@ -47,11 +58,92 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private string _logCount = "0 entries";
     public string LogCount { get => _logCount; private set => SetProperty(ref _logCount, value); }
 
+    private string _visibleLogCountText = "0 visible";
+    public string VisibleLogCountText { get => _visibleLogCountText; private set => SetProperty(ref _visibleLogCountText, value); }
+
+    private string _errorLogCountText = "0 errors";
+    public string ErrorLogCountText { get => _errorLogCountText; private set => SetProperty(ref _errorLogCountText, value); }
+
+    private string _warningLogCountText = "0 warnings";
+    public string WarningLogCountText { get => _warningLogCountText; private set => SetProperty(ref _warningLogCountText, value); }
+
+    private string _latestLogTimeText = "--";
+    public string LatestLogTimeText { get => _latestLogTimeText; private set => SetProperty(ref _latestLogTimeText, value); }
+
+    private string _latestLogSummary = "No activity captured yet.";
+    public string LatestLogSummary { get => _latestLogSummary; private set => SetProperty(ref _latestLogSummary, value); }
+
+    private string _activityPostureTitle = "Waiting for activity";
+    public string ActivityPostureTitle { get => _activityPostureTitle; private set => SetProperty(ref _activityPostureTitle, value); }
+
+    private string _activityPostureDetail = "Connect the backend or trigger a desktop workflow to populate retained activity.";
+    public string ActivityPostureDetail { get => _activityPostureDetail; private set => SetProperty(ref _activityPostureDetail, value); }
+
+    private string _activeFilterSummary = "Showing every retained entry";
+    public string ActiveFilterSummary { get => _activeFilterSummary; private set => SetProperty(ref _activeFilterSummary, value); }
+
     private bool _noLogsVisible = true;
     public bool NoLogsVisible { get => _noLogsVisible; private set => SetProperty(ref _noLogsVisible, value); }
 
     private bool _isAutoScrollEnabled = true;
     public bool IsAutoScrollEnabled { get => _isAutoScrollEnabled; set => SetProperty(ref _isAutoScrollEnabled, value); }
+
+    public string LevelFilter
+    {
+        get => _levelFilter;
+        set
+        {
+            if (SetProperty(ref _levelFilter, NormalizeFilterValue(value)) && !_suppressFilterRefresh)
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public string CategoryFilter
+    {
+        get => _categoryFilter;
+        set
+        {
+            if (SetProperty(ref _categoryFilter, NormalizeFilterValue(value)) && !_suppressFilterRefresh)
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value ?? string.Empty) && !_suppressFilterRefresh)
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public bool HasLogHistory => _allLogs.Count > 0;
+
+    public bool HasActiveFilters =>
+        !string.Equals(LevelFilter, "All", StringComparison.OrdinalIgnoreCase) ||
+        !string.Equals(CategoryFilter, "All", StringComparison.OrdinalIgnoreCase) ||
+        !string.IsNullOrWhiteSpace(SearchText);
+
+    public bool HasFilterRecoveryAction => HasLogHistory && HasActiveFilters;
+
+    public bool CanClearLog => HasLogHistory;
+
+    public bool CanExportVisibleLogs => FilteredLogs.Count > 0;
+
+    public string EmptyStateTitle => HasFilterRecoveryAction
+        ? "No log entries match the current filters"
+        : "No log entries to display";
+
+    public string EmptyStateDetail => HasFilterRecoveryAction
+        ? "Reset filters to return to the retained activity window."
+        : "Connect the backend or trigger a desktop workflow to populate retained activity.";
 
     // ── Event raised to signal the view to scroll ─────────────────────────────────
 
@@ -61,6 +153,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     // ── Commands ──────────────────────────────────────────────────────────────────
 
     public IRelayCommand ClearCommand { get; }
+    public IRelayCommand ClearFiltersCommand { get; }
 
     // ─────────────────────────────────────────────────────────────────────────────
 
@@ -73,7 +166,8 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         _notificationService = notificationService;
         _baseUrl = statusService.BaseUrl;
 
-        ClearCommand = new RelayCommand(ExecuteClear);
+        ClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog);
+        ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += async (_, _) => await LoadLogsAsync();
@@ -101,20 +195,17 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     public void UpdateLevelFilter(string level)
     {
-        _levelFilter = level;
-        ApplyFilters();
+        LevelFilter = level;
     }
 
     public void UpdateCategoryFilter(string category)
     {
-        _categoryFilter = category;
-        ApplyFilters();
+        CategoryFilter = category;
     }
 
     public void UpdateSearch(string text)
     {
-        _searchText = text;
-        ApplyFilters();
+        SearchText = text;
     }
 
     // ── Export (called from code-behind after file dialog) ────────────────────────
@@ -157,6 +248,22 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     }
 
     public int FilteredCount => FilteredLogs.Count;
+
+    internal void AddLocalLogEntry(
+        LogLevel level,
+        string message,
+        string category = "System",
+        DateTime? timestamp = null)
+    {
+        OnLogEntryAdded(
+            this,
+            new LogEntryEventArgs(
+                level,
+                timestamp ?? DateTime.UtcNow,
+                message,
+                null,
+                [("category", category)]));
+    }
 
     // ── Internal logic ────────────────────────────────────────────────────────────
 
@@ -268,7 +375,8 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     private void ShowOfflineIndicator(string reason)
     {
-        if (_offlineIndicatorShown) return;
+        if (_offlineIndicatorShown)
+            return;
         _offlineIndicatorShown = true;
 
         _notificationService.ShowNotification(
@@ -319,16 +427,18 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
             FilteredLogs.Add(log);
         }
 
-        LogCount = $"{FilteredLogs.Count} entries";
+        LogCount = FilteredLogs.Count == _allLogs.Count
+            ? FormatEntryCount(FilteredLogs.Count)
+            : $"{FilteredLogs.Count} of {FormatEntryCount(_allLogs.Count)}";
         NoLogsVisible = FilteredLogs.Count == 0;
+        UpdateTriageState();
+        RaiseFilterStateChanged();
     }
 
     private void ExecuteClear()
     {
         _allLogs.Clear();
-        FilteredLogs.Clear();
-        LogCount = "0 entries";
-        NoLogsVisible = true;
+        ApplyFilters();
 
         _notificationService.ShowNotification(
             "Cleared",
@@ -336,25 +446,137 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
             NotificationType.Info);
     }
 
-    private static SolidColorBrush GetLevelBackground(string level) =>
-        new(level.ToUpperInvariant() switch
+    private void ClearFilters()
+    {
+        if (!HasActiveFilters)
+            return;
+
+        _suppressFilterRefresh = true;
+        try
         {
-            "ERROR" => Color.FromArgb(40, 244, 67, 54),
-            "WARNING" or "WARN" => Color.FromArgb(40, 255, 193, 7),
-            "INFO" => Color.FromArgb(40, 88, 166, 255),
-            "DEBUG" => Color.FromArgb(40, 139, 148, 158),
-            _ => Color.FromArgb(40, 139, 148, 158)
-        });
+            LevelFilter = "All";
+            CategoryFilter = "All";
+            SearchText = string.Empty;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+        }
+
+        ApplyFilters();
+    }
+
+    private void UpdateTriageState()
+    {
+        var totalCount = _allLogs.Count;
+        var visibleCount = FilteredLogs.Count;
+        var errorCount = _allLogs.Count(log => IsLevel(log.Level, "Error"));
+        var warningCount = _allLogs.Count(log => IsLevel(log.Level, "Warning") || IsLevel(log.Level, "Warn"));
+        var latest = _allLogs.OrderByDescending(log => log.RawTimestamp).FirstOrDefault();
+
+        VisibleLogCountText = $"{visibleCount} visible";
+        ErrorLogCountText = $"{errorCount} error{(errorCount == 1 ? string.Empty : "s")}";
+        WarningLogCountText = $"{warningCount} warning{(warningCount == 1 ? string.Empty : "s")}";
+        LatestLogTimeText = latest?.Timestamp ?? "--";
+        LatestLogSummary = latest is null
+            ? "No activity captured yet."
+            : $"{latest.Level} / {latest.Category}: {latest.Message}";
+        ActiveFilterSummary = BuildActiveFilterSummary();
+
+        if (totalCount == 0)
+        {
+            ActivityPostureTitle = "Waiting for activity";
+            ActivityPostureDetail = "Connect the backend or trigger a desktop workflow to populate retained activity.";
+        }
+        else if (errorCount > 0)
+        {
+            ActivityPostureTitle = "Errors need review";
+            ActivityPostureDetail = $"{errorCount} retained error{(errorCount == 1 ? " is" : "s are")} visible in the local activity window. Start with the latest error, then export the trace if support needs it.";
+        }
+        else if (warningCount > 0)
+        {
+            ActivityPostureTitle = "Warnings present";
+            ActivityPostureDetail = $"{warningCount} retained warning{(warningCount == 1 ? " is" : "s are")} available for triage. Check provider, storage, or backfill categories before clearing the log.";
+        }
+        else
+        {
+            ActivityPostureTitle = "Activity is steady";
+            ActivityPostureDetail = "No retained errors or warnings are present in the current activity window.";
+        }
+    }
+
+    private string BuildActiveFilterSummary()
+    {
+        var parts = new List<string>();
+
+        if (!string.Equals(_levelFilter, "All", StringComparison.OrdinalIgnoreCase))
+        {
+            parts.Add($"{_levelFilter} level");
+        }
+
+        if (!string.Equals(_categoryFilter, "All", StringComparison.OrdinalIgnoreCase))
+        {
+            parts.Add($"{_categoryFilter} category");
+        }
+
+        if (!string.IsNullOrWhiteSpace(_searchText))
+        {
+            parts.Add($"search \"{_searchText.Trim()}\"");
+        }
+
+        return parts.Count == 0
+            ? "Showing every retained entry"
+            : $"Filters: {string.Join(" | ", parts)}";
+    }
+
+    private static string FormatEntryCount(int count) =>
+        $"{count} entr{(count == 1 ? "y" : "ies")}";
+
+    private void RaiseFilterStateChanged()
+    {
+        OnPropertyChanged(nameof(HasLogHistory));
+        OnPropertyChanged(nameof(HasActiveFilters));
+        OnPropertyChanged(nameof(HasFilterRecoveryAction));
+        OnPropertyChanged(nameof(CanClearLog));
+        OnPropertyChanged(nameof(CanExportVisibleLogs));
+        OnPropertyChanged(nameof(EmptyStateTitle));
+        OnPropertyChanged(nameof(EmptyStateDetail));
+        ClearCommand.NotifyCanExecuteChanged();
+        ClearFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private static string NormalizeFilterValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "All" : value;
+
+    private static SolidColorBrush GetLevelBackground(string level) =>
+        level.ToUpperInvariant() switch
+        {
+            "ERROR" => ErrorLevelBackground,
+            "WARNING" or "WARN" => WarningLevelBackground,
+            "INFO" => InfoLevelBackground,
+            "DEBUG" => DebugLevelBackground,
+            _ => DebugLevelBackground
+        };
 
     private static SolidColorBrush GetLevelForeground(string level) =>
-        new(level.ToUpperInvariant() switch
+        level.ToUpperInvariant() switch
         {
-            "ERROR" => Color.FromRgb(244, 67, 54),
-            "WARNING" or "WARN" => Color.FromRgb(255, 193, 7),
-            "INFO" => Color.FromRgb(88, 166, 255),
-            "DEBUG" => Color.FromRgb(139, 148, 158),
-            _ => Color.FromRgb(139, 148, 158)
-        });
+            "ERROR" => ErrorLevelForeground,
+            "WARNING" or "WARN" => WarningLevelForeground,
+            "INFO" => InfoLevelForeground,
+            "DEBUG" => DebugLevelForeground,
+            _ => DebugLevelForeground
+        };
+
+    private static bool IsLevel(string actual, string expected) =>
+        string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     public void Dispose()
     {

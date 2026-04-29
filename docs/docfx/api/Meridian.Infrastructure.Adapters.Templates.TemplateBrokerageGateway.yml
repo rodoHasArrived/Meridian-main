@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplateBrokerageGateway
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 55
   assemblies:
   - Meridian.Infrastructure
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 71
   assemblies:
   - Meridian.Infrastructure
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 87
   assemblies:
   - Meridian.Infrastructure
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -367,7 +367,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 128
   assemblies:
   - Meridian.Infrastructure
@@ -407,7 +407,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 153
   assemblies:
   - Meridian.Infrastructure
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 179
   assemblies:
   - Meridian.Infrastructure
@@ -484,7 +484,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 188
   assemblies:
   - Meridian.Infrastructure
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 202
   assemblies:
   - Meridian.Infrastructure
@@ -554,7 +554,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 209
   assemblies:
   - Meridian.Infrastructure
@@ -589,7 +589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 216
   assemblies:
   - Meridian.Infrastructure
@@ -627,7 +627,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
     startLine: 231
   assemblies:
   - Meridian.Infrastructure

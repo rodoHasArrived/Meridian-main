@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeRiskValidator
-    path: ../../src/Meridian.Risk/CompositeRiskValidator.cs
+    path: src/Meridian.Risk/CompositeRiskValidator.cs
     startLine: 11
   assemblies:
   - Meridian.Risk
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Risk/CompositeRiskValidator.cs
+    path: src/Meridian.Risk/CompositeRiskValidator.cs
     startLine: 16
   assemblies:
   - Meridian.Risk
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
-    path: ../../src/Meridian.Risk/CompositeRiskValidator.cs
+    path: src/Meridian.Risk/CompositeRiskValidator.cs
     startLine: 23
   assemblies:
   - Meridian.Risk

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotSelectionMethod
-    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fifo
-    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lifo
-    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
     startLine: 18
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hifo
-    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
     startLine: 24
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpecificId
-    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
     startLine: 31
   assemblies:
   - Meridian.Backtesting.Sdk

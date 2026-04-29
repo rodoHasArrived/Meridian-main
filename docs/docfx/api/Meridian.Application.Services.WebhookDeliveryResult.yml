@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookDeliveryResult
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 654
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 654
   assemblies:
   - Meridian.Application
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookName
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 655
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookType
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 656
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 657
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 658
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 659
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SentAt
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 660
   assemblies:
   - Meridian.Application

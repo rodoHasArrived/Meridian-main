@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WideSpreadAlert
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 370
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 370
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 371
   assemblies:
   - Meridian.Application
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 372
   assemblies:
   - Meridian.Application
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 373
   assemblies:
   - Meridian.Application
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 374
   assemblies:
   - Meridian.Application
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadBps
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 375
   assemblies:
   - Meridian.Application
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadPercent
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 376
   assemblies:
   - Meridian.Application
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 377
   assemblies:
   - Meridian.Application
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageSpreadBps
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 378
   assemblies:
   - Meridian.Application
@@ -352,7 +352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 379
   assemblies:
   - Meridian.Application
@@ -381,7 +381,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 380
   assemblies:
   - Meridian.Application
@@ -410,7 +410,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveWideCount
-    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
     startLine: 381
   assemblies:
   - Meridian.Application

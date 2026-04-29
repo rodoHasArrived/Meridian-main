@@ -4,7 +4,7 @@ namespace Meridian.QuantScript.Plotting;
 
 /// <summary>
 /// Collects <see cref="PlotRequest"/> objects emitted by script APIs (e.g.
-/// <see cref="Api.PriceSeries.Plot"/>) during a single execution run and makes
+/// <c>PriceSeries.Plot</c>) during a single execution run and makes
 /// them available to the host UI after the run completes.
 /// </summary>
 /// <remarks>

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterSnapshotStore
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
     startLine: 4
   assemblies:
   - Meridian.Storage
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
     startLine: 6
   assemblies:
   - Meridian.Storage
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
     startLine: 7
   assemblies:
   - Meridian.Storage

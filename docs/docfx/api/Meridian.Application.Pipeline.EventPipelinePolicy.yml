@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventPipelinePolicy
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capacity
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullMode
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 27
   assemblies:
   - Meridian.Core
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableMetrics
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 35
   assemblies:
   - Meridian.Core
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughput
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 44
   assemblies:
   - Meridian.Core
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageBuffer
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 53
   assemblies:
   - Meridian.Core
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceQueue
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 62
   assemblies:
   - Meridian.Core
@@ -367,7 +367,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Logging
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 71
   assemblies:
   - Meridian.Core
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletionQueue
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 81
   assemblies:
   - Meridian.Core
@@ -437,7 +437,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateChannel
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 105
   assemblies:
   - Meridian.Core
@@ -493,7 +493,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToBoundedOptions
-    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
     startLine: 117
   assemblies:
   - Meridian.Core

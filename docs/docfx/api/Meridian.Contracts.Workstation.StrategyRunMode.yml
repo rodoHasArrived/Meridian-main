@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunMode
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backtest
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paper
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Live
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegTMarginModel
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 28
   assemblies:
   - Meridian.Execution
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModelName
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 50
   assemblies:
   - Meridian.Execution
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongInitialRate
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 53
   assemblies:
   - Meridian.Execution
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMaintenanceRate
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 56
   assemblies:
   - Meridian.Execution
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortInitialRate
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 59
   assemblies:
   - Meridian.Execution
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMaintenanceRate
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 62
   assemblies:
   - Meridian.Execution
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateForPosition
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 65
   assemblies:
   - Meridian.Execution
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatePortfolioRequirement
-    path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
+    path: src/Meridian.Execution/Margin/RegTMarginModel.cs
     startLine: 96
   assemblies:
   - Meridian.Execution

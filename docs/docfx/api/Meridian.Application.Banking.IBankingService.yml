@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBankingService
-    path: ../../src/Meridian.Application/Banking/IBankingService.cs
+    path: src/Meridian.Application/Banking/IBankingService.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitiatePaymentAsync
-    path: ../../src/Meridian.Application/Banking/IBankingService.cs
+    path: src/Meridian.Application/Banking/IBankingService.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApprovePaymentAsync
-    path: ../../src/Meridian.Application/Banking/IBankingService.cs
+    path: src/Meridian.Application/Banking/IBankingService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectPaymentAsync
-    path: ../../src/Meridian.Application/Banking/IBankingService.cs
+    path: src/Meridian.Application/Banking/IBankingService.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPendingPaymentsAsync
-    path: ../../src/Meridian.Application/Banking/IBankingService.cs
+    path: src/Meridian.Application/Banking/IBankingService.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SeedBankTransactionsAsync
-    path: ../../src/Meridian.Application/Banking/IBankingService.cs
+    path: src/Meridian.Application/Banking/IBankingService.cs
     startLine: 44
   assemblies:
   - Meridian.Application

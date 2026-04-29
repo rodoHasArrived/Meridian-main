@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleDataResult
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 330
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 332
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 333
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 334
   assemblies:
   - Meridian.Application
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 335
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 336
   assemblies:
   - Meridian.Application
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 337
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteCount
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 338
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdateCount
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 339
   assemblies:
   - Meridian.Application
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarCount
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 340
   assemblies:
   - Meridian.Application
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Events
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 341
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesWritten
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 342
   assemblies:
   - Meridian.Application

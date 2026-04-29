@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSession
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndedAt
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 54
   assemblies:
   - Meridian.Contracts
@@ -414,7 +414,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -457,7 +457,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -500,7 +500,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts
@@ -543,7 +543,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -586,7 +586,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityScore
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -629,7 +629,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestPath
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -672,7 +672,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -715,7 +715,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts

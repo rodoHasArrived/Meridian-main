@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityEventType
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 374
   assemblies:
   - Meridian.Ui.Services
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceGap
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 376
   assemblies:
   - Meridian.Ui.Services
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrder
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 377
   assemblies:
   - Meridian.Ui.Services
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleData
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 378
   assemblies:
   - Meridian.Ui.Services
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationFailure
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 379
   assemblies:
   - Meridian.Ui.Services
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duplicate
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 380
   assemblies:
   - Meridian.Ui.Services
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSwitch
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 381
   assemblies:
   - Meridian.Ui.Services
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 382
   assemblies:
   - Meridian.Ui.Services

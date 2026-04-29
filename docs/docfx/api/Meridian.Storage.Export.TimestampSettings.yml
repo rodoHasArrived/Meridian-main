@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampSettings
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 321
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 323
   assemblies:
   - Meridian.Storage
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timezone
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 326
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeNanoseconds
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 329
   assemblies:
   - Meridian.Storage

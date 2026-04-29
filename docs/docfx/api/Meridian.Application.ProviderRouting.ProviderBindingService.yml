@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderBindingService
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBindingsAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
     startLine: 69
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPoliciesAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
     startLine: 89
   assemblies:
   - Meridian.Application

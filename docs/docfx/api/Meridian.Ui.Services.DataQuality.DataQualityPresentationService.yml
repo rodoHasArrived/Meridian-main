@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityPresentationService
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderComparisonAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Services
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSymbolDrilldown
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
     startLine: 80
   assemblies:
   - Meridian.Ui.Services

@@ -18,6 +18,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -97,17 +98,47 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
         builder.Services.AddSingleton<LoginSessionService>();
         builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        builder.Services.AddSingleton(PromotionRecordStoreOptions.Default);
+        builder.Services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         builder.Services.AddSingleton<PortfolioReadService>();
         builder.Services.AddSingleton<LedgerReadService>();
         builder.Services.AddSingleton<StrategyRunReadService>();
         builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        builder.Services.AddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
+        builder.Services.AddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
+        builder.Services.AddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
+        builder.Services.AddSingleton<IExternalStatementSource, NullExternalStatementSource>();
+        builder.Services.AddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<StrategyRunContinuityService>();
+        builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
+        builder.Services.AddSingleton<BrokeragePortfolioSyncService>();
+        builder.Services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
+        builder.Services.AddSingleton<Dk1TrustGateReadinessService>();
+        builder.Services.AddSingleton<TradingOperatorReadinessService>();
+        builder.Services.AddSingleton<StrategyRunReviewPacketService>();
+        builder.Services.AddWorkflowLibrary();
+        builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
+        // Durable promotion-record store is required by PromotionService; without it
+        // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
+        builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
+            new JsonlPromotionRecordStore(
+                Path.Combine(contentRootPath, "data", "promotions"),
+                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
+        builder.Services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService, Meridian.Application.SecurityMaster.SecurityMasterWorkbenchQueryService>();
+        builder.Services.AddSingleton(ExecutionAuditTrailOptions.Default);
+        builder.Services.AddSingleton<ExecutionAuditTrailService>();
+        builder.Services.AddSingleton(ExecutionOperatorControlOptions.Default);
+        builder.Services.AddSingleton<ExecutionOperatorControlService>();
+        builder.Services.AddSingleton<IPaperSessionStore>(sp =>
+            new JsonlFilePaperSessionStore(
+                Path.Combine(AppContext.BaseDirectory, "data", "execution", "sessions"),
+                sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
 
@@ -127,7 +158,10 @@ public sealed class UiServer : IAsyncDisposable
                 gateway,
                 logger,
                 riskValidator: risk,
-                portfolioState: portfolio);
+                operatorControls: sp.GetService<ExecutionOperatorControlService>(),
+                auditTrail: sp.GetService<ExecutionAuditTrailService>(),
+                portfolioState: portfolio,
+                sessionPersistence: sp.GetService<PaperSessionPersistenceService>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

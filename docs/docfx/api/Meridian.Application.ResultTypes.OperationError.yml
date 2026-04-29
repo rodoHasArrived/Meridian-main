@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationError
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Detail
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exception
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromException
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validation
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -390,7 +390,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimit
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -426,7 +426,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeout
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -462,7 +462,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connection
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 69
   assemblies:
   - Meridian.Application
@@ -498,7 +498,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithContext
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -534,7 +534,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Application/Results/OperationError.cs
+    path: src/Meridian.Application/Results/OperationError.cs
     startLine: 86
   assemblies:
   - Meridian.Application

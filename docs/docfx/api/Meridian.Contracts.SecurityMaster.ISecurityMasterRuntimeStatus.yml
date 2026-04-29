@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterRuntimeStatus
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailable
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailabilityDescription
-    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+    path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts

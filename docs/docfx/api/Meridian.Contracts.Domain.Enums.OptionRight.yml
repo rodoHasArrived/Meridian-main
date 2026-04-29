@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionRight
-    path: ../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+    path: src/Meridian.Contracts/Domain/Enums/OptionRight.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Call
-    path: ../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+    path: src/Meridian.Contracts/Domain/Enums/OptionRight.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Put
-    path: ../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+    path: src/Meridian.Contracts/Domain/Enums/OptionRight.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts

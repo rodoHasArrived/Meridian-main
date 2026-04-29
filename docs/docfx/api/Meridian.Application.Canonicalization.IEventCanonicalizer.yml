@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEventCanonicalizer
-    path: ../../src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
+    path: src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Canonicalize
-    path: ../../src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
+    path: src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
     startLine: 19
   assemblies:
   - Meridian.Application

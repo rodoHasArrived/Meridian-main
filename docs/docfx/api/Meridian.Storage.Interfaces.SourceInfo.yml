@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceInfo
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 51
   assemblies:
   - Meridian.Storage
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 51
   assemblies:
   - Meridian.Storage
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 52
   assemblies:
   - Meridian.Storage
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 53
   assemblies:
   - Meridian.Storage
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 54
   assemblies:
   - Meridian.Storage
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 55
   assemblies:
   - Meridian.Storage
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClasses
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 56
   assemblies:
   - Meridian.Storage
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 57
   assemblies:
   - Meridian.Storage
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 58
   assemblies:
   - Meridian.Storage
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reliability
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 59
   assemblies:
   - Meridian.Storage
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostPerEvent
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 60
   assemblies:
   - Meridian.Storage
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 61
   assemblies:
   - Meridian.Storage

@@ -1,10 +1,48 @@
 # QuantScriptEnvironment Blueprint — Brainstorm & Critical Evaluation
 
-**Date:** 2026-03-18 (updated 2026-04-16) | **Mode:** Problem-Focused + UX/Information Design
+**Date:** 2026-03-18 (updated 2026-04-21) | **Mode:** Problem-Focused + UX/Information Design
 **Input:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint)
 **Focus:** (1) Design improvements, (2) Usefulness audit, (3) Interface maximisation
 
 > **Previous sessions covered:** L3 inference, Python SDK, DuckDB, symbol health, VWAP/TWAP algorithms, provider SLA. **This session:** First deep evaluation of the QuantScript blueprint — covering gaps in the design, honest usefulness scoring, and interface-level rethinking to maximise versatility and ease of use across all three personas.
+
+---
+
+## 2026-04-21 Update — Repo Reality Check After Baseline Delivery
+
+This document should now be read as a **historical critique plus follow-on backlog**, not as the authoritative current-state QuantScript specification. Since the original March brainstorm and the April 16 implementation-readiness addendum, QuantScript moved from blueprint to implemented baseline across `src/Meridian.QuantScript/`, `src/Meridian.Wpf/Views/QuantScriptPage.xaml`, `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs`, notebook persistence in `src/Meridian.QuantScript/Documents/`, and checkpoint-aware cell replay in `src/Meridian.QuantScript/Compilation/NotebookExecutionSession.cs`.
+
+The authoritative current-state references are:
+
+- `docs/plans/quant-script-environment-blueprint.md`
+- `docs/plans/quant-script-page-implementation-guide.md`
+
+### What has already landed in the repository
+
+| Brainstorm theme | 2026-04-21 status | Evidence / note |
+|---|---|---|
+| Cell-based execution | **Implemented baseline** | Notebook documents, multi-cell ViewModel flow, and stale-cell replay are already in repo. |
+| Low-boilerplate backtest path | **Partially implemented** | `BacktestProxy` already supports a fluent path via `WithSymbols(...).OnBar(...).RunAsync()` backed by `LambdaBacktestStrategy`. |
+| Flattened return-series stats and plotting | **Partially implemented** | `ReturnSeries` already owns instance-level stats plus `Plot()`, `PlotCumulative()`, and `PlotDrawdown()` helpers. |
+| Script and notebook persistence | **Implemented baseline** | The current page and notebook store persist reusable QuantScript artifacts, which removes one of the biggest adoption blockers called out below. |
+| Async-first script APIs | **Implemented in follow-on wave** | `DataProxy` now exposes async overloads across the current data surface, and `BacktestProxy` now leads with `RunAsync()`. |
+| Runtime `Param<T>()` registration | **Implemented in follow-on wave** | Static discovery now seeds the sidebar, while runtime `Param<T>()` metadata becomes authoritative after execution. |
+| Local run history plus shared compare reuse | **Implemented in follow-on wave** | Every execution is stored locally under the resolved data root, and exact single-backtest runs reuse Strategy Runs browser/detail/compare flows. |
+| Template gallery | **Implemented in follow-on wave** | The page now ships a file-backed template catalog with a toolbar entry point and Local Data template rail. |
+
+### What remains the highest-value post-follow-on backlog
+
+- **Multi-backtest publication stays intentionally constrained.** Executions that capture more than one `BacktestResult` remain local-only and emit a warning instead of publishing ambiguous shared Research runs.
+- **Parent/child run lineage is still absent.** QuantScript does not yet establish explicit ancestry between related reruns or parameter sweeps.
+- **Richer multi-series alignment stays optional.** The heavier `AlignedSeries` / dataframe-style surface is still research-depth work, not a blocker for the shipped baseline.
+- **Optimization-specific UX is still open.** The current run history and Strategy Runs reuse solve comparison for ordinary backtest iterations, but not heatmaps or dedicated parameter-sweep surfaces.
+- **Beginner guidance can still grow.** The built-in templates improve the first-run experience, but a larger curated library would still raise adoption.
+
+### Important interpretation note
+
+The April 16 handoff section below deliberately narrowed MVP scope and deferred notebook-style cells to a later phase. The repository has since moved past that specific plan and implemented notebook execution earlier than this brainstorm expected. As a result, statements later in this file such as "No cell-based execution" or similar gap language should be read as **historical pre-implementation observations**, not current product-state claims.
+
+Keep the remainder of this document for rationale, prioritisation logic, and follow-on idea quality. When this evaluation conflicts with the newer blueprint or page implementation guide, the newer docs win.
 
 ---
 

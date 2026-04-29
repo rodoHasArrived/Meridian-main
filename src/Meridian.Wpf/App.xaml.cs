@@ -3,40 +3,45 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using System.Windows.Forms;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Meridian.Application.Services;
+using System.Windows.Threading;
 using Meridian.Application.EnvironmentDesign;
-using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
+using Meridian.Application.SecurityMaster;
+using Meridian.Application.Services;
 using Meridian.Backtesting;
+using Meridian.Backtesting.Engine;
 using Meridian.Contracts.Domain.Enums;
-using Meridian.Execution.Sdk;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
+using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
+using Meridian.Storage;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Services;
 using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Ui.Shared.Services;
-using Meridian.Wpf.Services;
-using Meridian.Wpf.Contracts;
-using Meridian.Wpf.ViewModels;
-using WpfServices = Meridian.Wpf.Services;
-using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
+using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf;
 
@@ -46,8 +51,8 @@ namespace Meridian.Wpf;
 /// </summary>
 public partial class App : System.Windows.Application
 {
-    private static bool     _isFirstRun;
-    private static bool     _isFixtureMode;
+    private static bool _isFirstRun;
+    private static bool _isFixtureMode;
     private static string[] _launchArgs = [];
     private IHost? _host;
 
@@ -110,6 +115,14 @@ public partial class App : System.Windows.Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        _launchArgs = e.Args;
+        var launchRequest = DesktopLaunchArguments.Parse(e.Args);
+        if (launchRequest.HasActions && WpfServices.SingleInstanceService.TrySendArgsToPrimary(e.Args, timeoutMs: 5000))
+        {
+            Shutdown();
+            return;
+        }
+
         // Register the AppUserModelID before any window is shown so that the
         // Windows shell (taskbar, JumpList, toast activations) maps all
         // notifications back to this process identity.
@@ -121,7 +134,6 @@ public partial class App : System.Windows.Application
 
         // Enforce single instance: if another Meridian window is already running,
         // forward the launch args to it via named pipe and exit cleanly.
-        _launchArgs = e.Args;
         if (!WpfServices.SingleInstanceService.Instance.TryAcquire())
         {
             WpfServices.SingleInstanceService.SendArgsToPrimary(e.Args);
@@ -131,11 +143,6 @@ public partial class App : System.Windows.Application
 
         // Detect fixture mode from --fixture arg or MDC_FIXTURE_MODE env var
         _isFixtureMode = DetectFixtureMode(e.Args);
-
-        // Parse any deep-link navigation tag from launch args (e.g. --navigate Backfill).
-        // Toast balloon-tip clicks raise BalloonTipClicked in-process, but external
-        // activations (future WinRT toasts, shortcuts) can pass this argument.
-        var deepLinkTag = ParseDeepLinkTag(e.Args);
 
         // Configure the host with dependency injection
         _host = Host.CreateDefaultBuilder()
@@ -162,46 +169,17 @@ public partial class App : System.Windows.Application
         mainWindow.Show();
         mainWindow.ForceStartupWindowRecovery();
 
-        // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
-        WpfServices.JumpListService.Instance.Register();
-
-        // Begin listening for args forwarded from secondary instances (jump list re-launch).
+        // Begin listening for args forwarded from secondary instances as soon as
+        // the main window exists so automation deep links do not race startup work.
         WpfServices.SingleInstanceService.Instance.StartListening();
 
-        // If a deep-link page was requested, navigate immediately after the window opens.
-        if (!string.IsNullOrEmpty(deepLinkTag))
-            WpfServices.NavigationService.Instance.NavigateTo(deepLinkTag);
+        // Register taskbar jump list tasks.
+        WpfServices.JumpListService.Instance.Register();
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
-    }
-
-    /// <summary>
-    /// Parses a deep-link navigation tag from command-line args.
-    /// Supports <c>--navigate &lt;PageTag&gt;</c> (e.g. <c>--navigate Backfill</c>)
-    /// and <c>--page=&lt;PageTag&gt;</c> (e.g. <c>--page=Dashboard</c>, used by jump list tasks).
-    /// </summary>
-    private static string? ParseDeepLinkTag(string[] args)
-    {
-        for (var i = 0; i < args.Length - 1; i++)
-        {
-            if (string.Equals(args[i], "--navigate", StringComparison.OrdinalIgnoreCase))
-                return args[i + 1];
-        }
-
-        // Also support --page=PageTag format used by taskbar jump list tasks.
-        foreach (var arg in args)
-        {
-            if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
-            {
-                var tag = arg["--page=".Length..];
-                if (!string.IsNullOrWhiteSpace(tag)) return tag;
-            }
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -291,6 +269,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
+        services.AddSingleton<Meridian.Application.UI.ConfigStore>();
 
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton<WpfServices.BackendServiceManager>(_ => WpfServices.BackendServiceManager.Instance);
@@ -301,6 +280,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.RunMatService>(_ => WpfServices.RunMatService.Instance);
         services.AddSingleton<ProviderManagementService>(_ => ProviderManagementService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
+        services.AddSingleton<IAdminMaintenanceService>(sp => sp.GetRequiredService<AdminMaintenanceServiceBase>());
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
         services.AddSingleton<SearchService>(_ => SearchService.Instance);
         services.AddSingleton<WpfServices.FundAccountReadService>();
@@ -308,7 +288,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ReconciliationReadService>();
         services.AddSingleton<WpfServices.CashFinancingReadService>();
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationSecurityMasterApiClient, WpfServices.WorkstationSecurityMasterApiClient>();
         services.AddSingleton<WpfServices.IWorkstationResearchBriefingApiClient, WpfServices.WorkstationResearchBriefingApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
         services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
 
@@ -383,12 +365,27 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
         services.AddSingleton<Meridian.Wpf.Services.BacktestDataAvailabilityService>();
+        services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
+            sp.GetRequiredService<ILogger<BatchBacktestService>>(),
+            request =>
+            {
+                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
+                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
+                return new BacktestEngine(
+                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
+                    catalogService,
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>(),
+                    sp.GetService<IBacktestPreflightService>());
+            }));
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.BatchBacktestViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.WorkflowLibraryViewModel>();
 
         // ── Credential management ────────────────────────────────────────────
         services.AddSingleton<WpfServices.CredentialService>();
@@ -401,11 +398,21 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
 
         // ── QuantScript services ─────────────────────────────────────────────
-        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
+        services.AddSingleton<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            return Microsoft.Extensions.Options.Options.Create(new Meridian.QuantScript.QuantScriptOptions
+            {
+                DefaultDataRoot = resolvedDataRoot,
+                ScriptsDirectory = Path.Combine(AppContext.BaseDirectory, "scripts")
+            });
+        });
         services.AddSingleton(sp =>
         {
-            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
-            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>().Value;
+            return new Meridian.Storage.Store.JsonlMarketDataStore(options.DefaultDataRoot);
         });
         services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
                               Meridian.QuantScript.Api.QuantDataContext>();
@@ -419,6 +426,8 @@ public partial class App : System.Windows.Application
                 sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>().Value));
         services.AddSingleton<WpfServices.IQuantScriptLayoutService,
                               WpfServices.QuantScriptLayoutService>();
+        services.AddSingleton<WpfServices.QuantScriptTemplateCatalogService>();
+        services.AddSingleton<WpfServices.QuantScriptExecutionHistoryService>();
         services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
@@ -496,9 +505,26 @@ public partial class App : System.Windows.Application
         });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.AddSingleton(PromotionRecordStoreOptions.Default);
+        services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<ReconciliationProjectionService>();
+        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.AddSingleton<CashFlowProjectionService>();
+        services.AddSingleton<StrategyRunContinuityService>();
+        services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.AddSingleton<BrokeragePortfolioSyncService>();
+        services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
+        services.AddSingleton<Dk1TrustGateReadinessService>();
+        services.AddSingleton<TradingOperatorReadinessService>();
+        services.AddSingleton<StrategyRunReviewPacketService>();
+        services.AddWorkflowLibrary();
+        services.AddSingleton<WorkstationWorkflowSummaryService>();
+        services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
+        services.AddSingleton<PromotionService>();
         services.AddSingleton<NavAttributionService>();
         services.AddSingleton<ReportGenerationService>();
         services.AddSingleton<FundOperationsWorkspaceReadService>();
@@ -558,17 +584,14 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
 
-            // Handle --start-collector launch arg now that connection monitoring is active.
-            if (Array.Exists(_launchArgs, a => string.Equals(a, "--start-collector", StringComparison.OrdinalIgnoreCase)))
-                await StartCollectorFromLaunchArgAsync();
-
-            // Notify if running in fixture mode
+            // Notify if running in fixture/demo mode
             if (_isFixtureMode)
             {
-                WpfServices.LoggingService.Instance.LogWarning("Running in FIXTURE MODE — using offline mock data");
-                await WpfServices.NotificationService.Instance.NotifyWarningAsync(
-                    "Fixture Mode Active",
-                    "Application is using mock data for offline development");
+                WpfServices.LoggingService.Instance.LogInfo("Running in demo data mode using offline sample data");
+                await WpfServices.NotificationService.Instance.NotifyAsync(
+                    "Demo Data Active",
+                    "Application is using sample data for offline review",
+                    NotificationType.Info);
             }
 
             // Log successful startup
@@ -624,32 +647,6 @@ public partial class App : System.Windows.Application
         catch (Exception)
         {
             // Continue - app should still work without background services
-        }
-    }
-
-    /// <summary>
-    /// Starts the data collector as requested by the <c>--start-collector</c> launch arg.
-    /// Runs after all services are initialised so connection monitoring is active.
-    /// </summary>
-    private static async Task StartCollectorFromLaunchArgAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            var provider = WpfServices.ConnectionService.Instance.CurrentProvider ?? "default";
-            var success  = await WpfServices.ConnectionService.Instance.ConnectAsync(provider, ct);
-
-            WpfServices.NotificationService.Instance.ShowNotification(
-                success ? "Collector Started" : "Start Failed",
-                success
-                    ? "Data collection started via taskbar jump list."
-                    : "Failed to start collector — check provider settings.",
-                success
-                    ? NotificationType.Success
-                    : NotificationType.Error,
-                success ? 5000 : 0);
-        }
-        catch (Exception)
-        {
         }
     }
 

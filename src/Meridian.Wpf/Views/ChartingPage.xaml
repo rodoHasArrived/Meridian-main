@@ -34,47 +34,90 @@
                         <ComboBox x:Name="SymbolCombo" MinWidth="120"
                                   ItemsSource="{Binding SymbolItems}"
                                   DisplayMemberPath="Symbol"
-                                  SelectionChanged="Symbol_SelectionChanged" />
+                                  SelectedValuePath="Symbol"
+                                  SelectedValue="{Binding SelectedSymbol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  AutomationProperties.AutomationId="ChartSymbolSelector" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
                         <TextBlock Text="Timeframe" Style="{StaticResource FormLabelStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <ComboBox x:Name="TimeframeCombo" MinWidth="100" SelectedIndex="6" SelectionChanged="Timeframe_SelectionChanged">
-                            <ComboBoxItem Content="1 Min" Tag="Minute1" />
-                            <ComboBoxItem Content="5 Min" Tag="Minute5" />
-                            <ComboBoxItem Content="15 Min" Tag="Minute15" />
-                            <ComboBoxItem Content="30 Min" Tag="Minute30" />
-                            <ComboBoxItem Content="1 Hour" Tag="Hour1" />
-                            <ComboBoxItem Content="4 Hour" Tag="Hour4" />
-                            <ComboBoxItem Content="Daily" Tag="Daily" />
-                            <ComboBoxItem Content="Weekly" Tag="Weekly" />
-                            <ComboBoxItem Content="Monthly" Tag="Monthly" />
-                        </ComboBox>
+                        <ComboBox x:Name="TimeframeCombo" MinWidth="100"
+                                  ItemsSource="{Binding TimeframeOptions}"
+                                  DisplayMemberPath="Label"
+                                  SelectedItem="{Binding SelectedTimeframeOption, Mode=TwoWay}"
+                                  AutomationProperties.AutomationId="ChartTimeframeSelector" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
                         <TextBlock Text="From" Style="{StaticResource FormLabelStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <DatePicker x:Name="FromDatePicker" SelectedDateChanged="DatePicker_Changed" />
+                        <DatePicker x:Name="FromDatePicker"
+                                    SelectedDate="{Binding FromDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    AutomationProperties.AutomationId="ChartFromDatePicker" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
                         <TextBlock Text="To" Style="{StaticResource FormLabelStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <DatePicker x:Name="ToDatePicker" SelectedDateChanged="DatePicker_Changed" />
+                        <DatePicker x:Name="ToDatePicker"
+                                    SelectedDate="{Binding ToDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    AutomationProperties.AutomationId="ChartToDatePicker" />
                     </StackPanel>
 
-                    <Button Content="Refresh" Click="Refresh_Click" Margin="0,0,8,4" Style="{StaticResource PrimaryButtonStyle}" />
+                    <Button Content="Refresh"
+                            Command="{Binding RefreshChartCommand}"
+                            Margin="0,0,8,4"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            AutomationProperties.AutomationId="ChartRefreshButton" />
 
                     <StackPanel Orientation="Horizontal" Margin="16,0,0,4">
                         <TextBlock Text="Indicators:" Style="{StaticResource FormLabelStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <CheckBox Content="SMA" Click="Indicator_Click" Tag="sma" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
-                        <CheckBox Content="EMA" Click="Indicator_Click" Tag="ema" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
-                        <CheckBox Content="RSI" Click="Indicator_Click" Tag="rsi" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
-                        <CheckBox Content="MACD" Click="Indicator_Click" Tag="macd" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
-                        <CheckBox Content="BB" Click="Indicator_Click" Tag="bb" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
-                        <CheckBox Content="VWAP" Click="Indicator_Click" Tag="vwap" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
-                        <CheckBox Content="ATR" Click="Indicator_Click" Tag="atr" Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,8,0" />
+                        <ItemsControl ItemsSource="{Binding IndicatorToggles}"
+                                      AutomationProperties.AutomationId="ChartIndicatorToggles">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Label}"
+                                              IsChecked="{Binding IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              Foreground="{DynamicResource ConsoleTextBrush}"
+                                              Margin="0,0,8,0" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </WrapPanel>
+
+                <Border AutomationProperties.AutomationId="ChartSetupReadinessCard"
+                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding ChartSetupTitle}"
+                                       Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding ChartSetupDetail}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ChartSetupScopeText}"
+                                   FontFamily="{StaticResource MeridianDataFontFamily}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="16,0,0,0" />
+                    </Grid>
+                </Border>
             </StackPanel>
         </Border>
 
@@ -93,10 +136,10 @@
                 </Grid.RowDefinitions>
 
                 <!-- Price Header -->
-                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,8" Padding="16">
+                <Border Grid.Row="0" Style="{StaticResource ChartCardStyle}" Margin="0,0,0,8" Padding="16">
                     <StackPanel Orientation="Horizontal">
                         <StackPanel Margin="0,0,32,0">
-                            <TextBlock Text="{Binding CurrentPrice}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource ConsoleTextBrush}" />
+                            <TextBlock Text="{Binding CurrentPrice}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TopBarTextBrush}" />
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding PriceChange}" FontSize="14" Margin="0,0,8,0" Foreground="{Binding PriceChangeBrush}" />
                                 <TextBlock Text="{Binding PriceChangePercent}" FontSize="14" Foreground="{Binding PriceChangeBrush}" />
@@ -104,48 +147,49 @@
                         </StackPanel>
 
                         <UniformGrid Rows="2" Columns="4" Margin="0,0,32,0">
-                            <TextBlock Text="O" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                            <TextBlock Text="{Binding OpenPrice}" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource ConsoleTextBrush}" />
-                            <TextBlock Text="Volume" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                            <TextBlock Text="{Binding Volume}" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource ConsoleTextBrush}" />
-                            <TextBlock Text="H" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                            <TextBlock Text="{Binding HighPrice}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource SuccessColorBrush}" />
-                            <TextBlock Text="L" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                            <TextBlock Text="{Binding LowPrice}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource ErrorColorBrush}" />
+                            <TextBlock Text="O" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" />
+                            <TextBlock Text="{Binding OpenPrice}" FontSize="12" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource TopBarTextBrush}" />
+                            <TextBlock Text="Volume" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" />
+                            <TextBlock Text="{Binding Volume}" FontSize="12" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource TopBarTextBrush}" />
+                            <TextBlock Text="H" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" />
+                            <TextBlock Text="{Binding HighPrice}" FontSize="12" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource ChartEquityBrush}" />
+                            <TextBlock Text="L" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" />
+                            <TextBlock Text="{Binding LowPrice}" FontSize="12" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource ChartDrawdownBrush}" />
                         </UniformGrid>
 
-                        <TextBlock Text="{Binding ActiveIndicatorsText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding ActiveIndicatorsText}" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
                 <!-- Candlestick Chart (LiveCharts2 CandlesticksSeries) -->
-                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,8">
-                    <Grid>
-                        <lvc:CartesianChart Series="{Binding CandleSeries}"
-                                            XAxes="{Binding CandleXAxes}"
-                                            YAxes="{Binding CandleYAxes}"
-                                            ZoomMode="X"
-                                            LegendPosition="Hidden"
-                                            TooltipPosition="Top"
-                                            Background="Transparent" />
+                <Border Grid.Row="1" Style="{StaticResource ChartCardStyle}" Margin="0,0,0,8" Padding="12">
+                    <Border Style="{StaticResource ChartPlotAreaStyle}">
+                        <Grid>
+                            <lvc:CartesianChart Series="{Binding CandleSeries}"
+                                                XAxes="{Binding CandleXAxes}"
+                                                YAxes="{Binding CandleYAxes}"
+                                                ZoomMode="X"
+                                                LegendPosition="Hidden"
+                                                TooltipPosition="Top"
+                                                Background="Transparent" />
 
-                        <TextBlock Text="{Binding NoChartDataMessage}"
-                                   Visibility="{Binding NoChartDataVisible}"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontStyle="Italic" />
-                    </Grid>
+                            <TextBlock Text="{Binding NoChartDataMessage}"
+                                       Visibility="{Binding NoChartDataVisible}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Foreground="{StaticResource ChartAxisLabelBrush}" FontStyle="Italic" />
+                        </Grid>
+                    </Border>
                 </Border>
 
                 <!-- Volume Chart -->
-                <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                <Border Grid.Row="2" Style="{StaticResource ChartCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Volume" FontWeight="SemiBold" FontSize="14"
-                                   Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,0,8" />
+                        <TextBlock Grid.Row="0" Text="Volume" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,8" />
 
                         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding VolumeItems}">
@@ -171,10 +215,9 @@
             <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!-- Volume Profile -->
-                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,8">
+                    <Border Style="{StaticResource ChartCardStyle}" Margin="0,0,0,8">
                         <StackPanel>
-                            <TextBlock Text="Volume Profile" FontWeight="SemiBold" FontSize="14"
-                                       Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,0,12" />
+                            <TextBlock Text="Volume Profile" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,12" />
 
                             <ItemsControl ItemsSource="{Binding VolumeProfileItems}" MaxHeight="300">
                                 <ItemsControl.ItemTemplate>
@@ -184,8 +227,8 @@
                                                 <ColumnDefinition Width="55" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding PriceLabel}" FontSize="10" FontFamily="Consolas"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="0" Text="{Binding PriceLabel}" FontSize="10" FontFamily="{StaticResource MeridianDataFontFamily}"
+                                                       Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" />
                                             <Border Grid.Column="1" Height="10" HorizontalAlignment="Left"
                                                     Width="{Binding BarWidth}" Background="{Binding BarBrush}" CornerRadius="2" />
                                         </Grid>
@@ -195,31 +238,30 @@
 
                             <TextBlock Text="No volume profile data"
                                        Visibility="{Binding NoVolumeProfileVisible}"
-                                       HorizontalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" Foreground="{StaticResource ChartAxisLabelBrush}"
                                        FontStyle="Italic" FontSize="12" />
 
                             <StackPanel Margin="0,8,0,0">
                                 <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="POC:" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Width="35" />
-                                    <TextBlock Text="{Binding Poc}" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource ConsoleTextBrush}" />
+                                    <TextBlock Text="POC:" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Width="35" />
+                                    <TextBlock Text="{Binding Poc}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource TopBarTextBrush}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="VAH:" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Width="35" />
-                                    <TextBlock Text="{Binding Vah}" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource ConsoleTextBrush}" />
+                                    <TextBlock Text="VAH:" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Width="35" />
+                                    <TextBlock Text="{Binding Vah}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource TopBarTextBrush}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="VAL:" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Width="35" />
-                                    <TextBlock Text="{Binding Val}" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource ConsoleTextBrush}" />
+                                    <TextBlock Text="VAL:" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Width="35" />
+                                    <TextBlock Text="{Binding Val}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}" Foreground="{StaticResource TopBarTextBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- Indicator Values -->
-                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,8">
+                    <Border Style="{StaticResource ChartCardStyle}" Margin="0,0,0,8">
                         <StackPanel>
-                            <TextBlock Text="Indicator Values" FontWeight="SemiBold" FontSize="14"
-                                       Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,0,12" />
+                            <TextBlock Text="Indicator Values" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,12" />
 
                             <ItemsControl ItemsSource="{Binding IndicatorValues}" MaxHeight="250">
                                 <ItemsControl.ItemTemplate>
@@ -229,8 +271,8 @@
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="{DynamicResource ConsoleTextBrush}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" FontFamily="Consolas"
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12" Foreground="{StaticResource TopBarTextBrush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" FontFamily="{StaticResource MeridianDataFontFamily}"
                                                        Foreground="{Binding ValueBrush}" FontWeight="SemiBold" />
                                         </Grid>
                                     </DataTemplate>
@@ -239,16 +281,15 @@
 
                             <TextBlock Text="Select indicators from the toolbar"
                                        Visibility="{Binding NoIndicatorsVisible}"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontStyle="Italic"
+                                       Foreground="{StaticResource ChartAxisLabelBrush}" FontStyle="Italic"
                                        FontSize="12" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>
 
                     <!-- Period Statistics -->
-                    <Border Style="{StaticResource CardStyle}">
+                    <Border Style="{StaticResource ChartCardStyle}">
                         <StackPanel>
-                            <TextBlock Text="Period Statistics" FontWeight="SemiBold" FontSize="14"
-                                       Foreground="{DynamicResource ConsoleTextBrush}" Margin="0,0,0,12" />
+                            <TextBlock Text="Period Statistics" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,12" />
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -261,18 +302,18 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="High" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,2" />
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PeriodHigh}" FontSize="11" FontFamily="Consolas"
-                                           Foreground="{StaticResource SuccessColorBrush}" HorizontalAlignment="Right" Margin="0,2" />
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Low" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,2" />
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PeriodLow}" FontSize="11" FontFamily="Consolas"
-                                           Foreground="{StaticResource ErrorColorBrush}" HorizontalAlignment="Right" Margin="0,2" />
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Volume" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,2" />
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PeriodVolume}" FontSize="11" FontFamily="Consolas"
-                                           Foreground="{DynamicResource ConsoleTextBrush}" HorizontalAlignment="Right" Margin="0,2" />
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Candles" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,2" />
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CandleCount}" FontSize="11" FontFamily="Consolas"
-                                           Foreground="{DynamicResource ConsoleTextBrush}" HorizontalAlignment="Right" Margin="0,2" />
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="High" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,2" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PeriodHigh}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}"
+                                           Foreground="{StaticResource ChartEquityBrush}" HorizontalAlignment="Right" Margin="0,2" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Low" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,2" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PeriodLow}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}"
+                                           Foreground="{StaticResource ChartDrawdownBrush}" HorizontalAlignment="Right" Margin="0,2" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Volume" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,2" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PeriodVolume}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}"
+                                           Foreground="{StaticResource TopBarTextBrush}" HorizontalAlignment="Right" Margin="0,2" />
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Candles" FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,2" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CandleCount}" FontSize="11" FontFamily="{StaticResource MeridianDataFontFamily}"
+                                           Foreground="{StaticResource TopBarTextBrush}" HorizontalAlignment="Right" Margin="0,2" />
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -281,9 +322,9 @@
         </Grid>
 
         <!-- Loading Overlay -->
-        <Border Grid.RowSpan="2" Visibility="{Binding LoadingVisible}" Background="#CC1a1a2e">
+        <Border Grid.RowSpan="2" Visibility="{Binding LoadingVisible}" Background="{StaticResource ChartLoadingOverlayBrush}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Loading chart data..." Foreground="{DynamicResource ConsoleTextBrush}" FontSize="14" />
+                <TextBlock Text="Loading chart data..." Foreground="{StaticResource TopBarTextBrush}" FontSize="14" />
             </StackPanel>
         </Border>
     </Grid>

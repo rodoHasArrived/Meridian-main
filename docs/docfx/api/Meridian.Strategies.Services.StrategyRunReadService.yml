@@ -5,7 +5,7 @@ items:
   id: StrategyRunReadService
   parent: Meridian.Strategies.Services
   children:
-  - Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)
+  - Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService,Meridian.Strategies.Interfaces.IPromotionRecordStore)
   - Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
   - Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync(System.String,System.Threading.CancellationToken)
@@ -29,8 +29,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunReadService
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 8
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 10
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -48,16 +48,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)
-  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)
-  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)'
+- uid: Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService,Meridian.Strategies.Interfaces.IPromotionRecordStore)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService,Meridian.Strategies.Interfaces.IPromotionRecordStore)
+  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService,Meridian.Strategies.Interfaces.IPromotionRecordStore)'
   parent: Meridian.Strategies.Services.StrategyRunReadService
   langs:
   - csharp
   - vb
-  name: StrategyRunReadService(IStrategyRepository, PortfolioReadService, LedgerReadService)
-  nameWithType: StrategyRunReadService.StrategyRunReadService(IStrategyRepository, PortfolioReadService, LedgerReadService)
-  fullName: Meridian.Strategies.Services.StrategyRunReadService.StrategyRunReadService(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Services.PortfolioReadService, Meridian.Strategies.Services.LedgerReadService)
+  name: StrategyRunReadService(IStrategyRepository, PortfolioReadService, LedgerReadService, IPromotionRecordStore?)
+  nameWithType: StrategyRunReadService.StrategyRunReadService(IStrategyRepository, PortfolioReadService, LedgerReadService, IPromotionRecordStore?)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.StrategyRunReadService(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Services.PortfolioReadService, Meridian.Strategies.Services.LedgerReadService, Meridian.Strategies.Interfaces.IPromotionRecordStore?)
   type: Constructor
   source:
     remote:
@@ -65,13 +65,13 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 14
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 17
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
   syntax:
-    content: public StrategyRunReadService(IStrategyRepository repository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService)
+    content: public StrategyRunReadService(IStrategyRepository repository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService, IPromotionRecordStore? promotionRecordStore = null)
     parameters:
     - id: repository
       type: Meridian.Strategies.Interfaces.IStrategyRepository
@@ -79,11 +79,13 @@ items:
       type: Meridian.Strategies.Services.PortfolioReadService
     - id: ledgerReadService
       type: Meridian.Strategies.Services.LedgerReadService
-    content.vb: Public Sub New(repository As IStrategyRepository, portfolioReadService As PortfolioReadService, ledgerReadService As LedgerReadService)
+    - id: promotionRecordStore
+      type: Meridian.Strategies.Interfaces.IPromotionRecordStore
+    content.vb: Public Sub New(repository As IStrategyRepository, portfolioReadService As PortfolioReadService, ledgerReadService As LedgerReadService, promotionRecordStore As IPromotionRecordStore = Nothing)
   overload: Meridian.Strategies.Services.StrategyRunReadService.#ctor*
-  nameWithType.vb: StrategyRunReadService.New(IStrategyRepository, PortfolioReadService, LedgerReadService)
-  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.New(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Services.PortfolioReadService, Meridian.Strategies.Services.LedgerReadService)
-  name.vb: New(IStrategyRepository, PortfolioReadService, LedgerReadService)
+  nameWithType.vb: StrategyRunReadService.New(IStrategyRepository, PortfolioReadService, LedgerReadService, IPromotionRecordStore)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.New(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Services.PortfolioReadService, Meridian.Strategies.Services.LedgerReadService, Meridian.Strategies.Interfaces.IPromotionRecordStore)
+  name.vb: New(IStrategyRepository, PortfolioReadService, LedgerReadService, IPromotionRecordStore)
 - uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
   commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
   id: GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
@@ -101,8 +103,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 24
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 29
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -139,8 +141,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 48
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 54
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -172,8 +174,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMergedTimelineAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 89
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 96
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -205,8 +207,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunDetailAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 110
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 117
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -241,8 +243,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLedgerSummaryAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 139
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 147
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -277,8 +279,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareRunsAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 156
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 164
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -313,8 +315,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunComparisonDtosAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 204
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 213
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -349,8 +351,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEquityCurveAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 425
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 475
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -390,8 +392,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFillsAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 478
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 528
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -431,8 +433,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAttributionAsync
-    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 516
+    path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 566
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -701,7 +703,7 @@ references:
   fullName: System
 - uid: Meridian.Strategies.Services.StrategyRunReadService.#ctor*
   commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.#ctor
-  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Meridian_Strategies_Services_PortfolioReadService_Meridian_Strategies_Services_LedgerReadService_
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Meridian_Strategies_Services_PortfolioReadService_Meridian_Strategies_Services_LedgerReadService_Meridian_Strategies_Interfaces_IPromotionRecordStore_
   name: StrategyRunReadService
   nameWithType: StrategyRunReadService.StrategyRunReadService
   fullName: Meridian.Strategies.Services.StrategyRunReadService.StrategyRunReadService
@@ -729,6 +731,13 @@ references:
   name: LedgerReadService
   nameWithType: LedgerReadService
   fullName: Meridian.Strategies.Services.LedgerReadService
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  commentId: T:Meridian.Strategies.Interfaces.IPromotionRecordStore
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html
+  name: IPromotionRecordStore
+  nameWithType: IPromotionRecordStore
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore
 - uid: Meridian.Strategies.Interfaces
   commentId: N:Meridian.Strategies.Interfaces
   href: Meridian.html

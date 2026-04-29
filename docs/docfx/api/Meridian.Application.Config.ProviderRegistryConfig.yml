@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistryConfig
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    path: src/Meridian.Core/Config/AppConfig.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    path: src/Meridian.Core/Config/AppConfig.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseAttributeDiscovery
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    path: src/Meridian.Core/Config/AppConfig.cs
     startLine: 70
   assemblies:
   - Meridian.Core

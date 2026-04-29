@@ -104,6 +104,31 @@ public sealed class PaperSessionPersistenceServiceTests
         var service = Build();
         var dto = new CreatePaperSessionDto("strat-3", "Detail Test", 100_000m, ["AAPL", "MSFT"]);
         var summary = await service.CreateSessionAsync(dto);
+        var orderUpdatedAt = DateTimeOffset.UtcNow;
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "detail-order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 10m,
+            Status = OrderStatus.Filled,
+            CreatedAt = orderUpdatedAt.AddSeconds(-1),
+            LastUpdatedAt = orderUpdatedAt
+        });
+        await service.RecordFillAsync(summary.SessionId, new ExecutionReport
+        {
+            OrderId = "detail-order-1",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 10m,
+            FilledQuantity = 10m,
+            FillPrice = 150m,
+            Timestamp = orderUpdatedAt
+        });
 
         var detail = service.GetSession(summary.SessionId);
 
@@ -111,7 +136,11 @@ public sealed class PaperSessionPersistenceServiceTests
         detail!.Summary.SessionId.Should().Be(summary.SessionId);
         detail.Symbols.Should().Equal("AAPL", "MSFT");
         detail.Portfolio.Should().NotBeNull();
-        detail.OrderHistory.Should().BeEmpty();
+        detail.OrderHistory.Should().ContainSingle();
+        detail.FillCount.Should().Be(1);
+        detail.LedgerEntryCount.Should().BeGreaterThan(0);
+        detail.LastFillAt.Should().NotBeNull();
+        detail.LastOrderUpdatedAt.Should().Be(orderUpdatedAt);
     }
 
     [Fact]
@@ -338,6 +367,30 @@ public sealed class PaperSessionPersistenceServiceTests
         await cts.CancelAsync();
 
         Func<Task> act = () => service.RecordOrderUpdateAsync(summary.SessionId, orderState, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task RecordFillAsync_WhenCancelled_ThrowsOperationCanceledException()
+    {
+        var service = Build(new ThrowingOrderUpdateStore());
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-fill-cancel", null, 10_000m));
+        var fill = new ExecutionReport
+        {
+            OrderId = "fill-cancel",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 10m,
+            FilledQuantity = 10m,
+            FillPrice = 100m
+        };
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        Func<Task> act = () => service.RecordFillAsync(summary.SessionId, fill, cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
@@ -581,8 +634,10 @@ public sealed class PaperSessionReplayTests : IDisposable
     private JsonlFilePaperSessionStore BuildStore() =>
         new(_tempDir, NullLogger<JsonlFilePaperSessionStore>.Instance);
 
-    private static PaperSessionPersistenceService Build(IPaperSessionStore? store = null) =>
-        new(NullLogger<PaperSessionPersistenceService>.Instance, store);
+    private static PaperSessionPersistenceService Build(
+        IPaperSessionStore? store = null,
+        ExecutionAuditTrailService? auditTrail = null) =>
+        new(NullLogger<PaperSessionPersistenceService>.Instance, store, auditTrail);
 
     private static ExecutionReport BuyFill(string symbol, decimal qty, decimal price) => new()
     {
@@ -719,10 +774,25 @@ public sealed class PaperSessionReplayTests : IDisposable
     public async Task VerifyReplayAsync_WithStore_ReturnsConsistentVerification()
     {
         var store = BuildStore();
-        var service = Build(store);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(store, auditTrail);
         var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-F", "Replay Verify", 100_000m, ["AAPL"]));
 
         await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 12m, 150m));
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "verify-order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 12m,
+            FilledQuantity = 12m,
+            Status = OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        });
 
         var verification = await service.VerifyReplayAsync(summary.SessionId);
 
@@ -734,6 +804,79 @@ public sealed class PaperSessionReplayTests : IDisposable
         verification.MismatchReasons.Should().BeEmpty();
         verification.CurrentPortfolio.Should().NotBeNull();
         verification.ReplayPortfolio.Cash.Should().Be(100_000m - (12m * 150m));
+        verification.ComparedFillCount.Should().Be(1);
+        verification.ComparedOrderCount.Should().Be(1);
+        verification.ComparedLedgerEntryCount.Should().BeGreaterThan(0);
+        verification.LastPersistedFillAt.Should().NotBeNull();
+        verification.LastPersistedOrderUpdateAt.Should().NotBeNull();
+        verification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        auditEntries.Should().Contain(entry =>
+            entry.AuditId == verification.VerificationAuditId &&
+            entry.Action == "VerifyReplay");
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Metadata.Should().NotBeNull();
+        auditEntry.Metadata!["isConsistent"].Should().Be(bool.TrueString);
+        auditEntry.Metadata["currentLedgerEntryCount"].Should().NotBe("0");
+        auditEntry.Metadata["currentLedgerLineCount"].Should().NotBe("0");
+        auditEntry.Metadata["persistedLedgerLineCount"].Should().NotBe("0");
+        auditEntry.Metadata["lastPersistedFillAt"].Should().NotBeNullOrWhiteSpace();
+        auditEntry.Metadata["lastPersistedOrderUpdateAt"].Should().NotBeNullOrWhiteSpace();
+        auditEntry.Metadata["primaryMismatchReason"].Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task VerifyReplayAsync_WhenPersistedOrderHistoryDiffers_ReturnsMismatchWithCounts()
+    {
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "mismatch-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(new ReplayMismatchStore(), auditTrail);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-mismatch", null, 100_000m, ["AAPL"]));
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeFalse();
+        verification.ComparedOrderCount.Should().Be(1);
+        verification.LastPersistedOrderUpdateAt.Should().NotBeNull();
+        verification.MismatchReasons.Should().Contain(reason =>
+            reason.Contains("Persisted order history count", StringComparison.OrdinalIgnoreCase));
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Outcome.Should().Be("AttentionRequired");
+        auditEntry.Message.Should().Contain("Persisted order history count");
+        auditEntry.Metadata.Should().NotBeNull();
+        auditEntry.Metadata!["isConsistent"].Should().Be(bool.FalseString);
+        auditEntry.Metadata["primaryMismatchReason"].Should().Contain("Persisted order history count");
+    }
+
+    [Fact]
+    public async Task VerifyReplayAsync_WhenPersistedLedgerJournalIsMissing_ReturnsMismatchWithLedgerReason()
+    {
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "ledger-mismatch-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(new MissingLedgerJournalStore(), auditTrail);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-ledger-mismatch", null, 100_000m, ["AAPL"]));
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeFalse();
+        verification.ComparedLedgerEntryCount.Should().Be(0);
+        verification.MismatchReasons.Should().Contain(reason =>
+            reason.Contains("Persisted ledger journal count differs", StringComparison.OrdinalIgnoreCase));
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Outcome.Should().Be("AttentionRequired");
+        auditEntry.Metadata.Should().NotBeNull();
+        auditEntry.Metadata!["currentLedgerEntryCount"].Should().NotBe("0");
+        auditEntry.Metadata["persistedLedgerLineCount"].Should().Be("0");
+        auditEntry.Metadata["primaryMismatchReason"].Should().Contain("Persisted ledger journal count");
     }
 
     [Fact]
@@ -760,7 +903,10 @@ internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
         => Task.CompletedTask;
 
     public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
-        => Task.CompletedTask;
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
+    }
 
     public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
     {
@@ -772,6 +918,85 @@ internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
 
         return Task.CompletedTask;
     }
+
+    public Task SaveLedgerJournalAsync(
+        string sessionId,
+        IReadOnlyList<PersistedJournalEntryDto> entries,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+}
+
+internal sealed class ReplayMismatchStore : IPaperSessionStore
+{
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task SaveLedgerJournalAsync(
+        string sessionId,
+        IReadOnlyList<PersistedJournalEntryDto> entries,
+        CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([
+            new OrderState
+            {
+                OrderId = "persisted-order-1",
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = OrderType.Market,
+                Quantity = 5m,
+                Status = OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-5),
+                LastUpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-4)
+            }
+        ]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+}
+
+internal sealed class MissingLedgerJournalStore : IPaperSessionStore
+{
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
+        => Task.CompletedTask;
 
     public Task SaveLedgerJournalAsync(
         string sessionId,

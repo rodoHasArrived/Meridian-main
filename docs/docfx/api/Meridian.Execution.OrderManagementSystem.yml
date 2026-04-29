@@ -5,7 +5,7 @@ items:
   id: OrderManagementSystem
   parent: Meridian.Execution
   children:
-  - Meridian.Execution.OrderManagementSystem.#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState)
+  - Meridian.Execution.OrderManagementSystem.#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState,Meridian.Execution.Services.PaperSessionPersistenceService)
   - Meridian.Execution.OrderManagementSystem.CancelAllAsync(System.Threading.CancellationToken)
   - Meridian.Execution.OrderManagementSystem.CancelOrderAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Execution.OrderManagementSystem.Dispose
@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderManagementSystem
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
+    path: src/Meridian.Execution/OrderManagementSystem.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -55,16 +55,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.OrderManagementSystem.#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState)
-  commentId: M:Meridian.Execution.OrderManagementSystem.#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState)
-  id: '#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState)'
+- uid: Meridian.Execution.OrderManagementSystem.#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState,Meridian.Execution.Services.PaperSessionPersistenceService)
+  commentId: M:Meridian.Execution.OrderManagementSystem.#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState,Meridian.Execution.Services.PaperSessionPersistenceService)
+  id: '#ctor(Meridian.Execution.Sdk.IExecutionGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.OrderManagementSystem},Meridian.Execution.IRiskValidator,Meridian.Execution.ISecurityMasterGate,Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Models.IPortfolioState,Meridian.Execution.Services.PaperSessionPersistenceService)'
   parent: Meridian.Execution.OrderManagementSystem
   langs:
   - csharp
   - vb
-  name: OrderManagementSystem(IExecutionGateway, ILogger<OrderManagementSystem>, IRiskValidator?, ISecurityMasterGate?, ExecutionOperatorControlService?, ExecutionAuditTrailService?, IPortfolioState?)
-  nameWithType: OrderManagementSystem.OrderManagementSystem(IExecutionGateway, ILogger<OrderManagementSystem>, IRiskValidator?, ISecurityMasterGate?, ExecutionOperatorControlService?, ExecutionAuditTrailService?, IPortfolioState?)
-  fullName: Meridian.Execution.OrderManagementSystem.OrderManagementSystem(Meridian.Execution.Sdk.IExecutionGateway, Microsoft.Extensions.Logging.ILogger<Meridian.Execution.OrderManagementSystem>, Meridian.Execution.IRiskValidator?, Meridian.Execution.ISecurityMasterGate?, Meridian.Execution.Services.ExecutionOperatorControlService?, Meridian.Execution.Services.ExecutionAuditTrailService?, Meridian.Execution.Models.IPortfolioState?)
+  name: OrderManagementSystem(IExecutionGateway, ILogger<OrderManagementSystem>, IRiskValidator?, ISecurityMasterGate?, ExecutionOperatorControlService?, ExecutionAuditTrailService?, IPortfolioState?, PaperSessionPersistenceService?)
+  nameWithType: OrderManagementSystem.OrderManagementSystem(IExecutionGateway, ILogger<OrderManagementSystem>, IRiskValidator?, ISecurityMasterGate?, ExecutionOperatorControlService?, ExecutionAuditTrailService?, IPortfolioState?, PaperSessionPersistenceService?)
+  fullName: Meridian.Execution.OrderManagementSystem.OrderManagementSystem(Meridian.Execution.Sdk.IExecutionGateway, Microsoft.Extensions.Logging.ILogger<Meridian.Execution.OrderManagementSystem>, Meridian.Execution.IRiskValidator?, Meridian.Execution.ISecurityMasterGate?, Meridian.Execution.Services.ExecutionOperatorControlService?, Meridian.Execution.Services.ExecutionAuditTrailService?, Meridian.Execution.Models.IPortfolioState?, Meridian.Execution.Services.PaperSessionPersistenceService?)
   type: Constructor
   source:
     remote:
@@ -72,13 +72,13 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 29
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 31
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
   syntax:
-    content: public OrderManagementSystem(IExecutionGateway gateway, ILogger<OrderManagementSystem> logger, IRiskValidator? riskValidator = null, ISecurityMasterGate? securityMasterGate = null, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, IPortfolioState? portfolioState = null)
+    content: public OrderManagementSystem(IExecutionGateway gateway, ILogger<OrderManagementSystem> logger, IRiskValidator? riskValidator = null, ISecurityMasterGate? securityMasterGate = null, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, IPortfolioState? portfolioState = null, PaperSessionPersistenceService? sessionPersistence = null)
     parameters:
     - id: gateway
       type: Meridian.Execution.Sdk.IExecutionGateway
@@ -94,11 +94,13 @@ items:
       type: Meridian.Execution.Services.ExecutionAuditTrailService
     - id: portfolioState
       type: Meridian.Execution.Models.IPortfolioState
-    content.vb: Public Sub New(gateway As IExecutionGateway, logger As ILogger(Of OrderManagementSystem), riskValidator As IRiskValidator = Nothing, securityMasterGate As ISecurityMasterGate = Nothing, operatorControls As ExecutionOperatorControlService = Nothing, auditTrail As ExecutionAuditTrailService = Nothing, portfolioState As IPortfolioState = Nothing)
+    - id: sessionPersistence
+      type: Meridian.Execution.Services.PaperSessionPersistenceService
+    content.vb: Public Sub New(gateway As IExecutionGateway, logger As ILogger(Of OrderManagementSystem), riskValidator As IRiskValidator = Nothing, securityMasterGate As ISecurityMasterGate = Nothing, operatorControls As ExecutionOperatorControlService = Nothing, auditTrail As ExecutionAuditTrailService = Nothing, portfolioState As IPortfolioState = Nothing, sessionPersistence As PaperSessionPersistenceService = Nothing)
   overload: Meridian.Execution.OrderManagementSystem.#ctor*
-  nameWithType.vb: OrderManagementSystem.New(IExecutionGateway, ILogger(Of OrderManagementSystem), IRiskValidator, ISecurityMasterGate, ExecutionOperatorControlService, ExecutionAuditTrailService, IPortfolioState)
-  fullName.vb: Meridian.Execution.OrderManagementSystem.New(Meridian.Execution.Sdk.IExecutionGateway, Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.OrderManagementSystem), Meridian.Execution.IRiskValidator, Meridian.Execution.ISecurityMasterGate, Meridian.Execution.Services.ExecutionOperatorControlService, Meridian.Execution.Services.ExecutionAuditTrailService, Meridian.Execution.Models.IPortfolioState)
-  name.vb: New(IExecutionGateway, ILogger(Of OrderManagementSystem), IRiskValidator, ISecurityMasterGate, ExecutionOperatorControlService, ExecutionAuditTrailService, IPortfolioState)
+  nameWithType.vb: OrderManagementSystem.New(IExecutionGateway, ILogger(Of OrderManagementSystem), IRiskValidator, ISecurityMasterGate, ExecutionOperatorControlService, ExecutionAuditTrailService, IPortfolioState, PaperSessionPersistenceService)
+  fullName.vb: Meridian.Execution.OrderManagementSystem.New(Meridian.Execution.Sdk.IExecutionGateway, Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.OrderManagementSystem), Meridian.Execution.IRiskValidator, Meridian.Execution.ISecurityMasterGate, Meridian.Execution.Services.ExecutionOperatorControlService, Meridian.Execution.Services.ExecutionAuditTrailService, Meridian.Execution.Models.IPortfolioState, Meridian.Execution.Services.PaperSessionPersistenceService)
+  name.vb: New(IExecutionGateway, ILogger(Of OrderManagementSystem), IRiskValidator, ISecurityMasterGate, ExecutionOperatorControlService, ExecutionAuditTrailService, IPortfolioState, PaperSessionPersistenceService)
 - uid: Meridian.Execution.OrderManagementSystem.PlaceOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
   commentId: M:Meridian.Execution.OrderManagementSystem.PlaceOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
   id: PlaceOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
@@ -116,8 +118,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceOrderAsync
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 56
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 60
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -153,8 +155,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 258
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 310
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -193,8 +195,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 295
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 348
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -235,8 +237,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrders
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 316
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 370
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -267,8 +269,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCompletedOrders
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 325
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 379
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -308,8 +310,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrder
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 341
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 395
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -346,8 +348,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAllAsync
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 347
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 401
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -381,8 +383,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 358
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 412
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -411,8 +413,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionReports
-    path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 370
+    path: src/Meridian.Execution/OrderManagementSystem.cs
+    startLine: 424
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -715,7 +717,7 @@ references:
     href: Meridian.Execution.Sdk.html
 - uid: Meridian.Execution.OrderManagementSystem.#ctor*
   commentId: Overload:Meridian.Execution.OrderManagementSystem.#ctor
-  href: Meridian.Execution.OrderManagementSystem.html#Meridian_Execution_OrderManagementSystem__ctor_Meridian_Execution_Sdk_IExecutionGateway_Microsoft_Extensions_Logging_ILogger_Meridian_Execution_OrderManagementSystem__Meridian_Execution_IRiskValidator_Meridian_Execution_ISecurityMasterGate_Meridian_Execution_Services_ExecutionOperatorControlService_Meridian_Execution_Services_ExecutionAuditTrailService_Meridian_Execution_Models_IPortfolioState_
+  href: Meridian.Execution.OrderManagementSystem.html#Meridian_Execution_OrderManagementSystem__ctor_Meridian_Execution_Sdk_IExecutionGateway_Microsoft_Extensions_Logging_ILogger_Meridian_Execution_OrderManagementSystem__Meridian_Execution_IRiskValidator_Meridian_Execution_ISecurityMasterGate_Meridian_Execution_Services_ExecutionOperatorControlService_Meridian_Execution_Services_ExecutionAuditTrailService_Meridian_Execution_Models_IPortfolioState_Meridian_Execution_Services_PaperSessionPersistenceService_
   name: OrderManagementSystem
   nameWithType: OrderManagementSystem.OrderManagementSystem
   fullName: Meridian.Execution.OrderManagementSystem.OrderManagementSystem
@@ -797,6 +799,13 @@ references:
   name: IPortfolioState
   nameWithType: IPortfolioState
   fullName: Meridian.Execution.Models.IPortfolioState
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService
+  commentId: T:Meridian.Execution.Services.PaperSessionPersistenceService
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html
+  name: PaperSessionPersistenceService
+  nameWithType: PaperSessionPersistenceService
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService
 - uid: Microsoft.Extensions.Logging.ILogger`1
   commentId: T:Microsoft.Extensions.Logging.ILogger`1
   isExternal: true

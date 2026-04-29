@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdminEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapAdminEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Shared

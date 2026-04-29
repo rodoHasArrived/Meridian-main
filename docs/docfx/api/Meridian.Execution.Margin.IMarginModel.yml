@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMarginModel
-    path: ../../src/Meridian.Execution/Margin/IMarginModel.cs
+    path: src/Meridian.Execution/Margin/IMarginModel.cs
     startLine: 8
   assemblies:
   - Meridian.Execution
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModelName
-    path: ../../src/Meridian.Execution/Margin/IMarginModel.cs
+    path: src/Meridian.Execution/Margin/IMarginModel.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateForPosition
-    path: ../../src/Meridian.Execution/Margin/IMarginModel.cs
+    path: src/Meridian.Execution/Margin/IMarginModel.cs
     startLine: 23
   assemblies:
   - Meridian.Execution
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatePortfolioRequirement
-    path: ../../src/Meridian.Execution/Margin/IMarginModel.cs
+    path: src/Meridian.Execution/Margin/IMarginModel.cs
     startLine: 35
   assemblies:
   - Meridian.Execution

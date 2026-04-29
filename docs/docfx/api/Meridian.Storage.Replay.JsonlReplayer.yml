@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlReplayer
-    path: ../../src/Meridian.Storage/Replay/JsonlReplayer.cs
+    path: src/Meridian.Storage/Replay/JsonlReplayer.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Replay/JsonlReplayer.cs
+    path: src/Meridian.Storage/Replay/JsonlReplayer.cs
     startLine: 19
   assemblies:
   - Meridian.Storage
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsAsync
-    path: ../../src/Meridian.Storage/Replay/JsonlReplayer.cs
+    path: src/Meridian.Storage/Replay/JsonlReplayer.cs
     startLine: 24
   assemblies:
   - Meridian.Storage

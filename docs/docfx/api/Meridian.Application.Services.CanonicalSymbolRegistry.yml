@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbolRegistry
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveToCanonical
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryResolve
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 59
   assemblies:
   - Meridian.Application
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterAsync
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 83
   assemblies:
   - Meridian.Application
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterBatchAsync
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 101
   assemblies:
   - Meridian.Application
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDefinition
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 115
   assemblies:
   - Meridian.Application
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 132
   assemblies:
   - Meridian.Application
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByAssetClass
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 140
   assemblies:
   - Meridian.Application
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByExchange
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 148
   assemblies:
   - Meridian.Application
@@ -451,7 +451,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryResolveWithProvider
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 160
   assemblies:
   - Meridian.Application
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsKnown
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 190
   assemblies:
   - Meridian.Application
@@ -534,7 +534,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveAsync
-    path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
+    path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
     startLine: 199
   assemblies:
   - Meridian.Application

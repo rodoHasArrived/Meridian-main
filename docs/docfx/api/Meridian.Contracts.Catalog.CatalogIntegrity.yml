@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogIntegrity
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 332
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 337
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastVerifiedAt
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 343
   assemblies:
   - Meridian.Contracts
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesVerified
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 349
   assemblies:
   - Meridian.Contracts
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumFailures
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 355
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingFiles
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 361
   assemblies:
   - Meridian.Contracts
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogChecksum
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 367
   assemblies:
   - Meridian.Contracts
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 373
   assemblies:
   - Meridian.Contracts

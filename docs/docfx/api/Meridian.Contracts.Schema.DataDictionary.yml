@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataDictionary
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 169
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 174
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 180
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schemas
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 186
   assemblies:
   - Meridian.Contracts
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExchangeCodes
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 192
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeConditions
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteConditions
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 204
   assemblies:
   - Meridian.Contracts

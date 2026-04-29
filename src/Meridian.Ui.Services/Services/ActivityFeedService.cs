@@ -362,6 +362,28 @@ public sealed class ActivityFeedService
         await SaveActivitiesAsync();
     }
 
+    /// <summary>
+    /// Merges persisted activities into the current feed without evicting newer
+    /// in-memory items that may have been logged while the initial load was running.
+    /// </summary>
+    internal void MergeLoadedActivities(IEnumerable<ActivityItem> items)
+    {
+        var persistedItems = items.Take(MaxActivities).ToList();
+        if (persistedItems.Count == 0)
+        {
+            return;
+        }
+
+        var merged = new List<ActivityItem>(MaxActivities);
+        var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        AppendUniqueActivities(_activities.ToList(), merged, seenIds);
+        AppendUniqueActivities(persistedItems, merged, seenIds);
+
+        SeedSeenServerEventIds(merged);
+        _activities.ReplaceAll(merged);
+    }
+
     private async Task LoadActivitiesAsync(CancellationToken ct = default)
     {
         try
@@ -382,10 +404,7 @@ public sealed class ActivityFeedService
                 var items = JsonSerializer.Deserialize<List<ActivityItem>>(json, _jsonOptions);
                 if (items != null)
                 {
-                    foreach (var item in items.Take(MaxActivities))
-                    {
-                        _activities.Add(item);
-                    }
+                    MergeLoadedActivities(items);
                 }
 
                 if (migratedFromLegacy)
@@ -468,6 +487,39 @@ public sealed class ActivityFeedService
             Path.GetFullPath(left),
             Path.GetFullPath(right),
             StringComparison.OrdinalIgnoreCase);
+
+    private static void AppendUniqueActivities(
+        IEnumerable<ActivityItem> source,
+        List<ActivityItem> destination,
+        HashSet<string> seenIds)
+    {
+        foreach (var item in source)
+        {
+            if (destination.Count >= MaxActivities)
+            {
+                break;
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.Id) && !seenIds.Add(item.Id))
+            {
+                continue;
+            }
+
+            destination.Add(item);
+        }
+    }
+
+    private void SeedSeenServerEventIds(IEnumerable<ActivityItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (!string.IsNullOrWhiteSpace(item.Id) &&
+                item.Id.StartsWith("server:", StringComparison.OrdinalIgnoreCase))
+            {
+                _seenServerEventIds.Add(item.Id);
+            }
+        }
+    }
 
     private static string FormatBytes(long bytes) => FormatHelpers.FormatBytes(bytes);
 }

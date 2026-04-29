@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
+import { renderWithRouter } from "@/test/render";
 import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
 
 const data: DataOperationsWorkspaceResponse = {
@@ -19,7 +19,12 @@ const data: DataOperationsWorkspaceResponse = {
       status: "Healthy",
       capability: "Streaming equities",
       latency: "18ms p50",
-      note: "Realtime subscriptions are stable."
+      note: "Realtime subscriptions are stable.",
+      trustScore: "98%",
+      signalSource: "Provider heartbeat",
+      reasonCode: "TRUST_OK",
+      recommendedAction: "Keep provider active.",
+      gateImpact: "No gate impact"
     }
   ],
   backfills: [
@@ -54,24 +59,38 @@ const data: DataOperationsWorkspaceResponse = {
 
 describe("DataOperationsScreen", () => {
   it("renders provider, backfill, and export summaries", () => {
-    render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
-    expect(screen.getByText("Provider health")).toBeInTheDocument();
-    expect(screen.getByText("Backfill queue")).toBeInTheDocument();
-    expect(screen.getByText("Recent exports")).toBeInTheDocument();
+    expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
     expect(screen.getByText("Polygon")).toBeInTheDocument();
+    expect(screen.getByLabelText("Polygon trust evidence")).toBeInTheDocument();
+    expect(screen.getByText("Trust score")).toBeInTheDocument();
+    expect(screen.getByText("98%")).toBeInTheDocument();
+    expect(screen.getByText("Keep provider active.")).toBeInTheDocument();
+    expect(screen.getByText("Reason: TRUST_OK")).toBeInTheDocument();
+  });
+
+  it("renders explicit empty guidance when provider, backfill, and export arrays are empty", () => {
+    const emptyData: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers: [],
+      backfills: [],
+      exports: []
+    };
+
+    renderWithRouter(<DataOperationsScreen data={emptyData} />, { initialEntries: ["/data/backfills"] });
+
+    expect(screen.getByText("No providers reported")).toBeInTheDocument();
+    expect(screen.getByText("No backfills queued")).toBeInTheDocument();
+    expect(screen.getByText("No exports available")).toBeInTheDocument();
+    expect(screen.getByText("No backfill activity yet")).toBeInTheDocument();
+    expect(screen.getAllByRole("status").length).toBe(3);
   });
 
   it("adapts the hero copy for deep-link routes", () => {
-    render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     expect(screen.getByText("Backfill queue focus")).toBeInTheDocument();
     expect(screen.getByText("Backfill Detail")).toBeInTheDocument();
@@ -81,11 +100,7 @@ describe("DataOperationsScreen", () => {
   it("switches the detail panel when a backfill row is selected", async () => {
     const user = userEvent.setup();
 
-    render(
-      <MemoryRouter initialEntries={["/data-operations/backfills"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /BF-1044/i }));
 
@@ -96,17 +111,27 @@ describe("DataOperationsScreen", () => {
   it("opens the trigger backfill dialog when the Trigger backfill button is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Trigger backfill")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/AAPL MSFT SPY/i)).toBeInTheDocument();
+  });
+
+  it("keeps preview disabled until the backfill symbols are valid", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+
+    expect(screen.getByRole("button", { name: /^preview$/i })).toBeDisabled();
+
+    await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
+
+    expect(screen.getByRole("button", { name: /^preview$/i })).toBeEnabled();
   });
 
   it("calls previewBackfill and shows preview result", async () => {
@@ -126,11 +151,7 @@ describe("DataOperationsScreen", () => {
 
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
 
-    render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
@@ -138,7 +159,7 @@ describe("DataOperationsScreen", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/preview — polygon/i)).toBeInTheDocument();
-      expect(screen.getByText("2,100")).toBeInTheDocument();
+      expect(screen.getByText(/Bars:\s*2,100/i)).toBeInTheDocument();
     });
   });
 
@@ -173,11 +194,7 @@ describe("DataOperationsScreen", () => {
     vi.spyOn(api, "triggerBackfill").mockResolvedValueOnce(mockResult);
     vi.spyOn(api, "getBackfillProgress").mockResolvedValue(mockProgress);
 
-    render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "MSFT");
@@ -189,7 +206,7 @@ describe("DataOperationsScreen", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/backfill complete — polygon/i)).toBeInTheDocument();
-      expect(screen.getByText("512")).toBeInTheDocument();
+      expect(screen.getByText(/Bars:\s*512/i)).toBeInTheDocument();
     });
   });
 
@@ -198,11 +215,7 @@ describe("DataOperationsScreen", () => {
 
     vi.spyOn(api, "previewBackfill").mockRejectedValueOnce(new Error("Provider offline"));
 
-    render(
-      <MemoryRouter initialEntries={["/data-operations"]}>
-        <DataOperationsScreen data={data} />
-      </MemoryRouter>
-    );
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "SPY");

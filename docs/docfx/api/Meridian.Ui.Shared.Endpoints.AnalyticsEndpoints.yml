@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyticsEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapAnalyticsEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared

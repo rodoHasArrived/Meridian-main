@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceType
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 73
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealTime
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 79
   assemblies:
   - Meridian.Core
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 84
   assemblies:
   - Meridian.Core
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Both
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 89
   assemblies:
   - Meridian.Core

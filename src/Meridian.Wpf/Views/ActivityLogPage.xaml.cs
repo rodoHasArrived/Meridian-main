@@ -43,23 +43,11 @@ public partial class ActivityLogPage : Page
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
         _viewModel.Stop();
 
-    private void Filter_Changed(object sender, SelectionChangedEventArgs e)
-    {
-        if (LevelFilterCombo is null || CategoryFilterCombo is null)
-            return;
-
-        if (LevelFilterCombo.SelectedItem is ComboBoxItem levelItem)
-            _viewModel.UpdateLevelFilter(levelItem.Content?.ToString() ?? "All");
-
-        if (CategoryFilterCombo.SelectedItem is ComboBoxItem categoryItem)
-            _viewModel.UpdateCategoryFilter(categoryItem.Content?.ToString() ?? "All");
-    }
-
-    private void Search_Changed(object sender, TextChangedEventArgs e) =>
-        _viewModel.UpdateSearch(SearchBox?.Text ?? string.Empty);
-
     private void Export_Click(object sender, RoutedEventArgs e)
     {
+        if (!_viewModel.CanExportVisibleLogs)
+            return;
+
         var dialog = new SaveFileDialog
         {
             Title = "Export Activity Log",
@@ -68,7 +56,8 @@ public partial class ActivityLogPage : Page
             FileName = $"activity_log_{DateTime.Now:yyyyMMdd_HHmmss}"
         };
 
-        if (dialog.ShowDialog() != true) return;
+        if (dialog.ShowDialog() != true)
+            return;
 
         try
         {
@@ -88,6 +77,9 @@ public partial class ActivityLogPage : Page
 
     private void Clear_Click(object sender, RoutedEventArgs e)
     {
+        if (!_viewModel.ClearCommand.CanExecute(null))
+            return;
+
         var result = MessageBox.Show(
             "Are you sure you want to clear all log entries?",
             "Clear Activity Log",

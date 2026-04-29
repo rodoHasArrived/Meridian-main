@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICorporateActionAdjustmentService
-    path: ../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
+    path: src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustAsync
-    path: ../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
+    path: src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting

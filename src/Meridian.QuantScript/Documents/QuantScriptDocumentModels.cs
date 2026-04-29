@@ -30,6 +30,10 @@ public sealed class QuantScriptNotebookDocument
     [
         new QuantScriptNotebookCellDocument(
             Guid.NewGuid().ToString("N"),
-            "var spy = Data.Prices(\"SPY\");" + Environment.NewLine + "Print(spy);")
+            """
+            var symbol = Param<string>("symbol", "SPY");
+            var prices = await Data.PricesAsync(symbol, new DateOnly(2024, 1, 2), new DateOnly(2024, 3, 29));
+            Print($"Loaded {prices.Count} bars for {symbol}.");
+            """)
     ];
 }

@@ -547,7 +547,8 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
         try
         {
             _ = decimal.TryParse(InitialCapitalText, out var capital);
-            if (capital < 1000) capital = 100000;
+            if (capital < 1000)
+                capital = 100000;
 
             var options = new BacktestOptions
             {
@@ -580,7 +581,8 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
 
     private void StopBacktest()
     {
-        if (_currentBacktestId == null) return;
+        if (_currentBacktestId == null)
+            return;
         _backtestPollTimer.Stop();
         _ = _leanService.StopBacktestAsync(_currentBacktestId, _cts.Token);
         ResetBacktestState();
@@ -588,7 +590,8 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
 
     private async Task PollBacktestStatusAsync(CancellationToken ct = default)
     {
-        if (_currentBacktestId == null) return;
+        if (_currentBacktestId == null)
+            return;
         try
         {
             var status = await _leanService.GetBacktestStatusAsync(_currentBacktestId, _cts.Token);

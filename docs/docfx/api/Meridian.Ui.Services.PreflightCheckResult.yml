@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightCheckResult
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 687
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetworkCheck
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 689
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiskSpaceCheck
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 690
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StoragePermissionCheck
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 691
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectorServiceCheck
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 692
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllPassed
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 694
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllChecks
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
     startLine: 698
   assemblies:
   - Meridian.Ui.Services

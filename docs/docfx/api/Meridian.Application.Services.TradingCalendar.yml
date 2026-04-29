@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingCalendar
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreMarketOpen
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegularMarketOpen
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegularMarketClose
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HalfDayClose
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AfterHoursClose
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 47
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentStatus
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 60
   assemblies:
   - Meridian.Application
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAt
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -321,7 +321,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTradingDay
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 188
   assemblies:
   - Meridian.Application
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHalfDay
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 200
   assemblies:
   - Meridian.Application
@@ -387,7 +387,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTodayTradingDay
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 205
   assemblies:
   - Meridian.Application
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextTradingDay
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 214
   assemblies:
   - Meridian.Application
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPreviousTradingDay
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 227
   assemblies:
   - Meridian.Application
@@ -483,7 +483,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingDays
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 240
   assemblies:
   - Meridian.Application
@@ -518,7 +518,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingDayCount
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 256
   assemblies:
   - Meridian.Application
@@ -553,7 +553,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTimeUntilOpen
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 265
   assemblies:
   - Meridian.Application
@@ -586,7 +586,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTimeUntilClose
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 281
   assemblies:
   - Meridian.Application
@@ -619,7 +619,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHolidays
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 296
   assemblies:
   - Meridian.Application
@@ -655,7 +655,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHalfDays
-    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    path: src/Meridian.Application/Services/TradingCalendar.cs
     startLine: 318
   assemblies:
   - Meridian.Application

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRangeInfo
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 124
   assemblies:
   - Meridian.Contracts
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 129
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: End
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 135
   assemblies:
   - Meridian.Contracts
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingDays
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 141
   assemblies:
   - Meridian.Contracts

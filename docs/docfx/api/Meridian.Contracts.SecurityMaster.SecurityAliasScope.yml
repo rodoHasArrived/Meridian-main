@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityAliasScope
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operations
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Collector
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Execution
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Migration
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts

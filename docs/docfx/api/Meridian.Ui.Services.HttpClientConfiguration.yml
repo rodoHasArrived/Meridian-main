@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientConfiguration
-    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddDesktopHttpClients
-    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services

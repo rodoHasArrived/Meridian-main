@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderExtendedEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapProviderExtendedEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared

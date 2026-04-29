@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCostEstimator
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Estimate
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 27
   assemblies:
   - Meridian.Application

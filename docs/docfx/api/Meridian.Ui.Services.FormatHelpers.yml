@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatHelpers
-    path: ../../src/Meridian.Ui.Services/Services/FormatHelpers.cs
+    path: src/Meridian.Ui.Services/Services/FormatHelpers.cs
     startLine: 5
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsoDateFormat
-    path: ../../src/Meridian.Ui.Services/Services/FormatHelpers.cs
+    path: src/Meridian.Ui.Services/Services/FormatHelpers.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatBytes
-    path: ../../src/Meridian.Ui.Services/Services/FormatHelpers.cs
+    path: src/Meridian.Ui.Services/Services/FormatHelpers.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatStaleIndicator
-    path: ../../src/Meridian.Ui.Services/Services/FormatHelpers.cs
+    path: src/Meridian.Ui.Services/Services/FormatHelpers.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatCompactNumber
-    path: ../../src/Meridian.Ui.Services/Services/FormatHelpers.cs
+    path: src/Meridian.Ui.Services/Services/FormatHelpers.cs
     startLine: 67
   assemblies:
   - Meridian.Ui.Services

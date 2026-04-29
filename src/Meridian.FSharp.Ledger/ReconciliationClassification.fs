@@ -101,6 +101,7 @@ type CanonicalBreakClassification = {
     BreakClass: CanonicalBreakClass
     PrimaryReasonCode: BreakReasonCode
     ReasonCodes: BreakReasonCode list
+    Severity: BreakSeverity
     IsFallback: bool
 }
 
@@ -176,6 +177,71 @@ module ReconciliationClassification =
         | CorporateActionType -> Some CorporateAction
         | MappingErrorType -> Some MappingError
         | UnknownType -> None
+
+    let private maxObservedAmount (facts: RawBreakFacts) =
+        [
+            facts.ExpectedCashAmount
+            facts.ActualCashAmount
+            facts.ExpectedQuantity
+            facts.ActualQuantity
+            facts.ExpectedPrice
+            facts.ActualPrice
+            facts.ExpectedCorporateActionFactor
+            facts.ActualCorporateActionFactor
+        ]
+        |> List.choose id
+        |> List.map abs
+        |> function
+            | [] -> 0m
+            | values -> values |> List.max
+
+    let private severityFromCashAmounts expectedAmount actualAmount =
+        match expectedAmount, actualAmount with
+        | Some expected, Some actual when expected <> 0m ->
+            let variancePct = abs ((actual - expected) / expected)
+            if variancePct > 0.05m then Critical
+            elif variancePct > 0.01m then High
+            else Medium
+        | Some _, Some _ -> Medium
+        | _ -> Medium
+
+    let private severityFromTiming (facts: RawBreakFacts) =
+        match facts.ExpectedSettlementDate, facts.ActualSettlementDate with
+        | Some expectedDate, Some actualDate ->
+            let daysLate = abs (int (actualDate - expectedDate).TotalDays)
+            if daysLate > 30 then High
+            elif daysLate > 5 then Medium
+            else Low
+        | _ -> Medium
+
+    let private severityFromMapping facts =
+        if maxObservedAmount facts > 10_000m then High else Medium
+
+    let private classifySeverity (facts: RawBreakFacts) (reasons: BreakReasonCode list) =
+        if reasons |> List.exists (fun reason -> reason = CashCurrencyMismatch) then
+            Critical
+        elif reasons |> List.exists (fun reason -> reason = CashAmountMismatch) then
+            severityFromCashAmounts facts.ExpectedCashAmount facts.ActualCashAmount
+        elif reasons |> List.exists (fun reason -> reason = TimingOutsideTolerance || reason = SettlementDateMissing) then
+            severityFromTiming facts
+        elif reasons |> List.exists (fun reason ->
+            reason = QuantityMismatch
+            || reason = QuantitySignMismatch
+            || reason = PriceMismatch
+            || reason = PriceMissing
+            || reason = InstrumentIdentifierMismatch
+            || reason = InstrumentMissing
+            || reason = CorporateActionTypeMismatch
+            || reason = CorporateActionFactorMismatch) then
+            High
+        elif reasons |> List.exists (fun reason ->
+            reason = MappingKeyNotFound
+            || reason = MappingConflict
+            || reason = UnsupportedBreakTypeFallback
+            || reason = NoDeterministicSignalFallback) then
+            severityFromMapping facts
+        else
+            Medium
 
     let private detectReasons (parsedType: RawBreakType) (facts: RawBreakFacts) : BreakReasonCode list =
         let mutable reasons = []
@@ -254,17 +320,19 @@ module ReconciliationClassification =
         let isFallback =
             List.contains UnsupportedBreakTypeFallback sortedReasons
             || List.contains NoDeterministicSignalFallback sortedReasons
+        let severity = classifySeverity facts sortedReasons
 
         {
             TaxonomyVersion = V1
             BreakClass = breakClass
             PrimaryReasonCode = primaryReason
             ReasonCodes = sortedReasons
+            Severity = severity
             IsFallback = isFallback
         }
 
     /// Migration helper to safely map legacy break discriminators into the new canonical model.
-    let classifyLegacy (legacy: LedgerBreakClassification) : CanonicalBreakClassification =
+    let classifyLegacy (nominalAmount: decimal) (legacy: LedgerBreakClassification) : CanonicalBreakClassification =
         let baseline: RawBreakFacts = {
             BreakType = None
             ExpectedQuantity = None
@@ -309,4 +377,9 @@ module ReconciliationClassification =
             | OtherBreak reason ->
                 { baseline with BreakType = Some reason }
 
-        classify facts
+        let classification = classify facts
+
+        {
+            classification with
+                Severity = LedgerBreakClassification.severity nominalAmount legacy
+        }

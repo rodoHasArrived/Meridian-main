@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParquetConversionService
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 23
   assemblies:
   - Meridian.Storage
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertCompletedDaysAsync
-    path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
+    path: src/Meridian.Storage/Services/ParquetConversionService.cs
     startLine: 35
   assemblies:
   - Meridian.Storage

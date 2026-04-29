@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OAuthTokenStatus
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 288
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 290
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 291
   assemblies:
   - Meridian.Ui.Services
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiresAt
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeRemaining
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 293
   assemblies:
   - Meridian.Ui.Services
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRefreshedAt
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 294
   assemblies:
   - Meridian.Ui.Services
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanAutoRefresh
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 295
   assemblies:
   - Meridian.Ui.Services
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExpired
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 296
   assemblies:
   - Meridian.Ui.Services
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExpiringSoon
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 297
   assemblies:
   - Meridian.Ui.Services
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusDisplay
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 299
   assemblies:
   - Meridian.Ui.Services
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeRemainingDisplay
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 313
   assemblies:
   - Meridian.Ui.Services

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 512
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Manifest
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 514
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 515
   assemblies:
   - Meridian.Ui.Services

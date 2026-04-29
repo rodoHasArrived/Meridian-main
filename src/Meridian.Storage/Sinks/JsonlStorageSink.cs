@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Meridian.Application.Monitoring;
@@ -40,9 +39,9 @@ public sealed class JsonlBatchOptions
     public bool Enabled { get; init; } = true;
 
     /// <summary>
-    /// Pre-serialize events in parallel when batch size exceeds this threshold.
-    /// Default is 5000 events — below this, the context-switching overhead of
-    /// Parallel.For exceeds the serialization savings.
+    /// Retained for configuration compatibility.
+    /// The direct-stream writer no longer pre-serializes batches into strings, so this
+    /// threshold is not used to switch between sequential and parallel string creation.
     /// </summary>
     public int ParallelSerializationThreshold { get; init; } = 5000;
 
@@ -215,8 +214,7 @@ public sealed class JsonlStorageSink : IStorageSink
     private async ValueTask WriteEventImmediateAsync(string path, MarketEvent evt, CancellationToken ct)
     {
         var writer = _writers.GetOrAdd(path, _writerFactory).Value;
-        var json = JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions);
-        await writer.WriteLineAsync(json, ct).ConfigureAwait(false);
+        await writer.WriteEventAsync(evt, ct).ConfigureAwait(false);
         Interlocked.Increment(ref _eventsWritten);
     }
 
@@ -227,27 +225,7 @@ public sealed class JsonlStorageSink : IStorageSink
             return;
 
         var writer = _writers.GetOrAdd(path, _writerFactory).Value;
-
-        // Serialize events - use parallel serialization only for very large batches
-        // where the parallelism savings outweigh context-switching overhead
-        var lines = new string[events.Count];
-        if (events.Count >= _batchOptions.ParallelSerializationThreshold)
-        {
-            Parallel.For(0, events.Count, i =>
-            {
-                lines[i] = JsonSerializer.Serialize(events[i], MarketDataJsonContext.HighPerformanceOptions);
-            });
-        }
-        else
-        {
-            for (var i = 0; i < events.Count; i++)
-            {
-                lines[i] = JsonSerializer.Serialize(events[i], MarketDataJsonContext.HighPerformanceOptions);
-            }
-        }
-
-        // Write all lines in a single batch
-        await writer.WriteBatchAsync(lines, ct).ConfigureAwait(false);
+        await writer.WriteBatchAsync(events, ct).ConfigureAwait(false);
 
         Interlocked.Add(ref _eventsWritten, events.Count);
         Interlocked.Add(ref _eventsBuffered, -events.Count);
@@ -390,6 +368,12 @@ public sealed class JsonlStorageSink : IStorageSink
 
     private sealed class WriterState : IAsyncDisposable
     {
+        private static readonly JsonWriterOptions JsonWriterOptions = new()
+        {
+            SkipValidation = true
+        };
+        private static readonly ReadOnlyMemory<byte> NewlineBytes = "\n"u8.ToArray();
+
         private readonly string _path;
         private readonly SemaphoreSlim _gate = new(1, 1);
         private readonly bool _compressed;
@@ -406,17 +390,29 @@ public sealed class JsonlStorageSink : IStorageSink
             return new WriterState(path, compress);
         }
 
-        public async ValueTask WriteLineAsync(string line, CancellationToken ct)
+        public async ValueTask WriteEventAsync(MarketEvent evt, CancellationToken ct)
         {
-            await WriteBatchAsync([line], ct).ConfigureAwait(false);
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await AtomicFileWriter.AppendAsync(
+                    _path,
+                    stream => WriteSingleEventAsync(stream, evt, ct),
+                    ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                _gate.Release();
+            }
         }
 
         /// <summary>
-        /// Writes multiple lines in a single batch operation, minimizing lock contention.
+        /// Writes multiple events in a single batch operation without materializing
+        /// intermediate JSON strings.
         /// </summary>
-        public async ValueTask WriteBatchAsync(string[] lines, CancellationToken ct)
+        public async ValueTask WriteBatchAsync(IReadOnlyList<MarketEvent> events, CancellationToken ct)
         {
-            if (lines.Length == 0)
+            if (events.Count == 0)
                 return;
 
             await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -424,36 +420,60 @@ public sealed class JsonlStorageSink : IStorageSink
             {
                 await AtomicFileWriter.AppendAsync(
                     _path,
-                    async stream =>
-                    {
-                        Stream writeStream = stream;
-                        if (_compressed)
-                        {
-                            writeStream = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
-                        }
-
-                        await using var writer = new StreamWriter(
-                            writeStream,
-                            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                            1 << 16,
-                            leaveOpen: true);
-
-                        foreach (var line in lines)
-                        {
-                            await writer.WriteLineAsync(line).ConfigureAwait(false);
-                        }
-
-                        await writer.FlushAsync().ConfigureAwait(false);
-                        if (_compressed && writeStream is GZipStream gzipStream)
-                        {
-                            await gzipStream.FlushAsync(ct).ConfigureAwait(false);
-                        }
-                    },
+                    stream => WriteEventsAsync(stream, events, ct),
                     ct).ConfigureAwait(false);
             }
             finally
             {
                 _gate.Release();
+            }
+        }
+
+        private async Task WriteSingleEventAsync(Stream stream, MarketEvent evt, CancellationToken ct)
+        {
+            if (_compressed)
+            {
+                using var gzipStream = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+                await WriteEventToTargetStreamAsync(gzipStream, evt, ct).ConfigureAwait(false);
+                await gzipStream.FlushAsync(ct).ConfigureAwait(false);
+                return;
+            }
+
+            await WriteEventToTargetStreamAsync(stream, evt, ct).ConfigureAwait(false);
+        }
+
+        private async Task WriteEventsAsync(Stream stream, IReadOnlyList<MarketEvent> events, CancellationToken ct)
+        {
+            if (_compressed)
+            {
+                using var gzipStream = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+                await WriteEventsToTargetStreamAsync(gzipStream, events, ct).ConfigureAwait(false);
+                await gzipStream.FlushAsync(ct).ConfigureAwait(false);
+                return;
+            }
+
+            await WriteEventsToTargetStreamAsync(stream, events, ct).ConfigureAwait(false);
+        }
+
+        private static async Task WriteEventToTargetStreamAsync(Stream stream, MarketEvent evt, CancellationToken ct)
+        {
+            using var writer = new Utf8JsonWriter(stream, JsonWriterOptions);
+            HighPerformanceJson.WriteTo(writer, evt);
+            await writer.FlushAsync(ct).ConfigureAwait(false);
+            await stream.WriteAsync(NewlineBytes, ct).ConfigureAwait(false);
+        }
+
+        private static async Task WriteEventsToTargetStreamAsync(Stream stream, IReadOnlyList<MarketEvent> events, CancellationToken ct)
+        {
+            using var writer = new Utf8JsonWriter(stream, JsonWriterOptions);
+
+            for (var i = 0; i < events.Count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                HighPerformanceJson.WriteTo(writer, events[i]);
+                await writer.FlushAsync(ct).ConfigureAwait(false);
+                await stream.WriteAsync(NewlineBytes, ct).ConfigureAwait(false);
+                writer.Reset();
             }
         }
 

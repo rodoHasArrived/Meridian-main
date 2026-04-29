@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FixtureModeDetector
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFixtureMode
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOfflineMode
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 50
   assemblies:
   - Meridian.Ui.Services
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBackendReachable
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 55
   assemblies:
   - Meridian.Ui.Services
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsNonLiveMode
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 60
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeLabel
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BannerColor
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Services
@@ -298,7 +298,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetFixtureMode
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 81
   assemblies:
   - Meridian.Ui.Services
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBackendReachability
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 91
   assemblies:
   - Meridian.Ui.Services
@@ -369,7 +369,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScenarioLabel
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 106
   assemblies:
   - Meridian.Ui.Services
@@ -400,7 +400,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 111
   assemblies:
   - Meridian.Ui.Services
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CycleScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 118
   assemblies:
   - Meridian.Ui.Services
@@ -465,7 +465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeChanged
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
     startLine: 136
   assemblies:
   - Meridian.Ui.Services

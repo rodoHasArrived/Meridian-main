@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalOptions
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 941
   assemblies:
   - Meridian.Storage
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxWalFileSizeBytes
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 946
   assemblies:
   - Meridian.Storage
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxWalFileAge
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 951
   assemblies:
   - Meridian.Storage
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncMode
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 956
   assemblies:
   - Meridian.Storage
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncBatchSize
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 961
   assemblies:
   - Meridian.Storage
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFlushDelay
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 966
   assemblies:
   - Meridian.Storage
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveAfterTruncate
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 971
   assemblies:
   - Meridian.Storage
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UncommittedSizeWarningThreshold
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 977
   assemblies:
   - Meridian.Storage
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptionMode
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 985
   assemblies:
   - Meridian.Storage

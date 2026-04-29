@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioParseResult
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 390
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 392
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 393
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 394
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entries
-    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
     startLine: 395
   assemblies:
   - Meridian.Ui.Services

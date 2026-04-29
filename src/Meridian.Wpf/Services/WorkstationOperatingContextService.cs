@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.EnvironmentDesign;
-using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Application.FundStructure;
+using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
@@ -15,8 +15,10 @@ public sealed partial class WorkstationOperatingContextService
     private readonly FundContextService _fundContextService;
     private readonly IFundStructureService? _fundStructureService;
     private readonly IEnvironmentRuntimeProjectionService? _environmentRuntimeProjectionService;
+    private readonly object _loadGate = new();
     private readonly string _storagePath;
     private readonly List<WorkstationOperatingContext> _contexts = new();
+    private Task? _loadTask;
     private bool _loaded;
 
     public WorkstationOperatingContextService(
@@ -51,27 +53,52 @@ public sealed partial class WorkstationOperatingContextService
 
     public event EventHandler? WindowModeChanged;
 
-    public async Task LoadAsync(CancellationToken ct = default)
+    public Task LoadAsync(CancellationToken ct = default)
     {
-        if (_loaded)
+        lock (_loadGate)
         {
-            return;
+            if (_loaded)
+            {
+                return Task.CompletedTask;
+            }
+
+            _loadTask ??= LoadCoreAsync(ct);
+            return _loadTask;
         }
+    }
 
-        _loaded = true;
-        await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
-        await LoadSettingsAsync(ct).ConfigureAwait(false);
-        await RefreshContextsAsync(ct).ConfigureAwait(false);
-
-        if (CurrentContext is not null)
+    private async Task LoadCoreAsync(CancellationToken ct)
+    {
+        try
         {
-            return;
+            await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+            await LoadSettingsAsync(ct).ConfigureAwait(false);
+            await RefreshContextsAsync(ct).ConfigureAwait(false);
+
+            var targetKey = LastSelectedOperatingContextKey;
+            if (CurrentContext is null && !string.IsNullOrWhiteSpace(targetKey))
+            {
+                await SelectLoadedContextAsync(targetKey, raiseChanging: false, raiseChanged: false, ct: ct).ConfigureAwait(false);
+            }
+
+            MarkLoaded();
         }
-
-        var targetKey = LastSelectedOperatingContextKey;
-        if (!string.IsNullOrWhiteSpace(targetKey))
+        catch
         {
-            await SelectContextAsync(targetKey, raiseChanging: false, raiseChanged: false, ct: ct).ConfigureAwait(false);
+            lock (_loadGate)
+            {
+                _loadTask = null;
+            }
+
+            throw;
+        }
+    }
+
+    private void MarkLoaded()
+    {
+        lock (_loadGate)
+        {
+            _loaded = true;
         }
     }
 
@@ -147,7 +174,15 @@ public sealed partial class WorkstationOperatingContextService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(contextKey);
         await LoadAsync(ct).ConfigureAwait(false);
+        return await SelectLoadedContextAsync(contextKey, raiseChanging, raiseChanged, ct).ConfigureAwait(false);
+    }
 
+    private async Task<WorkstationOperatingContext?> SelectLoadedContextAsync(
+        string contextKey,
+        bool raiseChanging,
+        bool raiseChanged,
+        CancellationToken ct)
+    {
         var nextContext = _contexts.FirstOrDefault(context =>
             string.Equals(context.ContextKey, contextKey, StringComparison.OrdinalIgnoreCase));
         if (nextContext is null)

@@ -1,3 +1,4 @@
+using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Plotting;
 
 namespace Meridian.QuantScript.Compilation;
@@ -16,4 +17,6 @@ public sealed record ScriptRunResult(
     IReadOnlyList<KeyValuePair<string, string>> Metrics,
     IReadOnlyList<PlotRequest> Plots,
     IReadOnlyList<string> TradesSummary,
+    IReadOnlyList<BacktestResult> CapturedBacktests,
+    IReadOnlyList<ParameterDescriptor> RuntimeParameters,
     ScriptExecutionCheckpoint? Checkpoint = null);

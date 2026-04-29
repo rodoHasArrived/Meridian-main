@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NyseNationalTradesCsvParser
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 38
   assemblies:
   - Meridian.Infrastructure
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeMessageType
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SummaryMessageType
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusMessageType
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseTradeLine
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToRealtimeTrade
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 112
   assemblies:
   - Meridian.Infrastructure
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseAllTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 130
   assemblies:
   - Meridian.Infrastructure
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMessageType
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 143
   assemblies:
   - Meridian.Infrastructure
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapExchangeCode
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 178
   assemblies:
   - Meridian.Infrastructure
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryParseNanosecondTime
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
     startLine: 190
   assemblies:
   - Meridian.Infrastructure

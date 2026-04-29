@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SemanticValidationStage
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 139
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
-    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    path: src/Meridian.Application/Config/IConfigValidator.cs
     startLine: 141
   assemblies:
   - Meridian.Application

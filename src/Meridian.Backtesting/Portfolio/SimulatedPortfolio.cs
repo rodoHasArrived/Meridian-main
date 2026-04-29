@@ -954,8 +954,8 @@ internal sealed class SimulatedPortfolio
     {
         return method switch
         {
-            LotSelectionMethod.Lifo  => IterateReverse(lots),
-            LotSelectionMethod.Hifo  => lots.EnumerateNodes().OrderByDescending(n => n.Value.EntryPrice),
+            LotSelectionMethod.Lifo => IterateReverse(lots),
+            LotSelectionMethod.Hifo => lots.EnumerateNodes().OrderByDescending(n => n.Value.EntryPrice),
             LotSelectionMethod.SpecificId when targetLotId.HasValue =>
                 SpecificIdFirst(lots, targetLotId.Value),
             _ => lots.EnumerateNodes(),   // Fifo + SpecificId fallback

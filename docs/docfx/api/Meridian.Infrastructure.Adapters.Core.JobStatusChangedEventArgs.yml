@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobStatusChangedEventArgs
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 98
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Job
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 101
   assemblies:
   - Meridian.Infrastructure
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 102
   assemblies:
   - Meridian.Infrastructure
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure

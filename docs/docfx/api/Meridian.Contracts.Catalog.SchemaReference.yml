@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaReference
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 296
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 301
   assemblies:
   - Meridian.Contracts
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentVersion
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 307
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VersionsInUse
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 313
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaPath
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 319
   assemblies:
   - Meridian.Contracts
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCountByVersion
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 325
   assemblies:
   - Meridian.Contracts

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerStatusService
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnStateChanged
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordStateTransition
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 82
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDashboard
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 96
   assemblies:
   - Meridian.Application

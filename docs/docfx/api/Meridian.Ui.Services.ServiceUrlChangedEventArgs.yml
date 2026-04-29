@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrlChangedEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 460
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldUrl
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 462
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewUrl
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 463
   assemblies:
   - Meridian.Ui.Services

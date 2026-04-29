@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusSnapshot
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IbEnabled
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCount
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthSubscriptions
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeSubscriptions
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -342,7 +342,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromRuntime
-    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
     startLine: 17
   assemblies:
   - Meridian.Application

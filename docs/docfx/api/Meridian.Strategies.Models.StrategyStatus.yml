@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyStatus
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 3
   assemblies:
   - Meridian.Strategies
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Registered
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 6
   assemblies:
   - Meridian.Strategies
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarmingUp
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paused
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stopped
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 18
   assemblies:
   - Meridian.Strategies
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Faulted
-    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    path: src/Meridian.Strategies/Models/StrategyStatus.cs
     startLine: 21
   assemblies:
   - Meridian.Strategies

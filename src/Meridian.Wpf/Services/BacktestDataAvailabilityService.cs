@@ -66,8 +66,10 @@ public sealed class BacktestDataAvailabilityService
                 foreach (var file in Directory.EnumerateFiles(symbolDir, "*.jsonl", SearchOption.AllDirectories))
                 {
                     var match = _dateInFilenameRegex.Match(Path.GetFileName(file));
-                    if (!match.Success) continue;
-                    if (!DateOnly.TryParse(match.Value, out var date)) continue;
+                    if (!match.Success)
+                        continue;
+                    if (!DateOnly.TryParse(match.Value, out var date))
+                        continue;
                     if (date >= from && date <= to)
                         presentDates.Add(date);
                 }

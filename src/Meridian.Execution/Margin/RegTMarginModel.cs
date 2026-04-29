@@ -108,7 +108,8 @@ public sealed class RegTMarginModel : IMarginModel
 
         foreach (var (symbol, position) in positions)
         {
-            if (!prices.TryGetValue(symbol, out var price)) continue;
+            if (!prices.TryGetValue(symbol, out var price))
+                continue;
 
             var notional = position.Quantity * price;
             totalNotional += notional;

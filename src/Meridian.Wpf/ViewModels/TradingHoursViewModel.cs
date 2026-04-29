@@ -40,6 +40,18 @@ public sealed class TradingHoursViewModel : BindableBase
     private string _marketStatusTimeText = string.Empty;
     public string MarketStatusTimeText { get => _marketStatusTimeText; private set => SetProperty(ref _marketStatusTimeText, value); }
 
+    private string _sessionBriefingToneLabel = "Calendar status";
+    public string SessionBriefingToneLabel { get => _sessionBriefingToneLabel; private set => SetProperty(ref _sessionBriefingToneLabel, value); }
+
+    private string _sessionBriefingTitle = "Loading session status";
+    public string SessionBriefingTitle { get => _sessionBriefingTitle; private set => SetProperty(ref _sessionBriefingTitle, value); }
+
+    private string _sessionBriefingDetail = "Loading the market calendar before projecting the next trading-desk handoff.";
+    public string SessionBriefingDetail { get => _sessionBriefingDetail; private set => SetProperty(ref _sessionBriefingDetail, value); }
+
+    private string _sessionBriefingTargetText = "Regular session: 9:30 AM - 4:00 PM ET";
+    public string SessionBriefingTargetText { get => _sessionBriefingTargetText; private set => SetProperty(ref _sessionBriefingTargetText, value); }
+
     // ── Exchange row properties ───────────────────────────────────────────────────────
     private Brush _nyseRegularStatusDotFill = Brushes.Gray;
     public Brush NyseRegularStatusDotFill { get => _nyseRegularStatusDotFill; private set => SetProperty(ref _nyseRegularStatusDotFill, value); }
@@ -63,6 +75,18 @@ public sealed class TradingHoursViewModel : BindableBase
     private string _holidaysHeaderText = "US Market Holidays";
     public string HolidaysHeaderText { get => _holidaysHeaderText; private set => SetProperty(ref _holidaysHeaderText, value); }
 
+    private bool _hasHolidays;
+    public bool HasHolidays { get => _hasHolidays; private set => SetProperty(ref _hasHolidays, value); }
+
+    private bool _isHolidayEmptyStateVisible = true;
+    public bool IsHolidayEmptyStateVisible { get => _isHolidayEmptyStateVisible; private set => SetProperty(ref _isHolidayEmptyStateVisible, value); }
+
+    private string _holidayEmptyStateTitle = "Loading holiday calendar";
+    public string HolidayEmptyStateTitle { get => _holidayEmptyStateTitle; private set => SetProperty(ref _holidayEmptyStateTitle, value); }
+
+    private string _holidayEmptyStateDetail = "Waiting for the workstation calendar to return this year's market closures.";
+    public string HolidayEmptyStateDetail { get => _holidayEmptyStateDetail; private set => SetProperty(ref _holidayEmptyStateDetail, value); }
+
     public ObservableCollection<HolidayDisplayItem> Holidays { get; } = new();
 
     public TradingHoursViewModel(ApiClientService apiClient)
@@ -76,6 +100,38 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         await LoadMarketStatusAsync(ct);
         await LoadHolidaysAsync(ct);
+    }
+
+    public void ApplyMarketStatusForTests(string state, string reason, DateTimeOffset? nextSession = null)
+    {
+        UpdateStatusBanner(state, reason, nextSession);
+        UpdateSessionRows(state);
+    }
+
+    internal void ApplyHolidayCalendarForTests(IEnumerable<HolidayDisplayItem> holidays, int? year = null)
+    {
+        var calendarYear = year ?? DateTime.UtcNow.Year;
+        HolidaysHeaderText = $"US Market Holidays ({calendarYear})";
+        Holidays.Clear();
+
+        foreach (var holiday in holidays)
+        {
+            Holidays.Add(holiday);
+        }
+
+        UpdateHolidayPresentation(
+            "No US market holidays loaded",
+            $"The calendar endpoint returned no usable {calendarYear} closure rows. Confirm exchange-holiday coverage before scheduling around market closures.");
+    }
+
+    internal void ApplyHolidayCalendarUnavailableForTests(int? year = null)
+    {
+        var calendarYear = year ?? DateTime.UtcNow.Year;
+        HolidaysHeaderText = $"US Market Holidays ({calendarYear})";
+        Holidays.Clear();
+        UpdateHolidayPresentation(
+            "Holiday calendar unavailable",
+            $"The workstation calendar did not return {calendarYear} market closures. Use the session status above before relying on holiday gates.");
     }
 
     // ── Data loading ──────────────────────────────────────────────────────────────────
@@ -115,23 +171,28 @@ public sealed class TradingHoursViewModel : BindableBase
 
         if (day is DayOfWeek.Saturday or DayOfWeek.Sunday)
         {
-            state  = "Closed"; reason = "Weekend";
+            state = "Closed";
+            reason = "Weekend";
         }
         else if (time >= new TimeOnly(4, 0) && time < new TimeOnly(9, 30))
         {
-            state  = "PreMarket"; reason = "Pre-market session";
+            state = "PreMarket";
+            reason = "Pre-market session";
         }
         else if (time >= new TimeOnly(9, 30) && time < new TimeOnly(16, 0))
         {
-            state  = "Open"; reason = "Regular trading session";
+            state = "Open";
+            reason = "Regular trading session";
         }
         else if (time >= new TimeOnly(16, 0) && time < new TimeOnly(20, 0))
         {
-            state  = "AfterHours"; reason = "After-hours session";
+            state = "AfterHours";
+            reason = "After-hours session";
         }
         else
         {
-            state  = "Closed"; reason = "Outside trading hours";
+            state = "Closed";
+            reason = "Outside trading hours";
         }
 
         UpdateStatusBanner(state, reason, nextSession: null);
@@ -142,49 +203,48 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         var (label, dotColor, textColor) = state switch
         {
-            "Open"       => ("Open",        GetResource("SuccessColorBrush",  Brushes.LimeGreen),     GetResource("SuccessColorBrush",  Brushes.LimeGreen)),
-            "PreMarket"  => ("Pre-Market",  GetResource("InfoColorBrush",     Brushes.CornflowerBlue), GetResource("InfoColorBrush",     Brushes.CornflowerBlue)),
-            "AfterHours" => ("After-Hours", GetResource("WarningColorBrush",  Brushes.Orange),         GetResource("WarningColorBrush",  Brushes.Orange)),
-            _            => ("Closed",      GetResource("ErrorColorBrush",    Brushes.Red),             GetResource("ErrorColorBrush",    Brushes.Red))
+            "Open" => ("Open", GetResource("SuccessColorBrush", Brushes.LimeGreen), GetResource("SuccessColorBrush", Brushes.LimeGreen)),
+            "PreMarket" => ("Pre-Market", GetResource("InfoColorBrush", Brushes.CornflowerBlue), GetResource("InfoColorBrush", Brushes.CornflowerBlue)),
+            "AfterHours" => ("After-Hours", GetResource("WarningColorBrush", Brushes.Orange), GetResource("WarningColorBrush", Brushes.Orange)),
+            _ => ("Closed", GetResource("ErrorColorBrush", Brushes.Red), GetResource("ErrorColorBrush", Brushes.Red))
         };
 
-        MarketStatusDotFill           = dotColor;
-        MarketStatusText              = label;
-        MarketStatusTextForeground    = textColor;
-        MarketStatusReasonText        = reason;
-        MarketStatusTimeText          = $"As of {DateTime.UtcNow:HH:mm} UTC";
+        MarketStatusDotFill = dotColor;
+        MarketStatusText = label;
+        MarketStatusTextForeground = textColor;
+        MarketStatusReasonText = reason;
+        MarketStatusTimeText = $"As of {DateTime.UtcNow:HH:mm} UTC";
+        NextSessionText = FormatNextSessionText(nextSession);
 
-        if (nextSession.HasValue)
-        {
-            var eastern = GetEasternTimeZone();
-            var local   = TimeZoneInfo.ConvertTime(nextSession.Value, eastern);
-            NextSessionText = $"Next session: {local:ddd, MMM d} at {local:h:mm tt} ET";
-        }
-        else
-        {
-            NextSessionText = string.Empty;
-        }
+        var briefing = BuildSessionBriefing(state, reason, NextSessionText);
+        SessionBriefingToneLabel = briefing.ToneLabel;
+        SessionBriefingTitle = briefing.Title;
+        SessionBriefingDetail = briefing.Detail;
+        SessionBriefingTargetText = briefing.TargetText;
     }
 
     private void UpdateSessionRows(string state)
     {
-        var isOpen      = state == "Open";
-        var openBrush   = GetResource("SuccessColorBrush", Brushes.LimeGreen);
-        var closedBrush = GetResource("ErrorColorBrush",   Brushes.Red);
+        var isOpen = state == "Open";
+        var openBrush = GetResource("SuccessColorBrush", Brushes.LimeGreen);
+        var closedBrush = GetResource("ErrorColorBrush", Brushes.Red);
 
-        NyseRegularStatusDotFill      = isOpen ? openBrush   : closedBrush;
-        NyseRegularStatusText         = isOpen ? "Open"      : "Closed";
-        NyseRegularStatusForeground   = isOpen ? openBrush   : closedBrush;
+        NyseRegularStatusDotFill = isOpen ? openBrush : closedBrush;
+        NyseRegularStatusText = isOpen ? "Open" : "Closed";
+        NyseRegularStatusForeground = isOpen ? openBrush : closedBrush;
 
-        NasdaqRegularStatusDotFill    = isOpen ? openBrush   : closedBrush;
-        NasdaqRegularStatusText       = isOpen ? "Open"      : "Closed";
-        NasdaqRegularStatusForeground = isOpen ? openBrush   : closedBrush;
+        NasdaqRegularStatusDotFill = isOpen ? openBrush : closedBrush;
+        NasdaqRegularStatusText = isOpen ? "Open" : "Closed";
+        NasdaqRegularStatusForeground = isOpen ? openBrush : closedBrush;
     }
 
     private async Task LoadHolidaysAsync(CancellationToken ct = default)
     {
         var year = DateTime.UtcNow.Year;
         HolidaysHeaderText = $"US Market Holidays ({year})";
+        UpdateHolidayPresentation(
+            "Loading holiday calendar",
+            "Waiting for the workstation calendar to return this year's market closures.");
 
         try
         {
@@ -200,10 +260,13 @@ public sealed class TradingHoursViewModel : BindableBase
                         Holidays.Add(new HolidayDisplayItem
                         {
                             DateText = $"{date:MMM d} ({date:ddd})",
-                            Name     = h.Name ?? string.Empty
+                            Name = h.Name ?? string.Empty
                         });
                     }
                 }
+                UpdateHolidayPresentation(
+                    "No US market holidays loaded",
+                    $"The calendar endpoint returned no usable {year} closure rows. Confirm exchange-holiday coverage before scheduling around market closures.");
                 return;
             }
         }
@@ -213,14 +276,70 @@ public sealed class TradingHoursViewModel : BindableBase
         }
 
         Holidays.Clear();
+        UpdateHolidayPresentation(
+            "Holiday calendar unavailable",
+            $"The workstation calendar did not return {year} market closures. Use the session status above before relying on holiday gates.");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────────────
 
     private static TimeZoneInfo GetEasternTimeZone()
     {
-        try   { return TimeZoneInfo.FindSystemTimeZoneById("America/New_York"); }
+        try
+        { return TimeZoneInfo.FindSystemTimeZoneById("America/New_York"); }
         catch { return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); }
+    }
+
+    private static string FormatNextSessionText(DateTimeOffset? nextSession)
+    {
+        if (!nextSession.HasValue)
+        {
+            return string.Empty;
+        }
+
+        var eastern = GetEasternTimeZone();
+        var local = TimeZoneInfo.ConvertTime(nextSession.Value, eastern);
+        return $"Next session: {local:ddd, MMM d} at {local:h:mm tt} ET";
+    }
+
+    private static SessionBriefing BuildSessionBriefing(string state, string reason, string nextSessionText)
+    {
+        var reasonText = string.IsNullOrWhiteSpace(reason) ? "Calendar status is available." : reason.Trim();
+
+        return state switch
+        {
+            "Open" => new SessionBriefing(
+                "Live risk window",
+                "Regular session is active",
+                "Monitor blotter, position drift, and provider latency before routing risk-sensitive work.",
+                "Regular session: 9:30 AM - 4:00 PM ET"),
+            "PreMarket" => new SessionBriefing(
+                "Pre-market staging",
+                "Extended session is active before the open",
+                "Confirm watchlists, liquidity, and backfill freshness before the regular session starts.",
+                "Pre-market: 4:00 AM - 9:30 AM ET"),
+            "AfterHours" => new SessionBriefing(
+                "After-hours review",
+                "Extended session is active after the close",
+                "Review late fills, reconciliation notes, and overnight research handoffs before the next open.",
+                "After-hours: 4:00 PM - 8:00 PM ET"),
+            _ => new SessionBriefing(
+                "Closed planning",
+                "Regular trading is closed",
+                string.IsNullOrWhiteSpace(nextSessionText)
+                    ? $"{reasonText} Review overnight research, queued backfills, and staged orders before the next open."
+                    : $"{nextSessionText}. Review overnight research, queued backfills, and staged orders before the open.",
+                "Regular session: 9:30 AM - 4:00 PM ET")
+        };
+    }
+
+    private void UpdateHolidayPresentation(string emptyTitle, string emptyDetail)
+    {
+        var hasHolidays = Holidays.Count > 0;
+        HasHolidays = hasHolidays;
+        IsHolidayEmptyStateVisible = !hasHolidays;
+        HolidayEmptyStateTitle = emptyTitle;
+        HolidayEmptyStateDetail = emptyDetail;
     }
 
     private static Brush GetResource(string key, Brush fallback) =>
@@ -231,8 +350,14 @@ public sealed class TradingHoursViewModel : BindableBase
     public sealed class HolidayDisplayItem
     {
         public string DateText { get; set; } = string.Empty;
-        public string Name     { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
+
+    private sealed record SessionBriefing(
+        string ToneLabel,
+        string Title,
+        string Detail,
+        string TargetText);
 }
 
 // Calendar API response DTOs (kept in this file — only used by this ViewModel)

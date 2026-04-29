@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
-using Meridian.Strategies.Services;
 using Meridian.QuantScript.Plotting;
+using Meridian.Strategies.Services;
 using Meridian.Wpf.Services;
 using CurvePt = Meridian.Contracts.Workstation.EquityCurvePoint;
 
@@ -115,7 +115,7 @@ public sealed class RunRiskViewModel : BindableBase
     private PlotRequest? _rollingVolatilityPlot;
 
     /// <summary>
-    /// Rolling 21-day annualised volatility time series for the <see cref="PlotRenderBehavior"/>.
+    /// Rolling 21-day annualised volatility time series for the plot render behavior.
     /// </summary>
     public PlotRequest? RollingVolatilityPlot
     {

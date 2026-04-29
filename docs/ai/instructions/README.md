@@ -2,6 +2,9 @@
 
 This directory is the navigation index for **path-specific instruction files** used by GitHub Copilot.
 The actual files live in `.github/instructions/` where Copilot can discover and auto-apply them.
+Path-specific instructions should stay focused on host mechanics and link back to the shared
+provider-agnostic workflow in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
+when a rule applies beyond Copilot.
 
 ---
 
@@ -99,6 +102,7 @@ explicitly**.
 
 | Resource | Purpose |
 |----------|---------|
+| [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Shared workflow and safety contract across AI providers |
 | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) | Repository-wide Copilot instructions |
 | [`docs/ai/copilot/instructions.md`](../copilot/instructions.md) | Extended Copilot guidance |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Agent definitions (Copilot + Claude) |
@@ -106,4 +110,4 @@ explicitly**.
 
 ---
 
-*Last Updated: 2026-03-16*
+*Last Updated: 2026-04-28*

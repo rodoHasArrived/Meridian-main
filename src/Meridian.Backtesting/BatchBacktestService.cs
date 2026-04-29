@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 
@@ -80,10 +81,26 @@ public sealed class BatchBacktestRequest
 /// Batch backtest service implementation using SemaphoreSlim for concurrency control.
 /// Runs multiple backtests in parallel, catching per-run exceptions without aborting the batch.
 /// </summary>
-public sealed class BatchBacktestService(
-    ILogger<BatchBacktestService> logger,
-    BacktestEngine engine) : IBatchBacktestService
+public sealed class BatchBacktestService : IBatchBacktestService
 {
+    private readonly ILogger<BatchBacktestService> _logger;
+    private readonly Func<BacktestRequest, BacktestEngine> _engineFactory;
+
+    public BatchBacktestService(
+        ILogger<BatchBacktestService> logger,
+        BacktestEngine engine)
+        : this(logger, _ => engine)
+    {
+    }
+
+    public BatchBacktestService(
+        ILogger<BatchBacktestService> logger,
+        Func<BacktestRequest, BacktestEngine> engineFactory)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _engineFactory = engineFactory ?? throw new ArgumentNullException(nameof(engineFactory));
+    }
+
     /// <summary>
     /// Runs a batch of backtests with parameter sweeping.
     /// Each run exception is caught and recorded; the batch continues to completion.
@@ -94,6 +111,7 @@ public sealed class BatchBacktestService(
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.BaseRequest);
         ArgumentNullException.ThrowIfNull(request.ParameterGrid);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.MaxConcurrency);
 
         var sw = Stopwatch.StartNew();
         var total = request.ParameterGrid.Count;
@@ -101,7 +119,7 @@ public sealed class BatchBacktestService(
         var runs = new List<BatchBacktestRun>();
         var semaphore = new SemaphoreSlim(request.MaxConcurrency, request.MaxConcurrency);
 
-        logger.LogInformation("Starting batch backtest with {Total} runs, max concurrency {MaxConcurrency}",
+        _logger.LogInformation("Starting batch backtest with {Total} runs, max concurrency {MaxConcurrency}",
             total, request.MaxConcurrency);
 
         var tasks = request.ParameterGrid.Select((paramSet, index) =>
@@ -118,7 +136,7 @@ public sealed class BatchBacktestService(
             TotalDuration = sw.Elapsed
         };
 
-        logger.LogInformation("Batch backtest completed in {Duration}. {Completed} succeeded, {Failed} failed",
+        _logger.LogInformation("Batch backtest completed in {Duration}. {Completed} succeeded, {Failed} failed",
             sw.Elapsed,
             summary.Runs.Count(r => r.Result != null),
             summary.Runs.Count(r => r.ErrorMessage != null));
@@ -144,7 +162,7 @@ public sealed class BatchBacktestService(
             var runSw = Stopwatch.StartNew();
             var label = FormatParameterLabel(paramSet);
 
-            logger.LogInformation("Starting run {Index}/{Total}: {Label}", index + 1, total, label);
+            _logger.LogInformation("Starting run {Index}/{Total}: {Label}", index + 1, total, label);
 
             progress?.Report(new BatchBacktestProgress
             {
@@ -158,19 +176,23 @@ public sealed class BatchBacktestService(
 
             try
             {
-                // Create a simple strategy that does nothing (caller can extend with parameter-driven logic)
+                var runRequest = ApplyParameters(request.BaseRequest, paramSet);
+                var engine = _engineFactory(runRequest);
+
+                // Create a simple strategy that does nothing (caller can extend with parameter-driven logic).
                 var strategy = new NoOpStrategy();
 
                 result = await Task.Run(async () =>
-                    await engine.RunAsync(request.BaseRequest, strategy, null, ct), ct);
+                    await engine.RunAsync(runRequest, strategy, null, ct).ConfigureAwait(false), ct)
+                    .ConfigureAwait(false);
 
-                logger.LogInformation("Run {Index}/{Total} succeeded in {Duration}ms",
+                _logger.LogInformation("Run {Index}/{Total} succeeded in {Duration}ms",
                     index + 1, total, runSw.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message;
-                logger.LogWarning(ex, "Run {Index}/{Total} failed: {Error}", index + 1, total, ex.Message);
+                _logger.LogWarning(ex, "Run {Index}/{Total} failed: {Error}", index + 1, total, ex.Message);
             }
 
             runSw.Stop();
@@ -208,6 +230,76 @@ public sealed class BatchBacktestService(
         var parts = paramSet.Select(kvp => $"{kvp.Key}={kvp.Value}");
         return string.Join(", ", parts);
     }
+
+    private static BacktestRequest ApplyParameters(
+        BacktestRequest baseRequest,
+        IReadOnlyDictionary<string, object> parameters)
+    {
+        var request = baseRequest;
+
+        foreach (var (key, value) in parameters)
+        {
+            request = key switch
+            {
+                nameof(BacktestRequest.InitialCash) => request with { InitialCash = ToDecimal(value) },
+                nameof(BacktestRequest.AnnualMarginRate) => request with { AnnualMarginRate = ToDouble(value) },
+                nameof(BacktestRequest.AnnualShortRebateRate) => request with { AnnualShortRebateRate = ToDouble(value) },
+                nameof(BacktestRequest.SlippageBasisPoints) => request with { SlippageBasisPoints = ToDecimal(value) },
+                nameof(BacktestRequest.CommissionRate) => request with { CommissionRate = ToDecimal(value) },
+                nameof(BacktestRequest.CommissionMinimum) => request with { CommissionMinimum = ToDecimal(value) },
+                nameof(BacktestRequest.CommissionMaximum) => request with { CommissionMaximum = ToDecimal(value) },
+                nameof(BacktestRequest.MarketImpactCoefficient) => request with { MarketImpactCoefficient = ToDecimal(value) },
+                nameof(BacktestRequest.RiskFreeRate) => request with { RiskFreeRate = ToDouble(value) },
+                nameof(BacktestRequest.MaxParticipationRate) => request with { MaxParticipationRate = ToDecimal(value) },
+                nameof(BacktestRequest.DefaultExecutionModel) => request with { DefaultExecutionModel = ToEnum<ExecutionModel>(value) },
+                nameof(BacktestRequest.CommissionKind) => request with { CommissionKind = ToEnum<BacktestCommissionKind>(value) },
+                nameof(BacktestRequest.AdjustForCorporateActions) => request with { AdjustForCorporateActions = ToBool(value) },
+                nameof(BacktestRequest.FailOnUnknownSymbols) => request with { FailOnUnknownSymbols = ToBool(value) },
+                _ => request
+            };
+        }
+
+        return request;
+    }
+
+    private static decimal ToDecimal(object value)
+        => value switch
+        {
+            decimal decimalValue => decimalValue,
+            double doubleValue => (decimal)doubleValue,
+            float floatValue => (decimal)floatValue,
+            int intValue => intValue,
+            long longValue => longValue,
+            string stringValue when decimal.TryParse(stringValue, out var parsed) => parsed,
+            _ => Convert.ToDecimal(value, CultureInfo.InvariantCulture)
+        };
+
+    private static double ToDouble(object value)
+        => value switch
+        {
+            double doubleValue => doubleValue,
+            decimal decimalValue => decimal.ToDouble(decimalValue),
+            float floatValue => floatValue,
+            string stringValue when double.TryParse(stringValue, out var parsed) => parsed,
+            _ => Convert.ToDouble(value, CultureInfo.InvariantCulture)
+        };
+
+    private static bool ToBool(object value)
+        => value switch
+        {
+            bool boolValue => boolValue,
+            string stringValue when bool.TryParse(stringValue, out var parsed) => parsed,
+            _ => Convert.ToBoolean(value, CultureInfo.InvariantCulture)
+        };
+
+    private static TEnum ToEnum<TEnum>(object value)
+        where TEnum : struct, Enum
+        => value switch
+        {
+            TEnum typedValue => typedValue,
+            string stringValue when Enum.TryParse<TEnum>(stringValue, ignoreCase: true, out var parsed) => parsed,
+            _ => (TEnum)Enum.ToObject(typeof(TEnum), value)
+        };
 
     /// <summary>
     /// Minimal no-op strategy for batch runs (caller can subclass to add parameter-driven logic).

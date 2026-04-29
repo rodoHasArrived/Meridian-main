@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenLot
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotId
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryPrice
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenedAt
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFillId
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -359,7 +359,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 18
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 22
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Age
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 26
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLongTerm
-    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    path: src/Meridian.Backtesting.Sdk/OpenLot.cs
     startLine: 32
   assemblies:
   - Meridian.Backtesting.Sdk

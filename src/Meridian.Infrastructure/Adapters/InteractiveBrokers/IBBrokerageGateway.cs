@@ -150,6 +150,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        RejectSessionScopedOrderType(request.Type);
 
         var gatewayOrderId = ReserveGatewayOrderId();
         var meridianOrderId = request.ClientOrderId ?? $"IB-{gatewayOrderId}";
@@ -456,6 +457,15 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         {
             throw new InvalidOperationException(
                 "IB brokerage gateway is not connected. Call ConnectAsync first.");
+        }
+    }
+
+    private static void RejectSessionScopedOrderType(OrderType type)
+    {
+        if (type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        {
+            throw new NotSupportedException(
+                $"Interactive Brokers gateway does not currently preserve the {type} session timing qualifier.");
         }
     }
 
@@ -972,6 +982,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         public bool IsConnected => false;
         public string GuidanceMessage { get; }
 
+        // Required by IIBBrokerageClient contract so unsupported-runtime guidance mode remains substitutable.
+#pragma warning disable CS0067 // Event is never used
         public event EventHandler<int>? NextValidIdReceived;
         public event EventHandler<IBOrderStatusUpdate>? OrderStatusReceived;
         public event EventHandler<IBOpenOrderUpdate>? OpenOrderReceived;
@@ -982,6 +994,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
         public event EventHandler<int>? AccountSummaryCompleted;
         public event EventHandler<IBApiError>? ErrorOccurred;
+#pragma warning restore CS0067
 
         public Task ConnectAsync(CancellationToken ct = default)
             => Task.FromException(CreateException());

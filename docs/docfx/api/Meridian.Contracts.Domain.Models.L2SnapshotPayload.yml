@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: L2SnapshotPayload
-    path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
-    path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts

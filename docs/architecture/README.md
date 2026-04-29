@@ -8,7 +8,7 @@
 
 ## Purpose
 
-This directory contains documentation about the system's design, architectural decisions, and structural patterns. It is the authoritative source for understanding *how* the system is built and *why* key design choices were made.
+This directory contains documentation about the system's design, architectural decisions, and structural patterns. It is the authoritative source for understanding _how_ the system is built and _why_ key design choices were made.
 
 ---
 
@@ -33,7 +33,7 @@ This directory contains documentation about the system's design, architectural d
 ## Contents
 
 | Document | Description |
-|----------|-------------|
+| -------- | ----------- |
 | [Overview](overview.md) | High-level system architecture |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
@@ -50,6 +50,7 @@ This directory contains documentation about the system's design, architectural d
 | [Desktop Layers](desktop-layers.md) | WPF desktop application layering |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
 | [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Shared workstation-shell UX pattern for WPF research, trading, data operations, and governance |
+| [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [UI Redesign](ui-redesign.md) | Product and information-architecture direction for workstation UX |
 | [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md) | Target run model, workspace IA, and migration phases |
 | [MCP Server](layer-boundaries.md#dependency-graph) | MCP tool server — dependency position and boundary rules |
@@ -62,4 +63,4 @@ This directory contains documentation about the system's design, architectural d
 
 ---
 
-*Architecture documentation is hand-authored and reviewed by the core team.*
+_Architecture documentation is hand-authored and reviewed by the core team._

@@ -56,7 +56,13 @@ public sealed class CashFlowViewModel : BindableBase
     public string StatusText
     {
         get => _statusText;
-        private set => SetProperty(ref _statusText, value);
+        private set
+        {
+            if (SetProperty(ref _statusText, value))
+            {
+                RaiseCashFlowStateChanged();
+            }
+        }
     }
 
     private string _asOfText = "-";
@@ -107,6 +113,88 @@ public sealed class CashFlowViewModel : BindableBase
     public IRelayCommand OpenLedgerCommand { get; }
     public IRelayCommand OpenSelectedSecurityCommand { get; }
 
+    public bool HasEntries => Entries.Count > 0;
+
+    public bool HasLadderBuckets => LadderBuckets.Count > 0;
+
+    public bool IsEntriesEmptyStateVisible => !HasEntries;
+
+    public bool IsLadderEmptyStateVisible => !HasLadderBuckets;
+
+    public string EntriesEmptyStateTitle
+    {
+        get
+        {
+            if (HasEntries)
+            {
+                return "Cash-flow events loaded";
+            }
+
+            if (string.IsNullOrWhiteSpace(_runId))
+            {
+                return StatusText.StartsWith("No cash flow data", StringComparison.Ordinal)
+                    ? "Cash-flow data unavailable"
+                    : "Select a run to inspect cash flows";
+            }
+
+            return "No cash-flow events recorded";
+        }
+    }
+
+    public string EntriesEmptyStateDetail
+    {
+        get
+        {
+            if (HasEntries)
+            {
+                return StatusText;
+            }
+
+            if (StatusText.StartsWith("No cash flow data", StringComparison.Ordinal))
+            {
+                return StatusText;
+            }
+
+            if (string.IsNullOrWhiteSpace(_runId))
+            {
+                return "Open a strategy run from the run browser to review cash movements by timestamp, account, symbol, and event type.";
+            }
+
+            return "The selected run has no trade, commission, dividend, funding, or other cash-flow entries in the retained result.";
+        }
+    }
+
+    public string LadderEmptyStateTitle
+        => HasLadderBuckets ? "Cash ladder loaded" : "No cash ladder buckets";
+
+    public string LadderEmptyStateDetail
+    {
+        get
+        {
+            if (HasLadderBuckets)
+            {
+                return BucketSummaryText;
+            }
+
+            if (StatusText.StartsWith("No cash flow data", StringComparison.Ordinal))
+            {
+                return "Load a retained run with cash-flow evidence before reviewing projected inflow and outflow buckets.";
+            }
+
+            if (string.IsNullOrWhiteSpace(_runId))
+            {
+                return "Select a strategy run to build the cash ladder from retained cash-flow events.";
+            }
+
+            if (HasEntries)
+            {
+                return "Cash-flow events are loaded, but no ladder buckets were generated for the retained run.";
+            }
+
+            return "No time buckets were generated because the selected run has no retained cash-flow events.";
+        }
+    }
+
     /// <summary>
     /// Parameterless constructor for use in XAML code-behind; resolves
     /// dependencies from the static singleton instances.
@@ -134,15 +222,14 @@ public sealed class CashFlowViewModel : BindableBase
         var runId = parameter as string;
         if (string.IsNullOrWhiteSpace(runId))
         {
-            StatusText = "Select a strategy run to inspect its cash flows.";
+            ResetLoadedState("Select a strategy run to inspect its cash flows.");
             return;
         }
 
-        _runId = runId;
         var summary = await _runService.GetCashFlowAsync(runId, ct: ct).ConfigureAwait(false);
         if (summary is null)
         {
-            StatusText = $"No cash flow data is available for run '{runId}'.";
+            ResetLoadedState($"No cash flow data is available for run '{runId}'.");
             return;
         }
 
@@ -151,6 +238,7 @@ public sealed class CashFlowViewModel : BindableBase
 
     private void ApplySummary(RunCashFlowSummary summary)
     {
+        _runId = summary.RunId;
         Title = $"Cash Flow ({summary.RunId[..Math.Min(8, summary.RunId.Length)]})";
         AsOfText = summary.AsOf.LocalDateTime.ToString("g");
         TotalEntriesText = summary.TotalEntries.ToString("N0");
@@ -178,6 +266,40 @@ public sealed class CashFlowViewModel : BindableBase
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
         OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+        RaiseCashFlowStateChanged();
+    }
+
+    private void ResetLoadedState(string statusText)
+    {
+        _runId = null;
+        Title = "Cash Flow";
+        AsOfText = "-";
+        TotalEntriesText = "-";
+        TotalInflowsText = "-";
+        TotalOutflowsText = "-";
+        NetCashFlowText = "-";
+        BucketSummaryText = "-";
+        Entries.Clear();
+        LadderBuckets.Clear();
+        SelectedEntry = null;
+        StatusText = statusText;
+        OpenRunDetailCommand.NotifyCanExecuteChanged();
+        OpenPortfolioCommand.NotifyCanExecuteChanged();
+        OpenLedgerCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+        RaiseCashFlowStateChanged();
+    }
+
+    private void RaiseCashFlowStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasEntries));
+        RaisePropertyChanged(nameof(HasLadderBuckets));
+        RaisePropertyChanged(nameof(IsEntriesEmptyStateVisible));
+        RaisePropertyChanged(nameof(IsLadderEmptyStateVisible));
+        RaisePropertyChanged(nameof(EntriesEmptyStateTitle));
+        RaisePropertyChanged(nameof(EntriesEmptyStateDetail));
+        RaisePropertyChanged(nameof(LadderEmptyStateTitle));
+        RaisePropertyChanged(nameof(LadderEmptyStateDetail));
     }
 
     private void OpenRunDetail()

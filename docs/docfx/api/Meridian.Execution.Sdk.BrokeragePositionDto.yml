@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokeragePositionDto
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 37
   assemblies:
   - Meridian.Execution.Sdk
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 37
   assemblies:
   - Meridian.Execution.Sdk
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 38
   assemblies:
   - Meridian.Execution.Sdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 39
   assemblies:
   - Meridian.Execution.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostBasis
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 40
   assemblies:
   - Meridian.Execution.Sdk
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
     startLine: 41
   assemblies:
   - Meridian.Execution.Sdk

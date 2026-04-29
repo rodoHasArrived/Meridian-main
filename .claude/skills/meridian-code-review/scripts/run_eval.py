@@ -15,8 +15,12 @@ import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
+from typing import Any
 
-from scripts.utils import parse_skill_md
+try:
+    from scripts.utils import parse_skill_md
+except ModuleNotFoundError:
+    from utils import parse_skill_md
 
 
 def find_project_root() -> Path:
@@ -30,6 +34,58 @@ def find_project_root() -> Path:
         if (parent / ".claude").is_dir():
             return parent
     return current
+
+
+def normalize_eval_item(item: Any, index: int) -> dict[str, Any]:
+    """Normalize supported eval item shapes into trigger-runner fields."""
+    if not isinstance(item, dict):
+        raise ValueError(f"Eval item {index} must be an object, got {type(item).__name__}")
+
+    raw_query = item.get("query", item.get("prompt"))
+    if not isinstance(raw_query, str) or not raw_query.strip():
+        eval_id = item.get("id", index)
+        raise ValueError(f"Eval {eval_id} must define a non-empty 'query' or 'prompt'")
+
+    if "should_trigger" in item:
+        raw_should_trigger = item["should_trigger"]
+        if not isinstance(raw_should_trigger, bool):
+            eval_id = item.get("id", index)
+            raise ValueError(f"Eval {eval_id} 'should_trigger' must be a boolean")
+        should_trigger = raw_should_trigger
+    else:
+        # Skill-creator style evals are positive examples for this trigger runner.
+        should_trigger = True
+
+    normalized = dict(item)
+    normalized["query"] = raw_query
+    normalized["should_trigger"] = should_trigger
+    return normalized
+
+
+def normalize_eval_set(data: Any) -> list[dict[str, Any]]:
+    """Load either a trigger list or a skill-creator eval manifest."""
+    if isinstance(data, dict):
+        if "evals" not in data:
+            raise ValueError("Eval manifest object must contain an 'evals' array")
+        raw_items = data["evals"]
+    elif isinstance(data, list):
+        raw_items = data
+    else:
+        raise ValueError(f"Eval set must be an array or object, got {type(data).__name__}")
+
+    if not isinstance(raw_items, list):
+        raise ValueError("Eval set 'evals' value must be an array")
+
+    normalized = [normalize_eval_item(item, index) for index, item in enumerate(raw_items, start=1)]
+    if not normalized:
+        raise ValueError("Eval set must contain at least one eval")
+
+    return normalized
+
+
+def load_eval_set(path: Path) -> list[dict[str, Any]]:
+    """Read and normalize an eval set from disk."""
+    return normalize_eval_set(json.loads(path.read_text()))
 
 
 def run_single_query(  # noqa: C901
@@ -182,7 +238,7 @@ def run_single_query(  # noqa: C901
 
 
 def run_eval(
-    eval_set: list[dict],
+    eval_set: list[dict[str, Any]],
     skill_name: str,
     description: str,
     num_workers: int,
@@ -233,6 +289,7 @@ def run_eval(
         else:
             did_pass = trigger_rate < trigger_threshold
         results.append({
+            "eval_id": item.get("id"),
             "query": query,
             "should_trigger": should_trigger,
             "trigger_rate": trigger_rate,
@@ -269,7 +326,7 @@ def main():
     parser.add_argument("--verbose", action="store_true", help="Print progress to stderr")
     args = parser.parse_args()
 
-    eval_set = json.loads(Path(args.eval_set).read_text())
+    eval_set = load_eval_set(Path(args.eval_set))
     skill_path = Path(args.skill_path)
 
     if not (skill_path / "SKILL.md").exists():

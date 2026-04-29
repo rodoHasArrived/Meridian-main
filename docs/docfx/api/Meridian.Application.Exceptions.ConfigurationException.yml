@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationException
-    path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
+    path: src/Meridian.Core/Exceptions/ConfigurationException.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
+    path: src/Meridian.Core/Exceptions/ConfigurationException.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldName
-    path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
+    path: src/Meridian.Core/Exceptions/ConfigurationException.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
+    path: src/Meridian.Core/Exceptions/ConfigurationException.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
+    path: src/Meridian.Core/Exceptions/ConfigurationException.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
+    path: src/Meridian.Core/Exceptions/ConfigurationException.cs
     startLine: 21
   assemblies:
   - Meridian.Core

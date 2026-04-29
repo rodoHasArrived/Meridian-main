@@ -56,7 +56,8 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
 
         foreach (var candidate in candidates)
         {
-            if (File.Exists(candidate)) return candidate;
+            if (File.Exists(candidate))
+                return candidate;
         }
 
         return null;
@@ -133,7 +134,8 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         try
         {
             var process = Process.GetProcessById(processId);
-            if (process.HasExited) return true;
+            if (process.HasExited)
+                return true;
 
             process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(ct);

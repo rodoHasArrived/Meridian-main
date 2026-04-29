@@ -16,6 +16,7 @@ public sealed partial class FundLedgerViewModel
     private readonly ObservableCollection<FundReconciliationCheckDetailRow> _reconciliationAllCheckRows = [];
     private readonly ObservableCollection<FundReconciliationSecurityCoverageRow> _reconciliationSecurityCoverageRows = [];
     private readonly ObservableCollection<FundReconciliationAuditTrailRow> _reconciliationAuditRows = [];
+    private readonly ObservableCollection<FundReconciliationCalibrationProfileRow> _reconciliationCalibrationProfiles = [];
 
     private IReadOnlyList<FundReconciliationBreakQueueRow> _allReconciliationBreakQueueItems = [];
     private IReadOnlyList<FundReconciliationRunRow> _allReconciliationRunItems = [];
@@ -38,6 +39,11 @@ public sealed partial class FundLedgerViewModel
     private string _reconciliationLastRefreshText = "-";
     private string _inReviewBreaksText = "0";
     private string _reconciliationSecurityCoverageIssuesText = "0";
+    private string _reconciliationCalibrationStatusText = "Not loaded";
+    private string _reconciliationCalibrationSummaryText = "Calibration posture appears after the reconciliation workbench loads.";
+    private string _reconciliationCalibrationProfilesText = "0";
+    private string _reconciliationCalibrationPendingSignoffText = "0";
+    private string _reconciliationCalibrationMissingMetadataText = "0";
     private string _reconciliationActionFeedbackText = string.Empty;
     private string _reconciliationOperatorText = DefaultReconciliationOperator;
     private string _reconciliationNoteText = string.Empty;
@@ -69,7 +75,11 @@ public sealed partial class FundLedgerViewModel
 
     public ObservableCollection<FundReconciliationAuditTrailRow> ReconciliationAuditRows => _reconciliationAuditRows;
 
+    public ObservableCollection<FundReconciliationCalibrationProfileRow> ReconciliationCalibrationProfiles => _reconciliationCalibrationProfiles;
+
     public IRelayCommand OpenSelectedReconciliationAccountWorkflowCommand { get; private set; } = null!;
+
+    public IRelayCommand ResetReconciliationFiltersCommand { get; private set; } = null!;
 
     public int SelectedReconciliationQueueIndex
     {
@@ -113,6 +123,7 @@ public sealed partial class FundLedgerViewModel
             _selectedReconciliationScopeFilter = normalized;
             RaisePropertyChanged();
             ApplyReconciliationFiltersAndSelection(previousActiveKey);
+            NotifyReconciliationFilterStateChanged();
         }
     }
 
@@ -170,6 +181,7 @@ public sealed partial class FundLedgerViewModel
 
             var previousActiveKey = GetActiveReconciliationSelectionKey();
             ApplyReconciliationFiltersAndSelection(previousActiveKey);
+            NotifyReconciliationFilterStateChanged();
         }
     }
 
@@ -200,7 +212,13 @@ public sealed partial class FundLedgerViewModel
     public string ReconciliationLastRefreshText
     {
         get => _reconciliationLastRefreshText;
-        private set => SetProperty(ref _reconciliationLastRefreshText, value);
+        private set
+        {
+            if (SetProperty(ref _reconciliationLastRefreshText, value))
+            {
+                UpdateReconciliationWorkbenchPresentation();
+            }
+        }
     }
 
     public string InReviewBreaksText
@@ -213,6 +231,36 @@ public sealed partial class FundLedgerViewModel
     {
         get => _reconciliationSecurityCoverageIssuesText;
         private set => SetProperty(ref _reconciliationSecurityCoverageIssuesText, value);
+    }
+
+    public string ReconciliationCalibrationStatusText
+    {
+        get => _reconciliationCalibrationStatusText;
+        private set => SetProperty(ref _reconciliationCalibrationStatusText, value);
+    }
+
+    public string ReconciliationCalibrationSummaryText
+    {
+        get => _reconciliationCalibrationSummaryText;
+        private set => SetProperty(ref _reconciliationCalibrationSummaryText, value);
+    }
+
+    public string ReconciliationCalibrationProfilesText
+    {
+        get => _reconciliationCalibrationProfilesText;
+        private set => SetProperty(ref _reconciliationCalibrationProfilesText, value);
+    }
+
+    public string ReconciliationCalibrationPendingSignoffText
+    {
+        get => _reconciliationCalibrationPendingSignoffText;
+        private set => SetProperty(ref _reconciliationCalibrationPendingSignoffText, value);
+    }
+
+    public string ReconciliationCalibrationMissingMetadataText
+    {
+        get => _reconciliationCalibrationMissingMetadataText;
+        private set => SetProperty(ref _reconciliationCalibrationMissingMetadataText, value);
     }
 
     public string ReconciliationActionFeedbackText
@@ -229,6 +277,8 @@ public sealed partial class FundLedgerViewModel
             if (SetProperty(ref _reconciliationOperatorText, value))
             {
                 NotifyReconciliationDerivedStateChanged();
+                UpdateReconciliationWorkbenchPresentation();
+                UpdateReportPackWorkbenchPresentation();
             }
         }
     }
@@ -323,6 +373,11 @@ public sealed partial class FundLedgerViewModel
         private set => SetProperty(ref _reconciliationRunsEmptyStateText, value);
     }
 
+    public bool HasActiveReconciliationFilters =>
+        _selectedReconciliationBreakQueueFilter != FundReconciliationBreakQueueFilter.Open ||
+        _selectedReconciliationScopeFilter != FundReconciliationScopeFilter.All ||
+        !string.IsNullOrWhiteSpace(ReconciliationSearchText);
+
     public bool IsOpenBreakQueueFilterSelected
     {
         get => _selectedReconciliationBreakQueueFilter == FundReconciliationBreakQueueFilter.Open;
@@ -396,6 +451,9 @@ public sealed partial class FundLedgerViewModel
         OpenSelectedReconciliationAccountWorkflowCommand = new RelayCommand(
             OpenSelectedReconciliationAccountWorkflow,
             () => CanOpenSelectedReconciliationAccountWorkflow);
+        ResetReconciliationFiltersCommand = new RelayCommand(
+            ResetReconciliationFilters,
+            () => HasActiveReconciliationFilters);
 
         ResetReconciliationWorkbenchState();
     }
@@ -421,6 +479,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationLastRefreshText = snapshot.RefreshedAt.LocalDateTime.ToString("g");
         InReviewBreaksText = snapshot.InReviewBreakCount.ToString("N0");
         ReconciliationSecurityCoverageIssuesText = snapshot.Summary.SecurityCoverageIssueCount.ToString("N0");
+        ApplyReconciliationCalibration(snapshot);
         ReconciliationStatusText = snapshot.RunRows.Count == 0
             ? "No reconciliation runs are recorded for this fund yet."
             : $"{snapshot.BreakQueueItems.Count} break queue item(s) and {snapshot.RunRows.Count} run(s) are ready for review.";
@@ -773,6 +832,7 @@ public sealed partial class FundLedgerViewModel
             _reconciliationAllCheckRows.Clear();
             _reconciliationSecurityCoverageRows.Clear();
             _reconciliationAuditRows.Clear();
+            _reconciliationCalibrationProfiles.Clear();
         }
         finally
         {
@@ -786,6 +846,11 @@ public sealed partial class FundLedgerViewModel
         ReconciliationLastRefreshText = "-";
         InReviewBreaksText = "0";
         ReconciliationSecurityCoverageIssuesText = "0";
+        ReconciliationCalibrationStatusText = "Not loaded";
+        ReconciliationCalibrationSummaryText = "Calibration posture appears after the reconciliation workbench loads.";
+        ReconciliationCalibrationProfilesText = "0";
+        ReconciliationCalibrationPendingSignoffText = "0";
+        ReconciliationCalibrationMissingMetadataText = "0";
         ReconciliationBreakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
         ReconciliationRunsEmptyStateText = "No reconciliation runs are available for this fund.";
         ClearReconciliationDetail();
@@ -802,6 +867,7 @@ public sealed partial class FundLedgerViewModel
         RaisePropertyChanged(nameof(IsInReviewBreakQueueFilterSelected));
         RaisePropertyChanged(nameof(IsAllBreakQueueFilterSelected));
         NotifyReconciliationDerivedStateChanged();
+        NotifyReconciliationFilterStateChanged();
     }
 
     private void DisposeReconciliationWorkbench()
@@ -838,6 +904,30 @@ public sealed partial class FundLedgerViewModel
             AccountId: accountId));
     }
 
+    private void ApplyReconciliationCalibration(FundReconciliationWorkbenchSnapshot snapshot)
+    {
+        SynchronizeCollection(_reconciliationCalibrationProfiles, snapshot.CalibrationProfiles);
+
+        var summary = snapshot.CalibrationSummary;
+        if (summary is null)
+        {
+            ReconciliationCalibrationStatusText = "Unavailable";
+            ReconciliationCalibrationSummaryText = "The workstation host did not return reconciliation calibration posture.";
+            ReconciliationCalibrationProfilesText = "0";
+            ReconciliationCalibrationPendingSignoffText = "0";
+            ReconciliationCalibrationMissingMetadataText = "0";
+            return;
+        }
+
+        ReconciliationCalibrationStatusText = FormatCalibrationStatus(summary.Status);
+        ReconciliationCalibrationSummaryText = string.IsNullOrWhiteSpace(summary.Summary)
+            ? "Calibration summary did not include operator guidance."
+            : summary.Summary;
+        ReconciliationCalibrationProfilesText = snapshot.CalibrationProfiles.Count.ToString("N0");
+        ReconciliationCalibrationPendingSignoffText = summary.PendingSignoffCount.ToString("N0");
+        ReconciliationCalibrationMissingMetadataText = summary.MissingCalibrationMetadataCount.ToString("N0");
+    }
+
     private void SetBreakQueueFilter(FundReconciliationBreakQueueFilter filter)
     {
         if (_selectedReconciliationBreakQueueFilter == filter)
@@ -851,6 +941,30 @@ public sealed partial class FundLedgerViewModel
         RaisePropertyChanged(nameof(IsInReviewBreakQueueFilterSelected));
         RaisePropertyChanged(nameof(IsAllBreakQueueFilterSelected));
         ApplyReconciliationFiltersAndSelection(previousActiveKey);
+        NotifyReconciliationFilterStateChanged();
+    }
+
+    private void ResetReconciliationFilters()
+    {
+        if (!HasActiveReconciliationFilters)
+        {
+            return;
+        }
+
+        var previousActiveKey = GetActiveReconciliationSelectionKey();
+        _selectedReconciliationBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+        _selectedReconciliationScopeFilter = FundReconciliationScopeFilter.All;
+        _reconciliationSearchText = string.Empty;
+
+        RaisePropertyChanged(nameof(IsOpenBreakQueueFilterSelected));
+        RaisePropertyChanged(nameof(IsInReviewBreakQueueFilterSelected));
+        RaisePropertyChanged(nameof(IsAllBreakQueueFilterSelected));
+        RaisePropertyChanged(nameof(SelectedReconciliationScopeFilterIndex));
+        RaisePropertyChanged(nameof(ReconciliationSearchText));
+
+        ApplyReconciliationFiltersAndSelection(previousActiveKey);
+        ReconciliationActionFeedbackText = "Reconciliation filters reset to the open queue, all scopes, and blank search.";
+        NotifyReconciliationFilterStateChanged();
     }
 
     private void SetReconciliationRefreshInFlight(bool value)
@@ -897,16 +1011,22 @@ public sealed partial class FundLedgerViewModel
         ReconciliationBreakQueueEmptyStateText = filteredBreakCount > 0
             ? string.Empty
             : _selectedReconciliationScopeFilter == FundReconciliationScopeFilter.Account
-                ? "Break Queue is strategy-scoped only. Switch the scope filter back to Strategy or All to review queue items."
+                ? "Break Queue is strategy-scoped only. Reset filters or switch scope back to Strategy or All to review queue items."
                 : _allReconciliationBreakQueueItems.Count == 0
                     ? "No strategy-run breaks are queued for this fund."
-                    : "No break queue items match the current filter.";
+                    : "No break queue items match the current filter. Reset filters to return to the open queue.";
 
         ReconciliationRunsEmptyStateText = filteredRunCount > 0
             ? string.Empty
             : _allReconciliationRunItems.Count == 0
                 ? "No reconciliation runs are available for this fund."
-                : "No runs match the current scope or search filter.";
+                : "No runs match the current scope or search filter. Reset filters to return to the full run list.";
+    }
+
+    private void NotifyReconciliationFilterStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasActiveReconciliationFilters));
+        ResetReconciliationFiltersCommand.NotifyCanExecuteChanged();
     }
 
     private string? GetActiveReconciliationSelectionKey()
@@ -940,6 +1060,15 @@ public sealed partial class FundLedgerViewModel
     private static bool ContainsIgnoreCase(string? value, string query)
         => !string.IsNullOrWhiteSpace(value) &&
            value.Contains(query, StringComparison.OrdinalIgnoreCase);
+
+    private static string FormatCalibrationStatus(ReconciliationCalibrationStatusDto status)
+        => status switch
+        {
+            ReconciliationCalibrationStatusDto.Ready => "Ready",
+            ReconciliationCalibrationStatusDto.ReviewRequired => "Review Required",
+            ReconciliationCalibrationStatusDto.Blocked => "Blocked",
+            _ => status.ToString()
+        };
 
     private static TItem? ResolveSelection<TItem>(
         IReadOnlyList<TItem> items,

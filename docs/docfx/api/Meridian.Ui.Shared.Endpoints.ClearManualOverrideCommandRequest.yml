@@ -5,7 +5,8 @@ items:
   id: ClearManualOverrideCommandRequest
   parent: Meridian.Ui.Shared.Endpoints
   children:
-  - Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor(System.String)
+  - Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor(System.String,System.String)
+  - Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId
   - Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.Reason
   langs:
   - csharp
@@ -17,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearManualOverrideCommandRequest
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 806
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1128
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -41,40 +42,42 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor(System.String)
-  commentId: M:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor(System.String)
-  id: '#ctor(System.String)'
+- uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor(System.String,System.String)
+  commentId: M:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor(System.String,System.String)
+  id: '#ctor(System.String,System.String)'
   parent: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
   langs:
   - csharp
   - vb
-  name: ClearManualOverrideCommandRequest(string?)
-  nameWithType: ClearManualOverrideCommandRequest.ClearManualOverrideCommandRequest(string?)
-  fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.ClearManualOverrideCommandRequest(string?)
+  name: ClearManualOverrideCommandRequest(string?, string?)
+  nameWithType: ClearManualOverrideCommandRequest.ClearManualOverrideCommandRequest(string?, string?)
+  fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.ClearManualOverrideCommandRequest(string?, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 806
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1128
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
   summary: Request to clear an existing manual override.
   example: []
   syntax:
-    content: public ClearManualOverrideCommandRequest(string? Reason = null)
+    content: public ClearManualOverrideCommandRequest(string? Reason = null, string? CorrelationId = null)
     parameters:
     - id: Reason
       type: System.String
-    content.vb: Public Sub New(Reason As String = Nothing)
+    - id: CorrelationId
+      type: System.String
+    content.vb: Public Sub New(Reason As String = Nothing, CorrelationId As String = Nothing)
   overload: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor*
-  nameWithType.vb: ClearManualOverrideCommandRequest.New(String)
-  fullName.vb: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.New(String)
-  name.vb: New(String)
+  nameWithType.vb: ClearManualOverrideCommandRequest.New(String, String)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.New(String, String)
+  name.vb: New(String, String)
 - uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.Reason
   commentId: P:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.Reason
   id: Reason
@@ -89,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 807
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1129
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -104,6 +107,35 @@ items:
       type: System.String
     content.vb: Public Property Reason As String
   overload: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.Reason*
+- uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId
+  commentId: P:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId
+  id: CorrelationId
+  parent: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: CorrelationId
+  nameWithType: ClearManualOverrideCommandRequest.CorrelationId
+  fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrelationId
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1130
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string? CorrelationId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CorrelationId As String
+  overload: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId*
 references:
 - uid: Meridian.Ui.Shared.Endpoints
   commentId: N:Meridian.Ui.Shared.Endpoints
@@ -419,7 +451,7 @@ references:
   - name: )
 - uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor*
   commentId: Overload:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.#ctor
-  href: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ClearManualOverrideCommandRequest__ctor_System_String_
+  href: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ClearManualOverrideCommandRequest__ctor_System_String_System_String_
   name: ClearManualOverrideCommandRequest
   nameWithType: ClearManualOverrideCommandRequest.ClearManualOverrideCommandRequest
   fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.ClearManualOverrideCommandRequest
@@ -443,3 +475,9 @@ references:
   name: Reason
   nameWithType: ClearManualOverrideCommandRequest.Reason
   fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.Reason
+- uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId
+  href: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ClearManualOverrideCommandRequest_CorrelationId
+  name: CorrelationId
+  nameWithType: ClearManualOverrideCommandRequest.CorrelationId
+  fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.CorrelationId

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTemplateFactory
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromMetadata
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 61
   assemblies:
   - Meridian.Infrastructure
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForStreaming
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 92
   assemblies:
   - Meridian.Infrastructure
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForBackfill
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 105
   assemblies:
   - Meridian.Infrastructure
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForSymbolSearch
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 118
   assemblies:
   - Meridian.Infrastructure
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToCatalogEntry
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
     startLine: 131
   assemblies:
   - Meridian.Infrastructure

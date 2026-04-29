@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimiter
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 21
   assemblies:
   - Meridian.Infrastructure
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WaitForSlotAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRequest
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 88
   assemblies:
   - Meridian.Infrastructure
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 98
   assemblies:
   - Meridian.Infrastructure
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
     startLine: 122
   assemblies:
   - Meridian.Infrastructure

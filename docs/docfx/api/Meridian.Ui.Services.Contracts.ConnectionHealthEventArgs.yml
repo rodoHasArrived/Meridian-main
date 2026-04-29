@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthEventArgs
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 71
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 73
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 75
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCategory
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 81
   assemblies:
   - Meridian.Ui.Services
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemediationGuidance
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 86
   assemblies:
   - Meridian.Ui.Services

@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailySummary
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 602
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 604
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 605
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketStatus
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 606
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHalfDay
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 607
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsPublished
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 610
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsConsumed
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 611
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsDropped
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 612
   assemblies:
   - Meridian.Application
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeakQueueSize
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 613
   assemblies:
   - Meridian.Application
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageProcessingTimeUs
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 614
   assemblies:
   - Meridian.Application
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleSymbolCount
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 617
   assemblies:
   - Meridian.Application
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleSymbols
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 618
   assemblies:
   - Meridian.Application
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SystemHealthStatus
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 621
   assemblies:
   - Meridian.Application
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningCount
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 622
   assemblies:
   - Meridian.Application
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 623
   assemblies:
   - Meridian.Application
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryUsageMb
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 626
   assemblies:
   - Meridian.Application
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GcCollections
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 627
   assemblies:
   - Meridian.Application

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRouteHistoryResult
-    path: ../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
+    path: src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
     startLine: 77
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
+    path: src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
     startLine: 79
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
+    path: src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
     startLine: 80
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: History
-    path: ../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
+    path: src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs
     startLine: 81
   assemblies:
   - Meridian.Ui.Services

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceCompositionRoot
-    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddMarketDataServices
-    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
     startLine: 67
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeCircuitBreakerCallbackRouter
-    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
     startLine: 134
   assemblies:
   - Meridian.Application

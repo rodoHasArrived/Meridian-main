@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionComplianceReport
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 183
   assemblies:
   - Meridian.Storage
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 183
   assemblies:
   - Meridian.Storage
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 184
   assemblies:
   - Meridian.Storage
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 185
   assemblies:
   - Meridian.Storage
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionPolicyDays
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 186
   assemblies:
   - Meridian.Storage
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompliant
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 187
   assemblies:
   - Meridian.Storage
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 188
   assemblies:
   - Meridian.Storage
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 189
   assemblies:
   - Meridian.Storage
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entries
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 190
   assemblies:
   - Meridian.Storage
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Violations
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 191
   assemblies:
   - Meridian.Storage
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
     startLine: 192
   assemblies:
   - Meridian.Storage

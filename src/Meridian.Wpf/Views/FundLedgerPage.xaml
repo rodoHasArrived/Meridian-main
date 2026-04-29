@@ -141,12 +141,41 @@
                                 CornerRadius="12"
                                 Padding="14">
                             <StackPanel>
-                                <TextBlock Text="Review Posture" Style="{StaticResource CardHeaderStyle}" />
-                                <TextBlock Text="Keep fund scope, ledger timing, and exception counts visible before drilling into journals or reconciliation detail." Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding CurrentWorkbenchModeText}" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock x:Name="GovernanceWorkbenchTitleText"
+                                           Text="{Binding CurrentWorkbenchTitleText}"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,6,0,0"
+                                           AutomationProperties.AutomationId="GovernanceWorkbenchTitleText" />
+                                <TextBlock Text="{Binding CurrentWorkbenchSubtitleText}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                     </Grid>
                 </Grid>
+            </Border>
+
+            <Border Margin="0,0,0,16"
+                    Padding="14"
+                    CornerRadius="12"
+                    Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                    BorderBrush="{StaticResource WarningColorBrush}"
+                    BorderThickness="1"
+                    Visibility="{Binding HasRouteBanner, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="GovernanceRouteBanner"
+                    AutomationProperties.Name="Governance Route Banner">
+                <StackPanel>
+                    <TextBlock x:Name="GovernanceRouteBannerTitleText"
+                               Text="{Binding RouteBannerTitleText}"
+                               Style="{StaticResource CardHeaderStyle}"
+                               AutomationProperties.AutomationId="GovernanceRouteBannerTitleText" />
+                    <TextBlock Text="{Binding RouteBannerDetailText}"
+                               Style="{StaticResource CardDescriptionStyle}"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </Border>
 
             <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
@@ -832,14 +861,22 @@
                                     </Border>
                                     <Border Style="{StaticResource CardStyle}" Margin="0,0,0,8">
                                         <StackPanel>
-                                            <TextBlock Text="Workspace As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="{Binding ReconciliationWorkspaceAsOfText}" Style="{StaticResource CardDescriptionStyle}" />
+                                            <TextBlock Text="Ownership &amp; Sign-Off" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationOwnershipText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,8"
+                                            Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}">
+                                        <StackPanel>
+                                            <TextBlock Text="Snapshot Warning" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationSnapshotWarningText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource CardStyle}">
                                         <StackPanel>
-                                            <TextBlock Text="Last Refresh" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="{Binding ReconciliationLastRefreshText}" Style="{StaticResource CardDescriptionStyle}" />
+                                            <TextBlock Text="Workspace &amp; Refresh" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationWorkspaceAsOfText}" Style="{StaticResource CardDescriptionStyle}" />
+                                            <TextBlock Text="{Binding ReconciliationLastRefreshText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
@@ -875,6 +912,59 @@
                                     </Border>
                                 </UniformGrid>
 
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.05*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="1.45*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Calibration Posture" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding ReconciliationCalibrationStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding ReconciliationCalibrationSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                            <UniformGrid Columns="3" Margin="0,12,0,0">
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Profiles" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding ReconciliationCalibrationProfilesText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Pending Sign-Off" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding ReconciliationCalibrationPendingSignoffText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Style="{StaticResource CardStyle}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Missing Metadata" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        <TextBlock Text="{Binding ReconciliationCalibrationMissingMetadataText}" Style="{StaticResource CardHeaderStyle}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                        <DataGrid Grid.Column="2"
+                                                  ItemsSource="{Binding ReconciliationCalibrationProfiles}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  HeadersVisibility="Column"
+                                                  BorderThickness="0"
+                                                  Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                  MinHeight="128"
+                                                  MaxHeight="168"
+                                                  TabIndex="7">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Profile" Binding="{Binding ToleranceProfileId}" Width="*" />
+                                                <DataGridTextColumn Header="Route" Binding="{Binding ExceptionRoute}" Width="*" />
+                                                <DataGridTextColumn Header="Severity" Binding="{Binding HighestSeverityLabel}" Width="95" />
+                                                <DataGridTextColumn Header="Active" Binding="{Binding ActiveBreakCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                <DataGridTextColumn Header="Pending" Binding="{Binding PendingSignoffCount}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </Border>
+
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -906,7 +996,19 @@
 
                                     <TextBlock Grid.Column="3" Text="{Binding ReconciliationActionFeedbackText}" Style="{StaticResource CardDescriptionStyle}" VerticalAlignment="Center" Margin="0,20,16,0" TextWrapping="Wrap" />
 
-                                    <Button Grid.Column="4" Content="Refresh Queue" Click="OnReconciliationRefreshClick" Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Bottom" TabIndex="5" />
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                        <Button Content="Reset Filters"
+                                                Command="{Binding ResetReconciliationFiltersCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Margin="0,0,8,0"
+                                                TabIndex="5"
+                                                AutomationProperties.AutomationId="ReconciliationResetFiltersButton" />
+                                        <Button Content="Refresh Queue"
+                                                Click="OnReconciliationRefreshClick"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                TabIndex="6"
+                                                AutomationProperties.AutomationId="ReconciliationRefreshQueueButton" />
+                                    </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -1371,6 +1473,20 @@
                                     <TextBlock Text="Use this preview as the operator handoff checkpoint before board, investor, compliance, or fund-ops packs leave the governance workspace."
                                                Style="{StaticResource CardDescriptionStyle}"
                                                TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding ReportPackOwnershipText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,12,0,0"
+                                               TextWrapping="Wrap" />
+                                    <Border Margin="0,10,0,0"
+                                            Padding="10"
+                                            CornerRadius="10"
+                                            Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding ReportPackSnapshotWarningText}"
+                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                   TextWrapping="Wrap" />
+                                    </Border>
                                 </StackPanel>
                             </Border>
 

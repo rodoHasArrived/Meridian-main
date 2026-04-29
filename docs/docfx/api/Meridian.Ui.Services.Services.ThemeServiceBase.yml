@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThemeServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTheme
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTheme
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleTheme
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSystemTheme
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyThemeCore
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 62
   assemblies:
   - Meridian.Ui.Services
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnThemeChanged
-    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
     startLine: 68
   assemblies:
   - Meridian.Ui.Services

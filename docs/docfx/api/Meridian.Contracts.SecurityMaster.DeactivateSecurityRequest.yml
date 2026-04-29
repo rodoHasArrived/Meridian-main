@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateSecurityRequest
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedVersion
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 44
   assemblies:
   - Meridian.Contracts
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceSystem
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 46
   assemblies:
   - Meridian.Contracts
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedBy
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 47
   assemblies:
   - Meridian.Contracts
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceRecordId
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts

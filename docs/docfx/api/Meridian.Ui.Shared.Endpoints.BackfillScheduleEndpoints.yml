@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillScheduleEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapBackfillScheduleEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared

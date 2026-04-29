@@ -343,7 +343,8 @@ public sealed class WatchlistService : IWatchlistReader
     public async Task<string?> ExportWatchlistAsync(string watchlistId, CancellationToken ct = default)
     {
         var watchlist = await GetWatchlistAsync(watchlistId, ct);
-        if (watchlist == null) return null;
+        if (watchlist == null)
+            return null;
 
         return JsonSerializer.Serialize(watchlist, DesktopJsonOptions.PrettyPrint);
     }
@@ -360,7 +361,8 @@ public sealed class WatchlistService : IWatchlistReader
         {
             var imported = JsonSerializer.Deserialize<Watchlist>(json, DesktopJsonOptions.Compact);
 
-            if (imported == null) return null;
+            if (imported == null)
+                return null;
 
             return await CreateWatchlistAsync(
                 imported.Name + " (Imported)",
@@ -491,7 +493,8 @@ public sealed class WatchlistService : IWatchlistReader
 
     private async Task EnsureLoadedAsync(CancellationToken ct)
     {
-        if (_isLoaded) return;
+        if (_isLoaded)
+            return;
 
         await _loadGate.WaitAsync(ct);
         try

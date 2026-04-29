@@ -27,6 +27,7 @@ public sealed class QuantScriptLayoutService : IQuantScriptLayoutService
 
     public void SaveLastActiveTab(int tabIndex)
     {
-        if (tabIndex >= 0) _lastActiveTab = tabIndex;
+        if (tabIndex >= 0)
+            _lastActiveTab = tabIndex;
     }
 }

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageFormat
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 157
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Zip
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 160
   assemblies:
   - Meridian.Storage
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TarGz
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 163
   assemblies:
   - Meridian.Storage
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SevenZip
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 166
   assemblies:
   - Meridian.Storage

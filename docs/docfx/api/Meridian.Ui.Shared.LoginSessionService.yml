@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoginSessionService
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConfigured
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Shared
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSession
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Shared
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSession
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 51
   assemblies:
   - Meridian.Ui.Shared
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessionProfile
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 69
   assemblies:
   - Meridian.Ui.Shared
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSession
-    path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
+    path: src/Meridian.Ui.Shared/LoginSessionService.cs
     startLine: 86
   assemblies:
   - Meridian.Ui.Shared

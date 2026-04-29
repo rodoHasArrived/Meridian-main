@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResponseResult
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSuccess
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsNotFound
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 55
   assemblies:
   - Meridian.Infrastructure
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReasonPhrase
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorContent
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure

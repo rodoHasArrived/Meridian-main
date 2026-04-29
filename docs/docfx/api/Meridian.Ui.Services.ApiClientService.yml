@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiClientService
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Services
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Services
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UiApi
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 51
   assemblies:
   - Meridian.Ui.Services
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConfigured
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrlChanged
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 61
   assemblies:
   - Meridian.Ui.Services
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Configure
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 66
   assemblies:
   - Meridian.Ui.Services
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Configure
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 115
   assemblies:
   - Meridian.Ui.Services
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillClient
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 137
   assemblies:
   - Meridian.Ui.Services
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 157
   assemblies:
   - Meridian.Ui.Services
@@ -372,7 +372,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWithResponseAsync
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 184
   assemblies:
   - Meridian.Ui.Services
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostAsync
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 238
   assemblies:
   - Meridian.Ui.Services
@@ -454,7 +454,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostWithResponseAsync
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 269
   assemblies:
   - Meridian.Ui.Services
@@ -498,7 +498,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteWithResponseAsync
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 333
   assemblies:
   - Meridian.Ui.Services
@@ -538,7 +538,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 390
   assemblies:
   - Meridian.Ui.Services
@@ -571,7 +571,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
+    path: src/Meridian.Ui.Services/Services/ApiClientService.cs
     startLine: 432
   assemblies:
   - Meridian.Ui.Services

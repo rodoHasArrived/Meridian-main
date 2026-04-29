@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataRecord
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 397
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFile
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 399
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LineNumber
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 400
   assemblies:
   - Meridian.Application
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 401
   assemblies:
   - Meridian.Application
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 402
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 403
   assemblies:
   - Meridian.Application
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawJson
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 404
   assemblies:
   - Meridian.Application

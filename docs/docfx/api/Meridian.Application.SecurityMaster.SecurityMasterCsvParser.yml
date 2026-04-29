@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterCsvParser
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parse
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs
     startLine: 33
   assemblies:
   - Meridian.Application

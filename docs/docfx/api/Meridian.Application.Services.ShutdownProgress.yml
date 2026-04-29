@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownProgress
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 503
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 503
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Phase
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 504
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStep
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 505
   assemblies:
   - Meridian.Application
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSteps
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 506
   assemblies:
   - Meridian.Application
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 507
   assemblies:
   - Meridian.Application
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 508
   assemblies:
   - Meridian.Application

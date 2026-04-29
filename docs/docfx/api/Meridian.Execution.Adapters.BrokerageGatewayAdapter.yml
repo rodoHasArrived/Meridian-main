@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageGatewayAdapter
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 32
   assemblies:
   - Meridian.Execution
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 35
   assemblies:
   - Meridian.Execution
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 38
   assemblies:
   - Meridian.Execution
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 59
   assemblies:
   - Meridian.Execution
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitAsync
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 86
   assemblies:
   - Meridian.Execution
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAsync
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 110
   assemblies:
   - Meridian.Execution
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamOrderUpdatesAsync
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 128
   assemblies:
   - Meridian.Execution
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
     startLine: 146
   assemblies:
   - Meridian.Execution

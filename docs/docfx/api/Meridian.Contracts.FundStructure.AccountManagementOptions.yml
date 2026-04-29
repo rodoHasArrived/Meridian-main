@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountManagementOptions
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionString
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schema
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationAmountTolerance
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationMaxAsOfDriftMinutes
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts

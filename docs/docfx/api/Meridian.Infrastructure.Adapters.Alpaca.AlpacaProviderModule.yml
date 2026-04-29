@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaProviderModule
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     startLine: 26
   assemblies:
   - Meridian.Infrastructure
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleId
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     startLine: 34
   assemblies:
   - Meridian.Infrastructure
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure

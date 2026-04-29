@@ -18,9 +18,8 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public sealed class SingleInstanceService : IDisposable
 {
-    // Global prefix makes the mutex cross-session (all desktop sessions on this machine).
-    private const string MutexName = "Global\\Meridian.Desktop.SingleInstance";
-    private const string PipeName  = "Meridian.Desktop.SingleInstance.Pipe";
+    private const string DefaultMutexName = "Local\\Meridian.Desktop.SingleInstance";
+    private const string DefaultPipeName = "Meridian.Desktop.SingleInstance.Pipe";
 
     private static readonly Lazy<SingleInstanceService> _instance =
         new(() => new SingleInstanceService());
@@ -28,15 +27,26 @@ public sealed class SingleInstanceService : IDisposable
     public static SingleInstanceService Instance => _instance.Value;
 
     private Mutex? _mutex;
-    private bool   _ownsMutex;
+    private bool _ownsMutex;
     private CancellationTokenSource? _pipeListenerCts;
+    private readonly string _mutexName;
+    private readonly string _pipeName;
 
     /// <summary>
     /// Raised on the UI thread when a secondary instance forwards its launch arguments.
     /// </summary>
     public event EventHandler<string[]>? LaunchArgsReceived;
 
-    private SingleInstanceService() { }
+    private SingleInstanceService()
+        : this(DefaultMutexName, DefaultPipeName)
+    {
+    }
+
+    internal SingleInstanceService(string mutexName, string pipeName)
+    {
+        _mutexName = string.IsNullOrWhiteSpace(mutexName) ? DefaultMutexName : mutexName;
+        _pipeName = string.IsNullOrWhiteSpace(pipeName) ? DefaultPipeName : pipeName;
+    }
 
     /// <summary>
     /// Attempts to acquire the single-instance mutex.
@@ -49,12 +59,17 @@ public sealed class SingleInstanceService : IDisposable
     {
         try
         {
-            _mutex     = new Mutex(initiallyOwned: true, MutexName, out _ownsMutex);
+            _mutex = new Mutex(initiallyOwned: true, _mutexName, out _ownsMutex);
             return _ownsMutex;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _ownsMutex = false;
+            return false;
         }
         catch (Exception)
         {
-            // If the mutex cannot be created (e.g. permission error), assume primary
+            // If the mutex cannot be created for an unexpected reason, assume primary
             // so startup is not blocked.
             return true;
         }
@@ -77,24 +92,39 @@ public sealed class SingleInstanceService : IDisposable
     /// <c>Application.Current.Shutdown()</c>.
     /// </summary>
     public static void SendArgsToPrimary(string[] args)
+        => _ = TrySendArgsToPrimary(args);
+
+    /// <summary>
+    /// Attempts to forward <paramref name="args"/> to an already-listening primary
+    /// instance and reports whether the named-pipe handoff completed.
+    /// </summary>
+    public static bool TrySendArgsToPrimary(string[] args, int timeoutMs = 2000)
+        => TrySendArgsToPipe(DefaultPipeName, args, timeoutMs);
+
+    internal bool TrySendArgsToConfiguredPrimary(string[] args, int timeoutMs = 2000)
+        => TrySendArgsToPipe(_pipeName, args, timeoutMs);
+
+    private static bool TrySendArgsToPipe(string pipeName, string[] args, int timeoutMs)
     {
         try
         {
             using var pipe = new NamedPipeClientStream(
                 ".",
-                PipeName,
+                pipeName,
                 PipeDirection.Out,
                 PipeOptions.None);
 
-            pipe.Connect(2000);
+            pipe.Connect(timeoutMs);
 
             var payload = string.Join("\n", args);
-            var bytes   = Encoding.UTF8.GetBytes(payload);
+            var bytes = Encoding.UTF8.GetBytes(payload);
             pipe.Write(bytes, 0, bytes.Length);
             pipe.Flush();
+            return true;
         }
         catch (Exception)
         {
+            return false;
         }
     }
 
@@ -107,7 +137,7 @@ public sealed class SingleInstanceService : IDisposable
             try
             {
                 using var server = new NamedPipeServerStream(
-                    PipeName,
+                    _pipeName,
                     PipeDirection.In,
                     maxNumberOfServerInstances: 1,
                     PipeTransmissionMode.Byte,
@@ -115,8 +145,8 @@ public sealed class SingleInstanceService : IDisposable
 
                 await server.WaitForConnectionAsync(ct).ConfigureAwait(false);
 
-                using var reader  = new StreamReader(server, Encoding.UTF8, leaveOpen: true);
-                var       payload = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+                using var reader = new StreamReader(server, Encoding.UTF8, leaveOpen: true);
+                var payload = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
 
                 var args = payload.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                 if (args.Length > 0)
@@ -142,7 +172,8 @@ public sealed class SingleInstanceService : IDisposable
 
     private static void ActivateMainWindow()
     {
-        if (System.Windows.Application.Current?.MainWindow is not Window win) return;
+        if (System.Windows.Application.Current?.MainWindow is not Window win)
+            return;
 
         if (win.WindowState == WindowState.Minimized)
             win.WindowState = WindowState.Normal;
@@ -158,7 +189,8 @@ public sealed class SingleInstanceService : IDisposable
 
         if (_ownsMutex)
         {
-            try { _mutex?.ReleaseMutex(); }
+            try
+            { _mutex?.ReleaseMutex(); }
             catch (ApplicationException) { /* Already released */ }
         }
 

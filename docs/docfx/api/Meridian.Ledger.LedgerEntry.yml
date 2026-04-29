@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerEntry
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 6
   assemblies:
   - Meridian.Ledger
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryId
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 9
   assemblies:
   - Meridian.Ledger
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 12
   assemblies:
   - Meridian.Ledger
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 15
   assemblies:
   - Meridian.Ledger
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Account
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 18
   assemblies:
   - Meridian.Ledger
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Debit
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 21
   assemblies:
   - Meridian.Ledger
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Credit
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 24
   assemblies:
   - Meridian.Ledger
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 27
   assemblies:
   - Meridian.Ledger
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/LedgerEntry.cs
+    path: src/Meridian.Ledger/LedgerEntry.cs
     startLine: 36
   assemblies:
   - Meridian.Ledger

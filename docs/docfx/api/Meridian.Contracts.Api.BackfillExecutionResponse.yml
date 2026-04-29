@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillExecutionResponse
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 109
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionId
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 114
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 120
   assemblies:
   - Meridian.Contracts
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 126
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    path: src/Meridian.Contracts/Api/BackfillApiModels.cs
     startLine: 132
   assemblies:
   - Meridian.Contracts

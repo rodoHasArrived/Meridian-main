@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCashFlow
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBarDto
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 247
   assemblies:
   - Meridian.Contracts
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 252
   assemblies:
   - Meridian.Contracts
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 258
   assemblies:
   - Meridian.Contracts
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 264
   assemblies:
   - Meridian.Contracts
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 270
   assemblies:
   - Meridian.Contracts
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 276
   assemblies:
   - Meridian.Contracts
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 282
   assemblies:
   - Meridian.Contracts
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 288
   assemblies:
   - Meridian.Contracts
@@ -367,7 +367,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vwap
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 294
   assemblies:
   - Meridian.Contracts
@@ -410,7 +410,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 300
   assemblies:
   - Meridian.Contracts
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 306
   assemblies:
   - Meridian.Contracts
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 312
   assemblies:
   - Meridian.Contracts
@@ -539,7 +539,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAdjusted
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 318
   assemblies:
   - Meridian.Contracts

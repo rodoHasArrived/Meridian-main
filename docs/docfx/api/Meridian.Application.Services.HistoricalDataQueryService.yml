@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataQueryService
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAsync
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableSymbols
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 94
   assemblies:
   - Meridian.Application
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDateRange
-    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
     startLine: 131
   assemblies:
   - Meridian.Application

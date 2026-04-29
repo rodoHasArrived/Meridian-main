@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeaseAcquireResult
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 2
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 2
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Acquired
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 3
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakenOver
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lease
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentOwner
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentExpiryUtc
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
+    path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
     startLine: 8
   assemblies:
   - Meridian.Application

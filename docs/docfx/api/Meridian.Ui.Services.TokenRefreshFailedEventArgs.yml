@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TokenRefreshFailedEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 348
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 350
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 351
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
     startLine: 353
   assemblies:
   - Meridian.Ui.Services

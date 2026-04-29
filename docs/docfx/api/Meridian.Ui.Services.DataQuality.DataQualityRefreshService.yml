@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityRefreshService
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stop
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Services
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityRefreshService.cs
     startLine: 42
   assemblies:
   - Meridian.Ui.Services

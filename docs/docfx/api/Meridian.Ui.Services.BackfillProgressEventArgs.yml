@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProgressEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 829
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 831
   assemblies:
   - Meridian.Ui.Services

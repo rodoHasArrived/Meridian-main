@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssueSeverity
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 426
   assemblies:
   - Meridian.Application
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 428
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 429
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    path: src/Meridian.Application/Services/StartupSummary.cs
     startLine: 430
   assemblies:
   - Meridian.Application

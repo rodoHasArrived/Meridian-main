@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunCertificationRequest
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityTestResult
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsReachable
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResponseTime
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Suggestion
-    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    path: src/Meridian.Application/Services/ConnectivityTestService.cs
     startLine: 35
   assemblies:
   - Meridian.Application

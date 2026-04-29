@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionContext
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 399
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 401
   assemblies:
   - Meridian.Storage
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageTier
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 402
   assemblies:
   - Meridian.Storage
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 403
   assemblies:
   - Meridian.Storage
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExport
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 404
   assemblies:
   - Meridian.Storage
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedBytes
-    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
     startLine: 405
   assemblies:
   - Meridian.Storage

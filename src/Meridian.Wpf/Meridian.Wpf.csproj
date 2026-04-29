@@ -130,6 +130,9 @@
     <None Include="..\..\config\appsettings.sample.json" Condition="Exists('..\..\config\appsettings.sample.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Templates\QuantScript\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!-- Trimmer root assemblies for JSON serialization -->

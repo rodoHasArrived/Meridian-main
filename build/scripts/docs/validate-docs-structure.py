@@ -24,8 +24,9 @@ import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-# Directories whose READMEs are auto-generated (skip them for front-matter checks)
-GENERATED_DIRS = {"generated"}
+# Directories whose contents are generated or build-produced
+# and should be excluded from hand-authored structure checks.
+GENERATED_DIRS = {"generated", "_site"}
 
 # Directories that are exempt from README requirement (meta files at top level)
 README_EXEMPT_FILES = {"README.md", "HELP.md", "DEPENDENCIES.md", "toc.yml"}
@@ -65,6 +66,8 @@ def check_readme_exists(docs_dir: Path, github_actions: bool) -> list[str]:
         if not subdir.is_dir():
             continue
         if subdir.name.startswith("."):
+            continue
+        if subdir.name in GENERATED_DIRS:
             continue
         readme = subdir / "README.md"
         if not readme.exists():

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatPayload
-    path: ../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
+    path: src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
+    path: src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts

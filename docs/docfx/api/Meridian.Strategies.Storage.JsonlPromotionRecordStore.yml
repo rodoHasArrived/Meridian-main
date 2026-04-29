@@ -1,0 +1,815 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  commentId: T:Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  id: JsonlPromotionRecordStore
+  parent: Meridian.Strategies.Storage
+  children:
+  - Meridian.Strategies.Storage.JsonlPromotionRecordStore.#ctor(Meridian.Strategies.Storage.PromotionRecordStoreOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore})
+  - Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  - Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: JsonlPromotionRecordStore
+  nameWithType: JsonlPromotionRecordStore
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonlPromotionRecordStore
+    path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Append-only JSONL promotion-history store.
+  example: []
+  syntax:
+    content: 'public sealed class JsonlPromotionRecordStore : IPromotionRecordStore'
+    content.vb: Public NotInheritable Class JsonlPromotionRecordStore Implements IPromotionRecordStore
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Strategies.Interfaces.IPromotionRecordStore
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore.#ctor(Meridian.Strategies.Storage.PromotionRecordStoreOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore})
+  commentId: M:Meridian.Strategies.Storage.JsonlPromotionRecordStore.#ctor(Meridian.Strategies.Storage.PromotionRecordStoreOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore})
+  id: '#ctor(Meridian.Strategies.Storage.PromotionRecordStoreOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore})'
+  parent: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  langs:
+  - csharp
+  - vb
+  name: JsonlPromotionRecordStore(PromotionRecordStoreOptions?, ILogger<JsonlPromotionRecordStore>)
+  nameWithType: JsonlPromotionRecordStore.JsonlPromotionRecordStore(PromotionRecordStoreOptions?, ILogger<JsonlPromotionRecordStore>)
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore.JsonlPromotionRecordStore(Meridian.Strategies.Storage.PromotionRecordStoreOptions?, Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Storage.JsonlPromotionRecordStore>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  syntax:
+    content: public JsonlPromotionRecordStore(PromotionRecordStoreOptions? options, ILogger<JsonlPromotionRecordStore> logger)
+    parameters:
+    - id: options
+      type: Meridian.Strategies.Storage.PromotionRecordStoreOptions
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore}
+    content.vb: Public Sub New(options As PromotionRecordStoreOptions, logger As ILogger(Of JsonlPromotionRecordStore))
+  overload: Meridian.Strategies.Storage.JsonlPromotionRecordStore.#ctor*
+  nameWithType.vb: JsonlPromotionRecordStore.New(PromotionRecordStoreOptions, ILogger(Of JsonlPromotionRecordStore))
+  fullName.vb: Meridian.Strategies.Storage.JsonlPromotionRecordStore.New(Meridian.Strategies.Storage.PromotionRecordStoreOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Storage.JsonlPromotionRecordStore))
+  name.vb: New(PromotionRecordStoreOptions, ILogger(Of JsonlPromotionRecordStore))
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  id: LoadAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAllAsync(CancellationToken)
+  nameWithType: JsonlPromotionRecordStore.LoadAllAsync(CancellationToken)
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAllAsync
+    path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Loads all recorded promotion decisions in append order.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+    content.vb: Public Function LoadAllAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  overload: Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync*
+  implements:
+  - Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  id: AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(StrategyPromotionRecord, CancellationToken)
+  nameWithType: JsonlPromotionRecordStore.AppendAsync(StrategyPromotionRecord, CancellationToken)
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Appends a new promotion decision to the durable history.
+  example: []
+  syntax:
+    content: public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
+    parameters:
+    - id: record
+      type: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function AppendAsync(record As StrategyPromotionRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync*
+  implements:
+  - Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Strategies.Storage
+  commentId: N:Meridian.Strategies.Storage
+  href: Meridian.html
+  name: Meridian.Strategies.Storage
+  nameWithType: Meridian.Strategies.Storage
+  fullName: Meridian.Strategies.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Storage
+    name: Storage
+    href: Meridian.Strategies.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Storage
+    name: Storage
+    href: Meridian.Strategies.Storage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  commentId: T:Meridian.Strategies.Interfaces.IPromotionRecordStore
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html
+  name: IPromotionRecordStore
+  nameWithType: IPromotionRecordStore
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore.#ctor*
+  commentId: Overload:Meridian.Strategies.Storage.JsonlPromotionRecordStore.#ctor
+  href: Meridian.Strategies.Storage.JsonlPromotionRecordStore.html#Meridian_Strategies_Storage_JsonlPromotionRecordStore__ctor_Meridian_Strategies_Storage_PromotionRecordStoreOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Strategies_Storage_JsonlPromotionRecordStore__
+  name: JsonlPromotionRecordStore
+  nameWithType: JsonlPromotionRecordStore.JsonlPromotionRecordStore
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore.JsonlPromotionRecordStore
+  nameWithType.vb: JsonlPromotionRecordStore.New
+  fullName.vb: Meridian.Strategies.Storage.JsonlPromotionRecordStore.New
+  name.vb: New
+- uid: Meridian.Strategies.Storage.PromotionRecordStoreOptions
+  commentId: T:Meridian.Strategies.Storage.PromotionRecordStoreOptions
+  parent: Meridian.Strategies.Storage
+  href: Meridian.Strategies.Storage.PromotionRecordStoreOptions.html
+  name: PromotionRecordStoreOptions
+  nameWithType: PromotionRecordStoreOptions
+  fullName: Meridian.Strategies.Storage.PromotionRecordStoreOptions
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Storage.JsonlPromotionRecordStore}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<JsonlPromotionRecordStore>
+  nameWithType: ILogger<JsonlPromotionRecordStore>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Storage.JsonlPromotionRecordStore>
+  nameWithType.vb: ILogger(Of JsonlPromotionRecordStore)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Storage.JsonlPromotionRecordStore)
+  name.vb: ILogger(Of JsonlPromotionRecordStore)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+    name: JsonlPromotionRecordStore
+    href: Meridian.Strategies.Storage.JsonlPromotionRecordStore.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+    name: JsonlPromotionRecordStore
+    href: Meridian.Strategies.Storage.JsonlPromotionRecordStore.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync*
+  commentId: Overload:Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync
+  href: Meridian.Strategies.Storage.JsonlPromotionRecordStore.html#Meridian_Strategies_Storage_JsonlPromotionRecordStore_LoadAllAsync_System_Threading_CancellationToken_
+  name: LoadAllAsync
+  nameWithType: JsonlPromotionRecordStore.LoadAllAsync
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore.LoadAllAsync
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_LoadAllAsync_System_Threading_CancellationToken_
+  name: LoadAllAsync(CancellationToken)
+  nameWithType: IPromotionRecordStore.LoadAllAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+    name: LoadAllAsync
+    href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_LoadAllAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.LoadAllAsync(System.Threading.CancellationToken)
+    name: LoadAllAsync
+    href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_LoadAllAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<StrategyPromotionRecord>>
+  nameWithType: Task<IReadOnlyList<StrategyPromotionRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Promotions.StrategyPromotionRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Promotions.StrategyPromotionRecord))
+  name.vb: Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync*
+  commentId: Overload:Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync
+  href: Meridian.Strategies.Storage.JsonlPromotionRecordStore.html#Meridian_Strategies_Storage_JsonlPromotionRecordStore_AppendAsync_Meridian_Strategies_Promotions_StrategyPromotionRecord_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: JsonlPromotionRecordStore.AppendAsync
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore.AppendAsync
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_AppendAsync_Meridian_Strategies_Promotions_StrategyPromotionRecord_System_Threading_CancellationToken_
+  name: AppendAsync(StrategyPromotionRecord, CancellationToken)
+  nameWithType: IPromotionRecordStore.AppendAsync(StrategyPromotionRecord, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_AppendAsync_Meridian_Strategies_Promotions_StrategyPromotionRecord_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IPromotionRecordStore.AppendAsync(Meridian.Strategies.Promotions.StrategyPromotionRecord,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html#Meridian_Strategies_Interfaces_IPromotionRecordStore_AppendAsync_Meridian_Strategies_Promotions_StrategyPromotionRecord_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  commentId: T:Meridian.Strategies.Promotions.StrategyPromotionRecord
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  name: StrategyPromotionRecord
+  nameWithType: StrategyPromotionRecord
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Strategies.Promotions
+  commentId: N:Meridian.Strategies.Promotions
+  href: Meridian.html
+  name: Meridian.Strategies.Promotions
+  nameWithType: Meridian.Strategies.Promotions
+  fullName: Meridian.Strategies.Promotions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html

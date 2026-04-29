@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveDataService
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentTradesAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentQuotesAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrderBookAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBboAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrderFlowStatsAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 52
   assemblies:
   - Meridian.Ui.Services
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveSubscriptionsAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 60
   assemblies:
   - Meridian.Ui.Services
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 68
   assemblies:
   - Meridian.Ui.Services
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Services
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamHealthAsync
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 85
   assemblies:
   - Meridian.Ui.Services

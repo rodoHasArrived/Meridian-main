@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerBalancePoint
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 6
   assemblies:
   - Meridian.Ledger
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 6
   assemblies:
   - Meridian.Ledger
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 7
   assemblies:
   - Meridian.Ledger
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 8
   assemblies:
   - Meridian.Ledger
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 9
   assemblies:
   - Meridian.Ledger
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Debit
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 10
   assemblies:
   - Meridian.Ledger
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Credit
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 11
   assemblies:
   - Meridian.Ledger
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balance
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 12
   assemblies:
   - Meridian.Ledger
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
+    path: src/Meridian.Ledger/LedgerBalancePoint.cs
     startLine: 13
   assemblies:
   - Meridian.Ledger

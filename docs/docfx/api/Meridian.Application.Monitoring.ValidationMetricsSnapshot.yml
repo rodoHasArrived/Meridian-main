@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationMetricsSnapshot
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 115
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 115
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalValidated
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRejected
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 117
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PassRatePercent
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 118
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedByErrorType
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedByEventType
-    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
     startLine: 120
   assemblies:
   - Meridian.Application

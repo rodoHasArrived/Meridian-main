@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DtoExtensions
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Shared
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Shared
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 37
   assemblies:
   - Meridian.Ui.Shared
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 50
   assemblies:
   - Meridian.Ui.Shared
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 59
   assemblies:
   - Meridian.Ui.Shared
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    path: src/Meridian.Ui.Shared/DtoExtensions.cs
     startLine: 75
   assemblies:
   - Meridian.Ui.Shared

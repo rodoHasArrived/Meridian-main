@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchBacktestSummary
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 39
   assemblies:
   - Meridian.Backtesting
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Runs
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 42
   assemblies:
   - Meridian.Backtesting
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuration
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 45
   assemblies:
   - Meridian.Backtesting

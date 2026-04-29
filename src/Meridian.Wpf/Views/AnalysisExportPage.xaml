@@ -19,6 +19,25 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Export Configuration" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+                    <Border AutomationProperties.AutomationId="AnalysisExportReadinessCard"
+                            Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock AutomationProperties.AutomationId="AnalysisExportReadinessTitle"
+                                       Text="{Binding ExportReadinessTitle}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock AutomationProperties.AutomationId="AnalysisExportReadinessDetail"
+                                       Text="{Binding ExportReadinessDetail}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -91,13 +110,16 @@
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                        <Button Content="Run Export"
+                        <Button AutomationProperties.AutomationId="AnalysisExportRunButton"
+                                Content="Run Export"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="RunExport_Click"
+                                Command="{Binding RunExportCommand}"
+                                ToolTip="{Binding ExportReadinessDetail}"
                                 Margin="0,0,8,0" />
-                        <Button Content="Save as Preset"
+                        <Button AutomationProperties.AutomationId="AnalysisExportSavePresetButton"
+                                Content="Save as Preset"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="SavePreset_Click" />
+                                Command="{Binding SavePresetCommand}" />
                     </StackPanel>
 
                     <TextBlock Text="{Binding StatusMessage}"
@@ -109,7 +131,12 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Recent Exports" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <DataGrid ItemsSource="{Binding RecentExports}"
+                    <TextBlock AutomationProperties.AutomationId="AnalysisExportRecentExportsState"
+                               Text="{Binding RecentExportsStateText}"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               Margin="0,0,0,8" />
+                    <DataGrid AutomationProperties.AutomationId="AnalysisExportRecentExportsGrid"
+                              ItemsSource="{Binding RecentExports}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               MinHeight="200">

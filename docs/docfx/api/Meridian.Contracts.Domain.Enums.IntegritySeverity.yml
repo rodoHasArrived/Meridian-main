@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegritySeverity
-    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts

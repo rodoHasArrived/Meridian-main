@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IRateLimitAwareProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 267
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitInfo
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 272
   assemblies:
   - Meridian.Infrastructure
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnRateLimitHit
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
     startLine: 277
   assemblies:
   - Meridian.Infrastructure

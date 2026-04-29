@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
@@ -14,10 +15,14 @@ namespace Meridian.Wpf.Views;
 public partial class DataQualityPage : Page
 {
     private readonly DataQualityViewModel _viewModel;
+    private readonly NavigationService _navigationService;
+    private InteractionMode _interactionMode = InteractionMode.None;
+    private string? _pendingGapId;
 
-    public DataQualityPage(DataQualityViewModel viewModel)
+    public DataQualityPage(DataQualityViewModel viewModel, NavigationService navigationService)
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         DataContext = _viewModel;
         InitializeComponent();
 
@@ -31,6 +36,7 @@ public partial class DataQualityPage : Page
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         await _viewModel.StartAsync();
+        CommandBar.CommandGroup = BuildCommandGroup();
         RenderTrendChart(_viewModel.TrendPoints);
         ApplyDrilldownHeatmap();
     }
@@ -47,29 +53,20 @@ public partial class DataQualityPage : Page
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await _viewModel.RefreshAsync();
 
-    private async void RunQualityCheck_Click(object sender, RoutedEventArgs e)
+    private void RunQualityCheck_Click(object sender, RoutedEventArgs e) => ShowQualityCheckPanel();
+
+    private void RepairGap_Click(object sender, RoutedEventArgs e)
     {
-        var path = PromptForQualityCheckPath();
-        if (!string.IsNullOrWhiteSpace(path))
+        if (sender is Button button && button.Tag is string gapId)
         {
-            await _viewModel.RunQualityCheckAsync(path);
+            ShowConfirmationPanel("Repair Gap", "Start repair for this gap?", InteractionMode.ConfirmRepairGap, gapId);
         }
     }
 
-    private async void RepairGap_Click(object sender, RoutedEventArgs e)
+    private void RepairAllGaps_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is string gapId && ShowConfirmation("Repair Gap", "Start repair for this gap?"))
-        {
-            await _viewModel.RepairGapAsync(gapId);
-        }
-    }
-
-    private async void RepairAllGaps_Click(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.Gaps.Count > 0 && ShowConfirmation("Repair All Gaps", "Start repair for all listed gaps?"))
-        {
-            await _viewModel.RepairAllGapsAsync();
-        }
+        if (_viewModel.Gaps.Count > 0)
+            ShowConfirmationPanel("Repair All Gaps", "Start repair for all listed gaps?", InteractionMode.ConfirmRepairAll);
     }
 
     private async void CompareProviders_Click(object sender, RoutedEventArgs e)
@@ -77,12 +74,27 @@ public partial class DataQualityPage : Page
         if (sender is Button button && button.Tag is string symbol)
         {
             var comparison = await _viewModel.GetProviderComparisonAsync(symbol);
-            ShowProviderComparisonDialog(comparison.Symbol, comparison.Providers);
+            ShowProviderComparisonInspector(comparison.Symbol, comparison.Providers);
         }
     }
 
     private void SymbolFilter_TextChanged(object sender, TextChangedEventArgs e)
         => _viewModel.ApplySymbolFilter(SymbolFilterBox.Text?.Trim() ?? string.Empty);
+
+    private void ClearSymbolFilter_Click(object sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(SymbolFilterBox.Text))
+        {
+            SymbolFilterBox.Text = string.Empty;
+        }
+        else
+        {
+            _viewModel.ClearSymbolFilter();
+        }
+
+        SymbolQualityList.SelectedItem = null;
+        _viewModel.HideSymbolDrilldown();
+    }
 
     private void SymbolQuality_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -117,6 +129,62 @@ public partial class DataQualityPage : Page
     }
 
     private async void AcknowledgeAll_Click(object sender, RoutedEventArgs e) => await _viewModel.AcknowledgeAllAlertsAsync();
+
+    private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
+    {
+        switch (e.Command.Id)
+        {
+            case "Refresh":
+                _ = _viewModel.RefreshAsync();
+                break;
+            case "RunQualityCheck":
+                ShowQualityCheckPanel();
+                break;
+            case "OpenDataBrowser":
+                OpenWorkflow("DataBrowser");
+                break;
+            case "OpenCollectionSessions":
+                OpenWorkflow("CollectionSessions");
+                break;
+            case "OpenSymbols":
+                OpenWorkflow("Symbols");
+                break;
+        }
+    }
+
+    private async void InteractionPrimaryAction_Click(object sender, RoutedEventArgs e)
+    {
+        switch (_interactionMode)
+        {
+            case InteractionMode.RunQualityCheck:
+                var path = InteractionInputBox.Text?.Trim();
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    InteractionBodyText.Text = "Enter a symbol or path before running the quality check.";
+                    return;
+                }
+
+                await _viewModel.RunQualityCheckAsync(path);
+                CloseInteractionPanel();
+                break;
+            case InteractionMode.ConfirmRepairGap:
+                if (!string.IsNullOrWhiteSpace(_pendingGapId))
+                {
+                    await _viewModel.RepairGapAsync(_pendingGapId);
+                }
+                CloseInteractionPanel();
+                break;
+            case InteractionMode.ConfirmRepairAll:
+                await _viewModel.RepairAllGapsAsync();
+                CloseInteractionPanel();
+                break;
+            default:
+                CloseInteractionPanel();
+                break;
+        }
+    }
+
+    private void InteractionSecondaryAction_Click(object sender, RoutedEventArgs e) => CloseInteractionPanel();
 
     private void AnomalyType_Changed(object sender, SelectionChangedEventArgs e)
     {
@@ -197,15 +265,88 @@ public partial class DataQualityPage : Page
         }
     }
 
-    private static string? PromptForQualityCheckPath()
-        => Microsoft.VisualBasic.Interaction.InputBox("Enter a symbol or path to check", "Run Quality Check", "SPY");
+    private static WorkspaceCommandGroup BuildCommandGroup()
+        => new()
+        {
+            PrimaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "Refresh", Label = "Refresh", Description = "Refresh data quality metrics.", Glyph = "\uE72C", Tone = WorkspaceTone.Primary },
+                new WorkspaceCommandItem { Id = "RunQualityCheck", Label = "Run quality check", Description = "Run a quality check for a symbol or file path.", Glyph = "\uE9D5" }
+            ],
+            SecondaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "OpenDataBrowser", Label = "Open data browser", Description = "Open data browser in the current shell workflow when possible.", Glyph = "\uE721" },
+                new WorkspaceCommandItem { Id = "OpenCollectionSessions", Label = "Open collection sessions", Description = "Open collection sessions in workspace routing.", Glyph = "\uE91C" },
+                new WorkspaceCommandItem { Id = "OpenSymbols", Label = "Open symbols", Description = "Open symbols page in workspace routing.", Glyph = "\uE8D2" }
+            ]
+        };
 
-    private static bool ShowConfirmation(string title, string message)
-        => MessageBox.Show(message, title, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
-
-    private static void ShowProviderComparisonDialog(string symbol, IReadOnlyList<DataQualityProviderComparisonItem> providers)
+    private void ShowQualityCheckPanel()
     {
-        var lines = providers.Select(p => $"{p.Name}: {p.CompletenessText}, {p.LatencyText}, {p.FreshnessText}, {p.Status}");
-        MessageBox.Show(string.Join(Environment.NewLine, lines), $"Provider Comparison - {symbol}", MessageBoxButton.OK, MessageBoxImage.Information);
+        _interactionMode = InteractionMode.RunQualityCheck;
+        InteractionTitleText.Text = "Run quality check";
+        InteractionBodyText.Text = "Enter a symbol or path to run quality checks without leaving this workspace.";
+        InteractionInputBox.Text = "SPY";
+        InteractionInputBox.Visibility = Visibility.Visible;
+        InteractionItemsList.Visibility = Visibility.Collapsed;
+        InteractionPrimaryActionButton.Content = "Run";
+        InteractionSecondaryActionButton.Content = "Cancel";
+        WorkspaceInteractionPanel.Visibility = Visibility.Visible;
+    }
+
+    private void ShowConfirmationPanel(string title, string message, InteractionMode mode, string? gapId = null)
+    {
+        _interactionMode = mode;
+        _pendingGapId = gapId;
+        InteractionTitleText.Text = title;
+        InteractionBodyText.Text = message;
+        InteractionInputBox.Visibility = Visibility.Collapsed;
+        InteractionItemsList.Visibility = Visibility.Collapsed;
+        InteractionPrimaryActionButton.Content = "Confirm";
+        InteractionSecondaryActionButton.Content = "Cancel";
+        WorkspaceInteractionPanel.Visibility = Visibility.Visible;
+    }
+
+    private void ShowProviderComparisonInspector(string symbol, IReadOnlyList<DataQualityProviderComparisonItem> providers)
+    {
+        _interactionMode = InteractionMode.ShowComparison;
+        var lines = providers.Select(p => $"{p.Name}: {p.CompletenessText}, {p.LatencyText}, {p.FreshnessText}, {p.Status}").ToArray();
+        InteractionTitleText.Text = $"Provider comparison · {symbol}";
+        InteractionBodyText.Text = "Comparison details are shown inline so operators can keep context while reviewing symbols.";
+        InteractionItemsList.ItemsSource = lines;
+        InteractionInputBox.Visibility = Visibility.Collapsed;
+        InteractionItemsList.Visibility = Visibility.Visible;
+        InteractionPrimaryActionButton.Content = "Close";
+        InteractionSecondaryActionButton.Content = "Dismiss";
+        WorkspaceInteractionPanel.Visibility = Visibility.Visible;
+    }
+
+    private void CloseInteractionPanel()
+    {
+        _interactionMode = InteractionMode.None;
+        _pendingGapId = null;
+        InteractionInputBox.Text = string.Empty;
+        InteractionItemsList.ItemsSource = null;
+        WorkspaceInteractionPanel.Visibility = Visibility.Collapsed;
+    }
+
+    private void OpenWorkflow(string pageTag)
+    {
+        if (WorkspaceShellChromeState.GetIsHostedInWorkspaceShell(this))
+        {
+            _navigationService.NavigateTo("DataOperationsShell");
+            return;
+        }
+
+        _navigationService.NavigateTo(pageTag);
+    }
+
+    private enum InteractionMode
+    {
+        None,
+        RunQualityCheck,
+        ConfirmRepairGap,
+        ConfirmRepairAll,
+        ShowComparison
     }
 }

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceValidationException
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedSequence
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualSequence
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationType
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
     startLine: 30
   assemblies:
   - Meridian.Core

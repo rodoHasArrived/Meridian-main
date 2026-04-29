@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRouteScopeDto
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 178
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Workspace
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 180
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 183
   assemblies:
   - Meridian.Contracts
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 186
   assemblies:
   - Meridian.Contracts
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 189
   assemblies:
   - Meridian.Contracts
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 192
   assemblies:
   - Meridian.Contracts
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
     startLine: 195
   assemblies:
   - Meridian.Contracts

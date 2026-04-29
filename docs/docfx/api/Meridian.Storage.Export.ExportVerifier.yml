@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportVerifier
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyExportAsync
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 28
   assemblies:
   - Meridian.Storage

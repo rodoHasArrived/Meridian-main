@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGroupService
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadGroupsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 40
   assemblies:
   - Meridian.Ui.Services
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupByIdAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 68
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateGroupAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 77
   assemblies:
   - Meridian.Ui.Services
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateGroupFromTemplateAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 110
   assemblies:
   - Meridian.Ui.Services
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateGroupAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 128
   assemblies:
   - Meridian.Ui.Services
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteGroupAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolToGroupAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 168
   assemblies:
   - Meridian.Ui.Services
@@ -403,7 +403,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolFromGroupAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 187
   assemblies:
   - Meridian.Ui.Services
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MoveSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 203
   assemblies:
   - Meridian.Ui.Services
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupsForSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 216
   assemblies:
   - Meridian.Ui.Services
@@ -523,7 +523,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUngroupedSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 227
   assemblies:
   - Meridian.Ui.Services
@@ -556,7 +556,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReorderGroupsAsync
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 247
   assemblies:
   - Meridian.Ui.Services
@@ -596,7 +596,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTemplates
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 273
   assemblies:
   - Meridian.Ui.Services
@@ -626,7 +626,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupCreated
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -655,7 +655,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupUpdated
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 297
   assemblies:
   - Meridian.Ui.Services
@@ -684,7 +684,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupDeleted
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 302
   assemblies:
   - Meridian.Ui.Services
@@ -713,7 +713,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupsReordered
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 307
   assemblies:
   - Meridian.Ui.Services

@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 147
   assemblies:
   - Meridian.ProviderSdk
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 151
   assemblies:
   - Meridian.ProviderSdk
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsBackfill
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 154
   assemblies:
   - Meridian.ProviderSdk
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSymbolSearch
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 157
   assemblies:
   - Meridian.ProviderSdk
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOptionsChain
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 160
   assemblies:
   - Meridian.ProviderSdk
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsBrokerage
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 163
   assemblies:
   - Meridian.ProviderSdk
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsRealtimeTrades
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 168
   assemblies:
   - Meridian.ProviderSdk
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsRealtimeQuotes
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 171
   assemblies:
   - Meridian.ProviderSdk
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarketDepth
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 174
   assemblies:
   - Meridian.ProviderSdk
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 177
   assemblies:
   - Meridian.ProviderSdk
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSymbolsPerSubscription
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 180
   assemblies:
   - Meridian.ProviderSdk
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 185
   assemblies:
   - Meridian.ProviderSdk
@@ -448,7 +448,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 188
   assemblies:
   - Meridian.ProviderSdk
@@ -479,7 +479,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 191
   assemblies:
   - Meridian.ProviderSdk
@@ -510,7 +510,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 194
   assemblies:
   - Meridian.ProviderSdk
@@ -541,7 +541,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistoricalQuotes
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 197
   assemblies:
   - Meridian.ProviderSdk
@@ -572,7 +572,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistoricalTrades
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 200
   assemblies:
   - Meridian.ProviderSdk
@@ -603,7 +603,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistoricalAuctions
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 203
   assemblies:
   - Meridian.ProviderSdk
@@ -634,7 +634,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinBarResolution
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 206
   assemblies:
   - Meridian.ProviderSdk
@@ -665,7 +665,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedBarIntervals
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 209
   assemblies:
   - Meridian.ProviderSdk
@@ -696,7 +696,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAssetTypeFilter
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 214
   assemblies:
   - Meridian.ProviderSdk
@@ -727,7 +727,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsExchangeFilter
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 217
   assemblies:
   - Meridian.ProviderSdk
@@ -758,7 +758,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 220
   assemblies:
   - Meridian.ProviderSdk
@@ -789,7 +789,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 223
   assemblies:
   - Meridian.ProviderSdk
@@ -820,7 +820,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 228
   assemblies:
   - Meridian.ProviderSdk
@@ -851,7 +851,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 233
   assemblies:
   - Meridian.ProviderSdk
@@ -882,7 +882,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 236
   assemblies:
   - Meridian.ProviderSdk
@@ -913,7 +913,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinRequestDelay
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 239
   assemblies:
   - Meridian.ProviderSdk
@@ -944,7 +944,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 244
   assemblies:
   - Meridian.ProviderSdk
@@ -975,7 +975,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streaming
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 247
   assemblies:
   - Meridian.ProviderSdk
@@ -1017,7 +1017,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillBarsOnly
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 261
   assemblies:
   - Meridian.ProviderSdk
@@ -1048,7 +1048,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillFullFeatured
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 270
   assemblies:
   - Meridian.ProviderSdk
@@ -1079,7 +1079,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearch
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 283
   assemblies:
   - Meridian.ProviderSdk
@@ -1110,7 +1110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchFilterable
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 289
   assemblies:
   - Meridian.ProviderSdk
@@ -1148,7 +1148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsChain
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 301
   assemblies:
   - Meridian.ProviderSdk
@@ -1188,7 +1188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brokerage
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 312
   assemblies:
   - Meridian.ProviderSdk
@@ -1230,7 +1230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hybrid
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 326
   assemblies:
   - Meridian.ProviderSdk
@@ -1274,7 +1274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromHistoricalCapabilities
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 349
   assemblies:
   - Meridian.ProviderSdk
@@ -1316,7 +1316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDictionary
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 372
   assemblies:
   - Meridian.ProviderSdk
@@ -1346,7 +1346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryType
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 444
   assemblies:
   - Meridian.ProviderSdk
@@ -1377,7 +1377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasTickData
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 452
   assemblies:
   - Meridian.ProviderSdk
@@ -1408,7 +1408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCorporateActions
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 455
   assemblies:
   - Meridian.ProviderSdk
@@ -1439,7 +1439,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarket
-    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    path: src/Meridian.ProviderSdk/IProviderMetadata.cs
     startLine: 458
   assemblies:
   - Meridian.ProviderSdk

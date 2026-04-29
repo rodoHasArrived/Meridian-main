@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportScriptTarget
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 226
   assemblies:
   - Meridian.Storage
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Python
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 229
   assemblies:
   - Meridian.Storage
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: R
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 232
   assemblies:
   - Meridian.Storage
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgreSql
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 235
   assemblies:
   - Meridian.Storage
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClickHouse
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 238
   assemblies:
   - Meridian.Storage
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spark
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 241
   assemblies:
   - Meridian.Storage
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuckDb
-    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    path: src/Meridian.Storage/Packaging/PackageOptions.cs
     startLine: 244
   assemblies:
   - Meridian.Storage

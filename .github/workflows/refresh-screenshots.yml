@@ -1,12 +1,13 @@
 # Refresh UI Screenshots
 #
-# Builds the Meridian web dashboard, starts it in default (no-provider) mode,
-# takes Playwright screenshots of the main pages, and commits the updated PNGs
-# back to docs/screenshots/.
+# Builds the Meridian WPF workstation in fixture mode, captures the desktop
+# screenshot catalog with scripts/dev/run-desktop-workflow.ps1, captures the
+# browser workstation dashboard with scripts/dev/capture-web-screenshots.mjs,
+# and commits updated PNGs under docs/screenshots/desktop/ and docs/screenshots/web/.
 #
 # Triggered:
-#   - Weekly on Monday at 06:00 UTC (keep screenshots current after UI changes)
-#   - On push to main when dashboard HTML/CSS/JS or wwwroot assets change
+#   - Weekly on Monday at 06:00 UTC
+#   - On push to main when the WPF shell or desktop screenshot automation changes
 #   - Manually via workflow_dispatch
 
 name: Refresh UI Screenshots
@@ -18,16 +19,71 @@ on:
     branches:
       - main
     paths:
-      - 'src/Meridian/wwwroot/**'
-      - 'src/Meridian.Ui/**'
-      - 'src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs'
-      - 'src/Meridian.Ui.Shared/HtmlTemplateGenerator*.cs'
-      - 'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs'
+      - '.github/workflows/refresh-screenshots.yml'
+      - 'config/appsettings.sample.json'
+      - 'scripts/dev/SharedBuild.ps1'
+      - 'scripts/dev/SharedCheckpoint.ps1'
+      - 'scripts/dev/desktop-workflows.json'
+      - 'scripts/dev/workflow-profiles/**'
+      - 'scripts/dev/SharedWorkflowProfiles.ps1'
+      - 'scripts/dev/validate-workflow-profile.ps1'
+      - 'scripts/dev/run-desktop-workflow.ps1'
+      - 'scripts/dev/capture-desktop-screenshots.ps1'
+      - 'scripts/dev/capture-web-screenshots.mjs'
+      - 'scripts/dev/web-screenshot-routes.json'
+      - 'src/Meridian.Ui/dashboard/**'
+      - 'src/Meridian.Ui/wwwroot/workstation/**'
+      - 'src/Meridian.Ui.Services/**'
+      - 'src/Meridian.Ui.Shared/**'
       - 'src/Meridian.Wpf/**'
   workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit updated screenshots back to the repository.'
+        type: boolean
+        default: true
+      surfaces:
+        description: 'Which UI surfaces to capture.'
+        type: choice
+        default: all
+        options:
+          - all
+          - desktop
+          - web
+      workflows:
+        description: 'Which desktop screenshot workflows to run.'
+        type: choice
+        default: all
+        options:
+          - all
+          - catalog
+          - manuals
+      cleanup_mode:
+        description: 'Stale screenshot cleanup behavior in commit job.'
+        type: choice
+        default: dry-run
+        options:
+          - dry-run
+          - enforce
+      output_root:
+        description: 'Root directory for desktop screenshots.'
+        type: string
+        default: docs/screenshots/desktop
+      web_output_root:
+        description: 'Root directory for web dashboard screenshots.'
+        type: string
+        default: docs/screenshots/web
+      approve_review_needed:
+        description: 'Allow committing review-needed screenshot deltas from this run.'
+        type: boolean
+        default: false
+      review_approval_note:
+        description: 'Audit note explaining why review-needed screenshot diffs are acceptable.'
+        type: string
+        default: ''
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: refresh-screenshots-${{ github.ref }}
@@ -35,360 +91,39 @@ concurrency:
 
 env:
   DOTNET_VERSION: '9.0.x'
+  NODE_VERSION: '20'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
-  UI_PORT: 8200
+  WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
+  WPF_CONFIGURATION: Release
+  WPF_FRAMEWORK: net9.0-windows10.0.19041.0
+  WEB_DASHBOARD_DIR: src/Meridian.Ui/dashboard
+  WEB_SCREENSHOT_PORT: 5173
+  SCREENSHOT_TIMING_BASELINE_MINUTES: 25
+  SCREENSHOT_TIMING_REGRESSION_PERCENT: 20
 
 jobs:
-  build-artifact:
-    name: Build Artifact
-    uses: ./.github/workflows/generate-build-artifact.yml
-
-  refresh:
-    name: Take screenshots
-    needs: [build-artifact]
-    runs-on: ubuntu-latest
+  build-wpf:
+    name: Build WPF binaries
+    runs-on: windows-latest
     timeout-minutes: 20
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+    # Prevent recursive runs from the bot commit.
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.surfaces == 'all' ||
+      inputs.surfaces == 'desktop')
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.build-artifact.outputs.artifact-name }}
-
-      - name: Copy sample config
-        run: cp config/appsettings.sample.json config/appsettings.json
-
-      - name: Start web dashboard (background)
-        env:
-          MDC_AUTH_MODE: optional
-        run: |
-          dotnet run \
-            --project src/Meridian/Meridian.csproj \
-            --no-build \
-            -c Release \
-            -- --ui --http-port ${{ env.UI_PORT }} > /tmp/dashboard.log 2>&1 &
-          echo "MERIDIAN_PID=$!" >> "$GITHUB_ENV"
-
-      # Install Node.js and Playwright while the server warms up in the background.
-      # By the time the readiness check runs the server has had a significant head
-      # start, so the poll loop completes much faster (or instantly).
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: playwright-chromium-${{ runner.os }}-
-
-      - name: Install Playwright and Chromium
-        run: |
-          npm install playwright
-          npx playwright install chromium ${{ steps.playwright-cache.outputs.cache-hit != 'true' && '--with-deps' || '' }}
-
-      - name: Wait for dashboard to be ready
-        run: |
-          # 60 attempts × 1 s = 60 s total — same budget as before but with
-          # faster polling so we exit as soon as the server answers.
-          echo "Waiting for http://localhost:${{ env.UI_PORT }}/readyz ..."
-          for i in $(seq 1 60); do
-            if curl -sf "http://localhost:${{ env.UI_PORT }}/readyz" > /dev/null 2>&1; then
-              echo "Dashboard is up (attempt ${i})"
-              exit 0
-            fi
-            echo "Attempt ${i}/60 failed, retrying in 1 second..."
-            sleep 1
-          done
-          echo "::error::Dashboard did not become ready within 60 seconds"
-          echo "Checking process status:"
-          ps aux | grep -i meridian || true
-          echo "Checking port ${{ env.UI_PORT }}:"
-          netstat -tlnp 2>/dev/null | grep ${{ env.UI_PORT }} || echo "Port ${{ env.UI_PORT }} not listening"
-          echo "Dashboard log tail:"
-          tail -50 /tmp/dashboard.log || true
-          exit 1
-
-      - name: Write screenshot helper script
-        run: |
-          cat > take-screenshots.mjs << 'SCRIPT'
-          import { chromium } from 'playwright';
-
-          const BASE = process.env.UI_BASE;
-          const browser = await chromium.launch();
-          const context = await browser.newContext({
-            viewport: { width: 1400, height: 900 },
-            colorScheme: 'light',
-            locale: 'en-US'
-          });
-
-          // Stabilize a page: wait for network idle, fonts, then disable animations.
-          async function stabilizePage(page) {
-            await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
-            await page.evaluate(async () => {
-              if (document.fonts?.ready) await document.fonts.ready;
-            });
-            await page.addStyleTag({
-              content: `
-                *,
-                *::before,
-                *::after {
-                  animation: none !important;
-                  transition: none !important;
-                  caret-color: transparent !important;
-                }
-              `
-            });
-          }
-
-          // All screenshots to capture.
-          // Shots that share the same URL are taken from a single page load.
-          const SHOTS = [
-            // ── Main dashboard (/ ) ────────────────────────────────────────────
-            { name: 'dashboard',       path: 'docs/screenshots/01-dashboard.png',
-              url: `${BASE}/`, fullPage: true,
-              stableSelector: '[data-testid="dashboard-root"], main, body', waitMs: 150 },
-            { name: 'status-overview', path: 'docs/screenshots/04-status-overview.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#storage, body',     waitMs: 0, clipSelector: '#storage' },
-            { name: 'data-source',     path: 'docs/screenshots/05-data-source.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#datasource, body',  waitMs: 0, clipSelector: '#datasource' },
-            { name: 'data-sources',    path: 'docs/screenshots/06-data-sources.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#datasources, body', waitMs: 0, clipSelector: '#datasources' },
-            { name: 'backfill',        path: 'docs/screenshots/07-backfill.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#backfill, body',    waitMs: 0, clipSelector: '#backfill' },
-            { name: 'derivatives',     path: 'docs/screenshots/08-derivatives.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#derivatives, body', waitMs: 0, clipSelector: '#derivatives' },
-            { name: 'symbols',         path: 'docs/screenshots/09-symbols.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#symbols, body',     waitMs: 0, clipSelector: '#symbols' },
-            { name: 'status',          path: 'docs/screenshots/10-status-section.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#status, body',      waitMs: 0, clipSelector: '#status' },
-
-            // ── Login ─────────────────────────────────────────────────────────
-            { name: 'login',           path: 'docs/screenshots/11-login.png',
-              url: `${BASE}/login`, fullPage: true,
-              stableSelector: '.login-card', waitMs: 150 },
-
-            // ── Swagger ───────────────────────────────────────────────────────
-            { name: 'swagger',         path: 'docs/screenshots/03-swagger.png',
-              url: `${BASE}/swagger/index.html`, fullPage: true,
-              stableSelector: '#swagger-ui, body', waitMs: 150 },
-
-            // ── Workstation deep-links ────────────────────────────────────────
-            { name: 'workstation-trading',
-              path: 'docs/screenshots/12-workstation-trading.png',
-              url: `${BASE}/workstation/trading`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations',
-              path: 'docs/screenshots/13-workstation-data-operations.png',
-              url: `${BASE}/workstation/data-operations`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance',
-              path: 'docs/screenshots/14-workstation-governance.png',
-              url: `${BASE}/workstation/governance`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-trading-orders',
-              path: 'docs/screenshots/15-workstation-trading-orders.png',
-              url: `${BASE}/workstation/trading/orders`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-trading-positions',
-              path: 'docs/screenshots/16-workstation-trading-positions.png',
-              url: `${BASE}/workstation/trading/positions`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-trading-risk',
-              path: 'docs/screenshots/17-workstation-trading-risk.png',
-              url: `${BASE}/workstation/trading/risk`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations-providers',
-              path: 'docs/screenshots/18-workstation-data-operations-providers.png',
-              url: `${BASE}/workstation/data-operations/providers`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations-backfills',
-              path: 'docs/screenshots/19-workstation-data-operations-backfills.png',
-              url: `${BASE}/workstation/data-operations/backfills`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations-exports',
-              path: 'docs/screenshots/20-workstation-data-operations-exports.png',
-              url: `${BASE}/workstation/data-operations/exports`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance-ledger',
-              path: 'docs/screenshots/21-workstation-governance-ledger.png',
-              url: `${BASE}/workstation/governance/ledger`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance-reconciliation',
-              path: 'docs/screenshots/22-workstation-governance-reconciliation.png',
-              url: `${BASE}/workstation/governance/reconciliation`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance-security-master',
-              path: 'docs/screenshots/23-workstation-governance-security-master.png',
-              url: `${BASE}/workstation/governance/security-master`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-          ];
-
-          // Group shots by URL so each URL is loaded only once.
-          function groupByUrl(shots) {
-            const map = new Map();
-            for (const shot of shots) {
-              const list = map.get(shot.url) ?? [];
-              list.push(shot);
-              map.set(shot.url, list);
-            }
-            return map;
-          }
-
-          // Open one page per URL group, stabilize it, then capture every shot.
-          // All shots in a group share the same page load; the first shot's
-          // stableSelector is used as a proxy for overall page readiness since
-          // every group's first entry uses a broad selector ('body', 'main, body',
-          // or a data-testid that includes a 'body' fallback).
-          async function processGroup(url, shots) {
-            const page = await context.newPage();
-            try {
-              await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-              await page.waitForSelector(shots[0].stableSelector ?? 'body', { timeout: 20000 }).catch(() => {});
-              await stabilizePage(page);
-              // Honour the highest explicit waitMs in the group; default to 0 so
-              // that shots which set waitMs: 0 are not forced to wait 150 ms.
-              const maxWaitMs = Math.max(...shots.map(s => s.waitMs ?? 0));
-              if (maxWaitMs > 0) await page.waitForTimeout(maxWaitMs);
-
-              for (const { name, path, fullPage, clipSelector } of shots) {
-                try {
-                  if (clipSelector) {
-                    const locator = page.locator(clipSelector);
-                    await locator.scrollIntoViewIfNeeded().catch(() => {});
-                    await locator.screenshot({ path });
-                  } else {
-                    await page.screenshot({ path, fullPage: fullPage ?? true });
-                  }
-                  console.log(`✓ ${path}`);
-                } catch (err) {
-                  console.warn(`⚠ ${name}: ${err.message} — falling back to viewport screenshot`);
-                  await page.screenshot({ path, fullPage: false }).catch(
-                    fallbackErr => console.error(`✗ Fallback also failed for ${name}: ${fallbackErr.message}`)
-                  );
-                }
-              }
-            } finally {
-              await page.close();
-            }
-          }
-
-          // Run all URL groups concurrently.
-          const groups = groupByUrl(SHOTS);
-          const results = await Promise.allSettled(
-            [...groups.entries()].map(([url, shots]) => processGroup(url, shots))
-          );
-
-          await browser.close();
-
-          const failures = results.filter(r => r.status === 'rejected');
-          if (failures.length > 0) {
-            for (const f of failures) console.error('FAILED:', f.reason);
-            process.exit(1);
-          }
-          SCRIPT
-
-      - name: Take screenshots
-        env:
-          UI_BASE: http://localhost:${{ env.UI_PORT }}
-        run: |
-          set -euo pipefail
-          mkdir -p docs/screenshots
-          node take-screenshots.mjs
-          echo "Screenshots captured:"
-          ls -lh docs/screenshots/*.png
-
-      - name: Stop dashboard
-        if: always()
-        run: |
-          if [ -n "${MERIDIAN_PID:-}" ]; then
-            kill "$MERIDIAN_PID" 2>/dev/null || true
-          fi
-
-      - name: Commit updated screenshots
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: 'docs(screenshots): refresh UI screenshots'
-          file_pattern: docs/screenshots/*.png
-          commit_user_name: github-actions[bot]
-          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          push_options: '--force-with-lease'
-
-      - name: Write workflow summary
-        if: always()
-        run: |
-          {
-            echo "## UI Screenshot Refresh"
-            echo ""
-            echo "| Screenshot | File |"
-            echo "|-----------|------|"
-            echo "| Main Dashboard | \`docs/screenshots/01-dashboard.png\` |"
-            echo "| React Workstation Shell | \`docs/screenshots/02-workstation.png\` |"
-            echo "| Swagger API Docs | \`docs/screenshots/03-swagger.png\` |"
-            echo "| Storage Configuration | \`docs/screenshots/04-status-overview.png\` |"
-            echo "| Data Provider Selector | \`docs/screenshots/05-data-source.png\` |"
-            echo "| Data Sources Panel | \`docs/screenshots/06-data-sources.png\` |"
-            echo "| Historical Backfill | \`docs/screenshots/07-backfill.png\` |"
-            echo "| Derivatives Tracking | \`docs/screenshots/08-derivatives.png\` |"
-            echo "| Subscribed Symbols | \`docs/screenshots/09-symbols.png\` |"
-            echo "| Status & Activity Log | \`docs/screenshots/10-status-section.png\` |"
-            echo "| Login Page | \`docs/screenshots/11-login.png\` |"
-            echo "| Workstation – Trading | \`docs/screenshots/12-workstation-trading.png\` |"
-            echo "| Workstation – Data Operations | \`docs/screenshots/13-workstation-data-operations.png\` |"
-            echo "| Workstation – Governance | \`docs/screenshots/14-workstation-governance.png\` |"
-            echo "| Workstation – Trading: Orders | \`docs/screenshots/15-workstation-trading-orders.png\` |"
-            echo "| Workstation – Trading: Positions | \`docs/screenshots/16-workstation-trading-positions.png\` |"
-            echo "| Workstation – Trading: Risk | \`docs/screenshots/17-workstation-trading-risk.png\` |"
-            echo "| Workstation – Data Operations: Providers | \`docs/screenshots/18-workstation-data-operations-providers.png\` |"
-            echo "| Workstation – Data Operations: Backfills | \`docs/screenshots/19-workstation-data-operations-backfills.png\` |"
-            echo "| Workstation – Data Operations: Exports | \`docs/screenshots/20-workstation-data-operations-exports.png\` |"
-            echo "| Workstation – Governance: Ledger | \`docs/screenshots/21-workstation-governance-ledger.png\` |"
-            echo "| Workstation – Governance: Reconciliation | \`docs/screenshots/22-workstation-governance-reconciliation.png\` |"
-            echo "| Workstation – Governance: Security Master | \`docs/screenshots/23-workstation-governance-security-master.png\` |"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # WPF Desktop Application Screenshots
-  # Runs on windows-latest after the web job so commits don't conflict.
-  # Launches the WPF app in fixture mode (MDC_FIXTURE_MODE=1), navigates key
-  # pages via the built-in Command Palette, and captures full-window PNGs.
-  # ─────────────────────────────────────────────────────────────────────────
-  desktop-screenshots:
-    name: WPF Desktop Screenshots
-    needs: refresh
-    runs-on: windows-latest
-    timeout-minutes: 30
-
-    env:
-      WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
+    defaults:
+      run:
+        shell: pwsh
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          # Pull the latest commit so we build on top of web screenshots
-          ref: ${{ github.ref }}
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -396,63 +131,955 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache-suffix: desktop-screenshots
 
-      - name: Restore WPF dependencies
-        run: dotnet restore ${{ env.WPF_PROJECT }} -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
+      - name: Restore WPF project
+        run: |
+          dotnet restore "${{ env.WPF_PROJECT }}" --verbosity minimal /p:EnableWindowsTargeting=true
 
-      - name: Build WPF app (Release)
-        run: >
-          dotnet build ${{ env.WPF_PROJECT }}
-          -c Release --no-restore
-          -p:TargetFramework=net9.0-windows10.0.19041.0
-          --verbosity minimal
+      - name: Build WPF project once
+        run: |
+          dotnet build "${{ env.WPF_PROJECT }}" `
+            -c "${{ env.WPF_CONFIGURATION }}" `
+            -f "${{ env.WPF_FRAMEWORK }}" `
+            --no-restore `
+            --verbosity minimal `
+            /p:EnableWindowsTargeting=true `
+            /p:EnableFullWpfBuild=true `
+            -maxcpucount:1
+
+      - name: Upload WPF build binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: wpf-build-binaries
+          path: |
+            src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/**
+            src/Meridian/bin/${{ env.WPF_CONFIGURATION }}/**
+          if-no-files-found: error
+          retention-days: 2
+
+  desktop-screenshots:
+    name: Take WPF screenshots
+    runs-on: windows-latest
+    timeout-minutes: 35
+    needs: build-wpf
+
+    # Prevent recursive runs from the bot commit.
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.surfaces == 'all' ||
+      inputs.surfaces == 'desktop')
+
+    defaults:
+      run:
+        shell: pwsh
+
+    strategy:
+      fail-fast: false
+      matrix:
+        workflow:
+          - name: screenshot-catalog
+            output: ${{ inputs.output_root || 'docs/screenshots/desktop' }}
+            group: catalog
+          - name: manual-overview
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-overview
+            group: manuals
+          - name: manual-data-operations
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-data-operations
+            group: manuals
+          - name: manual-research-and-trading
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-research-and-trading
+            group: manuals
+          - name: manual-governance
+            output: ${{ (inputs.output_root || 'docs/screenshots/desktop') }}/manuals/manual-governance
+            group: manuals
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Environment diagnostics
+        run: |
+          Write-Host "Runner OS: $env:RUNNER_OS"
+          Write-Host "Ref: $env:GITHUB_REF"
+          Write-Host "SHA: $env:GITHUB_SHA"
+          Write-Host "Actor: $env:GITHUB_ACTOR"
+          Write-Host "Workflow selection input: '${{ inputs.workflows }}'"
+          Write-Host "Commit input: '${{ inputs.commit }}'"
+          Write-Host "Output root input: '${{ inputs.output_root }}'"
+          dotnet --info
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: desktop-screenshots
+
+      - name: Download WPF build binaries
+        uses: actions/download-artifact@v5
+        with:
+          name: wpf-build-binaries
+          path: src
 
       - name: Copy sample config
-        shell: pwsh
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
 
-      - name: Take WPF desktop screenshots
-        shell: pwsh
+      - name: Capture ${{ matrix.workflow.name }} screenshots
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          inputs.workflows == 'all' ||
+          (inputs.workflows == 'catalog' && matrix.workflow.group == 'catalog') ||
+          (inputs.workflows == 'manuals' && matrix.workflow.group == 'manuals')
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
-          pwsh -File scripts/dev/capture-desktop-screenshots.ps1 `
-            -SkipBuild `
-            -ProjectPath "${{ env.WPF_PROJECT }}" `
-            -Configuration Release `
-            -Framework net9.0-windows10.0.19041.0
+          $startedUtc = (Get-Date).ToUniversalTime()
 
-      - name: Commit WPF desktop screenshots
+          pwsh -File scripts/dev/run-desktop-workflow.ps1 `
+            -Workflow "${{ matrix.workflow.name }}" `
+            -Profile "${{ matrix.workflow.name }}" `
+            -ProjectPath "${{ env.WPF_PROJECT }}" `
+            -Configuration "${{ env.WPF_CONFIGURATION }}" `
+            -Framework "${{ env.WPF_FRAMEWORK }}" `
+            -OutputRoot "artifacts/desktop-workflows/${{ matrix.workflow.name }}" `
+            -ScreenshotDirectory "${{ matrix.workflow.output }}" `
+            -SkipBuild
+
+          $finishedUtc = (Get-Date).ToUniversalTime()
+          $durationSeconds = [int][Math]::Round(($finishedUtc - $startedUtc).TotalSeconds)
+
+          New-Item -ItemType Directory -Force -Path artifacts/screenshot-runtime | Out-Null
+
+          [ordered]@{
+            workflow = "${{ matrix.workflow.name }}"
+            startedUtc = $startedUtc.ToString('o')
+            finishedUtc = $finishedUtc.ToString('o')
+            durationSeconds = $durationSeconds
+          } | ConvertTo-Json | Set-Content -Encoding utf8 "artifacts/screenshot-runtime/${{ matrix.workflow.name }}.json"
+
+      - name: Upload workflow runtime report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-runtime-${{ matrix.workflow.name }}
+          path: artifacts/screenshot-runtime/${{ matrix.workflow.name }}.json
+          if-no-files-found: warn
+          retention-days: 7
+
+
+      - name: Validate screenshot contract (catalog)
+        if: |
+          (github.event_name != 'workflow_dispatch' ||
+          inputs.workflows == 'all' ||
+          inputs.workflows == 'catalog') &&
+          matrix.workflow.name == 'screenshot-catalog'
+        run: python scripts/dev/validate-screenshot-contract.py
+
+      - name: Upload WPF screenshot diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
+          path: |
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
+            artifacts/desktop-workflows/${{ matrix.workflow.name }}/**/manifest.json
+            artifacts/desktop-workflows/${{ matrix.workflow.name }}/**/logs/*.log
+            wpf-startup-stdout.log
+            wpf-startup-stderr.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  web-screenshots:
+    name: Take web dashboard screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Prevent recursive runs from the bot commit.
+    if: |
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.surfaces == 'all' ||
+      inputs.surfaces == 'web')
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        working-directory: ${{ env.WEB_DASHBOARD_DIR }}
+        run: npm ci --include=optional
+
+      - name: Build web dashboard
+        working-directory: ${{ env.WEB_DASHBOARD_DIR }}
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: ${{ env.WEB_DASHBOARD_DIR }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture web dashboard screenshots
+        env:
+          WEB_OUTPUT_ROOT: ${{ inputs.web_output_root || 'docs/screenshots/web' }}
+        run: |
+          started_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+          npm --prefix "${WEB_DASHBOARD_DIR}" run screenshots -- \
+            --output-dir "${WEB_OUTPUT_ROOT}" \
+            --manifest "artifacts/web-screenshots/manifest.json" \
+            --port "${WEB_SCREENSHOT_PORT}"
+
+          finished_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          duration_seconds=$(( $(date -d "${finished_utc}" +%s) - $(date -d "${started_utc}" +%s) ))
+
+          mkdir -p artifacts/screenshot-runtime
+          node -e "const fs=require('fs'); fs.writeFileSync('artifacts/screenshot-runtime/web-dashboard.json', JSON.stringify({ workflow: 'web-dashboard', startedUtc: process.argv[1], finishedUtc: process.argv[2], durationSeconds: Number(process.argv[3]) }, null, 2) + '\n')" "${started_utc}" "${finished_utc}" "${duration_seconds}"
+
+      - name: Upload web workflow runtime report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-runtime-web-dashboard
+          path: artifacts/screenshot-runtime/web-dashboard.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload web screenshot diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-dashboard-screenshots
+          path: |
+            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*.png
+            artifacts/web-screenshots/manifest.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  commit-screenshots:
+    name: Commit screenshots
+    runs-on: windows-latest
+    timeout-minutes: 20
+    needs:
+      - build-wpf
+      - desktop-screenshots
+      - web-screenshots
+
+    # Prevent recursive runs from the bot commit.
+    if: |
+      always() &&
+      github.actor != 'github-actions[bot]' &&
+      !cancelled() &&
+      !contains(needs.*.result, 'failure')
+
+    permissions:
+      contents: write
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download all screenshot artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: _artifacts
+
+      - name: Setup Python for screenshot diff analysis
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install screenshot diff dependencies
+        run: python -m pip install --disable-pip-version-check --quiet pillow
+
+      - name: Merge downloaded PNGs into workspace
+        run: |
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $outputRoots = @()
+          if ($surfaceSelection -in @('all', 'desktop')) {
+            $outputRoots += $desktopOutputRoot
+          }
+          if ($surfaceSelection -in @('all', 'web')) {
+            $outputRoots += $webOutputRoot
+          }
+          if ($outputRoots.Count -eq 0) {
+            throw "No screenshot roots selected for surface mode '$surfaceSelection'."
+          }
+
+          foreach ($outputRoot in $outputRoots) {
+            New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+          }
+
+          $pngs = Get-ChildItem -Path _artifacts -Recurse -Filter *.png -ErrorAction SilentlyContinue
+          Write-Host "Downloaded PNG count: $($pngs.Count)"
+
+          foreach ($png in $pngs) {
+            $artifactRoot = (Resolve-Path _artifacts).Path
+            $rel = $png.FullName.Substring($artifactRoot.Length).TrimStart('\\','/')
+            $relNormalized = $rel.Replace('\\','/')
+
+            # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
+            # Find the first occurrence of the output root inside that path and copy from there.
+            foreach ($outputRoot in $outputRoots) {
+              $normalizedOutputRoot = $outputRoot.Replace('\\','/').Trim('/')
+              $idx = $relNormalized.ToLower().IndexOf($normalizedOutputRoot.ToLower())
+              if ($idx -lt 0) {
+                continue
+              }
+
+              $subPath = $relNormalized.Substring($idx + $normalizedOutputRoot.Length).TrimStart('/')
+              $dest = Join-Path $outputRoot $subPath
+
+              New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
+              Copy-Item -LiteralPath $png.FullName -Destination $dest -Force
+              break
+            }
+          }
+
+      - name: Prune stale screenshots (dry-run/enforce)
+        id: prune
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $selectedMode = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
+          $cleanupMode = "${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_mode || 'dry-run' }}"
+          $includeDesktop = $surfaceSelection -in @('all', 'desktop')
+          $includeWeb = $surfaceSelection -in @('all', 'web')
+
+          Write-Host "Selected surface mode: $surfaceSelection"
+          Write-Host "Selected workflow mode: $selectedMode"
+          Write-Host "Cleanup mode: $cleanupMode"
+
+          $selectedDefinitions = @()
+          if ($includeDesktop) {
+            $workflowConfigPath = 'scripts/dev/desktop-workflows.json'
+            if (-not (Test-Path -LiteralPath $workflowConfigPath)) {
+              throw "Workflow definition file not found: $workflowConfigPath"
+            }
+
+            $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
+            if ($null -eq $workflowConfig.workflows) {
+              throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+            }
+
+            $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
+            if ($allDefinitions.Count -eq 0) {
+              throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+            }
+
+            switch ($selectedMode) {
+              'catalog' {
+                $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' })
+              }
+              'manuals' {
+                $selectedDefinitions = @($allDefinitions | Where-Object { [bool]$_.includeInManual })
+              }
+              default {
+                $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' -or [bool]$_.includeInManual })
+              }
+            }
+
+            if ($selectedDefinitions.Count -eq 0) {
+              throw "No workflows selected for mode '$selectedMode'."
+            }
+          }
+
+          if (-not $includeDesktop -and -not $includeWeb) {
+            throw "No screenshot surfaces selected for mode '$surfaceSelection'."
+          }
+
+          $expectedFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+          $managedScopes = New-Object 'System.Collections.Generic.List[object]'
+          $managedScopeKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+          foreach ($definition in $selectedDefinitions) {
+            $workflowName = [string]$definition.name
+            $isCatalogWorkflow = $workflowName -eq 'screenshot-catalog'
+            $workflowDir = if ($isCatalogWorkflow) {
+              $outputRoot
+            }
+            else {
+              Join-Path $outputRoot ("manuals/$workflowName")
+            }
+
+            $resolvedWorkflowDir = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $workflowDir).FullName).Path
+            $scopeKey = '{0}|{1}' -f $resolvedWorkflowDir, $isCatalogWorkflow
+            if ($managedScopeKeys.Add($scopeKey)) {
+              $managedScopes.Add([PSCustomObject]@{
+                Path = $resolvedWorkflowDir
+                Recurse = -not $isCatalogWorkflow
+              }) | Out-Null
+            }
+
+            foreach ($step in @($definition.steps)) {
+              $captureName = [string]$step.captureName
+              if ([string]::IsNullOrWhiteSpace($captureName)) {
+                continue
+              }
+
+              $expectedPath = Join-Path $workflowDir "$captureName.png"
+              $normalizedExpectedPath = [System.IO.Path]::GetFullPath($expectedPath)
+              $null = $expectedFiles.Add($normalizedExpectedPath)
+            }
+          }
+
+          if ($includeWeb) {
+            $webRoutesPath = 'scripts/dev/web-screenshot-routes.json'
+            if (-not (Test-Path -LiteralPath $webRoutesPath)) {
+              throw "Web screenshot route file not found: $webRoutesPath"
+            }
+
+            $webRoutes = Get-Content -LiteralPath $webRoutesPath -Raw | ConvertFrom-Json
+            if ($null -eq $webRoutes.captures) {
+              throw 'No web screenshot captures found in scripts/dev/web-screenshot-routes.json'
+            }
+
+            $resolvedWebDir = (Resolve-Path -LiteralPath (New-Item -ItemType Directory -Force -Path $webOutputRoot).FullName).Path
+            $webScopeKey = '{0}|{1}' -f $resolvedWebDir, $false
+            if ($managedScopeKeys.Add($webScopeKey)) {
+              $managedScopes.Add([PSCustomObject]@{
+                Path = $resolvedWebDir
+                Recurse = $false
+              }) | Out-Null
+            }
+
+            foreach ($capture in @($webRoutes.captures)) {
+              $captureName = [string]$capture.name
+              if ([string]::IsNullOrWhiteSpace($captureName)) {
+                continue
+              }
+
+              $expectedPath = Join-Path $webOutputRoot "$captureName.png"
+              $normalizedExpectedPath = [System.IO.Path]::GetFullPath($expectedPath)
+              $null = $expectedFiles.Add($normalizedExpectedPath)
+            }
+          }
+
+          $candidates = New-Object System.Collections.Generic.List[string]
+          foreach ($managedScope in $managedScopes) {
+            $managedDir = [string]$managedScope.Path
+            if (-not (Test-Path -LiteralPath $managedDir)) {
+              continue
+            }
+
+            $scanRecursively = [bool]$managedScope.Recurse
+
+            if ($scanRecursively) {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -Recurse -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+            else {
+              $pngs = Get-ChildItem -LiteralPath $managedDir -File -Filter '*.png' -ErrorAction SilentlyContinue
+            }
+
+            foreach ($png in $pngs) {
+              $fullPath = [System.IO.Path]::GetFullPath($png.FullName)
+              if (-not $expectedFiles.Contains($fullPath)) {
+                $candidates.Add($fullPath)
+              }
+            }
+          }
+
+          $deleted = New-Object System.Collections.Generic.List[string]
+          if ($cleanupMode -eq 'enforce') {
+            foreach ($candidate in $candidates) {
+              Remove-Item -LiteralPath $candidate -Force
+              $deleted.Add($candidate)
+            }
+          }
+
+          Write-Host "Expected screenshot file count: $($expectedFiles.Count)"
+          Write-Host "Stale screenshot candidates: $($candidates.Count)"
+          if ($cleanupMode -eq 'enforce') {
+            Write-Host "Deleted stale screenshots: $($deleted.Count)"
+          }
+          else {
+            Write-Host 'Dry-run only: no screenshot files were deleted.'
+          }
+
+          $repoRoot = (Get-Location).Path
+          $toRelativePath = {
+            param([string]$absolutePath, [string]$basePath)
+            return [System.IO.Path]::GetRelativePath($basePath, $absolutePath).Replace('\\','/')
+          }
+
+          $candidateRelative = @($candidates | ForEach-Object { & $toRelativePath $_ $repoRoot })
+          $deletedRelative = @($deleted | ForEach-Object { & $toRelativePath $_ $repoRoot })
+
+          $pruneSummary = [ordered]@{
+            surfaceMode = $surfaceSelection
+            selectedMode = $selectedMode
+            cleanupMode = $cleanupMode
+            desktopOutputRoot = $outputRoot
+            webOutputRoot = $webOutputRoot
+            expectedCount = $expectedFiles.Count
+            staleCandidateCount = $candidates.Count
+            deletedCount = $deleted.Count
+            staleCandidates = $candidateRelative
+            deletedFiles = $deletedRelative
+          }
+
+          $pruneSummaryPath = '_artifacts/prune-summary.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path -Parent $pruneSummaryPath) | Out-Null
+          $pruneSummary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $pruneSummaryPath -Encoding utf8
+
+          "surface_mode=$surfaceSelection" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "selected_mode=$selectedMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "cleanup_mode=$cleanupMode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "expected_count=$($expectedFiles.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "stale_count=$($candidates.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "deleted_count=$($deleted.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "prune_summary_path=$pruneSummaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - name: Validate screenshot outputs and workflow manifests
+        id: validate_outputs
+        run: |
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $outputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $selection = "${{ github.event_name == 'workflow_dispatch' && inputs.workflows || 'all' }}"
+          $includeDesktop = $surfaceSelection -in @('all', 'desktop')
+          $includeWeb = $surfaceSelection -in @('all', 'web')
+
+          $includeManuals = $selection -in @('all', 'manuals')
+          $includeCatalog = $selection -in @('all', 'catalog')
+
+          $expectedFiles = @()
+          if ($includeDesktop) {
+            $normalizedOutputRoot = $outputRoot.Replace('\', '/').Trim('/')
+            $trackedPngs = git ls-files "$outputRoot/**/*.png"
+            foreach ($file in $trackedPngs) {
+              $normalizedFile = $file.Replace('\', '/')
+              $isManual = $normalizedFile -like "$normalizedOutputRoot/manuals/*"
+              if (($isManual -and $includeManuals) -or (-not $isManual -and $includeCatalog)) {
+                $expectedFiles += $file
+              }
+            }
+          }
+
+          if ($includeWeb) {
+            $webRoutesPath = 'scripts/dev/web-screenshot-routes.json'
+            if (-not (Test-Path -LiteralPath $webRoutesPath)) {
+              throw "Web screenshot route file not found: $webRoutesPath"
+            }
+
+            $webRoutes = Get-Content -LiteralPath $webRoutesPath -Raw | ConvertFrom-Json
+            foreach ($capture in @($webRoutes.captures)) {
+              $captureName = [string]$capture.name
+              if (-not [string]::IsNullOrWhiteSpace($captureName)) {
+                $expectedFiles += (Join-Path $webOutputRoot "$captureName.png")
+              }
+            }
+          }
+
+          $missingFiles = @()
+          $zeroByteFiles = @()
+          foreach ($expected in $expectedFiles) {
+            if (-not (Test-Path -LiteralPath $expected)) {
+              $missingFiles += $expected
+              continue
+            }
+
+            $size = (Get-Item -LiteralPath $expected).Length
+            if ($size -le 0) {
+              $zeroByteFiles += $expected
+            }
+          }
+
+          $manifestPaths = Get-ChildItem -Path _artifacts -Recurse -Filter manifest.json -File -ErrorAction SilentlyContinue
+          $failedSteps = New-Object System.Collections.Generic.List[string]
+
+          function Get-FailedManifestStatuses {
+            param(
+              [Parameter(Mandatory = $true)] [object] $Node,
+              [Parameter(Mandatory = $true)] [string] $ManifestPath,
+              [string] $Context = ''
+            )
+
+            if ($null -eq $Node) {
+              return
+            }
+
+            if ($Node -is [System.Collections.IEnumerable] -and -not ($Node -is [string])) {
+              foreach ($item in $Node) {
+                Get-FailedManifestStatuses -Node $item -ManifestPath $ManifestPath -Context $Context
+              }
+              return
+            }
+
+            if ($Node -is [pscustomobject] -or $Node -is [hashtable]) {
+              $statusProp = $Node.PSObject.Properties['status']
+              if ($statusProp -and $statusProp.Value -eq 'failed') {
+                $stepName = $Node.PSObject.Properties['name']?.Value
+                if (-not $stepName) {
+                  $stepName = $Node.PSObject.Properties['id']?.Value
+                }
+                if (-not $stepName) {
+                  $stepName = $Context
+                }
+                if (-not $stepName) {
+                  $stepName = '(unknown-step)'
+                }
+                $failedSteps.Add("$ManifestPath :: $stepName") | Out-Null
+              }
+
+              foreach ($property in $Node.PSObject.Properties) {
+                $nextContext = if ($Context) { "$Context/$($property.Name)" } else { $property.Name }
+                Get-FailedManifestStatuses -Node $property.Value -ManifestPath $ManifestPath -Context $nextContext
+              }
+            }
+          }
+
+          foreach ($manifest in $manifestPaths) {
+            try {
+              $json = Get-Content -LiteralPath $manifest.FullName -Raw | ConvertFrom-Json
+              $manifestRel = $manifest.FullName.Replace((Resolve-Path .).Path, '.').Replace('\', '/')
+              Get-FailedManifestStatuses -Node $json -ManifestPath $manifestRel
+            }
+            catch {
+              $manifestRel = $manifest.FullName.Replace((Resolve-Path .).Path, '.').Replace('\', '/')
+              $failedSteps.Add("$manifestRel :: (invalid-json)") | Out-Null
+            }
+          }
+
+          $validationFailed = ($missingFiles.Count -gt 0) -or ($zeroByteFiles.Count -gt 0) -or ($failedSteps.Count -gt 0)
+          if ($validationFailed) {
+            "passed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            $summary = @(
+              '## Screenshot validation failed',
+              '',
+              "Expected PNG set checked: **$($expectedFiles.Count)** file(s) for surface ``$surfaceSelection`` and desktop selection ``$selection``."
+            )
+
+            if ($missingFiles.Count -gt 0) {
+              $summary += ''
+              $summary += "### Missing PNG files ($($missingFiles.Count))"
+              $summary += ($missingFiles | ForEach-Object { "- ``$_``" })
+            }
+
+            if ($zeroByteFiles.Count -gt 0) {
+              $summary += ''
+              $summary += "### Zero-byte PNG files ($($zeroByteFiles.Count))"
+              $summary += ($zeroByteFiles | ForEach-Object { "- ``$_``" })
+            }
+
+            if ($failedSteps.Count -gt 0) {
+              $summary += ''
+              $summary += "### Failed workflow manifest steps ($($failedSteps.Count))"
+              $summary += ($failedSteps | ForEach-Object { "- ``$_``" })
+            }
+
+            $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            throw "Screenshot validation failed."
+          }
+
+          "passed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Screenshot validation passed. Checked $($expectedFiles.Count) expected PNG file(s) and $($manifestPaths.Count) manifest file(s)."
+
+      - name: Detect screenshot changes
+        id: detect_changes
+        run: |
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $outputRoots = @()
+          if ($surfaceSelection -in @('all', 'desktop')) {
+            $outputRoots += $desktopOutputRoot
+          }
+          if ($surfaceSelection -in @('all', 'web')) {
+            $outputRoots += $webOutputRoot
+          }
+
+          $changed = 0
+          foreach ($outputRoot in $outputRoots) {
+            $changed += (git status --porcelain --untracked-files=all -- "$outputRoot" | Measure-Object | Select-Object -ExpandProperty Count)
+          }
+          if ($changed -gt 0) {
+            "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "changed_count=$changed" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "Detected $changed changed file(s) under selected screenshot roots"
+          }
+          else {
+            "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "changed_count=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "No changes detected under selected screenshot roots"
+          }
+
+      - name: Classify screenshot diffs
+        id: classify_diffs
+        if: steps.detect_changes.outputs.changed == 'true'
+        run: |
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $outputRoots = @()
+          if ($surfaceSelection -in @('all', 'desktop')) {
+            $outputRoots += $desktopOutputRoot
+          }
+          if ($surfaceSelection -in @('all', 'web')) {
+            $outputRoots += $webOutputRoot
+          }
+          $approvalState = if ("${{ github.event_name == 'workflow_dispatch' && inputs.approve_review_needed || 'false' }}" -eq 'true') { 'approved' } else { 'pending' }
+          $approvalReason = "${{ github.event_name == 'workflow_dispatch' && inputs.review_approval_note || '' }}"
+
+          if ($approvalState -eq 'approved' -and [string]::IsNullOrWhiteSpace($approvalReason)) {
+            throw 'approve_review_needed=true requires review_approval_note for auditability.'
+          }
+
+          New-Item -ItemType Directory -Force -Path artifacts/screenshot-diff | Out-Null
+          $changedFilesPath = 'artifacts/screenshot-diff/changed-files.txt'
+          $diffFiles = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+          foreach ($outputRoot in $outputRoots) {
+            foreach ($file in @(git diff --name-only -- "$outputRoot/**/*.png")) {
+              if ($file) {
+                $null = $diffFiles.Add($file.Replace('\', '/'))
+              }
+            }
+
+            foreach ($statusLine in @(git status --porcelain --untracked-files=all -- "$outputRoot")) {
+              if ([string]::IsNullOrWhiteSpace($statusLine)) {
+                continue
+              }
+
+              $pathText = $statusLine.Substring(3).Trim()
+              if ($pathText.Contains(' -> ')) {
+                $pathText = ($pathText -split ' -> ')[-1]
+              }
+              $pathText = $pathText.Trim('"').Replace('\', '/')
+              if ($pathText.EndsWith('.png')) {
+                $null = $diffFiles.Add($pathText)
+              }
+            }
+          }
+          $diffFiles | Set-Content -LiteralPath $changedFilesPath -Encoding utf8
+
+          $baselineRoot = Join-Path (Resolve-Path .).Path '_baseline'
+          if (Test-Path -LiteralPath $baselineRoot) {
+            Remove-Item -LiteralPath $baselineRoot -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $baselineRoot | Out-Null
+          foreach ($outputRoot in $outputRoots) {
+            $trackedInHead = @(git ls-tree -r --name-only HEAD -- "$outputRoot" | Select-Object -First 1)
+            if ($trackedInHead.Count -gt 0) {
+              git archive HEAD -- "$outputRoot" | tar -xf - -C $baselineRoot
+            }
+          }
+
+          $jsonPath = 'artifacts/screenshot-diff/diff-summary.json'
+          $reportDir = 'artifacts/screenshot-diff/report'
+
+          python scripts/dev/screenshot_diff_report.py `
+            --current-root . `
+            --baseline-root $baselineRoot `
+            --config scripts/dev/screenshot-diff-config.json `
+            --report-dir $reportDir `
+            --changed-files $changedFilesPath `
+            --approval $approvalState `
+            --approval-actor "${{ github.actor }}" `
+            --approval-reason "$approvalReason" `
+            --output-json $jsonPath
+
+          $result = Get-Content -LiteralPath $jsonPath -Raw | ConvertFrom-Json
+          $blockingCount = [int]$result.counts.'blocking-regression'
+          $reviewCount = [int]$result.counts.'review-needed'
+          $noiseCount = [int]$result.counts.'non-blocking-noise'
+          $reviewApprovalRequired = [bool]$result.gate.reviewApprovalRequired
+          $commitAllowed = -not $reviewApprovalRequired
+
+          "blocking_count=$blockingCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "review_needed_count=$reviewCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "non_blocking_count=$noiseCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "commit_allowed=$commitAllowed" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "report_dir=$reportDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "summary_json=$jsonPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+          if ($blockingCount -gt 0) {
+            throw "Blocking screenshot regressions detected ($blockingCount)."
+          }
+
+      - name: Upload screenshot diff report
+        if: always() && steps.detect_changes.outputs.changed == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-diff-report
+          path: artifacts/screenshot-diff/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Commit UI screenshots
+        if: |
+          steps.validate_outputs.outputs.passed == 'true' &&
+          steps.detect_changes.outputs.changed == 'true' &&
+          (steps.classify_diffs.outputs.commit_allowed == 'true') &&
+          (github.event_name != 'workflow_dispatch' || inputs.commit == true)
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: 'docs(screenshots): refresh WPF desktop screenshots'
-          file_pattern: docs/screenshots/desktop/*.png
+          commit_message: 'docs(screenshots): refresh UI screenshots'
+          file_pattern: |
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
+            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*.png
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          push_options: '--force-with-lease'
 
       - name: Write workflow summary
         if: always()
-        shell: pwsh
         run: |
-          $rows = @(
-            'Dashboard'        , 'wpf-dashboard.png'
-            'Providers'        , 'wpf-providers.png'
-            'Provider Health'  , 'wpf-provider-health.png'
-            'Backfill'         , 'wpf-backfill.png'
-            'Symbols'          , 'wpf-symbols.png'
-            'Live Data'        , 'wpf-live-data.png'
-            'Storage'          , 'wpf-storage.png'
-            'Data Quality'     , 'wpf-data-quality.png'
-            'Data Browser'     , 'wpf-data-browser.png'
-            'Strategy Runs'    , 'wpf-strategy-runs.png'
-            'Backtest'         , 'wpf-backtest.png'
-            'Quant Script'     , 'wpf-quant-script.png'
-            'Security Master'  , 'wpf-security-master.png'
-            'Diagnostics'      , 'wpf-diagnostics.png'
-            'Settings'         , 'wpf-settings.png'
-          )
-          $lines = @('## WPF Desktop Screenshot Refresh', '', '| Page | File |', '|------|------|')
-          for ($i = 0; $i -lt $rows.Count; $i += 2) {
-            $lines += "| $($rows[$i]) | ``docs/screenshots/desktop/$($rows[$i+1])`` |"
+          $surfaceSelection = "${{ github.event_name == 'workflow_dispatch' && inputs.surfaces || 'all' }}"
+          $desktopOutputRoot = "${{ inputs.output_root || 'docs/screenshots/desktop' }}"
+          $webOutputRoot = "${{ inputs.web_output_root || 'docs/screenshots/web' }}"
+          $pngCount = 0
+          foreach ($outputRoot in @($desktopOutputRoot, $webOutputRoot)) {
+            if (Test-Path "$outputRoot") {
+              $pngCount += (Get-ChildItem -Path "$outputRoot" -Recurse -Filter *.png -ErrorAction SilentlyContinue | Measure-Object).Count
+            }
           }
+
+          $lines = @(
+            '## UI Screenshot Refresh (commit job)'
+            ''
+            "Surface mode: **$surfaceSelection**"
+            "Desktop output root: ``$desktopOutputRoot``"
+            "Web output root: ``$webOutputRoot``"
+            "PNG files found: **$pngCount**"
+            "Changes detected: **${{ steps.detect_changes.outputs.changed }}** (count: **${{ steps.detect_changes.outputs.changed_count }}**)"
+            "Workflow mode: **${{ steps.prune.outputs.selected_mode }}**"
+            "Cleanup mode: **${{ steps.prune.outputs.cleanup_mode }}**"
+            "Expected files (selected mode): **${{ steps.prune.outputs.expected_count }}**"
+            "Stale candidates: **${{ steps.prune.outputs.stale_count }}**"
+            "Deleted files: **${{ steps.prune.outputs.deleted_count }}**"
+            "Blocking screenshot diffs: **${{ steps.classify_diffs.outputs.blocking_count || '0' }}**"
+            "Review-needed diffs: **${{ steps.classify_diffs.outputs.review_needed_count || '0' }}**"
+            "Non-blocking noise diffs: **${{ steps.classify_diffs.outputs.non_blocking_count || '0' }}**"
+            "Commit allowed by diff policy: **${{ steps.classify_diffs.outputs.commit_allowed || 'true' }}**"
+            ''
+            '### Environment'
+            "Ref: ``${{ github.ref }}``"
+            "SHA: ``${{ github.sha }}``"
+            "Runner OS: ``${{ runner.os }}``"
+          )
+
+          $summaryPath = '${{ steps.prune.outputs.prune_summary_path }}'
+          if ($summaryPath -and (Test-Path -LiteralPath $summaryPath)) {
+            $pruneSummary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+
+            $lines += ''
+            $lines += '### Deleted files'
+            if (@($pruneSummary.deletedFiles).Count -gt 0) {
+              foreach ($file in @($pruneSummary.deletedFiles)) {
+                $lines += "- ``$file``"
+              }
+            }
+            else {
+              $lines += '- _None_'
+            }
+
+            $lines += ''
+            $lines += '### Dry-run stale candidates'
+            if (@($pruneSummary.staleCandidates).Count -gt 0) {
+              foreach ($file in @($pruneSummary.staleCandidates)) {
+                $lines += "- ``$file``"
+              }
+            }
+            else {
+              $lines += '- _None_'
+            }
+          }
+
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+  timing-summary:
+    name: Workflow timing summary
+    runs-on: windows-latest
+    timeout-minutes: 10
+    needs:
+      - build-wpf
+      - desktop-screenshots
+      - web-screenshots
+    if: |
+      always() &&
+      github.actor != 'github-actions[bot]' &&
+      !cancelled() &&
+      !contains(needs.*.result, 'failure') &&
+      (needs['desktop-screenshots'].result == 'success' ||
+      needs['web-screenshots'].result == 'success')
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Download timing artifacts
+        uses: actions/download-artifact@v5
+        with:
+          pattern: screenshot-runtime-*
+          path: _runtime
+          merge-multiple: true
+
+      - name: Compare runtime to baseline
+        run: |
+          $baselineMinutes = [double]${{ env.SCREENSHOT_TIMING_BASELINE_MINUTES }}
+          $thresholdPercent = [double]${{ env.SCREENSHOT_TIMING_REGRESSION_PERCENT }}
+
+          $timingFiles = @(Get-ChildItem -Path _runtime -Filter *.json -File -ErrorAction SilentlyContinue)
+          if ($timingFiles.Count -eq 0) {
+            throw 'No timing artifacts were produced by the screenshot matrix jobs.'
+          }
+
+          $records = @()
+          foreach ($file in $timingFiles) {
+            $records += Get-Content -Raw -LiteralPath $file.FullName | ConvertFrom-Json
+          }
+
+          $totalSeconds = ($records | Measure-Object -Property durationSeconds -Sum).Sum
+          $totalMinutes = [Math]::Round(($totalSeconds / 60.0), 2)
+          $allowedMinutes = [Math]::Round(($baselineMinutes * (1 + ($thresholdPercent / 100.0))), 2)
+          $deltaPercent = if ($baselineMinutes -gt 0) {
+            [Math]::Round((($totalMinutes - $baselineMinutes) / $baselineMinutes) * 100.0, 2)
+          }
+          else {
+            0
+          }
+
+          $lines = @(
+            '## UI Screenshot Runtime Summary',
+            '',
+            "Baseline: **$baselineMinutes min**",
+            "Regression threshold: **$thresholdPercent%**",
+            "Allowed max runtime: **$allowedMinutes min**",
+            "Measured total runtime: **$totalMinutes min**",
+            "Delta vs baseline: **$deltaPercent%**",
+            '',
+            '| Workflow | Duration (sec) |',
+            '| --- | ---: |'
+          )
+
+          foreach ($record in ($records | Sort-Object workflow)) {
+            $lines += "| $($record.workflow) | $($record.durationSeconds) |"
+          }
+
+          $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+          if ($totalMinutes -gt $allowedMinutes) {
+            throw "Screenshot runtime regression detected: $totalMinutes min exceeded allowed $allowedMinutes min ($thresholdPercent% over baseline)."
+          }

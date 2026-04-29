@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveMaintenanceEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapArchiveMaintenanceEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 28
   assemblies:
   - Meridian.Application

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStorageStats
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 40
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 42
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQuality
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapCount
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 47
   assemblies:
   - Meridian.Ui.Services
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeByType
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 48
   assemblies:
   - Meridian.Ui.Services
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsByType
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 49
   assemblies:
   - Meridian.Ui.Services

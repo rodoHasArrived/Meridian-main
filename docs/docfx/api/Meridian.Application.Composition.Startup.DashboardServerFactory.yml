@@ -18,7 +18,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DashboardServerFactory
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 25
   assemblies:
   - Meridian.Application

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillPreviewResult
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDays
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Shared
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedTradingDays
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Shared
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Shared
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedDurationSeconds
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Shared
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Shared

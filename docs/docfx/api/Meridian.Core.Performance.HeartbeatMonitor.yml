@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatMonitor
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 254
   assemblies:
   - Meridian.Core
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRunning
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 270
   assemblies:
   - Meridian.Core
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveFailures
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 271
   assemblies:
   - Meridian.Core
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalHeartbeats
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 272
   assemblies:
   - Meridian.Core
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFailures
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 273
   assemblies:
   - Meridian.Core
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastLatencyUs
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 274
   assemblies:
   - Meridian.Core
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSinceLastSuccess
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 276
   assemblies:
   - Meridian.Core
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 288
   assemblies:
   - Meridian.Core
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatCompleted
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 290
   assemblies:
   - Meridian.Core
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionUnhealthy
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 291
   assemblies:
   - Meridian.Core
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 293
   assemblies:
   - Meridian.Core
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 305
   assemblies:
   - Meridian.Core
@@ -390,7 +390,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 314
   assemblies:
   - Meridian.Core
@@ -421,7 +421,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 401
   assemblies:
   - Meridian.Core

@@ -1,8 +1,8 @@
 # Meridian
 
-Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a desktop-local API host, and a Windows WPF workstation shell. The current delivery focus is turning that breadth into a more cohesive operator product across research, trading, data operations, governance, and fund-operations workflows.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into a cohesive web-first operator product across research, trading, data operations, governance, and fund-operations workflows.
 
-> **Desktop-only UI direction:** `src/Meridian.Wpf/` is the Windows desktop shell. `src/Meridian.Ui.Shared/` and `src/Meridian.Ui.Services/` contain the shared desktop-facing API and service layers that support the local workstation experience.
+> **Web UI active direction:** New operator UI development is focused on `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets. `src/Meridian.Wpf/` is retained for compatibility, regression fixes, and shared-contract support rather than new desktop-first feature work.
 
 ## Start Here
 
@@ -12,6 +12,7 @@ Meridian is a .NET 9 fund-management and trading-platform codebase in active del
 - [Improvements Tracker](docs/status/IMPROVEMENTS.md)
 - [Trading Workstation Migration Blueprint](docs/plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](docs/plans/governance-fund-ops-blueprint.md)
+- [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
 
 ## Current Product Direction
 
@@ -37,7 +38,8 @@ The solution currently includes these major areas:
 - `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
 - `src/Meridian.QuantScript` for scripting and charting-oriented tooling
 - `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
-- `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, and `src/Meridian.Wpf` for desktop-facing UI and local API layers
+- `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, and `src/Meridian.Ui.Shared` for the active web workstation and shared UI/API layers
+- `src/Meridian.Wpf` for the retained Windows desktop shell
 - `tests/` and `benchmarks/` for automated validation and performance work
 
 ## Verified Entry Points
@@ -47,7 +49,7 @@ The solution currently includes these major areas:
 The primary runnable project. Supports multiple modes via `--mode <mode>`:
 
 | Mode / flag | What runs |
-|---|---|
+| --- | --- |
 | `--mode desktop` | Collector + desktop-local API host on `http://localhost:8080` |
 | `--mode headless` | Collector only, no HTTP server |
 | `--backfill` | Historical data backfill (combine with `--backfill-provider`, `--backfill-symbols`, `--backfill-from`, `--backfill-to`) |
@@ -69,6 +71,26 @@ When you launch the desktop-local API host from the repository root, Meridian bi
 
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
+### Web workstation dashboard — `src/Meridian.Ui/dashboard`
+
+The browser-based operator dashboard is the active UI delivery lane. It builds static workstation
+assets that are served from `src/Meridian.Ui/wwwroot/workstation/`.
+
+```bash
+cd src/Meridian.Ui/dashboard
+npm install
+npm run dev
+npm run preview
+npm run test
+npm run build
+```
+
+`npm run dev` serves the shell at `/workstation/`; `npm run preview` serves the built assets from
+`src/Meridian.Ui/wwwroot/workstation/`. Both commands proxy `/api` to `MERIDIAN_API_BASE_URL` when
+set, or `http://localhost:8080` by default. When the local API host is not running, development
+builds fall back to typed fixture data for the initial dashboard bootstrap GETs only; command and
+mutation workflows still require the Meridian API.
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
@@ -87,9 +109,9 @@ dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --confi
 
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
-### Windows WPF desktop app — `src/Meridian.Wpf`
+### Retained Windows WPF desktop app — `src/Meridian.Wpf`
 
-The full Windows workstation shell. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
+The retained Windows workstation shell. Use it for compatibility support, regression fixes, and shared-contract validation. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1
@@ -108,7 +130,11 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 ```bash
 make help           # List all task targets
 make build-quick    # Shared restore-once, sequential Debug build
-make desktop-run    # WPF desktop + local host (Windows)
+npm run ui:dashboard:test   # Web workstation Vitest suite
+npm run ui:dashboard:build  # Web workstation production build
+pwsh ./scripts/dev/run-desktop.ps1  # WPF desktop + local host (Windows)
+make desktop-build  # Build WPF desktop project
+make desktop-test   # Run WPF desktop tests
 make run            # Collector with config hot-reload (--mode desktop)
 make run-backfill   # Historical backfill
 make run-selftest   # Wiring self-test
@@ -117,13 +143,22 @@ make bench-quick    # Quick bottleneck benchmarks (~10 min)
 make setup-dev      # One-shot local dev setup (hooks, config, restore, build)
 ```
 
+Desktop workflow automation (workflow runs, manual generation, screenshot capture) is PowerShell-script based; see [docs/development/desktop-command-surface-migration.md](docs/development/desktop-command-surface-migration.md).
+
 See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference including environment variables, configuration schema, and provider credential setup.
 
 Build safety note:
 
 - Prefer one solution or project build at a time when multiple entrypoints share the same referenced projects.
 - `python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` now restores once and builds with a single MSBuild node.
-- For automation or concurrent local runs, pass `--isolation-key <name>` so the build graph writes under `artifacts/bin/<name>/` and `artifacts/obj/<name>/` instead of shared project `bin/obj` folders.
+- For automation or concurrent local runs, pass `--isolation-key <name>` so the build graph
+  writes under `artifacts/bin/<name>/` and `artifacts/obj/<name>/` instead of shared project
+  `bin/obj` folders. `buildctl.py` prunes stale isolated output directories older than 14 days
+  and trims excess same-day output beyond the latest 10 runs per artifact root before isolated
+  builds; use `--isolation-retention-days <days>` and `--isolation-retain-latest <count>` to tune
+  those limits, or set both to `0` to disable cleanup for a run.
+- Keep the F# test project's transitive `xunit.v3` runtime pin aligned with
+  `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
 
 ## Planning Source of Truth
 
@@ -144,16 +179,40 @@ Use these documents together when planning or implementing new work:
 │   └── link-repair-report.md
 ├── .claude
 │   ├── agents
+│   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
 │   │   ├── meridian-docs.md
 │   │   ├── meridian-navigation.md
+│   │   ├── meridian-repo-navigation.md
+│   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
 │       ├── _shared
 │       │   └── project-context.md
+│       ├── meridian-archive-organizer
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── evals
+│       │   │   └── evals.json
+│       │   ├── fixtures
+│       │   │   └── superseded-adr
+│       │   │       └── docs
+│       │   │           ├── adr
+│       │   │           │   ├── ADR-015-platform-restructuring.md
+│       │   │           │   └── README.md
+│       │   │           └── generated
+│       │   │               └── repository-structure.md
+│       │   ├── references
+│       │   │   ├── archive-placement-guide.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── run_evals.py
+│       │       ├── score_eval.py
+│       │       └── trace_archive_candidates.py
 │       ├── meridian-blueprint
 │       │   ├── CHANGELOG.md
 │       │   ├── SKILL.md
@@ -201,6 +260,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── provider-patterns.md
+│       ├── meridian-repo-navigation
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
+│       ├── meridian-roadmap-strategist
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   └── references
+│       │       └── roadmap-source-map.md
 │       ├── meridian-simulated-user-panel
 │       │   ├── SKILL.md
 │       │   ├── agents
@@ -295,12 +364,6 @@ Use these documents together when planning or implementing new work:
 │       │   ├── agents
 │       │   │   └── openai.yaml
 │       │   ├── evals
-│       │   │   ├── artifacts
-│       │   │   │   ├── eval-1.jsonl
-│       │   │   │   ├── eval-2.jsonl
-│       │   │   │   ├── eval-3.jsonl
-│       │   │   │   ├── eval-4.jsonl
-│       │   │   │   └── eval-5.jsonl
 │       │   │   ├── benchmark_baseline.json
 │       │   │   ├── evals.json
 │       │   │   ├── meridian-implementation-assurance.prompts.csv
@@ -416,6 +479,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── workflow-results-code-quality.prompt.yml
 │   │   ├── workflow-results-test-matrix.prompt.yml
 │   │   ├── wpf-debug-improve.prompt.yml
+│   │   ├── wpf-design-system-screen-impact.prompt.yml
 │   │   └── write-unit-tests.prompt.yml
 │   ├── pull_request_template_desktop.md
 │   ├── spellcheck-config.yml
@@ -445,6 +509,7 @@ Use these documents together when planning or implementing new work:
 │       ├── makefile.yml
 │       ├── nightly.yml
 │       ├── pr-checks.yml
+│       ├── program-state-validation.yml
 │       ├── prompt-generation.yml
 │       ├── python-package-conda.yml
 │       ├── readme-tree.yml
@@ -461,7 +526,8 @@ Use these documents together when planning or implementing new work:
 │       ├── test-matrix.yml
 │       ├── ticker-data-collection.yml
 │       ├── update-diagrams.yml
-│       └── validate-workflows.yml
+│       ├── validate-workflows.yml
+│       └── workflow-docs-parity.yml
 ├── .gitignore
 ├── .gitleaks.toml
 ├── .globalconfig
@@ -593,14 +659,135 @@ Use these documents together when planning or implementing new work:
 │   │           └── project.assets.json
 │   └── dotnet-dump.exe
 ├── .vsconfig
+├── AGENTS.md
 ├── CLAUDE.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── LICENSE
 ├── Makefile
+├── Meridian Design System (3)
+│   ├── CONTENT_FUNDAMENTALS.md
+│   ├── ICONOGRAPHY.md
+│   ├── INSPIRATION_BRIEF.md
+│   ├── README.md
+│   ├── SKILL.md
+│   ├── VISUAL_FOUNDATIONS.md
+│   ├── assets
+│   │   ├── app.ico
+│   │   ├── brand
+│   │   │   ├── meridian-hero.svg
+│   │   │   ├── meridian-mark.svg
+│   │   │   ├── meridian-tile-256.png
+│   │   │   ├── meridian-tile.svg
+│   │   │   └── meridian-wordmark.svg
+│   │   └── icons
+│   │       ├── README.md
+│   │       ├── account-portfolio.svg
+│   │       ├── admin-maintenance.svg
+│   │       ├── aggregate-portfolio.svg
+│   │       ├── archive-health.svg
+│   │       ├── backfill.svg
+│   │       ├── backtest.svg
+│   │       ├── charting.svg
+│   │       ├── collection-sessions.svg
+│   │       ├── dashboard.svg
+│   │       ├── data-browser.svg
+│   │       ├── data-calendar.svg
+│   │       ├── data-export.svg
+│   │       ├── data-operations.svg
+│   │       ├── data-quality.svg
+│   │       ├── data-sampling.svg
+│   │       ├── data-sources.svg
+│   │       ├── diagnostics.svg
+│   │       ├── event-replay.svg
+│   │       ├── governance.svg
+│   │       ├── help.svg
+│   │       ├── index-subscription.svg
+│   │       ├── keyboard-shortcuts.svg
+│   │       ├── lean-integration.svg
+│   │       ├── live-data.svg
+│   │       ├── order-book.svg
+│   │       ├── portfolio-import.svg
+│   │       ├── provider-health.svg
+│   │       ├── research.svg
+│   │       ├── retention-assurance.svg
+│   │       ├── run-detail.svg
+│   │       ├── run-ledger.svg
+│   │       ├── run-mat.svg
+│   │       ├── run-portfolio.svg
+│   │       ├── schedule-manager.svg
+│   │       ├── security-master.svg
+│   │       ├── service-manager.svg
+│   │       ├── settings.svg
+│   │       ├── storage-optimization.svg
+│   │       ├── storage.svg
+│   │       ├── strategy-runs.svg
+│   │       ├── symbol-storage.svg
+│   │       ├── symbols.svg
+│   │       ├── system-health.svg
+│   │       ├── trading-hours.svg
+│   │       ├── trading.svg
+│   │       └── watchlist.svg
+│   ├── colors_and_type.css
+│   ├── docs
+│   │   └── screenshots
+│   │       ├── 01-dashboard.png
+│   │       ├── 11-login.png
+│   │       ├── 15-workstation-trading-orders.png
+│   │       ├── 20-workstation-data-operations-exports.png
+│   │       └── 21-workstation-governance-ledger.png
+│   ├── governance-baseline.json
+│   ├── index.html
+│   ├── preview
+│   │   ├── brand-icons.html
+│   │   ├── brand-marks.html
+│   │   ├── chart-table-standards.html
+│   │   ├── charts-candlestick.html
+│   │   ├── charts-correlation.html
+│   │   ├── charts-equity-print.html
+│   │   ├── charts-equity.html
+│   │   ├── charts-heatmap.html
+│   │   ├── charts-histogram.html
+│   │   ├── charts-orderbook.html
+│   │   ├── charts-scatter.html
+│   │   ├── charts-sparklines.html
+│   │   ├── charts-volsurface.html
+│   │   ├── charts-yieldcurve.html
+│   │   ├── colors-ambient.html
+│   │   ├── colors-brand.html
+│   │   ├── colors-semantic.html
+│   │   ├── colors-surfaces.html
+│   │   ├── component-state-matrix.html
+│   │   ├── components-badges.html
+│   │   ├── components-banners.html
+│   │   ├── components-buttons.html
+│   │   ├── components-inputs.html
+│   │   ├── components-metrics.html
+│   │   ├── components-nav.html
+│   │   ├── components-table.html
+│   │   ├── design-standards.html
+│   │   ├── institutional-workstation.html
+│   │   ├── screen-recipes.html
+│   │   ├── spacing-radii.html
+│   │   ├── spacing-scale.html
+│   │   ├── spacing-shadows.html
+│   │   ├── state-patterns.html
+│   │   ├── type-body.html
+│   │   ├── type-display.html
+│   │   └── type-mono.html
+│   ├── scripts
+│   │   └── check_design_system_governance.py
+│   ├── tests
+│   │   └── test_design_system_governance.py
+│   └── ui_kits
+│       ├── dashboard
+│       │   ├── README.md
+│       │   └── components.jsx
+│       ├── plottool_workstation.html
+│       ├── security_master-company.html
+│       ├── security_master-print.html
+│       └── security_master.html
 ├── Meridian.sln
-├── PROJECTS
-│   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── README.md
 ├── archive
 │   └── docs
@@ -653,79 +840,13 @@ Use these documents together when planning or implementing new work:
 │           └── desktop-improvements-executive-summary.md
 ├── artifacts
 │   └── provider-validation
-│       ├── README.md
-│       ├── _automation
-│       │   ├── 2026-04-09
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   ├── 2026-04-16
-│       │   │   ├── wave1-validation-summary.json
-│       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-17
-│       │       ├── wave1-validation-summary.json
-│       │       └── wave1-validation-summary.md
-│       ├── interactive-brokers
-│       │   ├── 2026-04-09
-│       │   │   ├── bootstrap
-│       │   │   │   └── summary.md
-│       │   │   ├── disconnect-reconnect
-│       │   │   │   └── summary.md
-│       │   │   ├── manifest.json
-│       │   │   ├── market-data-entitlements
-│       │   │   │   └── summary.md
-│       │   │   └── server-version
-│       │   │       └── summary.md
-│       │   └── 2026-04-14
-│       │       └── manual-validation-checklist.md
-│       ├── nyse
-│       │   └── 2026-04-09
-│       │       ├── auth-connectivity
-│       │       │   └── summary.md
-│       │       ├── l1-streaming-reconnect
-│       │       │   └── summary.md
-│       │       ├── manifest.json
-│       │       ├── premium-depth
-│       │       │   └── summary.md
-│       │       └── rate-limit
-│       │           └── summary.md
-│       ├── robinhood
-│       │   └── 2026-04-09
-│       │       ├── auth-session
-│       │       │   └── summary.md
-│       │       ├── manifest.json
-│       │       ├── order-submit-cancel
-│       │       │   └── summary.md
-│       │       ├── quote-polling
-│       │       │   └── summary.md
-│       │       └── throttling-reconnect
-│       │           └── summary.md
-│       └── stocksharp
-│           └── 2026-04-09
-│               ├── cqg-bootstrap
-│               │   └── summary.md
-│               ├── cqg-historical
-│               │   └── summary.md
-│               ├── cqg-streaming
-│               │   └── summary.md
-│               ├── interactive-brokers-bootstrap
-│               │   └── summary.md
-│               ├── interactive-brokers-historical
-│               │   └── summary.md
-│               ├── interactive-brokers-streaming
-│               │   └── summary.md
-│               ├── iqfeed-bootstrap
-│               │   └── summary.md
-│               ├── iqfeed-historical
-│               │   └── summary.md
-│               ├── iqfeed-streaming
-│               │   └── summary.md
-│               ├── manifest.json
-│               ├── rithmic-bootstrap
-│               │   └── summary.md
-│               ├── rithmic-historical
-│               │   └── summary.md
-│               └── rithmic-streaming
-│                   └── summary.md
+│       └── _automation
+│           └── 2026-04-27
+│               ├── dk1-operator-signoff.json
+│               ├── dk1-pilot-parity-packet.json
+│               ├── dk1-pilot-parity-packet.md
+│               ├── wave1-validation-summary.json
+│               └── wave1-validation-summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
@@ -746,6 +867,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── NewlineScanBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
+│   │   ├── StrategyRunReadBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
 ├── build
@@ -797,15 +919,24 @@ Use these documents together when planning or implementing new work:
 │       │   ├── README.md
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
+│       │   ├── check-ai-inventory.py
 │       │   ├── create-todo-issues.py
+│       │   ├── dashboard_rendering.py
 │       │   ├── generate-ai-navigation.py
+│       │   ├── generate-api-contract-coverage-dashboard.py
 │       │   ├── generate-changelog.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
+│       │   ├── generate-evidence-continuity-dashboard.py
+│       │   ├── generate-governance-readiness-dashboard.py
 │       │   ├── generate-health-dashboard.py
 │       │   ├── generate-metrics-dashboard.py
+│       │   ├── generate-paper-replay-reliability-dashboard.py
+│       │   ├── generate-pilot-readiness-dashboard.py
 │       │   ├── generate-prompts.py
 │       │   ├── generate-structure-docs.py
+│       │   ├── generate-workflow-manifest.py
+│       │   ├── lint-command-snippets.py
 │       │   ├── repair-links.py
 │       │   ├── rules-engine.py
 │       │   ├── run-docs-automation.py
@@ -813,6 +944,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── sync-readme-badges.py
 │       │   ├── test-scripts.py
 │       │   ├── tests
+│       │   │   ├── test_check_ai_inventory.py
 │       │   │   └── test_scan_todos.py
 │       │   ├── update-claude-md.py
 │       │   ├── validate-api-docs.py
@@ -828,6 +960,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── install.ps1
 │       │   └── install.sh
 │       ├── lib
+│       │   ├── ArtifactRetention.psm1
 │       │   └── BuildNotification.psm1
 │       ├── publish
 │       │   ├── publish.ps1
@@ -906,6 +1039,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── agents
 │   │   │   └── README.md
 │   │   ├── ai-known-errors.md
+│   │   ├── assistant-workflow-contract.md
 │   │   ├── claude
 │   │   │   ├── CLAUDE.actions.md
 │   │   │   ├── CLAUDE.api.md
@@ -913,6 +1047,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CLAUDE.fsharp.md
 │   │   │   ├── CLAUDE.providers.md
 │   │   │   ├── CLAUDE.repo-updater.md
+│   │   │   ├── CLAUDE.roadmap-learning-log.md
 │   │   │   ├── CLAUDE.storage.md
 │   │   │   ├── CLAUDE.structure.md
 │   │   │   └── CLAUDE.testing.md
@@ -945,6 +1080,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
+│   │   ├── workflow-library.md
 │   │   ├── wpf-shell-mvvm.md
 │   │   └── wpf-workstation-shell-ux.md
 │   ├── audits
@@ -956,12 +1092,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
 │   │   ├── audit-results-full.json
-│   │   └── prompt-generation-results.json
+│   │   ├── prompt-generation-results.json
+│   │   └── workspace-visual-audit-checklist-2026-04-22.md
 │   ├── development
 │   │   ├── README.md
 │   │   ├── adding-custom-rules.md
 │   │   ├── build-observability.md
 │   │   ├── central-package-management.md
+│   │   ├── desktop-command-surface-migration.md
 │   │   ├── desktop-testing-guide.md
 │   │   ├── desktop-workflow-automation.md
 │   │   ├── documentation-automation.md
@@ -986,81 +1124,78 @@ Use these documents together when planning or implementing new work:
 │   │   └── wpf-implementation-notes.md
 │   ├── diagrams
 │   │   ├── README.md
-│   │   ├── backfill-workflow.dot
-│   │   ├── backfill-workflow.png
-│   │   ├── backfill-workflow.svg
-│   │   ├── backtesting-engine.dot
-│   │   ├── backtesting-engine.png
-│   │   ├── backtesting-engine.svg
-│   │   ├── c4-level1-context.dot
-│   │   ├── c4-level1-context.png
-│   │   ├── c4-level1-context.svg
-│   │   ├── c4-level2-containers.dot
-│   │   ├── c4-level2-containers.png
-│   │   ├── c4-level2-containers.svg
-│   │   ├── c4-level3-components.dot
-│   │   ├── c4-level3-components.png
-│   │   ├── c4-level3-components.svg
-│   │   ├── cli-commands.dot
-│   │   ├── cli-commands.png
-│   │   ├── cli-commands.svg
-│   │   ├── configuration-management.dot
-│   │   ├── configuration-management.png
-│   │   ├── configuration-management.svg
-│   │   ├── data-flow.dot
-│   │   ├── data-flow.png
-│   │   ├── data-flow.svg
-│   │   ├── data-quality-monitoring.dot
-│   │   ├── data-quality-monitoring.png
-│   │   ├── data-quality-monitoring.svg
-│   │   ├── deployment-options.dot
-│   │   ├── deployment-options.png
-│   │   ├── deployment-options.svg
-│   │   ├── domain-event-model.dot
-│   │   ├── domain-event-model.png
-│   │   ├── domain-event-model.svg
-│   │   ├── event-pipeline-sequence.dot
-│   │   ├── event-pipeline-sequence.png
-│   │   ├── event-pipeline-sequence.svg
-│   │   ├── execution-layer.dot
-│   │   ├── execution-layer.png
-│   │   ├── execution-layer.svg
-│   │   ├── fsharp-domain.dot
-│   │   ├── fsharp-domain.png
-│   │   ├── fsharp-domain.svg
-│   │   ├── fund-ops-reconciliation.dot
-│   │   ├── fund-ops-reconciliation.png
-│   │   ├── fund-ops-reconciliation.svg
-│   │   ├── mcp-server.dot
-│   │   ├── mcp-server.png
-│   │   ├── mcp-server.svg
-│   │   ├── onboarding-flow.dot
-│   │   ├── onboarding-flow.png
-│   │   ├── onboarding-flow.svg
-│   │   ├── project-dependencies.dot
-│   │   ├── project-dependencies.png
-│   │   ├── project-dependencies.svg
-│   │   ├── provider-architecture.dot
-│   │   ├── provider-architecture.png
-│   │   ├── provider-architecture.svg
-│   │   ├── resilience-patterns.dot
-│   │   ├── resilience-patterns.png
-│   │   ├── resilience-patterns.svg
-│   │   ├── runtime-hosts.dot
-│   │   ├── runtime-hosts.png
-│   │   ├── runtime-hosts.svg
-│   │   ├── security-master-lifecycle.dot
-│   │   ├── security-master-lifecycle.png
-│   │   ├── security-master-lifecycle.svg
-│   │   ├── storage-architecture.dot
-│   │   ├── storage-architecture.png
-│   │   ├── storage-architecture.svg
-│   │   ├── strategy-lifecycle.dot
-│   │   ├── strategy-lifecycle.png
-│   │   ├── strategy-lifecycle.svg
-│   │   ├── symbol-search-resolution.dot
-│   │   ├── symbol-search-resolution.png
-│   │   ├── symbol-search-resolution.svg
+│   │   ├── analytics
+│   │   │   ├── README.md
+│   │   │   ├── backtesting-engine.dot
+│   │   │   ├── backtesting-engine.png
+│   │   │   └── backtesting-engine.svg
+│   │   ├── architecture
+│   │   │   ├── README.md
+│   │   │   ├── c4
+│   │   │   │   ├── c4-level1-context.dot
+│   │   │   │   ├── c4-level1-context.png
+│   │   │   │   ├── c4-level1-context.svg
+│   │   │   │   ├── c4-level2-containers.dot
+│   │   │   │   ├── c4-level2-containers.png
+│   │   │   │   ├── c4-level2-containers.svg
+│   │   │   │   ├── c4-level3-components.dot
+│   │   │   │   ├── c4-level3-components.png
+│   │   │   │   └── c4-level3-components.svg
+│   │   │   └── platform
+│   │   │       ├── domain-event-model.dot
+│   │   │       ├── domain-event-model.png
+│   │   │       ├── domain-event-model.svg
+│   │   │       ├── fsharp-domain.dot
+│   │   │       ├── fsharp-domain.png
+│   │   │       ├── fsharp-domain.svg
+│   │   │       ├── mcp-server.dot
+│   │   │       ├── mcp-server.png
+│   │   │       ├── mcp-server.svg
+│   │   │       ├── project-dependencies.dot
+│   │   │       ├── project-dependencies.png
+│   │   │       ├── project-dependencies.svg
+│   │   │       ├── provider-architecture.dot
+│   │   │       ├── provider-architecture.png
+│   │   │       ├── provider-architecture.svg
+│   │   │       ├── runtime-hosts.dot
+│   │   │       ├── runtime-hosts.png
+│   │   │       ├── runtime-hosts.svg
+│   │   │       ├── storage-architecture.dot
+│   │   │       ├── storage-architecture.png
+│   │   │       ├── storage-architecture.svg
+│   │   │       ├── workstation-delivery.dot
+│   │   │       ├── workstation-delivery.png
+│   │   │       └── workstation-delivery.svg
+│   │   ├── operations
+│   │   │   ├── README.md
+│   │   │   ├── data-quality-monitoring.dot
+│   │   │   ├── data-quality-monitoring.png
+│   │   │   ├── data-quality-monitoring.svg
+│   │   │   ├── deployment-options.dot
+│   │   │   ├── deployment-options.png
+│   │   │   ├── deployment-options.svg
+│   │   │   ├── resilience-patterns.dot
+│   │   │   ├── resilience-patterns.png
+│   │   │   └── resilience-patterns.svg
+│   │   ├── reference
+│   │   │   ├── README.md
+│   │   │   ├── cli-commands.dot
+│   │   │   ├── cli-commands.png
+│   │   │   ├── cli-commands.svg
+│   │   │   ├── configuration-management.dot
+│   │   │   ├── configuration-management.png
+│   │   │   ├── configuration-management.svg
+│   │   │   ├── symbol-search-resolution.dot
+│   │   │   ├── symbol-search-resolution.png
+│   │   │   └── symbol-search-resolution.svg
+│   │   ├── ui
+│   │   │   ├── README.md
+│   │   │   ├── ui-implementation-flow.dot
+│   │   │   ├── ui-implementation-flow.png
+│   │   │   ├── ui-implementation-flow.svg
+│   │   │   ├── ui-navigation-map.dot
+│   │   │   ├── ui-navigation-map.png
+│   │   │   └── ui-navigation-map.svg
 │   │   ├── ui-implementation-flow.dot
 │   │   ├── ui-implementation-flow.png
 │   │   ├── ui-implementation-flow.svg
@@ -1136,9 +1271,33 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── timing-diagram.puml
 │   │   │   ├── use-case-diagram.png
 │   │   │   └── use-case-diagram.puml
-│   │   ├── workstation-delivery.dot
-│   │   ├── workstation-delivery.png
-│   │   └── workstation-delivery.svg
+│   │   └── workflows
+│   │       ├── README.md
+│   │       └── operations
+│   │           ├── backfill-workflow.dot
+│   │           ├── backfill-workflow.png
+│   │           ├── backfill-workflow.svg
+│   │           ├── data-flow.dot
+│   │           ├── data-flow.png
+│   │           ├── data-flow.svg
+│   │           ├── event-pipeline-sequence.dot
+│   │           ├── event-pipeline-sequence.png
+│   │           ├── event-pipeline-sequence.svg
+│   │           ├── execution-layer.dot
+│   │           ├── execution-layer.png
+│   │           ├── execution-layer.svg
+│   │           ├── fund-ops-reconciliation.dot
+│   │           ├── fund-ops-reconciliation.png
+│   │           ├── fund-ops-reconciliation.svg
+│   │           ├── onboarding-flow.dot
+│   │           ├── onboarding-flow.png
+│   │           ├── onboarding-flow.svg
+│   │           ├── security-master-lifecycle.dot
+│   │           ├── security-master-lifecycle.png
+│   │           ├── security-master-lifecycle.svg
+│   │           ├── strategy-lifecycle.dot
+│   │           ├── strategy-lifecycle.png
+│   │           └── strategy-lifecycle.svg
 │   ├── docfx
 │   │   ├── README.md
 │   │   ├── api
@@ -3842,6 +4001,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Storage.TieringOptions.yml
 │   │   │   ├── Meridian.Storage.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.ILiveStrategy.yml
+│   │   │   ├── Meridian.Strategies.Interfaces.IPromotionRecordStore.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.IStrategyLifecycle.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.IStrategyRepository.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.yml
@@ -3851,6 +4011,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Strategies.Models.yml
 │   │   │   ├── Meridian.Strategies.Promotions.BacktestToLivePromoter.yml
 │   │   │   ├── Meridian.Strategies.Promotions.PromotionCriteria.yml
+│   │   │   ├── Meridian.Strategies.Promotions.PromotionDecisionKinds.yml
 │   │   │   ├── Meridian.Strategies.Promotions.StrategyPromotionRecord.yml
 │   │   │   ├── Meridian.Strategies.Promotions.yml
 │   │   │   ├── Meridian.Strategies.Services.AggregatePortfolioService.yml
@@ -3877,6 +4038,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunContinuityService.yml
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunReadService.yml
 │   │   │   ├── Meridian.Strategies.Services.yml
+│   │   │   ├── Meridian.Strategies.Storage.JsonlPromotionRecordStore.yml
+│   │   │   ├── Meridian.Strategies.Storage.PromotionRecordStoreOptions.yml
 │   │   │   ├── Meridian.Strategies.Storage.StrategyRunStore.yml
 │   │   │   ├── Meridian.Strategies.Storage.yml
 │   │   │   ├── Meridian.Tools.DataValidator.GapInfo.yml
@@ -4646,6 +4809,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ConfigEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CppTraderEndpoints.yml
+│   │   │   ├── Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CredentialEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CronEndpoints.yml
@@ -4725,7 +4889,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── index.md
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
-│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   └── temp-metadata-only.json
 │   ├── evaluations
@@ -4764,6 +4927,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
 │   │   ├── repository-structure.md
+│   │   ├── workflow-command-reference.md
 │   │   └── workflows-overview.md
 │   ├── getting-started
 │   │   ├── README.md
@@ -4791,15 +4955,19 @@ Use these documents together when planning or implementing new work:
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
 │   │   ├── governance-fund-ops-blueprint.md
+│   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
+│   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── meridian-pilot-workflow.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── portfolio-level-backtesting-composer-blueprint.md
@@ -4835,6 +5003,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ufl-treasury-bill-target-state-v2.md
 │   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── waves-2-4-operator-readiness-addendum.md
+│   │   ├── web-ui-development-pivot.md
 │   │   ├── workstation-release-readiness-blueprint.md
 │   │   └── workstation-sprint-1-implementation-backlog.md
 │   ├── providers
@@ -4851,14 +5020,19 @@ Use these documents together when planning or implementing new work:
 │   ├── reference
 │   │   ├── README.md
 │   │   ├── api-reference.md
+│   │   ├── backtest-preflight-and-stage-telemetry.md
 │   │   ├── brand-assets.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
+│   │   ├── edgar-reference-data.md
 │   │   ├── environment-variables.md
+│   │   ├── export-preflight-rules.md
+│   │   ├── governance-report-packs.md
 │   │   ├── open-source-references.md
 │   │   ├── reconciliation-break-taxonomy.md
-│   │   └── research-briefing-workflow.md
+│   │   ├── research-briefing-workflow.md
+│   │   └── strategy-promotion-history.md
 │   ├── screenshots
 │   │   ├── 01-dashboard.png
 │   │   ├── 02-workstation.png
@@ -4899,6 +5073,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 23-workstation-governance-security-master.png
 │   │   ├── README.md
 │   │   └── desktop
+│   │       ├── catalog.json
 │   │       ├── wpf-backfill.png
 │   │       ├── wpf-backtest.png
 │   │       ├── wpf-dashboard.png
@@ -4909,6 +5084,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── wpf-provider-health.png
 │   │       ├── wpf-providers.png
 │   │       ├── wpf-quant-script.png
+│   │       ├── wpf-research-workspace.png
 │   │       ├── wpf-security-master.png
 │   │       ├── wpf-settings.png
 │   │       ├── wpf-storage.png
@@ -4924,6 +5100,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
 │   │   ├── IMPROVEMENTS.md
+│   │   ├── KERNEL_PARITY_STATUS.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── PROGRAM_STATE.md
 │   │   ├── README.md
@@ -4947,14 +5124,18 @@ Use these documents together when planning or implementing new work:
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
+│   │   ├── program-state-summary.json
+│   │   ├── program-state-summary.md
 │   │   ├── provider-validation-matrix.md
-│   │   └── rules-report.md
+│   │   ├── rules-report.md
+│   │   ├── run-contract.schema.json
+│   │   ├── wave4-evidence-template.md
+│   │   ├── workflow-drift-report.md
+│   │   ├── workflow-manifest.json
+│   │   └── workflow-validation-summary.json
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
-├── issues
-│   ├── phase-1-5-add-equityclassification-discriminator-and-preferredterms-domain-model.md
-│   └── phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md
 ├── make
 │   ├── ai.mk
 │   ├── build.mk
@@ -5008,11 +5189,17 @@ Use these documents together when planning or implementing new work:
 │   │   └── setup.sh
 │   ├── check_contract_compatibility_gate.py
 │   ├── check_program_state_consistency.py
+│   ├── check_workflow_docs_parity.py
 │   ├── compare_benchmarks.py
+│   ├── compare_run_contract.py
 │   ├── dev
 │   │   ├── SharedBuild.ps1
+│   │   ├── SharedCheckpoint.ps1
+│   │   ├── SharedPreflight.ps1
+│   │   ├── SharedWorkflowProfiles.ps1
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
+│   │   ├── capture-web-screenshots.mjs
 │   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── desktop-workflows.json
@@ -5020,14 +5207,34 @@ Use these documents together when planning or implementing new work:
 │   │   ├── fixtures
 │   │   │   └── robinhood-options-smoke.seed.json
 │   │   ├── generate-desktop-user-manual.ps1
+│   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── preflight_runner.py
+│   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
-│   │   └── validate-position-blotter-route.ps1
+│   │   ├── screenshot-diff-config.json
+│   │   ├── screenshot_diff_report.py
+│   │   ├── shared
+│   │   │   └── retry.ps1
+│   │   ├── validate-operator-inbox-route.ps1
+│   │   ├── validate-position-blotter-route.ps1
+│   │   ├── validate-screenshot-contract.py
+│   │   ├── validate-workflow-profile.ps1
+│   │   ├── web-screenshot-routes.json
+│   │   └── workflow-profiles
+│   │       ├── debug-startup.json
+│   │       ├── manual-data-operations.json
+│   │       ├── manual-governance.json
+│   │       ├── manual-overview.json
+│   │       ├── manual-research-and-trading.json
+│   │       └── screenshot-catalog.json
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
+│   ├── generate_contract_review_packet.py
+│   ├── generate_program_state_summary.py
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -5055,6 +5262,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── runtimeconfig.template.json
 │   ├── Meridian.Application
 │   │   ├── Backfill
+│   │   │   ├── AutoGapRemediationService.cs
+│   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillResult.cs
@@ -5062,8 +5271,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillStatusStoreJsonContext.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
+│   │   │   ├── IBackfillExecutionGateway.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
+│   │   │   ├── BacktestPreflightService.cs
 │   │   │   └── BacktestStudioContracts.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
@@ -5208,7 +5419,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── IFundStructureService.cs
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
-│   │   │   └── InMemoryFundStructureService.cs
+│   │   │   ├── InMemoryFundStructureService.cs
+│   │   │   └── LedgerGroupingRules.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Http
 │   │   │   ├── BackfillCoordinator.cs
@@ -5279,6 +5491,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
 │   │   ├── ProviderRouting
+│   │   │   ├── BestOfBreedProviderSelector.cs
 │   │   │   ├── KernelObservabilityService.cs
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConnectionService.cs
@@ -5297,9 +5510,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── EdgarIngestOrchestrator.cs
+│   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
+│   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
@@ -5411,6 +5627,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BacktestEngine.cs
 │   │   │   ├── ContingentOrderManager.cs
 │   │   │   ├── MultiSymbolMergeEnumerator.cs
+│   │   │   ├── StageTimer.cs
 │   │   │   └── UniverseDiscovery.cs
 │   │   ├── FillModels
 │   │   │   ├── BarMidpointFillModel.cs
@@ -5438,6 +5655,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── BacktestProgressEvent.cs
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
+│   │   ├── BacktestStage.cs
+│   │   ├── BacktestStageTelemetryDto.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
@@ -5503,6 +5722,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── UserRole.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillProgress.cs
+│   │   ├── Backtesting
+│   │   │   └── BacktestPreflightDtos.cs
 │   │   ├── Banking
 │   │   │   └── BankingModels.cs
 │   │   ├── Catalog
@@ -5594,7 +5815,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
-│   │   │   └── FundStructureQueries.cs
+│   │   │   ├── FundStructureQueries.cs
+│   │   │   └── LedgerGroupId.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── Meridian.Contracts.csproj
@@ -5607,6 +5829,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
@@ -5618,6 +5841,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterOptions.cs
 │   │   │   └── SecurityQueries.cs
 │   │   ├── Services
+│   │   │   ├── IBacktestPreflightService.cs
 │   │   │   └── IConnectivityProbeService.cs
 │   │   ├── Session
 │   │   │   └── CollectionSession.cs
@@ -5626,13 +5850,18 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
+│   │       ├── BrokerageSyncDtos.cs
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
 │   │       ├── FundOperationsWorkspaceDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── ResearchBriefingDtos.cs
+│   │       ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
-│   │       └── StrategyRunReadModels.cs
+│   │       ├── StrategyRunReadModels.cs
+│   │       ├── TradingOperatorReadinessDtos.cs
+│   │       ├── WorkflowLibraryDtos.cs
+│   │       └── WorkflowSummaryDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
 │   │   │   ├── AlpacaOptions.cs
@@ -5807,6 +6036,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FutureDetails.cs
 │   │   │   ├── OptionDetails.cs
 │   │   │   └── OptionGreeks.cs
+│   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
@@ -5938,8 +6168,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
 │   │   │   ├── Edgar
+│   │   │   │   ├── EdgarReferenceDataProvider.cs
+│   │   │   │   ├── EdgarSecurityDocumentParser.cs
 │   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
-│   │   │   │   └── EdgarSymbolSearchProvider.cs
+│   │   │   │   ├── EdgarSymbolSearchProvider.cs
+│   │   │   │   └── IEdgarReferenceDataProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -6240,11 +6473,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AnalysisExportService.IO.cs
 │   │   │   ├── AnalysisExportService.cs
 │   │   │   ├── AnalysisQualityReport.cs
+│   │   │   ├── ExportPreflightRules.cs
 │   │   │   ├── ExportProfile.cs
 │   │   │   ├── ExportRequest.cs
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
-│   │   │   └── ExportVerificationReport.cs
+│   │   │   ├── ExportVerificationReport.cs
+│   │   │   ├── PreflightRule.cs
+│   │   │   └── XlsxWorkbookWriter.cs
 │   │   ├── FundAccounts
 │   │   │   ├── IFundAccountStore.cs
 │   │   │   └── Migrations
@@ -6281,6 +6517,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── JsonlReplayer.cs
 │   │   │   └── MemoryMappedJsonlReader.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── FileEdgarReferenceDataStore.cs
+│   │   │   ├── IEdgarReferenceDataStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
@@ -6307,6 +6545,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MaintenanceScheduler.cs
 │   │   │   ├── MetadataTagService.cs
 │   │   │   ├── ParquetConversionService.cs
+│   │   │   ├── QualityTrendStore.cs
 │   │   │   ├── QuotaEnforcementService.cs
 │   │   │   ├── RetentionComplianceReporter.cs
 │   │   │   ├── SourceRegistry.cs
@@ -6331,21 +6570,27 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
+│   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── IStrategyLifecycle.cs
 │   │   │   └── IStrategyRepository.cs
 │   │   ├── Meridian.Strategies.csproj
 │   │   ├── Models
 │   │   │   ├── RunType.cs
 │   │   │   ├── StrategyRunEntry.cs
+│   │   │   ├── StrategyRunRepositoryQuery.cs
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
-│   │   │   └── BacktestToLivePromoter.cs
+│   │   │   ├── BacktestToLivePromoter.cs
+│   │   │   └── PromotionApprovalChecklist.cs
 │   │   ├── Serialization
-│   │   │   └── FSharpInteropJsonContext.cs
+│   │   │   ├── FSharpInteropJsonContext.cs
+│   │   │   └── PromotionRecordJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.cs
 │   │   │   ├── IAggregatePortfolioService.cs
+│   │   │   ├── IReconciliationBreakQueueRepository.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
@@ -6355,38 +6600,106 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PromotionService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
+│   │   │   ├── ReconciliationSourceAdapters.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
-│   │   │   └── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunReadService.cs
+│   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   └── Storage
+│   │       ├── JsonlPromotionRecordStore.cs
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
 │   │   ├── dashboard
-│   │   │   └── src
-│   │   │       ├── app.tsx
-│   │   │       ├── components
-│   │   │       │   └── meridian
-│   │   │       │       ├── workspace-header.tsx
-│   │   │       │       └── workspace-nav.tsx
-│   │   │       ├── lib
-│   │   │       │   ├── api.trading.test.ts
-│   │   │       │   └── api.ts
-│   │   │       ├── screens
-│   │   │       │   ├── data-operations-screen.test.tsx
-│   │   │       │   ├── governance-screen.test.tsx
-│   │   │       │   ├── governance-screen.tsx
-│   │   │       │   ├── overview-screen.tsx
-│   │   │       │   ├── research-screen.test.tsx
-│   │   │       │   ├── trading-screen.test.tsx
-│   │   │       │   └── trading-screen.tsx
-│   │   │       ├── styles
-│   │   │       │   └── index.css
-│   │   │       └── types.ts
+│   │   │   ├── index.html
+│   │   │   ├── package-lock.json
+│   │   │   ├── package.json
+│   │   │   ├── postcss.config.cjs
+│   │   │   ├── src
+│   │   │   │   ├── app-shell.view-model.test.ts
+│   │   │   │   ├── app-shell.view-model.ts
+│   │   │   │   ├── app.tsx
+│   │   │   │   ├── assets
+│   │   │   │   │   └── brand
+│   │   │   │   │       └── meridian-mark.svg
+│   │   │   │   ├── components
+│   │   │   │   │   ├── meridian
+│   │   │   │   │   │   ├── command-palette.test.tsx
+│   │   │   │   │   │   ├── command-palette.tsx
+│   │   │   │   │   │   ├── command-palette.view-model.test.ts
+│   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── metric-card.test.tsx
+│   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── metric-card.view-model.test.ts
+│   │   │   │   │   │   ├── metric-card.view-model.ts
+│   │   │   │   │   │   ├── workspace-header.test.tsx
+│   │   │   │   │   │   ├── workspace-header.tsx
+│   │   │   │   │   │   ├── workspace-header.view-model.test.ts
+│   │   │   │   │   │   ├── workspace-header.view-model.ts
+│   │   │   │   │   │   ├── workspace-nav.test.tsx
+│   │   │   │   │   │   ├── workspace-nav.tsx
+│   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
+│   │   │   │   │   │   └── workspace-nav.view-model.ts
+│   │   │   │   │   └── ui
+│   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── button.tsx
+│   │   │   │   │       ├── card.tsx
+│   │   │   │   │       ├── dialog.test.tsx
+│   │   │   │   │       └── dialog.tsx
+│   │   │   │   ├── design-system-contract.test.ts
+│   │   │   │   ├── hooks
+│   │   │   │   │   └── use-workstation-data.ts
+│   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
+│   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── utils.ts
+│   │   │   │   │   ├── workspace.test.ts
+│   │   │   │   │   └── workspace.ts
+│   │   │   │   ├── main.tsx
+│   │   │   │   ├── screens
+│   │   │   │   │   ├── data-operations-screen.test.tsx
+│   │   │   │   │   ├── data-operations-screen.tsx
+│   │   │   │   │   ├── data-operations-screen.view-model.test.ts
+│   │   │   │   │   ├── data-operations-screen.view-model.ts
+│   │   │   │   │   ├── governance-screen.test.tsx
+│   │   │   │   │   ├── governance-screen.tsx
+│   │   │   │   │   ├── governance-screen.view-model.test.ts
+│   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── operator-readiness-console.tsx
+│   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
+│   │   │   │   │   ├── operator-readiness-console.view-model.ts
+│   │   │   │   │   ├── overview-screen.tsx
+│   │   │   │   │   ├── overview-screen.view-model.test.ts
+│   │   │   │   │   ├── overview-screen.view-model.ts
+│   │   │   │   │   ├── research-screen.test.tsx
+│   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── research-screen.view-model.test.ts
+│   │   │   │   │   ├── research-screen.view-model.ts
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
+│   │   │   │   │   ├── trading-screen.view-model.test.ts
+│   │   │   │   │   ├── trading-screen.view-model.ts
+│   │   │   │   │   ├── workspace-placeholder-screen.tsx
+│   │   │   │   │   ├── workspace-placeholder-screen.view-model.test.ts
+│   │   │   │   │   └── workspace-placeholder-screen.view-model.ts
+│   │   │   │   ├── styles
+│   │   │   │   │   └── index.css
+│   │   │   │   ├── test
+│   │   │   │   │   ├── render.tsx
+│   │   │   │   │   └── setup.ts
+│   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.test.ts
+│   │   │   │   └── vite-env.d.ts
+│   │   │   ├── tailwind.config.ts
+│   │   │   ├── tsconfig.json
+│   │   │   ├── tsconfig.node.json
+│   │   │   └── vite.config.ts
 │   │   └── wwwroot
 │   │       └── workstation
-│   │           └── assets
-│   │               ├── index-CnAc-D_d.js
-│   │               └── index-DLXsLZLB.css
+│   │           ├── assets
+│   │           │   ├── index-DN1W91Kc.js
+│   │           │   └── index-UFtGYQsd.css
+│   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
 │   │   │   ├── BoundedObservableCollection.cs
@@ -6451,6 +6764,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── DataQualityServiceBase.cs
 │   │       ├── DataSamplingService.cs
 │   │       ├── DesktopJsonOptions.cs
+│   │       ├── DesktopShellPreferences.cs
 │   │       ├── DiagnosticsService.cs
 │   │       ├── ErrorHandlingService.cs
 │   │       ├── ErrorMessages.cs
@@ -6527,6 +6841,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
+│   │   │   ├── EdgarReferenceDataEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
@@ -6576,10 +6891,28 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BackfillCoordinator.cs
+│   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
-│   │   │   └── SecurityMasterSecurityReferenceLookup.cs
-│   │   └── UserProfileRegistry.cs
+│   │   │   ├── GovernanceReportPackRepository.cs
+│   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── StrategyRunReviewPacketService.cs
+│   │   │   ├── TradingOperatorReadinessService.cs
+│   │   │   └── WorkstationWorkflowSummaryService.cs
+│   │   ├── UserProfileRegistry.cs
+│   │   └── Workflows
+│   │       ├── BuiltInWorkflowDefinitionProvider.cs
+│   │       ├── FileWorkflowPresetStore.cs
+│   │       ├── IWorkflowActionCatalog.cs
+│   │       ├── IWorkflowDefinitionProvider.cs
+│   │       ├── IWorkflowPresetStore.cs
+│   │       ├── WorkflowActionIds.cs
+│   │       ├── WorkflowLibraryService.cs
+│   │       ├── WorkflowPresetService.cs
+│   │       ├── WorkflowRegistry.cs
+│   │       └── WorkflowServiceCollectionExtensions.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
 │       ├── App.xaml.cs
@@ -6657,6 +6990,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NullToCollapsedConverter.cs
 │       │   ├── StringToBoolConverter.cs
 │       │   └── StringToVisibilityConverter.cs
+│       ├── Copy
+│       │   └── WorkspaceCopyCatalog.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
@@ -6681,7 +7016,9 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
+│       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
+│       │   ├── ResearchWorkspaceShellPresentationModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.DataOperations.cs
 │       │   ├── ShellNavigationCatalog.Governance.cs
@@ -6690,10 +7027,13 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ShellNavigationCatalog.Workspaces.cs
 │       │   ├── ShellNavigationCatalog.cs
 │       │   ├── ShellNavigationModels.cs
+│       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
+│       │   ├── TradingWorkspaceShellPresentationModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
+│       │   ├── WorkspaceQueueRegionState.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   ├── WorkspaceShellChromeModels.cs
 │       │   ├── WorkspaceShellModels.cs
@@ -6715,6 +7055,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
 │       │   ├── DataOperationsWorkspacePresentationBuilder.cs
+│       │   ├── DesktopLaunchArguments.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -6740,8 +7081,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NotificationService.cs
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
+│       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── QuantScriptStorageJsonContext.cs
+│       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
+│       │   ├── ResearchWorkspaceShellPresentationService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -6758,6 +7103,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TickerStripService.cs
 │       │   ├── ToastNotificationService.cs
 │       │   ├── TooltipService.cs
+│       │   ├── TradingWorkspaceShellPresentationService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
 │       │   ├── WindowStartupRecovery.cs
@@ -6765,8 +7111,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkspaceShellContextService.cs
 │       │   ├── WorkspaceShellStateProviders.cs
 │       │   ├── WorkstationOperatingContextService.cs
+│       │   ├── WorkstationOperatorInboxApiClient.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
 │       │   ├── WorkstationResearchBriefingService.cs
+│       │   ├── WorkstationSecurityMasterApiClient.cs
 │       │   └── WpfShellServiceCollectionExtensions.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
@@ -6777,6 +7125,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ThemeSurfaces.xaml
 │       │   ├── ThemeTokens.xaml
 │       │   └── ThemeTypography.xaml
+│       ├── Templates
+│       │   └── QuantScript
+│       │       ├── catalog.json
+│       │       ├── hello-spy.csx
+│       │       ├── indicator-sma.csx
+│       │       └── single-symbol-backtest.csx
 │       ├── ViewModels
 │       │   ├── AccountPortfolioViewModel.cs
 │       │   ├── ActivityLogViewModel.cs
@@ -6834,9 +7188,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QualityArchiveViewModel.cs
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
+│       │   ├── ResearchWorkspaceShellViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
+│       │   ├── ScheduleManagerViewModel.cs
+│       │   ├── SecurityConflictLaneModels.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -6849,12 +7206,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── StrategyRunDetailViewModel.cs
 │       │   ├── StrategyRunLedgerViewModel.cs
 │       │   ├── StrategyRunPortfolioViewModel.cs
+│       │   ├── SymbolMappingViewModel.cs
 │       │   ├── SymbolsPageViewModel.cs
 │       │   ├── SystemHealthViewModel.cs
 │       │   ├── TickerStripViewModel.cs
+│       │   ├── TimeSeriesAlignmentViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
+│       │   ├── TradingWorkspaceShellViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
+│       │   ├── WorkflowLibraryViewModel.cs
 │       │   ├── WorkspacePageViewModel.cs
 │       │   └── WorkspaceShellViewModelBase.cs
 │       └── Views
@@ -7043,6 +7404,9 @@ Use these documents together when planning or implementing new work:
 │           ├── WatchlistPage.xaml.cs
 │           ├── WelcomePage.xaml
 │           ├── WelcomePage.xaml.cs
+│           ├── WorkflowLibraryPage.xaml
+│           ├── WorkflowLibraryPage.xaml.cs
+│           ├── WorkspaceCapabilityHomePage.cs
 │           ├── WorkspaceCommandBarControl.xaml
 │           ├── WorkspaceCommandBarControl.xaml.cs
 │           ├── WorkspaceDeepPageHostPage.xaml
@@ -7060,6 +7424,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestMetricsEngineTests.cs
+│   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
@@ -7073,6 +7438,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
+│   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
@@ -7096,6 +7462,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LedgerKernelTests.fs
 │   │   ├── Meridian.FSharp.Tests.fsproj
 │   │   ├── PipelineTests.fs
+│   │   ├── PromotionPolicyTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── TradingTransitionTests.fs
 │   │   └── ValidationTests.fs
@@ -7130,6 +7497,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Application
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
+│   │   │   │   ├── AutoGapRemediationServiceTests.cs
 │   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillStatusStoreTests.cs
@@ -7163,6 +7531,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── DryRunCommandTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
+│   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
 │   │   │   │   ├── SelfTestCommandTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
 │   │   │   │   └── ValidateConfigCommandTests.cs
@@ -7174,6 +7543,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
+│   │   │   │   ├── AppSettingsSampleTests.cs
 │   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -7200,6 +7570,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
+│   │   │   ├── FundStructure
+│   │   │   │   ├── LedgerGroupIdTests.cs
+│   │   │   │   └── LedgerGroupingRulesTests.cs
+│   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -7217,6 +7591,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ProviderDegradationCalibrationTests.cs
 │   │   │   │   ├── ProviderDegradationScorerTests.cs
 │   │   │   │   ├── ProviderLatencyServiceTests.cs
+│   │   │   │   ├── QualityTrendCalculationTests.cs
 │   │   │   │   ├── SchemaValidationServiceTests.cs
 │   │   │   │   ├── SloDefinitionRegistryTests.cs
 │   │   │   │   ├── SpreadMonitorTests.cs
@@ -7243,11 +7618,15 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
+│   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
+│   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMaster
-│   │   │   │   └── SecurityMasterImportServiceTests.cs
+│   │   │   │   ├── EdgarIngestOrchestratorTests.cs
+│   │   │   │   ├── SecurityMasterImportServiceTests.cs
+│   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── CanonicalizingPublisherTests.cs
 │   │   │   │   ├── CliModeResolverTests.cs
@@ -7267,6 +7646,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── OptionsChainServiceTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
 │   │   │   ├── Ui
@@ -7336,6 +7716,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── Fixtures
@@ -7520,7 +7901,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
-│   │   │   └── StrategyRunReadServiceTests.cs
+│   │   │   ├── StrategyRunReadServiceTests.cs
+│   │   │   └── StrategyRunStoreTests.cs
 │   │   ├── SymbolSearch
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
@@ -7545,11 +7927,15 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
+│   │       ├── BrokeragePortfolioSyncServiceTests.cs
 │   │       ├── DirectLendingEndpointsTests.cs
+│   │       ├── EdgarReferenceDataEndpointsTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │       ├── TradingOperatorReadinessServiceTests.cs
+│   │       ├── WorkflowLibraryEndpointTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -7615,6 +8001,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── WatchlistServiceCollection.cs
 │   │       └── WatchlistServiceTests.cs
 │   ├── Meridian.Wpf.Tests
+│   │   ├── Copy
+│   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   ├── Models
@@ -7629,6 +8017,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundLedgerReadServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
@@ -7637,9 +8026,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OfflineTrackingPersistenceServiceTests.cs
 │   │   │   ├── PendingOperationsQueueServiceTests.cs
+│   │   │   ├── QuantScriptExecutionHistoryServiceTests.cs
+│   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── ResearchBriefingWorkspaceServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
 │   │   │   ├── StorageServiceTests.cs
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
@@ -7647,7 +8039,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkspaceServiceTests.cs
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
-│   │   │   └── WorkstationOperatingContextServiceTests.cs
+│   │   │   ├── WorkstationOperatingContextServiceTests.cs
+│   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -7661,26 +8054,63 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── WpfTestThread.cs
 │   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
+│   │   │   ├── AccountPortfolioViewModelTests.cs
+│   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
+│   │   │   ├── AdminMaintenanceViewModelTests.cs
+│   │   │   ├── AdvancedAnalyticsViewModelTests.cs
+│   │   │   ├── AgentViewModelTests.cs
+│   │   │   ├── AggregatePortfolioViewModelTests.cs
+│   │   │   ├── AnalysisExportViewModelTests.cs
+│   │   │   ├── AnalysisExportWizardViewModelTests.cs
+│   │   │   ├── BackfillViewModelTests.cs
+│   │   │   ├── BatchBacktestViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
+│   │   │   ├── ChartingPageViewModelTests.cs
+│   │   │   ├── CollectionSessionViewModelTests.cs
+│   │   │   ├── DataBrowserViewModelTests.cs
+│   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── DataSamplingViewModelTests.cs
+│   │   │   ├── DataSourcesViewModelTests.cs
+│   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
+│   │   │   ├── MessagingHubViewModelTests.cs
+│   │   │   ├── NotificationCenterViewModelTests.cs
+│   │   │   ├── OrderBookViewModelTests.cs
+│   │   │   ├── PortfolioImportViewModelTests.cs
+│   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
+│   │   │   ├── ResearchWorkspaceShellViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
+│   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── StatusBarViewModelTests.cs
+│   │   │   ├── StorageViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── SymbolMappingViewModelTests.cs
+│   │   │   ├── SymbolsPageViewModelTests.cs
+│   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
+│   │   │   ├── TradingHoursViewModelTests.cs
+│   │   │   ├── TradingWorkspaceShellViewModelTests.cs
+│   │   │   ├── WatchlistViewModelTests.cs
+│   │   │   ├── WelcomePageViewModelTests.cs
+│   │   │   ├── WorkflowLibraryViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   └── Views
 │   │       ├── DashboardPageSmokeTests.cs
 │   │       ├── DataOperationsWorkspaceShellSmokeTests.cs
 │   │       ├── DataQualityPageSmokeTests.cs
+│   │       ├── DesktopWorkflowScriptTests.cs
 │   │       ├── FullNavigationSweepTests.cs
 │   │       ├── FundProfileSelectionPageSmokeTests.cs
+│   │       ├── GovernanceWorkspaceShellPageTests.cs
 │   │       ├── GovernanceWorkspaceShellSmokeTests.cs
 │   │       ├── MainPageSmokeTests.cs
 │   │       ├── MainPageUiWorkflowTests.cs
@@ -7688,6 +8118,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── PageLifecycleCleanupTests.cs
 │   │       ├── PlotRenderBehaviorTests.cs
 │   │       ├── QuantScriptPageTests.cs
+│   │       ├── ResearchWorkspaceShellPageTests.cs
 │   │       ├── ResearchWorkspaceShellSmokeTests.cs
 │   │       ├── ResearchWorkspaceShellWorkflowTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
@@ -7696,15 +8127,37 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SystemHealthPageSmokeTests.cs
 │   │       ├── TradingWorkspaceShellPageTests.cs
 │   │       ├── WorkspaceDeepPageChromeTests.cs
+│   │       ├── WorkspaceQueueToneStylesTests.cs
+│   │       ├── WorkspaceShellContextStripControlTests.cs
 │   │       ├── WorkspaceShellPageSmokeTests.cs
 │   │       └── WorkstationPageSmokeTests.cs
 │   ├── coverlet.runsettings
 │   ├── scripts
-│   │   └── setup-verification.sh
+│   │   ├── setup-verification.sh
+│   │   ├── test_artifact_retention_module.py
+│   │   ├── test_buildctl_artifact_retention.py
+│   │   ├── test_check_contract_compatibility_gate.py
+│   │   ├── test_check_program_state_consistency.py
+│   │   ├── test_cleanup_generated_script.py
+│   │   ├── test_code_quality_workflow.py
+│   │   ├── test_compare_run_contract.py
+│   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_documentation_workflow.py
+│   │   ├── test_generate_contract_review_packet.py
+│   │   ├── test_generate_dk1_pilot_parity_packet.py
+│   │   ├── test_generate_program_state_summary.py
+│   │   ├── test_maintenance_full_workflow.py
+│   │   ├── test_meridian_code_review_run_eval.py
+│   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_python_package_conda_dependencies.py
+│   │   ├── test_refresh_screenshots_workflow.py
+│   │   ├── test_screenshot_diff_report.py
+│   │   ├── test_setup_dotnet_cache_action.py
+│   │   └── test_shared_build_retention.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 └── tree.bak
 
-604 directories, 6961 files
+615 directories, 7368 files
 ```
 <!-- readme-tree end -->

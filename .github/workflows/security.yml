@@ -185,19 +185,25 @@ jobs:
           fetch-depth: 0
 
       - name: Log PR context
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_REF: ${{ github.base_ref }}
+          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
           echo "=== Pull Request Context ==="
-          echo "PR Number: ${{ github.event.pull_request.number }}"
-          echo "Base SHA: ${{ github.event.pull_request.base.sha }}"
-          echo "Head SHA: ${{ github.event.pull_request.head.sha }}"
-          echo "Base Ref: ${{ github.base_ref }}"
-          echo "Head Ref: ${{ github.head_ref }}"
+          echo "PR Number: ${PR_NUMBER}"
+          echo "Base SHA: ${PR_BASE_SHA}"
+          echo "Head SHA: ${PR_HEAD_SHA}"
+          echo "Base Ref: ${PR_BASE_REF}"
+          echo "Head Ref: ${PR_HEAD_REF}"
           echo ""
           echo "=== Changed Files ==="
-          git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} || echo "Could not get diff"
+          git diff --name-only "${PR_BASE_SHA}..${PR_HEAD_SHA}" || echo "Could not get diff"
           echo ""
           echo "=== Dependency Files Changed ==="
-          git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -E '\.(csproj|fsproj|props|targets|json|lock)$' || echo "No dependency files changed"
+          git diff --name-only "${PR_BASE_SHA}..${PR_HEAD_SHA}" | grep -E '\.(csproj|fsproj|props|targets|json|lock)$' || echo "No dependency files changed"
 
       - name: Dependency Review
         id: dependency-review
@@ -271,7 +277,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         id: trivy
-        uses: aquasecurity/trivy-action@0.31.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: 'meridian:scan-${{ github.sha }}'
           format: 'sarif'
@@ -365,9 +371,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages:
-            - csharp
-            - python
+          languages: csharp, python
           queries: security-and-quality
 
       - name: Setup .NET

@@ -38,6 +38,64 @@ public sealed class SymbolFreshnessItem
     public Brush StatusBrush { get; set; } = Brushes.Transparent;
 }
 
+/// <summary>Operational KPI item for the research operations dashboard.</summary>
+public sealed class DashboardOperationsMetricItem
+{
+    public string Label { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
+    public string Detail { get; set; } = string.Empty;
+    public Brush AccentBrush { get; set; } = Brushes.Transparent;
+}
+
+/// <summary>Data-quality category summary for the research operations dashboard.</summary>
+public sealed class DashboardDataQualityCategoryItem
+{
+    public string Category { get; set; } = string.Empty;
+    public string Count { get; set; } = string.Empty;
+    public string Detail { get; set; } = string.Empty;
+    public double Completion { get; set; }
+    public Brush StatusBrush { get; set; } = Brushes.Transparent;
+}
+
+/// <summary>Upcoming maturity row for the research operations dashboard.</summary>
+public sealed class DashboardUpcomingMaturityItem
+{
+    public string Issuer { get; set; } = string.Empty;
+    public string MaturityDate { get; set; } = string.Empty;
+    public string ParValue { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public Brush StatusBrush { get; set; } = Brushes.Transparent;
+}
+
+/// <summary>Holdings snapshot row for the research operations dashboard.</summary>
+public sealed class DashboardHoldingSnapshotItem
+{
+    public string Cusip { get; set; } = string.Empty;
+    public string Issuer { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string AssetClass { get; set; } = string.Empty;
+    public string Rating { get; set; } = string.Empty;
+    public string Coupon { get; set; } = string.Empty;
+    public string Maturity { get; set; } = string.Empty;
+    public string ParValue { get; set; } = string.Empty;
+    public string BookValue { get; set; } = string.Empty;
+    public string MarketValue { get; set; } = string.Empty;
+    public string ValuationDelta { get; set; } = string.Empty;
+    public Brush ValuationDeltaBrush { get; set; } = Brushes.Transparent;
+    public string DataStatus { get; set; } = string.Empty;
+    public Brush DataStatusBackground { get; set; } = Brushes.Transparent;
+    public Brush DataStatusBorderBrush { get; set; } = Brushes.Transparent;
+    public Brush DataStatusForeground { get; set; } = Brushes.Transparent;
+}
+
+/// <summary>Portfolio data service status item for the dashboard status banner.</summary>
+public sealed class DashboardServiceStatusItem
+{
+    public string ServiceName { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
+    public Brush StatusBrush { get; set; } = Brushes.Transparent;
+}
+
 /// <summary>
 /// Severity level for integrity events.
 /// Used for badge counting without fragile brush-reference comparisons (P3 fix).

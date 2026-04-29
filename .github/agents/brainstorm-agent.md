@@ -29,9 +29,10 @@ user growth strategy, or technical debt ideation.
 
 Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. It already
 spans provider ingestion and backfill, tiered storage, replay, backtesting, execution and risk
-seams, shared run, portfolio, and ledger models, QuantScript, MCP, and a desktop-first workstation
-shell. The current delivery focus is turning that breadth into one cohesive operator product across
-Research, Trading, Data Operations, and Governance.
+seams, shared run, portfolio, and ledger models, QuantScript, MCP, a browser-based operator
+workstation, and retained WPF support. The current delivery focus is turning that breadth into one
+cohesive operator product across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and
+Settings.
 
 **Use current repo docs as authoritative context:** rely on `README.md`, `docs/status/ROADMAP.md`,
 and `.claude/skills/_shared/project-context.md` instead of fixed file-count snapshots.

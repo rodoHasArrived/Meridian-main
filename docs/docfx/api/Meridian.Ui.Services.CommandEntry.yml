@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandEntry
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 428
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 428
   assemblies:
   - Meridian.Ui.Services
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 429
   assemblies:
   - Meridian.Ui.Services
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 430
   assemblies:
   - Meridian.Ui.Services
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 431
   assemblies:
   - Meridian.Ui.Services
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Command
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 432
   assemblies:
   - Meridian.Ui.Services
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Shortcut
-    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
     startLine: 433
   assemblies:
   - Meridian.Ui.Services

@@ -2,10 +2,17 @@ using System;
 
 namespace Meridian.Ui.Services.Services;
 
+public enum FixtureModeKind
+{
+    Live,
+    Fixture,
+    Offline
+}
+
 /// <summary>
 /// Detects and tracks whether the application is running in fixture/offline mode.
-/// Provides a centralized check so all UI pages can show a hard visual distinction
-/// when viewing sample data instead of live backend data.
+/// Provides a centralized check so UI pages can distinguish intentional demo data
+/// from backend-unreachable offline state.
 /// </summary>
 /// <remarks>
 /// Fixture mode is activated by:
@@ -61,20 +68,30 @@ public sealed class FixtureModeDetector
     public bool IsNonLiveMode => _isFixtureMode || _isOfflineMode;
 
     /// <summary>
+    /// Gets the normalized non-live mode kind for UI tone selection.
+    /// </summary>
+    public FixtureModeKind ModeKind => (_isFixtureMode, _isOfflineMode) switch
+    {
+        (true, _) => FixtureModeKind.Fixture,
+        (_, true) => FixtureModeKind.Offline,
+        _ => FixtureModeKind.Live
+    };
+
+    /// <summary>
     /// Gets a human-readable mode label for display in the UI banner.
     /// </summary>
     public string ModeLabel => (_isFixtureMode, _isOfflineMode) switch
     {
-        (true, _) => "FIXTURE MODE — Showing sample data, not connected to live backend",
-        (_, true) => "OFFLINE — Backend unreachable, displaying cached/stale data",
+        (true, _) => "Demo data mode - sample workflow data; live services are not connected.",
+        (_, true) => "Offline - local backend is unreachable; showing cached or fallback data.",
         _ => string.Empty
     };
 
     /// <summary>
     /// Gets the banner background color suggestion.
-    /// Fixture mode: amber/orange, Offline: red.
+    /// Fixture mode: blue informational, Offline: red.
     /// </summary>
-    public string BannerColor => _isFixtureMode ? "#FFB300" : "#F44336";
+    public string BannerColor => _isFixtureMode ? "#2563EB" : "#F44336";
 
     /// <summary>
     /// Sets explicit fixture mode state.

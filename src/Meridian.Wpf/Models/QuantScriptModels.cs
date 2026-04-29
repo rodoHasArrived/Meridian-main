@@ -1,7 +1,8 @@
+using System.Globalization;
+using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
-using System.Globalization;
 
 namespace Meridian.Wpf.Models;
 
@@ -123,7 +124,7 @@ public enum ConsoleEntryKind
 // ── Metrics tab ───────────────────────────────────────────────────────────────
 
 /// <summary>A single metric key/value pair shown in the Metrics tab.</summary>
-public sealed record MetricEntry(string Label, string Value, string? Category = null);
+public sealed record MetricEntry(string Label, string Value, string? Category = null, string? Source = null);
 
 // ── Trades tab ────────────────────────────────────────────────────────────────
 
@@ -172,22 +173,54 @@ public sealed class ChartLegendEntry
 /// </summary>
 public sealed class ParameterViewModel : BindableBase
 {
+    private Type _parameterType;
+    private string _label;
+    private string? _description;
+    private double _min;
+    private double _max;
     private string _rawValue = string.Empty;
     private bool _isValid = true;
     private string? _validationMessage;
     private object? _parsedValue;
 
-    public ParameterViewModel(string name, object? defaultValue, Type? parameterType = null)
+    public ParameterViewModel(
+        string name,
+        object? defaultValue,
+        Type? parameterType = null,
+        string? label = null,
+        string? description = null,
+        double min = double.MinValue,
+        double max = double.MaxValue)
     {
         Name = name;
-        ParameterType = parameterType ?? typeof(string);
+        _parameterType = parameterType ?? typeof(string);
+        _label = string.IsNullOrWhiteSpace(label) ? name : label.Trim();
+        _description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        _min = min;
+        _max = max;
         _parsedValue = defaultValue;
         _rawValue = FormatValue(defaultValue);
         Validate();
     }
 
     public string Name { get; }
-    public Type ParameterType { get; }
+    public Type ParameterType
+    {
+        get => _parameterType;
+        private set
+        {
+            if (SetProperty(ref _parameterType, value))
+            {
+                RaisePropertyChanged(nameof(IsBoolean));
+                RaisePropertyChanged(nameof(IsNumeric));
+            }
+        }
+    }
+
+    public string Label { get => _label; private set => SetProperty(ref _label, value); }
+    public string? Description { get => _description; private set => SetProperty(ref _description, value); }
+    public double Min { get => _min; private set => SetProperty(ref _min, value); }
+    public double Max { get => _max; private set => SetProperty(ref _max, value); }
 
     public string RawValue
     {
@@ -244,6 +277,26 @@ public sealed class ParameterViewModel : BindableBase
     public bool IsValid { get => _isValid; private set => SetProperty(ref _isValid, value); }
     public string? ValidationMessage { get => _validationMessage; private set => SetProperty(ref _validationMessage, value); }
     public object? ParsedValue { get => _parsedValue; private set => SetProperty(ref _parsedValue, value); }
+
+    public void ApplyDescriptor(ParameterDescriptor descriptor, Type? parameterType, bool preserveUserValue)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+
+        ParameterType = parameterType ?? typeof(string);
+        Label = string.IsNullOrWhiteSpace(descriptor.Label) ? descriptor.Name : descriptor.Label.Trim();
+        Description = string.IsNullOrWhiteSpace(descriptor.Description) ? null : descriptor.Description.Trim();
+        Min = descriptor.Min;
+        Max = descriptor.Max;
+
+        if (preserveUserValue)
+        {
+            Validate();
+            return;
+        }
+
+        RawValue = FormatValue(descriptor.DefaultValue);
+        Validate();
+    }
 
     private void Validate()
     {

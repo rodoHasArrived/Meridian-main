@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationRunService
-    path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
     startLine: 6
   assemblies:
   - Meridian.Strategies
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
     startLine: 13
   assemblies:
   - Meridian.Strategies
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
     startLine: 25
   assemblies:
   - Meridian.Strategies
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
-    path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
     startLine: 128
   assemblies:
   - Meridian.Strategies
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestForRunAsync
-    path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
     startLine: 131
   assemblies:
   - Meridian.Strategies
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryForRunAsync
-    path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
     startLine: 134
   assemblies:
   - Meridian.Strategies

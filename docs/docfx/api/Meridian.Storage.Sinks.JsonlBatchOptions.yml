@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlBatchOptions
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 21
   assemblies:
   - Meridian.Storage
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSize
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 27
   assemblies:
   - Meridian.Storage
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushInterval
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 33
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 39
   assemblies:
   - Meridian.Storage
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelSerializationThreshold
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 46
   assemblies:
   - Meridian.Storage
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 51
   assemblies:
   - Meridian.Storage
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughput
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 56
   assemblies:
   - Meridian.Storage
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowLatency
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 66
   assemblies:
   - Meridian.Storage
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoBatching
-    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
     startLine: 76
   assemblies:
   - Meridian.Storage

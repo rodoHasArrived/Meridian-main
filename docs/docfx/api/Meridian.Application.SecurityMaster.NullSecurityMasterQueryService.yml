@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NullSecurityMasterQueryService
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailable
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailabilityDescription
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdentifierAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 55
   assemblies:
   - Meridian.Application
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEconomicDefinitionByIdAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 60
   assemblies:
   - Meridian.Application
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingParametersAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -391,7 +391,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCorporateActionsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 71
   assemblies:
   - Meridian.Application
@@ -432,7 +432,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPreferredEquityTermsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 76
   assemblies:
   - Meridian.Application
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConvertibleEquityTermsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
     startLine: 81
   assemblies:
   - Meridian.Application

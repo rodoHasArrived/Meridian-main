@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionTrigger
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 113
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scheduled
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Manual
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Api
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Retry
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 125
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatchUp
-    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
     startLine: 128
   assemblies:
   - Meridian.Application

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Shared
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapHistoricalEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapAlignmentEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
     startLine: 107
   assemblies:
   - Meridian.Ui.Shared

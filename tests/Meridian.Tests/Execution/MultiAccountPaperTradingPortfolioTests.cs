@@ -108,7 +108,7 @@ public sealed class MultiAccountPaperTradingPortfolioTests
         var portfolio = new PaperTradingPortfolio(accounts);
 
         portfolio.ApplyFill("acc-1", BuildFill("AAPL", OrderSide.Buy, qty: 10, price: 150m));
-        portfolio.ApplyFill("acc-2", BuildFill("AAPL", OrderSide.Buy, qty: 5,  price: 155m));
+        portfolio.ApplyFill("acc-2", BuildFill("AAPL", OrderSide.Buy, qty: 5, price: 155m));
 
         portfolio.Positions["AAPL"].Quantity.Should().Be(15);
     }
@@ -153,15 +153,15 @@ public sealed class MultiAccountPaperTradingPortfolioTests
         decimal qty,
         decimal price,
         decimal commission = 0m) => new()
-    {
-        OrderId = Guid.NewGuid().ToString("N"),
-        Symbol = symbol,
-        Side = side,
-        ReportType = ExecutionReportType.Fill,
-        FilledQuantity = qty,
-        FillPrice = price,
-        Commission = commission,
-        Timestamp = DateTimeOffset.UtcNow,
-        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
-    };
+        {
+            OrderId = Guid.NewGuid().ToString("N"),
+            Symbol = symbol,
+            Side = side,
+            ReportType = ExecutionReportType.Fill,
+            FilledQuantity = qty,
+            FillPrice = price,
+            Commission = commission,
+            Timestamp = DateTimeOffset.UtcNow,
+            OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+        };
 }

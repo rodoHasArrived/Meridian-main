@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchUtility
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
     startLine: 5
   assemblies:
   - Meridian.Infrastructure
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateMatchScore
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure

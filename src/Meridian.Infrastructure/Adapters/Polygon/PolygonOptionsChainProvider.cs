@@ -335,7 +335,8 @@ public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
 
         foreach (var result in results)
         {
-            if (result.Details is null) continue;
+            if (result.Details is null)
+                continue;
 
             var right = result.Details.ContractType?.ToUpperInvariant() == "PUT"
                 ? OptionRight.Put
@@ -356,7 +357,8 @@ public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
                 InstrumentType: InstrumentType.EquityOption);
 
             var quote = MapToOptionQuote(contract, result, now);
-            if (quote is null) continue;
+            if (quote is null)
+                continue;
 
             strikeSet.Add(contract.Strike);
 

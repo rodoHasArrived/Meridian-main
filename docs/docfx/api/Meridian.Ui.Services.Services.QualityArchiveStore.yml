@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityArchiveStore
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 52
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAsync
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 67
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 90
   assemblies:
   - Meridian.Ui.Services
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 116
   assemblies:
   - Meridian.Ui.Services
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 183
   assemblies:
   - Meridian.Ui.Services

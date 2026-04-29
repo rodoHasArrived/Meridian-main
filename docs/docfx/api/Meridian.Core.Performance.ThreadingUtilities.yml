@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThreadingUtilities
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetHighPriority
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetAboveNormalPriority
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrySetThreadAffinity
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 50
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrySetProcessAffinity
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 79
   assemblies:
   - Meridian.Core
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrySetProcessHighPriority
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 104
   assemblies:
   - Meridian.Core
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YieldProcessor
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 128
   assemblies:
   - Meridian.Core
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpinWait
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 138
   assemblies:
   - Meridian.Core
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentThreadId
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 147
   assemblies:
   - Meridian.Core
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryStartNoGCRegion
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 154
   assemblies:
   - Meridian.Core
@@ -374,7 +374,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndNoGCRegion
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 169
   assemblies:
   - Meridian.Core

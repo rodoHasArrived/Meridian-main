@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchResults
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 369
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Query
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 371
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 372
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 373
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pages
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 374
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Actions
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 375
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Help
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 376
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 378
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllResults
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 380
   assemblies:
   - Meridian.Ui.Services

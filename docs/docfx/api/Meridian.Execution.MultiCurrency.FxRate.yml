@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FxRate
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteCurrency
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rate
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Convert
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertInverse
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 23
   assemblies:
   - Meridian.Execution
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Inverse
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 32
   assemblies:
   - Meridian.Execution
@@ -334,7 +334,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    path: src/Meridian.Execution/MultiCurrency/FxRate.cs
     startLine: 37
   assemblies:
   - Meridian.Execution

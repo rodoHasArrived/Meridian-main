@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentProvider
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uptime
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 41
   assemblies:
   - Meridian.Ui.Services
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastLatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalReconnects
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 47
   assemblies:
   - Meridian.Ui.Services
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMonitoring
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 50
   assemblies:
   - Meridian.Ui.Services
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAutoReconnectPaused
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 53
   assemblies:
   - Meridian.Ui.Services
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StateChanged
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStateChanged
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 59
   assemblies:
   - Meridian.Ui.Services
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyUpdated
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 62
   assemblies:
   - Meridian.Ui.Services
@@ -437,7 +437,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectAttempting
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services
@@ -466,7 +466,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectSucceeded
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 68
   assemblies:
   - Meridian.Ui.Services
@@ -495,7 +495,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectFailed
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 71
   assemblies:
   - Meridian.Ui.Services
@@ -524,7 +524,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthUpdated
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services
@@ -553,7 +553,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSettings
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 79
   assemblies:
   - Meridian.Ui.Services
@@ -584,7 +584,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureServiceUrl
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 89
   assemblies:
   - Meridian.Ui.Services
@@ -620,7 +620,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSettings
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 97
   assemblies:
   - Meridian.Ui.Services
@@ -650,7 +650,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartMonitoring
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 115
   assemblies:
   - Meridian.Ui.Services
@@ -678,7 +678,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopMonitoring
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 140
   assemblies:
   - Meridian.Ui.Services
@@ -706,7 +706,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 158
   assemblies:
   - Meridian.Ui.Services
@@ -749,7 +749,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 196
   assemblies:
   - Meridian.Ui.Services
@@ -782,7 +782,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseAutoReconnect
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 210
   assemblies:
   - Meridian.Ui.Services
@@ -810,7 +810,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumeAutoReconnect
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 223
   assemblies:
   - Meridian.Ui.Services
@@ -838,7 +838,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnMonitoringTimerFired
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 242
   assemblies:
   - Meridian.Ui.Services
@@ -871,7 +871,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnReconnectTimerFired
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 250
   assemblies:
   - Meridian.Ui.Services
@@ -904,7 +904,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerformHealthCheckCoreAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 488
   assemblies:
   - Meridian.Ui.Services
@@ -940,7 +940,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartMonitoringTimer
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 491
   assemblies:
   - Meridian.Ui.Services
@@ -974,7 +974,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopMonitoringTimer
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 494
   assemblies:
   - Meridian.Ui.Services
@@ -1002,7 +1002,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartReconnectTimer
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 497
   assemblies:
   - Meridian.Ui.Services
@@ -1036,7 +1036,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAutoReconnect
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 500
   assemblies:
   - Meridian.Ui.Services
@@ -1064,7 +1064,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnSettingsUpdated
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 503
   assemblies:
   - Meridian.Ui.Services
@@ -1095,7 +1095,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconnectDelayMs
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 509
   assemblies:
   - Meridian.Ui.Services
@@ -1134,7 +1134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogOperation
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 517
   assemblies:
   - Meridian.Ui.Services
@@ -1170,7 +1170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogWarning
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 520
   assemblies:
   - Meridian.Ui.Services
@@ -1206,7 +1206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 523
   assemblies:
   - Meridian.Ui.Services
@@ -1236,7 +1236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 532
   assemblies:
   - Meridian.Ui.Services
@@ -1270,7 +1270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposePlatformResources
-    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
     startLine: 548
   assemblies:
   - Meridian.Ui.Services

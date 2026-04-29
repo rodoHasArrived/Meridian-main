@@ -37,6 +37,12 @@ public sealed class FundReconciliationWorkbenchServiceTests
         snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
         snapshot.RunRows.First().HasOpenExceptions.Should().BeTrue();
         snapshot.InReviewBreakCount.Should().Be(1);
+        snapshot.CalibrationSummary.Should().NotBeNull();
+        snapshot.CalibrationSummary!.Status.Should().Be(ReconciliationCalibrationStatusDto.ReviewRequired);
+        snapshot.CalibrationProfiles.Should().ContainSingle(profile =>
+            profile.ToleranceProfileId == "price-variance-ops" &&
+            profile.ExceptionRoute == "fund-ops-review" &&
+            profile.PendingSignoffCount == 2);
     }
 
     [Fact]
@@ -170,7 +176,13 @@ public sealed class FundReconciliationWorkbenchServiceTests
                 Reason: "Large amount mismatch remains open.",
                 AssignedTo: null,
                 DetectedAt: new DateTimeOffset(2026, 3, 21, 16, 40, 0, TimeSpan.Zero),
-                LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 40, 0, TimeSpan.Zero)),
+                LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 40, 0, TimeSpan.Zero),
+                Severity: ReconciliationBreakSeverity.High,
+                ExceptionRoute: "fund-ops-review",
+                ToleranceProfileId: "price-variance-ops",
+                ToleranceBand: 100m,
+                RequiredSignoffRole: "Fund operations lead",
+                SignoffStatus: "pending-signoff"),
             new ReconciliationBreakQueueItem(
                 BreakId: "run-fund-ops:reviewed-gap",
                 RunId: "run-fund-ops",
@@ -183,7 +195,13 @@ public sealed class FundReconciliationWorkbenchServiceTests
                 DetectedAt: new DateTimeOffset(2026, 3, 21, 16, 41, 0, TimeSpan.Zero),
                 LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 45, 0, TimeSpan.Zero),
                 ReviewedBy: "desktop-user",
-                ReviewedAt: new DateTimeOffset(2026, 3, 21, 16, 45, 0, TimeSpan.Zero)),
+                ReviewedAt: new DateTimeOffset(2026, 3, 21, 16, 45, 0, TimeSpan.Zero),
+                Severity: ReconciliationBreakSeverity.Medium,
+                ExceptionRoute: "fund-ops-review",
+                ToleranceProfileId: "price-variance-ops",
+                ToleranceBand: 60m,
+                RequiredSignoffRole: "Fund operations lead",
+                SignoffStatus: "pending-signoff"),
             new ReconciliationBreakQueueItem(
                 BreakId: "run-fund-ops:open-small",
                 RunId: "run-fund-ops",
@@ -194,7 +212,13 @@ public sealed class FundReconciliationWorkbenchServiceTests
                 Reason: "A smaller ledger-only mismatch is still open.",
                 AssignedTo: null,
                 DetectedAt: new DateTimeOffset(2026, 3, 21, 16, 42, 0, TimeSpan.Zero),
-                LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 42, 0, TimeSpan.Zero))
+                LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 42, 0, TimeSpan.Zero),
+                Severity: ReconciliationBreakSeverity.Low,
+                ExceptionRoute: "ledger-coverage-review",
+                ToleranceProfileId: "ledger-coverage-ops",
+                ToleranceBand: 10m,
+                RequiredSignoffRole: "Fund operations lead",
+                SignoffStatus: "signed-off")
         ],
         [
             BuildStrategyDetail("run-fund-ops")
@@ -252,6 +276,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
                     ExpectedAmount: 150m,
                     ActualAmount: 125m,
                     Variance: 25m,
+                    Severity: ReconciliationBreakSeverity.High,
                     Reason: "Broker statement has not been normalized yet.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 29, 0, TimeSpan.Zero)),
@@ -264,6 +289,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
                     ExpectedAmount: 50m,
                     ActualAmount: 10m,
                     Variance: 40m,
+                    Severity: ReconciliationBreakSeverity.Medium,
                     Reason: "Statement timestamp drift exceeds tolerance.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 00, 0, TimeSpan.Zero)),
@@ -276,6 +302,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
                     ExpectedAmount: 25m,
                     ActualAmount: 20m,
                     Variance: 5m,
+                    Severity: ReconciliationBreakSeverity.Low,
                     Reason: "Ledger posting is late.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 28, 0, TimeSpan.Zero))

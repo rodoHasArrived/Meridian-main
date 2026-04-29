@@ -4,11 +4,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="clr-namespace:Meridian.Wpf.Models"
+             xmlns:views="clr-namespace:Meridian.Wpf.Views"
              x:Name="Root"
              mc:Ignorable="d"
              d:DesignHeight="70"
              d:DesignWidth="1200">
-    <Border Style="{StaticResource WorkspaceCommandBarSurfaceStyle}">
+    <Border>
+        <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource WorkspaceCommandBarSurfaceStyle}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ElementName=Root, Path=IsCompactSurface}" Value="True">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="CornerRadius" Value="0" />
+                        <Setter Property="Effect" Value="{x:Null}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -34,6 +49,9 @@
                                     <Setter Property="Padding" Value="14,10" />
                                     <Setter Property="FontWeight" Value="SemiBold" />
                                     <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompactSurface, RelativeSource={RelativeSource AncestorType={x:Type views:WorkspaceCommandBarControl}}}" Value="True">
+                                            <Setter Property="Padding" Value="12,7" />
+                                        </DataTrigger>
                                         <DataTrigger Binding="{Binding Tone}" Value="Primary">
                                             <Setter Property="Background" Value="{StaticResource InfoColorBrush}" />
                                             <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentBlueBrush}" />
@@ -64,6 +82,9 @@
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Visibility" Value="Visible" />
                                                 <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCompactSurface, RelativeSource={RelativeSource AncestorType={x:Type views:WorkspaceCommandBarControl}}}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding ShortcutHint}" Value="">
                                                         <Setter Property="Visibility" Value="Collapsed" />
                                                     </DataTrigger>
@@ -80,11 +101,19 @@
 
             <Button x:Name="MoreButton"
                     Grid.Column="1"
-                    Style="{StaticResource GhostButtonStyle}"
-                    Padding="14,10"
                     Margin="8,0,0,8"
                     Click="OnMoreButtonClick"
                     AutomationProperties.Name="More Workspace Commands">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                        <Setter Property="Padding" Value="14,10" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=Root, Path=IsCompactSurface}" Value="True">
+                                <Setter Property="Padding" Value="12,7" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE712;"
                                FontFamily="{StaticResource SymbolThemeFontFamily}"

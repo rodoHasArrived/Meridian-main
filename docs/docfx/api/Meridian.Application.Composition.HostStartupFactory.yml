@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostStartupFactory
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 290
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveProfile
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 295
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 310
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForBackfill
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 325
   assemblies:
   - Meridian.Application
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForUtility
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 333
   assemblies:
   - Meridian.Application

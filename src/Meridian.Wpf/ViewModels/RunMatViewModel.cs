@@ -13,6 +13,7 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
 {
     private readonly RunMatService _runMatService;
     private CancellationTokenSource? _runCts;
+    private bool _hasRunAttempt;
 
     public ObservableCollection<RunMatScriptDocument> Scripts { get; } = [];
     public ObservableCollection<RunMatOutputLine> OutputLines { get; } = [];
@@ -84,7 +85,13 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     public string LastRunSummary
     {
         get => _lastRunSummary;
-        set => SetProperty(ref _lastRunSummary, value);
+        set
+        {
+            if (SetProperty(ref _lastRunSummary, value))
+            {
+                RaiseOutputPresentationChanged();
+            }
+        }
     }
 
     private bool _isRunning;
@@ -96,12 +103,29 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRunning, value))
             {
                 RaisePropertyChanged(nameof(CanRun));
+                RaisePropertyChanged(nameof(CanStopRun));
                 (RunScriptCommand as AsyncRelayCommand)?.NotifyCanExecuteChanged();
+                StopRunCommand.NotifyCanExecuteChanged();
+                RaiseOutputPresentationChanged();
             }
         }
     }
 
     public bool CanRun => !IsRunning;
+    public bool CanStopRun => IsRunning;
+    public bool HasOutputLines => OutputLines.Count > 0;
+    public bool IsOutputEmptyStateVisible => !HasOutputLines;
+    public string OutputLineCountText => OutputLines.Count == 1 ? "1 output line" : $"{OutputLines.Count} output lines";
+    public string OutputEmptyStateTitle => IsRunning
+        ? "RunMat output is streaming"
+        : _hasRunAttempt
+            ? "Latest run produced no output"
+            : "No output captured yet";
+    public string OutputEmptyStateDetail => IsRunning
+        ? "Stdout and stderr will appear here as RunMat emits lines."
+        : _hasRunAttempt
+            ? "The run finished without stdout or stderr. Check Last Run and resolved executable before rerunning."
+            : "Run a script to capture stdout, stderr, and execution diagnostics in this panel.";
 
     public IAsyncRelayCommand InitializeCommand { get; }
     public IAsyncRelayCommand RefreshScriptsCommand { get; }
@@ -120,7 +144,9 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
         RunScriptCommand = new AsyncRelayCommand(RunScriptAsync, () => CanRun);
         LoadSelectedScriptCommand = new AsyncRelayCommand(LoadSelectedScriptAsync);
         NewScriptCommand = new RelayCommand(NewScript);
-        StopRunCommand = new RelayCommand(StopRun);
+        StopRunCommand = new RelayCommand(StopRun, () => CanStopRun);
+
+        OutputLines.CollectionChanged += (_, _) => RaiseOutputPresentationChanged();
     }
 
     public async Task InitializeAsync()
@@ -195,6 +221,7 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     private async Task RunScriptAsync()
     {
         OutputLines.Clear();
+        _hasRunAttempt = true;
         IsRunning = true;
         StatusText = "Running script...";
         LastRunSummary = "Run in progress...";
@@ -249,7 +276,21 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
 
     private void StopRun()
     {
+        if (!IsRunning)
+            return;
+
+        StatusText = "Cancellation requested.";
+        LastRunSummary = "Cancellation requested.";
         _runCts?.Cancel();
+    }
+
+    private void RaiseOutputPresentationChanged()
+    {
+        RaisePropertyChanged(nameof(HasOutputLines));
+        RaisePropertyChanged(nameof(IsOutputEmptyStateVisible));
+        RaisePropertyChanged(nameof(OutputLineCountText));
+        RaisePropertyChanged(nameof(OutputEmptyStateTitle));
+        RaisePropertyChanged(nameof(OutputEmptyStateDetail));
     }
 
     public void Dispose()

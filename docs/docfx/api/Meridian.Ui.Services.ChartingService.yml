@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChartingService
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 6
   assemblies:
   - Meridian.Ui.Services
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCandlestickDataAsync
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateSma
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateEma
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 92
   assemblies:
   - Meridian.Ui.Services
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateVwap
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 128
   assemblies:
   - Meridian.Ui.Services
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateRsi
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 158
   assemblies:
   - Meridian.Ui.Services
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateMacd
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 210
   assemblies:
   - Meridian.Ui.Services
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateBollingerBands
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 273
   assemblies:
   - Meridian.Ui.Services
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateAtr
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 324
   assemblies:
   - Meridian.Ui.Services
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateVolumeProfile
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 375
   assemblies:
   - Meridian.Ui.Services
@@ -446,7 +446,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableIndicators
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 456
   assemblies:
   - Meridian.Ui.Services

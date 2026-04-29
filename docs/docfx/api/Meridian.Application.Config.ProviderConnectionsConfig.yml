@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConnectionsConfig
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connections
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bindings
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 9
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Policies
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Presets
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Certifications
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 12
   assemblies:
   - Meridian.Core

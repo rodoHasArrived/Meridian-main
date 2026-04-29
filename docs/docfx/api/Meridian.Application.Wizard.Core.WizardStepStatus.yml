@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardStepStatus
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skip
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
     startLine: 17
   assemblies:
   - Meridian.Application

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleDataPreview
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 348
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Events
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 350
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedTotalEvents
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 351
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleSymbols
-    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    path: src/Meridian.Application/Services/SampleDataGenerator.cs
     startLine: 352
   assemblies:
   - Meridian.Application

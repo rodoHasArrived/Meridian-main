@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageProfilePresets
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultProfile
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 26
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyProfile
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 116
   assemblies:
   - Meridian.Storage
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProfile
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 134
   assemblies:
   - Meridian.Storage
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromProfile
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 143
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresets
-    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    path: src/Meridian.Storage/StorageProfiles.cs
     startLine: 154
   assemblies:
   - Meridian.Storage

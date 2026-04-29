@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumePriceLevel
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 620
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceLevel
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 622
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 623
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Intensity
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 624
   assemblies:
   - Meridian.Ui.Services

@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionDetails
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 38
   assemblies:
   - Meridian.Execution.Sdk
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 38
   assemblies:
   - Meridian.Execution.Sdk
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 39
   assemblies:
   - Meridian.Execution.Sdk
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 40
   assemblies:
   - Meridian.Execution.Sdk
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiry
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 41
   assemblies:
   - Meridian.Execution.Sdk
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 42
   assemblies:
   - Meridian.Execution.Sdk
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Style
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 43
   assemblies:
   - Meridian.Execution.Sdk
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractMultiplier
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 44
   assemblies:
   - Meridian.Execution.Sdk
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 45
   assemblies:
   - Meridian.Execution.Sdk
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntrinsicValue
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 51
   assemblies:
   - Meridian.Execution.Sdk
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInTheMoney
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 61
   assemblies:
   - Meridian.Execution.Sdk
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DaysToExpiry
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 66
   assemblies:
   - Meridian.Execution.Sdk
@@ -446,7 +446,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeToExpiryYears
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 71
   assemblies:
   - Meridian.Execution.Sdk

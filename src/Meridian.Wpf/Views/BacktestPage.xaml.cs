@@ -41,16 +41,19 @@ public partial class BacktestPage : Page
     private void RenderEquityCurve()
     {
         var points = _viewModel.EquityCurvePoints;
-        if (points.Count < 2) return;
+        if (points.Count < 2)
+            return;
 
         var w = EquityCanvas.ActualWidth;
         var h = EquityCanvas.ActualHeight;
-        if (w <= 0 || h <= 0) return;
+        if (w <= 0 || h <= 0)
+            return;
 
         var minVal = points.Min(p => p.Value);
         var maxVal = points.Max(p => p.Value);
         var range = maxVal - minVal;
-        if (range < 1.0) range = 1.0;
+        if (range < 1.0)
+            range = 1.0;
 
         var ptCount = points.Count;
         var collection = new PointCollection(ptCount);

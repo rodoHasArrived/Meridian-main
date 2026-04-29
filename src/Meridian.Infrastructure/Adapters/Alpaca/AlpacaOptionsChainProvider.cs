@@ -354,7 +354,8 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
                     strike = strikeMillis / 1000m;
             }
 
-            if (strike <= 0m) continue;
+            if (strike <= 0m)
+                continue;
 
             var contract = new OptionContractSpec(
                 UnderlyingSymbol: underlyingSymbol,
@@ -369,7 +370,8 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
                 InstrumentType: InstrumentType.EquityOption);
 
             var quote = MapToOptionQuote(contract, ticker, snap, now);
-            if (quote is null) continue;
+            if (quote is null)
+                continue;
 
             strikeSet.Add(strike);
 

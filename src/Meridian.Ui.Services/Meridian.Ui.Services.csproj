@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Meridian.Ui.Tests" />
+    <InternalsVisibleTo Include="Meridian.Wpf.Tests" />
   </ItemGroup>
 
   <ItemGroup>

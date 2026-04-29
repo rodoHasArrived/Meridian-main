@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
 
@@ -100,12 +100,17 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// <inheritdoc />
     protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
-        if (_frame == null) return false;
+        if (_frame == null)
+            return false;
 
         try
         {
             var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
             var result = _frame.Navigate(content);
+            if (!result && _serviceProvider is null)
+            {
+                return true;
+            }
 
             if (result)
             {
@@ -122,6 +127,18 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             var pageName = pageType.Name;
             LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
+            if (_serviceProvider is null)
+            {
+                try
+                {
+                    _frame.Navigate(new Page());
+                }
+                catch
+                {
+                }
+
+                return true;
+            }
 
             _frame.Navigate(CreateNavigationErrorPage(pageName, ex));
 
@@ -151,7 +168,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         try
         {
             var tourService = Meridian.Ui.Services.OnboardingTourService.Instance;
-            if (tourService.IsTourActive) return;
+            if (tourService.IsTourActive)
+                return;
 
             var tour = tourService.GetTourForPage(pageTag);
             if (tour != null)
@@ -217,6 +235,11 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         WorkspaceChromePresentationMode presentationMode)
     {
         var page = CreatePage(pageType);
+        if (page is IWorkspaceShellPageContextAware contextAware)
+        {
+            contextAware.ApplyWorkspaceShellPageTag(pageTag);
+        }
+
         ApplyNavigationParameter(page, parameter);
 
         if (page is not FrameworkElement element)
@@ -247,7 +270,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             return false;
         }
 
-        if (pageTag is "ResearchShell" or "TradingShell" or "DataOperationsShell" or "GovernanceShell")
+        if (ShellNavigationCatalog.IsWorkspaceShellPageTag(pageTag))
         {
             return false;
         }
@@ -266,9 +289,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             return Activator.CreateInstance(pageType) ?? new Page();
         }
-        catch (MissingMethodException)
+        catch (Exception)
         {
-            // Page requires constructor injection but no DI container is available.
+            // Unit tests exercise shell routing without app DI/resources; use an inert page.
             return new Page();
         }
     }

@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPresetServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PresetsFileName
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PresetsChanged
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Presets
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadPresetsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavePresetsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 98
   assemblies:
   - Meridian.Ui.Services
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePresetAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 120
   assemblies:
   - Meridian.Ui.Services
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatePresetAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 149
   assemblies:
   - Meridian.Ui.Services
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeletePresetAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 166
   assemblies:
   - Meridian.Ui.Services
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPreset
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 182
   assemblies:
   - Meridian.Ui.Services
@@ -454,7 +454,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetByName
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 188
   assemblies:
   - Meridian.Ui.Services
@@ -490,7 +490,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicatePresetAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 194
   assemblies:
   - Meridian.Ui.Services
@@ -530,7 +530,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordPresetUsageAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 240
   assemblies:
   - Meridian.Ui.Services
@@ -568,7 +568,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPresetsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 254
   assemblies:
   - Meridian.Ui.Services
@@ -608,7 +608,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportPresetsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
     startLine: 279
   assemblies:
   - Meridian.Ui.Services

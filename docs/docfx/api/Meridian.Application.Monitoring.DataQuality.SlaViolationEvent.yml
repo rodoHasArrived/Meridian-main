@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlaViolationEvent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 117
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 117
   assemblies:
   - Meridian.Application
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 118
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSinceLastEvent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 120
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThresholdSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 121
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViolationCount
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousState
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 123
   assemblies:
   - Meridian.Application

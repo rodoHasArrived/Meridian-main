@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationProjectionService
-    path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
     startLine: 6
   assemblies:
   - Meridian.Strategies
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildChecks
-    path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
     startLine: 8
   assemblies:
   - Meridian.Strategies
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildBankingChecks
-    path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+    path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
     startLine: 150
   assemblies:
   - Meridian.Strategies

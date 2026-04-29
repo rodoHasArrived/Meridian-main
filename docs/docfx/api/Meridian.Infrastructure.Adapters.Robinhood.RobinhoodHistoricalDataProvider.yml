@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 40
   assemblies:
   - Meridian.Infrastructure
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 55
   assemblies:
   - Meridian.Infrastructure
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 65
   assemblies:
   - Meridian.Infrastructure
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 66
   assemblies:
   - Meridian.Infrastructure
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 67
   assemblies:
   - Meridian.Infrastructure
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 74
   assemblies:
   - Meridian.Infrastructure
@@ -475,7 +475,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 84
   assemblies:
   - Meridian.Infrastructure
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure
@@ -556,7 +556,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 124
   assemblies:
   - Meridian.Infrastructure
@@ -602,7 +602,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs
     startLine: 240
   assemblies:
   - Meridian.Infrastructure

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexSubscriptionStatus
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 412
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 412
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexId
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 413
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexName
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 414
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalComponents
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 415
   assemblies:
   - Meridian.Application
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedCount
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 416
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedSymbols
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 417
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotSubscribedSymbols
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 418
   assemblies:
   - Meridian.Application

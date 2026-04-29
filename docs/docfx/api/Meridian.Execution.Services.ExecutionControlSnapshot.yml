@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionControlSnapshot
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 61
   assemblies:
   - Meridian.Execution
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 61
   assemblies:
   - Meridian.Execution
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreaker
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 62
   assemblies:
   - Meridian.Execution
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultMaxPositionSize
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 63
   assemblies:
   - Meridian.Execution
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPositionLimits
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 64
   assemblies:
   - Meridian.Execution
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverrides
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 65
   assemblies:
   - Meridian.Execution
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 66
   assemblies:
   - Meridian.Execution

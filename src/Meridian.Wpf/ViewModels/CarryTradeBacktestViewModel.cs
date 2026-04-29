@@ -245,10 +245,10 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             // Pre-populate known dividend yields for these ETFs
             ApplyYieldPreset(new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
             {
-                ["VYM"]  = 0.031,
+                ["VYM"] = 0.031,
                 ["SCHD"] = 0.035,
-                ["HDV"]  = 0.040,
-                ["DVY"]  = 0.043,
+                ["HDV"] = 0.040,
+                ["DVY"] = 0.043,
                 ["JEPI"] = 0.073
             });
         });
@@ -269,7 +269,8 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             () => !string.IsNullOrWhiteSpace(NewYieldSymbol) && NewYieldValue is >= 0 and <= 1);
         RemoveYieldOverrideCommand = new RelayCommand<SymbolYieldVm>(vy =>
         {
-            if (vy is not null) SymbolYields.Remove(vy);
+            if (vy is not null)
+                SymbolYields.Remove(vy);
         });
         OpenRunBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(() => OpenRunSurface("RunDetail"), () => HasLatestRecordedRun);
@@ -284,7 +285,8 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
     private void AddSymbol()
     {
         var sym = NewSymbol.Trim().ToUpperInvariant();
-        if (string.IsNullOrEmpty(sym)) return;
+        if (string.IsNullOrEmpty(sym))
+            return;
         if (!SelectedSymbols.Contains(sym, StringComparer.OrdinalIgnoreCase))
             SelectedSymbols.Add(sym);
         NewSymbol = string.Empty;
@@ -292,7 +294,8 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
 
     private void RemoveSymbol(string? symbol)
     {
-        if (symbol is null) return;
+        if (symbol is null)
+            return;
         var existing = SelectedSymbols.FirstOrDefault(s => string.Equals(s, symbol, StringComparison.OrdinalIgnoreCase));
         if (existing is not null)
             SelectedSymbols.Remove(existing);
@@ -322,7 +325,8 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
     private void AddYieldOverride()
     {
         var sym = NewYieldSymbol.Trim().ToUpperInvariant();
-        if (string.IsNullOrEmpty(sym)) return;
+        if (string.IsNullOrEmpty(sym))
+            return;
         var existing = SymbolYields.FirstOrDefault(y =>
             string.Equals(y.Symbol, sym, StringComparison.OrdinalIgnoreCase));
         if (existing is not null)
@@ -366,11 +370,11 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             : null;
 
         var strategy = new CarryTradeBacktestStrategy(
-            configuration:          config,
-            yieldCarryMode:         YieldCarryMode,
+            configuration: config,
+            yieldCarryMode: YieldCarryMode,
             rebalanceFrequencyDays: RebalanceFrequencyDays,
-            explicitYields:         explicitYields,
-            minYieldSpreadToLong:   MinYieldSpread);
+            explicitYields: explicitYields,
+            minYieldSpreadToLong: MinYieldSpread);
 
         var progress = new Progress<BacktestProgressEvent>(OnProgress);
         var result = await _backtestService.RunAsync(request, strategy, progress);
@@ -469,8 +473,8 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             >= 1.5 => 25.0,
             >= 1.0 => 20.0,
             >= 0.5 => 12.0,
-            > 0.0  => 5.0,
-            _      => 0.0
+            > 0.0 => 5.0,
+            _ => 0.0
         };
 
         // 2. Max drawdown  (<10% → 25, <20% → 18, <30% → 10, <40% → 5, ≥40% → 0)
@@ -481,7 +485,7 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             < 0.20 => 18.0,
             < 0.30 => 10.0,
             < 0.40 => 5.0,
-            _      => 0.0
+            _ => 0.0
         };
 
         // 3. Annualised return (>10% → 25, >6% → 18, >3% → 10, >0% → 5, ≤0% → 0)
@@ -491,8 +495,8 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             >= 0.10 => 25.0,
             >= 0.06 => 18.0,
             >= 0.03 => 10.0,
-            > 0.0   => 5.0,
-            _       => 0.0
+            > 0.0 => 5.0,
+            _ => 0.0
         };
 
         // 4. Win rate  (>55% → 25, >50% → 18, >45% → 10, >40% → 5, ≤40% → 0)
@@ -502,7 +506,7 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             >= 0.50 => 18.0,
             >= 0.45 => 10.0,
             >= 0.40 => 5.0,
-            _       => 0.0
+            _ => 0.0
         };
 
         var composite = sharpeScore + drawdownScore + returnScore + winScore;
@@ -518,7 +522,7 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             >= 65 => ("B", "#84cc16", $"Good carry viability. The strategy shows solid risk-adjusted returns. Sharpe {sharpeFmt}, drawdown {ddFmt}."),
             >= 50 => ("C", "#eab308", $"Moderate carry viability. Returns are acceptable but risk-adjusted performance could be improved. Sharpe {sharpeFmt}."),
             >= 35 => ("D", "#f97316", $"Below-average carry viability. Consider adjusting the universe or risk parameters. Sharpe {sharpeFmt}, drawdown {ddFmt}."),
-            _     => ("F", "#ef4444", $"Poor carry viability. The strategy did not generate sufficient risk-adjusted returns. Sharpe {sharpeFmt}.")
+            _ => ("F", "#ef4444", $"Poor carry viability. The strategy did not generate sufficient risk-adjusted returns. Sharpe {sharpeFmt}.")
         };
 
         ViabilityGrade = grade;

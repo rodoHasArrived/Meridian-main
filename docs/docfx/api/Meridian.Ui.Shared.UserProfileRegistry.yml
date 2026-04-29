@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UserProfileRegistry
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Shared
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConfigured
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Shared
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Authenticate
-    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
     startLine: 51
   assemblies:
   - Meridian.Ui.Shared

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailurePolicy
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 38
   assemblies:
   - Meridian.Storage
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContinueOnPartialFailure
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 41
   assemblies:
   - Meridian.Storage
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailOnAnyFailure
-    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    path: src/Meridian.Storage/Sinks/CompositeSink.cs
     startLine: 44
   assemblies:
   - Meridian.Storage

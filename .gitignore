@@ -131,11 +131,13 @@ credentials.json
 artifacts/*
 !artifacts/provider-validation/
 !artifacts/provider-validation/**
+.artifacts/validation/
 output/
 data/
 logs/
 _logs/
 diagnostic-logs/
+/Meridian Design System (3)/uploads/
 .build-system/
 external/IBApi/
 external/IBApi-*.msi

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBackfillService
-    path: ../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs
+    path: src/Meridian.Application/Backfill/HistoricalBackfillService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs
+    path: src/Meridian.Application/Backfill/HistoricalBackfillService.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs
+    path: src/Meridian.Application/Backfill/HistoricalBackfillService.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateRequest
-    path: ../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs
+    path: src/Meridian.Application/Backfill/HistoricalBackfillService.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs
+    path: src/Meridian.Application/Backfill/HistoricalBackfillService.cs
     startLine: 71
   assemblies:
   - Meridian.Application

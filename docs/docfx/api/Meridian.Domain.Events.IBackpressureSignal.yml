@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBackpressureSignal
-    path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
+    path: src/Meridian.Domain/Events/IBackpressureSignal.cs
     startLine: 12
   assemblies:
   - Meridian.Domain
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsUnderPressure
-    path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
+    path: src/Meridian.Domain/Events/IBackpressureSignal.cs
     startLine: 19
   assemblies:
   - Meridian.Domain
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
-    path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
+    path: src/Meridian.Domain/Events/IBackpressureSignal.cs
     startLine: 25
   assemblies:
   - Meridian.Domain

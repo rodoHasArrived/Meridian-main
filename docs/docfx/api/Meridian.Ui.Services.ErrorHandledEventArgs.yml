@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorHandledEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 373
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Record
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 375
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WasNotified
-    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
     startLine: 376
   assemblies:
   - Meridian.Ui.Services

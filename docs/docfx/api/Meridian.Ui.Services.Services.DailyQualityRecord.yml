@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyQualityRecord
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
-    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services

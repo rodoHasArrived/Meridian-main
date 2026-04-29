@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlJobOrchestrator
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 369
   assemblies:
   - Meridian.Application
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 383
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 407
   assemblies:
   - Meridian.Application

@@ -5,6 +5,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Ui.Services.Services;
@@ -17,11 +18,15 @@ namespace Meridian.Wpf.Tests.Support;
 
 internal sealed class MainPageUiAutomationFacade : IDisposable
 {
+    private static readonly Size TestViewport = new(1440, 960);
+
     private readonly string _runMatRootDirectory;
     private readonly ServiceProvider _serviceProvider;
     private bool _disposed;
 
-    public MainPageUiAutomationFacade(FundContextService? fundContextService = null)
+    public MainPageUiAutomationFacade(
+        FundContextService? fundContextService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
     {
         RunMatUiAutomationFacade.EnsureApplicationResources();
 
@@ -32,17 +37,23 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         _runMatRootDirectory = Path.Combine(Path.GetTempPath(), "mainpage-ui-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_runMatRootDirectory);
         WorkspaceService.SetSettingsFilePathOverrideForTests(Path.Combine(_runMatRootDirectory, "workspace-data.json"));
+        SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(Path.Combine(_runMatRootDirectory, "desktop-shell-preferences.json"));
+        SettingsConfigurationService.Instance.SetShellDensityMode(ShellDensityMode.Standard);
 
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         WorkspaceService.Instance.ResetForTests();
 
         var runMatService = new RunMatService(_runMatRootDirectory);
-        _serviceProvider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(runMatService, fundContextService);
+        _serviceProvider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(
+            runMatService,
+            fundContextService,
+            operatorInboxApiClient);
         navigationService.SetServiceProvider(_serviceProvider);
 
         Page = _serviceProvider.GetRequiredService<MainPage>();
         Page.ApplyTemplate();
+        MeasureAndArrangePage();
         UpdateLayout();
         RunMatUiAutomationFacade.InvokeMainPageLoaded(Page);
         UpdateLayout();
@@ -74,13 +85,25 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public ListBox RelatedWorkflowNavList => GetRequired<ListBox>("RelatedWorkflowNavList");
 
-    public Button ResearchWorkspaceButton => GetRequired<Button>("ResearchWorkspaceButton");
+    public Button StrategyWorkspaceButton => FindByAutomationId<Button>("WorkspaceStrategyButton");
 
-    public Button TradingWorkspaceButton => GetRequired<Button>("TradingWorkspaceButton");
+    public Button ResearchWorkspaceButton => StrategyWorkspaceButton;
 
-    public Button DataOperationsWorkspaceButton => GetRequired<Button>("DataOperationsWorkspaceButton");
+    public Button TradingWorkspaceButton => FindByAutomationId<Button>("WorkspaceTradingButton");
 
-    public Button GovernanceWorkspaceButton => GetRequired<Button>("GovernanceWorkspaceButton");
+    public Button PortfolioWorkspaceButton => FindByAutomationId<Button>("WorkspacePortfolioButton");
+
+    public Button AccountingWorkspaceButton => FindByAutomationId<Button>("WorkspaceAccountingButton");
+
+    public Button ReportingWorkspaceButton => FindByAutomationId<Button>("WorkspaceReportingButton");
+
+    public Button DataWorkspaceButton => FindByAutomationId<Button>("WorkspaceDataButton");
+
+    public Button DataOperationsWorkspaceButton => DataWorkspaceButton;
+
+    public Button SettingsWorkspaceButton => FindByAutomationId<Button>("WorkspaceSettingsButton");
+
+    public Button GovernanceWorkspaceButton => AccountingWorkspaceButton;
 
     public TextBlock RecentPagesEmptyText => GetRequired<TextBlock>("RecentPagesEmptyText");
 
@@ -91,6 +114,14 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     public Button TickerStripToggleButton => GetRequired<Button>("TickerStripToggleButton");
 
     public TextBlock TickerStripToggleLabelText => GetRequired<TextBlock>("TickerStripToggleLabelText");
+
+    public Button ShellDensityToggleButton => GetRequired<Button>("ShellDensityToggleButton");
+
+    public TextBlock ShellDensityButtonLabelText => GetRequired<TextBlock>("ShellDensityButtonLabelText");
+
+    public Button OperatorInboxButton => GetRequired<Button>("OperatorInboxButton");
+
+    public TextBlock OperatorInboxButtonLabelText => GetRequired<TextBlock>("OperatorInboxButtonLabelText");
 
     public Border FixtureModeBanner => GetRequired<Border>("FixtureModeBanner");
 
@@ -104,7 +135,31 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public TextBlock PageTitleText => GetRequired<TextBlock>("PageTitleTextBlock");
 
+    public TextBlock PageSubtitleText => GetRequired<TextBlock>("PageSubtitleText");
+
     public Frame ContentFrame => GetRequired<Frame>("ContentFrame");
+
+    public Page? InnermostContentPage => NavigationHostInspector.ResolveInnermostPage(ContentFrame.Content);
+
+    public Border WorkflowSummaryStrip => GetRequired<Border>("WorkflowSummaryStrip");
+
+    public ItemsControl WorkflowSummaryItemsControl => GetRequired<ItemsControl>("WorkflowSummaryItemsControl");
+
+    public Button PrimaryWorkflowActionButton => FindByAutomationId<Button>("PrimaryWorkflowActionButton");
+
+    public Button SecondaryWorkflowToggleButton => FindByAutomationId<Button>("SecondaryWorkflowToggleButton");
+
+    public WorkspaceShellContextStripControl WorkspaceShellContextStrip => GetRequired<WorkspaceShellContextStripControl>("WorkspaceShellContextStrip");
+
+    public TextBlock WorkspaceContextTitleText => FindByAutomationId<TextBlock>("WorkspaceContextTitleText");
+
+    public TextBlock WorkspaceContextSubtitleText => FindByAutomationId<TextBlock>("WorkspaceContextSubtitleText");
+
+    public Border WorkspaceContextAttentionBanner => FindByAutomationId<Border>("WorkspaceContextAttentionBanner");
+
+    public TextBlock WorkspaceContextAttentionTitleText => FindByAutomationId<TextBlock>("WorkspaceContextAttentionTitle");
+
+    public TextBlock WorkspaceContextAttentionDetailText => FindByAutomationId<TextBlock>("WorkspaceContextAttentionDetail");
 
     public void ShowCommandPalette()
     {
@@ -169,6 +224,16 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         UpdateLayout();
     }
 
+    public bool TryHandleCommandPaletteDirectionalKey(Key key)
+    {
+        var method = typeof(MainPage).GetMethod("TryHandleCommandPaletteDirectionalKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        method.Should().NotBeNull();
+
+        var handled = method!.Invoke(Page, [key]).Should().BeOfType<bool>().Subject;
+        UpdateLayout();
+        return handled;
+    }
+
     public void OpenWorkspaceHome(string pageTag)
     {
         var suppressNavigationField = typeof(MainPageViewModel)
@@ -223,12 +288,6 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         typeof(MainPageViewModel)
             .GetMethod("UpdateFixtureModeBanner", BindingFlags.Instance | BindingFlags.NonPublic)?
             .Invoke(ViewModel, null);
-        typeof(MainPageViewModel)
-            .GetField("_fixtureModeBannerVisibility", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .SetValue(ViewModel, fixtureModeDetector.IsNonLiveMode ? Visibility.Visible : Visibility.Collapsed);
-        typeof(MainPageViewModel)
-            .GetField("_fixtureModeBannerText", BindingFlags.Instance | BindingFlags.NonPublic)?
-            .SetValue(ViewModel, fixtureModeDetector.ModeLabel);
         FlushUi();
     }
 
@@ -265,6 +324,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         NavigationService.Instance.ResetForTests();
         WorkspaceService.Instance.ResetForTests();
         WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+        SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
 
         try
         {
@@ -289,7 +349,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     {
         UpdateLayout();
 
-        foreach (var descendant in EnumerateDescendants(Page))
+        foreach (var descendant in EnumerateSearchRoots().SelectMany(EnumerateDescendants))
         {
             if (descendant is T typed &&
                 string.Equals(AutomationProperties.GetAutomationId(typed), automationId, StringComparison.Ordinal))
@@ -301,12 +361,16 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         throw new Xunit.Sdk.XunitException($"Unable to locate {typeof(T).Name} with AutomationId '{automationId}'.");
     }
 
+    public T FindDescendantByAutomationId<T>(string automationId) where T : FrameworkElement
+        => FindByAutomationId<T>(automationId);
+
     private void UpdateLayout()
     {
         EnsureNavigationBridge();
 
         for (var attempt = 0; attempt < 4; attempt++)
         {
+            MeasureAndArrangePage();
             Page.UpdateLayout();
             RunMatUiAutomationFacade.DrainDispatcher();
 
@@ -321,8 +385,17 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     private void FlushUi()
     {
+        MeasureAndArrangePage();
         Page.UpdateLayout();
         RunMatUiAutomationFacade.DrainDispatcher();
+    }
+
+    private void MeasureAndArrangePage()
+    {
+        Page.Width = TestViewport.Width;
+        Page.Height = TestViewport.Height;
+        Page.Measure(TestViewport);
+        Page.Arrange(new Rect(TestViewport));
     }
 
     private void EnsureNavigationBridge()
@@ -338,14 +411,41 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         RunMatUiAutomationFacade.DrainDispatcher();
     }
 
+    private IEnumerable<DependencyObject> EnumerateSearchRoots()
+    {
+        yield return Page;
+
+        if (NavigationHostInspector.ResolveInnermostContent(ContentFrame.Content) is DependencyObject hostedContent &&
+            !ReferenceEquals(hostedContent, Page))
+        {
+            yield return hostedContent;
+        }
+    }
+
     private static IEnumerable<DependencyObject> EnumerateDescendants(DependencyObject root)
     {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        yield return root;
+
+        var visualChildCount = root is Visual
+            ? VisualTreeHelper.GetChildrenCount(root)
+            : 0;
+
+        for (var i = 0; i < visualChildCount; i++)
         {
             var child = VisualTreeHelper.GetChild(root, i);
             yield return child;
 
             foreach (var descendant in EnumerateDescendants(child))
+            {
+                yield return descendant;
+            }
+        }
+
+        foreach (var logicalChild in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())
+        {
+            yield return logicalChild;
+
+            foreach (var descendant in EnumerateDescendants(logicalChild))
             {
                 yield return descendant;
             }

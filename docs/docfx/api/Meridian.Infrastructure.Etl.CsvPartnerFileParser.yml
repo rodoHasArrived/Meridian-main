@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CsvPartnerFileParser
-    path: ../../src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
+    path: src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
+    path: src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaId
-    path: ../../src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
+    path: src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanParse
-    path: ../../src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
+    path: src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
     startLine: 15
   assemblies:
   - Meridian.Infrastructure
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseAsync
-    path: ../../src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
+    path: src/Meridian.Infrastructure/Etl/CsvPartnerFileParser.cs
     startLine: 18
   assemblies:
   - Meridian.Infrastructure

@@ -1,19 +1,26 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Application.Monitoring;
+using Meridian.Application.ProviderRouting;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
-using Meridian.Application.ProviderRouting;
+using Meridian.Execution.Services;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -23,8 +30,6 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class WorkstationEndpoints
 {
     private const int SecurityCoveragePreviewLimit = 5;
-    private static readonly object BreakQueueSync = new();
-    private static readonly Dictionary<string, ReconciliationBreakQueueItem> BreakQueue = new(StringComparer.OrdinalIgnoreCase);
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -50,11 +55,193 @@ public static class WorkstationEndpoints
         .WithName("GetWorkstationResearchBriefing")
         .Produces<ResearchBriefingDto>(200);
 
+        group.MapGet("/workflow-summary", async (
+            bool? hasOperatingContext,
+            string? operatingContext,
+            string? fundProfileId,
+            string? fundDisplayName,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkstationWorkflowSummaryService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow summary service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await service
+                .GetAsync(
+                    hasOperatingContext: hasOperatingContext ?? false,
+                    operatingContextDisplayName: operatingContext,
+                    fundProfileId: fundProfileId,
+                    fundDisplayName: fundDisplayName,
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowSummary")
+        .Produces<OperatorWorkflowHomeSummary>(200)
+        .Produces(501);
+
+        group.MapGet("/workflows", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowLibraryService>();
+            if (service is null)
+            {
+                var fallback = new WorkflowLibraryService(WorkflowRegistry.CreateDefault());
+                return Results.Json(fallback.GetLibrary(), jsonOptions);
+            }
+
+            return Results.Json(service.GetLibrary(), jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowLibrary")
+        .Produces<WorkflowLibraryDto>(200);
+
+        group.MapGet("/workflows/presets", async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(library, jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowPresets")
+        .Produces<WorkflowPresetLibraryDto>(200)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets", async (WorkflowPresetSaveRequest request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("SaveWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPut("/workflows/presets/{presetId}", async (
+            string presetId,
+            WorkflowPresetSaveRequest request,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service
+                .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
+                .ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("UpdateWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets/{presetId}/pin", async (
+            string presetId,
+            WorkflowPresetPinRequest request,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.SetPinnedAsync(presetId, request.IsPinned, context.RequestAborted).ConfigureAwait(false);
+            if (result.NotFound)
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("PinWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets/{presetId}/used", async (string presetId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.MarkUsedAsync(presetId, context.RequestAborted).ConfigureAwait(false);
+            if (result.NotFound)
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("MarkWorkstationWorkflowPresetUsed")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapDelete("/workflows/presets/{presetId}", async (string presetId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var deleted = await service.DeleteAsync(presetId, context.RequestAborted).ConfigureAwait(false);
+            return deleted
+                ? Results.NoContent()
+                : Results.NotFound(new { error = $"Workflow preset '{presetId}' was not found." });
+        })
+        .WithName("DeleteWorkstationWorkflowPreset")
+        .Produces(204)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/trading", async (HttpContext context) =>
         {
             return await BuildTradingPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationTrading");
+
+        group.MapGet("/trading/readiness", async (Guid? fundAccountId, HttpContext context) =>
+        {
+            var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
+            return Results.Json(readiness, jsonOptions);
+        })
+        .WithName("GetWorkstationTradingReadiness")
+        .Produces<TradingOperatorReadinessDto>(200);
+
+        group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
+        {
+            var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
+            return Results.Json(inbox, jsonOptions);
+        })
+        .WithName("GetWorkstationOperatorInbox")
+        .Produces<OperatorInboxDto>(200);
 
         group.MapGet("/data-operations", async (HttpContext context) =>
         {
@@ -139,11 +326,41 @@ public static class WorkstationEndpoints
         group.MapGet("/reconciliation/break-queue", async (string? status, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var items = GetBreakQueueItems(status);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
+
+        group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
+        {
+            var asOf = DateTimeOffset.UtcNow;
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false);
+            var summary = BuildReconciliationCalibrationSummary(items, asOf);
+            return Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetReconciliationCalibrationSummary")
+        .Produces<ReconciliationCalibrationSummaryDto>(200);
+
+        group.MapGet("/reconciliation/break-queue/{breakId}/audit", async (string breakId, HttpContext context) =>
+        {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var history = await repository.GetAuditHistoryAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            return history.Count == 0
+                ? Results.NotFound()
+                : Results.Json(history, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakAudit")
+        .Produces<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>(200)
+        .Produces(404)
+        .Produces(501);
 
         group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
@@ -153,8 +370,13 @@ public static class WorkstationEndpoints
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var updated = ReviewBreak(request);
-            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+            var transition = await ReviewBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            return transition.Status switch
+            {
+                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
+                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
+                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
+            };
         })
         .WithName("ReviewReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -174,8 +396,13 @@ public static class WorkstationEndpoints
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var updated = ResolveBreak(request);
-            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+            var transition = await ResolveBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            return transition.Status switch
+            {
+                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
+                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
+                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
+            };
         })
         .WithName("ResolveReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -214,6 +441,24 @@ public static class WorkstationEndpoints
         })
         .WithName("GetRunContinuity")
         .Produces<StrategyRunContinuityDetail>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/review-packet", async (string runId, Guid? fundAccountId, HttpContext context) =>
+        {
+            var reviewPacketService = context.RequestServices.GetService<StrategyRunReviewPacketService>();
+            if (reviewPacketService is null)
+            {
+                return Results.Problem("Strategy run review packet service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var packet = await reviewPacketService.GetAsync(runId, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            return packet is null
+                ? Results.NotFound()
+                : Results.Json(packet, jsonOptions);
+        })
+        .WithName("GetRunReviewPacket")
+        .Produces<StrategyRunReviewPacketDto>(200)
         .Produces(404)
         .Produces(501);
 
@@ -351,7 +596,7 @@ public static class WorkstationEndpoints
             string? query,
             int? take,
             bool activeOnly,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(query))
@@ -372,7 +617,7 @@ public static class WorkstationEndpoints
 
         group.MapGet("/security-master/securities/{securityId:guid}", async (
             Guid securityId,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -387,7 +632,7 @@ public static class WorkstationEndpoints
         group.MapGet("/security-master/securities/{securityId:guid}/history", async (
             Guid securityId,
             int? take,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var history = await queryService.GetHistoryAsync(
@@ -407,7 +652,7 @@ public static class WorkstationEndpoints
 
         group.MapGet("/security-master/securities/{securityId:guid}/identity", async (
             Guid securityId,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -421,7 +666,7 @@ public static class WorkstationEndpoints
 
         group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (
             Guid securityId,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -432,6 +677,51 @@ public static class WorkstationEndpoints
         .WithName("GetSecurityMasterWorkstationEconomicDefinition")
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
         .Produces(404);
+
+        group.MapGet("/security-master/securities/{securityId:guid}/trust-snapshot", async (
+            Guid securityId,
+            string? fundProfileId,
+            HttpContext context) =>
+        {
+            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
+            if (workbenchService is null)
+            {
+                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var snapshot = await workbenchService
+                .GetTrustSnapshotAsync(securityId, fundProfileId, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return snapshot is null
+                ? Results.NotFound()
+                : Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationTrustSnapshot")
+        .Produces<SecurityMasterTrustSnapshotDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost("/security-master/conflicts/bulk-resolve", async (
+            BulkResolveSecurityMasterConflictsRequest request,
+            HttpContext context) =>
+        {
+            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
+            if (workbenchService is null)
+            {
+                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await workbenchService
+                .BulkResolveConflictsAsync(request, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("BulkResolveSecurityMasterWorkstationConflicts")
+        .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
+        .Produces<BulkResolveSecurityMasterConflictsResult>(200)
+        .Produces(501);
 
         // --- Multi-run comparison and diff ---
 
@@ -691,14 +981,14 @@ public static class WorkstationEndpoints
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             var contentType = ext switch
             {
-                ".js"   => "application/javascript",
-                ".css"  => "text/css",
-                ".png"  => "image/png",
-                ".svg"  => "image/svg+xml",
-                ".ico"  => "image/x-icon",
+                ".js" => "application/javascript",
+                ".css" => "text/css",
+                ".png" => "image/png",
+                ".svg" => "image/svg+xml",
+                ".ico" => "image/x-icon",
                 ".woff" => "font/woff",
                 ".woff2" => "font/woff2",
-                _       => "application/octet-stream"
+                _ => "application/octet-stream"
             };
             return Results.File(filePath, contentType);
         }).ExcludeFromDescription();
@@ -1278,6 +1568,8 @@ public static class WorkstationEndpoints
             fills = Array.Empty<object>();
         }
 
+        var readiness = await GetTradingOperatorReadinessAsync(null, context).ConfigureAwait(false);
+
         return new
         {
             metrics = new[]
@@ -1317,9 +1609,309 @@ public static class WorkstationEndpoints
                 fillFeed = portfolio is not null ? "healthy" : "—",
                 notes = BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)
             },
+            readiness,
             comparisons = run is null ? Array.Empty<object>() : BuildModeComparisons([run]),
             drillIn = run is null ? null : BuildRunDrillInLinks(run)
         };
+    }
+
+    private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
+        Guid? fundAccountId,
+        HttpContext context)
+    {
+        var readinessService = context.RequestServices.GetService<TradingOperatorReadinessService>();
+        if (readinessService is null)
+        {
+            var logger = context.RequestServices.GetService<Microsoft.Extensions.Logging.ILogger<TradingOperatorReadinessService>>()
+                ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<TradingOperatorReadinessService>.Instance;
+            readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
+        }
+
+        return readinessService.GetAsync(fundAccountId, context.RequestAborted);
+    }
+
+    private static async Task<OperatorInboxDto> BuildOperatorInboxAsync(Guid? fundAccountId, HttpContext context)
+    {
+        var asOf = DateTimeOffset.UtcNow;
+        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
+        var workItems = readiness.WorkItems
+            .Select(AttachOperatorNavigation)
+            .ToList();
+
+        await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
+        await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+
+        var items = workItems
+            .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group
+                .OrderByDescending(static item => item.Tone)
+                .ThenByDescending(static item => item.CreatedAt)
+                .First())
+            .OrderByDescending(static item => item.Tone)
+            .ThenByDescending(static item => item.CreatedAt)
+            .ThenBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var criticalCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
+        var warningCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
+        var reviewCount = criticalCount + warningCount;
+
+        return new OperatorInboxDto(
+            AsOf: asOf,
+            Items: items,
+            CriticalCount: criticalCount,
+            WarningCount: warningCount,
+            ReviewCount: reviewCount,
+            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
+    }
+
+    private static async Task AddRunReviewPacketWorkItemsAsync(
+        HttpContext context,
+        Guid? fundAccountId,
+        List<OperatorWorkItemDto> workItems,
+        DateTimeOffset asOf)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var reviewPacketService = context.RequestServices.GetService<StrategyRunReviewPacketService>();
+        if (readService is null || reviewPacketService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var runs = await readService
+                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
+                .ConfigureAwait(false);
+
+            foreach (var run in runs.Where(ShouldSurfaceRunReviewWorkItems))
+            {
+                var packet = await reviewPacketService
+                    .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (packet is null)
+                {
+                    continue;
+                }
+
+                workItems.AddRange(packet.WorkItems
+                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                    .Select(AttachOperatorNavigation));
+            }
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
+        }
+    }
+
+    private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
+        => run.Promotion?.RequiresReview == true ||
+           run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled;
+
+    private static OperatorWorkItemDto BuildRunReviewPacketUnavailableWorkItem(DateTimeOffset asOf)
+        => new(
+            WorkItemId: "run-review-packets-unavailable",
+            Kind: OperatorWorkItemKindDto.PromotionReview,
+            Label: "Run review packets unavailable",
+            Detail: "Trading readiness is still available, but run review-packet work items could not be loaded. Review run-read service health before accepting promotion queue coverage.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: asOf,
+            Workspace: "Trading",
+            TargetRoute: UiApiRoutes.WorkstationOperatorInbox,
+            TargetPageTag: "TradingShell");
+
+    private static async Task AddReconciliationBreakWorkItemsAsync(
+        HttpContext context,
+        List<OperatorWorkItemDto> workItems,
+        DateTimeOffset asOf)
+    {
+        try
+        {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var reconciliationBreaks = await GetBreakQueueItemsAsync(
+                context.RequestServices,
+                status: null,
+                context.RequestAborted).ConfigureAwait(false);
+            workItems.AddRange(reconciliationBreaks
+                .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
+                .Select(MapReconciliationBreakWorkItem));
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            workItems.Add(BuildReconciliationBreakQueueUnavailableWorkItem(asOf));
+        }
+    }
+
+    private static OperatorWorkItemDto BuildReconciliationBreakQueueUnavailableWorkItem(DateTimeOffset asOf)
+        => new(
+            WorkItemId: "reconciliation-break-queue-unavailable",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Reconciliation queue unavailable",
+            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting governance queue coverage.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: asOf,
+            Workspace: "Governance",
+            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+            TargetPageTag: "GovernanceShell");
+
+    private static OperatorWorkItemDto AttachOperatorNavigation(OperatorWorkItemDto item)
+    {
+        var navigation = ResolveOperatorNavigation(item.Kind, item.FundAccountId);
+        return item with
+        {
+            Workspace = item.Workspace ?? navigation.Workspace,
+            TargetRoute = item.TargetRoute ?? navigation.TargetRoute,
+            TargetPageTag = item.TargetPageTag ?? navigation.TargetPageTag
+        };
+    }
+
+    private static OperatorWorkItemDto MapReconciliationBreakWorkItem(ReconciliationBreakQueueItem item)
+    {
+        var tone = item.Severity switch
+        {
+            ReconciliationBreakSeverity.Critical => OperatorWorkItemToneDto.Critical,
+            ReconciliationBreakSeverity.High or ReconciliationBreakSeverity.Medium => OperatorWorkItemToneDto.Warning,
+            _ => OperatorWorkItemToneDto.Info
+        };
+        var assignment = string.IsNullOrWhiteSpace(item.AssignedTo)
+            ? "unassigned"
+            : $"assigned to {item.AssignedTo}";
+        var status = item.Status == ReconciliationBreakQueueStatus.InReview
+            ? "in review"
+            : "open";
+        var routeDetail = BuildReconciliationRoutingDetail(item);
+
+        return new OperatorWorkItemDto(
+            WorkItemId: BuildOperatorInboxScopedId("reconciliation-break", item.BreakId),
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: item.Status == ReconciliationBreakQueueStatus.InReview
+                ? "Reconciliation break in review"
+                : "Reconciliation break requires review",
+            Detail: $"{item.StrategyName}: {item.Reason} The break is {status} and {assignment}. {routeDetail}",
+            Tone: tone,
+            CreatedAt: item.DetectedAt,
+            RunId: item.RunId,
+            AuditReference: item.BreakId,
+            Workspace: "Governance",
+            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+            TargetPageTag: "GovernanceShell");
+    }
+
+    private static string BuildReconciliationRoutingDetail(ReconciliationBreakQueueItem item)
+    {
+        var exceptionRoute = string.IsNullOrWhiteSpace(item.ExceptionRoute)
+            ? "operations-triage"
+            : item.ExceptionRoute;
+        var toleranceProfileId = string.IsNullOrWhiteSpace(item.ToleranceProfileId)
+            ? "standard-recon-tolerance"
+            : item.ToleranceProfileId;
+        var requiredSignoffRole = string.IsNullOrWhiteSpace(item.RequiredSignoffRole)
+            ? "Operations reviewer"
+            : item.RequiredSignoffRole;
+        var signoffStatus = string.IsNullOrWhiteSpace(item.SignoffStatus)
+            ? "pending-signoff"
+            : item.SignoffStatus;
+        var toleranceBand = item.ToleranceBand.HasValue
+            ? $" ({item.ToleranceBand.Value.ToString("0.##", CultureInfo.InvariantCulture)} tolerance)"
+            : string.Empty;
+
+        return $"Exception route: {exceptionRoute}; tolerance profile {toleranceProfileId}{toleranceBand}; sign-off {signoffStatus} by {requiredSignoffRole}.";
+    }
+
+    private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveOperatorNavigation(
+        OperatorWorkItemKindDto kind,
+        Guid? fundAccountId)
+        => kind switch
+        {
+            OperatorWorkItemKindDto.SecurityMasterCoverage => (
+                "Governance",
+                UiApiRoutes.WorkstationSecurityMasterSearch,
+                "GovernanceShell"),
+            OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
+                "Governance",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "GovernanceShell"),
+            OperatorWorkItemKindDto.BrokerageSync => (
+                "Trading",
+                fundAccountId.HasValue
+                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
+                "AccountPortfolio"),
+            _ => (
+                "Trading",
+                UiApiRoutes.WorkstationTradingReadiness,
+                "TradingShell")
+        };
+
+    private static string BuildOperatorInboxSummary(
+        IReadOnlyCollection<OperatorWorkItemDto> items,
+        int criticalCount,
+        int warningCount)
+    {
+        if (items.Count == 0)
+        {
+            return "No operator work items are open.";
+        }
+
+        if (criticalCount > 0)
+        {
+            return $"{criticalCount} critical and {warningCount} warning work item(s) need review.";
+        }
+
+        if (warningCount > 0)
+        {
+            return $"{warningCount} warning work item(s) need review.";
+        }
+
+        return $"{items.Count} informational work item(s) are available.";
+    }
+
+    private static string BuildOperatorInboxScopedId(string prefix, string scope)
+    {
+        var normalizedPrefix = NormalizeOperatorInboxToken(prefix);
+        var normalizedScope = NormalizeOperatorInboxToken(scope);
+        return string.IsNullOrEmpty(normalizedScope)
+            ? normalizedPrefix
+            : $"{normalizedPrefix}-{normalizedScope}";
+    }
+
+    private static string NormalizeOperatorInboxToken(string value)
+    {
+        Span<char> buffer = stackalloc char[value.Length];
+        var length = 0;
+        var previousWasSeparator = false;
+
+        foreach (var character in value.Trim())
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                buffer[length++] = char.ToLowerInvariant(character);
+                previousWasSeparator = false;
+                continue;
+            }
+
+            if (!previousWasSeparator && length > 0)
+            {
+                buffer[length++] = '-';
+                previousWasSeparator = true;
+            }
+        }
+
+        if (length > 0 && buffer[length - 1] == '-')
+        {
+            length--;
+        }
+
+        return new string(buffer[..length]);
     }
 
     private static string BuildTradingBrokerageNotes(
@@ -1420,15 +2012,24 @@ public static class WorkstationEndpoints
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
         object[] providers = metricsStatus is { Providers.Length: > 0 }
-            ? metricsStatus.Providers.Select(static p => (object)new
+            ? metricsStatus.Providers.Select(static p =>
             {
-                provider = p.ProviderId,
-                status = p.IsConnected ? "Healthy" : "Offline",
-                capability = p.ProviderType,
-                latency = $"{p.AverageLatencyMs:F0}ms p50",
-                note = p.IsConnected
-                    ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {p.DataQualityScore:P0}."
-                    : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC."
+                var trust = BuildProviderTrustRationale(p);
+                return (object)new
+                {
+                    provider = p.ProviderId,
+                    status = trust.Status,
+                    capability = p.ProviderType,
+                    latency = $"{p.AverageLatencyMs:F0}ms p50",
+                    note = p.IsConnected
+                        ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {trust.TrustScore}."
+                        : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC.",
+                    trustScore = trust.TrustScore,
+                    signalSource = trust.SignalSource,
+                    reasonCode = trust.ReasonCode,
+                    recommendedAction = trust.RecommendedAction,
+                    gateImpact = trust.GateImpact
+                };
             }).ToArray()
             : [];
 
@@ -1473,7 +2074,7 @@ public static class WorkstationEndpoints
                 new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
                 new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
                 new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             providers,
             backfills,
@@ -1492,13 +2093,49 @@ public static class WorkstationEndpoints
                 new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
                 new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
                 new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             providers = new[]
             {
-                new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." },
-                new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." },
-                new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." }
+                new
+                {
+                    provider = "Interactive Brokers",
+                    status = "Healthy",
+                    capability = "Execution + fills",
+                    latency = "21ms p50",
+                    note = "Paper adapter routing is available.",
+                    trustScore = "100%",
+                    signalSource = "Provider baseline health snapshot",
+                    reasonCode = "HEALTHY_BASELINE",
+                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
+                    gateImpact = "Normal operation"
+                },
+                new
+                {
+                    provider = "Polygon",
+                    status = "Healthy",
+                    capability = "Streaming equities",
+                    latency = "16ms p50",
+                    note = "Realtime subscriptions are steady.",
+                    trustScore = "100%",
+                    signalSource = "Provider baseline health snapshot",
+                    reasonCode = "HEALTHY_BASELINE",
+                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
+                    gateImpact = "Normal operation"
+                },
+                new
+                {
+                    provider = "Databento",
+                    status = "Warning",
+                    capability = "Historical replay",
+                    latency = "69ms p50",
+                    note = "Replay queue is elevated but within tolerance.",
+                    trustScore = "86%",
+                    signalSource = "Latency monitor",
+                    reasonCode = "LATENCY_REGRESSION",
+                    recommendedAction = "Delay operator promotion actions; review latency trend and compare against baseline window.",
+                    gateImpact = "Watch"
+                }
             },
             backfills = new[]
             {
@@ -1513,6 +2150,99 @@ public static class WorkstationEndpoints
             kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
+
+    private static ProviderTrustRationalePayload BuildProviderTrustRationale(ProviderMetrics metrics)
+    {
+        var trustScore = NormalizeScore(metrics.DataQualityScore);
+        var successRate = NormalizeScore(metrics.ConnectionSuccessRate);
+        var gateImpact = BuildProviderGateImpact(trustScore);
+
+        if (!metrics.IsConnected)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Provider quote/trade stream health telemetry",
+                ReasonCode: "PROVIDER_STREAM_DEGRADED",
+                RecommendedAction: "Verify provider connectivity and entitlements, then monitor for recovery before promotion decisions.",
+                GateImpact: gateImpact);
+        }
+
+        if (metrics.ConnectionFailures > 0 && (metrics.ConnectionAttempts == 0 || successRate < 0.75d))
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Provider reconnect monitor",
+                ReasonCode: "RECONNECT_INSTABILITY",
+                RecommendedAction: "Keep run in observation mode; require a stable reconnect window before trusting parity-sensitive outputs.",
+                GateImpact: gateImpact);
+        }
+
+        if (metrics.MessagesDropped > 0)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Missing data completeness checker",
+                ReasonCode: "DATA_COMPLETENESS_GAP",
+                RecommendedAction: "Trigger targeted backfill or replay and block trust sign-off for impacted symbols or windows.",
+                GateImpact: gateImpact);
+        }
+
+        if (metrics.AverageLatencyMs >= 250d)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Warning",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Latency monitor",
+                ReasonCode: "LATENCY_REGRESSION",
+                RecommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
+                GateImpact: gateImpact);
+        }
+
+        if (trustScore < 0.90d)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: trustScore < 0.80d ? "Degraded" : "Warning",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Cross-provider parity comparator",
+                ReasonCode: "PARITY_DRIFT_DETECTED",
+                RecommendedAction: "Re-run the parity packet and treat results as non-promotable until drift is explained or corrected.",
+                GateImpact: gateImpact);
+        }
+
+        return new ProviderTrustRationalePayload(
+            Status: "Healthy",
+            TrustScore: FormatScore(trustScore),
+            SignalSource: "Provider baseline health snapshot",
+            ReasonCode: "HEALTHY_BASELINE",
+            RecommendedAction: "Continue monitoring provider health; no DK1 action is required.",
+            GateImpact: gateImpact);
+    }
+
+    private static double NormalizeScore(double value)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            return 0d;
+        }
+
+        var normalized = value > 1d ? value / 100d : value;
+        return Math.Clamp(normalized, 0d, 1d);
+    }
+
+    private static string FormatScore(double score)
+        => $"{(score * 100d).ToString("0", CultureInfo.InvariantCulture)}%";
+
+    private static string BuildProviderGateImpact(double trustScore)
+        => trustScore >= 0.90d
+            ? "Normal operation"
+            : trustScore >= 0.80d
+                ? "Watch"
+                : trustScore >= 0.70d
+                    ? "Degraded"
+                    : "Critical";
 
     private static async Task<object> BuildGovernancePayloadAsync(HttpContext context)
     {
@@ -1535,7 +2265,7 @@ public static class WorkstationEndpoints
                     new { id = "timing-drift", label = "Timing Drift", value = "0", tone = "default" },
                     new { id = "security-gaps", label = "Security Gaps", value = "0", tone = "success" },
                     new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" },
-                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
                 },
                 reconciliationQueue = Array.Empty<object>(),
                 breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
@@ -1561,7 +2291,7 @@ public static class WorkstationEndpoints
 
         var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
         var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
-        SeedBreakQueue(runs, reconciliations);
+        await SeedBreakQueueAsync(context.RequestServices, runs, reconciliations, context.RequestAborted).ConfigureAwait(false);
 
         var openBreaks = reconciliations.Sum(static detail => detail?.Summary.OpenBreakCount ?? 0);
         var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
@@ -1579,13 +2309,13 @@ public static class WorkstationEndpoints
                 new { id = "timing-drift", label = "Timing Drift", value = timingDriftRuns.ToString(CultureInfo.InvariantCulture), tone = timingDriftRuns == 0 ? "default" : "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), tone = runsWithSecurityIssues == 0 ? "success" : "warning" },
                 new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             reconciliationQueue = runs
                 .Zip(details, static (run, detail) => (run, detail))
-                .Zip(reconciliations, static (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation))
+                .Zip(reconciliations, (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
                 .ToArray(),
-            breakQueue = GetBreakQueueItems(status: null),
+            breakQueue = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false),
             workspace = new
             {
                 totalRuns = allRuns.Length,
@@ -1610,7 +2340,7 @@ public static class WorkstationEndpoints
                 new { id = "timing-drift", label = "Timing Drift", value = "1", tone = "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = "2", tone = "warning" },
                 new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             reconciliationQueue = new[]
             {
@@ -1738,7 +2468,13 @@ public static class WorkstationEndpoints
                     Reason: "Cash variance exceeds configured tolerance.",
                     AssignedTo: null,
                     DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18)),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                    Severity: ReconciliationBreakSeverity.Critical,
+                    ExceptionRoute: "governance-variance-escalation",
+                    ToleranceProfileId: "critical-zero-tolerance",
+                    ToleranceBand: 0m,
+                    RequiredSignoffRole: "Governance sign-off",
+                    SignoffStatus: "pending-signoff"),
                 new ReconciliationBreakQueueItem(
                     BreakId: "BRK-gov-run-001-2",
                     RunId: "gov-run-001",
@@ -1752,7 +2488,13 @@ public static class WorkstationEndpoints
                     LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
                     ReviewedBy: "ops.gov",
                     ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                    ResolutionNote: "Investigating ticker reclassification.")
+                    ResolutionNote: "Investigating ticker reclassification.",
+                    Severity: ReconciliationBreakSeverity.Medium,
+                    ExceptionRoute: "security-master-governance-review",
+                    ToleranceProfileId: "coverage-classification-review",
+                    ToleranceBand: 0m,
+                    RequiredSignoffRole: "Governance analyst",
+                    SignoffStatus: "in-review")
             },
             workspace = new
             {
@@ -1773,7 +2515,8 @@ public static class WorkstationEndpoints
                 tone = "warning",
                 summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
             },
-            reporting = BuildGovernanceReportingPayload()
+            reporting = BuildGovernanceReportingPayload(),
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
@@ -2166,7 +2909,8 @@ public static class WorkstationEndpoints
     private static object BuildGovernanceRunCard(
         StrategyRunSummary run,
         StrategyRunDetail? detail,
-        ReconciliationRunDetail? reconciliation)
+        ReconciliationRunDetail? reconciliation,
+        KernelObservabilitySnapshot? kernelObservability)
     {
         return new
         {
@@ -2204,10 +2948,22 @@ public static class WorkstationEndpoints
                     hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
                     lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
                     tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
-            },
+                },
             kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
+
+    private static int GetKernelActiveAlertCount(KernelObservabilitySnapshot? snapshot)
+        => snapshot?.ActiveAlertCount ?? 0;
+
+    private static int GetKernelTotalAlertCount(KernelObservabilitySnapshot? snapshot)
+        => snapshot?.AlertCount ?? 0;
+
+    private static string GetKernelJumpAlertTone(KernelObservabilitySnapshot? snapshot)
+        => GetKernelActiveAlertCount(snapshot) == 0 ? "success" : "warning";
+
+    private static string FormatKernelJumpAlertDelta(KernelObservabilitySnapshot? snapshot)
+        => $"{GetKernelTotalAlertCount(snapshot).ToString(CultureInfo.InvariantCulture)} total";
 
     private static object BuildKernelObservabilityPayload(KernelObservabilitySnapshot? snapshot)
     {
@@ -2217,6 +2973,8 @@ public static class WorkstationEndpoints
             {
                 updatedAtUtc = (DateTimeOffset?)null,
                 determinismChecksEnabled = false,
+                activeAlerts = 0,
+                totalAlerts = 0,
                 alerts = 0,
                 domains = Array.Empty<object>()
             };
@@ -2226,6 +2984,8 @@ public static class WorkstationEndpoints
         {
             updatedAtUtc = snapshot.UpdatedAtUtc,
             determinismChecksEnabled = snapshot.DeterminismChecksEnabled,
+            activeAlerts = snapshot.ActiveAlertCount,
+            totalAlerts = snapshot.AlertCount,
             alerts = snapshot.AlertCount,
             domains = snapshot.Domains.Select(static domain => new
             {
@@ -2242,16 +3002,28 @@ public static class WorkstationEndpoints
                 drift = new
                 {
                     score = domain.ScoreDrift,
-                    severity = domain.SeverityDrift
+                    severity = domain.SeverityDrift,
+                    methodology = "totalVariationDistance"
                 },
                 criticalSeverityRate = new
                 {
                     shortWindow = domain.CriticalRateShortWindow,
                     longWindow = domain.CriticalRateLongWindow,
+                    shortWindowSamples = domain.CriticalRateShortWindowSamples,
+                    longWindowSamples = domain.CriticalRateLongWindowSamples,
                     jumpAlertActive = domain.CriticalJumpActive,
-                    jumpAlertCount = domain.CriticalJumpAlertCount
+                    jumpAlertCount = domain.CriticalJumpAlertCount,
+                    alertThresholds = new
+                    {
+                        minimumSampleCount = domain.CriticalJumpThresholds.MinimumSampleCount,
+                        minimumShortRate = domain.CriticalJumpThresholds.MinimumShortRate,
+                        zeroBaselineShortRate = domain.CriticalJumpThresholds.ZeroBaselineShortRate,
+                        relativeMultiplier = domain.CriticalJumpThresholds.RelativeMultiplier,
+                        absoluteIncrease = domain.CriticalJumpThresholds.AbsoluteIncrease
+                    }
                 },
-                determinismMismatches = domain.DeterminismMismatches
+                determinismMismatches = domain.DeterminismMismatches,
+                lastUpdatedUtc = domain.LastUpdatedUtc
             })
         };
     }
@@ -2797,7 +3569,10 @@ public static class WorkstationEndpoints
                 AssetClass: summary.AssetClass,
                 SubType: DeriveSubType(summary.AssetClass),
                 PrimaryIdentifierKind: null,
-                PrimaryIdentifierValue: summary.PrimaryIdentifier),
+                PrimaryIdentifierValue: summary.PrimaryIdentifier,
+                MatchedIdentifierKind: null,
+                MatchedIdentifierValue: null,
+                MatchedProvider: null),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: summary.Currency,
                 Version: summary.Version,
@@ -2818,7 +3593,10 @@ public static class WorkstationEndpoints
                 AssetClass: detail.AssetClass,
                 SubType: DeriveSubType(detail.AssetClass),
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
-                PrimaryIdentifierValue: primaryIdentifier?.Value),
+                PrimaryIdentifierValue: primaryIdentifier?.Value,
+                MatchedIdentifierKind: null,
+                MatchedIdentifierValue: null,
+                MatchedProvider: null),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: detail.Currency,
                 Version: detail.Version,
@@ -2868,30 +3646,37 @@ public static class WorkstationEndpoints
         _ => null
     };
 
-    private static void SeedBreakQueue(
+    private static async Task SeedBreakQueueAsync(
+        IServiceProvider services,
         IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<ReconciliationRunDetail?> reconciliations)
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
+        CancellationToken ct)
     {
-        lock (BreakQueueSync)
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
         {
-            for (var i = 0; i < runs.Count; i++)
+            return;
+        }
+
+        for (var i = 0; i < runs.Count; i++)
+        {
+            var run = runs[i];
+            var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
+            if (reconciliation is null)
             {
-                var run = runs[i];
-                var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
-                if (reconciliation is null)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                foreach (var reconciliationBreak in reconciliation.Breaks)
-                {
-                    var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
-                    if (BreakQueue.ContainsKey(breakId))
-                    {
-                        continue;
-                    }
-
-                    BreakQueue[breakId] = new ReconciliationBreakQueueItem(
+            foreach (var reconciliationBreak in reconciliation.Breaks)
+            {
+                var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
+                var now = DateTimeOffset.UtcNow;
+                var routing = ResolveReconciliationExceptionRouting(
+                    reconciliationBreak.Category,
+                    reconciliationBreak.Severity,
+                    Math.Abs(reconciliationBreak.Variance));
+                await repository.CreateIfMissingAsync(
+                    new ReconciliationBreakQueueItem(
                         BreakId: breakId,
                         RunId: run.RunId,
                         StrategyName: run.StrategyName,
@@ -2900,11 +3685,79 @@ public static class WorkstationEndpoints
                         Variance: Math.Abs(reconciliationBreak.Variance),
                         Reason: reconciliationBreak.Reason,
                         AssignedTo: null,
-                        DetectedAt: DateTimeOffset.UtcNow,
-                        LastUpdatedAt: DateTimeOffset.UtcNow);
-                }
+                        DetectedAt: now,
+                        LastUpdatedAt: now,
+                        Severity: reconciliationBreak.Severity,
+                        ExceptionRoute: routing.ExceptionRoute,
+                        ToleranceProfileId: routing.ToleranceProfileId,
+                        ToleranceBand: routing.ToleranceBand,
+                        RequiredSignoffRole: routing.RequiredSignoffRole,
+                        SignoffStatus: routing.SignoffStatus),
+                    ct).ConfigureAwait(false);
             }
         }
+    }
+
+    private sealed record ReconciliationExceptionRouting(
+        string ExceptionRoute,
+        string ToleranceProfileId,
+        decimal ToleranceBand,
+        string RequiredSignoffRole,
+        string SignoffStatus);
+
+    private static ReconciliationExceptionRouting ResolveReconciliationExceptionRouting(
+        ReconciliationBreakCategory category,
+        ReconciliationBreakSeverity severity,
+        decimal variance)
+    {
+        if (severity == ReconciliationBreakSeverity.Critical)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: category is ReconciliationBreakCategory.MissingLedgerCoverage or ReconciliationBreakCategory.MissingBankCoverage
+                    ? "governance-coverage-escalation"
+                    : "governance-variance-escalation",
+                ToleranceProfileId: "critical-zero-tolerance",
+                ToleranceBand: 0m,
+                RequiredSignoffRole: "Governance sign-off",
+                SignoffStatus: "pending-signoff");
+        }
+
+        if (severity == ReconciliationBreakSeverity.High)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: "fund-ops-review",
+                ToleranceProfileId: "high-variance-watch",
+                ToleranceBand: Math.Max(100m, Math.Round(variance * 0.05m, 2)),
+                RequiredSignoffRole: "Fund operations lead",
+                SignoffStatus: "pending-signoff");
+        }
+
+        if (category is ReconciliationBreakCategory.ClassificationGap or ReconciliationBreakCategory.MissingPortfolioCoverage)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: "security-master-governance-review",
+                ToleranceProfileId: "coverage-classification-review",
+                ToleranceBand: 0m,
+                RequiredSignoffRole: "Governance analyst",
+                SignoffStatus: "routing-review");
+        }
+
+        if (severity == ReconciliationBreakSeverity.Low || severity == ReconciliationBreakSeverity.Info)
+        {
+            return new ReconciliationExceptionRouting(
+                ExceptionRoute: "ops-monitor",
+                ToleranceProfileId: "low-variance-watch",
+                ToleranceBand: 500m,
+                RequiredSignoffRole: "Operations reviewer",
+                SignoffStatus: "monitor");
+        }
+
+        return new ReconciliationExceptionRouting(
+            ExceptionRoute: "operations-triage",
+            ToleranceProfileId: "standard-recon-tolerance",
+            ToleranceBand: Math.Max(250m, Math.Round(variance * 0.02m, 2)),
+            RequiredSignoffRole: "Operations reviewer",
+            SignoffStatus: "pending-signoff");
     }
 
     private static async Task EnsureBreakQueueSeededAsync(IServiceProvider services, CancellationToken ct)
@@ -2924,72 +3777,225 @@ public static class WorkstationEndpoints
 
         var reconciliations = await Task.WhenAll(
             runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-        SeedBreakQueue(runs, reconciliations);
+        await SeedBreakQueueAsync(services, runs, reconciliations, ct).ConfigureAwait(false);
     }
 
-    private static IReadOnlyList<ReconciliationBreakQueueItem> GetBreakQueueItems(string? status)
+    private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
+        IServiceProvider services,
+        string? status,
+        CancellationToken ct)
     {
-        lock (BreakQueueSync)
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
         {
-            IEnumerable<ReconciliationBreakQueueItem> items = BreakQueue.Values;
-            if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var parsed))
-            {
-                items = items.Where(item => item.Status == parsed);
-            }
-
-            return items
-                .OrderByDescending(item => item.LastUpdatedAt)
-                .ToArray();
+            return [];
         }
+
+        ReconciliationBreakQueueStatus? parsed = null;
+        if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var statusValue))
+        {
+            parsed = statusValue;
+        }
+
+        return await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
     }
 
-    private static ReconciliationBreakQueueItem? ReviewBreak(ReviewReconciliationBreakRequest request)
+    private static ReconciliationCalibrationSummaryDto BuildReconciliationCalibrationSummary(
+        IReadOnlyList<ReconciliationBreakQueueItem> items,
+        DateTimeOffset asOf)
     {
-        lock (BreakQueueSync)
-        {
-            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
-            {
-                return null;
-            }
+        var totalBreakCount = items.Count;
+        var openBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open);
+        var inReviewBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview);
+        var resolvedBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved);
+        var dismissedBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed);
+        var activeBreakCount = openBreakCount + inReviewBreakCount;
+        var criticalOpenBreakCount = items.Count(static item =>
+            (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
+            item.Severity == ReconciliationBreakSeverity.Critical);
+        var pendingSignoffCount = items.Count(static item => RequiresCalibrationSignoff(item));
+        var signedOffCount = items.Count(static item => IsSignedOff(item.SignoffStatus));
+        var missingCalibrationMetadataCount = items.Count(static item => HasMissingCalibrationMetadata(item));
 
-            var now = DateTimeOffset.UtcNow;
-            var updated = item with
-            {
-                Status = ReconciliationBreakQueueStatus.InReview,
-                AssignedTo = request.AssignedTo,
-                ReviewedBy = request.ReviewedBy,
-                ReviewedAt = now,
-                ResolutionNote = request.ReviewNote,
-                LastUpdatedAt = now
-            };
+        var status = DetermineReconciliationCalibrationStatus(
+            totalBreakCount,
+            activeBreakCount,
+            criticalOpenBreakCount,
+            pendingSignoffCount,
+            missingCalibrationMetadataCount);
+        var profiles = items
+            .GroupBy(static item => (
+                Profile: NormalizeCalibrationValue(item.ToleranceProfileId, "unassigned-profile"),
+                Route: NormalizeCalibrationValue(item.ExceptionRoute, "operations-triage")))
+            .Select(BuildCalibrationProfileSummary)
+            .OrderByDescending(static profile => profile.HighestSeverity)
+            .ThenBy(static profile => profile.ToleranceProfileId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static profile => profile.ExceptionRoute, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
-            BreakQueue[request.BreakId] = updated;
-            return updated;
-        }
+        return new ReconciliationCalibrationSummaryDto(
+            AsOf: asOf,
+            Status: status,
+            Summary: BuildReconciliationCalibrationSummaryText(
+                status,
+                totalBreakCount,
+                activeBreakCount,
+                criticalOpenBreakCount,
+                pendingSignoffCount,
+                missingCalibrationMetadataCount,
+                profiles.Length),
+            TotalBreakCount: totalBreakCount,
+            ActiveBreakCount: activeBreakCount,
+            OpenBreakCount: openBreakCount,
+            InReviewBreakCount: inReviewBreakCount,
+            ResolvedBreakCount: resolvedBreakCount,
+            DismissedBreakCount: dismissedBreakCount,
+            CriticalOpenBreakCount: criticalOpenBreakCount,
+            PendingSignoffCount: pendingSignoffCount,
+            SignedOffCount: signedOffCount,
+            MissingCalibrationMetadataCount: missingCalibrationMetadataCount,
+            Profiles: profiles);
     }
 
-    private static ReconciliationBreakQueueItem? ResolveBreak(ResolveReconciliationBreakRequest request)
+    private static ReconciliationCalibrationProfileSummaryDto BuildCalibrationProfileSummary(
+        IGrouping<(string Profile, string Route), ReconciliationBreakQueueItem> group)
     {
-        lock (BreakQueueSync)
+        var items = group.ToArray();
+        var toleranceBands = items
+            .Where(static item => item.ToleranceBand.HasValue)
+            .Select(static item => item.ToleranceBand!.Value)
+            .ToArray();
+
+        return new ReconciliationCalibrationProfileSummaryDto(
+            ToleranceProfileId: group.Key.Profile,
+            ExceptionRoute: group.Key.Route,
+            HighestSeverity: items
+                .OrderByDescending(static item => item.Severity)
+                .First()
+                .Severity,
+            MaxToleranceBand: toleranceBands.Length == 0 ? null : toleranceBands.Max(),
+            TotalBreakCount: items.Length,
+            OpenBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
+            InReviewBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
+            ResolvedBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
+            DismissedBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
+            PendingSignoffCount: items.Count(static item => RequiresCalibrationSignoff(item)),
+            SignedOffCount: items.Count(static item => IsSignedOff(item.SignoffStatus)),
+            LastUpdatedAt: items
+                .OrderByDescending(static item => item.LastUpdatedAt)
+                .First()
+                .LastUpdatedAt);
+    }
+
+    private static ReconciliationCalibrationStatusDto DetermineReconciliationCalibrationStatus(
+        int totalBreakCount,
+        int activeBreakCount,
+        int criticalOpenBreakCount,
+        int pendingSignoffCount,
+        int missingCalibrationMetadataCount)
+    {
+        if (totalBreakCount == 0)
         {
-            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
-            {
-                return null;
-            }
-
-            var now = DateTimeOffset.UtcNow;
-            var updated = item with
-            {
-                Status = request.Status,
-                ResolvedBy = request.ResolvedBy,
-                ResolvedAt = now,
-                LastUpdatedAt = now,
-                ResolutionNote = request.ResolutionNote
-            };
-
-            BreakQueue[request.BreakId] = updated;
-            return updated;
+            return ReconciliationCalibrationStatusDto.Ready;
         }
+
+        if (criticalOpenBreakCount > 0 || missingCalibrationMetadataCount > 0)
+        {
+            return ReconciliationCalibrationStatusDto.Blocked;
+        }
+
+        return activeBreakCount > 0 || pendingSignoffCount > 0
+            ? ReconciliationCalibrationStatusDto.ReviewRequired
+            : ReconciliationCalibrationStatusDto.Ready;
+    }
+
+    private static string BuildReconciliationCalibrationSummaryText(
+        ReconciliationCalibrationStatusDto status,
+        int totalBreakCount,
+        int activeBreakCount,
+        int criticalOpenBreakCount,
+        int pendingSignoffCount,
+        int missingCalibrationMetadataCount,
+        int profileCount)
+    {
+        if (totalBreakCount == 0)
+        {
+            return "No reconciliation breaks require calibration.";
+        }
+
+        if (missingCalibrationMetadataCount > 0)
+        {
+            return $"{missingCalibrationMetadataCount} reconciliation break(s) are missing tolerance or sign-off metadata.";
+        }
+
+        if (criticalOpenBreakCount > 0)
+        {
+            return $"{criticalOpenBreakCount} critical reconciliation break(s) block calibration sign-off.";
+        }
+
+        if (status == ReconciliationCalibrationStatusDto.ReviewRequired)
+        {
+            return $"{activeBreakCount} reconciliation break(s) need review across {profileCount} tolerance profile(s); {pendingSignoffCount} sign-off item(s) remain open.";
+        }
+
+        return "All reconciliation breaks are resolved or dismissed; calibration is ready for governance sign-off.";
+    }
+
+    private static bool HasMissingCalibrationMetadata(ReconciliationBreakQueueItem item)
+        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
+           (string.IsNullOrWhiteSpace(item.ExceptionRoute) ||
+            string.IsNullOrWhiteSpace(item.ToleranceProfileId) ||
+            !item.ToleranceBand.HasValue ||
+            string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ||
+            string.IsNullOrWhiteSpace(item.SignoffStatus));
+
+    private static bool RequiresCalibrationSignoff(ReconciliationBreakQueueItem item)
+        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
+           !IsTerminalCalibrationSignoff(item.SignoffStatus);
+
+    private static bool IsTerminalCalibrationSignoff(string? signoffStatus)
+        => string.Equals(signoffStatus, "signed-off", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(signoffStatus, "dismissed", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(signoffStatus, "monitor", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsSignedOff(string? signoffStatus)
+        => string.Equals(signoffStatus, "signed-off", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeCalibrationValue(string? value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value;
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
+        IServiceProvider services,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
+        {
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.NotFound,
+                Item: null,
+                Error: "Reconciliation break queue repository is not registered.");
+        }
+
+        return await repository.StartReviewAsync(request, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
+        IServiceProvider services,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
+        {
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.NotFound,
+                Item: null,
+                Error: "Reconciliation break queue repository is not registered.");
+        }
+
+        return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
@@ -3036,6 +4042,14 @@ public static class WorkstationEndpoints
         string Description,
         bool LoaderScript,
         bool DataDictionary);
+
+    private sealed record ProviderTrustRationalePayload(
+        string Status,
+        string TrustScore,
+        string SignalSource,
+        string ReasonCode,
+        string RecommendedAction,
+        string GateImpact);
 }
 
 /// <summary>Request to compare multiple strategy runs side by side.</summary>

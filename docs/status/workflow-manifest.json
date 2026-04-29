@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "workflows": [
+    {
+      "id": "docs-automation-core",
+      "owners": ["@platform-docs", "@developer-experience"],
+      "requiredPrerequisites": [
+        "Python 3.11+ available on PATH",
+        "Repository dependencies installed via make install"
+      ],
+      "executionCommands": [
+        {
+          "shell": "bash",
+          "command": "python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json"
+        },
+        {
+          "shell": "bash",
+          "command": "python3 build/scripts/docs/generate-workflow-manifest.py"
+        }
+      ],
+      "expectedArtifacts": [
+        "docs/status/docs-automation-summary.md",
+        "docs/status/docs-automation-summary.json",
+        "docs/status/workflow-validation-summary.json",
+        "docs/status/workflow-drift-report.md"
+      ],
+      "validationChecks": [
+        {
+          "name": "docs automation summary exists",
+          "command": "test -f docs/status/docs-automation-summary.json"
+        },
+        {
+          "name": "workflow drift report exists",
+          "command": "test -f docs/status/workflow-drift-report.md"
+        }
+      ]
+    },
+    {
+      "id": "desktop-screenshot-catalog",
+      "owners": ["@desktop-shell", "@operator-experience"],
+      "requiredPrerequisites": [
+        "Windows build host with PowerShell",
+        "Release WPF build available when using -SkipBuild"
+      ],
+      "executionCommands": [
+        {
+          "shell": "pwsh",
+          "command": "pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop"
+        },
+        {
+          "shell": "pwsh",
+          "command": "pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0"
+        }
+      ],
+      "expectedArtifacts": [
+        "docs/screenshots/desktop",
+        "artifacts/desktop-workflows"
+      ],
+      "validationChecks": [
+        {
+          "name": "screenshot workflow artifacts produced",
+          "command": "test -d artifacts/desktop-workflows"
+        }
+      ]
+    },
+    {
+      "id": "provider-validation-wave1",
+      "owners": ["@provider-infra", "@ops-readiness"],
+      "requiredPrerequisites": [
+        "Provider credentials configured for Wave 1 adapters",
+        "PowerShell available"
+      ],
+      "executionCommands": [
+        {
+          "shell": "pwsh",
+          "command": "pwsh ./scripts/dev/run-wave1-provider-validation.ps1"
+        },
+        {
+          "shell": "pwsh",
+          "command": "pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json"
+        }
+      ],
+      "expectedArtifacts": [
+        "artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json",
+        "artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json"
+      ],
+      "validationChecks": [
+        {
+          "name": "provider validation summary exists",
+          "command": "test -f artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json"
+        }
+      ]
+    },
+    {
+      "id": "operator-inbox-route-validation",
+      "owners": ["@desktop-shell", "@api-workstation"],
+      "requiredPrerequisites": [
+        "dotnet SDK with Windows targeting packs",
+        "PowerShell available"
+      ],
+      "executionCommands": [
+        {
+          "shell": "bash",
+          "command": "make desktop-test-operator-inbox-route"
+        },
+        {
+          "shell": "pwsh",
+          "command": "pwsh -File ./scripts/dev/validate-operator-inbox-route.ps1"
+        }
+      ],
+      "expectedArtifacts": [
+        "artifacts/wpf-validation/operator-inbox-route"
+      ],
+      "validationChecks": [
+        {
+          "name": "operator inbox route artifact directory exists",
+          "command": "test -d artifacts/wpf-validation/operator-inbox-route"
+        }
+      ]
+    }
+  ]
+}

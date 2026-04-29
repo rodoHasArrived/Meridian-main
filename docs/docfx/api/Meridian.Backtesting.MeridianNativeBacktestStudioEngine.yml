@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianNativeBacktestStudioEngine
-    path: ../../src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
+    path: src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
+    path: src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
     startLine: 17
   assemblies:
   - Meridian.Backtesting
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
-    path: ../../src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
+    path: src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
     startLine: 25
   assemblies:
   - Meridian.Backtesting
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
+    path: src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
     startLine: 27
   assemblies:
   - Meridian.Backtesting
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
-    path: ../../src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
+    path: src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
     startLine: 48
   assemblies:
   - Meridian.Backtesting
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCanonicalResultAsync
-    path: ../../src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
+    path: src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs
     startLine: 56
   assemblies:
   - Meridian.Backtesting

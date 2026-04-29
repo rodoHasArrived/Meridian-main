@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupContext
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliArgs
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Config
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deployment
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationService
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DashboardServerFactory
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Log
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancellationToken
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
     startLine: 36
   assemblies:
   - Meridian.Application

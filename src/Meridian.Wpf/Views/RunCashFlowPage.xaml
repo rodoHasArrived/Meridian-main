@@ -3,6 +3,11 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Run Cash Flow">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,20,28,32" MaxWidth="1200">
 
@@ -90,7 +95,9 @@
                               IsReadOnly="True"
                               HeadersVisibility="Column"
                               BorderThickness="0"
-                              Background="{StaticResource ConsoleBackgroundLightBrush}">
+                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                              Visibility="{Binding HasLadderBuckets, Converter={StaticResource BoolToVisibilityConverter}}"
+                              AutomationProperties.AutomationId="RunCashFlowLadderGrid">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Bucket Start" Binding="{Binding BucketStart, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
                             <DataGridTextColumn Header="Bucket End" Binding="{Binding BucketEnd, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
@@ -101,6 +108,31 @@
                             <DataGridTextColumn Header="Events" Binding="{Binding EventCount}" Width="70" />
                         </DataGrid.Columns>
                     </DataGrid>
+                    <Border MinHeight="180"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="24"
+                            Visibility="{Binding IsLadderEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="RunCashFlowLadderEmptyState">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="540">
+                            <TextBlock Text="{Binding LadderEmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="RunCashFlowLadderEmptyStateTitle" />
+                            <TextBlock Text="{Binding LadderEmptyStateDetail}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="RunCashFlowLadderEmptyStateDetail" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -114,7 +146,9 @@
                               IsReadOnly="True"
                               HeadersVisibility="Column"
                               BorderThickness="0"
-                              Background="{StaticResource ConsoleBackgroundLightBrush}">
+                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                              Visibility="{Binding HasEntries, Converter={StaticResource BoolToVisibilityConverter}}"
+                              AutomationProperties.AutomationId="RunCashFlowEntriesGrid">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
                             <DataGridTextColumn Header="Type" Binding="{Binding EventKind}" Width="120" />
@@ -125,6 +159,31 @@
                             <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
                         </DataGrid.Columns>
                     </DataGrid>
+                    <Border MinHeight="220"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="24"
+                            Visibility="{Binding IsEntriesEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="RunCashFlowEntriesEmptyState">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560">
+                            <TextBlock Text="{Binding EntriesEmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="RunCashFlowEntriesEmptyStateTitle" />
+                            <TextBlock Text="{Binding EntriesEmptyStateDetail}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       AutomationProperties.AutomationId="RunCashFlowEntriesEmptyStateDetail" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 

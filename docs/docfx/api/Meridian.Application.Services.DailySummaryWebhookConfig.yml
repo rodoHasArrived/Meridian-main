@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailySummaryWebhookConfig
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 521
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Webhooks
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 526
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableScheduledSummary
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 531
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledTime
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 537
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryCount
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 542
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeoutSeconds
-    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    path: src/Meridian.Application/Services/DailySummaryWebhook.cs
     startLine: 547
   assemblies:
   - Meridian.Application

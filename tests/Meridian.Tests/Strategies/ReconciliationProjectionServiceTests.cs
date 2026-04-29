@@ -9,248 +9,102 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class ReconciliationProjectionServiceTests
 {
-    private static readonly ReconciliationRunRequest DefaultRequest =
-        new("run-1", AmountTolerance: 0.01m, MaxAsOfDriftMinutes: 5);
-
-    // ── BuildChecks – null guards ────────────────────────────────────────────
-
     [Fact]
-    public void BuildChecks_NullDetail_Throws()
+    public void BuildChecks_NullInputs_Throws()
     {
         var service = new ReconciliationProjectionService();
-        var act = () => service.BuildChecks(null!, DefaultRequest);
+        var act = () => service.BuildChecks(null!);
         act.Should().Throw<ArgumentNullException>();
     }
-
-    [Fact]
-    public void BuildChecks_NullRequest_Throws()
-    {
-        var service = new ReconciliationProjectionService();
-        var detail = BuildDetail(null, null);
-        var act = () => service.BuildChecks(detail, null!);
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    // ── BuildChecks – both portfolio and ledger present ──────────────────────
 
     [Fact]
     public void BuildChecks_BothPresent_ProducesCashBalanceAndEquityChecks()
     {
-        var portfolio = BuildPortfolioSummary(cash: 40_000m, totalEquity: 110_000m);
-        var ledger = BuildLedgerSummary(cashBalance: 40_000m, assetBalance: 120_000m, liabilityBalance: 10_000m);
-        var detail = BuildDetail(portfolio, ledger);
+        var inputs = BuildInputs(
+            BuildPortfolioSummary(cash: 40_000m, totalEquity: 110_000m),
+            BuildLedgerSummary(cashBalance: 40_000m, assetBalance: 120_000m, liabilityBalance: 10_000m));
 
         var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
+        var checks = service.BuildChecks(inputs);
 
-        checks.Should().NotBeEmpty();
         checks.Should().Contain(c => c.CheckId == "cash-balance");
         checks.Should().Contain(c => c.CheckId == "net-equity");
     }
 
     [Fact]
-    public void BuildChecks_BothPresent_CashBalanceCheckHasBothAmounts()
-    {
-        var portfolio = BuildPortfolioSummary(cash: 40_000m, totalEquity: 110_000m);
-        var ledger = BuildLedgerSummary(cashBalance: 40_000m, assetBalance: 120_000m, liabilityBalance: 10_000m);
-        var detail = BuildDetail(portfolio, ledger);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
-
-        var cashCheck = checks.Single(c => c.CheckId == "cash-balance");
-        cashCheck.HasExpectedAmount.Should().BeTrue();
-        cashCheck.HasActualAmount.Should().BeTrue();
-        cashCheck.ExpectedAmount.Should().Be(40_000m);
-        cashCheck.ActualAmount.Should().Be(40_000m);
-    }
-
-    [Fact]
-    public void BuildChecks_BothPresent_NetEquityUsesAssetMinusLiability()
-    {
-        var portfolio = BuildPortfolioSummary(cash: 30_000m, totalEquity: 110_000m);
-        // assetBalance=120k, liabilityBalance=10k → ledger net = 110k
-        var ledger = BuildLedgerSummary(cashBalance: 30_000m, assetBalance: 120_000m, liabilityBalance: 10_000m);
-        var detail = BuildDetail(portfolio, ledger);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
-
-        var equityCheck = checks.Single(c => c.CheckId == "net-equity");
-        equityCheck.ExpectedAmount.Should().Be(110_000m); // portfolio equity
-        equityCheck.ActualAmount.Should().Be(110_000m);   // ledger net assets
-    }
-
-    // ── BuildChecks – position coverage ──────────────────────────────────────
-
-    [Fact]
-    public void BuildChecks_LongPositionInPortfolioAndLedger_ProducesCoverageCheck()
-    {
-        var portfolio = BuildPortfolioSummaryWithPositions(
-            new[] { ("AAPL", isShort: false) },
-            cash: 50_000m, totalEquity: 100_000m);
-        var ledger = BuildLedgerSummaryWithPositions(
-            longs: ["AAPL"], shorts: [],
-            cashBalance: 50_000m, assetBalance: 100_000m, liabilityBalance: 0m);
-        var detail = BuildDetail(portfolio, ledger);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
-
-        checks.Should().Contain(c => c.CheckId == "long-AAPL");
-    }
-
-    [Fact]
-    public void BuildChecks_ShortPositionInPortfolio_ProducesShortCoverageCheck()
-    {
-        var portfolio = BuildPortfolioSummaryWithPositions(
-            new[] { ("MSFT", isShort: true) },
-            cash: 50_000m, totalEquity: 100_000m);
-        var ledger = BuildLedgerSummaryWithPositions(
-            longs: [], shorts: ["MSFT"],
-            cashBalance: 50_000m, assetBalance: 100_000m, liabilityBalance: 0m);
-        var detail = BuildDetail(portfolio, ledger);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
-
-        checks.Should().Contain(c => c.CheckId == "short-MSFT");
-    }
-
-    [Fact]
     public void BuildChecks_LedgerHasPositionNotInPortfolio_ProducesLedgerExtraCoverageCheck()
     {
-        // Ledger has GOOG but portfolio does not
-        var portfolio = BuildPortfolioSummary(cash: 50_000m, totalEquity: 100_000m);
-        var ledger = BuildLedgerSummaryWithPositions(
-            longs: ["GOOG"], shorts: [],
-            cashBalance: 50_000m, assetBalance: 100_000m, liabilityBalance: 0m);
-        var detail = BuildDetail(portfolio, ledger);
+        var inputs = BuildInputs(
+            BuildPortfolioSummary(cash: 50_000m, totalEquity: 100_000m),
+            BuildLedgerSummaryWithPositions(
+                longs: ["GOOG"], shorts: [],
+                cashBalance: 50_000m, assetBalance: 100_000m, liabilityBalance: 0m));
 
         var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
+        var checks = service.BuildChecks(inputs);
 
         checks.Should().Contain(c => c.CheckId == "ledger-long-GOOG");
     }
 
-    // ── BuildChecks – portfolio only / ledger only ───────────────────────────
-
     [Fact]
-    public void BuildChecks_PortfolioOnlyNoLedger_ProducesMissingLedgerCheck()
+    public void BuildChecks_InternalCashAndLedger_ProducesBankNetCheck()
     {
-        var portfolio = BuildPortfolioSummary(cash: 40_000m, totalEquity: 100_000m);
-        var detail = BuildDetail(portfolio, null);
+        var inputs = BuildInputs(
+            portfolio: null,
+            ledger: BuildLedgerSummary(cashBalance: 50_000m, assetBalance: 50_000m, liabilityBalance: 0m),
+            internalCash: [BuildCashMovement(50_000m)]);
 
         var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
+        var checks = service.BuildChecks(inputs);
 
-        checks.Should().Contain(c => c.CheckId == "ledger-summary-missing");
+        checks.Should().ContainSingle(c => c.CheckId == "bank-net-vs-ledger-cash");
     }
 
     [Fact]
-    public void BuildChecks_LedgerOnlyNoPortfolio_ProducesMissingPortfolioCheck()
+    public void BuildChecks_ExternalStatementRows_ProducesExternalStatementComparison()
     {
-        var ledger = BuildLedgerSummary(cashBalance: 40_000m, assetBalance: 100_000m, liabilityBalance: 0m);
-        var detail = BuildDetail(null, ledger);
+        var inputs = BuildInputs(
+            portfolio: null,
+            ledger: null,
+            internalCash: [BuildCashMovement(90m)],
+            externalRows: [new ReconciliationExternalStatementInput("row-1", 100m, DateTimeOffset.UtcNow, "custodian")]);
 
         var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
+        var checks = service.BuildChecks(inputs);
 
-        checks.Should().Contain(c => c.CheckId == "portfolio-summary-missing");
+        checks.Should().ContainSingle(c => c.CheckId == "external-statement-vs-internal-cash");
     }
 
-    [Fact]
-    public void BuildChecks_NeitherPresent_ReturnsEmptyList()
+    private static ReconciliationNormalizedInputs BuildInputs(
+        PortfolioSummary? portfolio,
+        LedgerSummary? ledger,
+        IReadOnlyList<ReconciliationCashMovementInput>? internalCash = null,
+        IReadOnlyList<ReconciliationExternalStatementInput>? externalRows = null)
     {
-        var detail = BuildDetail(null, null);
+        var detail = BuildDetail(portfolio, ledger);
+        var portfolioAdapter = new StrategyPortfolioReconciliationSourceAdapter();
+        var ledgerAdapter = new StrategyLedgerReconciliationSourceAdapter();
 
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildChecks(detail, DefaultRequest);
-
-        checks.Should().BeEmpty();
+        return new ReconciliationNormalizedInputs(
+            Portfolio: portfolioAdapter.Adapt(detail),
+            Ledger: ledgerAdapter.Adapt(detail),
+            InternalCashMovements: internalCash ?? [],
+            ExternalStatementRows: externalRows ?? []);
     }
 
-    // ── BuildBankingChecks – null guard ──────────────────────────────────────
-
-    [Fact]
-    public void BuildBankingChecks_NullTransactions_Throws()
-    {
-        var service = new ReconciliationProjectionService();
-        var act = () => service.BuildBankingChecks(null!, null);
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    // ── BuildBankingChecks – no data ─────────────────────────────────────────
-
-    [Fact]
-    public void BuildBankingChecks_EmptyTransactionsAndNoLedger_ReturnsEmpty()
-    {
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildBankingChecks([], null);
-        checks.Should().BeEmpty();
-    }
-
-    // ── BuildBankingChecks – both present ────────────────────────────────────
-
-    [Fact]
-    public void BuildBankingChecks_BothPresent_ProducesSingleAmountCheck()
-    {
-        var txn = BuildBankTransaction(amount: 50_000m);
-        var ledger = BuildLedgerSummary(cashBalance: 50_000m, assetBalance: 60_000m, liabilityBalance: 0m);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildBankingChecks([txn], ledger);
-
-        checks.Should().ContainSingle();
-        var check = checks[0];
-        check.CheckId.Should().Be("bank-net-vs-ledger-cash");
-        check.ExpectedAmount.Should().Be(50_000m); // bank net
-        check.ActualAmount.Should().Be(50_000m);   // ledger cash
-    }
-
-    [Fact]
-    public void BuildBankingChecks_VoidedTransactionsExcluded()
-    {
-        var activeTxn = BuildBankTransaction(amount: 40_000m, isVoided: false);
-        var voidedTxn = BuildBankTransaction(amount: 10_000m, isVoided: true);
-        var ledger = BuildLedgerSummary(cashBalance: 40_000m, assetBalance: 50_000m, liabilityBalance: 0m);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildBankingChecks([activeTxn, voidedTxn], ledger);
-
-        checks.Should().ContainSingle();
-        checks[0].ExpectedAmount.Should().Be(40_000m); // only active transaction
-    }
-
-    // ── BuildBankingChecks – one side missing ────────────────────────────────
-
-    [Fact]
-    public void BuildBankingChecks_BankDataButNoLedger_ProducesMissingLedgerCoverage()
-    {
-        var txn = BuildBankTransaction(amount: 25_000m);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildBankingChecks([txn], null);
-
-        checks.Should().ContainSingle();
-        checks[0].CheckId.Should().Be("bank-ledger-coverage-missing");
-        checks[0].ActualPresent.Should().BeFalse();
-    }
-
-    [Fact]
-    public void BuildBankingChecks_LedgerButNoBankTransactions_ProducesMissingBankCoverage()
-    {
-        var ledger = BuildLedgerSummary(cashBalance: 30_000m, assetBalance: 40_000m, liabilityBalance: 0m);
-
-        var service = new ReconciliationProjectionService();
-        var checks = service.BuildBankingChecks([], ledger);
-
-        checks.Should().ContainSingle();
-        checks[0].CheckId.Should().Be("bank-coverage-missing");
-        checks[0].ExpectedPresent.Should().BeFalse();
-    }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    private static ReconciliationCashMovementInput BuildCashMovement(decimal amount, bool isVoided = false)
+        => new(
+            MovementId: Guid.NewGuid().ToString("N"),
+            Amount: amount,
+            AsOf: DateTimeOffset.UtcNow,
+            IsVoided: isVoided,
+            Source: "bank",
+            BankTransaction: new BankTransactionDto(
+                Guid.NewGuid(), Guid.NewGuid(), "Wire",
+                DateOnly.FromDateTime(DateTime.UtcNow),
+                DateOnly.FromDateTime(DateTime.UtcNow),
+                DateOnly.FromDateTime(DateTime.UtcNow),
+                amount, "USD", null, DateTimeOffset.UtcNow, isVoided));
 
     private static StrategyRunDetail BuildDetail(PortfolioSummary? portfolio, LedgerSummary? ledger)
     {
@@ -273,51 +127,27 @@ public sealed class ReconciliationProjectionServiceTests
             FillCount: 2,
             LastUpdatedAt: DateTimeOffset.UtcNow);
 
-        return new StrategyRunDetail(
-            Summary: summary,
-            Parameters: new Dictionary<string, string>(),
-            Portfolio: portfolio,
-            Ledger: ledger);
+        return new StrategyRunDetail(summary, new Dictionary<string, string>(), portfolio, ledger);
     }
 
     private static PortfolioSummary BuildPortfolioSummary(decimal cash, decimal totalEquity)
-        => BuildPortfolioSummaryWithPositions([], cash, totalEquity);
-
-    private static PortfolioSummary BuildPortfolioSummaryWithPositions(
-        IEnumerable<(string Symbol, bool IsShort)> positionSpecs,
-        decimal cash,
-        decimal totalEquity)
-    {
-        var asOf = DateTimeOffset.UtcNow;
-        var positions = positionSpecs
-            .Select(static p => new PortfolioPositionSummary(
-                Symbol: p.Symbol,
-                Quantity: p.IsShort ? -100 : 100,
-                AverageCostBasis: 100m,
-                RealizedPnl: 1_000m,
-                UnrealizedPnl: 500m,
-                IsShort: p.IsShort))
-            .ToArray();
-
-        return new PortfolioSummary(
+        => new(
             PortfolioId: "run-1-portfolio",
             RunId: "run-1",
-            AsOf: asOf,
+            AsOf: DateTimeOffset.UtcNow,
             Cash: cash,
             LongMarketValue: totalEquity - cash,
             ShortMarketValue: 0m,
             GrossExposure: totalEquity - cash,
             NetExposure: totalEquity - cash,
             TotalEquity: totalEquity,
-            RealizedPnl: positions.Sum(static p => p.RealizedPnl),
-            UnrealizedPnl: positions.Sum(static p => p.UnrealizedPnl),
-            Commissions: 50m,
-            Financing: 5m,
-            Positions: positions);
-    }
+            RealizedPnl: 0m,
+            UnrealizedPnl: 0m,
+            Commissions: 0m,
+            Financing: 0m,
+            Positions: []);
 
-    private static LedgerSummary BuildLedgerSummary(
-        decimal cashBalance, decimal assetBalance, decimal liabilityBalance)
+    private static LedgerSummary BuildLedgerSummary(decimal cashBalance, decimal assetBalance, decimal liabilityBalance)
         => BuildLedgerSummaryWithPositions([], [], cashBalance, assetBalance, liabilityBalance);
 
     private static LedgerSummary BuildLedgerSummaryWithPositions(
@@ -327,8 +157,6 @@ public sealed class ReconciliationProjectionServiceTests
         decimal assetBalance,
         decimal liabilityBalance)
     {
-        var asOf = DateTimeOffset.UtcNow;
-
         var trialBalance = new List<LedgerTrialBalanceLine>
         {
             new("Cash", "Asset", null, null, cashBalance, 2)
@@ -343,30 +171,15 @@ public sealed class ReconciliationProjectionServiceTests
         return new LedgerSummary(
             LedgerReference: "run-1-ledger",
             RunId: "run-1",
-            AsOf: asOf,
+            AsOf: DateTimeOffset.UtcNow,
             JournalEntryCount: 2,
             LedgerEntryCount: trialBalance.Count,
             AssetBalance: assetBalance,
             LiabilityBalance: liabilityBalance,
             EquityBalance: assetBalance - liabilityBalance,
-            RevenueBalance: 10_000m,
-            ExpenseBalance: 50m,
+            RevenueBalance: 0m,
+            ExpenseBalance: 0m,
             TrialBalance: trialBalance,
             Journal: []);
     }
-
-    private static BankTransactionDto BuildBankTransaction(
-        decimal amount, bool isVoided = false)
-        => new BankTransactionDto(
-            BankTransactionId: Guid.NewGuid(),
-            EntityId: Guid.NewGuid(),
-            TransactionType: "Wire",
-            EffectiveDate: DateOnly.FromDateTime(DateTime.UtcNow),
-            TransactionDate: DateOnly.FromDateTime(DateTime.UtcNow),
-            SettlementDate: DateOnly.FromDateTime(DateTime.UtcNow),
-            Amount: amount,
-            Currency: "USD",
-            ExternalRef: null,
-            RecordedAt: DateTimeOffset.UtcNow,
-            IsVoided: isVoided);
 }

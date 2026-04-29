@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchOptions
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 356
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchSymbols
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 358
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchProviders
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 359
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchPages
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 360
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchActions
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 361
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchHelp
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 362
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxResults
-    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    path: src/Meridian.Ui.Services/Services/SearchService.cs
     startLine: 363
   assemblies:
   - Meridian.Ui.Services

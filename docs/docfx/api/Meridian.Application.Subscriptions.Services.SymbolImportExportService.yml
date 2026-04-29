@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolImportExportService
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromTextAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAutoDetectAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 156
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromCsvAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 179
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportToCsv
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 283
   assemblies:
   - Meridian.Application
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportToCsvBytes
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
     startLine: 316
   assemblies:
   - Meridian.Application

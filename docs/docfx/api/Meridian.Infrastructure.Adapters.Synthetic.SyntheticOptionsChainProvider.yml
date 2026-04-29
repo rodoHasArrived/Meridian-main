@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyntheticOptionsChainProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 68
   assemblies:
   - Meridian.Infrastructure
@@ -404,7 +404,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 77
   assemblies:
   - Meridian.Infrastructure
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainSnapshotAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -502,7 +502,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionQuoteAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs
     startLine: 128
   assemblies:
   - Meridian.Infrastructure

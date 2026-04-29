@@ -112,7 +112,7 @@ public sealed class DataCalendarViewModel : BindableBase
                 >= 95 => _successBrush,
                 >= 80 => _infoBrush,
                 >= 50 => _warningBrush,
-                _     => _errorBrush
+                _ => _errorBrush
             };
 
             if (yearData.Months.Count > 0)

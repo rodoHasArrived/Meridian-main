@@ -39,7 +39,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 544
   assemblies:
   - Meridian.Infrastructure
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 553
   assemblies:
   - Meridian.Infrastructure
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 555
   assemblies:
   - Meridian.Infrastructure
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 564
   assemblies:
   - Meridian.Infrastructure
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 565
   assemblies:
   - Meridian.Infrastructure
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 566
   assemblies:
   - Meridian.Infrastructure
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 570
   assemblies:
   - Meridian.Infrastructure
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 571
   assemblies:
   - Meridian.Infrastructure
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 572
   assemblies:
   - Meridian.Infrastructure
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 573
   assemblies:
   - Meridian.Infrastructure
@@ -448,7 +448,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 575
   assemblies:
   - Meridian.Infrastructure
@@ -484,7 +484,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 579
   assemblies:
   - Meridian.Infrastructure
@@ -517,7 +517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 580
   assemblies:
   - Meridian.Infrastructure
@@ -550,7 +550,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 581
   assemblies:
   - Meridian.Infrastructure
@@ -583,7 +583,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 582
   assemblies:
   - Meridian.Infrastructure
@@ -616,7 +616,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 584
   assemblies:
   - Meridian.Infrastructure
@@ -649,7 +649,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 592
   assemblies:
   - Meridian.Infrastructure
@@ -685,7 +685,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 598
   assemblies:
   - Meridian.Infrastructure
@@ -718,7 +718,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 604
   assemblies:
   - Meridian.Infrastructure
@@ -751,7 +751,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 610
   assemblies:
   - Meridian.Infrastructure
@@ -789,7 +789,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 616
   assemblies:
   - Meridian.Infrastructure
@@ -833,7 +833,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
     startLine: 623
   assemblies:
   - Meridian.Infrastructure

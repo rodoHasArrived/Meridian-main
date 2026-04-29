@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCostRequest
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 279
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 279
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 280
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 281
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 282
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 283
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Granularity
-    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
     startLine: 284
   assemblies:
   - Meridian.Application

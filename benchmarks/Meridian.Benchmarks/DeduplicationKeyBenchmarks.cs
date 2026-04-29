@@ -27,7 +27,7 @@ namespace Meridian.Benchmarks;
 /// </list>
 /// </para>
 /// <para>
-/// Run with: <c>dotnet run -c Release -- --filter "*DedupKey*" --memory --job short</c>
+/// Run with: <c>dotnet run -c Release -- --filter "*DeduplicationKeyBenchmarks*" --memory --job short</c>
 /// </para>
 /// </summary>
 [MemoryDiagnoser]

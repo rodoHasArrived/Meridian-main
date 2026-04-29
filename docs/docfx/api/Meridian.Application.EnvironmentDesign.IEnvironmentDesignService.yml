@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEnvironmentDesignService
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListDraftsAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDraftAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDraftAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveDraftAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteDraftAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListPublishedVersionsAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPublishedVersionAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentPublishedVersionAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentDesignService.cs
     startLine: 22
   assemblies:
   - Meridian.Application

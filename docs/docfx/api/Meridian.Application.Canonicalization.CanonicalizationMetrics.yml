@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalizationMetrics
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 136
   assemblies:
   - Meridian.Application
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Current
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 144
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSuccess
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 151
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSoftFail
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 155
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHardFail
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 159
   assemblies:
   - Meridian.Application
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordUnresolved
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 163
   assemblies:
   - Meridian.Application
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordDualWrite
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetActiveVersion
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 171
   assemblies:
   - Meridian.Application
@@ -309,7 +309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 175
   assemblies:
   - Meridian.Application
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 179
   assemblies:
   - Meridian.Application

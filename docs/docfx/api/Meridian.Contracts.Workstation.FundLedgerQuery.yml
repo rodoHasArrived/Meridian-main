@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerQuery
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScopeKind
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScopeId
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IExecutionContext
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gateway
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 19
   assemblies:
   - Meridian.Execution
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 22
   assemblies:
   - Meridian.Execution
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTime
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
-    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
     startLine: 31
   assemblies:
   - Meridian.Execution

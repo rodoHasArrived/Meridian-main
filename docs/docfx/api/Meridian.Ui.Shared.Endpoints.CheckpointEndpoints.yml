@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCheckpointEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared

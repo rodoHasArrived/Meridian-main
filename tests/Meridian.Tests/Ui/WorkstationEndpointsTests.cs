@@ -3,22 +3,32 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.Monitoring;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Ledger;
+using Meridian.ProviderSdk;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -134,6 +144,151 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsProviderMetrics_ShouldExposeDk1TrustRationale()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-metrics", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "_status"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, """{"DataRoot":"."}""");
+
+        var metrics = new ProviderMetricsStatus(
+            Timestamp: new DateTimeOffset(2026, 4, 24, 17, 0, 0, TimeSpan.Zero),
+            Providers:
+            [
+                new ProviderMetrics(
+                    ProviderId: "yahoo",
+                    ProviderType: "Historical bars",
+                    IsConnected: true,
+                    TradesReceived: 0,
+                    DepthUpdatesReceived: 0,
+                    QuotesReceived: 2400,
+                    ConnectionAttempts: 1,
+                    ConnectionFailures: 0,
+                    MessagesDropped: 0,
+                    ActiveSubscriptions: 4,
+                    AverageLatencyMs: 42,
+                    MinLatencyMs: 25,
+                    MaxLatencyMs: 80,
+                    DataQualityScore: 0.96,
+                    ConnectionSuccessRate: 1,
+                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 59, 0, TimeSpan.Zero)),
+                new ProviderMetrics(
+                    ProviderId: "alpaca",
+                    ProviderType: "Streaming equities",
+                    IsConnected: false,
+                    TradesReceived: 12,
+                    DepthUpdatesReceived: 0,
+                    QuotesReceived: 30,
+                    ConnectionAttempts: 4,
+                    ConnectionFailures: 4,
+                    MessagesDropped: 0,
+                    ActiveSubscriptions: 2,
+                    AverageLatencyMs: 510,
+                    MinLatencyMs: 90,
+                    MaxLatencyMs: 900,
+                    DataQualityScore: 0.62,
+                    ConnectionSuccessRate: 0,
+                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 58, 0, TimeSpan.Zero))
+            ],
+            TotalProviders: 2,
+            HealthyProviders: 1);
+        var metricsJson = JsonSerializer.Serialize(metrics, ServerJsonOptions);
+        await File.WriteAllTextAsync(Path.Combine(root, "_status", "providers.json"), metricsJson);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+        });
+        var client = app.GetTestClient();
+
+        using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
+        var providers = dataOperations.RootElement.GetProperty("providers");
+        providers.GetArrayLength().Should().Be(2);
+
+        var healthy = providers[0];
+        healthy.GetProperty("provider").GetString().Should().Be("yahoo");
+        healthy.GetProperty("status").GetString().Should().Be("Healthy");
+        healthy.GetProperty("trustScore").GetString().Should().Be("96%");
+        healthy.GetProperty("reasonCode").GetString().Should().Be("HEALTHY_BASELINE");
+        healthy.GetProperty("recommendedAction").GetString().Should().Contain("no DK1 action");
+
+        var degraded = providers[1];
+        degraded.GetProperty("provider").GetString().Should().Be("alpaca");
+        degraded.GetProperty("status").GetString().Should().Be("Degraded");
+        degraded.GetProperty("trustScore").GetString().Should().Be("62%");
+        degraded.GetProperty("signalSource").GetString().Should().Be("Provider quote/trade stream health telemetry");
+        degraded.GetProperty("reasonCode").GetString().Should().Be("PROVIDER_STREAM_DEGRADED");
+        degraded.GetProperty("recommendedAction").GetString().Should().Contain("Verify provider connectivity");
+        degraded.GetProperty("gateImpact").GetString().Should().Be("Critical");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_KernelObservability_ShouldSurfaceActiveAndHistoricalAlertMetrics()
+    {
+        var observability = CreateRecoveredKernelObservability();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(observability);
+        });
+
+        var client = app.GetTestClient();
+
+        using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
+        dataOperations.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric =>
+                metric.GetProperty("id").GetString() == "kernel-critical-jumps" &&
+                metric.GetProperty("value").GetString() == "0" &&
+                metric.GetProperty("delta").GetString() == "1 total" &&
+                metric.GetProperty("tone").GetString() == "success");
+
+        var dataOpsKernel = dataOperations.RootElement.GetProperty("kernelObservability");
+        dataOpsKernel.GetProperty("activeAlerts").GetInt32().Should().Be(0);
+        dataOpsKernel.GetProperty("totalAlerts").GetInt32().Should().Be(1);
+        dataOpsKernel.GetProperty("alerts").GetInt32().Should().Be(1);
+        dataOpsKernel.GetProperty("determinismChecksEnabled").GetBoolean().Should().BeTrue();
+        dataOpsKernel.GetProperty("domains").GetArrayLength().Should().Be(1);
+
+        var domain = dataOpsKernel.GetProperty("domains")[0];
+        domain.GetProperty("domain").GetString().Should().Be(nameof(ProviderCapabilityKind.HistoricalBars));
+        domain.GetProperty("throughputPerMinute").GetDouble().Should().BeGreaterThan(0);
+        domain.GetProperty("latencyMs").GetProperty("p95").GetDouble()
+            .Should()
+            .BeGreaterThanOrEqualTo(domain.GetProperty("latencyMs").GetProperty("p50").GetDouble());
+        domain.GetProperty("drift").GetProperty("methodology").GetString().Should().Be("totalVariationDistance");
+        domain.GetProperty("lastUpdatedUtc").ValueKind.Should().Be(JsonValueKind.String);
+
+        var criticalSeverityRate = domain.GetProperty("criticalSeverityRate");
+        criticalSeverityRate.GetProperty("jumpAlertActive").GetBoolean().Should().BeFalse();
+        criticalSeverityRate.GetProperty("jumpAlertCount").GetInt32().Should().Be(1);
+        criticalSeverityRate.GetProperty("shortWindowSamples").GetInt32().Should().Be(30);
+        criticalSeverityRate.GetProperty("longWindowSamples").GetInt32().Should().Be(90);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("minimumSampleCount").GetInt32().Should().Be(20);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("minimumShortRate").GetDouble().Should().Be(0.25);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("zeroBaselineShortRate").GetDouble().Should().Be(0.35);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("relativeMultiplier").GetDouble().Should().Be(2.0);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("absoluteIncrease").GetDouble().Should().Be(0.15);
+
+        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
+        governance.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric =>
+                metric.GetProperty("id").GetString() == "kernel-critical-jumps" &&
+                metric.GetProperty("value").GetString() == "0" &&
+                metric.GetProperty("tone").GetString() == "success");
+
+        var governanceKernel = governance.RootElement.GetProperty("kernelObservability");
+        governanceKernel.GetProperty("activeAlerts").GetInt32().Should().Be(0);
+        governanceKernel.GetProperty("totalAlerts").GetInt32().Should().Be(1);
+        governanceKernel.GetProperty("domains")[0]
+            .GetProperty("criticalSeverityRate")
+            .GetProperty("jumpAlertCount")
+            .GetInt32()
+            .Should()
+            .Be(1);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnTypedResearchBriefing()
     {
         await using var app = await CreateAppAsync(services =>
@@ -200,6 +355,122 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutContext_ShouldPrioritizeChooseContextForTradingAndAccounting()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var client = app.GetTestClient();
+
+        var summary = await ReadWorkflowSummaryAsync(client, "/api/workstation/workflow-summary");
+
+        GetWorkspace(summary, "trading").NextAction.Label.Should().Be("Choose Context");
+        GetWorkspace(summary, "trading").NextAction.TargetPageTag.Should().Be("TradingShell");
+        GetWorkspace(summary, "accounting").NextAction.Label.Should().Be("Choose Context");
+        GetWorkspace(summary, "accounting").NextAction.TargetPageTag.Should().Be("AccountingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectStrategyToTradingHandoff()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("workflow-backtest-candidate") with
+        {
+            FundProfileId = "northwind-income",
+            FundDisplayName = "Northwind Income"
+        });
+
+        var client = app.GetTestClient();
+        var summary = await ReadWorkflowSummaryAsync(
+            client,
+            "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
+
+        var strategy = GetWorkspace(summary, "strategy");
+        strategy.StatusLabel.Should().Be("Candidate for paper review");
+        strategy.NextAction.Label.Should().Be("Send to Trading Review");
+        strategy.NextAction.TargetPageTag.Should().Be("TradingShell");
+
+        var trading = GetWorkspace(summary, "trading");
+        trading.StatusLabel.Should().Be("Candidate awaiting paper review");
+        trading.NextAction.Label.Should().Be("Review Candidate for Paper");
+        trading.NextAction.TargetPageTag.Should().Be("TradingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithActivePaperRunAndNoBreaks_ShouldKeepTradingActiveAndAccountingReady()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-active", withBreaks: false));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("workflow-paper-active"));
+
+        var client = app.GetTestClient();
+        var summary = await ReadWorkflowSummaryAsync(
+            client,
+            "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
+
+        var trading = GetWorkspace(summary, "trading");
+        trading.StatusLabel.Should().Be("Active paper cockpit");
+        trading.NextAction.Label.Should().Be("Open Active Cockpit");
+
+        var accounting = GetWorkspace(summary, "accounting");
+        accounting.StatusLabel.Should().Be("Accounting review ready");
+        accounting.NextAction.Label.Should().Be("Open Accounting Shell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateAccountingNextAction()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-breaks", withBreaks: true));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("workflow-paper-breaks"));
+
+        var client = app.GetTestClient();
+        var summary = await ReadWorkflowSummaryAsync(
+            client,
+            "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
+
+        var accounting = GetWorkspace(summary, "accounting");
+        accounting.StatusLabel.Should().Be("Reconciliation breaks require review");
+        accounting.NextAction.Label.Should().Be("Review Reconciliation Breaks");
+        accounting.NextAction.TargetPageTag.Should().Be("FundReconciliation");
+        accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutRuns_ShouldReturnStableNonNullContracts()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/workflow-summary");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+        summary!.Workspaces.Should().HaveCount(7);
+        summary.Workspaces.Select(workspace => workspace.WorkspaceId).Should().BeEquivalentTo(
+            "trading",
+            "portfolio",
+            "accounting",
+            "reporting",
+            "strategy",
+            "data",
+            "settings");
+        foreach (var workspace in summary.Workspaces)
+        {
+            workspace.NextAction.Should().NotBeNull();
+            workspace.PrimaryBlocker.Should().NotBeNull();
+            workspace.Evidence.Should().NotBeNull();
+        }
+        GetWorkspace(summary, "strategy").NextAction.Label.Should().Be("Start Backtest");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingPayload_ShouldSurfacePaperGatewayBrokerGap()
     {
         await using var app = await CreateAppAsync(services =>
@@ -227,6 +498,693 @@ public sealed class WorkstationEndpointsTests
         brokerage.GetProperty("provider").GetString().Should().Be("Paper trading");
         brokerage.GetProperty("notes").GetString().Should().Contain("blocked");
         brokerage.GetProperty("notes").GetString().Should().Contain("paper trading");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldJoinSessionReplayAuditControlsAndPromotion()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+        WriteReadyDk1Packet(automationRoot);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            services.AddSingleton<Dk1TrustGateReadinessService>();
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(Path.Combine(rootPath, "controls")),
+                NullLogger<ExecutionOperatorControlService>.Instance,
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            services.AddSingleton<BacktestToLivePromoter>();
+            services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
+                Path.Combine(rootPath, "promotions"),
+                NullLogger<JsonlPromotionRecordStore>.Instance));
+            services.AddSingleton<PromotionService>(sp => new PromotionService(
+                sp.GetRequiredService<IStrategyRepository>(),
+                sp.GetRequiredService<BacktestToLivePromoter>(),
+                sp.GetRequiredService<IPromotionRecordStore>(),
+                NullLogger<PromotionService>.Instance,
+                operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
+                auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-wave2-backtest",
+            strategyId: "strat-wave2",
+            strategyName: "Wave 2 Acceptance",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 24, 15, 30, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-wave2",
+            StrategyName: "Wave 2 Acceptance",
+            InitialCash: 250_000m,
+            Symbols: ["AAPL"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-wave2", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-wave2", "AAPL", 10m, 190m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+
+        var controls = app.Services.GetRequiredService<ExecutionOperatorControlService>();
+        await controls.SetDefaultPositionLimitAsync(
+            100_000m,
+            "risk.lead",
+            "Daily paper desk limit accepted for Wave 2.");
+
+        var decision = await app.Services.GetRequiredService<PromotionService>().ApproveAsync(new PromotionApprovalRequest(
+            RunId: "run-wave2-backtest",
+            ApprovedBy: "ops.lead",
+            ApprovalReason: "Replay, audit, and paper controls accepted for Wave 2.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+
+        decision.Success.Should().BeTrue();
+
+        var client = app.GetTestClient();
+        var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            "/api/workstation/trading/readiness",
+            ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.ActiveSession.Should().NotBeNull();
+        readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        readiness.ActiveSession.OrderCount.Should().Be(1);
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.IsConsistent.Should().BeTrue();
+        readiness.Replay.ComparedFillCount.Should().Be(1);
+        readiness.Replay.ComparedOrderCount.Should().Be(1);
+        readiness.Replay.LastPersistedFillAt.Should().NotBeNull();
+        readiness.Replay.LastPersistedOrderUpdateAt.Should().NotBeNull();
+        readiness.Replay.VerificationAuditId.Should().Be(verification!.VerificationAuditId);
+        readiness.Controls.CircuitBreakerOpen.Should().BeFalse();
+        readiness.Controls.ManualOverrideCount.Should().Be(0);
+        readiness.Promotion.Should().NotBeNull();
+        readiness.Promotion!.ApprovalStatus.Should().Be(PromotionDecisionKinds.Approved);
+        readiness.Promotion.ApprovedBy.Should().Be("ops.lead");
+        readiness.Promotion.AuditReference.Should().Be(decision.AuditReference);
+        readiness.Promotion.ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
+        readiness.Controls.DefaultMaxPositionSize.Should().Be(100_000m);
+        readiness.Controls.ExplainableEvidenceCount.Should().Be(1);
+        readiness.Controls.UnexplainedEvidenceCount.Should().Be(0);
+        readiness.Controls.RecentEvidence.Should().ContainSingle(evidence =>
+            evidence.Action == "DefaultPositionLimitUpdated" &&
+            evidence.Actor == "risk.lead" &&
+            evidence.Scope == "default-position-limit" &&
+            evidence.Reason.Contains("Daily paper desk limit", StringComparison.OrdinalIgnoreCase) &&
+            evidence.IsExplained);
+        readiness.TrustGate.Status.Should().Be("ready-for-operator-review");
+        readiness.TrustGate.ReadyForOperatorReview.Should().BeTrue();
+        readiness.TrustGate.RequiredSampleCount.Should().Be(4);
+        readiness.TrustGate.ReadySampleCount.Should().Be(4);
+        readiness.TrustGate.ValidatedEvidenceDocumentCount.Should().Be(4);
+        readiness.TrustGate.SampleReviews.Should().ContainSingle(sample =>
+            sample.SampleId == "DK1-ALPACA-QUOTE-GOLDEN" &&
+            sample.Provider == "Alpaca" &&
+            sample.AcceptanceCheck.Contains("golden", StringComparison.OrdinalIgnoreCase));
+        readiness.TrustGate.EvidenceDocuments.Should().ContainSingle(document =>
+            document.Gate == "explainability" &&
+            document.Status == "validated" &&
+            document.Path == "docs/status/dk1-trust-rationale-mapping.md");
+        readiness.TrustGate.TrustRationaleContract.Should().NotBeNull();
+        readiness.TrustGate.TrustRationaleContract!.Status.Should().Be("validated");
+        readiness.TrustGate.TrustRationaleContract.RequiredReasonCodes.Should().Contain("PROVIDER_STREAM_DEGRADED");
+        readiness.TrustGate.BaselineThresholdContract.Should().NotBeNull();
+        readiness.TrustGate.BaselineThresholdContract!.Status.Should().Be("validated");
+        readiness.TrustGate.BaselineThresholdContract.FpFnReviewRequired.Should().BeTrue();
+        readiness.TrustGate.Detail.Should().Contain("explainability validated").And.Contain("calibration validated");
+        readiness.TrustGate.OperatorSignoffStatus.Should().Be("pending");
+        readiness.TrustGate.OperatorSignoff.Should().NotBeNull();
+        readiness.TrustGate.OperatorSignoff!.MissingOwners.Should().BeEquivalentTo(
+            ["Data Operations", "Provider Reliability", "Trading"]);
+        readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readiness.AcceptanceGates.Should().HaveCount(5);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.SessionId == session.SessionId);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == verification!.VerificationAuditId);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "audit-controls" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == decision.AuditReference);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "dk1-trust" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.Detail.Contains("sign-off remains pending", StringComparison.OrdinalIgnoreCase));
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.Detail.Contains("sign-off remains pending", StringComparison.OrdinalIgnoreCase));
+        readiness.WorkItems.Should().NotContain(item => item.Tone == OperatorWorkItemToneDto.Critical);
+        readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PaperReplay);
+        readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PromotionReview);
+
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+        trading.RootElement
+            .GetProperty("readiness")
+            .GetProperty("activeSession")
+            .GetProperty("sessionId")
+            .GetString()
+            .Should()
+            .Be(session.SessionId);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldNotUseStalePromotionHistoryForLatestRun()
+    {
+        var promotionRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "promotion-history",
+            Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            RegisterPromotionServices(services, promotionRoot);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-stale-backtest",
+            strategyId: "stale-strategy",
+            strategyName: "Stale Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 22, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("MSFT")));
+
+        await app.Services.GetRequiredService<IPromotionRecordStore>().AppendAsync(new StrategyPromotionRecord(
+            PromotionId: "promotion-stale-backtest",
+            StrategyId: "stale-strategy",
+            StrategyName: "Stale Strategy",
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: "run-stale-backtest",
+            TargetRunId: "run-stale-paper",
+            QualifyingSharpe: 1.2d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: new DateTimeOffset(2026, 4, 22, 15, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "Older promotion was approved for a previous cockpit run.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            AuditReference: "audit-stale-promotion",
+            ApprovedBy: "ops.archive"));
+
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-current-backtest",
+            strategyId: "current-strategy",
+            strategyName: "Current Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 24, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.Promotion.Should().NotBeNull();
+        readiness.Promotion!.SourceRunId.Should().Be("run-current-backtest");
+        readiness.Promotion.ApprovalStatus.Should().BeNull();
+        readiness.Promotion.AuditReference.Should().Be("audit-run-current-backtest");
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.RunId == "run-current-backtest" &&
+            gate.AuditReference == "audit-run-current-backtest");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "promotion-trace-incomplete-run-current-backtest" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+            item.AuditReference == "audit-run-current-backtest");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldRequireReplayRefreshWhenSessionChangesAfterVerification()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-stale-replay", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-stale-replay",
+            StrategyName: "Stale Replay",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL", "MSFT"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-before-replay", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-before-replay", "AAPL", 10m, 190m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-after-replay", "MSFT", 5m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-after-replay", "MSFT", 5m, 320m));
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.ActiveSession.Should().NotBeNull();
+        readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        readiness.ActiveSession.FillCount.Should().Be(2);
+        readiness.ActiveSession.OrderCount.Should().Be(2);
+        readiness.ActiveSession.LedgerEntryCount.Should().BeGreaterThan(verification!.ComparedLedgerEntryCount);
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.ComparedFillCount.Should().Be(1);
+        readiness.Replay.ComparedOrderCount.Should().Be(1);
+        readiness.Replay.VerificationAuditId.Should().Be(verification.VerificationAuditId);
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.AuditReference == verification.VerificationAuditId &&
+            gate.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.AuditReference == verification.VerificationAuditId &&
+            item.Detail.Contains("orders active=2, verified=1", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldFlagUnexplainedRiskControlAuditEvidence()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-risk", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+        });
+
+        await app.Services.GetRequiredService<ExecutionAuditTrailService>().RecordAsync(new ExecutionAuditEntry(
+            AuditId: "audit-risk-missing-context",
+            Category: "Order",
+            Action: "OrderRejected",
+            Outcome: "Rejected",
+            OccurredAt: new DateTimeOffset(2026, 4, 26, 18, 0, 0, TimeSpan.Zero)));
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.Controls.UnexplainedEvidenceCount.Should().Be(1);
+        readiness.Controls.ExplainableEvidenceCount.Should().Be(0);
+        var evidence = readiness.Controls.RecentEvidence.Should().ContainSingle().Which;
+        evidence.AuditId.Should().Be("audit-risk-missing-context");
+        evidence.IsExplained.Should().BeFalse();
+        evidence.MissingFields.Should().BeEquivalentTo(["actor", "scope", "reason"]);
+        readiness.Controls.ExplainabilityWarnings.Should().ContainSingle(warning =>
+            warning.Contains("OrderRejected", StringComparison.OrdinalIgnoreCase) &&
+            warning.Contains("actor, scope, reason", StringComparison.OrdinalIgnoreCase));
+
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "audit-controls" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.AuditReference == "audit-risk-missing-context");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "execution-evidence-incomplete" &&
+            item.Kind == OperatorWorkItemKindDto.ExecutionControl &&
+            item.AuditReference == "audit-risk-missing-context" &&
+            item.Detail.Contains("actor, scope, reason", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadinessWithoutRegisteredReadinessService_ShouldUseSharedReadinessBuilder()
+    {
+        await using var app = await CreateAppAsync();
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readiness.AcceptanceGates
+            .Select(static gate => gate.GateId)
+            .Should()
+            .Equal("session", "replay", "audit-controls", "promotion", "dk1-trust");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "paper-session-missing" &&
+            item.Label == "No active paper session" &&
+            item.Tone == OperatorWorkItemToneDto.Critical);
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == "promotion-decision-missing" &&
+            item.Label == "Promotion decision required");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldProjectTradingReadinessWorkItemsWithNavigation()
+    {
+        await using var app = await CreateAppAsync();
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.CriticalCount.Should().BeGreaterThanOrEqualTo(1);
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
+        inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == "paper-session-missing" &&
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Workspace == "Trading" &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+        inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == "promotion-decision-missing" &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeRunReviewPacketWorkItems()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runId = $"run-inbox-review-packet-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(runId));
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+        var reviewItem = inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview).Which;
+
+        reviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
+        reviewItem.Workspace.Should().Be("Trading");
+        reviewItem.RunId.Should().Be(runId);
+        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal));
+        reviewItem.TargetPageTag.Should().Be("TradingShell");
+        inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WithFundAccountId_ShouldProjectBrokerageSyncWorkItem()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-inbox", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            var status = await brokerageSync.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Failed);
+
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(brokerageSync);
+            });
+
+            var inbox = await app
+                .GetTestClient()
+                .GetFromJsonAsync<OperatorInboxDto>(
+                    $"/api/workstation/operator/inbox?fundAccountId={fundAccountId:D}",
+                    ServerJsonOptions);
+
+            inbox.Should().NotBeNull();
+            var syncItem = inbox!.Items.Should()
+                .ContainSingle(item =>
+                    item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                    item.FundAccountId == fundAccountId)
+                .Which;
+            syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
+            syncItem.Workspace.Should().Be("Trading");
+            syncItem.TargetRoute.Should().Be(UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+            syncItem.TargetPageTag.Should().Be("AccountPortfolio");
+            syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-break-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.RunId == runId &&
+            item.Workspace == "Governance");
+        var breakItem = inbox.Items.First(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.RunId == runId &&
+            item.Workspace == "Governance");
+        breakItem.WorkItemId.Should().StartWith("reconciliation-break-");
+        breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
+        breakItem.TargetPageTag.Should().Be("GovernanceShell");
+        breakItem.Detail.Should().Contain("The break is open");
+        breakItem.Detail.Should().Contain("Exception route:");
+        breakItem.Detail.Should().Contain("sign-off");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeInReviewReconciliationBreaks()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-review-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+        var review = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating the mismatch."));
+        review.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+            "/api/workstation/operator/inbox",
+            ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        var breakItem = inbox!.Items.First(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.AuditReference == breakId);
+        breakItem.Label.Should().Be("Reconciliation break in review");
+        breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
+        breakItem.TargetPageTag.Should().Be("GovernanceShell");
+        breakItem.Detail.Should().Contain("The break is in review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WhenBreakQueueUnavailable_ShouldReturnTradingReadinessWithWarning()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(
+                new ThrowingReconciliationBreakQueueRepository());
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item =>
+            item.WorkItemId == "paper-session-missing" &&
+            item.TargetPageTag == "TradingShell");
+        inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == "reconciliation-break-queue-unavailable" &&
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.Workspace == "Governance" &&
+            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
+            item.TargetPageTag == "GovernanceShell");
+        inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WithSignedOperatorPacket_ShouldExposeOwnerEvidence()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-signed-packet",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(
+            automationRoot,
+            """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "signed",
+              "requiredBeforeDk1Exit": true,
+              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "missingOwners": [],
+              "completedAtUtc": "2026-04-26T16:02:00Z",
+              "sourcePath": "artifacts/provider-validation/_automation/unit-ready/dk1-operator-signoff.json",
+              "approvals": [
+                {
+                  "owner": "Data Operations",
+                  "signedBy": "data.ops",
+                  "signedAtUtc": "2026-04-26T15:58:00Z",
+                  "decision": "approved",
+                  "rationale": "Provider packet reviewed."
+                },
+                {
+                  "owner": "Provider Reliability",
+                  "signedBy": "provider.reliability",
+                  "signedAtUtc": "2026-04-26T16:00:00Z",
+                  "decision": "approved",
+                  "rationale": "Threshold and evidence checks accepted."
+                },
+                {
+                  "owner": "Trading",
+                  "signedBy": "trading.owner",
+                  "signedAtUtc": "2026-04-26T16:02:00Z",
+                  "decision": "approved",
+                  "rationale": "Cockpit readiness gate accepted."
+                }
+              ]
+            }
+            """);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.OperatorSignoffStatus.Should().Be("signed");
+        readiness.OperatorSignoff.Should().NotBeNull();
+        readiness.OperatorSignoff!.SignedOwners.Should().BeEquivalentTo(
+            ["Data Operations", "Provider Reliability", "Trading"]);
+        readiness.OperatorSignoff.MissingOwners.Should().BeEmpty();
+        readiness.OperatorSignoff.CompletedAt.Should().Be(new DateTimeOffset(2026, 4, 26, 16, 2, 0, TimeSpan.Zero));
+        readiness.Detail.Should().Contain("operator sign-off is complete");
+        readiness.Detail.Should().Contain("explainability validated").And.Contain("calibration validated");
+        readiness.Blockers.Should().BeEmpty();
+        readiness.TrustRationaleContract.Should().NotBeNull();
+        readiness.TrustRationaleContract!.Status.Should().Be("validated");
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WithLegacyPacketWithoutContracts_ShouldBlockReview()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-legacy-packet",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(automationRoot, includeContractReview: false);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.ReadyForOperatorReview.Should().BeTrue();
+        readiness.Blockers.Should().Contain("DK1 explainability contract is missing from the parity packet.");
+        readiness.Blockers.Should().Contain("DK1 calibration contract is missing from the parity packet.");
+        readiness.Detail.Should().Contain("explainability contract is missing");
+        readiness.TrustRationaleContract.Should().BeNull();
+        readiness.BaselineThresholdContract.Should().BeNull();
     }
 
     [Fact]
@@ -560,6 +1518,121 @@ public sealed class WorkstationEndpointsTests
         queue!.Should().Contain(item =>
             item.RunId == runId &&
             reconciliation!.Breaks.Any(reconciliationBreak => item.BreakId == $"{runId}:{reconciliationBreak.CheckId}"));
+        queue.Should().Contain(item =>
+            item.RunId == runId &&
+            !string.IsNullOrWhiteSpace(item.ExceptionRoute) &&
+            !string.IsNullOrWhiteSpace(item.ToleranceProfileId) &&
+            !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) &&
+            !string.IsNullOrWhiteSpace(item.SignoffStatus));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCalibrationSummary_ShouldAggregateToleranceProfiles()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-calibration-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var summary = await app
+            .GetTestClient()
+            .GetFromJsonAsync<ReconciliationCalibrationSummaryDto>(
+                UiApiRoutes.ReconciliationCalibrationSummary,
+                ServerJsonOptions);
+
+        summary.Should().NotBeNull();
+        summary!.TotalBreakCount.Should().BeGreaterThan(0);
+        summary.ActiveBreakCount.Should().BeGreaterThan(0);
+        summary.PendingSignoffCount.Should().BeGreaterThan(0);
+        summary.MissingCalibrationMetadataCount.Should().Be(0);
+        summary.Status.Should().BeOneOf(
+            ReconciliationCalibrationStatusDto.ReviewRequired,
+            ReconciliationCalibrationStatusDto.Blocked);
+        summary.Profiles.Should().Contain(profile =>
+            !string.IsNullOrWhiteSpace(profile.ToleranceProfileId) &&
+            !string.IsNullOrWhiteSpace(profile.ExceptionRoute) &&
+            profile.TotalBreakCount > 0 &&
+            profile.PendingSignoffCount > 0);
+        summary.Summary.Should().Contain("reconciliation");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCalibrationSummary_AfterResolution_ShouldMarkReadyForSignoff()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-calibration-resolved-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var client = app.GetTestClient();
+        var queue = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+        queue.Should().NotBeNull();
+        queue.Should().NotBeEmpty();
+
+        foreach (var item in queue!)
+        {
+            if (item.Status == ReconciliationBreakQueueStatus.Open)
+            {
+                var review = await client.PostAsJsonAsync(
+                    UiApiRoutes.ReconciliationBreakReview.Replace("{breakId}", item.BreakId, StringComparison.Ordinal),
+                    new ReviewReconciliationBreakRequest(
+                        BreakId: item.BreakId,
+                        AssignedTo: "ops-review",
+                        ReviewedBy: "qa-review",
+                        ReviewNote: "Calibration review completed."));
+                review.StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+
+            var resolve = await client.PostAsJsonAsync(
+                UiApiRoutes.ReconciliationBreakResolve.Replace("{breakId}", item.BreakId, StringComparison.Ordinal),
+                new ResolveReconciliationBreakRequest(
+                    BreakId: item.BreakId,
+                    Status: ReconciliationBreakQueueStatus.Resolved,
+                    ResolvedBy: "qa-resolve",
+                    ResolutionNote: "Tolerance profile accepted for sign-off."));
+            resolve.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        var summary = await client.GetFromJsonAsync<ReconciliationCalibrationSummaryDto>(
+            UiApiRoutes.ReconciliationCalibrationSummary,
+            ServerJsonOptions);
+
+        summary.Should().NotBeNull();
+        summary!.Status.Should().Be(ReconciliationCalibrationStatusDto.Ready);
+        summary.ActiveBreakCount.Should().Be(0);
+        summary.OpenBreakCount.Should().Be(0);
+        summary.InReviewBreakCount.Should().Be(0);
+        summary.PendingSignoffCount.Should().Be(0);
+        summary.CriticalOpenBreakCount.Should().Be(0);
+        summary.SignedOffCount.Should().Be(summary.TotalBreakCount);
+        summary.Profiles.Should().OnlyContain(profile => profile.PendingSignoffCount == 0);
+        summary.Summary.Should().Contain("ready for governance sign-off");
     }
 
     [Fact]
@@ -598,6 +1671,64 @@ public sealed class WorkstationEndpointsTests
         updated!.RunId.Should().Be(runId);
         updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         updated.AssignedTo.Should().Be("ops-review");
+        updated.SignoffStatus.Should().Be("in-review");
+        updated.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueResolveRoute_ShouldRequireReviewBeforeResolve()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-resolve-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+
+        var invalidResolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Skipping review should fail."));
+        invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var review = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating."));
+        review.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Issue resolved."));
+        resolve.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        resolved.Should().NotBeNull();
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved.ResolvedBy.Should().Be("qa-resolve");
+        resolved.SignoffStatus.Should().Be("signed-off");
     }
 
     [Fact]
@@ -662,6 +1793,59 @@ public sealed class WorkstationEndpointsTests
 
         var client = app.GetTestClient();
         var response = await client.GetAsync("/api/workstation/runs/no-such-run/continuity");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunReviewPacket_ShouldReturnStableActionableWorkItems()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runId = $"run-review-packet-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(runId));
+
+        var client = app.GetTestClient();
+        var first = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>(
+            $"/api/workstation/runs/{runId}/review-packet",
+            ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>(
+            $"/api/workstation/runs/{runId}/review-packet",
+            ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.WorkItems.Should().NotBeEmpty();
+        first.WorkItems.Select(static item => item.WorkItemId)
+            .Should()
+            .Equal(second!.WorkItems.Select(static item => item.WorkItemId));
+        first.WorkItems.Should().OnlyContain(static item =>
+            !string.IsNullOrWhiteSpace(item.Workspace) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute) &&
+            !string.IsNullOrWhiteSpace(item.TargetPageTag));
+        first.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+            item.Workspace == "Trading" &&
+            item.TargetRoute == UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal) &&
+            item.TargetPageTag == "TradingShell");
+        first.WorkItems.Should().NotContain(static item =>
+            item.WorkItemId.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunReviewPacket_ShouldReturnNotFoundForMissingRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/runs/no-such-run/review-packet");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -793,6 +1977,299 @@ public sealed class WorkstationEndpointsTests
         var client = app.GetTestClient();
         var response = await client.GetAsync($"/api/workstation/security-master/securities/{Guid.NewGuid()}/history");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnTypedWinningSourceProvenance()
+    {
+        var securityId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL"),
+            CreateSecurityDetail(securityId, "Apple Inc.", "AAPL"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Apple Inc.",
+                "AAPL",
+                JsonSerializer.SerializeToElement(new
+                {
+                    sourceSystem = "golden-edm",
+                    sourceRecordId = "EDM-123",
+                    asOf = "2026-04-20T09:30:00Z",
+                    updatedBy = "workflow.bot",
+                    reason = "golden-copy"
+                })));
+        queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.EconomicDefinition.WinningSourceSystem.Should().Be("golden-edm");
+        snapshot.EconomicDefinition.WinningSourceRecordId.Should().Be("EDM-123");
+        snapshot.EconomicDefinition.WinningSourceUpdatedBy.Should().Be("workflow.bot");
+        snapshot.ProvenanceCandidates.Should().ContainSingle(candidate =>
+            candidate.IsWinningSource &&
+            candidate.SourceSystem == "golden-edm" &&
+            candidate.SourceRecordId == "EDM-123");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnOnlySelectedSecurityChallengers()
+    {
+        var selectedSecurityId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+        var otherSecurityId = Guid.Parse("88888888-8888-8888-8888-888888888888");
+        var selectedConflictId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(selectedSecurityId, "Apple Inc.", "AAPL"),
+            CreateSecurityDetail(selectedSecurityId, "Apple Inc.", "AAPL"));
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(otherSecurityId, "Microsoft Corp.", "MSFT"),
+            CreateSecurityDetail(otherSecurityId, "Microsoft Corp.", "MSFT"));
+        queryService.RegisterEconomicDefinition(
+            selectedSecurityId,
+            CreateEconomicDefinitionRecord(
+                selectedSecurityId,
+                "Apple Inc.",
+                "AAPL",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflicts = new[]
+        {
+            new SecurityMasterConflict(
+                ConflictId: selectedConflictId,
+                SecurityId: selectedSecurityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "AAPL",
+                ProviderB: "vendor-b",
+                ValueB: "AAPL.O",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 10, 0, 0, TimeSpan.Zero),
+                Status: "Open"),
+            new SecurityMasterConflict(
+                ConflictId: Guid.Parse("aaaaaaaa-1111-1111-1111-111111111111"),
+                SecurityId: otherSecurityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "MSFT",
+                ProviderB: "vendor-c",
+                ValueB: "MSFT.O",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 11, 0, 0, TimeSpan.Zero),
+                Status: "Open")
+        };
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService(conflicts));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{selectedSecurityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.ConflictAssessments.Should().ContainSingle();
+        snapshot.ProvenanceCandidates.Count(candidate => !candidate.IsWinningSource).Should().Be(1);
+        snapshot.ProvenanceCandidates.Should().OnlyContain(candidate =>
+            candidate.IsWinningSource || candidate.ConflictId == selectedConflictId);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldPreserveWinnerByDefault()
+    {
+        var securityId = Guid.Parse("bbbbbbbb-1111-1111-1111-111111111111");
+        var conflictId = Guid.Parse("bbbbbbbb-2222-2222-2222-222222222222");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL US"),
+            CreateSecurityDetail(securityId, "Apple Inc.", "AAPL US"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Apple Inc.",
+                "AAPL US",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflict = new SecurityMasterConflict(
+            ConflictId: conflictId,
+            SecurityId: securityId,
+            ConflictKind: "IdentifierMismatch",
+            FieldPath: "Identifiers.Primary",
+            ProviderA: "golden-edm",
+            ValueA: "AAPL US",
+            ProviderB: "vendor-b",
+            ValueB: "AAPL UW",
+            DetectedAt: new DateTimeOffset(2026, 4, 20, 12, 0, 0, TimeSpan.Zero),
+            Status: "Open");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([conflict]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=fund-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.ConflictAssessments.Should().ContainSingle();
+        snapshot.ConflictAssessments[0].Recommendation.Should().Be(SecurityMasterConflictRecommendationKind.PreserveWinner);
+        snapshot.ConflictAssessments[0].RecommendedResolution.Should().Be("AcceptA");
+        snapshot.ConflictAssessments[0].RecommendedWinner.Should().Contain("Preserve golden-edm");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldDismissEquivalentNormalizedValues()
+    {
+        var securityId = Guid.Parse("cccccccc-1111-1111-1111-111111111111");
+        var conflictId = Guid.Parse("cccccccc-2222-2222-2222-222222222222");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Berkshire Hathaway", "BRK-B"),
+            CreateSecurityDetail(securityId, "Berkshire Hathaway", "BRK-B"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Berkshire Hathaway",
+                "BRK-B",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflict = new SecurityMasterConflict(
+            ConflictId: conflictId,
+            SecurityId: securityId,
+            ConflictKind: "IdentifierMismatch",
+            FieldPath: "Identifiers.Primary",
+            ProviderA: "golden-edm",
+            ValueA: "BRK-B",
+            ProviderB: "vendor-b",
+            ValueB: "BRK/B",
+            DetectedAt: new DateTimeOffset(2026, 4, 20, 12, 30, 0, TimeSpan.Zero),
+            Status: "Open");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([conflict]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=fund-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.ConflictAssessments.Should().ContainSingle();
+        snapshot.ConflictAssessments[0].Recommendation.Should().Be(SecurityMasterConflictRecommendationKind.DismissAsEquivalent);
+        snapshot.ConflictAssessments[0].RecommendedResolution.Should().Be("Dismiss");
+        snapshot.ConflictAssessments[0].IsBulkEligible.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterBulkResolve_ShouldResolveOnlyEligibleConflicts()
+    {
+        var securityId = Guid.Parse("dddddddd-1111-1111-1111-111111111111");
+        var equivalentConflictId = Guid.Parse("dddddddd-2222-2222-2222-222222222222");
+        var blankWinnerConflictId = Guid.Parse("dddddddd-3333-3333-3333-333333333333");
+        var skippedConflictId = Guid.Parse("dddddddd-4444-4444-4444-444444444444");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "BRK-B"),
+            CreateSecurityDetail(securityId, string.Empty, "BRK-B"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                string.Empty,
+                "BRK-B",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflictService = new StubSecurityMasterConflictService(
+        [
+            new SecurityMasterConflict(
+                ConflictId: equivalentConflictId,
+                SecurityId: securityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "BRK-B",
+                ProviderB: "vendor-b",
+                ValueB: "BRK/B",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 13, 0, 0, TimeSpan.Zero),
+                Status: "Open"),
+            new SecurityMasterConflict(
+                ConflictId: blankWinnerConflictId,
+                SecurityId: securityId,
+                ConflictKind: "FieldMismatch",
+                FieldPath: "DisplayName",
+                ProviderA: "golden-edm",
+                ValueA: "",
+                ProviderB: "vendor-b",
+                ValueB: "Apple Inc.",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 13, 5, 0, TimeSpan.Zero),
+                Status: "Open"),
+            new SecurityMasterConflict(
+                ConflictId: skippedConflictId,
+                SecurityId: securityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "BRK-B",
+                ProviderB: "vendor-b",
+                ValueB: "MSFT",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 13, 10, 0, TimeSpan.Zero),
+                Status: "Open")
+        ]);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, conflictService);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/security-master/conflicts/bulk-resolve",
+            new BulkResolveSecurityMasterConflictsRequest(
+                ConflictIds: [equivalentConflictId, blankWinnerConflictId, skippedConflictId],
+                ResolvedBy: "desktop-user",
+                Reason: "bulk assist",
+                FundProfileId: "fund-alpha"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<BulkResolveSecurityMasterConflictsResult>(ServerJsonOptions);
+
+        result.Should().NotBeNull();
+        result!.Requested.Should().Be(3);
+        result.Eligible.Should().Be(2);
+        result.Resolved.Should().Be(2);
+        result.Skipped.Should().Be(1);
+        result.ResolvedConflictIds.Should().Contain([equivalentConflictId, blankWinnerConflictId]);
+        result.SkippedReasons.Should().ContainKey(skippedConflictId);
+        conflictService.ResolvedRequests.Select(request => request.ConflictId)
+            .Should()
+            .Contain([equivalentConflictId, blankWinnerConflictId]);
     }
 
     [Fact]
@@ -977,6 +2454,10 @@ public sealed class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
 
         var app = builder.Build();
         app.MapWorkstationEndpoints(new JsonSerializerOptions
@@ -997,10 +2478,468 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
         services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         services.AddSingleton<ReconciliationProjectionService>();
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
+        services.AddSingleton<StrategyRunReviewPacketService>();
+        services.AddSingleton<WorkstationWorkflowSummaryService>();
+    }
+
+    private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
+    {
+        services.AddSingleton<BacktestToLivePromoter>();
+        services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
+            promotionRoot,
+            NullLogger<JsonlPromotionRecordStore>.Instance));
+        services.AddSingleton<PromotionService>(sp => new PromotionService(
+            sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<BacktestToLivePromoter>(),
+            sp.GetRequiredService<IPromotionRecordStore>(),
+            NullLogger<PromotionService>.Instance));
+    }
+
+    private static BrokeragePortfolioSyncService CreateFailedBrokerageSyncService(string root)
+        => new(
+            new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
+            catalogs: [],
+            portfolioAdapters: [new ThrowingPortfolioAdapter("alpaca", "Alpaca credentials are missing.")],
+            activityAdapters: [new ThrowingActivityAdapter("alpaca", "Alpaca credentials are missing.")],
+            services: new ServiceCollection().BuildServiceProvider(),
+            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
+
+    private sealed class ThrowingPortfolioAdapter(string providerId, string message) : IBrokeragePortfolioSync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException(message);
+        }
+    }
+
+    private sealed class ThrowingActivityAdapter(string providerId, string message) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException(message);
+        }
+    }
+
+    private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
+    {
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<ReconciliationBreakQueueItem?> GetByIdAsync(string breakId, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<bool> CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<bool> DeleteAsync(string breakId, CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(
+            ReviewReconciliationBreakRequest request,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(
+            ResolveReconciliationBreakRequest request,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(
+            string breakId,
+            CancellationToken ct = default)
+            => throw new IOException("Simulated break queue storage failure.");
+    }
+
+    private static void WriteReadyDk1Packet(
+        string automationRoot,
+        string? operatorSignoffJson = null,
+        bool includeContractReview = true)
+    {
+        var packetDirectory = Path.Combine(automationRoot, "unit-ready");
+        Directory.CreateDirectory(packetDirectory);
+        operatorSignoffJson ??= """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "pending",
+              "requiredBeforeDk1Exit": true
+            }
+            """;
+        File.WriteAllText(
+            Path.Combine(packetDirectory, "dk1-pilot-parity-packet.json"),
+            """
+            {
+              "generatedAtUtc": "2026-04-25T20:28:38Z",
+              "sourceSummary": "artifacts/provider-validation/_automation/unit-ready/wave1-validation-summary.json",
+              "status": "ready-for-operator-review",
+              "sampleReview": {
+                "requiredCount": 4,
+                "samples": [
+                  {
+                    "id": "DK1-ALPACA-QUOTE-GOLDEN",
+                    "provider": "Alpaca",
+                    "requiredStep": "Alpaca core provider confidence",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json",
+                      "AlpacaQuotePipelineGoldenTests"
+                    ],
+                    "acceptanceCheck": "Golden quote pipeline fixture matched the committed output."
+                  },
+                  {
+                    "id": "DK1-ALPACA-PARSER-EDGE-CASES",
+                    "provider": "Alpaca",
+                    "requiredStep": "Alpaca core provider confidence",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "AlpacaMessageParsingTests",
+                      "AlpacaQuoteRoutingTests",
+                      "AlpacaCredentialAndReconnectTests"
+                    ],
+                    "acceptanceCheck": "Parser edge cases preserved routing and reconnect behavior."
+                  },
+                  {
+                    "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE",
+                    "provider": "Robinhood",
+                    "requiredStep": "Robinhood supported surface",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "RobinhoodMarketDataClientTests",
+                      "RobinhoodBrokerageGatewayTests",
+                      "artifacts/provider-validation/robinhood/2026-04-09/manifest.json"
+                    ],
+                    "acceptanceCheck": "Bounded runtime packet and offline provider surface remain aligned."
+                  },
+                  {
+                    "id": "DK1-YAHOO-HISTORICAL-FALLBACK",
+                    "provider": "Yahoo",
+                    "requiredStep": "Yahoo historical-only core provider",
+                    "stepStatus": "passed",
+                    "observed": true,
+                    "status": "ready",
+                    "missingRequirements": [],
+                    "evidenceAnchors": [
+                      "YahooFinanceHistoricalDataProviderTests",
+                      "YahooFinanceIntradayContractTests"
+                    ],
+                    "acceptanceCheck": "Historical fallback fixtures remain stable without implying live readiness."
+                  }
+                ]
+              },
+              "evidenceDocuments": [
+                { "name": "DK1 pilot parity runbook", "gate": "parity", "path": "docs/status/dk1-pilot-parity-runbook.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 trust rationale mapping", "gate": "explainability", "path": "docs/status/dk1-trust-rationale-mapping.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "DK1 baseline trust thresholds", "gate": "calibration", "path": "docs/status/dk1-baseline-trust-thresholds.md", "exists": true, "status": "validated", "missingRequirements": [] },
+                { "name": "Provider validation matrix", "gate": "parity", "path": "docs/status/provider-validation-matrix.md", "exists": true, "status": "validated", "missingRequirements": [] }
+              ],
+              __CONTRACT_REVIEW__
+              "operatorSignoff": __OPERATOR_SIGNOFF__,
+              "blockers": []
+            }
+            """
+            .Replace("__CONTRACT_REVIEW__", includeContractReview
+                ? """
+                  "trustRationaleContract": {
+                    "documentPath": "docs/status/dk1-trust-rationale-mapping.md",
+                    "requiredPayloadFields": [ "signalSource", "reasonCode", "recommendedAction" ],
+                    "requiredReasonCodes": [
+                      "HEALTHY_BASELINE",
+                      "PROVIDER_STREAM_DEGRADED",
+                      "RECONNECT_INSTABILITY",
+                      "ERROR_RATE_SPIKE",
+                      "LATENCY_REGRESSION",
+                      "PARITY_DRIFT_DETECTED",
+                      "DATA_COMPLETENESS_GAP",
+                      "CALIBRATION_STALE"
+                    ],
+                    "status": "validated",
+                    "missingRequirements": []
+                  },
+                  "baselineThresholdContract": {
+                    "documentPath": "docs/status/dk1-baseline-trust-thresholds.md",
+                    "requiredMetrics": [
+                      "Composite trust score",
+                      "Connection stability score",
+                      "Error-rate score",
+                      "Latency score",
+                      "Reconnect score"
+                    ],
+                    "fpFnReviewRequired": true,
+                    "status": "validated",
+                    "missingRequirements": []
+                  },
+                """
+                : string.Empty)
+            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
+    }
+
+    private static void RegisterSecurityMasterWorkbenchServices(
+        IServiceCollection services,
+        StubSecurityMasterQueryService queryService,
+        StubSecurityMasterConflictService conflictService)
+    {
+        services.AddSingleton<ISecurityMasterQueryService>(queryService);
+        services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(queryService);
+        services.AddSingleton<ISecurityMasterConflictService>(conflictService);
+        services.AddSingleton<ISecurityMasterIngestStatusService>(new StubSecurityMasterIngestStatusService());
+        RegisterRunReadServices(services);
+        services.AddSingleton<ReportGenerationService>();
+        services.AddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+    }
+
+    private static SecuritySummaryDto CreateSecuritySummary(Guid securityId, string displayName, string primaryIdentifier)
+        => new(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            PrimaryIdentifier: primaryIdentifier,
+            Currency: "USD",
+            Version: 4);
+
+    private static SecurityDetailDto CreateSecurityDetail(Guid securityId, string displayName, string primaryIdentifier)
+        => new(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            Currency: "USD",
+            CommonTerms: CreateEmptyJson(),
+            AssetSpecificTerms: CreateEmptyJson(),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    primaryIdentifier,
+                    true,
+                    new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+                    null,
+                    null)
+            ],
+            Aliases: [],
+            Version: 4,
+            EffectiveFrom: new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null);
+
+    private static SecurityEconomicDefinitionRecord CreateEconomicDefinitionRecord(
+        Guid securityId,
+        string displayName,
+        string primaryIdentifier,
+        JsonElement provenance)
+        => new(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            AssetFamily: "Public Equity",
+            SubType: "CommonStock",
+            TypeName: "Common Stock",
+            IssuerType: "Corporate",
+            RiskCountry: "US",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            Currency: "USD",
+            Classification: CreateEmptyJson(),
+            CommonTerms: CreateEmptyJson(),
+            EconomicTerms: CreateEmptyJson(),
+            Provenance: provenance,
+            Version: 4,
+            EffectiveFrom: new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    primaryIdentifier,
+                    true,
+                    new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+                    null,
+                    null)
+            ],
+            LegacyAssetClass: null,
+            LegacyAssetSpecificTerms: null);
+
+    private static TradingParametersDto CreateTradingParameters(Guid securityId)
+        => new(
+            SecurityId: securityId,
+            LotSize: 1m,
+            TickSize: 0.01m,
+            ContractMultiplier: null,
+            MarginRequirementPct: null,
+            TradingHoursUtc: "13:30-20:00",
+            CircuitBreakerThresholdPct: null,
+            AsOf: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero));
+
+    private static OrderState CreateExecutionOrderState(string orderId, string symbol, decimal quantity) => new()
+    {
+        OrderId = orderId,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        Type = Meridian.Execution.Sdk.OrderType.Market,
+        Quantity = quantity,
+        Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+        CreatedAt = DateTimeOffset.UtcNow,
+        LastUpdatedAt = DateTimeOffset.UtcNow
+    };
+
+    private static ExecutionReport CreateExecutionFill(string orderId, string symbol, decimal quantity, decimal fillPrice) => new()
+    {
+        OrderId = orderId,
+        ReportType = ExecutionReportType.Fill,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+        OrderQuantity = quantity,
+        FilledQuantity = quantity,
+        FillPrice = fillPrice,
+        Timestamp = DateTimeOffset.UtcNow
+    };
+
+    private static JsonElement CreateEmptyJson()
+        => JsonDocument.Parse("{}").RootElement.Clone();
+
+    private static KernelObservabilityService CreateRecoveredKernelObservability()
+    {
+        var observability = new KernelObservabilityService();
+
+        for (var index = 0; index < 30; index++)
+        {
+            var context = new ProviderRouteContext(
+                ProviderCapabilityKind.HistoricalBars,
+                Workspace: "data-ops",
+                Symbol: $"baseline-{index}");
+            RecordKernelObservation(
+                observability,
+                context,
+                BuildKernelSuccessResult(context, "route-steady", ["healthy-route"]),
+                score: 96);
+        }
+
+        for (var index = 0; index < 30; index++)
+        {
+            var context = new ProviderRouteContext(
+                ProviderCapabilityKind.HistoricalBars,
+                Workspace: "data-ops",
+                Symbol: $"critical-{index}");
+            RecordKernelObservation(
+                observability,
+                context,
+                BuildKernelCriticalResult(context, "route-review", ["manual-review"]),
+                score: 12);
+        }
+
+        for (var index = 0; index < 30; index++)
+        {
+            var context = new ProviderRouteContext(
+                ProviderCapabilityKind.HistoricalBars,
+                Workspace: "data-ops",
+                Symbol: $"recovery-{index}");
+            RecordKernelObservation(
+                observability,
+                context,
+                BuildKernelSuccessResult(context, "route-steady", ["healthy-route"]),
+                score: 97);
+        }
+
+        return observability;
+    }
+
+    private static void RecordKernelObservation(
+        KernelObservabilityService observability,
+        ProviderRouteContext context,
+        ProviderRouteResult result,
+        double score)
+    {
+        var scope = observability.BeginExecution(context);
+        var healthByConnection = result.SelectedDecision is null
+            ? new Dictionary<string, ProviderConnectionHealthSnapshot>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, ProviderConnectionHealthSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [result.SelectedDecision.ConnectionId] = new(
+                    result.SelectedDecision.ConnectionId,
+                    result.SelectedDecision.ProviderFamilyId,
+                    result.SelectedDecision.IsHealthy,
+                    result.SelectedDecision.IsHealthy ? "healthy" : "degraded",
+                    score,
+                    DateTimeOffset.UtcNow)
+            };
+
+        observability.RecordResult(context, result, healthByConnection, scope);
+    }
+
+    private static ProviderRouteResult BuildKernelSuccessResult(
+        ProviderRouteContext context,
+        string connectionId,
+        IReadOnlyList<string>? reasonCodes = null)
+    {
+        var selected = new ProviderRouteDecision(
+            connectionId,
+            "alpha",
+            context.Capability,
+            ProviderSafetyMode.HealthAwareFailover,
+            ScopeRank: 0,
+            Priority: 0,
+            IsHealthy: true,
+            ReasonCodes: reasonCodes ?? [],
+            FallbackConnectionIds: []);
+
+        return new ProviderRouteResult(
+            context,
+            selected,
+            Candidates: [selected],
+            SkippedCandidates: []);
+    }
+
+    private static ProviderRouteResult BuildKernelCriticalResult(
+        ProviderRouteContext context,
+        string connectionId,
+        IReadOnlyList<string>? reasonCodes = null)
+    {
+        var selected = new ProviderRouteDecision(
+            connectionId,
+            "beta",
+            context.Capability,
+            ProviderSafetyMode.ManualApprovalRequired,
+            ScopeRank: 0,
+            Priority: 0,
+            IsHealthy: true,
+            ReasonCodes: reasonCodes ?? [],
+            FallbackConnectionIds: []);
+
+        return new ProviderRouteResult(
+            context,
+            selected,
+            Candidates: [selected],
+            SkippedCandidates: [],
+            RequiresManualApproval: true);
     }
 
     private static string CamelCase(string propertyName) => JsonNamingPolicy.CamelCase.ConvertName(propertyName);
@@ -1012,6 +2951,19 @@ public sealed class WorkstationEndpointsTests
         var stream = await response.Content.ReadAsStreamAsync();
         return await JsonDocument.ParseAsync(stream);
     }
+
+    private static async Task<OperatorWorkflowHomeSummary> ReadWorkflowSummaryAsync(HttpClient client, string path)
+    {
+        var response = await client.GetAsync(path, HttpCompletionOption.ResponseHeadersRead);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+        return summary!;
+    }
+
+    private static WorkspaceWorkflowSummary GetWorkspace(OperatorWorkflowHomeSummary summary, string workspaceId)
+        => summary.Workspaces.Single(workspace =>
+            string.Equals(workspace.WorkspaceId, workspaceId, StringComparison.OrdinalIgnoreCase));
 
     private static StrategyRunEntry BuildRun(
         string runId,
@@ -1032,6 +2984,116 @@ public sealed class WorkstationEndpointsTests
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
             LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
             AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static StrategyRunEntry BuildActivePaperRun(string runId, bool withBreaks)
+    {
+        if (withBreaks)
+        {
+            var mismatched = BuildReconciliationMismatchRun(runId);
+            return mismatched with
+            {
+                RunType = RunType.Paper,
+                EndedAt = mismatched.EndedAt,
+                Engine = "BrokerPaper",
+                TerminalStatus = StrategyRunStatus.Running,
+                ParentRunId = "workflow-backtest-candidate",
+                FundProfileId = "northwind-income",
+                FundDisplayName = "Northwind Income",
+                AuditReference = $"audit-{runId}"
+            };
+        }
+
+        var startedAt = new DateTimeOffset(2026, 3, 22, 14, 0, 0, TimeSpan.Zero);
+        var portfolioAsOf = startedAt.AddMinutes(30);
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m)
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: BacktestDefaults.DefaultBrokerageAccountId,
+            DisplayName: "Primary Brokerage",
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Simulated Broker",
+            Cash: 600m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: 0m,
+            Equity: 1_000m,
+            Positions: positions,
+            Rules: new FinancialAccountRules());
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: portfolioAsOf,
+            Date: DateOnly.FromDateTime(portfolioAsOf.UtcDateTime),
+            Cash: 600m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: 0m,
+            TotalEquity: 1_000m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_000m,
+            FinalEquity: 1_000m,
+            GrossPnl: 0m,
+            NetPnl: 0m,
+            TotalReturn: 0m,
+            AnnualizedReturn: 0m,
+            SharpeRatio: 0d,
+            SortinoRatio: 0d,
+            CalmarRatio: 0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 1,
+            WinningTrades: 1,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+        var result = new BacktestResult(
+            Request: new BacktestRequest(
+                From: new DateOnly(2026, 3, 21),
+                To: new DateOnly(2026, 3, 22),
+                Symbols: ["AAPL"],
+                InitialCash: 1_000m,
+                DataRoot: "./data"),
+            Universe: new HashSet<string>(["AAPL"], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: CreateWorkflowBalancedLedger(startedAt, portfolioAsOf),
+            ElapsedTime: TimeSpan.FromMinutes(30),
+            TotalEventsProcessed: 42);
+
+        return StrategyRunEntry.Start("workflow-paper-strategy", "Workflow Paper Strategy", RunType.Paper) with
+        {
+            RunId = runId,
+            StartedAt = startedAt,
+            EndedAt = portfolioAsOf,
+            Metrics = result,
+            DatasetReference = "dataset/us/equities",
+            FeedReference = "synthetic:equities",
+            PortfolioId = "workflow-paper-portfolio",
+            LedgerReference = "workflow-paper-ledger",
+            AuditReference = $"audit-{runId}",
+            Engine = "BrokerPaper",
+            TerminalStatus = StrategyRunStatus.Running,
+            ParentRunId = "workflow-backtest-candidate",
+            FundProfileId = "northwind-income",
+            FundDisplayName = "Northwind Income"
         };
     }
 
@@ -1360,6 +3422,7 @@ public sealed class WorkstationEndpointsTests
                 ExpectedAmount: 100m + index,
                 ActualAmount: 95m + index,
                 Variance: 5m,
+                Severity: ReconciliationBreakSeverity.Medium,
                 Reason: "Seeded mismatch for history coverage",
                 ExpectedAsOf: createdAt,
                 ActualAsOf: createdAt))
@@ -1414,6 +3477,24 @@ public sealed class WorkstationEndpointsTests
         [
             (LedgerAccounts.Securities("AAPL"), 350m, 0m),
             (LedgerAccounts.Cash, 0m, 350m)
+        ]);
+        return ledger;
+    }
+
+    private static global::Meridian.Ledger.Ledger CreateWorkflowBalancedLedger(
+        DateTimeOffset startedAt,
+        DateTimeOffset portfolioAsOf)
+    {
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, startedAt, "Initial capital",
+        [
+            (LedgerAccounts.Cash, 1_000m, 0m),
+            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+        ]);
+        PostBalancedEntry(ledger, portfolioAsOf, "Buy AAPL",
+        [
+            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Cash, 0m, 400m)
         ]);
         return ledger;
     }
@@ -1773,16 +3854,39 @@ public sealed class WorkstationEndpointsTests
         }
     }
 
-    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    private sealed class StubSecurityMasterQueryService :
+        ISecurityMasterQueryService,
+        Meridian.Application.SecurityMaster.ISecurityMasterQueryService
     {
         private readonly Dictionary<Guid, SecurityDetailDto> _details = [];
         private readonly Dictionary<Guid, IReadOnlyList<SecurityMasterEventEnvelope>> _history = [];
+        private readonly Dictionary<Guid, SecurityEconomicDefinitionRecord> _economicDefinitions = [];
+        private readonly Dictionary<Guid, TradingParametersDto> _tradingParameters = [];
+        private readonly Dictionary<Guid, IReadOnlyList<CorporateActionDto>> _corporateActions = [];
         private readonly List<SecuritySummaryDto> _summaries = [];
 
         public void Register(SecuritySummaryDto summary, SecurityDetailDto detail)
+            => RegisterSecurity(summary, detail);
+
+        public void RegisterSecurity(SecuritySummaryDto summary, SecurityDetailDto detail)
         {
             _summaries.Add(summary);
             _details[detail.SecurityId] = detail;
+        }
+
+        public void RegisterEconomicDefinition(Guid securityId, SecurityEconomicDefinitionRecord record)
+        {
+            _economicDefinitions[securityId] = record;
+        }
+
+        public void RegisterTradingParameters(Guid securityId, TradingParametersDto tradingParameters)
+        {
+            _tradingParameters[securityId] = tradingParameters;
+        }
+
+        public void RegisterCorporateActions(Guid securityId, IReadOnlyList<CorporateActionDto> corporateActions)
+        {
+            _corporateActions[securityId] = corporateActions;
         }
 
         public void RegisterHistory(Guid securityId, IReadOnlyList<SecurityMasterEventEnvelope> history)
@@ -1828,17 +3932,84 @@ public sealed class WorkstationEndpointsTests
         }
 
         public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
-            => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+        {
+            _economicDefinitions.TryGetValue(securityId, out var record);
+            return Task.FromResult<SecurityEconomicDefinitionRecord?>(record);
+        }
 
         public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
-            => Task.FromResult<TradingParametersDto?>(null);
+        {
+            _tradingParameters.TryGetValue(securityId, out var tradingParameters);
+            return Task.FromResult<TradingParametersDto?>(tradingParameters);
+        }
 
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+        {
+            if (_corporateActions.TryGetValue(securityId, out var corporateActions))
+            {
+                return Task.FromResult(corporateActions);
+            }
+
+            return Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+        }
 
         public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<PreferredEquityTermsDto?>(null);
         public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<ConvertibleEquityTermsDto?>(null);
+    }
+
+    private sealed class StubSecurityMasterConflictService : ISecurityMasterConflictService
+    {
+        private readonly Dictionary<Guid, SecurityMasterConflict> _conflicts;
+
+        public StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)
+        {
+            _conflicts = conflicts.ToDictionary(conflict => conflict.ConflictId);
+        }
+
+        public List<ResolveConflictRequest> ResolvedRequests { get; } = [];
+
+        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<SecurityMasterConflict>>(
+                _conflicts.Values
+                    .Where(conflict => string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(conflict => conflict.DetectedAt)
+                    .ToArray());
+
+        public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
+        {
+            _conflicts.TryGetValue(conflictId, out var conflict);
+            return Task.FromResult<SecurityMasterConflict?>(conflict);
+        }
+
+        public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
+        {
+            ResolvedRequests.Add(request);
+            if (!_conflicts.TryGetValue(request.ConflictId, out var existing))
+            {
+                return Task.FromResult<SecurityMasterConflict?>(null);
+            }
+
+            var updated = existing with
+            {
+                Status = string.Equals(request.Resolution, "Dismiss", StringComparison.OrdinalIgnoreCase)
+                    ? "Dismissed"
+                    : "Resolved"
+            };
+            _conflicts[request.ConflictId] = updated;
+            return Task.FromResult<SecurityMasterConflict?>(updated);
+        }
+
+        public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+            => Task.CompletedTask;
+    }
+
+    private sealed class StubSecurityMasterIngestStatusService : ISecurityMasterIngestStatusService
+    {
+        public SecurityMasterIngestStatusSnapshot GetSnapshot()
+            => new(
+                ActiveImport: null,
+                LastCompleted: null);
     }
 }

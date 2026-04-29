@@ -1,6 +1,6 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-14
+**Last Updated:** 2026-04-27
 
 ## Summary
 
@@ -14,6 +14,8 @@ This blueprint starts from the current repository state:
 - run-scoped reconciliation contracts, services, and workstation endpoints already exist
 - direct-lending services, migrations, projections, and `/api/loans/*` endpoints already exist as the first deep governance/UFL vertical slice
 - export infrastructure already exists for JSONL, Parquet, Arrow, XLSX, and CSV
+- `/api/workstation/operator/inbox` now includes open and in-review reconciliation breaks with Governance navigation targets, and the WPF shell queue button resolves the primary work item's route metadata into the concrete `FundReconciliation` workbench when applicable
+- `FundAccountsPage` now includes a stateful operator brief that projects fund-context, account-queue, provider-routing, blocked-route, shared-data-access, balance-evidence snapshot posture, and ready-for-reconciliation states from already-loaded account, provider, and balance-history evidence
 
 The design goal is to finish these capabilities without creating a parallel architecture outside Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian credible as a comprehensive front-, middle-, and back-office fund-management platform. Security Master should be treated as a delivered baseline in this blueprint, not as a future foundation wave.
 
@@ -43,15 +45,18 @@ The current repository now includes the first organization-rooted governance str
   - Security Master-driven instrument rule projections for structure-assigned instruments, including coupon/dividend/maturity events sourced from economic definitions and corporate actions without querying position holdings
   - realized-vs-projected variance summaries and per-account contribution breakdowns
   - a shared `/api/fund-structure/cash-flow-view` query path that reuses the F# cash ladder kernel without relying on position holdings
-- A shared governance fund-operations projection now exists for `fundProfileId` scopes through `FundOperationsWorkspaceReadService` plus `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview`, combining:
+- A shared governance fund-operations projection now exists for `fundProfileId` scopes through `FundOperationsWorkspaceReadService` plus `/api/fund-structure/workspace-view`, `/api/fund-structure/report-pack-preview`, and persisted `/api/fund-structure/report-packs` artifact routes, combining:
   - account summaries and bank snapshots sourced from fund-account state
   - cash/financing posture derived from linked runs and balance snapshots
   - fund-ledger journal/trial-balance summaries
+  - optional `selectedLedgerIds` query semantics so empty selections keep the full fund view, populated selections build consolidated-over-selection or scoped drill-ins over that subset, and unknown IDs safely return empty ledger projections
   - reconciliation posture across account and run-scoped seams
-  - NAV attribution and report/export profile preview metadata
+  - NAV attribution, report/export profile preview metadata, and local-first governed report-pack artifacts
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
+- Reconciliation break work items now flow into the shared operator inbox with stable scoped IDs, severity-derived tone, audit references, exception route, tolerance profile/band, required sign-off role, sign-off status, and Governance navigation hints, while WPF resolves the reconciliation route into `FundReconciliation` and preserves the active account context as `fundAccountId` so the queue surface no longer has to infer break posture from one-off page state. `/api/workstation/reconciliation/calibration-summary` now aggregates the same break metadata into Ready/ReviewRequired/Blocked profile posture for tolerance and sign-off review.
+- The WPF Fund Accounts workbench now turns the former static operator brief into a stateful account handoff by projecting fund context, empty queue, missing route evidence, blocked provider routes, shared-data access gaps, balance-evidence snapshot posture, and ready-for-reconciliation posture without another service read.
 
-This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, and a fund-scoped workspace/report-preview API baseline are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, full report packs, and publication/readiness controls still remain future implementation waves.
+This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, the Fund Accounts operator and balance-evidence brief, the first governed report-pack artifact generation path, a file-backed reconciliation break queue for run-scoped breaks, seeded exception-route/tolerance/sign-off metadata, a calibration-summary rollup, and shared operator-inbox projection for those breaks are now in place. Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation across external statements/custodians, broader board/investor/compliance templates, operator-approved tolerance/severity calibration, end-to-end queue acceptance, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
@@ -362,9 +367,11 @@ Suggested paths:
 ### Security Master drift
 
 Risk:
+
 - unresolved or stale instrument metadata pollutes cash-flow, reconciliation, and compliance outputs
 
 Mitigation:
+
 - explicit unresolved-state DTOs
 - governance break queues for missing metadata
 - report-pack warnings for degraded classification quality
@@ -372,9 +379,11 @@ Mitigation:
 ### Multi-ledger ambiguity
 
 Risk:
+
 - ledger grouping semantics drift across funds, sleeves, and legal entities
 
 Mitigation:
+
 - define `LedgerGroupId` and grouping rules centrally
 - keep consolidation logic in one kernel
 - test per-ledger and consolidated cases together
@@ -382,9 +391,11 @@ Mitigation:
 ### Reconciliation false positives
 
 Risk:
+
 - noisy break generation undermines trust
 
 Mitigation:
+
 - category-specific matching rules
 - confidence scores
 - manual resolution workflow with explicit status transitions
@@ -392,18 +403,22 @@ Mitigation:
 ### Reporting forked logic
 
 Risk:
+
 - report generation re-implements portfolio or ledger logic separately
 
 Mitigation:
+
 - force reports to consume shared governance DTOs and read services
 - keep formatting separate from calculation
 
 ### Overbuilding too early
 
 Risk:
+
 - trying to fully match enterprise fund admin systems before the foundations are stable
 
 Mitigation:
+
 - sequence the work strictly
 - treat the delivered Security Master seam plus multi-ledger and reconciliation kernels as the enabling path
 - delay advanced report polish until shared DTOs are stable
@@ -466,19 +481,23 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 ### Phase F2: Multi-Ledger Governance Foundation
 
-- [ ] Define `LedgerGroupId` and ledger grouping rules.
-- [ ] Add consolidated trial-balance query support.
-- [ ] Add multi-ledger selection and per-ledger drill-in DTOs.
+- [x] Define `LedgerGroupId` and ledger grouping rules.
+- [x] Add consolidated trial-balance query support.
+- [x] Add multi-ledger selection and per-ledger drill-in DTOs.
 - [ ] Add reconciliation-friendly snapshot outputs.
-- [ ] Add WPF governance surfaces for trial balance and consolidated ledger views.
+- [x] Add WPF governance surfaces for trial balance and consolidated ledger views.
 - [ ] Add tests for per-ledger, cross-ledger, and consolidated cases.
+
+Current delivered slice: workstation `FundLedgerSummary` now carries both the selected-scope projection and consolidated totals plus per-ledger slices, the WPF read path can constrain consolidation to selected run ledgers while materializing entity/sleeve/vehicle slices from fund-account structure assignments, and the WPF workstation binds ledger drill-in from DTO slices/totals instead of inferring state only from account IDs.
 
 ### Phase F2.5: Reconciliation Engine
 
-- [ ] Define reconciliation DTOs and rule categories.
+Current delivered slice: run-scoped reconciliation service/history, Security Master coverage issue detection, and a file-backed break queue now exist. `/api/workstation/reconciliation/break-queue` plus review, resolve/dismiss, and audit routes seed and persist run-scoped breaks with exception route, tolerance profile/band, required sign-off role, and sign-off status metadata; `/api/workstation/reconciliation/calibration-summary` rolls those breaks into profile-level Ready/ReviewRequired/Blocked posture. External-statement/custodian adapters, operator-approved calibration, richer match rules, and generalized governance exception workflows remain open.
+
+- [x] Define reconciliation DTOs and rule categories.
 - [ ] Implement structured source adapters for ledger, portfolio, cash, and external statements.
 - [ ] Build F# reconciliation rule kernel and C# orchestration service.
-- [ ] Add break queue states, assignment, and resolution workflow.
+- [x] Add first break queue states, assignment, and resolution workflow for run-scoped breaks.
 - [ ] Add governance UI for unresolved breaks and matched items.
 - [ ] Add tests for matching, mismatching, partial matching, and break severity.
 
@@ -503,14 +522,15 @@ Current delivered slice: fund-level shared workspace and report-preview API proj
 
 ### Phase F4.5: Report Generation Tools
 
-Current delivered slice: report-pack preview contracts and a shared preview endpoint now exist, but governed artifact packaging/export flows remain incomplete.
+Current delivered slice: report-pack preview contracts, a shared preview endpoint, and the first local-first governed artifact generation path now exist. The delivered artifact slice persists manifest/provenance JSON, trial-balance and asset-class JSON/CSV sections, checksum metadata, history/detail queries, and an XLSX workbook when requested under the workstation data area.
 
-- [ ] Define `ReportPackRequest`, `ReportPackDto`, and report section models.
+- [x] Define governed report-pack request, snapshot, artifact, provenance, history, and format DTOs.
 - [ ] Add governance export profiles for board, investor, compliance, and operations packs.
-- [ ] Implement report section assembly using shared read models.
-- [ ] Add XLSX-first reporting support with audit metadata and source references.
-- [ ] Add packaging of reconciliation, cash-flow, trial-balance, and portfolio outputs into one governed artifact set.
-- [ ] Add tests for section assembly, export validation, and artifact completeness.
+- [x] Implement first report section assembly using shared ledger, NAV, reconciliation, Security Master, and report-generation flows.
+- [x] Add XLSX workbook artifact support with audit metadata and source references.
+- [x] Add packaging of trial-balance, asset-class, manifest, and provenance outputs into one governed artifact set.
+- [x] Add tests for section assembly, endpoint validation, history/detail retrieval, and artifact completeness.
+- [ ] Expand governed artifact packaging to cash-flow, reconciliation-detail, portfolio, board, investor, and compliance sections.
 
 ### Phase F5: Compliance and Policy Overlay
 
@@ -524,19 +544,19 @@ Current delivered slice: report-pack preview contracts and a shared preview endp
 
 ### Phase F6: Post-Trade Allocation and External Custodian Reconciliation
 
-*FundStudio source: rules-based post-trade allocation by strategy, trader, or tax lot; automated multi-prime reconciliation to reduce T+1 breaks.*
+_FundStudio source: rules-based post-trade allocation by strategy, trader, or tax lot; automated multi-prime reconciliation to reduce T+1 breaks._
 
 - [ ] Define `TradeAllocationRule` domain model and F# rule engine: allocation by strategy, tax lot, account, or trader.
 - [ ] Add `PostTradeAllocationService` to apply rules to fills from the execution layer and distribute quantities to fund/sleeve/account ledger lines.
 - [ ] Add workstation UI for reviewing and overriding allocations before confirmation.
 - [ ] Extend the existing reconciliation engine to accept external custodian position and cash statements as structured inputs (CSV, SWIFT MT940/942, or JSON adapters).
 - [ ] Add break classification and severity for internal-vs-custodian mismatches (quantity, settlement date, currency, instrument).
-- [ ] Add multi-custodian break queue with assignment and resolution workflow, targeting automated exception-based T+1 reconciliation.
+- [ ] Extend the run-scoped break queue into a multi-custodian break queue with assignment and resolution workflow, targeting automated exception-based T+1 reconciliation.
 - [ ] Add tests for allocation rule evaluation, custodian feed parsing, and break matching accuracy.
 
 ### Phase F7: Regulatory and Investor Reporting
 
-*FundStudio source: automated multi-fund NAV calculation; shadow-NAV; drag-and-drop report builder; automated distribution via portal or email; AIFMD Annex IV; SEC reporting data exports; locked periods; version control.*
+_FundStudio source: automated multi-fund NAV calculation; shadow-NAV; drag-and-drop report builder; automated distribution via portal or email; AIFMD Annex IV; SEC reporting data exports; locked periods; version control._
 
 - [ ] Define regulatory reporting domain models: `TransactionReportRecord`, `CostChargeDisclosureRecord`, `RegulatoryReportBatch`.
 - [ ] Implement MiFID II RTS 28 best-execution report generation (quarterly aggregation by venue and instrument class).
@@ -551,7 +571,7 @@ Current delivered slice: report-pack preview contracts and a shared preview endp
 
 ### Phase F8: Model Portfolio Management and Rebalancing
 
-*FundStudio source: discretionary mandate management with drift monitoring and rebalancing; cross-asset model portfolios for equity long/short, global macro, and credit strategies.*
+_FundStudio source: discretionary mandate management with drift monitoring and rebalancing; cross-asset model portfolios for equity long/short, global macro, and credit strategies._
 
 - [ ] Define `ModelPortfolio` domain model: target weights by instrument, asset class, duration bucket, or factor exposure.
 - [ ] Add drift monitoring service: compare current portfolio weights against model targets; compute absolute and relative drift per position.
@@ -571,17 +591,33 @@ Current delivered slice: report-pack preview contracts and a shared preview endp
 
 ## Suggested first PR slices
 
-1. Security Master governance delta closure in portfolio, ledger, reconciliation, and report-generation paths
-2. Multi-ledger grouping and consolidated trial-balance query path
-3. Reconciliation DTOs plus F# rules spike and C# orchestration shell
-4. Cash-flow projection kernel plus governance cash-ladder read path
-5. Report-pack contracts plus export-profile integration
-6. Pre/post-trade compliance hard-stops wired into `IRiskRule` and the execution path
-7. Post-trade allocation rule engine (F# kernel) plus allocation DTOs and `PostTradeAllocationService`
-8. External custodian statement adapter plus break classification kernel for T+1 reconciliation
-9. Shadow-NAV calculation path, locked reporting periods, and governed report pack profiles
-10. MiFID II RTS 28 and cost/charges data model plus `RegulatoryReportingService` shell
-11. Model portfolio domain model, drift monitoring service, and rebalancing signal generator
+### Slice 1: Security Master governance drill-through + conflict queue
+
+- **Prerequisite services/contracts:** `ISecurityMasterQueryService`, `ISecurityMasterService`, `ISecurityResolver`, `WorkstationSecurityReference`, `SecurityMasterWorkstationDto`, `SecurityClassificationSummaryDto`, `SecurityEconomicDefinitionSummaryDto`, governance workspace projection contracts.
+- **API endpoints affected:** `/api/security-master/*`, `/api/fund-structure/workspace-view`, `/api/workstation/*` drill-through endpoints that surface security reference details and conflict state.
+- **Workstation surfaces (WPF + retained local API):** governance workspace summary page, reconciliation queue page, Security Master detail/drill-through pane in WPF Governance/Run surfaces and retained local workstation contracts.
+- **Deterministic scenario evidence required to mark complete:** fixed fixture with one canonical instrument and two conflicting upstream definitions; conflict queue deterministically ranks/severity-tags the mismatch; drill-through shows canonical-vs-source deltas; resolve/reject action updates queue state and audit trail without non-deterministic ordering.
+
+### Slice 2: Corporate action propagation + reconciliation variance reasons
+
+- **Prerequisite services/contracts:** Security Master corporate-action contracts, reconciliation DTOs/rules (`ReconciliationRules`, `ReconciliationTypes`), governance cash-flow view DTOs, variance classification DTOs.
+- **API endpoints affected:** `/api/security-master/*` corporate-action reads, `/api/fund-structure/cash-flow-view`, `/api/fund-structure/workspace-view`, reconciliation endpoints `/api/workstation/reconciliation/runs` and `/api/workstation/reconciliation/runs/{id}`.
+- **Workstation surfaces (WPF + retained local API):** corporate action timeline/impact panel, reconciliation break queue with variance-reason column, cash-flow ladder detail view.
+- **Deterministic scenario evidence required to mark complete:** seeded dividend + split + maturity event set applied to a static ledger/account fixture; propagation updates projected and realized ladders identically on repeated runs; reconciliation breaks include explicit variance reason codes (timing, amount, classification, missing action) with stable totals and row ordering.
+
+### Slice 3: Multi-ledger trial-balance + cash-flow projection continuity
+
+- **Prerequisite services/contracts:** `LedgerGroupId`, `LedgerGroupSummaryDto`, `LedgerConsolidationRequest`, `LedgerConsolidationResultDto`, `TrialBalanceViewDto`, `TrialBalanceRowDto`, `MultiLedgerSelectionDto`, governance cash-flow projection contracts.
+- **API endpoints affected:** trial-balance and ledger aggregation routes in `/api/workstation/*`, governance projection routes `/api/fund-structure/workspace-view` and `/api/fund-structure/cash-flow-view`, plus any ledger read endpoints in `/api/ledger/*` used for consolidation.
+- **Workstation surfaces (WPF + retained local API):** multi-ledger selector view, consolidated/per-ledger trial-balance grid, governance cash-flow continuity panel.
+- **Deterministic scenario evidence required to mark complete:** fixed three-ledger fixture (fund/sleeve/vehicle) where consolidated debits equal credits each run; carry-forward from prior period opening balances remains invariant; projected cash-flow buckets reconcile to trial-balance movement deltas with exact expected totals.
+
+### Slice 4: Report/export governance pack
+
+- **Prerequisite services/contracts:** `ReportPackRequestDto`, `ReportPackPreviewDto`, `GovernanceReportProfileDto`, `ReportGenerationService`, `AnalysisExportService`, `ExportProfile` governance variants, report provenance/audit DTOs.
+- **API endpoints affected:** `/api/fund-structure/report-pack-preview`, `/api/export/*`, governance report-pack generation/publish endpoints (new or existing `/api/reports/*` routes).
+- **Workstation surfaces (WPF + retained local API):** governance report pack wizard, export profile selector, publication history/audit page.
+- **Deterministic scenario evidence required to mark complete:** golden-input fixture generates identical pack structure (sections, metric values, filenames, hashes) across JSONL/Parquet/XLSX/CSV exports; preview totals match published artifacts; provenance links resolve to source ledger/reconciliation snapshots; rerun without data change produces byte-stable or hash-stable outputs per format policy.
 
 ## Open Questions
 

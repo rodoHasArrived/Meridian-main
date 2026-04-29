@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterestUpdate
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contract
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterest
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousOpenInterest
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 44
   assemblies:
   - Meridian.Contracts
@@ -292,7 +292,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 54
   assemblies:
   - Meridian.Contracts
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterestChange
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -405,7 +405,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeToOpenInterestRatio
-    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
     startLine: 95
   assemblies:
   - Meridian.Contracts

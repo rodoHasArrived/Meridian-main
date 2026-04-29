@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleAction
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enable
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disable
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 28
   assemblies:
   - Meridian.Core

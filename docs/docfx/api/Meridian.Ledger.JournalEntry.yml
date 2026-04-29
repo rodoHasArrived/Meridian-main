@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntry
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 7
   assemblies:
   - Meridian.Ledger
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 10
   assemblies:
   - Meridian.Ledger
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 13
   assemblies:
   - Meridian.Ledger
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 16
   assemblies:
   - Meridian.Ledger
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lines
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 19
   assemblies:
   - Meridian.Ledger
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 24
   assemblies:
   - Meridian.Ledger
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 34
   assemblies:
   - Meridian.Ledger
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBalanced
-    path: ../../src/Meridian.Ledger/JournalEntry.cs
+    path: src/Meridian.Ledger/JournalEntry.cs
     startLine: 93
   assemblies:
   - Meridian.Ledger

@@ -8,11 +8,14 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
@@ -50,11 +53,16 @@ public sealed class ResearchWorkspaceShellWorkflowTests
 
             configureServices.Should().NotBeNull();
             configureServices!.Invoke(null, [services]);
+            var briefing = BuildBriefing(runId, expectedSummary);
             services.RemoveAll(typeof(IWorkstationResearchBriefingApiClient));
             services.AddSingleton<IWorkstationResearchBriefingApiClient>(new FakeWorkstationResearchBriefingApiClient
             {
-                Briefing = BuildBriefing(runId, expectedSummary)
+                Briefing = briefing
             });
+            services.RemoveAll(typeof(IResearchBriefingWorkspaceService));
+            services.AddSingleton<IResearchBriefingWorkspaceService>(new FakeResearchBriefingWorkspaceService(briefing));
+            services.RemoveAll(typeof(IStatusService));
+            services.AddSingleton<IStatusService>(new FakeStatusService());
 
             using var serviceProvider = services.BuildServiceProvider();
             NavigationService.Instance.SetServiceProvider(serviceProvider);
@@ -80,6 +88,14 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 page.UpdateLayout();
                 window.UpdateLayout();
 
+                var viewModel = page.DataContext.Should().BeOfType<ResearchWorkspaceShellViewModel>().Subject;
+
+                await WaitForConditionAsync(() =>
+                    (!viewModel.IsLoading && string.Equals(viewModel.BriefingSummaryText, expectedSummary, StringComparison.Ordinal)) ||
+                    viewModel.HasError).ConfigureAwait(true);
+                viewModel.HasError.Should().BeFalse(viewModel.ErrorMessage);
+                viewModel.BriefingSummaryText.Should().Be(expectedSummary);
+
                 await WaitForConditionAsync(() =>
                 {
                     var summaryText = page.FindName("BriefingSummaryText") as TextBlock;
@@ -87,6 +103,14 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 }).ConfigureAwait(true);
 
                 GetRequired<TextBlock>(page, "BriefingSummaryText").Text.Should().Be(expectedSummary);
+                GetRequired<TextBlock>(page, "ResearchHeroFocusText").Text.Should().Be("Promotion queue");
+                GetRequired<TextBlock>(page, "ResearchHeroBadgeText").Text.Should().Be("Attention");
+                GetRequired<TextBlock>(page, "ResearchWorkflowStatusText").Text.Should().Be("1 run is waiting for trading review.");
+                GetRequired<TextBlock>(page, "ResearchWorkflowBlockerLabelText").Text.Should().NotBeNullOrWhiteSpace();
+                GetRequired<TextBlock>(page, "ResearchWorkflowBlockerDetailText").Text.Should().NotBeNullOrWhiteSpace();
+                GetRequired<Button>(page, "ResearchHeroPrimaryActionButton").Content.Should().Be("Run Browser");
+                GetRequired<Button>(page, "ResearchHeroSecondaryActionButton").Content.Should().Be("Open Watchlists");
+                GetRequired<TextBlock>(page, "ResearchWorkflowTargetText").Text.Should().Be("Target page: StrategyRuns");
                 GetRequired<ItemsControl>(page, "BriefingInsightsList").Items.Count.Should().Be(1);
                 GetRequired<TextBlock>(page, "ActiveRunNameText").Text.Should().Be("No selected run");
 
@@ -103,7 +127,13 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 activeContext.Should().NotBeNull();
                 activeContext!.RunId.Should().Be(runId);
                 activeContext.StrategyName.Should().Be("Reconciliation Strategy");
+                activeContext.CanPromoteToPaper.Should().BeTrue();
 
+                GetRequired<TextBlock>(page, "ResearchHeroFocusText").Text.Should().Be("Promotion review");
+                GetRequired<TextBlock>(page, "ResearchHeroBadgeText").Text.Should().Be("Ready");
+                GetRequired<Button>(page, "ResearchHeroPrimaryActionButton").Content.Should().Be("Open Trading Review");
+                GetRequired<Button>(page, "ResearchHeroSecondaryActionButton").Content.Should().Be("Promote to Paper");
+                GetRequired<TextBlock>(page, "ResearchWorkflowTargetText").Text.Should().Be("Target page: TradingShell");
                 GetRequired<TextBlock>(page, "RunStatusText").Text.Should().Be("Backtest run selected");
                 GetRequired<TextBlock>(page, "PortfolioPreviewText").Text.Should().Contain("2 position(s)");
                 GetRequired<TextBlock>(page, "RiskPreviewText").Text.Should().Contain("Audit and reconciliation drill-ins stay one action away");
@@ -353,5 +383,30 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 Environment.SetEnvironmentVariable(pair.Key, pair.Value);
             }
         }
+    }
+
+    private sealed class FakeResearchBriefingWorkspaceService : IResearchBriefingWorkspaceService
+    {
+        private readonly ResearchBriefingDto _briefing;
+
+        public FakeResearchBriefingWorkspaceService(ResearchBriefingDto briefing)
+            => _briefing = briefing;
+
+        public Task<ResearchBriefingDto> GetBriefingAsync(CancellationToken ct = default)
+            => Task.FromResult(_briefing);
+    }
+
+    private sealed class FakeStatusService : IStatusService
+    {
+        public string ServiceUrl => "http://localhost:8080";
+
+        public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<StatusResponse?>(new StatusResponse { IsConnected = true });
+
+        public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
+            => throw new NotSupportedException("The Research shell workflow test only consumes GetStatusAsync.");
+
+        public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
+            => throw new NotSupportedException("The Research shell workflow test only consumes GetStatusAsync.");
     }
 }

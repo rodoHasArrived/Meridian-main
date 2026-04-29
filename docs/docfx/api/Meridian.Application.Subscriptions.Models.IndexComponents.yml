@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexComponents
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexId
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Components
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
     startLine: 14
   assemblies:
   - Meridian.Core

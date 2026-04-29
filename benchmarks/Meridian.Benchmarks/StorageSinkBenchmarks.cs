@@ -148,8 +148,9 @@ public class EventBufferIngestionBenchmarks
 }
 
 /// <summary>
-/// Benchmarks for batch serialization — the actual CPU-bound work inside JsonlStorageSink.FlushBufferAsync.
-/// Compares sequential vs parallel serialization at different batch sizes.
+/// Benchmarks for JSONL serialization hot paths used by <c>JsonlStorageSink</c>.
+/// Retains the older string and parallel baselines, and adds the direct-stream UTF-8
+/// path that mirrors the current sink implementation.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
@@ -157,6 +158,11 @@ public class EventBufferIngestionBenchmarks
 public class BatchSerializationBenchmarks
 {
     private MarketEvent[] _events = null!;
+    private static readonly JsonWriterOptions WriterOptions = new()
+    {
+        SkipValidation = true
+    };
+    private static readonly ReadOnlyMemory<byte> NewlineBytes = "\n"u8.ToArray();
 
     // Static options avoid per-iteration allocation of JsonSerializerOptions, which would
     // inflate the "Allocated" column and make reflection vs source-gen comparisons unfair.
@@ -242,10 +248,7 @@ public class BatchSerializationBenchmarks
     public long Sequential_WriteTo_PooledBuffer()
     {
         var bufferWriter = new ArrayBufferWriter<byte>(512);
-        using var jsonWriter = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
-        {
-            SkipValidation = true
-        });
+        using var jsonWriter = new Utf8JsonWriter(bufferWriter, WriterOptions);
 
         long totalBytes = 0;
         for (var i = 0; i < _events.Length; i++)
@@ -259,6 +262,27 @@ public class BatchSerializationBenchmarks
         }
 
         return totalBytes;
+    }
+
+    /// <summary>
+    /// Mirrors the current JSONL sink path: write each event directly to a UTF-8 stream,
+    /// flush the writer, append a newline, then reset for the next top-level JSON object.
+    /// </summary>
+    [Benchmark]
+    public long Sequential_DirectJsonlStream()
+    {
+        using var stream = new MemoryStream(_events.Length * 384);
+        using var jsonWriter = new Utf8JsonWriter(stream, WriterOptions);
+
+        for (var i = 0; i < _events.Length; i++)
+        {
+            HighPerformanceJson.WriteTo(jsonWriter, _events[i]);
+            jsonWriter.Flush();
+            stream.Write(NewlineBytes.Span);
+            jsonWriter.Reset();
+        }
+
+        return stream.Length;
     }
 
     [Benchmark]

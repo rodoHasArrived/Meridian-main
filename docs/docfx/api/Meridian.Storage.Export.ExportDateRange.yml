@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportDateRange
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 152
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 154
   assemblies:
   - Meridian.Storage
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: End
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 157
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingDays
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 160
   assemblies:
   - Meridian.Storage

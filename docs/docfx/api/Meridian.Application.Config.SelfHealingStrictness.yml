@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelfHealingStrictness
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 930
   assemblies:
   - Meridian.Application
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Development
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 937
   assemblies:
   - Meridian.Application
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Production
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 945
   assemblies:
   - Meridian.Application

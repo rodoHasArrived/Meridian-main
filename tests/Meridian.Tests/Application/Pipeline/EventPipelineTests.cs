@@ -591,7 +591,7 @@ public class EventPipelineTests : IAsyncLifetime
             pipeline.TryPublish(CreateTradeEvent($"SYM{i}"));
         }
 
-        await Task.Delay(10);
+        await WaitForEventsAsync(sink, expectedCount: 5, timeout: TimeSpan.FromSeconds(2));
 
         // Assert - Pipeline should still be alive and processing
         // At least some events should have been processed before the throw
@@ -720,6 +720,15 @@ public class EventPipelineTests : IAsyncLifetime
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         while (_mockSink.ReceivedEvents.Count < expectedCount && sw.ElapsedMilliseconds < timeoutMs)
+        {
+            await Task.Delay(1);
+        }
+    }
+
+    private static async Task WaitForEventsAsync(MockStorageSink sink, int expectedCount, TimeSpan timeout)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sink.ReceivedEvents.Count < expectedCount && sw.Elapsed < timeout)
         {
             await Task.Delay(1);
         }

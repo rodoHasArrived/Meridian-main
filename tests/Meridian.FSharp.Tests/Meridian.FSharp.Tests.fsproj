@@ -15,6 +15,7 @@
     <Compile Include="CanonicalizationTests.fs" />
     <Compile Include="PipelineTests.fs" />
     <Compile Include="RiskPolicyTests.fs" />
+    <Compile Include="PromotionPolicyTests.fs" />
     <Compile Include="TradingTransitionTests.fs" />
     <Compile Include="LedgerKernelTests.fs" />
     <Compile Include="DirectLendingInteropTests.fs" />
@@ -28,7 +29,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="FSharp.Core" />
+    <!-- FsUnit.xUnit brings xunit.v3; keep the central pin aligned with the VS adapter. -->
     <PackageReference Include="FsUnit.xUnit" />
   </ItemGroup>
 

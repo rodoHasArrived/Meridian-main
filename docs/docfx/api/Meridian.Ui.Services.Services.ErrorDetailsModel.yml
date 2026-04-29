@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorDetailsModel
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 50
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 52
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 53
   assemblies:
   - Meridian.Ui.Services
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 54
   assemblies:
   - Meridian.Ui.Services
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remedy
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 55
   assemblies:
   - Meridian.Ui.Services
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFormattedMessage
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 61
   assemblies:
   - Meridian.Ui.Services
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromException
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services

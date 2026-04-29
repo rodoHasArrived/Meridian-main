@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthOperation
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Insert
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Update
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delete
-    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts

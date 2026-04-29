@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSizeValidatorConfig
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 293
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultTickSize
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 299
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubDollarTickSize
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 305
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseSubDollarTicks
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 310
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownMs
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 315
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 317
   assemblies:
   - Meridian.Application
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FuturesForex
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 322
   assemblies:
   - Meridian.Application
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lenient
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 332
   assemblies:
   - Meridian.Application

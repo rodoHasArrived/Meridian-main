@@ -5,10 +5,10 @@ items:
   id: PromotionService
   parent: Meridian.Strategies.Services
   children:
-  - Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
+  - Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration,Meridian.Strategies.Interfaces.IPromotionRecordStore)
   - Meridian.Strategies.Services.PromotionService.ApproveAsync(Meridian.Strategies.Services.PromotionApprovalRequest,System.Threading.CancellationToken)
   - Meridian.Strategies.Services.PromotionService.EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
-  - Meridian.Strategies.Services.PromotionService.GetPromotionHistory
+  - Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync(System.Threading.CancellationToken)
   - Meridian.Strategies.Services.PromotionService.RejectAsync(Meridian.Strategies.Services.PromotionRejectionRequest,System.Threading.CancellationToken)
   langs:
   - csharp
@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionService
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    path: src/Meridian.Strategies/Services/PromotionService.cs
     startLine: 16
   assemblies:
   - Meridian.Strategies
@@ -47,16 +47,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
-  commentId: M:Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
-  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)'
+- uid: Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration,Meridian.Strategies.Interfaces.IPromotionRecordStore)
+  commentId: M:Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration,Meridian.Strategies.Interfaces.IPromotionRecordStore)
+  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration,Meridian.Strategies.Interfaces.IPromotionRecordStore)'
   parent: Meridian.Strategies.Services.PromotionService
   langs:
   - csharp
   - vb
-  name: PromotionService(IStrategyRepository, BacktestToLivePromoter, ILogger<PromotionService>, ExecutionOperatorControlService?, ExecutionAuditTrailService?, BrokerageConfiguration?)
-  nameWithType: PromotionService.PromotionService(IStrategyRepository, BacktestToLivePromoter, ILogger<PromotionService>, ExecutionOperatorControlService?, ExecutionAuditTrailService?, BrokerageConfiguration?)
-  fullName: Meridian.Strategies.Services.PromotionService.PromotionService(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Promotions.BacktestToLivePromoter, Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Services.PromotionService>, Meridian.Execution.Services.ExecutionOperatorControlService?, Meridian.Execution.Services.ExecutionAuditTrailService?, Meridian.Execution.Sdk.BrokerageConfiguration?)
+  name: PromotionService(IStrategyRepository, BacktestToLivePromoter, ILogger<PromotionService>, ExecutionOperatorControlService?, ExecutionAuditTrailService?, BrokerageConfiguration?, IPromotionRecordStore?)
+  nameWithType: PromotionService.PromotionService(IStrategyRepository, BacktestToLivePromoter, ILogger<PromotionService>, ExecutionOperatorControlService?, ExecutionAuditTrailService?, BrokerageConfiguration?, IPromotionRecordStore?)
+  fullName: Meridian.Strategies.Services.PromotionService.PromotionService(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Promotions.BacktestToLivePromoter, Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Services.PromotionService>, Meridian.Execution.Services.ExecutionOperatorControlService?, Meridian.Execution.Services.ExecutionAuditTrailService?, Meridian.Execution.Sdk.BrokerageConfiguration?, Meridian.Strategies.Interfaces.IPromotionRecordStore?)
   type: Constructor
   source:
     remote:
@@ -64,13 +64,13 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 27
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 30
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
   syntax:
-    content: public PromotionService(IStrategyRepository repository, BacktestToLivePromoter promoter, ILogger<PromotionService> logger, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null)
+    content: public PromotionService(IStrategyRepository repository, BacktestToLivePromoter promoter, ILogger<PromotionService> logger, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null, IPromotionRecordStore? promotionRecordStore = null)
     parameters:
     - id: repository
       type: Meridian.Strategies.Interfaces.IStrategyRepository
@@ -84,11 +84,13 @@ items:
       type: Meridian.Execution.Services.ExecutionAuditTrailService
     - id: brokerageConfiguration
       type: Meridian.Execution.Sdk.BrokerageConfiguration
-    content.vb: Public Sub New(repository As IStrategyRepository, promoter As BacktestToLivePromoter, logger As ILogger(Of PromotionService), operatorControls As ExecutionOperatorControlService = Nothing, auditTrail As ExecutionAuditTrailService = Nothing, brokerageConfiguration As BrokerageConfiguration = Nothing)
+    - id: promotionRecordStore
+      type: Meridian.Strategies.Interfaces.IPromotionRecordStore
+    content.vb: Public Sub New(repository As IStrategyRepository, promoter As BacktestToLivePromoter, logger As ILogger(Of PromotionService), operatorControls As ExecutionOperatorControlService = Nothing, auditTrail As ExecutionAuditTrailService = Nothing, brokerageConfiguration As BrokerageConfiguration = Nothing, promotionRecordStore As IPromotionRecordStore = Nothing)
   overload: Meridian.Strategies.Services.PromotionService.#ctor*
-  nameWithType.vb: PromotionService.New(IStrategyRepository, BacktestToLivePromoter, ILogger(Of PromotionService), ExecutionOperatorControlService, ExecutionAuditTrailService, BrokerageConfiguration)
-  fullName.vb: Meridian.Strategies.Services.PromotionService.New(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Promotions.BacktestToLivePromoter, Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Services.PromotionService), Meridian.Execution.Services.ExecutionOperatorControlService, Meridian.Execution.Services.ExecutionAuditTrailService, Meridian.Execution.Sdk.BrokerageConfiguration)
-  name.vb: New(IStrategyRepository, BacktestToLivePromoter, ILogger(Of PromotionService), ExecutionOperatorControlService, ExecutionAuditTrailService, BrokerageConfiguration)
+  nameWithType.vb: PromotionService.New(IStrategyRepository, BacktestToLivePromoter, ILogger(Of PromotionService), ExecutionOperatorControlService, ExecutionAuditTrailService, BrokerageConfiguration, IPromotionRecordStore)
+  fullName.vb: Meridian.Strategies.Services.PromotionService.New(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Promotions.BacktestToLivePromoter, Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Services.PromotionService), Meridian.Execution.Services.ExecutionOperatorControlService, Meridian.Execution.Services.ExecutionAuditTrailService, Meridian.Execution.Sdk.BrokerageConfiguration, Meridian.Strategies.Interfaces.IPromotionRecordStore)
+  name.vb: New(IStrategyRepository, BacktestToLivePromoter, ILogger(Of PromotionService), ExecutionOperatorControlService, ExecutionAuditTrailService, BrokerageConfiguration, IPromotionRecordStore)
 - uid: Meridian.Strategies.Services.PromotionService.EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
   commentId: M:Meridian.Strategies.Services.PromotionService.EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
   id: EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
@@ -106,8 +108,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateAsync
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 46
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 51
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -146,8 +148,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApproveAsync
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 192
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 198
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -181,8 +183,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectAsync
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 288
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 309
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -199,36 +201,39 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionDecisionResult}
     content.vb: Public Function RejectAsync(request As PromotionRejectionRequest, ct As CancellationToken = Nothing) As Task(Of PromotionDecisionResult)
   overload: Meridian.Strategies.Services.PromotionService.RejectAsync*
-- uid: Meridian.Strategies.Services.PromotionService.GetPromotionHistory
-  commentId: M:Meridian.Strategies.Services.PromotionService.GetPromotionHistory
-  id: GetPromotionHistory
+- uid: Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync(System.Threading.CancellationToken)
+  id: GetPromotionHistoryAsync(System.Threading.CancellationToken)
   parent: Meridian.Strategies.Services.PromotionService
   langs:
   - csharp
   - vb
-  name: GetPromotionHistory()
-  nameWithType: PromotionService.GetPromotionHistory()
-  fullName: Meridian.Strategies.Services.PromotionService.GetPromotionHistory()
+  name: GetPromotionHistoryAsync(CancellationToken)
+  nameWithType: PromotionService.GetPromotionHistoryAsync(CancellationToken)
+  fullName: Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync(System.Threading.CancellationToken)
   type: Method
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetPromotionHistory
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 306
+    id: GetPromotionHistoryAsync
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 382
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
   summary: Returns the full promotion audit trail.
   example: []
   syntax:
-    content: public IReadOnlyList<StrategyPromotionRecord> GetPromotionHistory()
+    content: public Task<IReadOnlyList<StrategyPromotionRecord>> GetPromotionHistoryAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
     return:
-      type: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}
-    content.vb: Public Function GetPromotionHistory() As IReadOnlyList(Of StrategyPromotionRecord)
-  overload: Meridian.Strategies.Services.PromotionService.GetPromotionHistory*
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+    content.vb: Public Function GetPromotionHistoryAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  overload: Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync*
 references:
 - uid: Meridian.Strategies.Services
   commentId: N:Meridian.Strategies.Services
@@ -475,7 +480,7 @@ references:
   fullName: System
 - uid: Meridian.Strategies.Services.PromotionService.#ctor*
   commentId: Overload:Meridian.Strategies.Services.PromotionService.#ctor
-  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Meridian_Strategies_Promotions_BacktestToLivePromoter_Microsoft_Extensions_Logging_ILogger_Meridian_Strategies_Services_PromotionService__Meridian_Execution_Services_ExecutionOperatorControlService_Meridian_Execution_Services_ExecutionAuditTrailService_Meridian_Execution_Sdk_BrokerageConfiguration_
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Meridian_Strategies_Promotions_BacktestToLivePromoter_Microsoft_Extensions_Logging_ILogger_Meridian_Strategies_Services_PromotionService__Meridian_Execution_Services_ExecutionOperatorControlService_Meridian_Execution_Services_ExecutionAuditTrailService_Meridian_Execution_Sdk_BrokerageConfiguration_Meridian_Strategies_Interfaces_IPromotionRecordStore_
   name: PromotionService
   nameWithType: PromotionService.PromotionService
   fullName: Meridian.Strategies.Services.PromotionService.PromotionService
@@ -550,6 +555,13 @@ references:
   name: BrokerageConfiguration
   nameWithType: BrokerageConfiguration
   fullName: Meridian.Execution.Sdk.BrokerageConfiguration
+- uid: Meridian.Strategies.Interfaces.IPromotionRecordStore
+  commentId: T:Meridian.Strategies.Interfaces.IPromotionRecordStore
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IPromotionRecordStore.html
+  name: IPromotionRecordStore
+  nameWithType: IPromotionRecordStore
+  fullName: Meridian.Strategies.Interfaces.IPromotionRecordStore
 - uid: Meridian.Strategies.Interfaces
   commentId: N:Meridian.Strategies.Interfaces
   href: Meridian.html
@@ -951,24 +963,29 @@ references:
   name: PromotionRejectionRequest
   nameWithType: PromotionRejectionRequest
   fullName: Meridian.Strategies.Services.PromotionRejectionRequest
-- uid: Meridian.Strategies.Services.PromotionService.GetPromotionHistory*
-  commentId: Overload:Meridian.Strategies.Services.PromotionService.GetPromotionHistory
-  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService_GetPromotionHistory
-  name: GetPromotionHistory
-  nameWithType: PromotionService.GetPromotionHistory
-  fullName: Meridian.Strategies.Services.PromotionService.GetPromotionHistory
-- uid: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}
-  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}
-  parent: System.Collections.Generic
-  definition: System.Collections.Generic.IReadOnlyList`1
-  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
-  name: IReadOnlyList<StrategyPromotionRecord>
-  nameWithType: IReadOnlyList<StrategyPromotionRecord>
-  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Promotions.StrategyPromotionRecord>
-  nameWithType.vb: IReadOnlyList(Of StrategyPromotionRecord)
-  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Promotions.StrategyPromotionRecord)
-  name.vb: IReadOnlyList(Of StrategyPromotionRecord)
+- uid: Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync*
+  commentId: Overload:Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService_GetPromotionHistoryAsync_System_Threading_CancellationToken_
+  name: GetPromotionHistoryAsync
+  nameWithType: PromotionService.GetPromotionHistoryAsync
+  fullName: Meridian.Strategies.Services.PromotionService.GetPromotionHistoryAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<StrategyPromotionRecord>>
+  nameWithType: Task<IReadOnlyList<StrategyPromotionRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Promotions.StrategyPromotionRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of StrategyPromotionRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Promotions.StrategyPromotionRecord))
+  name.vb: Task(Of IReadOnlyList(Of StrategyPromotionRecord))
   spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
   - uid: System.Collections.Generic.IReadOnlyList`1
     name: IReadOnlyList
     isExternal: true
@@ -978,7 +995,15 @@ references:
     name: StrategyPromotionRecord
     href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
   - name: '>'
+  - name: '>'
   spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
   - uid: System.Collections.Generic.IReadOnlyList`1
     name: IReadOnlyList
     isExternal: true
@@ -990,68 +1015,4 @@ references:
     name: StrategyPromotionRecord
     href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
   - name: )
-- uid: System.Collections.Generic.IReadOnlyList`1
-  commentId: T:System.Collections.Generic.IReadOnlyList`1
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
-  name: IReadOnlyList<T>
-  nameWithType: IReadOnlyList<T>
-  fullName: System.Collections.Generic.IReadOnlyList<T>
-  nameWithType.vb: IReadOnlyList(Of T)
-  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
-  name.vb: IReadOnlyList(Of T)
-  spec.csharp:
-  - uid: System.Collections.Generic.IReadOnlyList`1
-    name: IReadOnlyList
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
-  - name: <
-  - name: T
-  - name: '>'
-  spec.vb:
-  - uid: System.Collections.Generic.IReadOnlyList`1
-    name: IReadOnlyList
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
-  - name: (
-  - name: Of
-  - name: " "
-  - name: T
   - name: )
-- uid: System.Collections.Generic
-  commentId: N:System.Collections.Generic
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system
-  name: System.Collections.Generic
-  nameWithType: System.Collections.Generic
-  fullName: System.Collections.Generic
-  spec.csharp:
-  - uid: System
-    name: System
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system
-  - name: .
-  - uid: System.Collections
-    name: Collections
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections
-  - name: .
-  - uid: System.Collections.Generic
-    name: Generic
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
-  spec.vb:
-  - uid: System
-    name: System
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system
-  - name: .
-  - uid: System.Collections
-    name: Collections
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections
-  - name: .
-  - uid: System.Collections.Generic
-    name: Generic
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

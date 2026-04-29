@@ -17,7 +17,7 @@ items:
   type: Class
   source:
     id: AlpacaCorporateActionProvider
-    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Infrastructure\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaCorporateActionJsonContext.PropertyNames.g.cs
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Infrastructure\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaCorporateActionJsonContext.String.g.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCertificationService
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 180
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 186
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCertificationsAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 196
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 205
   assemblies:
   - Meridian.Application

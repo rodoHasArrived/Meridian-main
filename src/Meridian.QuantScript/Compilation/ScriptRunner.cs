@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
 using Microsoft.CodeAnalysis;
@@ -15,7 +16,6 @@ public sealed class ScriptRunner : IScriptRunner
 {
     private readonly IQuantScriptCompiler _compiler;
     private readonly IQuantDataContext _dataContext;
-    private readonly PlotQueue _plotQueue;
     private readonly Backtesting.Engine.BacktestEngine? _backtestEngine;
     private readonly QuantScriptOptions _options;
     private readonly ILogger<ScriptRunner> _logger;
@@ -30,7 +30,7 @@ public sealed class ScriptRunner : IScriptRunner
     {
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _plotQueue = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue));
+        _ = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue)); // retained for DI compatibility; per-run queues are now local
         _backtestEngine = backtestEngine; // null is valid — backtest is optional
         _options = options?.Value ?? new QuantScriptOptions();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -62,18 +62,25 @@ public sealed class ScriptRunner : IScriptRunner
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         parameters ??= new Dictionary<string, object?>();
+        ct.ThrowIfCancellationRequested();
 
         var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
-
-        var compilationResult = new ScriptCompilationResult(
-            Success: true,
-            CompilationTime: TimeSpan.Zero,
-            Diagnostics: Array.Empty<ScriptDiagnostic>());
+        TimeSpan compileTime;
 
         if (checkpoint is null)
         {
-            compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+            ScriptCompilationResult compilationResult;
+            try
+            {
+                compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return CreateCancelledResult(wallClock, checkpoint);
+            }
+
+            compileTime = compilationResult.CompilationTime;
 
             if (!compilationResult.Success)
             {
@@ -88,8 +95,15 @@ public sealed class ScriptRunner : IScriptRunner
                     Metrics: Array.Empty<KeyValuePair<string, string>>(),
                     Plots: Array.Empty<PlotRequest>(),
                     TradesSummary: Array.Empty<string>(),
+                    CapturedBacktests: Array.Empty<BacktestResult>(),
+                    RuntimeParameters: Array.Empty<ParameterDescriptor>(),
                     Checkpoint: checkpoint);
             }
+        }
+        else
+        {
+            // Continuations rely on Roslyn continuation diagnostics from ContinueWithAsync.
+            compileTime = TimeSpan.Zero;
         }
 
         using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -118,7 +132,8 @@ public sealed class ScriptRunner : IScriptRunner
         string? runtimeError = null;
         IReadOnlyList<ScriptDiagnostic> continuationDiagnostics = Array.Empty<ScriptDiagnostic>();
         ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
-        var runPlotQueue = _plotQueue;
+        var runPlotQueue = new PlotQueue();
+        TimeSpan continuationCompileTime = TimeSpan.Zero;
 
         await Task.Run(async () =>
         {
@@ -137,9 +152,12 @@ public sealed class ScriptRunner : IScriptRunner
                 }
                 else
                 {
+                    var continuationCompileWatch = Stopwatch.StartNew();
                     scriptState = await checkpoint.ScriptState
                         .ContinueWithAsync(source, cancellationToken: runCt)
                         .ConfigureAwait(false);
+                    continuationCompileWatch.Stop();
+                    continuationCompileTime = continuationCompileWatch.Elapsed;
                 }
 
                 nextCheckpoint = new ScriptExecutionCheckpoint(scriptState, globals);
@@ -153,6 +171,12 @@ public sealed class ScriptRunner : IScriptRunner
             }
             catch (CompilationErrorException ex)
             {
+                if (checkpoint is not null)
+                {
+                    continuationCompileTime = continuationCompileTime == TimeSpan.Zero
+                        ? wallClock.Elapsed
+                        : continuationCompileTime;
+                }
                 continuationDiagnostics = ex.Diagnostics
                     .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
                     .Select(MapDiagnostic)
@@ -169,17 +193,19 @@ public sealed class ScriptRunner : IScriptRunner
                 runPlotQueue.Complete();
                 ScriptContext.PlotQueue = null;
             }
-        }, ct).ConfigureAwait(false);
+        }, CancellationToken.None).ConfigureAwait(false);
 
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
         var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0;
+        if (checkpoint is not null)
+            compileTime = continuationCompileTime;
 
         return new ScriptRunResult(
             Success: resultSuccess,
             Elapsed: wallClock.Elapsed,
-            CompileTime: compilationResult.CompilationTime,
+            CompileTime: compileTime,
             PeakMemoryBytes: peakMemory,
             CompilationErrors: continuationDiagnostics,
             RuntimeError: runtimeError,
@@ -187,6 +213,8 @@ public sealed class ScriptRunner : IScriptRunner
             Metrics: globals.DrainMetrics(),
             Plots: plots,
             TradesSummary: Array.Empty<string>(),
+            CapturedBacktests: globals.Backtest.DrainCapturedResults(),
+            RuntimeParameters: globals.SnapshotRuntimeParameters(),
             Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
     }
 
@@ -198,5 +226,26 @@ public sealed class ScriptRunner : IScriptRunner
             diagnostic.GetMessage(),
             lineSpan.StartLinePosition.Line + 1,
             lineSpan.StartLinePosition.Character + 1);
+    }
+
+    private static ScriptRunResult CreateCancelledResult(
+        Stopwatch wallClock,
+        ScriptExecutionCheckpoint? checkpoint)
+    {
+        wallClock.Stop();
+        return new ScriptRunResult(
+            Success: false,
+            Elapsed: wallClock.Elapsed,
+            CompileTime: TimeSpan.Zero,
+            PeakMemoryBytes: 0,
+            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeError: "Script cancelled by user.",
+            ConsoleOutput: string.Empty,
+            Metrics: Array.Empty<KeyValuePair<string, string>>(),
+            Plots: Array.Empty<PlotRequest>(),
+            TradesSummary: Array.Empty<string>(),
+            CapturedBacktests: Array.Empty<BacktestResult>(),
+            RuntimeParameters: Array.Empty<ParameterDescriptor>(),
+            Checkpoint: checkpoint);
     }
 }

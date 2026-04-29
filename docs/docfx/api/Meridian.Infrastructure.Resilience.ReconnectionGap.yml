@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectionGap
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 625
   assemblies:
   - Meridian.Infrastructure
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 625
   assemblies:
   - Meridian.Infrastructure
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 626
   assemblies:
   - Meridian.Infrastructure
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectedAt
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 627
   assemblies:
   - Meridian.Infrastructure
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectedAt
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 628
   assemblies:
   - Meridian.Infrastructure
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectAttempts
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 629
   assemblies:
   - Meridian.Infrastructure
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
     startLine: 634
   assemblies:
   - Meridian.Infrastructure

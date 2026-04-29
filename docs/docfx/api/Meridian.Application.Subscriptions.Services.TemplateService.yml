@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplateService
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllTemplatesAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTemplateAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyTemplateAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateTemplateAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 107
   assemblies:
   - Meridian.Application
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteTemplateAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 136
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromCurrentAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 156
   assemblies:
   - Meridian.Application

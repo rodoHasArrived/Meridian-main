@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportVerificationResult
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 203
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 208
   assemblies:
   - Meridian.Storage
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumsValid
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 214
   assemblies:
   - Meridian.Storage
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCountsValid
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 220
   assemblies:
   - Meridian.Storage
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaValid
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 227
   assemblies:
   - Meridian.Storage
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 233
   assemblies:
   - Meridian.Storage
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileResults
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 239
   assemblies:
   - Meridian.Storage
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
-    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    path: src/Meridian.Storage/Export/ExportVerificationReport.cs
     startLine: 246
   assemblies:
   - Meridian.Storage

@@ -144,6 +144,11 @@ public sealed class GovernanceExceptionService
 
     private static GovernanceExceptionSeverity ClassifySeverity(PortfolioLedgerCheckResultDto result)
     {
+        if (TryMapSeverity(result.Severity, out var severity))
+        {
+            return severity;
+        }
+
         var abs = Math.Abs(result.Variance);
 
         return result.Category switch
@@ -157,6 +162,21 @@ public sealed class GovernanceExceptionService
             "timing_mismatch" => GovernanceExceptionSeverity.Low,
             _ => GovernanceExceptionSeverity.Medium
         };
+    }
+
+    private static bool TryMapSeverity(string severity, out GovernanceExceptionSeverity mapped)
+    {
+        mapped = severity switch
+        {
+            "Critical" => GovernanceExceptionSeverity.Critical,
+            "High" => GovernanceExceptionSeverity.High,
+            "Medium" => GovernanceExceptionSeverity.Medium,
+            "Low" => GovernanceExceptionSeverity.Low,
+            "Info" => GovernanceExceptionSeverity.Info,
+            _ => GovernanceExceptionSeverity.Info
+        };
+
+        return !string.IsNullOrWhiteSpace(severity);
     }
 }
 

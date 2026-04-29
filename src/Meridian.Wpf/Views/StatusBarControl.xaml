@@ -4,15 +4,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Height="28">
+             Height="28"
+             ToolTip="{Binding StatusToolTip}">
     <Border Background="{StaticResource StatusBarBackgroundBrush}"
             BorderBrush="{StaticResource StatusBarBorderBrush}"
             BorderThickness="0,1,0,0">
         <DockPanel LastChildFill="False" Margin="16,0">
-            <!-- Left side: status dot + provider count -->
+            <!-- Left side: status dot + backend status + provider count -->
             <Ellipse DockPanel.Dock="Left" Width="7" Height="7" Margin="0,0,6,0"
                      Fill="{Binding StatusDotBrush}"
                      VerticalAlignment="Center"/>
+            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
+                       Foreground="{StaticResource StatusBarTextBrush}"
+                       Text="{Binding BackendStatus}"
+                       Margin="0,0,12,0"/>
+
+            <Rectangle DockPanel.Dock="Left" Width="1" Margin="0,6,12,6"
+                       Fill="{StaticResource StatusBarBorderBrush}" />
+
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
                        Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding ActiveProviderCount, StringFormat='Providers: {0}'}"/>
@@ -24,6 +33,18 @@
             <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="11"
                        Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding ThroughputLabel}"/>
+
+            <Rectangle DockPanel.Dock="Left" Width="1" Margin="12,6"
+                       Fill="{StaticResource StatusBarBorderBrush}" />
+
+            <!-- Pipeline queue pressure -->
+            <TextBlock x:Name="StatusBarPipelineQueueLabel"
+                       DockPanel.Dock="Left"
+                       AutomationProperties.Name="Pipeline queue"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{Binding PipelineQueueBrush}"
+                       Text="{Binding PipelineQueueLabel}"/>
 
             <Rectangle DockPanel.Dock="Left" Width="1" Margin="12,6"
                        Fill="{StaticResource StatusBarBorderBrush}" />
@@ -41,9 +62,10 @@
 
             <Border DockPanel.Dock="Right" Margin="12,4,8,4" CornerRadius="3" Padding="7,2"
                     Background="{Binding ErrorBadgeBrush}"
-                    Visibility="{Binding HasErrors, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Visibility="{Binding HasErrors, Converter={StaticResource BoolToVisibilityConverter}}"
+                    ToolTip="Events dropped since the last status refresh.">
                 <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="White"
-                           Text="{Binding ErrorCount, StringFormat='{}{0} errors'}"/>
+                           Text="{Binding ErrorCount, StringFormat='{}{0} dropped'}"/>
             </Border>
         </DockPanel>
     </Border>

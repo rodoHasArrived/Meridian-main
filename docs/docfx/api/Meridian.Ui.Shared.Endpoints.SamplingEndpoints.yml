@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SamplingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSamplingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared

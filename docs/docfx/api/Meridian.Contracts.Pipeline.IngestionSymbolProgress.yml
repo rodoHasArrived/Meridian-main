@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionSymbolProgress
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 335
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 340
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 346
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataPointsProcessed
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 352
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedDataPoints
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 358
   assemblies:
   - Meridian.Contracts
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastCommittedDate
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 364
   assemblies:
   - Meridian.Contracts
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 370
   assemblies:
   - Meridian.Contracts
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryCount
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 376
   assemblies:
   - Meridian.Contracts
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressPercent
-    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
     startLine: 382
   assemblies:
   - Meridian.Contracts

@@ -13,7 +13,7 @@ public sealed class WorkspaceShellContextServiceTests
     [Fact]
     public async Task CreateAsync_WhenFundSelected_ComposesFundAndEnvironmentBadges()
     {
-        var detector = FixtureModeDetector.Instance;
+        var detector = CreateDetector();
         detector.SetFixtureMode(false);
         detector.UpdateBackendReachability(true);
         NotificationService.Instance.ClearHistory();
@@ -50,9 +50,9 @@ public sealed class WorkspaceShellContextServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenFixtureModeAndUnreadAlerts_SurfaceWarningBadges()
+    public async Task CreateAsync_WhenFixtureModeAndUnreadAlerts_SurfaceDemoEnvironmentAndWarningAlerts()
     {
-        var detector = FixtureModeDetector.Instance;
+        var detector = CreateDetector();
         detector.SetFixtureMode(true);
         detector.UpdateBackendReachability(true);
         NotificationService.Instance.ClearHistory();
@@ -81,7 +81,7 @@ public sealed class WorkspaceShellContextServiceTests
             ReviewStateTone = WorkspaceTone.Warning
         });
 
-        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Fixture" && b.Tone == WorkspaceTone.Warning);
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Demo data" && b.Tone == WorkspaceTone.Info);
         context.Badges.Should().ContainSingle(b => b.Label == "Freshness" && b.Tone == WorkspaceTone.Warning);
         context.Badges.Should().ContainSingle(b => b.Label == "Alerts" && b.Value.Contains("1 unread") && b.Tone == WorkspaceTone.Warning);
 
@@ -92,7 +92,7 @@ public sealed class WorkspaceShellContextServiceTests
     [Fact]
     public async Task CreateAsync_WhenOperatingContextSelected_AddsScopeAndCurrencyBadges()
     {
-        var detector = FixtureModeDetector.Instance;
+        var detector = CreateDetector();
         detector.SetFixtureMode(false);
         detector.UpdateBackendReachability(true);
         NotificationService.Instance.ClearHistory();
@@ -147,6 +147,9 @@ public sealed class WorkspaceShellContextServiceTests
         await service.SelectFundProfileAsync("alpha-credit");
         return service;
     }
+
+    private static FixtureModeDetector CreateDetector()
+        => (FixtureModeDetector)Activator.CreateInstance(typeof(FixtureModeDetector), nonPublic: true)!;
 
     private static async Task<WorkstationOperatingContextService> CreateOperatingContextServiceAsync(FundContextService fundContext)
     {

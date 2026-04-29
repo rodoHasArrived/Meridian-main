@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientConfiguration
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 78
   assemblies:
   - Meridian.Infrastructure
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddMarketDataHttpClients
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 85
   assemblies:
   - Meridian.Infrastructure
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddMarketDataHttpClientsTracked
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 401
   assemblies:
   - Meridian.Infrastructure

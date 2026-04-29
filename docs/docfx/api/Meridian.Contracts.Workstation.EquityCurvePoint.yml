@@ -25,8 +25,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquityCurvePoint
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 328
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 334
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -63,8 +63,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 328
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 334
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -107,8 +107,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 329
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 335
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -136,8 +136,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEquity
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 330
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 336
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -165,8 +165,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 331
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 337
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -194,8 +194,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyReturn
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 332
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 338
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -223,8 +223,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrawdownFromPeak
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 333
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 339
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -252,8 +252,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrawdownFromPeakPercent
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 334
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 340
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

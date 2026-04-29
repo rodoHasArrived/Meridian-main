@@ -23,7 +23,7 @@ public sealed class GlobalHotkeyService
 
     // Modifier flags for RegisterHotKey (subset used by default hotkeys)
     private const uint MOD_CTRL = 0x0002;
-    private const uint MOD_WIN  = 0x0008;
+    private const uint MOD_WIN = 0x0008;
 
     // Virtual-key codes
     private const uint VK_M = 0x4D;
@@ -79,7 +79,8 @@ public sealed class GlobalHotkeyService
         get => _isEnabled;
         set
         {
-            if (_isEnabled == value) return;
+            if (_isEnabled == value)
+                return;
             _isEnabled = value;
 
             if (_initialized)
@@ -102,7 +103,8 @@ public sealed class GlobalHotkeyService
     /// <param name="hwnd">The HWND that will receive WM_HOTKEY messages.</param>
     public void Initialize(IntPtr hwnd)
     {
-        if (_initialized) return;
+        if (_initialized)
+            return;
 
         _hwnd = hwnd;
         _initialized = true;
@@ -118,11 +120,13 @@ public sealed class GlobalHotkeyService
     /// <param name="hotkeyId">The <c>wParam</c> value from the WM_HOTKEY message.</param>
     public void HandleHotkeyMessage(int hotkeyId)
     {
-        if (!_isEnabled) return;
+        if (!_isEnabled)
+            return;
 
         foreach (var def in _definitions)
         {
-            if (def.Id != hotkeyId) continue;
+            if (def.Id != hotkeyId)
+                continue;
 
             GlobalHotkeyFired?.Invoke(this, new GlobalHotkeyFiredEventArgs(def.ActionId, def));
             return;
@@ -143,7 +147,8 @@ public sealed class GlobalHotkeyService
 
     private void RegisterAll()
     {
-        if (_hwnd == IntPtr.Zero) return;
+        if (_hwnd == IntPtr.Zero)
+            return;
 
         foreach (var def in _definitions)
         {
@@ -165,7 +170,8 @@ public sealed class GlobalHotkeyService
 
     private void UnregisterAll()
     {
-        if (_hwnd == IntPtr.Zero) return;
+        if (_hwnd == IntPtr.Zero)
+            return;
 
         foreach (var id in _registeredIds)
         {

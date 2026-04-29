@@ -4,62 +4,128 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
-      d:DesignHeight="900" d:DesignWidth="1200"
+      d:DesignHeight="900"
+      d:DesignWidth="1200"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Welcome">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
-        <StackPanel MaxWidth="1200">
+        <StackPanel MaxWidth="1240">
 
-            <!-- Header with branding -->
             <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="1.7*" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="44"
-                                Height="44"
-                                CornerRadius="14"
-                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                BorderBrush="{StaticResource InfoColorBrush}"
-                                BorderThickness="1">
-                            <TextBlock Text="{StaticResource IconHome}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24"
-                                       Foreground="{StaticResource InfoColorBrush}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                        </Border>
-                        <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Meridian Command Center"
-                                       Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="High-performance market data collection for real-time and historical workflows across providers."
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       TextWrapping="Wrap" />
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="48"
+                                    Height="48"
+                                    CornerRadius="16"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                    BorderThickness="1">
+                                <TextBlock Text="{StaticResource IconHome}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="26"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" />
+                            </Border>
+
+                            <StackPanel Margin="14,0,0,0">
+                                <TextBlock Text="Meridian Workstation"
+                                           Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="Choose the right operator lane first, then move into Research, Trading, Data Operations, or Governance without leaving the desktop shell."
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
                         </StackPanel>
+
+                        <WrapPanel Margin="0,18,0,0">
+                            <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="999"
+                                    Padding="10,4"
+                                    Margin="0,0,8,8">
+                                <TextBlock Text="4 operator workspaces"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Border>
+
+                            <Border Background="{StaticResource ConsoleAccentGreenAlpha10Brush}"
+                                    BorderBrush="{StaticResource SuccessColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="999"
+                                    Padding="10,4"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="8"
+                                             Height="8"
+                                             Fill="{Binding ConnectionStatusDotFill}"
+                                             Margin="0,0,6,0"
+                                             VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding ConnectionStatusText}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="999"
+                                    Padding="10,4"
+                                    Margin="0,0,8,8">
+                                <TextBlock Text="{Binding SymbolsCountText, StringFormat={}{0} symbols configured}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            </Border>
+                        </WrapPanel>
                     </StackPanel>
 
-                    <Border Grid.Column="1"
+                    <Border Grid.Column="2"
                             Background="{StaticResource ConsoleBackgroundMediumBrush}"
                             BorderBrush="{StaticResource ConsoleBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="999"
-                            Padding="10,4"
-                            Margin="16,0,0,0"
-                            VerticalAlignment="Top">
-                        <TextBlock Text="v1.6.1"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource InfoColorBrush}" />
+                            CornerRadius="16"
+                            Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="Landing Page Focus"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="The welcome surface now mirrors the workstation model: pick a shell, then use page-level jumps only when you need a specific operation."
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="Collection onboarding still lives below, but it is explicitly scoped to Data Operations instead of acting like the entire product home."
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap" />
+
+                            <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                                <Button Content="Open Documentation"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Click="OpenDocumentation_Click"
+                                        Margin="0,0,8,0" />
+                                <Button Content="Open Data Operations"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
+                            </StackPanel>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Border>
 
-            <!-- Getting Started Card -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <Grid Margin="0,0,0,16">
@@ -69,28 +135,158 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource IconPlay}"
+                            <TextBlock Text="{StaticResource IconDashboard}"
                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                                        FontSize="18"
                                        Foreground="{StaticResource InfoColorBrush}"
                                        VerticalAlignment="Center" />
-                            <TextBlock Text="Getting Started"
+                            <TextBlock Text="Choose A Workspace"
                                        Style="{StaticResource CardHeaderStyle}"
                                        Margin="8,0,0,0" />
                         </StackPanel>
 
                         <Button Grid.Column="1"
-                                Content="Open Documentation"
+                                Content="Open Research"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="OpenDocumentation_Click" />
+                                Command="{Binding NavigateToWorkspaceCommand}"
+                                CommandParameter="ResearchShell" />
                     </Grid>
 
-                    <TextBlock Text="Follow these five steps to begin collecting market data. Click any step to navigate directly to its configuration page."
+                    <TextBlock Text="Each shell owns a distinct part of the operator journey while keeping the same top-level navigation model across the desktop."
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+
+                    <ItemsControl ItemsSource="{Binding WorkspaceCards}" Margin="0,18,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Margin" Value="0,0,16,16" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="280"
+                                        Padding="16"
+                                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                        BorderBrush="{Binding AccentBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="16">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Width="42"
+                                                    Height="42"
+                                                    CornerRadius="14"
+                                                    Background="{Binding AccentBackgroundBrush}"
+                                                    BorderBrush="{Binding AccentBrush}"
+                                                    BorderThickness="1">
+                                                <TextBlock Text="{Binding IconGlyph}"
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                           FontSize="22"
+                                                           Foreground="{Binding AccentBrush}"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center" />
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding ShellDisplayName}"
+                                                           Margin="0,4,0,0"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding AccentBrush}" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <TextBlock Grid.Row="1"
+                                                   Margin="0,14,0,0"
+                                                   Text="{Binding Description}"
+                                                   Style="{StaticResource CardDescriptionStyle}" />
+
+                                        <Grid Grid.Row="2" Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Content="{Binding ActionLabel}"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    Command="{Binding DataContext.NavigateToWorkspaceCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding PageTag}" />
+
+                                            <Border Grid.Column="1"
+                                                    Margin="10,0,0,0"
+                                                    Background="{Binding AccentBackgroundBrush}"
+                                                    BorderBrush="{Binding AccentBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="999"
+                                                    Padding="10,4"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TileSummary}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding AccentBrush}" />
+                                            </Border>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconDataOps}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Data Operations Quick Start"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="Open Data Operations Workspace"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
+                    </Grid>
+
+                    <TextBlock Text="Use this route when you are onboarding provider collection, validating symbol coverage, or checking storage and freshness from a clean workstation."
                                TextWrapping="Wrap"
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                Margin="0,0,0,16" />
 
-                    <!-- Quick-start step cards -->
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -104,10 +300,13 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Step 1: Configure Provider -->
-                        <Border Grid.Column="0" Background="{StaticResource PremiumPanelBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
-                                CornerRadius="12" Padding="14" Cursor="Hand"
+                        <Border Grid.Column="0"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Cursor="Hand"
                                 MouseLeftButtonUp="StepProvider_CardClick">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="{StaticResource IconProvider}"
@@ -115,18 +314,26 @@
                                            FontSize="24"
                                            Foreground="{StaticResource InfoColorBrush}"
                                            HorizontalAlignment="Center" />
-                                <TextBlock Text="1. Provider" HorizontalAlignment="Center" FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
-                                <TextBlock Text="Configure data source" HorizontalAlignment="Center"
+                                <TextBlock Text="1. Provider"
+                                           HorizontalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,8,0,4" />
+                                <TextBlock Text="Configure data source"
+                                           HorizontalAlignment="Center"
                                            TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="11" />
                             </StackPanel>
                         </Border>
 
-                        <!-- Step 2: Add Symbols -->
-                        <Border Grid.Column="2" Background="{StaticResource PremiumPanelBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
-                                CornerRadius="12" Padding="14" Cursor="Hand"
+                        <Border Grid.Column="2"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Cursor="Hand"
                                 MouseLeftButtonUp="StepSymbols_CardClick">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="{StaticResource IconList}"
@@ -134,18 +341,26 @@
                                            FontSize="24"
                                            Foreground="{StaticResource InfoColorBrush}"
                                            HorizontalAlignment="Center" />
-                                <TextBlock Text="2. Symbols" HorizontalAlignment="Center" FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
-                                <TextBlock Text="Add subscriptions" HorizontalAlignment="Center"
+                                <TextBlock Text="2. Symbols"
+                                           HorizontalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,8,0,4" />
+                                <TextBlock Text="Add subscriptions"
+                                           HorizontalAlignment="Center"
                                            TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="11" />
                             </StackPanel>
                         </Border>
 
-                        <!-- Step 3: Set Storage -->
-                        <Border Grid.Column="4" Background="{StaticResource PremiumPanelBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
-                                CornerRadius="12" Padding="14" Cursor="Hand"
+                        <Border Grid.Column="4"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Cursor="Hand"
                                 MouseLeftButtonUp="StepStorage_CardClick">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="{StaticResource IconDatabase}"
@@ -153,56 +368,76 @@
                                            FontSize="24"
                                            Foreground="{StaticResource InfoColorBrush}"
                                            HorizontalAlignment="Center" />
-                                <TextBlock Text="3. Storage" HorizontalAlignment="Center" FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
-                                <TextBlock Text="Set output location" HorizontalAlignment="Center"
+                                <TextBlock Text="3. Storage"
+                                           HorizontalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,8,0,4" />
+                                <TextBlock Text="Set output location"
+                                           HorizontalAlignment="Center"
                                            TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="11" />
                             </StackPanel>
                         </Border>
 
-                        <!-- Step 4: Start Collection -->
-                        <Border Grid.Column="6" Background="{StaticResource PremiumPanelBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
-                                CornerRadius="12" Padding="14" Cursor="Hand"
-                                MouseLeftButtonUp="StepDashboard_CardClick">
+                        <Border Grid.Column="6"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Cursor="Hand"
+                                MouseLeftButtonUp="StepOperations_CardClick">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{StaticResource IconPlay}"
+                                <TextBlock Text="{StaticResource IconDataOps}"
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                                            FontSize="24"
-                                           Foreground="{StaticResource InfoColorBrush}"
+                                           Foreground="{StaticResource WarningColorBrush}"
                                            HorizontalAlignment="Center" />
-                                <TextBlock Text="4. Collect" HorizontalAlignment="Center" FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
-                                <TextBlock Text="Start collection" HorizontalAlignment="Center"
+                                <TextBlock Text="4. Operate"
+                                           HorizontalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,8,0,4" />
+                                <TextBlock Text="Open queue shell"
+                                           HorizontalAlignment="Center"
                                            TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="11" />
                             </StackPanel>
                         </Border>
 
-                        <!-- Step 5: Monitor Quality -->
-                        <Border Grid.Column="8" Background="{StaticResource PremiumPanelBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
-                                CornerRadius="12" Padding="14" Cursor="Hand"
+                        <Border Grid.Column="8"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Cursor="Hand"
                                 MouseLeftButtonUp="StepDataQuality_CardClick">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{StaticResource IconChart}"
+                                <TextBlock Text="{StaticResource IconDataQuality}"
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                                            FontSize="24"
-                                           Foreground="{StaticResource InfoColorBrush}"
+                                           Foreground="{StaticResource SuccessColorBrush}"
                                            HorizontalAlignment="Center" />
-                                <TextBlock Text="5. Monitor" HorizontalAlignment="Center" FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
-                                <TextBlock Text="Monitor quality" HorizontalAlignment="Center"
+                                <TextBlock Text="5. Quality"
+                                           HorizontalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,8,0,4" />
+                                <TextBlock Text="Monitor freshness"
+                                           HorizontalAlignment="Center"
                                            TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="11" />
                             </StackPanel>
                         </Border>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- System Overview and Recent Features side by side -->
             <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -210,7 +445,6 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- System Overview Card -->
                 <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -224,7 +458,6 @@
                                        Margin="8,0,0,0" />
                         </StackPanel>
 
-                        <!-- Connection Status -->
                         <Border Background="{StaticResource PremiumPanelBrush}"
                                 BorderBrush="{StaticResource ConsoleBorderBrush}"
                                 BorderThickness="1"
@@ -237,6 +470,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
+
                                 <TextBlock Grid.Column="0"
                                            Text="{StaticResource IconNetwork}"
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -253,8 +487,10 @@
                                                FontSize="11" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse Width="8" Height="8"
-                                             Fill="{Binding ConnectionStatusDotFill}" Margin="0,0,6,0" />
+                                    <Ellipse Width="8"
+                                             Height="8"
+                                             Fill="{Binding ConnectionStatusDotFill}"
+                                             Margin="0,0,6,0" />
                                     <TextBlock Text="{Binding ConnectionStatusText}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
@@ -262,7 +498,6 @@
                             </Grid>
                         </Border>
 
-                        <!-- Symbols Count -->
                         <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
                                 CornerRadius="8"
                                 Padding="12"
@@ -297,7 +532,6 @@
                             </Grid>
                         </Border>
 
-                        <!-- Storage Path -->
                         <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
                                 CornerRadius="8"
                                 Padding="12">
@@ -318,7 +552,7 @@
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                     <TextBlock Text="{Binding StoragePathText}"
-                                               FontFamily="Cascadia Code, Consolas, monospace"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}"
                                                FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                TextTrimming="CharacterEllipsis" />
@@ -326,207 +560,199 @@
                             </Grid>
                         </Border>
 
-                        <Button Content="Go to Dashboard"
+                        <Button Content="Open Data Operations Workspace"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 HorizontalAlignment="Left"
                                 Margin="0,16,0,0"
-                                Click="StepDashboard_Click" />
+                                Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
                     </StackPanel>
                 </Border>
 
-                <!-- Recent Features Card -->
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock Text="{StaticResource IconStar}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="18"
-                                       Foreground="{StaticResource InfoColorBrush}"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Text="Recent Features"
-                                       Style="{StaticResource CardHeaderStyle}"
-                                       Margin="8,0,0,0" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="What's new in v1.6.1"
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconStar}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="18"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Next Best Action"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+
+                            <Border Grid.Column="1"
+                                    Background="{Binding NextAction.AccentBackgroundBrush}"
+                                    BorderBrush="{Binding NextAction.AccentBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="999"
+                                    Padding="10,4">
+                                <TextBlock Text="{Binding NextAction.ToneLabel}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding NextAction.AccentBrush}" />
+                            </Border>
+                        </Grid>
+
+                        <Border Background="{Binding NextAction.AccentBackgroundBrush}"
+                                BorderBrush="{Binding NextAction.AccentBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14"
+                                Padding="16"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding NextAction.Title}"
+                                               FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                               FontSize="19"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               TextWrapping="Wrap" />
+
+                                    <Border Grid.Column="1"
+                                            AutomationProperties.AutomationId="WelcomeReadinessProgressText"
+                                            Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                            BorderBrush="{Binding NextAction.AccentBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="999"
+                                            Padding="10,4"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding ReadinessProgressText}"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding NextAction.AccentBrush}" />
+                                    </Border>
+                                </Grid>
+
+                                <TextBlock Text="{Binding NextAction.Summary}"
+                                           Margin="0,10,0,0"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap" />
+
+                                <TextBlock AutomationProperties.AutomationId="WelcomeReadinessSummaryText"
+                                           Text="{Binding ReadinessSummaryText}"
+                                           Margin="0,10,0,0"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+
+                                <WrapPanel Margin="0,16,0,0">
+                                    <Button Content="{Binding NextAction.PrimaryActionLabel}"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Command="{Binding NavigateToPageCommand}"
+                                            CommandParameter="{Binding NextAction.PrimaryActionPageTag}"
+                                            Margin="0,0,8,8" />
+                                    <Button Content="{Binding NextAction.SecondaryActionLabel}"
+                                            Style="{StaticResource GhostButtonStyle}"
+                                            Command="{Binding NavigateToPageCommand}"
+                                            CommandParameter="{Binding NextAction.SecondaryActionPageTag}"
+                                            Margin="0,0,0,8" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Readiness checks"
+                                   FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                   Margin="0,0,0,12" />
+                                   Margin="0,0,0,10" />
 
-                        <!-- Feature: WPF Desktop App -->
+                        <ItemsControl ItemsSource="{Binding ReadinessItems}">
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Width="38"
+                                                    Height="38"
+                                                    CornerRadius="12"
+                                                    Background="{Binding AccentBackgroundBrush}"
+                                                    BorderBrush="{Binding AccentBrush}"
+                                                    BorderThickness="1"
+                                                    VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding IconGlyph}"
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                           FontSize="18"
+                                                           Foreground="{Binding AccentBrush}"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center" />
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" Margin="12,0,16,0">
+                                                <WrapPanel Margin="0,0,0,6">
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                               Margin="0,0,8,0" />
+                                                    <Border Background="{Binding AccentBackgroundBrush}"
+                                                            BorderBrush="{Binding AccentBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="999"
+                                                            Padding="8,2">
+                                                        <TextBlock Text="{Binding StatusLabel}"
+                                                                   FontSize="10"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{Binding AccentBrush}" />
+                                                    </Border>
+                                                </WrapPanel>
+                                                <TextBlock Text="{Binding Detail}"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <Button Grid.Column="2"
+                                                    Content="{Binding ActionLabel}"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding ActionPageTag}"
+                                                    VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
                         <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="8"
+                                CornerRadius="10"
                                 Padding="12"
-                                Margin="0,0,0,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconCheckmark}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource SuccessColorBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,10,0" />
-                                <StackPanel>
-                                    <TextBlock Text="WPF Desktop App"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Full-featured Windows desktop client with modern UI"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               FontSize="11"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Feature: Data Quality Monitoring -->
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="8"
-                                Padding="12"
-                                Margin="0,0,0,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconCheckmark}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource SuccessColorBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,10,0" />
-                                <StackPanel>
-                                    <TextBlock Text="Data Quality Monitoring"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="SLA enforcement, gap analysis, and anomaly detection"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               FontSize="11"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Feature: Portable Data Packages -->
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="8"
-                                Padding="12"
-                                Margin="0,0,0,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconCheckmark}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource SuccessColorBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,10,0" />
-                                <StackPanel>
-                                    <TextBlock Text="Portable Data Packages"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Create, share, and import compressed data archives"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               FontSize="11"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Feature: QuantConnect Integration -->
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="8"
-                                Padding="12">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconCheckmark}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource SuccessColorBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,10,0" />
-                                <StackPanel>
-                                    <TextBlock Text="QuantConnect Integration"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Lean Engine data export for algorithmic backtesting"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               FontSize="11"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </StackPanel>
+                                Margin="0,8,0,0">
+                            <TextBlock Text="Routing rule: keep provider, symbol, storage, and freshness blockers inside Data Operations. Move into Research, Trading, or Governance only after setup stops being the limiting factor."
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap" />
                         </Border>
                     </StackPanel>
                 </Border>
             </Grid>
-
-            <!-- Quick Actions -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock Text="{StaticResource IconSettings}"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="18"
-                                   Foreground="{StaticResource InfoColorBrush}"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text="Quick Actions"
-                                   Style="{StaticResource CardHeaderStyle}"
-                                   Margin="8,0,0,0" />
-                    </StackPanel>
-
-                    <WrapPanel>
-                        <Button Style="{StaticResource SecondaryButtonStyle}"
-                                Click="StepProvider_Click"
-                                Margin="0,0,8,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconProvider}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Configure Provider" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource SecondaryButtonStyle}"
-                                Click="StepSymbols_Click"
-                                Margin="0,0,8,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconList}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Manage Symbols" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource SecondaryButtonStyle}"
-                                Click="StepStorage_Click"
-                                Margin="0,0,8,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconDatabase}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Storage Settings" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource SecondaryButtonStyle}"
-                                Click="StepDataQuality_Click"
-                                Margin="0,0,8,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconChart}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Data Quality" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource GhostButtonStyle}"
-                                Click="OpenDocumentation_Click"
-                                Margin="0,0,8,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconHelp}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Help &amp; Docs" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
 
         </StackPanel>
     </ScrollViewer>

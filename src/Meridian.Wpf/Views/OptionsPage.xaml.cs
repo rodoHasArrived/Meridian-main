@@ -20,7 +20,8 @@ public partial class OptionsPage : Page
         InitializeComponent();
 
         UiApiClient? apiClient = null;
-        try { apiClient = Ui.Services.ApiClientService.Instance?.UiApi; }
+        try
+        { apiClient = Ui.Services.ApiClientService.Instance?.UiApi; }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[OptionsPage] Failed to resolve API client: {ex.Message}");

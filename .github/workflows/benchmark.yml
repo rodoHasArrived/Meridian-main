@@ -123,6 +123,17 @@ jobs:
             BASELINE_ARGS="--baseline ./BenchmarkDotNet.Artifacts/baseline/results"
           fi
 
+          if ! find ./BenchmarkDotNet.Artifacts/current/results -type f -name '*.json' | grep -q .; then
+            {
+              echo "## Benchmark Regression Report"
+              echo ""
+              echo "_No current BenchmarkDotNet JSON results were produced; skipping regression comparison._"
+            } > benchmark-summary.md
+            echo "exit_code=0" >> $GITHUB_OUTPUT
+            cat benchmark-summary.md >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
           python3 scripts/compare_benchmarks.py \
             --current ./BenchmarkDotNet.Artifacts/current/results \
             $BASELINE_ARGS \

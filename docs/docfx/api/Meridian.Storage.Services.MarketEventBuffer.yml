@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventBuffer
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 230
   assemblies:
   - Meridian.Storage
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 232
   assemblies:
   - Meridian.Storage
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrainBySymbol
-    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    path: src/Meridian.Storage/Services/EventBuffer.cs
     startLine: 246
   assemblies:
   - Meridian.Storage

@@ -39,6 +39,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Valoren -> "Valoren"
         | IdentifierKind.PermTicker -> "PermTicker"
         | IdentifierKind.Ric -> "Ric"
+        | IdentifierKind.Cik -> "Cik"
 
     member _.Kind = kind
     member _.Value = identifier.Value
@@ -268,7 +269,11 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                issuerName = record.Common.IssuerName
                exchange = record.Common.Exchange
                lotSize = record.Common.LotSize
-               tickSize = record.Common.TickSize |})
+               tickSize = record.Common.TickSize
+               primaryListingMic = record.Common.PrimaryListingMic
+               countryOfIncorporation = record.Common.CountryOfIncorporation
+               settlementCycleDays = record.Common.SettlementCycleDays
+               holidayCalendarId = record.Common.HolidayCalendarId |})
 
     let provenanceJson =
         JsonSerializer.Serialize(

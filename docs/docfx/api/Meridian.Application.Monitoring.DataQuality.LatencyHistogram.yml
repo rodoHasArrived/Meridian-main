@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyHistogram
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDistribution
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllDistributions
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 71
   assemblies:
   - Meridian.Application
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBuckets
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPercentile
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 103
   assemblies:
   - Meridian.Application
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 117
   assemblies:
   - Meridian.Application
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHighLatencySymbols
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 161
   assemblies:
   - Meridian.Application
@@ -397,7 +397,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 177
   assemblies:
   - Meridian.Application
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAll
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 186
   assemblies:
   - Meridian.Application
@@ -461,7 +461,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 214
   assemblies:
   - Meridian.Application

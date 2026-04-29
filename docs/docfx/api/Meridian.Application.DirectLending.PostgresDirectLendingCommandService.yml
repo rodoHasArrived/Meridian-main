@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgresDirectLendingCommandService
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateLoanAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 73
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivateLoanAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 117
   assemblies:
   - Meridian.Application
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BookDrawdownAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 153
   assemblies:
   - Meridian.Application
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyRateResetAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 208
   assemblies:
   - Meridian.Application
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPrincipalPaymentAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 255
   assemblies:
   - Meridian.Application
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyMixedPaymentAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 304
   assemblies:
   - Meridian.Application
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssessFeeAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 372
   assemblies:
   - Meridian.Application
@@ -451,7 +451,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyWriteOffAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 427
   assemblies:
   - Meridian.Application
@@ -494,7 +494,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostDailyAccrualAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 469
   assemblies:
   - Meridian.Application
@@ -537,7 +537,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestProjectionAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 527
   assemblies:
   - Meridian.Application
@@ -580,7 +580,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostJournalAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 566
   assemblies:
   - Meridian.Application
@@ -616,7 +616,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 574
   assemblies:
   - Meridian.Application
@@ -657,7 +657,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateServicerReportBatchAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 669
   assemblies:
   - Meridian.Application
@@ -698,7 +698,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChargePrepaymentPenaltyAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 785
   assemblies:
   - Meridian.Application
@@ -741,7 +741,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAllAsync
-    path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
+    path: src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs
     startLine: 837
   assemblies:
   - Meridian.Application

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestStudioRunHandle
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineRunHandle
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 26
   assemblies:
   - Meridian.Application

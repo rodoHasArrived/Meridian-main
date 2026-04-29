@@ -99,7 +99,8 @@ public static class TaxLotSelectors
 
             foreach (var id in lotIds)
             {
-                if (toRelieve == 0) break;
+                if (toRelieve == 0)
+                    break;
 
                 if (!lotMap.TryGetValue(id, out var lot))
                     throw new InvalidOperationException($"Lot {id} not found in open positions.");

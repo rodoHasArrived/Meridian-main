@@ -96,6 +96,7 @@ type PortfolioLedgerCheckResult = {
     HasActualAmount: bool
     Variance: decimal
     Reason: string
+    Severity: string
     ExpectedAsOf: System.DateTimeOffset
     ActualAsOf: System.DateTimeOffset
     HasExpectedAsOf: bool
@@ -104,6 +105,35 @@ type PortfolioLedgerCheckResult = {
 
 [<RequireQualifiedAccess>]
 module Reconciliation =
+
+    let private amountVariancePct expected actual =
+        if expected <> 0m then
+            abs ((actual - expected) / expected)
+        elif actual = 0m then
+            0m
+        else
+            1m
+
+    let private timingDriftMinutes (expectedAsOf: System.DateTimeOffset) (actualAsOf: System.DateTimeOffset) =
+        abs ((actualAsOf - expectedAsOf).TotalMinutes)
+
+    let private partialTimingConfidence maxAsOfDriftMinutes (driftMinutes: float) =
+        let safeTolerance = decimal (max 1 maxAsOfDriftMinutes)
+        1.0m - (decimal driftMinutes / safeTolerance) * 0.3m
+
+    let private partialAmountConfidence amountTolerance variancePct =
+        1.0m - (variancePct / max 0.001m amountTolerance) * 0.3m
+
+    let private classifyTimingSeverity maxAsOfDriftMinutes (driftMinutes: float) =
+        let safeTolerance = max 1 maxAsOfDriftMinutes
+        let roundedDrift = int (System.Math.Ceiling(driftMinutes))
+
+        if roundedDrift >= safeTolerance * 6 then
+            BreakSeverity.High
+        elif roundedDrift >= safeTolerance * 2 then
+            BreakSeverity.Medium
+        else
+            BreakSeverity.Low
 
     let private statusOfOutcome = function
         | ReconciliationOutcome.Matched -> ReconciliationStatus.Matched
@@ -223,25 +253,60 @@ module Reconciliation =
                 else
                     0m
 
-            let hasTimingDrift =
-                check.HasExpectedAsOf
-                && check.HasActualAsOf
-                && abs ((check.ActualAsOf - check.ExpectedAsOf).TotalMinutes) > float maxAsOfDriftMinutes
-
-            let category, status, missingSource, reason, isMatch =
-                if hasTimingDrift then
-                    "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false
-                elif check.ExpectedPresent && not check.ActualPresent then
-                    "missing_ledger_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "ledger" else check.MissingSourceHint), "Expected portfolio coverage is missing a ledger counterpart.", false
+            let category, status, missingSource, reason, isMatch, severity =
+                if check.ExpectedPresent && not check.ActualPresent then
+                    "missing_ledger_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "ledger" else check.MissingSourceHint), "Expected portfolio coverage is missing a ledger counterpart.", false, BreakSeverity.asString BreakSeverity.Medium
                 elif not check.ExpectedPresent && check.ActualPresent then
-                    "missing_portfolio_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "portfolio" else check.MissingSourceHint), "Ledger coverage exists without a matching portfolio reference.", false
+                    "missing_portfolio_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "portfolio" else check.MissingSourceHint), "Ledger coverage exists without a matching portfolio reference.", false, BreakSeverity.asString BreakSeverity.Medium
                 elif not (System.String.IsNullOrWhiteSpace check.ActualKind)
                      && not (System.String.Equals(check.ActualKind, check.CategoryHint, System.StringComparison.OrdinalIgnoreCase)) then
-                    "classification_gap", "open", "unknown", "Coverage was found, but it is classified in the wrong ledger bucket.", false
-                elif check.HasExpectedAmount && check.HasActualAmount && abs variance > amountTolerance then
-                    "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false
+                    "classification_gap", "open", "unknown", "Coverage was found, but it is classified in the wrong ledger bucket.", false, BreakSeverity.asString BreakSeverity.High
+                elif check.HasExpectedAmount && check.HasActualAmount && check.HasExpectedAsOf && check.HasActualAsOf then
+                    let expectedAmountForSeverity =
+                        if check.ExpectedAmount <> 0m then
+                            abs check.ExpectedAmount
+                        elif check.ActualAmount <> 0m then
+                            abs check.ActualAmount
+                        else
+                            1m
+
+                    let variancePct = amountVariancePct check.ExpectedAmount check.ActualAmount
+                    let driftMinutes = timingDriftMinutes check.ExpectedAsOf check.ActualAsOf
+                    let amountWithinTolerance = variancePct <= max 0m amountTolerance
+                    let timingWithinTolerance = driftMinutes <= float (max 0 maxAsOfDriftMinutes)
+                    let roundedDriftMinutes = int (System.Math.Ceiling(driftMinutes))
+
+                    match timingWithinTolerance, amountWithinTolerance with
+                    | true, true ->
+                        "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
+                    | false, true ->
+                        let confidence = partialTimingConfidence maxAsOfDriftMinutes driftMinutes
+                        if confidence >= 0.60m then
+                            "partial_match", "partial_match", "unknown", sprintf "Timing drift %d minute(s)" roundedDriftMinutes, false, BreakSeverity.asString BreakSeverity.Low
+                        else
+                            let severity = classifyTimingSeverity maxAsOfDriftMinutes driftMinutes |> BreakSeverity.asString
+                            "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false, severity
+                    | true, false ->
+                        let confidence = partialAmountConfidence amountTolerance variancePct
+                        if confidence >= 0.60m then
+                            "partial_match", "partial_match", "unknown", sprintf "Amount variance %.2f%%" (float variancePct * 100.0), false, BreakSeverity.asString BreakSeverity.Low
+                        else
+                            let severity =
+                                LedgerBreakClassification.severity expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount))
+                                |> BreakSeverity.asString
+                            "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, severity
+                    | false, false ->
+                        let timingRatio = decimal roundedDriftMinutes / decimal (max 1 maxAsOfDriftMinutes)
+                        if variancePct >= timingRatio then
+                            let severity =
+                                LedgerBreakClassification.severity expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount))
+                                |> BreakSeverity.asString
+                            "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, severity
+                        else
+                            let severity = classifyTimingSeverity maxAsOfDriftMinutes driftMinutes |> BreakSeverity.asString
+                            "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false, severity
                 else
-                    "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true
+                    "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
 
             {
                 CheckId = check.CheckId
@@ -258,6 +323,7 @@ module Reconciliation =
                 HasActualAmount = check.HasActualAmount
                 Variance = variance
                 Reason = reason
+                Severity = severity
                 ExpectedAsOf = check.ExpectedAsOf
                 ActualAsOf = check.ActualAsOf
                 HasExpectedAsOf = check.HasExpectedAsOf

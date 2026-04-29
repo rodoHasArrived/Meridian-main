@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
-using UiServices = Meridian.Ui.Services;
-using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
 using SessionState = Meridian.Ui.Services.SessionState;
-using WorkspaceCategory = Meridian.Ui.Services.WorkspaceCategory;
-using WorkspacePage = Meridian.Ui.Services.WorkspacePage;
+using UiServices = Meridian.Ui.Services;
 using WidgetPosition = Meridian.Ui.Services.WidgetPosition;
 using WindowBounds = Meridian.Ui.Services.WindowBounds;
+using WorkspaceCategory = Meridian.Ui.Services.WorkspaceCategory;
 using WorkspaceEventArgs = Meridian.Ui.Services.WorkspaceEventArgs;
+using WorkspacePage = Meridian.Ui.Services.WorkspacePage;
+using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
 
 namespace Meridian.Wpf.Services;
 
@@ -114,10 +114,14 @@ public sealed class WorkspaceService
     private static readonly IReadOnlyDictionary<string, string> LegacyWorkspaceIdMap =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["monitoring"] = "research",
+            ["research"] = "strategy",
+            ["data-operations"] = "data",
+            ["governance"] = "accounting",
+            ["trading"] = "trading",
+            ["monitoring"] = "strategy",
             ["backfill-ops"] = "trading",
-            ["storage-admin"] = "data-operations",
-            ["analysis-export"] = "governance"
+            ["storage-admin"] = "data",
+            ["analysis-export"] = "reporting"
         };
 
     private static readonly Lazy<IReadOnlyDictionary<string, string>> UniquePageWorkspaceOwnership =
@@ -193,7 +197,8 @@ public sealed class WorkspaceService
                     if (data.ActiveWorkspaceId != null)
                     {
                         var normalizedWorkspaceId = NormalizeWorkspaceId(data.ActiveWorkspaceId);
-                        _activeWorkspace = _workspaces.FirstOrDefault(w => w.Id == normalizedWorkspaceId);
+                        _activeWorkspace = _workspaces.FirstOrDefault(w => w.Id == normalizedWorkspaceId)
+                            ?? _workspaces.FirstOrDefault(w => w.Id == data.ActiveWorkspaceId);
                     }
 
                     _lastSession = data.LastSession;
@@ -335,7 +340,8 @@ public sealed class WorkspaceService
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
             if (workspace != null && !workspace.IsBuiltIn)
             {
                 _workspaces.Remove(workspace);
@@ -350,7 +356,8 @@ public sealed class WorkspaceService
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
             if (workspace != null)
             {
                 var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
@@ -525,7 +532,8 @@ public sealed class WorkspaceService
         {
             await EnsureInitializedAsync().ConfigureAwait(false);
 
-            var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            var workspace = _workspaces.FirstOrDefault(w => string.Equals(w.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
             return workspace != null
                 ? JsonSerializer.Serialize(workspace, UiServices.DesktopJsonOptions.PrettyPrint)
                 : string.Empty;
@@ -562,131 +570,39 @@ public sealed class WorkspaceService
 
     private static List<WorkspaceTemplate> GetDefaultWorkspaces()
     {
-        return new List<WorkspaceTemplate>
-        {
-            new WorkspaceTemplate
+        var now = DateTime.UtcNow;
+        return ShellNavigationCatalog.Workspaces
+            .Select(workspace => new WorkspaceTemplate
             {
-                Id = "research",
-                Name = "Research",
-                Description = "Backtests, experiments, charts, strategy runs, and result analysis.",
-                PreferredPageTag = "Dashboard",
-                Category = WorkspaceCategory.Research,
+                Id = workspace.Id,
+                Name = workspace.Title,
+                Description = workspace.Description,
+                PreferredPageTag = workspace.HomePageTag,
+                Category = GetWorkspaceCategory(workspace.Id),
                 IsBuiltIn = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Pages = new List<WorkspacePage>
-                {
-                    new WorkspacePage { PageTag = "Dashboard", Title = "Dashboard", IsDefault = true },
-                    new WorkspacePage { PageTag = "Backtest", Title = "Backtest" },
-                    new WorkspacePage { PageTag = "BatchBacktest", Title = "Batch Backtest" },
-                    new WorkspacePage { PageTag = "QuantScript", Title = "QuantScript" },
-                    new WorkspacePage { PageTag = "StrategyRuns", Title = "Strategy Runs" },
-                    new WorkspacePage { PageTag = "RunDetail", Title = "Run Detail" },
-                    new WorkspacePage { PageTag = "RunPortfolio", Title = "Run Portfolio" },
-                    new WorkspacePage { PageTag = "RunCashFlow", Title = "Run Cash Flow" },
-                    new WorkspacePage { PageTag = "LeanIntegration", Title = "Lean Integration" },
-                    new WorkspacePage { PageTag = "Charts", Title = "Charts" },
-                    new WorkspacePage { PageTag = "AdvancedAnalytics", Title = "Advanced Analytics" },
-                    new WorkspacePage { PageTag = "RunMat", Title = "RunMat Lab" },
-                    new WorkspacePage { PageTag = "Watchlist", Title = "Watchlist" },
-                    new WorkspacePage { PageTag = "ResearchShell", Title = "Research Workspace" }
-                }
-            },
-            new WorkspaceTemplate
-            {
-                Id = "trading",
-                Name = "Trading",
-                Description = "Live monitoring, order flow, and trading controls.",
-                PreferredPageTag = "LiveData",
-                Category = WorkspaceCategory.Trading,
-                IsBuiltIn = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Pages = new List<WorkspacePage>
-                {
-                    new WorkspacePage { PageTag = "LiveData", Title = "Live Data", IsDefault = true },
-                    new WorkspacePage { PageTag = "TradingHours", Title = "Trading Hours" },
-                    new WorkspacePage { PageTag = "StrategyRuns", Title = "Strategy Runs" },
-                    new WorkspacePage { PageTag = "RunPortfolio", Title = "Run Portfolio" },
-                    new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
-                    new WorkspacePage { PageTag = "PositionBlotter", Title = "Position Blotter" },
-                    new WorkspacePage { PageTag = "RunRisk", Title = "Run Risk" },
-                    new WorkspacePage { PageTag = "OrderBook", Title = "Order Book" },
-                    new WorkspacePage { PageTag = "TradingShell", Title = "Trading Workspace" }
-                }
-            },
-            new WorkspaceTemplate
-            {
-                Id = "data-operations",
-                Name = "Data Operations",
-                Description = "Providers, symbols, backfills, storage, schedules, and exports.",
-                PreferredPageTag = "Provider",
-                Category = WorkspaceCategory.DataOperations,
-                IsBuiltIn = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Pages = new List<WorkspacePage>
-                {
-                    new WorkspacePage { PageTag = "Provider", Title = "Provider", IsDefault = true },
-                    new WorkspacePage { PageTag = "DataSources", Title = "Data Sources" },
-                    new WorkspacePage { PageTag = "Symbols", Title = "Symbols" },
-                    new WorkspacePage { PageTag = "SymbolMapping", Title = "Symbol Mapping" },
-                    new WorkspacePage { PageTag = "SymbolStorage", Title = "Symbol Storage" },
-                    new WorkspacePage { PageTag = "Backfill", Title = "Backfill" },
-                    new WorkspacePage { PageTag = "Schedules", Title = "Schedules" },
-                    new WorkspacePage { PageTag = "IndexSubscription", Title = "Index Subscription" },
-                    new WorkspacePage { PageTag = "Storage", Title = "Storage" },
-                    new WorkspacePage { PageTag = "PackageManager", Title = "Packages" },
-                    new WorkspacePage { PageTag = "DataExport", Title = "Data Export" },
-                    new WorkspacePage { PageTag = "ExportPresets", Title = "Export Presets" },
-                    new WorkspacePage { PageTag = "AnalysisExport", Title = "Analysis Export" },
-                    new WorkspacePage { PageTag = "AnalysisExportWizard", Title = "Analysis Export Wizard" },
-                    new WorkspacePage { PageTag = "DataBrowser", Title = "Data Browser" },
-                    new WorkspacePage { PageTag = "DataCalendar", Title = "Data Calendar" },
-                    new WorkspacePage { PageTag = "DataSampling", Title = "Data Sampling" },
-                    new WorkspacePage { PageTag = "TimeSeriesAlignment", Title = "Time Series Alignment" },
-                    new WorkspacePage { PageTag = "EventReplay", Title = "Event Replay" },
-                    new WorkspacePage { PageTag = "Options", Title = "Options / Derivatives" },
-                    new WorkspacePage { PageTag = "PortfolioImport", Title = "Portfolio Import" },
-                    new WorkspacePage { PageTag = "AddProviderWizard", Title = "Add Provider Wizard" }
-                }
-            },
-            new WorkspaceTemplate
-            {
-                Id = "governance",
-                Name = "Governance",
-                Description = "Quality, audit, health, diagnostics, retention, security, and settings.",
-                PreferredPageTag = "DataQuality",
-                Category = WorkspaceCategory.Governance,
-                IsBuiltIn = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Pages = new List<WorkspacePage>
-                {
-                    new WorkspacePage { PageTag = "DataQuality", Title = "Data Quality", IsDefault = true },
-                    new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
-                    new WorkspacePage { PageTag = "ProviderHealth", Title = "Provider Health" },
-                    new WorkspacePage { PageTag = "SystemHealth", Title = "System Health" },
-                    new WorkspacePage { PageTag = "Diagnostics", Title = "Diagnostics" },
-                    new WorkspacePage { PageTag = "ArchiveHealth", Title = "Archive Health" },
-                    new WorkspacePage { PageTag = "ServiceManager", Title = "Service Manager" },
-                    new WorkspacePage { PageTag = "CollectionSessions", Title = "Collection Sessions" },
-                    new WorkspacePage { PageTag = "StorageOptimization", Title = "Storage Optimization" },
-                    new WorkspacePage { PageTag = "RetentionAssurance", Title = "Retention Assurance" },
-                    new WorkspacePage { PageTag = "AdminMaintenance", Title = "Admin Maintenance" },
-                    new WorkspacePage { PageTag = "ActivityLog", Title = "Activity Log" },
-                    new WorkspacePage { PageTag = "MessagingHub", Title = "Messaging Hub" },
-                    new WorkspacePage { PageTag = "NotificationCenter", Title = "Notification Center" },
-                    new WorkspacePage { PageTag = "SecurityMaster", Title = "Security Master" },
-                    new WorkspacePage { PageTag = "DirectLending", Title = "Direct Lending" },
-                    new WorkspacePage { PageTag = "CredentialManagement", Title = "Credential Management" },
-                    new WorkspacePage { PageTag = "SetupWizard", Title = "Setup Wizard" },
-                    new WorkspacePage { PageTag = "KeyboardShortcuts", Title = "Keyboard Shortcuts" },
-                    new WorkspacePage { PageTag = "Settings", Title = "Settings" }
-                }
-            }
-        };
+                CreatedAt = now,
+                UpdatedAt = now,
+                Pages = ShellNavigationCatalog.GetPagesForWorkspace(workspace.Id)
+                    .Select(page => new WorkspacePage
+                    {
+                        PageTag = page.PageTag,
+                        Title = page.Title,
+                        IsDefault = string.Equals(page.PageTag, workspace.HomePageTag, StringComparison.OrdinalIgnoreCase)
+                    })
+                    .ToList()
+            })
+            .ToList();
     }
+
+    private static WorkspaceCategory GetWorkspaceCategory(string workspaceId)
+        => workspaceId switch
+        {
+            "strategy" => WorkspaceCategory.Research,
+            "trading" => WorkspaceCategory.Trading,
+            "data" => WorkspaceCategory.DataOperations,
+            "portfolio" or "accounting" or "reporting" or "settings" => WorkspaceCategory.Governance,
+            _ => WorkspaceCategory.Custom
+        };
 
     private bool EnsureBuiltInWorkspaces()
     {
@@ -696,7 +612,7 @@ public sealed class WorkspaceService
             var existing = _workspaces.FirstOrDefault(workspace => workspace.Id == builtIn.Id);
             if (existing is null)
             {
-                _workspaces.Insert(0, builtIn);
+                _workspaces.Add(builtIn);
                 changed = true;
                 continue;
             }
@@ -715,6 +631,13 @@ public sealed class WorkspaceService
                 existing.Description = builtIn.Description;
                 existing.Category = builtIn.Category;
                 existing.PreferredPageTag = builtIn.PreferredPageTag;
+                changed = true;
+            }
+
+            var removedPages = existing.Pages.RemoveAll(page =>
+                builtIn.Pages.All(builtInPage => !string.Equals(builtInPage.PageTag, page.PageTag, StringComparison.OrdinalIgnoreCase)));
+            if (removedPages > 0)
+            {
                 changed = true;
             }
 
@@ -754,8 +677,9 @@ public sealed class WorkspaceService
             }
         }
 
-        AddOwner(owners, "GovernanceShell", "governance");
-        AddOwner(owners, "DataOperationsShell", "data-operations");
+        AddOwner(owners, "ResearchShell", "strategy");
+        AddOwner(owners, "DataOperationsShell", "data");
+        AddOwner(owners, "GovernanceShell", "accounting");
 
         return owners
             .Where(static pair => pair.Value.Count == 1)
@@ -844,6 +768,9 @@ public sealed class WorkspaceService
             }
         }
 
+        changed |= MigrateDockLayoutKeys();
+        changed |= MigrateWorkspaceLayoutKeys();
+
         return changed;
     }
 
@@ -854,9 +781,62 @@ public sealed class WorkspaceService
             return workspaceId;
         }
 
-        return LegacyWorkspaceIdMap.TryGetValue(workspaceId, out var mappedWorkspaceId)
+        var trimmed = workspaceId.Trim();
+        return LegacyWorkspaceIdMap.TryGetValue(trimmed, out var mappedWorkspaceId)
             ? mappedWorkspaceId
-            : workspaceId;
+            : trimmed;
+    }
+
+    private static string NormalizeWorkspaceLayoutKey(string layoutKey)
+    {
+        if (string.IsNullOrWhiteSpace(layoutKey))
+        {
+            return layoutKey;
+        }
+
+        var parts = layoutKey.Split(["::"], 2, StringSplitOptions.None);
+        var normalizedWorkspaceId = NormalizeWorkspaceId(parts[0]) ?? parts[0].Trim();
+        return parts.Length == 1
+            ? normalizedWorkspaceId
+            : $"{normalizedWorkspaceId}::{parts[1]}";
+    }
+
+    private bool MigrateDockLayoutKeys()
+    {
+        var changed = false;
+        foreach (var pair in _dockLayouts.ToArray())
+        {
+            var normalizedKey = NormalizeWorkspaceLayoutKey(pair.Key);
+            if (string.Equals(pair.Key, normalizedKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            _dockLayouts.TryAdd(normalizedKey, pair.Value);
+            _dockLayouts.Remove(pair.Key);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private bool MigrateWorkspaceLayoutKeys()
+    {
+        var changed = false;
+        foreach (var pair in _workspaceLayouts.ToArray())
+        {
+            var normalizedKey = NormalizeWorkspaceLayoutKey(pair.Key);
+            if (string.Equals(pair.Key, normalizedKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            _workspaceLayouts.TryAdd(normalizedKey, CloneWorkstationLayoutState(pair.Value));
+            _workspaceLayouts.Remove(pair.Key);
+            changed = true;
+        }
+
+        return changed;
     }
 
     private static bool TryMapLegacyBuiltIn(string? workspaceId, out WorkspaceTemplate builtIn)
@@ -1054,7 +1034,7 @@ public sealed class WorkspaceService
 
         return workspace.Pages.FirstOrDefault(static page => page.IsDefault)?.PageTag
             ?? workspace.Pages.FirstOrDefault()?.PageTag
-            ?? "Dashboard";
+            ?? ShellNavigationCatalog.GetDefaultWorkspace().HomePageTag;
     }
 
     private static string ResolveActivePageTag(WorkspaceTemplate workspace, SessionState session)
@@ -1210,10 +1190,57 @@ public sealed class WorkspaceService
 
     private static string BuildWorkspaceLayoutKey(string workspaceId, string? fundProfileId)
     {
+        var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId.Trim();
+        return BuildRawWorkspaceLayoutKey(normalizedWorkspaceId, fundProfileId);
+    }
+
+    private static string BuildRawWorkspaceLayoutKey(string workspaceId, string? fundProfileId)
+    {
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         return string.IsNullOrWhiteSpace(normalizedFundProfileId)
             ? workspaceId
             : $"{workspaceId}::{normalizedFundProfileId}";
+    }
+
+    private static IReadOnlyList<string> BuildWorkspaceLayoutLookupKeys(string workspaceId, string? fundProfileId)
+    {
+        var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId.Trim();
+        var keys = new List<string>
+        {
+            BuildRawWorkspaceLayoutKey(normalizedWorkspaceId, fundProfileId)
+        };
+
+        if (!string.Equals(normalizedWorkspaceId, workspaceId, StringComparison.OrdinalIgnoreCase))
+        {
+            keys.Add(BuildRawWorkspaceLayoutKey(workspaceId, fundProfileId));
+        }
+
+        foreach (var legacyPair in LegacyWorkspaceIdMap)
+        {
+            if (string.Equals(legacyPair.Key, legacyPair.Value, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(legacyPair.Value, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            keys.Add(BuildRawWorkspaceLayoutKey(legacyPair.Key, fundProfileId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            keys.Add(normalizedWorkspaceId);
+            foreach (var legacyPair in LegacyWorkspaceIdMap)
+            {
+                if (!string.Equals(legacyPair.Value, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                keys.Add(legacyPair.Key);
+            }
+        }
+
+        return keys.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
     public event EventHandler<WorkspaceEventArgs>? WorkspaceCreated;
@@ -1225,14 +1252,14 @@ public sealed class WorkspaceService
 
     /// <summary>
     /// Persists the AvalonDock layout XML string for a named workspace shell
-    /// (e.g., "trading" or "research") to the local application settings file.
+    /// (e.g., "trading" or "strategy") to the local application settings file.
     /// </summary>
     public Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default)
         => WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            _dockLayouts[workspaceId] = layoutXml;
+            _dockLayouts[BuildWorkspaceLayoutKey(workspaceId, null)] = layoutXml;
 
             await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
         }, ct);
@@ -1245,24 +1272,25 @@ public sealed class WorkspaceService
         => WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
-            var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
-            if (_dockLayouts.TryGetValue(layoutKey, out var xml))
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId.Trim();
+            foreach (var layoutKey in BuildWorkspaceLayoutLookupKeys(workspaceId, fundProfileId))
             {
-                return xml;
+                if (_dockLayouts.TryGetValue(layoutKey, out var xml))
+                {
+                    return xml;
+                }
             }
 
-            if (!string.Equals(layoutKey, workspaceId, StringComparison.OrdinalIgnoreCase) &&
-                _dockLayouts.TryGetValue(workspaceId, out xml))
+            foreach (var layoutKey in BuildWorkspaceLayoutLookupKeys(workspaceId, fundProfileId))
             {
-                return xml;
+                if (_workspaceLayouts.TryGetValue(layoutKey, out var layoutState))
+                {
+                    return layoutState.DockLayoutXml;
+                }
             }
 
-            if (_workspaceLayouts.TryGetValue(layoutKey, out var layoutState))
-            {
-                return layoutState.DockLayoutXml;
-            }
-
-            if (_activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null)
+            if (string.Equals(_activeWorkspace?.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase) &&
+                _lastSession?.WorkstationLayout is not null)
             {
                 return _lastSession.WorkstationLayout.DockLayoutXml;
             }
@@ -1283,7 +1311,8 @@ public sealed class WorkspaceService
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId.Trim();
+            var layoutKey = BuildWorkspaceLayoutKey(normalizedWorkspaceId, fundProfileId);
             var clonedLayout = CloneWorkstationLayoutState(layoutState);
             clonedLayout.SavedAt = DateTime.UtcNow;
             _workspaceLayouts[layoutKey] = clonedLayout;
@@ -1293,7 +1322,7 @@ public sealed class WorkspaceService
                 _dockLayouts[layoutKey] = clonedLayout.DockLayoutXml!;
             }
 
-            if (_activeWorkspace?.Id == workspaceId)
+            if (string.Equals(_activeWorkspace?.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase))
             {
                 _lastSession ??= new SessionState();
                 _lastSession.WorkstationLayout = CloneWorkstationLayoutState(clonedLayout);
@@ -1322,12 +1351,19 @@ public sealed class WorkspaceService
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-            var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
-            return _workspaceLayouts.TryGetValue(layoutKey, out var layoutState)
-                ? CloneWorkstationLayoutState(layoutState)
-                : _activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null
-                    ? CloneWorkstationLayoutState(_lastSession.WorkstationLayout)
-                    : null;
+            var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId.Trim();
+            foreach (var layoutKey in BuildWorkspaceLayoutLookupKeys(workspaceId, fundProfileId))
+            {
+                if (_workspaceLayouts.TryGetValue(layoutKey, out var layoutState))
+                {
+                    return CloneWorkstationLayoutState(layoutState);
+                }
+            }
+
+            return string.Equals(_activeWorkspace?.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase) &&
+                   _lastSession?.WorkstationLayout is not null
+                ? CloneWorkstationLayoutState(_lastSession.WorkstationLayout)
+                : null;
         }, ct);
     }
 

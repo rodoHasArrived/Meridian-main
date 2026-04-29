@@ -568,11 +568,15 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             throw new InvalidOperationException($"Node {request.NodeId} was not found.");
         }
 
+        var normalizedAssignmentReference = LedgerGroupingRules.NormalizeAssignmentReference(
+            request.AssignmentType,
+            request.AssignmentReference);
+
         var assignment = new FundStructureAssignmentDto(
             request.AssignmentId,
             request.NodeId,
             request.AssignmentType,
-            request.AssignmentReference,
+            normalizedAssignmentReference,
             request.EffectiveFrom,
             request.EffectiveTo,
             request.IsPrimary);
@@ -1014,13 +1018,10 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             .Where(portfolio => query.InvestmentPortfolioId is null || portfolio.InvestmentPortfolioId == query.InvestmentPortfolioId.Value)
             .ToList();
         portfolios = AttachSharedDataAccess(portfolios, sharedDataAccess).ToList();
-        var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        var accountScope = BuildAccountingAccountScope(scoped, portfolios);
         var accounts = scoped.Accounts
             .Where(account => query.LedgerReference is null || string.Equals(account.LedgerReference, query.LedgerReference, StringComparison.OrdinalIgnoreCase))
-            .Where(account =>
-                portfolioIds.Count == 0
-                || (TryParseGuid(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId))
-                || IsAccountLinkedToAny(account.AccountId, portfolioIds, scoped.OwnershipLinks))
+            .Where(account => IsAccountInAccountingScope(account, query, accountScope, scoped.OwnershipLinks))
             .ToList();
 
         var organization = query.OrganizationId.HasValue
@@ -1030,15 +1031,10 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             ? scoped.Businesses.FirstOrDefault(candidate => candidate.BusinessId == query.BusinessId.Value)
             : scoped.Businesses.FirstOrDefault();
         var portfolioById = portfolios.ToDictionary(static portfolio => portfolio.InvestmentPortfolioId);
-        var ledgerAssignments = scoped.Assignments
-            .Where(assignment => AssignmentComparer.Equals(assignment.AssignmentType, "LedgerGroup"))
-            .GroupBy(static assignment => assignment.NodeId)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group.Select(static assignment => assignment.AssignmentReference).First());
+        var ledgerAssignments = LedgerGroupingRules.BuildLedgerAssignments(scoped.Assignments);
 
         var ledgerGroups = accounts
-            .GroupBy(account => ResolveLedgerGroup(account, ledgerAssignments))
+            .GroupBy(account => LedgerGroupingRules.ResolveLedgerGroupId(account, ledgerAssignments))
             .Select(group =>
             {
                 var accountIds = group.Select(static account => account.AccountId).ToList();
@@ -1056,8 +1052,8 @@ public sealed class InMemoryFundStructureService : IFundStructureService
                     .ToList();
 
                 return new LedgerGroupSummaryDto(
-                    new LedgerGroupId(group.Key),
-                    DisplayName: group.Key,
+                    group.Key,
+                    DisplayName: group.Key.Value,
                     accountIds,
                     relatedPortfolioIds,
                     relatedPortfolios.Where(static portfolio => portfolio.ClientId.HasValue).Select(static portfolio => portfolio.ClientId!.Value).Distinct().ToList(),
@@ -1234,19 +1230,14 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         }
     }
 
-    private static IReadOnlyDictionary<Guid, string> BuildLedgerAssignments(
+    private static IReadOnlyDictionary<Guid, LedgerGroupId> BuildLedgerAssignments(
         IReadOnlyList<FundStructureAssignmentDto> assignments) =>
-        assignments
-            .Where(assignment => AssignmentComparer.Equals(assignment.AssignmentType, "LedgerGroup"))
-            .GroupBy(static assignment => assignment.NodeId)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group.Select(static assignment => assignment.AssignmentReference).First());
+        LedgerGroupingRules.BuildLedgerAssignments(assignments);
 
     private static ResolvedCashFlowScope? ResolveCashFlowScope(
         GovernanceCashFlowQuery query,
         StructureScope scoped,
-        IReadOnlyDictionary<Guid, string> ledgerAssignments)
+        IReadOnlyDictionary<Guid, LedgerGroupId> ledgerAssignments)
     {
         return query.ScopeKind switch
         {
@@ -1623,7 +1614,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
     private static ResolvedCashFlowScope? ResolveLedgerGroupCashFlowScope(
         GovernanceCashFlowQuery query,
         StructureScope scoped,
-        IReadOnlyDictionary<Guid, string> ledgerAssignments)
+        IReadOnlyDictionary<Guid, LedgerGroupId> ledgerAssignments)
     {
         if (!query.LedgerGroupId.HasValue)
         {
@@ -1631,10 +1622,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         }
 
         var accounts = scoped.Accounts
-            .Where(account => string.Equals(
-                ResolveLedgerGroup(account, ledgerAssignments),
-                query.LedgerGroupId.Value.Value,
-                StringComparison.OrdinalIgnoreCase))
+            .Where(account => LedgerGroupingRules.ResolveLedgerGroupId(account, ledgerAssignments) == query.LedgerGroupId.Value)
             .ToList();
         var portfolioIds = GetRelatedPortfolioIds(accounts, scoped.OwnershipLinks, scoped.InvestmentPortfolios);
 
@@ -3224,6 +3212,98 @@ public sealed class InMemoryFundStructureService : IFundStructureService
     private static bool IsFundPortfolio(InvestmentPortfolioSummaryDto portfolio) =>
         portfolio.FundId.HasValue || portfolio.SleeveId.HasValue || portfolio.VehicleId.HasValue;
 
+    private static bool HasAccountingAccountScopeFilter(AccountingStructureQuery query) =>
+        query.ClientId.HasValue
+        || query.FundId.HasValue
+        || query.SleeveId.HasValue
+        || query.VehicleId.HasValue
+        || query.InvestmentPortfolioId.HasValue;
+
+    private static bool IsAccountInAccountingScope(
+        AccountSummaryDto account,
+        AccountingStructureQuery query,
+        AccountingAccountScope accountScope,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks)
+    {
+        if (IsAccountLinkedToAccountingPortfolios(account, accountScope.PortfolioIds, ownershipLinks))
+        {
+            return true;
+        }
+
+        if (HasAccountingAccountScopeFilter(query))
+        {
+            return MatchesDirectAccountingAccountFilters(account, query);
+        }
+
+        return IsAccountInAccountingBusinessScope(account, accountScope, ownershipLinks);
+    }
+
+    private static AccountingAccountScope BuildAccountingAccountScope(
+        StructureScope scoped,
+        IReadOnlyList<InvestmentPortfolioSummaryDto> portfolios)
+    {
+        var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
+        var fundIds = scoped.Funds.Select(static fund => fund.FundId).ToHashSet();
+        var sleeveIds = scoped.Sleeves.Select(static sleeve => sleeve.SleeveId).ToHashSet();
+        var vehicleIds = scoped.Vehicles.Select(static vehicle => vehicle.VehicleId).ToHashSet();
+        var scopedEntityIds = scoped.Entities.Select(static entity => entity.EntityId).ToHashSet();
+        var entityParentIds = scoped.Businesses.Select(static business => business.BusinessId)
+            .Concat(fundIds)
+            .Concat(sleeveIds)
+            .Concat(vehicleIds)
+            .Concat(portfolioIds)
+            .ToHashSet();
+        var entityIds = scoped.Funds.SelectMany(static fund => fund.EntityIds)
+            .Concat(scoped.Vehicles.Select(static vehicle => vehicle.LegalEntityId))
+            .Concat(portfolios.Where(static portfolio => portfolio.EntityId.HasValue).Select(static portfolio => portfolio.EntityId!.Value))
+            .Concat(scoped.OwnershipLinks
+                .Where(link => scopedEntityIds.Contains(link.ChildNodeId) && entityParentIds.Contains(link.ParentNodeId))
+                .Select(static link => link.ChildNodeId))
+            .ToHashSet();
+
+        return new AccountingAccountScope(entityIds, fundIds, sleeveIds, vehicleIds, portfolioIds);
+    }
+
+    private static bool IsAccountLinkedToAccountingPortfolios(
+        AccountSummaryDto account,
+        IReadOnlyCollection<Guid> portfolioIds,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks) =>
+        (TryParseGuid(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId))
+        || IsAccountLinkedToAny(account.AccountId, portfolioIds, ownershipLinks);
+
+    private static bool MatchesDirectAccountingAccountFilters(
+        AccountSummaryDto account,
+        AccountingStructureQuery query)
+    {
+        if (query.ClientId.HasValue || query.InvestmentPortfolioId.HasValue)
+        {
+            return false;
+        }
+
+        var hasDirectScopeFilter = query.FundId.HasValue || query.SleeveId.HasValue || query.VehicleId.HasValue;
+        return hasDirectScopeFilter
+            && MatchesOptionalScope(account.FundId, query.FundId)
+            && MatchesOptionalScope(account.SleeveId, query.SleeveId)
+            && MatchesOptionalScope(account.VehicleId, query.VehicleId);
+    }
+
+    private static bool MatchesOptionalScope(Guid? value, Guid? filter) =>
+        !filter.HasValue || value == filter.Value;
+
+    private static bool IsAccountInAccountingBusinessScope(
+        AccountSummaryDto account,
+        AccountingAccountScope accountScope,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks) =>
+        (account.EntityId.HasValue && accountScope.EntityIds.Contains(account.EntityId.Value))
+        || (account.FundId.HasValue && accountScope.FundIds.Contains(account.FundId.Value))
+        || (account.SleeveId.HasValue && accountScope.SleeveIds.Contains(account.SleeveId.Value))
+        || (account.VehicleId.HasValue && accountScope.VehicleIds.Contains(account.VehicleId.Value))
+        || IsAccountLinkedToAccountingPortfolios(account, accountScope.PortfolioIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.EntityIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.FundIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.SleeveIds, ownershipLinks)
+        || IsAccountLinkedToAny(account.AccountId, accountScope.VehicleIds, ownershipLinks);
+
     private static IEnumerable<AccountSummaryDto> GetScopeAccounts(
         IEnumerable<AccountSummaryDto> accounts,
         IReadOnlyList<OwnershipLinkDto> links,
@@ -3270,24 +3350,6 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private static bool TryParseGuid(string? value, out Guid guid) =>
         Guid.TryParse(value, out guid);
-
-    private static string ResolveLedgerGroup(
-        AccountSummaryDto account,
-        IReadOnlyDictionary<Guid, string> ledgerAssignments)
-    {
-        if (!string.IsNullOrWhiteSpace(account.LedgerReference))
-        {
-            return account.LedgerReference!;
-        }
-
-        if (ledgerAssignments.TryGetValue(account.AccountId, out var assignedLedger)
-            && !string.IsNullOrWhiteSpace(assignedLedger))
-        {
-            return assignedLedger;
-        }
-
-        return "unassigned";
-    }
 
     private static void EnsureSingleOperatingParent(CreateInvestmentPortfolioRequest request)
     {
@@ -3745,6 +3807,13 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         GovernanceCashFlowScopeDto Scope,
         IReadOnlyList<AccountSummaryDto> Accounts,
         string BaseCurrency);
+
+    private sealed record AccountingAccountScope(
+        IReadOnlySet<Guid> EntityIds,
+        IReadOnlySet<Guid> FundIds,
+        IReadOnlySet<Guid> SleeveIds,
+        IReadOnlySet<Guid> VehicleIds,
+        IReadOnlySet<Guid> PortfolioIds);
 
     private sealed record AccountCashFlowWindow(
         AccountSummaryDto Account,

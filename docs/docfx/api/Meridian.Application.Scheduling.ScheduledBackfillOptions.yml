@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledBackfillOptions
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 618
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleCheckInterval
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 623
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxExecutionDuration
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 628
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatchUpMissedSchedules
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 633
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatchUpWindow
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 638
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentExecutions
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 643
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseDuringMarketHours
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 648
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketOpenTime
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 653
   assemblies:
   - Meridian.Application
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCloseTime
-    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
     startLine: 658
   assemblies:
   - Meridian.Application

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StooqHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 26
   assemblies:
   - Meridian.Infrastructure
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -309,7 +309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IQuoteStateStore
-    path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
+    path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
     startLine: 10
   assemblies:
   - Meridian.Domain
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
-    path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
+    path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
     startLine: 13
   assemblies:
   - Meridian.Domain
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upsert
-    path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
+    path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
     startLine: 21
   assemblies:
   - Meridian.Domain
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRemove
-    path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
+    path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
     startLine: 26
   assemblies:
   - Meridian.Domain
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
-    path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
+    path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
     startLine: 31
   assemblies:
   - Meridian.Domain

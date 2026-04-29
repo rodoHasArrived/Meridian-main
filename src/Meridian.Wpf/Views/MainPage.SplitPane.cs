@@ -13,7 +13,8 @@ public partial class MainPage
 
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
-        if (sender is not SplitPaneHostControl host) return;
+        if (sender is not SplitPaneHostControl host)
+            return;
 
         _splitPaneHost = host;
         host.PaneDropRequested -= OnSplitPanePaneDropRequested;

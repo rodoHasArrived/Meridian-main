@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderLatencyService
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistogram
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 62
   assemblies:
   - Meridian.Application
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllHistograms
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 71
   assemblies:
   - Meridian.Application
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 82
   assemblies:
   - Meridian.Application
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHighLatencyProviders
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 126
   assemblies:
   - Meridian.Application
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 148
   assemblies:
   - Meridian.Application
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAll
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 157
   assemblies:
   - Meridian.Application
@@ -374,7 +374,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToJson
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 165
   assemblies:
   - Meridian.Application
@@ -404,7 +404,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
     startLine: 212
   assemblies:
   - Meridian.Application

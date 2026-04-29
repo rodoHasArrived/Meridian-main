@@ -2,8 +2,8 @@
   href: README.md
 
 - name: API Reference
-  href: ~/api/
-  homepage: ~/api/index.md
+  href: docfx/api/toc.yml
+  homepage: docfx/api/index.md
 
 - name: User Guide
   href: HELP.md

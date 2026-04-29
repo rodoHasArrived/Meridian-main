@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISftpFilePublisher
-    path: ../../src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
+    path: src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishAsync
-    path: ../../src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
+    path: src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure

@@ -251,7 +251,8 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
 
     public static IServiceProvider CreateMainPageServiceProvider(
         RunMatService? runMatService = null,
-        FundContextService? fundContextService = null)
+        FundContextService? fundContextService = null,
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
     {
         var services = new ServiceCollection();
         var configureServices = typeof(Meridian.Wpf.App)
@@ -298,6 +299,11 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             sp.GetService<IFundStructureService>(),
             storagePath: Path.Combine(serviceRoot, "operating-context.json")));
         services.AddSingleton<WorkspaceShellContextService>();
+        if (operatorInboxApiClient is not null)
+        {
+            services.AddSingleton(operatorInboxApiClient);
+        }
+
         services.AddSingleton<FundAccountReadService>();
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<FundLedgerReadService>();

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGapAnalysisDto
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 160
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 162
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGaps
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 163
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataAvailabilityPercent
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 165
   assemblies:
   - Meridian.Ui.Services

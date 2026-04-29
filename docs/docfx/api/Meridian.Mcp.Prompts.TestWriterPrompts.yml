@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestWriterPrompts
-    path: ../../src/Meridian.Mcp/Prompts/TestWriterPrompts.cs
+    path: src/Meridian.Mcp/Prompts/TestWriterPrompts.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Prompts/TestWriterPrompts.cs
+    path: src/Meridian.Mcp/Prompts/TestWriterPrompts.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteTests
-    path: ../../src/Meridian.Mcp/Prompts/TestWriterPrompts.cs
+    path: src/Meridian.Mcp/Prompts/TestWriterPrompts.cs
     startLine: 5
   assemblies:
   - mdc-mcp

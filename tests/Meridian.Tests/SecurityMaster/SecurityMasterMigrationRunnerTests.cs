@@ -3,6 +3,7 @@ using Npgsql;
 
 namespace Meridian.Tests.SecurityMaster;
 
+[Trait("Category", "Integration")]
 [Collection(nameof(SecurityMasterDatabaseCollection))]
 public sealed class SecurityMasterMigrationRunnerTests
 {

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolTransform
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 616
   assemblies:
   - Meridian.Ui.Services
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 619
   assemblies:
   - Meridian.Ui.Services
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uppercase
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 621
   assemblies:
   - Meridian.Ui.Services
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lowercase
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 623
   assemblies:
   - Meridian.Ui.Services
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DotsToSpaces
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 625
   assemblies:
   - Meridian.Ui.Services
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DotsToDashes
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 627
   assemblies:
   - Meridian.Ui.Services
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StooqFormat
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
     startLine: 629
   assemblies:
   - Meridian.Ui.Services

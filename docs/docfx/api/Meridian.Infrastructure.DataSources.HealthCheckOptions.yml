@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckOptions
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 539
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 539
   assemblies:
   - Meridian.Infrastructure
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntervalSeconds
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 540
   assemblies:
   - Meridian.Infrastructure
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeoutSeconds
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 541
   assemblies:
   - Meridian.Infrastructure
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyThreshold
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
     startLine: 542
   assemblies:
   - Meridian.Infrastructure

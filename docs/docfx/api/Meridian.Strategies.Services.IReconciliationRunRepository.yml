@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IReconciliationRunRepository
-    path: ../../src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
     startLine: 4
   assemblies:
   - Meridian.Strategies
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
     startLine: 6
   assemblies:
   - Meridian.Strategies
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
-    path: ../../src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
     startLine: 8
   assemblies:
   - Meridian.Strategies
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestForRunAsync
-    path: ../../src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
     startLine: 10
   assemblies:
   - Meridian.Strategies
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryForRunAsync
-    path: ../../src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/IReconciliationRunRepository.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies

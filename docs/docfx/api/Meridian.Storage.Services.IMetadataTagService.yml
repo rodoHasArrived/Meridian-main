@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMetadataTagService
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 389
   assemblies:
   - Meridian.Storage
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTag
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 391
   assemblies:
   - Meridian.Storage
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTags
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 392
   assemblies:
   - Meridian.Storage
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTag
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 393
   assemblies:
   - Meridian.Storage
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllTags
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 394
   assemblies:
   - Meridian.Storage
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveTag
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 395
   assemblies:
   - Meridian.Storage
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLineage
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 396
   assemblies:
   - Meridian.Storage
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLineage
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 397
   assemblies:
   - Meridian.Storage
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetInsight
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 398
   assemblies:
   - Meridian.Storage
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetInsight
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 399
   assemblies:
   - Meridian.Storage
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllInsights
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 400
   assemblies:
   - Meridian.Storage
@@ -416,7 +416,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetQualityScore
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 401
   assemblies:
   - Meridian.Storage
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityScore
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 402
   assemblies:
   - Meridian.Storage
@@ -486,7 +486,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchByTag
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 403
   assemblies:
   - Meridian.Storage
@@ -522,7 +522,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchByQualityScore
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 404
   assemblies:
   - Meridian.Storage
@@ -558,7 +558,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFullMetadata
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 405
   assemblies:
   - Meridian.Storage
@@ -592,7 +592,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveMetadata
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 406
   assemblies:
   - Meridian.Storage
@@ -624,7 +624,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetQualityAssessmentAsync
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 407
   assemblies:
   - Meridian.Storage
@@ -666,7 +666,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetQualityAssessmentsAsync
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 408
   assemblies:
   - Meridian.Storage
@@ -702,7 +702,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 409
   assemblies:
   - Meridian.Storage

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianException
-    path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
+    path: src/Meridian.Core/Exceptions/MeridianException.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
+    path: src/Meridian.Core/Exceptions/MeridianException.cs
     startLine: 7
   assemblies:
   - Meridian.Core
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
+    path: src/Meridian.Core/Exceptions/MeridianException.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
+    path: src/Meridian.Core/Exceptions/MeridianException.cs
     startLine: 15
   assemblies:
   - Meridian.Core

@@ -1,21 +1,26 @@
 # Plans
 
-**Last Reviewed:** 2026-04-13
+**Last Reviewed:** 2026-04-29
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
+
+Current roadmap refresh note: the 2026-04-29 direction pivots new operator UI work to the browser dashboard in `src/Meridian.Ui/dashboard/`. Treat WPF plans and automation as retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Waves 2-4 still require cockpit, shared-model, and governance acceptance evidence, now with web-first UI delivery.
 
 ## Core Operator-Ready Path (Waves 1-4)
 
 These are the plan documents that directly support the current path to the core operator-ready baseline.
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current six-week execution slice for Waves 1-4 |
+| [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner-lane, dependency, and exit-criteria addendum for the active Waves 2-4 path |
 | [provider-reliability-data-confidence-wave-1-blueprint.md](provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 provider-confidence and checkpoint-evidence blueprint |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability sprint blueprint for replay confidence, session persistence, risk auditability, and promotion traceability |
-| [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Release-readiness checklist for workstation hardening |
+| [web-ui-development-pivot.md](web-ui-development-pivot.md) | Active plan for pausing desktop feature work and making the browser dashboard the operator UI lane |
+| [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Historical browser-workstation checklist; reuse remaining items only when they support the active web dashboard |
 | [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint backlog for workstation delivery |
-| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation productization blueprint across web and WPF |
+| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Historical WPF-first migration blueprint; re-scope open items to web-first workstation delivery |
+| [meridian-analytics-productization-blueprint.md](meridian-analytics-productization-blueprint.md) | Research -> Trading -> Governance analytics productization blueprint for notebooks, comparison, exports, handoff, and governed artifacts |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, reconciliation, and reporting blueprint on top of shared seams |
 | [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sequenced Wave 4 governance and fund-operations slices |
 | [security-master-productization-roadmap.md](security-master-productization-roadmap.md) | Delivered Security Master baseline plus Wave 4 follow-ons |
@@ -26,7 +31,7 @@ These are the plan documents that directly support the current path to the core 
 These docs matter, but they normally follow the Wave 1-4 operator-readiness path unless explicitly pulled forward.
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Wave 5 blueprint for unifying native and Lean backtesting into one product |
 | [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | PR-sized Wave 5 execution path for Backtest Studio unification |
 | [portfolio-level-backtesting-composer-blueprint.md](portfolio-level-backtesting-composer-blueprint.md) | Portfolio-level composition, capital contention, and risk analytics blueprint |
@@ -40,9 +45,10 @@ These docs matter, but they normally follow the Wave 1-4 operator-readiness path
 These plans can deepen Meridian's research and performance story, but they are not part of the default core operator-readiness gate.
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md) | High-level QuantScript blueprint and product-placement reference |
 | [quant-script-page-implementation-guide.md](quant-script-page-implementation-guide.md) | Page-level implementation guidance for the QuantScript surface |
+| [backtesting-quantscript-improvement-plan-2026-04.md](backtesting-quantscript-improvement-plan-2026-04.md) | Integrated improvement plan for backtesting trust/velocity and QuantScript workflow continuity |
 | [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | L3 inference implementation design and rollout plan |
 | [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Multi-instance and L3-focused optional follow-on roadmap |
 
@@ -55,7 +61,7 @@ Active UFL target-state references include direct lending, equity, options, futu
 ## Technical Refactors And Platform Work
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [readability-refactor-roadmap.md](readability-refactor-roadmap.md) | Readability refactor execution plan |
 | [readability-refactor-baseline.md](readability-refactor-baseline.md) | Baseline measurements before readability work |
 | [readability-refactor-technical-design-pack.md](readability-refactor-technical-design-pack.md) | Technical design pack for readability refactoring |
@@ -65,7 +71,7 @@ Active UFL target-state references include direct lending, equity, options, futu
 ## Other Plans
 
 | Document | Purpose |
-|----------|---------|
+| --- | --- |
 | [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint |
 | [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct lending implementation roadmap |
 

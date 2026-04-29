@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageSinkAttribute
-    path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
+    path: src/Meridian.Storage/StorageSinkAttribute.cs
     startLine: 33
   assemblies:
   - Meridian.Storage
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
+    path: src/Meridian.Storage/StorageSinkAttribute.cs
     startLine: 41
   assemblies:
   - Meridian.Storage
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
+    path: src/Meridian.Storage/StorageSinkAttribute.cs
     startLine: 46
   assemblies:
   - Meridian.Storage
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
+    path: src/Meridian.Storage/StorageSinkAttribute.cs
     startLine: 51
   assemblies:
   - Meridian.Storage
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledByDefault
-    path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
+    path: src/Meridian.Storage/StorageSinkAttribute.cs
     startLine: 57
   assemblies:
   - Meridian.Storage
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
+    path: src/Meridian.Storage/StorageSinkAttribute.cs
     startLine: 64
   assemblies:
   - Meridian.Storage

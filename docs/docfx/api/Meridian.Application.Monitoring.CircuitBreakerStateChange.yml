@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerStateChange
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 165
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 165
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 166
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewState
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 168
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 169
   assemblies:
   - Meridian.Application

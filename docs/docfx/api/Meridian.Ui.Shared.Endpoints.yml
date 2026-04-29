@@ -17,8 +17,10 @@ items:
   - Meridian.Ui.Shared.Endpoints.CanonicalizationEndpoints
   - Meridian.Ui.Shared.Endpoints.CatalogEndpoints
   - Meridian.Ui.Shared.Endpoints.CheckpointEndpoints
+  - Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
   - Meridian.Ui.Shared.Endpoints.ConfigEndpoints
   - Meridian.Ui.Shared.Endpoints.CppTraderEndpoints
+  - Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest
   - Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest
   - Meridian.Ui.Shared.Endpoints.CredentialEndpoints
   - Meridian.Ui.Shared.Endpoints.CronEndpoints
@@ -243,6 +245,18 @@ references:
   name: UpdateExecutionCircuitBreakerRequest
   nameWithType: UpdateExecutionCircuitBreakerRequest
   fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
+- uid: Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest
+  commentId: T:Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest
+  href: Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest.html
+  name: CreateManualOverrideCommandRequest
+  nameWithType: CreateManualOverrideCommandRequest
+  fullName: Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest
+- uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
+  commentId: T:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
+  href: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.html
+  name: ClearManualOverrideCommandRequest
+  nameWithType: ClearManualOverrideCommandRequest
+  fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
 - uid: Meridian.Ui.Shared.Endpoints.ExportEndpoints
   commentId: T:Meridian.Ui.Shared.Endpoints.ExportEndpoints
   href: Meridian.Ui.Shared.Endpoints.ExportEndpoints.html

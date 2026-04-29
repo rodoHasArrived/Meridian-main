@@ -5,7 +5,8 @@ items:
   id: UpdateExecutionCircuitBreakerRequest
   parent: Meridian.Ui.Shared.Endpoints
   children:
-  - Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor(System.Boolean,System.String)
+  - Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor(System.Boolean,System.String,System.String)
+  - Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId
   - Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.IsOpen
   - Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.Reason
   langs:
@@ -21,8 +22,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateExecutionCircuitBreakerRequest
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1021
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1112
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -42,16 +43,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor(System.Boolean,System.String)
-  commentId: M:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor(System.Boolean,System.String)
-  id: '#ctor(System.Boolean,System.String)'
+- uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor(System.Boolean,System.String,System.String)
+  commentId: M:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor(System.Boolean,System.String,System.String)
+  id: '#ctor(System.Boolean,System.String,System.String)'
   parent: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
   langs:
   - csharp
   - vb
-  name: UpdateExecutionCircuitBreakerRequest(bool, string?)
-  nameWithType: UpdateExecutionCircuitBreakerRequest.UpdateExecutionCircuitBreakerRequest(bool, string?)
-  fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.UpdateExecutionCircuitBreakerRequest(bool, string?)
+  name: UpdateExecutionCircuitBreakerRequest(bool, string?, string?)
+  nameWithType: UpdateExecutionCircuitBreakerRequest.UpdateExecutionCircuitBreakerRequest(bool, string?, string?)
+  fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.UpdateExecutionCircuitBreakerRequest(bool, string?, string?)
   type: Constructor
   source:
     remote:
@@ -59,25 +60,27 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1021
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1112
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
   summary: Request to update the global execution circuit breaker.
   example: []
   syntax:
-    content: public UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? Reason = null)
+    content: public UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? Reason = null, string? CorrelationId = null)
     parameters:
     - id: IsOpen
       type: System.Boolean
     - id: Reason
       type: System.String
-    content.vb: Public Sub New(IsOpen As Boolean, Reason As String = Nothing)
+    - id: CorrelationId
+      type: System.String
+    content.vb: Public Sub New(IsOpen As Boolean, Reason As String = Nothing, CorrelationId As String = Nothing)
   overload: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor*
-  nameWithType.vb: UpdateExecutionCircuitBreakerRequest.New(Boolean, String)
-  fullName.vb: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.New(Boolean, String)
-  name.vb: New(Boolean, String)
+  nameWithType.vb: UpdateExecutionCircuitBreakerRequest.New(Boolean, String, String)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.New(Boolean, String, String)
+  name.vb: New(Boolean, String, String)
 - uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.IsOpen
   commentId: P:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.IsOpen
   id: IsOpen
@@ -95,8 +98,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOpen
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1022
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1113
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -124,8 +127,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 1023
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1114
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -136,6 +139,35 @@ items:
       type: System.String
     content.vb: Public Property Reason As String
   overload: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.Reason*
+- uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId
+  commentId: P:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId
+  id: CorrelationId
+  parent: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
+  langs:
+  - csharp
+  - vb
+  name: CorrelationId
+  nameWithType: UpdateExecutionCircuitBreakerRequest.CorrelationId
+  fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrelationId
+    path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1115
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string? CorrelationId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CorrelationId As String
+  overload: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId*
 references:
 - uid: Meridian.Ui.Shared.Endpoints
   commentId: N:Meridian.Ui.Shared.Endpoints
@@ -451,7 +483,7 @@ references:
   - name: )
 - uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor*
   commentId: Overload:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.#ctor
-  href: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.html#Meridian_Ui_Shared_Endpoints_UpdateExecutionCircuitBreakerRequest__ctor_System_Boolean_System_String_
+  href: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.html#Meridian_Ui_Shared_Endpoints_UpdateExecutionCircuitBreakerRequest__ctor_System_Boolean_System_String_System_String_
   name: UpdateExecutionCircuitBreakerRequest
   nameWithType: UpdateExecutionCircuitBreakerRequest.UpdateExecutionCircuitBreakerRequest
   fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.UpdateExecutionCircuitBreakerRequest
@@ -492,3 +524,9 @@ references:
   name: Reason
   nameWithType: UpdateExecutionCircuitBreakerRequest.Reason
   fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.Reason
+- uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId
+  href: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.html#Meridian_Ui_Shared_Endpoints_UpdateExecutionCircuitBreakerRequest_CorrelationId
+  name: CorrelationId
+  nameWithType: UpdateExecutionCircuitBreakerRequest.CorrelationId
+  fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.CorrelationId

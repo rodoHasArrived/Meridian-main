@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Ui.Shared.Services;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
@@ -61,9 +61,20 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _reportPackTrialBalanceLinesText = "0";
     private string _reportPackAssetSectionsText = "0";
     private string _reportPackGeneratedAtText = "-";
+    private string _currentWorkbenchModeText = "Overview Mode";
+    private string _currentWorkbenchTitleText = "Overview Workbench";
+    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and exception pressure.";
+    private string _routeBannerTitleText = string.Empty;
+    private string _routeBannerDetailText = string.Empty;
+    private bool _hasRouteBanner;
+    private string _reconciliationOwnershipText = "Assign an operator before reconciliation sign-off.";
+    private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
+    private string _reportPackOwnershipText = "Governance operator sign-off is pending.";
+    private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
     private bool _isReportPackLoading;
     private GovernanceReportKindDto _selectedReportKind = GovernanceReportKindDto.TrialBalance;
     private int _selectedTabIndex;
+    private string? _routedPageTag;
     private FundAccountSummary? _selectedAccount;
     private FundPortfolioPosition? _selectedPortfolioPosition;
     private CashFlowEntryDto? _selectedCashFlowEntry;
@@ -463,7 +474,73 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public string ReportPackGeneratedAtText
     {
         get => _reportPackGeneratedAtText;
-        private set => SetProperty(ref _reportPackGeneratedAtText, value);
+        private set
+        {
+            if (SetProperty(ref _reportPackGeneratedAtText, value))
+            {
+                UpdateReportPackWorkbenchPresentation();
+            }
+        }
+    }
+
+    public string CurrentWorkbenchModeText
+    {
+        get => _currentWorkbenchModeText;
+        private set => SetProperty(ref _currentWorkbenchModeText, value);
+    }
+
+    public string CurrentWorkbenchTitleText
+    {
+        get => _currentWorkbenchTitleText;
+        private set => SetProperty(ref _currentWorkbenchTitleText, value);
+    }
+
+    public string CurrentWorkbenchSubtitleText
+    {
+        get => _currentWorkbenchSubtitleText;
+        private set => SetProperty(ref _currentWorkbenchSubtitleText, value);
+    }
+
+    public string RouteBannerTitleText
+    {
+        get => _routeBannerTitleText;
+        private set => SetProperty(ref _routeBannerTitleText, value);
+    }
+
+    public string RouteBannerDetailText
+    {
+        get => _routeBannerDetailText;
+        private set => SetProperty(ref _routeBannerDetailText, value);
+    }
+
+    public bool HasRouteBanner
+    {
+        get => _hasRouteBanner;
+        private set => SetProperty(ref _hasRouteBanner, value);
+    }
+
+    public string ReconciliationOwnershipText
+    {
+        get => _reconciliationOwnershipText;
+        private set => SetProperty(ref _reconciliationOwnershipText, value);
+    }
+
+    public string ReconciliationSnapshotWarningText
+    {
+        get => _reconciliationSnapshotWarningText;
+        private set => SetProperty(ref _reconciliationSnapshotWarningText, value);
+    }
+
+    public string ReportPackOwnershipText
+    {
+        get => _reportPackOwnershipText;
+        private set => SetProperty(ref _reportPackOwnershipText, value);
+    }
+
+    public string ReportPackSnapshotWarningText
+    {
+        get => _reportPackSnapshotWarningText;
+        private set => SetProperty(ref _reportPackSnapshotWarningText, value);
     }
 
     public bool IsReportPackLoading
@@ -491,7 +568,14 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public int SelectedTabIndex
     {
         get => _selectedTabIndex;
-        set => SetProperty(ref _selectedTabIndex, value);
+        set
+        {
+            if (SetProperty(ref _selectedTabIndex, value))
+            {
+                UpdateWorkbenchIdentity();
+                UpdateRouteBannerPresentation();
+            }
+        }
     }
 
     public FundAccountSummary? SelectedAccount
@@ -631,7 +715,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         ApplyLedger(ledger);
         ApplyAccounts(accounts, context);
-        BuildLedgerDimensions(activeFund, ledger, accounts);
+        BuildLedgerDimensions(activeFund, ledger);
         ApplyBankSnapshots(bankSnapshots);
         ApplyCashSummary(cashSummary);
         ApplyPortfolio(portfolioPositions);
@@ -639,6 +723,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
         BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
         await RefreshReportPackPreviewAsync(ct);
+        UpdateReconciliationWorkbenchPresentation();
+        UpdateReportPackWorkbenchPresentation();
     }
 
     public void Dispose()
@@ -662,13 +748,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private void ApplySelectedTab(FundOperationsNavigationContext? context)
     {
-        if (context is not null)
-        {
-            SelectedTabIndex = (int)context.Tab;
-            return;
-        }
-
-        SelectedTabIndex = MapPageTagToTabIndex(_navigationService.GetCurrentPageTag());
+        _routedPageTag = ResolveRoutedPageTag(context);
+        SelectedTabIndex = context is not null
+            ? (int)context.Tab
+            : MapPageTagToTabIndex(_navigationService.GetCurrentPageTag());
     }
 
     private void ResetEmptyState()
@@ -734,6 +817,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReportPackAssetSectionsText = "0";
         ReportPackGeneratedAtText = "-";
         ResetReconciliationWorkbenchState();
+        UpdateWorkbenchIdentity();
+        UpdateRouteBannerPresentation();
+        UpdateReconciliationWorkbenchPresentation();
+        UpdateReportPackWorkbenchPresentation();
     }
 
     private void ApplyLedger(FundLedgerSummary? summary)
@@ -850,85 +937,59 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private void BuildLedgerDimensions(
         FundProfileDetail activeFund,
-        FundLedgerSummary? ledger,
-        IReadOnlyList<FundAccountSummary> accounts)
+        FundLedgerSummary? ledger)
     {
         var previousSelectionKey = SelectedLedgerDimension?.Key;
-        var trialBalanceByAccount = (ledger?.TrialBalance ?? [])
-            .Where(static line => !string.IsNullOrWhiteSpace(line.FinancialAccountId))
-            .GroupBy(static line => line.FinancialAccountId!, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.OrdinalIgnoreCase);
-        var journalByAccount = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var line in ledger?.Journal ?? [])
-        {
-            foreach (var accountId in line.FinancialAccountIds ?? [])
-            {
-                journalByAccount[accountId] = journalByAccount.TryGetValue(accountId, out var count)
-                    ? count + 1
-                    : 1;
-            }
-        }
-
-        var consolidatedAccountIds = accounts
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var entityAccountIds = accounts
-            .Where(static account => account.EntityId.HasValue)
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var sleeveAccountIds = accounts
-            .Where(static account => account.SleeveId.HasValue)
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var vehicleAccountIds = accounts
-            .Where(static account => account.VehicleId.HasValue)
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var slices = ledger?.LedgerSlices ?? [];
+        var consolidatedSlice = slices.FirstOrDefault(slice => slice.ScopeKind == FundLedgerScope.Consolidated);
+        var entitySlices = slices.Where(slice => slice.ScopeKind == FundLedgerScope.Entity).ToArray();
+        var sleeveSlices = slices.Where(slice => slice.ScopeKind == FundLedgerScope.Sleeve).ToArray();
+        var vehicleSlices = slices.Where(slice => slice.ScopeKind == FundLedgerScope.Vehicle).ToArray();
+        var consolidatedTotals = consolidatedSlice?.Totals ?? BuildSummaryTotals(ledger);
+        var consolidatedLinkedAccountCount = CountLinkedAccounts(consolidatedSlice is null ? [] : [consolidatedSlice]);
+        var consolidatedTrialBalanceLineCount = consolidatedSlice?.TrialBalance.Count ?? ledger?.TrialBalance.Count ?? 0;
+        var consolidatedJournalEntryCount = consolidatedSlice?.Totals.JournalEntryCount ?? ledger?.Journal.Count ?? 0;
 
         var dimensions = new List<FundLedgerDimensionView>
         {
             new(
                 Key: "consolidated",
                 DisplayName: "Consolidated Fund View",
-                CoverageText: $"{ledger?.TrialBalance.Count ?? 0} trial-balance line(s) · {ledger?.Journal.Count ?? 0} journal entry(s) across the full fund view.",
+                CoverageText: $"1 ledger slice · {consolidatedLinkedAccountCount} linked account(s) · {consolidatedTrialBalanceLineCount} trial-balance line(s) · {consolidatedJournalEntryCount} journal entry(s) across the full fund view.",
                 StatusText: "Shows the complete fund ledger, including generic postings that are not tied to a specific financial account.",
                 ExpectedScopeCount: 1,
-                LinkedAccountCount: consolidatedAccountIds.Count,
-                TrialBalanceLineCount: ledger?.TrialBalance.Count ?? 0,
-                JournalEntryCount: ledger?.Journal.Count ?? 0,
+                MaterializedScopeCount: consolidatedSlice is null ? 0 : 1,
+                LinkedAccountCount: consolidatedLinkedAccountCount,
+                TrialBalanceLineCount: consolidatedTrialBalanceLineCount,
+                JournalEntryCount: consolidatedJournalEntryCount,
+                Totals: consolidatedTotals,
                 IsConsolidated: true,
                 HasScopedLedgerData: true,
-                FinancialAccountIds: consolidatedAccountIds)
+                LedgerSlices: consolidatedSlice is null ? [] : [consolidatedSlice])
         };
 
         dimensions.Add(CreateLedgerDimensionView(
             key: "entity-linked",
             displayName: "Entity-Linked View",
             expectedScopeCount: activeFund.EntityIds?.Count ?? 0,
-            accountIds: entityAccountIds,
-            trialBalanceByAccount,
-            journalByAccount));
+            slices: entitySlices));
         dimensions.Add(CreateLedgerDimensionView(
             key: "sleeve-linked",
             displayName: "Sleeve-Linked View",
             expectedScopeCount: activeFund.SleeveIds?.Count ?? 0,
-            accountIds: sleeveAccountIds,
-            trialBalanceByAccount,
-            journalByAccount));
+            slices: sleeveSlices));
         dimensions.Add(CreateLedgerDimensionView(
             key: "vehicle-linked",
             displayName: "Vehicle-Linked View",
             expectedScopeCount: activeFund.VehicleIds?.Count ?? 0,
-            accountIds: vehicleAccountIds,
-            trialBalanceByAccount,
-            journalByAccount));
+            slices: vehicleSlices));
 
         LedgerDimensions.Clear();
         foreach (var dimension in dimensions.Where(static dimension =>
                      dimension.IsConsolidated ||
                      dimension.ExpectedScopeCount > 0 ||
-                     dimension.LinkedAccountCount > 0))
+                     dimension.MaterializedScopeCount > 0 ||
+                     dimension.HasScopedLedgerData))
         {
             LedgerDimensions.Add(dimension);
         }
@@ -942,19 +1003,24 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         string key,
         string displayName,
         int expectedScopeCount,
-        IReadOnlySet<string> accountIds,
-        IReadOnlyDictionary<string, int> trialBalanceByAccount,
-        IReadOnlyDictionary<string, int> journalByAccount)
+        IReadOnlyList<FundLedgerSliceDto> slices)
     {
-        var trialBalanceLineCount = accountIds.Sum(accountId => trialBalanceByAccount.TryGetValue(accountId, out var count) ? count : 0);
-        var journalEntryCount = accountIds.Sum(accountId => journalByAccount.TryGetValue(accountId, out var count) ? count : 0);
+        var linkedAccountCount = CountLinkedAccounts(slices);
+        var materializedScopeCount = slices.Count;
+        var trialBalanceLineCount = slices.Sum(static slice => slice.TrialBalance.Count);
+        var totals = BuildDimensionTotals(slices);
+        var journalEntryCount = totals.JournalEntryCount;
         var hasScopedLedgerData = trialBalanceLineCount > 0 || journalEntryCount > 0;
-        var coverageText = $"{expectedScopeCount} profile scope(s) · {accountIds.Count} linked account(s) · {trialBalanceLineCount} trial-balance line(s) · {journalEntryCount} journal entry(s)";
-        var statusText = accountIds.Count == 0
-            ? "No linked accounts are tagged to this structure yet."
+        var coverageText = $"{expectedScopeCount} profile scope(s) · {materializedScopeCount} ledger slice(s) · {linkedAccountCount} linked account(s) · {trialBalanceLineCount} trial-balance line(s) · {journalEntryCount} journal entry(s)";
+        var statusText = materializedScopeCount == 0
+            ? "No ledger slices are currently materialized for this structure."
             : hasScopedLedgerData
-                ? "Account-linked ledger rows are ready for scoped review."
-                : "Linked accounts exist, but the current ledger postings remain consolidated-only.";
+                ? materializedScopeCount < expectedScopeCount && expectedScopeCount > 0
+                    ? "Ledger slices are partially materialized and ready for scoped review."
+                    : "Ledger slices are ready for scoped review."
+                : linkedAccountCount > 0
+                    ? "Ledger slices exist for this structure, but current postings have not hit them yet."
+                    : "Ledger slices exist, but current postings remain generic and are not tied to linked accounts.";
 
         return new FundLedgerDimensionView(
             Key: key,
@@ -962,12 +1028,14 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             CoverageText: coverageText,
             StatusText: statusText,
             ExpectedScopeCount: expectedScopeCount,
-            LinkedAccountCount: accountIds.Count,
+            MaterializedScopeCount: materializedScopeCount,
+            LinkedAccountCount: linkedAccountCount,
             TrialBalanceLineCount: trialBalanceLineCount,
             JournalEntryCount: journalEntryCount,
+            Totals: totals,
             IsConsolidated: false,
             HasScopedLedgerData: hasScopedLedgerData,
-            FinancialAccountIds: accountIds);
+            LedgerSlices: slices);
     }
 
     private void ApplyLedgerDimensionFilter()
@@ -987,18 +1055,24 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
-        var visibleTrialBalance = SelectedLedgerDimension.IsConsolidated
-            ? TrialBalance.ToArray()
-            : TrialBalance
-                .Where(line =>
-                    !string.IsNullOrWhiteSpace(line.FinancialAccountId) &&
-                    SelectedLedgerDimension.FinancialAccountIds.Contains(line.FinancialAccountId!))
-                .ToArray();
-        var visibleJournal = SelectedLedgerDimension.IsConsolidated
-            ? Journal.ToArray()
-            : Journal
-                .Where(line => (line.FinancialAccountIds ?? []).Any(SelectedLedgerDimension.FinancialAccountIds.Contains))
-                .ToArray();
+        var visibleTrialBalance = SelectedLedgerDimension.LedgerSlices
+            .SelectMany(static slice => slice.TrialBalance)
+            .ToArray();
+        if (visibleTrialBalance.Length == 0 && SelectedLedgerDimension.IsConsolidated)
+        {
+            visibleTrialBalance = TrialBalance.ToArray();
+        }
+
+        var visibleJournal = SelectedLedgerDimension.LedgerSlices
+            .SelectMany(static slice => slice.Journal)
+            .OrderByDescending(static line => line.Timestamp)
+            .ThenByDescending(static line => line.JournalEntryId)
+            .DistinctBy(static line => line.JournalEntryId)
+            .ToArray();
+        if (visibleJournal.Length == 0 && SelectedLedgerDimension.IsConsolidated)
+        {
+            visibleJournal = Journal.ToArray();
+        }
 
         VisibleTrialBalance.Clear();
         foreach (var line in visibleTrialBalance)
@@ -1018,9 +1092,41 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         SelectedLedgerLinkedAccountsText = SelectedLedgerDimension.LinkedAccountCount.ToString("N0");
         SelectedLedgerTrialBalanceLinesText = visibleTrialBalance.Length.ToString("N0");
         SelectedLedgerJournalEntriesText = visibleJournal.Length.ToString("N0");
-        SelectedLedgerAssetBalanceText = SumBalance(visibleTrialBalance, "Asset").ToString("C2");
-        SelectedLedgerEquityBalanceText = SumBalance(visibleTrialBalance, "Equity").ToString("C2");
+        SelectedLedgerAssetBalanceText = SelectedLedgerDimension.Totals.AssetBalance.ToString("C2");
+        SelectedLedgerEquityBalanceText = SelectedLedgerDimension.Totals.EquityBalance.ToString("C2");
     }
+
+    private static FundLedgerTotalsDto BuildSummaryTotals(FundLedgerSummary? ledger)
+        => ledger is null
+            ? new FundLedgerTotalsDto(0, 0, 0m, 0m, 0m, 0m, 0m)
+            : ledger.ConsolidatedTotals
+              ?? new FundLedgerTotalsDto(
+                  JournalEntryCount: ledger.JournalEntryCount,
+                  LedgerEntryCount: ledger.LedgerEntryCount,
+                  AssetBalance: ledger.AssetBalance,
+                  LiabilityBalance: ledger.LiabilityBalance,
+                  EquityBalance: ledger.EquityBalance,
+                  RevenueBalance: ledger.RevenueBalance,
+                  ExpenseBalance: ledger.ExpenseBalance);
+
+    private static FundLedgerTotalsDto BuildDimensionTotals(IReadOnlyList<FundLedgerSliceDto> slices)
+        => new(
+            JournalEntryCount: slices.Sum(static slice => slice.Totals.JournalEntryCount),
+            LedgerEntryCount: slices.Sum(static slice => slice.Totals.LedgerEntryCount),
+            AssetBalance: slices.Sum(static slice => slice.Totals.AssetBalance),
+            LiabilityBalance: slices.Sum(static slice => slice.Totals.LiabilityBalance),
+            EquityBalance: slices.Sum(static slice => slice.Totals.EquityBalance),
+            RevenueBalance: slices.Sum(static slice => slice.Totals.RevenueBalance),
+            ExpenseBalance: slices.Sum(static slice => slice.Totals.ExpenseBalance));
+
+    private static int CountLinkedAccounts(IReadOnlyList<FundLedgerSliceDto> slices)
+        => slices
+            .SelectMany(static slice => slice.TrialBalance.Select(static line => line.FinancialAccountId)
+                .Concat(slice.Journal.SelectMany(static line => line.FinancialAccountIds ?? [])))
+            .Where(static accountId => !string.IsNullOrWhiteSpace(accountId))
+            .Select(static accountId => accountId!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
 
     private static decimal SumBalance(IEnumerable<FundTrialBalanceLine> lines, string accountType) =>
         lines
@@ -1364,6 +1470,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         finally
         {
             IsReportPackLoading = false;
+            UpdateReportPackWorkbenchPresentation();
         }
     }
 
@@ -1371,6 +1478,140 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         await LoadAsync();
     }
+
+    private void UpdateWorkbenchIdentity()
+    {
+        var tab = SelectedTabIndex is >= byte.MinValue and <= byte.MaxValue &&
+                  Enum.IsDefined(typeof(FundOperationsTab), (byte)SelectedTabIndex)
+            ? (FundOperationsTab)SelectedTabIndex
+            : FundOperationsTab.Overview;
+
+        var identity = DescribeWorkbench(tab);
+        CurrentWorkbenchModeText = identity.Mode;
+        CurrentWorkbenchTitleText = identity.Title;
+        CurrentWorkbenchSubtitleText = identity.Subtitle;
+    }
+
+    private void UpdateRouteBannerPresentation()
+    {
+        if (string.IsNullOrWhiteSpace(_routedPageTag) ||
+            MapPageTagToTabIndex(_routedPageTag) != SelectedTabIndex)
+        {
+            HasRouteBanner = false;
+            RouteBannerTitleText = string.Empty;
+            RouteBannerDetailText = string.Empty;
+            return;
+        }
+
+        var route = DescribeRouteBanner(_routedPageTag);
+        HasRouteBanner = true;
+        RouteBannerTitleText = route.Title;
+        RouteBannerDetailText = route.Detail;
+    }
+
+    private void UpdateReconciliationWorkbenchPresentation()
+    {
+        var operatorLabel = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
+                            string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
+            ? "Owner not confirmed"
+            : $"Owner {ReconciliationOperatorText}";
+
+        ReconciliationOwnershipText = $"{operatorLabel}. Reconciliation sign-off should happen only after queue review, stale-snapshot confirmation, and security coverage checks are complete.";
+        ReconciliationSnapshotWarningText = BuildSnapshotWarningText(
+            ReconciliationLastRefreshText,
+            "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.");
+    }
+
+    private void UpdateReportPackWorkbenchPresentation()
+    {
+        var reportOwner = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
+                          string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
+            ? "Governance operator"
+            : ReconciliationOperatorText;
+
+        ReportPackOwnershipText = $"{reportOwner} owns final report-pack sign-off once accounting, reconciliation, and audit evidence align.";
+        ReportPackSnapshotWarningText = BuildSnapshotWarningText(
+            ReportPackGeneratedAtText,
+            "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.");
+    }
+
+    private static (string Mode, string Title, string Subtitle) DescribeWorkbench(FundOperationsTab tab) => tab switch
+    {
+        FundOperationsTab.Overview => ("Overview Mode", "Overview Workbench", "Fund-wide operating summary, liquidity posture, and exception pressure."),
+        FundOperationsTab.Reconciliation => ("Reconciliation Mode", "Reconciliation Workbench", "Exception queue, operator ownership, stale-snapshot checks, and break resolution."),
+        FundOperationsTab.ReportPack => ("Reporting Mode", "Report Pack Workbench", "Reporting preview, handoff readiness, and sign-off posture for governance artifacts."),
+        FundOperationsTab.AuditTrail => ("Accounting Mode", "Audit Trail Workbench", "Recent journal and reconciliation evidence for operator review and traceability."),
+        FundOperationsTab.Portfolio => ("Accounting Mode", "Portfolio Accounting Workbench", "Fund-scoped positions, security coverage, and exposure review inside governance."),
+        FundOperationsTab.Banking => ("Accounting Mode", "Banking Workbench", "Bank-facing balances, statements, and settlement posture for the active fund."),
+        FundOperationsTab.CashFinancing => ("Accounting Mode", "Cash & Financing Workbench", "Funding ladder, financing cost, and pending-settlement review."),
+        FundOperationsTab.Journal => ("Accounting Mode", "Journal Workbench", "Booked journal history and ledger-linked review for accounting operators."),
+        FundOperationsTab.TrialBalance => ("Accounting Mode", "Trial Balance Workbench", "Scoped ledger balances, material lines, and accounting posture."),
+        FundOperationsTab.Accounts => ("Accounting Mode", "Accounts Workbench", "Account-centered review across banking, brokerage, custody, and linked workflows."),
+        _ => ("Accounting Mode", "Fund Operations Workbench", "Fund operations workbench for accounting, reconciliation, and reporting review.")
+    };
+
+    private static (string Title, string Detail) DescribeRouteBanner(string pageTag) => pageTag switch
+    {
+        "FundTrialBalance" => (
+            "Routed to Trial Balance Workbench",
+            "This deep link opened the accounting trial-balance tab so the selected ledger slice and balance-line review target are explicit."),
+        "FundReconciliation" => (
+            "Routed to Reconciliation Workbench",
+            "This deep link opened the reconciliation tab so operator ownership, queue freshness, and break resolution posture stay visible."),
+        "FundReportPack" => (
+            "Routed to Report Pack Workbench",
+            "This deep link opened the reporting tab so preview freshness, handoff readiness, and sign-off posture are explicit."),
+        _ => (
+            "Routed to Fund Operations",
+            "This navigation landed inside the shared governance workbench.")
+    };
+
+    private static string BuildSnapshotWarningText(string timestampText, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(timestampText) || string.Equals(timestampText, "-", StringComparison.Ordinal))
+        {
+            return fallback;
+        }
+
+        if (!DateTime.TryParse(timestampText, out var parsedTimestamp))
+        {
+            return fallback;
+        }
+
+        var age = DateTime.Now - parsedTimestamp;
+        if (age > TimeSpan.FromMinutes(30))
+        {
+            return $"Snapshot may be stale ({Math.Round(age.TotalMinutes):N0} minute(s) old). {fallback}";
+        }
+
+        return $"Snapshot confirmed at {parsedTimestamp:g}. Refresh again before sign-off if desk activity or ledger posture has changed.";
+    }
+
+    private string? ResolveRoutedPageTag(FundOperationsNavigationContext? context)
+    {
+        var currentPageTag = _navigationService.GetCurrentPageTag();
+        if (IsRouteBannerPage(currentPageTag))
+        {
+            return currentPageTag;
+        }
+
+        return context is null
+            ? null
+            : MapTabToRoutedPageTag(context.Tab);
+    }
+
+    private static bool IsRouteBannerPage(string? pageTag) =>
+        string.Equals(pageTag, "FundTrialBalance", StringComparison.Ordinal) ||
+        string.Equals(pageTag, "FundReconciliation", StringComparison.Ordinal) ||
+        string.Equals(pageTag, "FundReportPack", StringComparison.Ordinal);
+
+    private static string? MapTabToRoutedPageTag(FundOperationsTab tab) => tab switch
+    {
+        FundOperationsTab.TrialBalance => "FundTrialBalance",
+        FundOperationsTab.Reconciliation => "FundReconciliation",
+        FundOperationsTab.ReportPack => "FundReportPack",
+        _ => null
+    };
 
     private static int MapPageTagToTabIndex(string? pageTag) => pageTag switch
     {

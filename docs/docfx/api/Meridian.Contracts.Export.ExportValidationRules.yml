@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportValidationRules
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 272
   assemblies:
   - Meridian.Contracts
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiskSpaceMultiplier
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 278
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireData
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 285
   assemblies:
   - Meridian.Contracts
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarnCsvComplexTypes
-    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    path: src/Meridian.Contracts/Export/ExportPreset.cs
     startLine: 292
   assemblies:
   - Meridian.Contracts

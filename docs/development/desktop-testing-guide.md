@@ -2,20 +2,23 @@
 
 This guide helps contributors set up and test the WPF desktop application for Meridian.
 
+> Migration note: desktop workflow orchestration commands are PowerShell-first as of April 2026. See [desktop-command-surface-migration.md](./desktop-command-surface-migration.md) for deprecated-to-supported command mappings.
+
 ## Quick Commands Reference
 
 ```bash
 # Environment validation
-make desktop-dev-bootstrap
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 # Build desktop application
-make build-wpf                    # Build WPF desktop app
+make desktop-build                # Build WPF desktop app
 
 # Run tests
-make test-desktop-services        # Run all desktop-focused tests
+make desktop-test                 # Run all desktop-focused tests
 dotnet test tests/Meridian.Wpf.Tests        # WPF service tests (Windows only)
 dotnet test tests/Meridian.Ui.Tests         # Shared UI service tests (Windows only)
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-operator-inbox-route.ps1
 ```
 
 ## Quick Start
@@ -25,12 +28,6 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blot
 Run the desktop development bootstrap script to validate your environment:
 
 ```bash
-make desktop-dev-bootstrap
-```
-
-Or directly with PowerShell:
-
-```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 ```
 
@@ -48,7 +45,7 @@ This script validates:
 
 ```bash
 # Run all desktop-focused tests (platform-aware)
-make test-desktop-services
+make desktop-test
 
 # Or run specific test projects:
 dotnet test tests/Meridian.Wpf.Tests  # Windows only
@@ -212,19 +209,28 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQu
 
 # Position blotter route slice
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
+
+# Operator inbox route slice
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-operator-inbox-route.ps1
 ```
 
-The position blotter route wrapper exists for the recurring WPF `testhost` lock case around `Meridian.Desktop.dll`.
-It uses a per-run `MeridianBuildIsolationKey`, builds the WPF test project once into an isolated artifact root, and then runs the focused route slice with `--no-build` so the validation path is repeatable.
+The route validation wrappers exist for the recurring WPF `testhost` lock case around `Meridian.Desktop.dll`.
+They use a per-run `MeridianBuildIsolationKey`, build the WPF test project once into an isolated artifact root, and then run the focused route slice with `--no-build` so the validation path is repeatable.
 
-The default slice covers:
+The position blotter route slice covers:
 
 - `PositionBlotterViewModelTests`
 - `ShellNavigationCatalogTests`
 - `WorkspaceDeepPageChromeTests`
 - `TradingWorkspaceShellPageTests`
 
-Validation artifacts land under `artifacts/wpf-validation/position-blotter-route/<timestamp>/` with build/test logs plus JSON and Markdown summaries.
+The operator inbox route slice covers:
+
+- `MainPageUiWorkflowTests`
+- `TradingWorkspaceShellPageTests`
+- `WorkspaceShellContextStripControlTests`
+
+Validation artifacts land under `artifacts/wpf-validation/<slice-name>/<timestamp>/` with build/test logs plus JSON and Markdown summaries.
 
 If a stale repo-owned `testhost.exe` is still hanging around from an earlier run and the first build fails, the script stops only those repo-scoped processes and retries the build once.
 
@@ -307,7 +313,7 @@ See [UI Fixture Mode Guide](./ui-fixture-mode-guide.md) for complete documentati
 ### WPF Application (Recommended)
 
 ```bash
-make build-wpf
+make desktop-build
 
 # Or directly:
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64
@@ -421,6 +427,10 @@ Desktop tests run in CI via GitHub Actions:
 
 - **Windows runners**: Run full WPF test suite
 - **Linux/macOS runners**: Skip WPF tests, run integration tests
+- **Reusable solution lanes**: Use `Category!=Integration|FullyQualifiedName!~Integration`
+  so untagged WPF xUnit tests still run while known integration suites stay excluded.
+  New integration suites should use both `[Trait("Category", "Integration")]` and an
+  `Integration` test class name.
 
 See `.github/workflows/desktop-builds.yml` for CI configuration.
 

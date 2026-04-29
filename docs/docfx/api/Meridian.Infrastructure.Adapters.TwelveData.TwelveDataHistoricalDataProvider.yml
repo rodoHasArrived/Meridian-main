@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TwelveDataHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 38
   assemblies:
   - Meridian.Infrastructure
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -347,7 +347,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -382,7 +382,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -460,7 +460,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -533,7 +533,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
     startLine: 69
   assemblies:
   - Meridian.Infrastructure

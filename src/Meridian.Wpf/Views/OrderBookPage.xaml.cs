@@ -29,9 +29,6 @@ public partial class OrderBookPage : Page
         // ColumnDefinition.Width does not support data binding — relay via PropertyChanged.
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
-        // Sync ComboBox when the ViewModel auto-selects the first symbol on load.
-        _viewModel.FirstSymbolAutoSelected += OnFirstSymbolAutoSelected;
-
         Unloaded += OnPageUnloaded;
     }
 
@@ -41,7 +38,6 @@ public partial class OrderBookPage : Page
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        _viewModel.FirstSymbolAutoSelected -= OnFirstSymbolAutoSelected;
         _viewModel.Dispose();
         Unloaded -= OnPageUnloaded;
     }
@@ -55,26 +51,4 @@ public partial class OrderBookPage : Page
         }
     }
 
-    private void OnFirstSymbolAutoSelected(object? sender, EventArgs e)
-    {
-        if (SymbolComboBox.SelectedIndex < 0 && SymbolComboBox.Items.Count > 0)
-        {
-            SymbolComboBox.SelectedIndex = 0;
-        }
-    }
-
-    private void Symbol_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (SymbolComboBox.SelectedItem is string symbol)
-            _viewModel.SetSymbol(symbol);
-    }
-
-    private void Levels_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (LevelsComboBox.SelectedItem is ComboBoxItem item &&
-            int.TryParse(item.Content?.ToString(), out var levels))
-        {
-            _viewModel.SetDepthLevels(levels);
-        }
-    }
 }

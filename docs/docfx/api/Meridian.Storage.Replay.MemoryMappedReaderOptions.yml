@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryMappedReaderOptions
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChunkSize
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSize
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 26
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinFileSizeForMapping
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 32
   assemblies:
   - Meridian.Storage
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseParallelDeserialization
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 38
   assemblies:
   - Meridian.Storage
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelDeserializationThreshold
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 44
   assemblies:
   - Meridian.Storage
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 49
   assemblies:
   - Meridian.Storage
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughput
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 54
   assemblies:
   - Meridian.Storage
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowMemory
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 64
   assemblies:
   - Meridian.Storage

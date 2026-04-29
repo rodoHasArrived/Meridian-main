@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineOptions
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 864
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplySelfHealing
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 869
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfig
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 874
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealingStrictness
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 884
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 890
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strict
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 898
   assemblies:
   - Meridian.Application
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lenient
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 907
   assemblies:
   - Meridian.Application

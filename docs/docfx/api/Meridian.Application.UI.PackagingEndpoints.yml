@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagingEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapPackagingEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 22
   assemblies:
   - Meridian.Application

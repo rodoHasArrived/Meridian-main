@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FigiLookupRequest
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 195
   assemblies:
   - Meridian.Core
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 195
   assemblies:
   - Meridian.Core
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdType
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 197
   assemblies:
   - Meridian.Core
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdValue
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 200
   assemblies:
   - Meridian.Core
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExchCode
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 203
   assemblies:
   - Meridian.Core
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketSecDes
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 206
   assemblies:
   - Meridian.Core

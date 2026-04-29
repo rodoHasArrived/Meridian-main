@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertStatistics
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 217
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 217
   assemblies:
   - Meridian.Core
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAlerts
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 218
   assemblies:
   - Meridian.Core
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertsBySeverity
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 219
   assemblies:
   - Meridian.Core
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertsByCategory
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 220
   assemblies:
   - Meridian.Core
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertsBySource
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 221
   assemblies:
   - Meridian.Core
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Since
-    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
     startLine: 222
   assemblies:
   - Meridian.Core

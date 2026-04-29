@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPreviewResult
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 239
   assemblies:
   - Meridian.Storage
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProfileId
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 241
   assemblies:
   - Meridian.Storage
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProfileName
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 244
   assemblies:
   - Meridian.Storage
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 247
   assemblies:
   - Meridian.Storage
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFileCount
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 250
   assemblies:
   - Meridian.Storage
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRecords
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 253
   assemblies:
   - Meridian.Storage
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSourceBytes
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 256
   assemblies:
   - Meridian.Storage
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedOutputBytes
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 259
   assemblies:
   - Meridian.Storage
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 262
   assemblies:
   - Meridian.Storage
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 265
   assemblies:
   - Meridian.Storage
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 268
   assemblies:
   - Meridian.Storage
@@ -477,7 +477,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleRecords
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 271
   assemblies:
   - Meridian.Storage
@@ -518,7 +518,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 274
   assemblies:
   - Meridian.Storage
@@ -559,7 +559,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    path: src/Meridian.Storage/Export/ExportResult.cs
     startLine: 277
   assemblies:
   - Meridian.Storage

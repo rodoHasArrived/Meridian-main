@@ -4,10 +4,12 @@ import type {
   BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
   LedgerSummary,
   LedgerTrialBalanceLine,
+  OperatorInbox,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
@@ -33,7 +35,10 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
-  TradingWorkspaceResponse
+  TradingOperatorReadiness,
+  TradingWorkspaceResponse,
+  CreateExecutionManualOverrideRequest,
+  ExecutionManualOverride
 } from "@/types";
 
 async function getJson<T>(path: string): Promise<T> {
@@ -44,10 +49,26 @@ async function getJson<T>(path: string): Promise<T> {
   });
 
   if (!response.ok) {
+    const fixture = await getDevelopmentFallback<T>(path, response.status);
+    if (fixture !== undefined) {
+      return fixture;
+    }
+
     throw new Error(`Request failed for ${path} (${response.status})`);
   }
 
   return response.json() as Promise<T>;
+}
+
+const developmentFallbackStatuses = new Set([404, 500, 502, 503, 504]);
+
+async function getDevelopmentFallback<T>(path: string, status: number): Promise<T | undefined> {
+  if (!import.meta.env.DEV || !developmentFallbackStatuses.has(status)) {
+    return undefined;
+  }
+
+  const { resolveDevFixture } = await import("@/lib/dev-fixtures");
+  return resolveDevFixture<T>(path);
 }
 
 async function postJson<T>(path: string, body?: unknown): Promise<T> {
@@ -88,6 +109,15 @@ export function getTradingWorkspace() {
   return getJson<TradingWorkspaceResponse>("/api/workstation/trading");
 }
 
+export function getTradingReadiness() {
+  return getJson<TradingOperatorReadiness>("/api/workstation/trading/readiness");
+}
+
+export function getOperatorInbox(fundAccountId?: string) {
+  const params = fundAccountId ? `?fundAccountId=${encodeURIComponent(fundAccountId)}` : "";
+  return getJson<OperatorInbox>(`/api/workstation/operator/inbox${params}`);
+}
+
 export function getDataOperationsWorkspace() {
   return getJson<DataOperationsWorkspaceResponse>("/api/workstation/data-operations");
 }
@@ -102,12 +132,28 @@ export function evaluatePromotion(runId: string) {
   return getJson<PromotionEvaluationResult>(`/api/promotion/evaluate/${encodeURIComponent(runId)}`);
 }
 
-export function approvePromotion(runId: string, reviewNotes?: string) {
-  return postJson<PromotionDecisionResult>("/api/promotion/approve", { runId, reviewNotes });
+export interface ApprovePromotionRequest {
+  runId: string;
+  approvedBy: string;
+  approvalReason: string;
+  reviewNotes?: string;
+  manualOverrideId?: string;
 }
 
-export function rejectPromotion(runId: string, reason: string) {
-  return postJson<PromotionDecisionResult>("/api/promotion/reject", { runId, reason });
+export function approvePromotion(request: ApprovePromotionRequest) {
+  return postJson<PromotionDecisionResult>("/api/promotion/approve", request);
+}
+
+export interface RejectPromotionRequest {
+  runId: string;
+  reason: string;
+  rejectedBy?: string;
+  reviewNotes?: string;
+  manualOverrideId?: string;
+}
+
+export function rejectPromotion(request: RejectPromotionRequest) {
+  return postJson<PromotionDecisionResult>("/api/promotion/reject", request);
 }
 
 export function getPromotionHistory() {
@@ -160,6 +206,18 @@ export function getPaperSessionReplayVerification(sessionId: string) {
 
 export function getExecutionAudit(take = 20) {
   return getJson<ExecutionAuditEntry[]>(`/api/execution/audit?take=${encodeURIComponent(String(take))}`);
+}
+
+export function getExecutionControls() {
+  return getJson<ExecutionControlSnapshot>("/api/execution/controls");
+}
+
+export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
+  return postJson<ExecutionManualOverride>("/api/execution/controls/manual-overrides", request);
+}
+
+export function clearExecutionManualOverride(overrideId: string) {
+  return postJson<TradingActionResult>(`/api/execution/controls/manual-overrides/${encodeURIComponent(overrideId)}/clear`);
 }
 
 // --- Strategy lifecycle ---

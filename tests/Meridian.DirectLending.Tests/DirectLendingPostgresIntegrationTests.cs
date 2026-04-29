@@ -3,9 +3,10 @@ using Meridian.Contracts.DirectLending;
 
 namespace Meridian.DirectLending.Tests;
 
+[Trait("Category", "Integration")]
 public sealed class DirectLendingPostgresIntegrationTests
 {
-    [Fact]
+    [DirectLendingDatabaseFact]
     public async Task PostgresService_ShouldPersistSchemaVersionedHistoryAndSnapshots()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
@@ -29,7 +30,7 @@ public sealed class DirectLendingPostgresIntegrationTests
         servicing!.Balances.PrincipalOutstanding.Should().Be(250_000m);
     }
 
-    [Fact]
+    [DirectLendingDatabaseFact]
     public async Task QueryService_ShouldRebuildFromHistory_WhenLiveStateRowIsMissing()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();

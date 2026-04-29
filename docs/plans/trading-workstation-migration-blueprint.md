@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-04-09
-**Status:** Active blueprint — documentation-aligned, implementation pending
+**Last Updated:** 2026-04-29
+**Status:** Active blueprint — the active operator UI implementation lane is now the web dashboard in `src/Meridian.Ui/dashboard/`, with WPF retained for compatibility, support fixes, and shared-contract regression evidence. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and retained WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
 
 ---
 
@@ -37,26 +37,28 @@ Meridian already contains strong underlying capabilities:
 - a double-entry ledger implementation
 - a broad WPF page inventory and supporting UI services
 
-However, those capabilities are still exposed through multiple page- and service-centric flows. The current UX is optimized for **feature access** rather than **operator workflow**.
+However, those capabilities are still exposed through multiple page- and service-centric flows. The WPF shell now has a four-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data Operations desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first card ordering, Messaging Hub delivery posture with refresh recency, StrategyRuns filter recovery, BatchBacktest results empty guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing, route-aware account-scoped shell queue-button consumption of the shared operator inbox with shell-context attention cues, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that the active workflows are better, not just that the shell is more organized.
+
+The newest shell support slice adds Welcome readiness progress for provider connection, symbol inventory, and storage-path posture; Storage preview scope/guidance for archive-path decisions; OrderBook order-flow posture for depth/tape/spread monitoring; compact command-bar presentation for shared deep-page hosts while retaining related-workflow and trust-state context; actionable shell-context attention detail; provider-degradation workflow summaries that hand off to `ProviderHealth`; brokerage-sync queue routing into `AccountPortfolio`; and Trading desk hero attention states for warning or critical shared readiness work items. These are useful operator-orientation improvements, but they remain evidence for validating the workstation migration rather than a separate completion claim.
 
 ### Current pain points
 
-1. **Backtesting is split across multiple experiences**
+1. **Backtesting is still split across multiple experiences**
    - Native WPF backtest page
    - Lean integration page
    - no unified run browser or comparison workflow
 
-2. **Paper trading is infrastructure-first, operator-second**
+2. **Paper trading is still infrastructure-first, operator-second**
    - OMS and paper gateway exist
-   - trading cockpit, positions, blotter, and risk surfaces are not yet the primary UX
+   - trading cockpit, positions, blotter, and risk surfaces exist, but daily-use acceptance still depends on preserving DK1 trust evidence, promotion rationale, replay/session reliability, and operator scenario sign-off
 
-3. **Ledger capability is mostly invisible**
+3. **Ledger capability is still not consistently first-class**
    - accounting exists in the engine
-   - users do not yet get journal-first, account-first, or reconciliation-first views
+   - users have run-centered ledger, trial-balance, and reconciliation seams, but broader account/entity, cash-flow, multi-ledger, and governed-output workflows remain incomplete
 
-4. **The UI is page-dense**
+4. **The UI is still page-dense below the shell**
    - many pages are individually useful
-   - fewer end-to-end workflows feel cohesive
+   - the shell baseline is in place, but end-to-end workflows still need acceptance evidence across active Wave 2-4 paths
 
 ---
 
@@ -88,6 +90,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Explore data, validate coverage, run experiments, compare results.
 
 **Consolidates / fronts:**
+
 - BacktestPage
 - LeanIntegrationPage (backtest functions)
 - ChartingPage
@@ -97,6 +100,7 @@ The target UX is organized around four top-level workspaces.
 - AnalysisExport pages when used as research output
 
 **Primary tasks:**
+
 - choose dataset
 - validate coverage / data quality
 - run backtests
@@ -109,6 +113,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Operate strategies in paper mode now, live mode later, with clear risk and audit controls.
 
 **Consolidates / fronts:**
+
 - LiveDataViewerPage
 - OrderBookPage
 - future Orders / Positions / Portfolio / Strategy Runs pages
@@ -116,6 +121,7 @@ The target UX is organized around four top-level workspaces.
 - execution audit panels
 
 **Primary tasks:**
+
 - monitor active strategies
 - review orders and fills
 - inspect positions, exposure, and P&L
@@ -127,6 +133,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Manage providers, symbols, backfills, storage, and export operations.
 
 **Consolidates / fronts:**
+
 - BackfillPage
 - SymbolsPage
 - SymbolMappingPage
@@ -142,6 +149,7 @@ The target UX is organized around four top-level workspaces.
 **Purpose:** Risk, ledger, diagnostics, audit trail, notifications, and settings.
 
 **Consolidates / fronts:**
+
 - portfolio ledger views
 - diagnostics
 - notifications
@@ -219,6 +227,7 @@ These services should sit above raw engine/service primitives and below UI view 
 ## 6.1 Research workspace
 
 **Default layout**
+
 - Left: strategy, engine, dataset, parameters
 - Center: equity curve / charts / progress
 - Right: metrics, fills, attribution, ledger drill-ins
@@ -227,12 +236,14 @@ These services should sit above raw engine/service primitives and below UI view 
 ## 6.2 Trading cockpit
 
 **Default layout**
+
 - Left: active strategies + watchlists
 - Center: market view, positions, and action panels
 - Right: order blotter, fills, risk, alerts
 - Optional lower panel: ledger / audit event stream
 
 **Required operator controls**
+
 - pause strategy
 - stop strategy
 - cancel all open orders
@@ -242,6 +253,7 @@ These services should sit above raw engine/service primitives and below UI view 
 ## 6.3 Portfolio & Ledger workspace
 
 **Primary tabs**
+
 - Overview
 - Positions
 - Exposure
@@ -251,13 +263,13 @@ These services should sit above raw engine/service primitives and below UI view 
 - P&L Attribution
 - Audit Trail
 
-## 6.4 Desktop-local API direction
+## 6.4 Web workstation and local API direction
 
-The standalone web dashboard has been retired. The remaining supporting surface should stay local and API-first so the desktop workstation, Swagger, and automation can share the same read models without reintroducing a browser product:
+The standalone-browser direction has been restored as the active operator UI lane through the React/Vite dashboard. The local API should remain the shared contract source so the web workstation, retained WPF shell, Swagger, and automation consume the same read models instead of drifting into separate products:
 
-- run browser and strategy-state queries through retained workstation APIs
+- run browser, strategy-state, compare, diff, and promotion-history queries through shared workstation APIs
 - portfolio summary and cash / ledger inspection through localhost routes
-- lightweight diagnostics and audit access for desktop tooling
+- lightweight diagnostics and audit access for web, desktop-support, and automation tooling
 
 ---
 
@@ -268,6 +280,7 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Align repository docs around the new target state before implementation work begins.
 
 **Deliverables**
+
 - this blueprint
 - roadmap updates
 - feature inventory updates
@@ -279,13 +292,19 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Make new functionality discoverable without requiring core engine rewrites.
 
+**Current status (2026-04-27):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, Trading, Research, and Data Operations desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear state, Watchlist posture with pinned-first card ordering, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation, BatchBacktest results empty guidance, QuantScript local Run History with Research handoffs for mirrored runs, Security Master runtime/search recovery, Fund Accounts operator and balance-evidence briefing, shell operator queue button state with shell-context attention cues, shell/navigation smoke tests, `ShellAutomationState` page-state confirmation, deterministic isolated workflow restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
+
+Welcome readiness progress, Storage preview scope/guidance, OrderBook order-flow posture, compact shared deep-page command chrome, related-workflow/trust-state context around hosted pages, actionable shell-context attention detail, `ProviderHealth` handoffs for provider degradation, brokerage-sync queue routing into `AccountPortfolio`, and Trading hero attention states for warning or critical shared work items are also present as shell-support evidence.
+
 **Work**
+
 - Register all existing trading/backtesting pages consistently in WPF navigation.
 - Add command palette entries for backtest, trading, and portfolio-ledger workflows.
 - Consolidate top-level navigation into `Research`, `Trading`, `Data Operations`, `Governance`.
 - Add cross-links between backtest, Lean, live viewer, and portfolio import flows.
 
 **Exit criteria**
+
 - Every major trading workflow is reachable from primary navigation and command palette.
 - No major capability exists only as an orphan page.
 
@@ -293,13 +312,19 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Unify backtest, paper, and live-facing state around common models.
 
+**Current status (2026-04-27):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
+
+RunCashFlow now has a WPF evidence-state pass for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Treat it as a shared-run continuity improvement alongside run detail, portfolio, ledger, StrategyRuns, BatchBacktest, and QuantScript handoffs; broader governance cash-flow projection still belongs to the fund-ops wave.
+
 **Work**
+
 - Introduce shared run DTOs/read models.
 - Create a run browser and run-detail view model contract.
 - Normalize metrics, fills, cash flows, and portfolio summaries across engines.
 - Expose a comparison-friendly results schema.
 
 **Exit criteria**
+
 - A user can compare multiple runs across engines from one surface.
 
 ## Phase 3 — Backtest Studio unification
@@ -307,12 +332,14 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Merge native and Lean backtesting into one cohesive experience.
 
 **Work**
+
 - Replace one-off backtest launcher patterns with a common Backtest Studio shell.
 - Support engine selection (`Meridian Native` / `Lean`).
 - Add parameter editing, benchmark selection, coverage preflight, and saved scenarios.
 - Add compare-runs and open-ledger affordances.
 
 **Exit criteria**
+
 - Backtesting feels like one product capability with multiple engines, not separate tools.
 
 ## Phase 4 — Portfolio & Ledger first-class UX
@@ -320,24 +347,30 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Surface accounting and portfolio state as operator-visible product features.
 
 **Work**
+
 - Build portfolio overview and ledger drill-down views.
 - Add trial balance, journal explorer, account summaries, and financing analysis.
 - Add “why did equity change?” and “reconcile P&L” views backed by ledger read models.
 
 **Exit criteria**
+
 - Operators can inspect and audit a run without leaving the product or reading raw storage.
 
 ## Phase 5 — Paper-trading cockpit and execution hardening
 
 **Goal:** Turn paper trading into a reliable pre-live environment.
 
+**Current status (2026-04-27):** Partial. Paper/execution primitives, cockpit surfaces, signed DK1 trust-gate readiness projection, position/order/fill/replay/session paths, Trading Hours session briefing, OrderBook order-flow posture, account-scoped route-aware operator queue handling with shell-context attention cues and Account Portfolio brokerage-sync routing, and promotion checklist/audit evidence are present. Dependable daily operation is still a Wave 2 / DK1 acceptance problem.
+
 **Work**
+
 - Add positions, orders, fills, exposure, and risk panels.
 - Replace scaffold-only market fills with feed-aware simulated pricing.
 - Surface risk validator outcomes and strategy controls in real time.
 - Add auditability around order lifecycle state transitions.
 
 **Exit criteria**
+
 - Paper trading is usable as a daily validation surface before live promotion.
 
 ## Phase 6 — Promotion workflow and live-readiness guardrails
@@ -345,12 +378,14 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 **Goal:** Formalize the controlled path from research to live.
 
 **Work**
+
 - Add promotion workflow: Backtest → Paper → Live
 - Capture approvals / checks / preflight validations
 - Add environment badges, explicit mode separation, and irreversible-action confirmations
 - Keep live routing opt-in and behind explicit safety controls
 
 **Exit criteria**
+
 - Promotion is visible, auditable, and safety-gated.
 
 ---
@@ -384,7 +419,7 @@ The following documentation should remain aligned with this blueprint during imp
 ## 9. Risks and Mitigations
 
 | Risk | Why it matters | Mitigation |
-|------|----------------|------------|
+| --- | --- | --- |
 | UX migration outruns backend contracts | UI becomes another layer of adapters and one-off transforms | Introduce shared run/portfolio/ledger read models first |
 | Backtest and Lean remain parallel systems | Users continue to see duplicate concepts | Force common run browser and result schema |
 | Paper trading feels misleading | Simulated execution may look more realistic than it is | Keep mode badging explicit; document fill assumptions; add staged realism improvements |
@@ -398,16 +433,19 @@ The following documentation should remain aligned with this blueprint during imp
 The migration should be considered successful when the following are true:
 
 ### Product / UX
+
 - Users can navigate the platform through four workspaces rather than dozens of loosely-related pages.
 - Backtest, paper, and live capabilities share a recognizable run model.
 - Portfolio and ledger views are first-class navigation destinations.
 
 ### Engineering
+
 - WPF page logic relies on workflow view models and orchestration services rather than page-local business logic.
 - Backtest result schemas are comparable across native and Lean engines.
 - Trading state can be queried through stable read models.
 
 ### Operational
+
 - Paper mode and live mode are visually and operationally distinct.
 - Promotion checks are auditable.
 - Strategy runs, fills, P&L, and ledger movements can be reconciled from the product UI.
@@ -417,7 +455,20 @@ The migration should be considered successful when the following are true:
 ## 11. Immediate Next Actions
 
 1. Align documentation and status reporting around this blueprint.
-2. Fix WPF capability discoverability gaps (navigation + command palette).
-3. Define shared `StrategyRun`, `PortfolioSummary`, and `LedgerSummary` contracts.
-4. Design the first `Research` and `Trading` workspace shells before deeper page rewrites.
-5. Prioritize Phase 1 and Phase 2 work so future UI effort builds on shared contracts rather than one-off page logic.
+2. Validate the implemented WPF shell baseline against real `Research`, `Trading`, `Data Operations`, and `Governance` workflows.
+3. Keep shared `StrategyRun`, `PortfolioSummary`, `LedgerSummary`, reconciliation, and promotion contracts under the compatibility matrix.
+4. Tie cockpit acceptance to DK1 provider trust, replay/sample parity, promotion rationale, and session/replay reliability.
+5. Keep the Trading desk briefing hero consuming shared active-run, workflow-summary, and operator-readiness state, including risk/control audit explainability, rather than becoming a shell-local readiness model.
+6. Keep the Data Operations desk briefing hero and Provider Health posture briefing consuming shared provider, backfill, storage, session, and export state rather than becoming shell-local operational-readiness models.
+7. Keep System Health triage as diagnostics support evidence for provider, storage, and retained event posture, including pending-scan versus confirmed-empty guidance, not a substitute for readiness gates or durable incident queues.
+8. Keep Notification Center filter recovery as governance/operator-triage support evidence for retained history recovery, not a substitute for durable work-item queues.
+9. Keep Activity Log triage and export/clear header actions as supporting operational review evidence for errors, warnings, latest activity, active filters, and support traces, not a substitute for readiness gates.
+10. Keep Watchlist posture and pinned-first display as symbol-set staging guidance for saved lists, pinned lists, search scope, and symbol coverage, not as a separate readiness gate.
+11. Keep OrderBook order-flow posture as depth/tape/spread monitoring support evidence, not as a separate execution-readiness model.
+12. Keep StrategyRuns filter recovery as shared-run support evidence for visible-versus-recorded scope and retained-row recovery, not as a separate run-store or readiness model.
+13. Keep run review-packet work items in the operator inbox bounded to actionable warning/critical latest-run blockers, not a broad run-history or acceptance replacement.
+14. Keep Storage archive posture as Data Operations support evidence for growth, capacity horizon, scan failures, and archive handoffs, not as a separate storage readiness gate.
+15. Keep the GitHub WPF screenshot refresh workflow as validation evidence capture for catalog/manual shell states, with diagnostics and one final screenshot commit, not as a substitute for workflow acceptance.
+16. Keep QuantScript Run History as research support evidence for local execution records and mirrored-run handoffs into shared Research surfaces, not as closure of broader Backtest Studio unification.
+17. Keep Fund Accounts operator and balance-evidence briefing as governance support evidence for shared account, provider-routing, retained balance-history, and shared-data-access posture, not as closure of external-account or durable casework readiness.
+18. Prioritize Phase 2, Phase 4, and Phase 5 work that reduces page-local orchestration and strengthens shared contracts rather than broadening shell surface area.

@@ -182,7 +182,8 @@ public sealed class OptionsViewModel : BindableBase
 
     private async Task LoadTrackedUnderlyingsAsync()
     {
-        if (_apiClient is null) return;
+        if (_apiClient is null)
+            return;
 
         try
         {
@@ -242,7 +243,8 @@ public sealed class OptionsViewModel : BindableBase
 
     private async Task LoadChainAsync(string symbol, string expiration)
     {
-        if (_apiClient is null) return;
+        if (_apiClient is null)
+            return;
 
         ShowStatus($"Loading chain for {symbol} {expiration}...", true);
 

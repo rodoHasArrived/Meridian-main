@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionRight
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 5
   assemblies:
   - Meridian.Execution.Sdk
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Call
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 8
   assemblies:
   - Meridian.Execution.Sdk
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Put
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 11
   assemblies:
   - Meridian.Execution.Sdk

@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InMemoryFundAccountService
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAccountAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 54
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 104
   assemblies:
   - Meridian.Application
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAccountsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 114
   assemblies:
   - Meridian.Application
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCustodianDetailsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 139
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBankDetailsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 164
   assemblies:
   - Meridian.Application
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateAccountAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 189
   assemblies:
   - Meridian.Application
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundAccountsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 214
   assemblies:
   - Meridian.Application
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordBalanceSnapshotAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 236
   assemblies:
   - Meridian.Application
@@ -437,7 +437,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalanceHistoryAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 269
   assemblies:
   - Meridian.Application
@@ -477,7 +477,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestBalanceSnapshotAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 290
   assemblies:
   - Meridian.Application
@@ -513,7 +513,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestCustodianStatementAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 309
   assemblies:
   - Meridian.Application
@@ -549,7 +549,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestBankStatementAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 339
   assemblies:
   - Meridian.Application
@@ -585,7 +585,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCustodianPositionsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 368
   assemblies:
   - Meridian.Application
@@ -623,7 +623,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBankStatementLinesAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 386
   assemblies:
   - Meridian.Application
@@ -663,7 +663,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAccountAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 407
   assemblies:
   - Meridian.Application
@@ -699,7 +699,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationRunsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 497
   assemblies:
   - Meridian.Application
@@ -735,7 +735,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationResultsAsync
-    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
     startLine: 511
   assemblies:
   - Meridian.Application

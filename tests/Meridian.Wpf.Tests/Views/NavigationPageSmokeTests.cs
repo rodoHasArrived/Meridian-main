@@ -2,6 +2,7 @@ using System.Reflection;
 using AvalonDock.Layout;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Models;
@@ -162,6 +163,7 @@ public sealed class NavigationPageSmokeTests
                 var document = documentProperty!.GetValue(descriptor).Should().BeOfType<LayoutDocument>().Subject;
                 var hostFrame = document.Content.Should().BeOfType<Frame>().Subject;
                 hostFrame.Content.Should().BeOfType<Page>();
+                hostFrame.Background.Should().Be(Brushes.Transparent);
                 WorkspaceShellFallbackContentFactory.IsFallbackContent(document.Content).Should().BeFalse();
             }
             finally

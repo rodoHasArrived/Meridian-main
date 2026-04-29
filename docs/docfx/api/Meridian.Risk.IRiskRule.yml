@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IRiskRule
-    path: ../../src/Meridian.Risk/IRiskRule.cs
+    path: src/Meridian.Risk/IRiskRule.cs
     startLine: 8
   assemblies:
   - Meridian.Risk
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleName
-    path: ../../src/Meridian.Risk/IRiskRule.cs
+    path: src/Meridian.Risk/IRiskRule.cs
     startLine: 11
   assemblies:
   - Meridian.Risk
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateAsync
-    path: ../../src/Meridian.Risk/IRiskRule.cs
+    path: src/Meridian.Risk/IRiskRule.cs
     startLine: 14
   assemblies:
   - Meridian.Risk

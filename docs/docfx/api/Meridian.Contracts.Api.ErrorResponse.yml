@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorResponse
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Detail
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCode
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrelationId
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -472,7 +472,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Extensions
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts
@@ -526,7 +526,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validation
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -566,7 +566,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 95
   assemblies:
   - Meridian.Contracts
@@ -606,7 +606,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitExceeded
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 119
   assemblies:
   - Meridian.Contracts
@@ -646,7 +646,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUnavailable
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 143
   assemblies:
   - Meridian.Contracts
@@ -686,7 +686,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InternalError
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 166
   assemblies:
   - Meridian.Contracts
@@ -724,7 +724,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeout
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 184
   assemblies:
   - Meridian.Contracts
@@ -764,7 +764,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromErrorCode
-    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    path: src/Meridian.Contracts/Api/ErrorResponse.cs
     startLine: 208
   assemblies:
   - Meridian.Contracts

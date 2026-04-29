@@ -3,10 +3,10 @@
 # =============================================================================
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
-        gen-interfaces gen-structure gen-providers gen-workflows \
-        update-claude-md docs-all
+        gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
+        update-claude-md docs-all check-workflow-docs-parity
 
-docs: gen-context verify-adrs ## Generate all documentation from code
+docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
 
 gen-context: ## Generate project-context.md from code annotations
@@ -65,6 +65,11 @@ gen-workflows: ## Generate workflows overview documentation
 		--workflows-only
 	@echo "$(GREEN)Generated docs/generated/workflows-overview.md$(NC)"
 
+gen-workflow-manifest: ## Generate workflow manifest docs snippets and drift artifacts
+	@echo "$(BLUE)Generating workflow manifest artifacts...$(NC)"
+	@python3 build/scripts/docs/generate-workflow-manifest.py
+	@echo "$(GREEN)Generated workflow manifest artifacts$(NC)"
+
 update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 	@echo "$(BLUE)Updating CLAUDE.md repository structure...$(NC)"
 	@python3 build/scripts/docs/update-claude-md.py \
@@ -72,5 +77,12 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
 
+docs-lint: ## Validate documented make/pwsh command snippets resolve to real targets/scripts
+	@python3 build/scripts/docs/lint-command-snippets.py
+
 docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows verify-adrs ## Generate all documentation
 	@echo "$(GREEN)All documentation generated$(NC)"
+
+check-workflow-docs-parity: ## Validate docs workflow command parity and generate remediation report
+	@python3 scripts/check_workflow_docs_parity.py --report artifacts/docs/workflow-docs-parity-report.md
+	@echo "$(GREEN)Workflow docs parity check complete$(NC)"

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlaConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultFreshnessThresholdSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalFreshnessThresholdSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolThresholds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipOutsideMarketHours
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketOpenUtc
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCloseUtc
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 51
   assemblies:
   - Meridian.Application
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetThresholdForSymbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
     startLine: 58
   assemblies:
   - Meridian.Application

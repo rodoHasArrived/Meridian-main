@@ -124,7 +124,8 @@ public sealed class ToastNotificationService : IDisposable
     {
         var tag = _pendingNavigationTag;
         _pendingNavigationTag = string.Empty;
-        if (string.IsNullOrEmpty(tag)) return;
+        if (string.IsNullOrEmpty(tag))
+            return;
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         dispatcher?.BeginInvoke(() =>

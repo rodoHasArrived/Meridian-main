@@ -4,6 +4,8 @@ items:
   commentId: N:Meridian.Strategies.Storage
   id: Meridian.Strategies.Storage
   children:
+  - Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  - Meridian.Strategies.Storage.PromotionRecordStoreOptions
   - Meridian.Strategies.Storage.StrategyRunStore
   langs:
   - csharp
@@ -15,9 +17,52 @@ items:
   assemblies:
   - Meridian.Strategies
 references:
+- uid: Meridian.Strategies.Storage.PromotionRecordStoreOptions
+  commentId: T:Meridian.Strategies.Storage.PromotionRecordStoreOptions
+  parent: Meridian.Strategies.Storage
+  href: Meridian.Strategies.Storage.PromotionRecordStoreOptions.html
+  name: PromotionRecordStoreOptions
+  nameWithType: PromotionRecordStoreOptions
+  fullName: Meridian.Strategies.Storage.PromotionRecordStoreOptions
+- uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  commentId: T:Meridian.Strategies.Storage.JsonlPromotionRecordStore
+  href: Meridian.Strategies.Storage.JsonlPromotionRecordStore.html
+  name: JsonlPromotionRecordStore
+  nameWithType: JsonlPromotionRecordStore
+  fullName: Meridian.Strategies.Storage.JsonlPromotionRecordStore
 - uid: Meridian.Strategies.Storage.StrategyRunStore
   commentId: T:Meridian.Strategies.Storage.StrategyRunStore
   href: Meridian.Strategies.Storage.StrategyRunStore.html
   name: StrategyRunStore
   nameWithType: StrategyRunStore
   fullName: Meridian.Strategies.Storage.StrategyRunStore
+- uid: Meridian.Strategies.Storage
+  commentId: N:Meridian.Strategies.Storage
+  href: Meridian.html
+  name: Meridian.Strategies.Storage
+  nameWithType: Meridian.Strategies.Storage
+  fullName: Meridian.Strategies.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Storage
+    name: Storage
+    href: Meridian.Strategies.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Storage
+    name: Storage
+    href: Meridian.Strategies.Storage.html

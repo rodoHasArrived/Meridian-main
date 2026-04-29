@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgresSecurityMasterSnapshotStore
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
     startLine: 7
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs
     startLine: 41
   assemblies:
   - Meridian.Storage

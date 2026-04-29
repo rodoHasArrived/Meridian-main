@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBClientPortalOptionsValidator
-    path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
+    path: src/Meridian.Application/Config/ConfigValidationHelper.cs
     startLine: 164
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
+    path: src/Meridian.Application/Config/ConfigValidationHelper.cs
     startLine: 166
   assemblies:
   - Meridian.Application

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSecurityMasterIngestProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
     startLine: 209
   assemblies:
   - Meridian.Infrastructure

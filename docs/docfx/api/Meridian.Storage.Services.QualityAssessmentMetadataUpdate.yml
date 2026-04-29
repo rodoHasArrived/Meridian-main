@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityAssessmentMetadataUpdate
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 412
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 412
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 413
   assemblies:
   - Meridian.Storage
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 414
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Insight
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 415
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoredBy
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 416
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsightKey
-    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    path: src/Meridian.Storage/Services/MetadataTagService.cs
     startLine: 417
   assemblies:
   - Meridian.Storage

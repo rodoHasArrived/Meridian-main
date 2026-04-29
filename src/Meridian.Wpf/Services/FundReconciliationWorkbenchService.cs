@@ -60,12 +60,14 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     public async Task<FundReconciliationWorkbenchSnapshot> GetSnapshotAsync(string fundProfileId, CancellationToken ct = default)
     {
         var summaryTask = _reconciliationReadService.GetAsync(fundProfileId, ct);
+        var calibrationSummaryTask = _apiClient.GetCalibrationSummaryAsync(ct);
         var breakQueueTask = _apiClient.GetBreakQueueAsync(ct);
         var runsTask = _runWorkspaceService.GetRecordedRunsAsync(ct);
 
-        await Task.WhenAll(summaryTask, breakQueueTask, runsTask).ConfigureAwait(false);
+        await Task.WhenAll(summaryTask, calibrationSummaryTask, breakQueueTask, runsTask).ConfigureAwait(false);
 
         var summary = await summaryTask.ConfigureAwait(false);
+        var calibrationSummary = await calibrationSummaryTask.ConfigureAwait(false);
         var runs = await runsTask.ConfigureAwait(false);
         var relevantRuns = runs
             .Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
@@ -90,9 +92,18 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             .ThenByDescending(item => item.SecurityIssueCount)
             .ThenByDescending(item => item.RequestedAt)
             .ToArray();
+        var calibrationProfiles = calibrationSummary?.Profiles
+            .Select(MapCalibrationProfileRow)
+            .OrderByDescending(item => item.PendingSignoffCount)
+            .ThenByDescending(item => item.ActiveBreakCount)
+            .ThenBy(item => item.ToleranceProfileId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(item => item.ExceptionRoute, StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
 
         return new FundReconciliationWorkbenchSnapshot(
             Summary: summary,
+            CalibrationSummary: calibrationSummary,
+            CalibrationProfiles: calibrationProfiles,
             BreakQueueItems: breakQueueItems,
             RunRows: runRows,
             RefreshedAt: DateTimeOffset.UtcNow,
@@ -220,7 +231,30 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ReviewedAt: item.ReviewedAt,
             ResolvedBy: item.ResolvedBy,
             ResolvedAt: item.ResolvedAt,
-            ResolutionNote: item.ResolutionNote);
+            ResolutionNote: item.ResolutionNote,
+            Severity: item.Severity,
+            ExceptionRouteLabel: string.IsNullOrWhiteSpace(item.ExceptionRoute) ? "Unrouted" : item.ExceptionRoute,
+            ToleranceProfileLabel: string.IsNullOrWhiteSpace(item.ToleranceProfileId) ? "Unassigned" : item.ToleranceProfileId,
+            RequiredSignoffRoleLabel: string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ? "Not configured" : item.RequiredSignoffRole,
+            SignoffStatusLabel: Humanize(item.SignoffStatus));
+    }
+
+    private static FundReconciliationCalibrationProfileRow MapCalibrationProfileRow(
+        ReconciliationCalibrationProfileSummaryDto profile)
+    {
+        var activeBreakCount = profile.OpenBreakCount + profile.InReviewBreakCount;
+        return new FundReconciliationCalibrationProfileRow(
+            ToleranceProfileId: profile.ToleranceProfileId,
+            ExceptionRoute: profile.ExceptionRoute,
+            HighestSeverity: profile.HighestSeverity,
+            HighestSeverityLabel: Humanize(profile.HighestSeverity),
+            MaxToleranceBand: profile.MaxToleranceBand,
+            MaxToleranceBandText: profile.MaxToleranceBand.HasValue ? profile.MaxToleranceBand.Value.ToString("N2") : "-",
+            TotalBreakCount: profile.TotalBreakCount,
+            ActiveBreakCount: activeBreakCount,
+            PendingSignoffCount: profile.PendingSignoffCount,
+            SignedOffCount: profile.SignedOffCount,
+            LastUpdatedAtText: FormatTimestamp(profile.LastUpdatedAt));
     }
 
     private static FundReconciliationRunRow MapRunRow(FundReconciliationItem item)

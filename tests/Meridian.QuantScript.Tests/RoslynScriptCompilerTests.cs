@@ -189,4 +189,64 @@ public sealed class RoslynScriptCompilerTests
         var result = compiler.ExtractParameters(source);
         result.Should().HaveCount(2);
     }
+
+    [Fact]
+    public void ExtractParameters_ParamCalls_ReturnRuntimeDescriptorShape()
+    {
+        var compiler = BuildCompiler();
+        var source = """
+            var lookback = Param<int>("lookback", 20, 5, 100, "Window length");
+            """;
+
+        var result = compiler.ExtractParameters(source);
+
+        result.Should().ContainSingle();
+        result[0].Name.Should().Be("lookback");
+        result[0].TypeName.Should().Be("int");
+        result[0].DefaultValue.Should().Be(20);
+        result[0].Min.Should().Be(5);
+        result[0].Max.Should().Be(100);
+        result[0].Description.Should().Be("Window length");
+    }
+
+    [Fact]
+    public void ExtractParameters_ScriptParamDeclarations_AreDiscovered()
+    {
+        var compiler = BuildCompiler();
+        var source = """
+            [ScriptParam("Fast Window", Default = 12, Min = 5, Max = 50, Description = "Used before first run")]
+            int fastWindow = 12;
+            """;
+
+        var result = compiler.ExtractParameters(source);
+
+        result.Should().ContainSingle();
+        result[0].Name.Should().Be("fastWindow");
+        result[0].Label.Should().Be("Fast Window");
+        result[0].DefaultValue.Should().Be(12);
+        result[0].Min.Should().Be(5);
+        result[0].Max.Should().Be(50);
+        result[0].Description.Should().Be("Used before first run");
+    }
+
+    [Fact]
+    public void ExtractParameters_WhenMultipleDiscoverySourcesExist_PrefersParamCallsThenAttributesThenComments()
+    {
+        var compiler = BuildCompiler();
+        var source = """
+            // @param lookback:Legacy Lookback:10:1:20:legacy
+            [ScriptParam("Attribute Lookback", Default = 11, Min = 2, Max = 30, Description = "attribute")]
+            int lookback = 11;
+            var resolved = Param<int>("lookback", 14, 3, 40, "runtime");
+            """;
+
+        var result = compiler.ExtractParameters(source);
+
+        result.Should().ContainSingle();
+        result[0].Name.Should().Be("lookback");
+        result[0].DefaultValue.Should().Be(14);
+        result[0].Min.Should().Be(3);
+        result[0].Max.Should().Be(40);
+        result[0].Description.Should().Be("runtime");
+    }
 }

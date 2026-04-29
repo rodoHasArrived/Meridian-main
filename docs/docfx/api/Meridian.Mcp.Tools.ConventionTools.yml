@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConventionTools
-    path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
+    path: src/Meridian.Mcp/Tools/ConventionTools.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
+    path: src/Meridian.Mcp/Tools/ConventionTools.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCodingConventions
-    path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
+    path: src/Meridian.Mcp/Tools/ConventionTools.cs
     startLine: 5
   assemblies:
   - mdc-mcp
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAntiPatterns
-    path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
+    path: src/Meridian.Mcp/Tools/ConventionTools.cs
     startLine: 53
   assemblies:
   - mdc-mcp

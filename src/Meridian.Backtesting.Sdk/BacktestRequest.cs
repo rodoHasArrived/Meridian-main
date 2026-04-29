@@ -68,6 +68,11 @@ public enum BacktestCommissionKind
 /// fill-realism for strategies that trade illiquid names or hold large positions. Set to zero
 /// (default) to use the original unconstrained behaviour.
 /// </param>
+/// <param name="FailOnUnknownSymbols">
+/// When <see langword="true"/>, the backtest engine aborts with an error if any symbol in the
+/// discovered universe is absent from the Security Master. When <see langword="false"/>, missing
+/// symbols produce a warning and the run continues.
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -91,12 +96,6 @@ public sealed record BacktestRequest(
     bool AdjustForCorporateActions = true,
     double RiskFreeRate = 0.04,
     decimal MaxParticipationRate = 0m,
-    /// <summary>
-    /// When <see langword="true"/>, the backtest engine aborts with an error if any symbol in the
-    /// discovered universe is absent from the Security Master (requires a Security Master connection).
-    /// When <see langword="false"/> (default), missing symbols produce a warning and the run continues.
-    /// Has no effect when no Security Master is configured.
-    /// </summary>
     bool FailOnUnknownSymbols = false)
 {
     /// <summary>

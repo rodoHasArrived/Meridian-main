@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampFormat
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 336
   assemblies:
   - Meridian.Storage
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Iso8601
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 339
   assemblies:
   - Meridian.Storage
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnixSeconds
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 341
   assemblies:
   - Meridian.Storage
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnixMilliseconds
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 343
   assemblies:
   - Meridian.Storage
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnixNanoseconds
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 345
   assemblies:
   - Meridian.Storage
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExcelSerial
-    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    path: src/Meridian.Storage/Export/ExportProfile.cs
     startLine: 347
   assemblies:
   - Meridian.Storage

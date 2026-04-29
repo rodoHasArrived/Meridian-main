@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MultiAccountPortfolioSnapshot
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 38
   assemblies:
   - Meridian.Execution
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 38
   assemblies:
   - Meridian.Execution
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 39
   assemblies:
   - Meridian.Execution
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCash
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 40
   assemblies:
   - Meridian.Execution
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalLongMarketValue
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 41
   assemblies:
   - Meridian.Execution
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalShortMarketValue
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 42
   assemblies:
   - Meridian.Execution
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGrossExposure
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 43
   assemblies:
   - Meridian.Execution
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalNetExposure
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 44
   assemblies:
   - Meridian.Execution
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalUnrealisedPnl
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 45
   assemblies:
   - Meridian.Execution
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRealisedPnl
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 46
   assemblies:
   - Meridian.Execution
@@ -374,7 +374,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 47
   assemblies:
   - Meridian.Execution
@@ -405,7 +405,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromAccounts
-    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
     startLine: 50
   assemblies:
   - Meridian.Execution

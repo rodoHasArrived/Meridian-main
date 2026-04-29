@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IProviderFamilyCatalogService
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
     startLine: 441
   assemblies:
   - Meridian.Application
@@ -45,7 +45,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFamilies
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
     startLine: 443
   assemblies:
   - Meridian.Application
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFamily
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
     startLine: 445
   assemblies:
   - Meridian.Application

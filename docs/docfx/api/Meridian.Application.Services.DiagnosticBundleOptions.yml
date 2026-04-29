@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticBundleOptions
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 442
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 442
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeSystemInfo
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 443
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeConfiguration
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 444
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeMetrics
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 445
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeLogs
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 446
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeStorageInfo
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 447
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeEnvironmentVariables
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 448
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogDays
-    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    path: src/Meridian.Application/Services/DiagnosticBundleService.cs
     startLine: 449
   assemblies:
   - Meridian.Application

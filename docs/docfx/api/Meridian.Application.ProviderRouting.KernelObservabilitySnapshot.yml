@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KernelObservabilitySnapshot
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 188
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 188
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAtUtc
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 189
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Domains
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 190
   assemblies:
   - Meridian.Application
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCount
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 191
   assemblies:
   - Meridian.Application
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveAlertCount
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 192
   assemblies:
   - Meridian.Application
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeterminismChecksEnabled
-    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
     startLine: 193
   assemblies:
   - Meridian.Application

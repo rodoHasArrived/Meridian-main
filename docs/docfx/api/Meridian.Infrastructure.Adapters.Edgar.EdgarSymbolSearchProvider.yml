@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EdgarSymbolSearchProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 23
   assemblies:
   - Meridian.Infrastructure
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 65
   assemblies:
   - Meridian.Infrastructure
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 90
   assemblies:
   - Meridian.Infrastructure
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 106
   assemblies:
   - Meridian.Infrastructure
@@ -425,7 +425,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 115
   assemblies:
   - Meridian.Infrastructure
@@ -471,7 +471,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 148
   assemblies:
   - Meridian.Infrastructure
@@ -508,7 +508,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
     startLine: 357
   assemblies:
   - Meridian.Infrastructure

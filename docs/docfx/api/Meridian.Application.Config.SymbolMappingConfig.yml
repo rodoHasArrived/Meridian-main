@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMappingConfig
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 296
   assemblies:
   - Meridian.Core
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 296
   assemblies:
   - Meridian.Core
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbol
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 300
   assemblies:
   - Meridian.Core
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IbSymbol
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 305
   assemblies:
   - Meridian.Core
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaSymbol
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 310
   assemblies:
   - Meridian.Core
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSymbol
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 315
   assemblies:
   - Meridian.Core
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YahooSymbol
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 320
   assemblies:
   - Meridian.Core
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 325
   assemblies:
   - Meridian.Core
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 330
   assemblies:
   - Meridian.Core

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Execution.Models;
-using Meridian.Execution.Serialization;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -76,7 +76,8 @@ public sealed record ManualOverrideRequest(
     string? Symbol = null,
     string? StrategyId = null,
     string? RunId = null,
-    DateTimeOffset? ExpiresAt = null);
+    DateTimeOffset? ExpiresAt = null,
+    string? CorrelationId = null);
 
 /// <summary>
 /// Result of evaluating a new order against the current operator controls.
@@ -156,6 +157,7 @@ public sealed class ExecutionOperatorControlService
         bool isOpen,
         string? reason,
         string? changedBy,
+        string? correlationId = null,
         CancellationToken ct = default)
     {
         ExecutionControlSnapshot snapshot;
@@ -174,14 +176,17 @@ public sealed class ExecutionOperatorControlService
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
-            action: isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
-            actor: NormalizeActor(changedBy),
-            message: reason ?? (isOpen ? "Execution circuit breaker opened." : "Execution circuit breaker closed."),
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
+            NormalizeActor(changedBy),
+            reason ?? (isOpen ? "Execution circuit breaker opened." : "Execution circuit breaker closed."),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["isOpen"] = isOpen.ToString()
             },
-            ct: ct).ConfigureAwait(false);
+            NormalizeOptionalToken(correlationId),
+            null,
+            null,
+            ct).ConfigureAwait(false);
 
         return snapshot;
     }
@@ -211,14 +216,17 @@ public sealed class ExecutionOperatorControlService
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
-            action: "DefaultPositionLimitUpdated",
-            actor: NormalizeActor(changedBy),
-            message: reason ?? "Default position limit updated.",
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            "DefaultPositionLimitUpdated",
+            NormalizeActor(changedBy),
+            reason ?? "Default position limit updated.",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["limit"] = maxPositionSize?.ToString("G29") ?? "unlimited"
             },
-            ct: ct).ConfigureAwait(false);
+            null,
+            null,
+            null,
+            ct).ConfigureAwait(false);
 
         return snapshot;
     }
@@ -261,15 +269,18 @@ public sealed class ExecutionOperatorControlService
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
-            action: "SymbolPositionLimitUpdated",
-            actor: NormalizeActor(changedBy),
-            message: reason ?? $"Position limit updated for {normalizedSymbol}.",
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            "SymbolPositionLimitUpdated",
+            NormalizeActor(changedBy),
+            reason ?? $"Position limit updated for {normalizedSymbol}.",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["symbol"] = normalizedSymbol,
                 ["limit"] = maxPositionSize?.ToString("G29") ?? "unlimited"
             },
-            ct: ct).ConfigureAwait(false);
+            null,
+            null,
+            normalizedSymbol,
+            ct).ConfigureAwait(false);
 
         return snapshot;
     }
@@ -327,6 +338,9 @@ public sealed class ExecutionOperatorControlService
                 ["runId"] = overrideEntry.RunId ?? string.Empty,
                 ["expiresAt"] = overrideEntry.ExpiresAt?.ToString("O") ?? string.Empty
             },
+            correlationId: NormalizeOptionalToken(request.CorrelationId),
+            runId: overrideEntry.RunId,
+            symbol: overrideEntry.Symbol,
             ct: ct).ConfigureAwait(false);
 
         return overrideEntry;
@@ -339,6 +353,7 @@ public sealed class ExecutionOperatorControlService
         string overrideId,
         string? changedBy,
         string? reason,
+        string? correlationId = null,
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideId);
@@ -371,8 +386,14 @@ public sealed class ExecutionOperatorControlService
             metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["overrideId"] = removed.OverrideId,
-                ["kind"] = removed.Kind
+                ["kind"] = removed.Kind,
+                ["symbol"] = removed.Symbol ?? string.Empty,
+                ["strategyId"] = removed.StrategyId ?? string.Empty,
+                ["runId"] = removed.RunId ?? string.Empty
             },
+            correlationId: NormalizeOptionalToken(correlationId),
+            runId: removed.RunId,
+            symbol: removed.Symbol,
             ct: ct).ConfigureAwait(false);
 
         return true;
@@ -521,6 +542,9 @@ public sealed class ExecutionOperatorControlService
         string actor,
         string message,
         IReadOnlyDictionary<string, string>? metadata,
+        string? correlationId,
+        string? runId,
+        string? symbol,
         CancellationToken ct)
     {
         if (_auditTrail is null)
@@ -533,6 +557,9 @@ public sealed class ExecutionOperatorControlService
             action: action,
             outcome: "Completed",
             actor: actor,
+            runId: runId,
+            symbol: symbol,
+            correlationId: correlationId,
             message: message,
             metadata: metadata,
             ct: ct).ConfigureAwait(false);

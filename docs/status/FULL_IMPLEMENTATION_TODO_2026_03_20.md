@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-29
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -23,14 +23,14 @@ Use it with:
 Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
 
 <!-- program-state:begin -->
-| Wave | Owner | Status | Target Date | Evidence Link |
-| --- | --- | --- | --- | --- |
-| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
-| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
-| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
-| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
-| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+| Wave | Owner | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
 <!-- program-state:end -->
 
 ---
@@ -48,19 +48,25 @@ Closed platform work:
 - Paper-trading cockpit REST endpoints wired: `/api/execution/account`, `/api/execution/positions`, `/api/execution/portfolio`, `/api/execution/orders`, `/api/execution/health`, `/api/execution/capabilities`
 - Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
 - `Backtest → Paper → Live` promotion workflow endpoints: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
+- Trading dashboard promotion gate now supports both **approval** and **rejection** decisions with explicit operator rationale fields wired to the promotion API
+- Wave 2 trading-readiness contract wired through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, covering session, replay, control, promotion, DK1 trust-gate packet/sign-off posture, brokerage-sync, acceptance-gate/overall-readiness posture, work-item, and warning posture
+- Local Wave 2 replay-audit hardening records replay consistency, compared fill/order/ledger counts, last-persisted timestamps, and primary mismatch reason into execution-audit metadata for readiness reconstruction
+- Promotion approvals now use the canonical `PromotionApprovalChecklist`; `Backtest -> Paper` approvals require DK1 trust-packet, run-lineage, portfolio/ledger-continuity, and risk-control review, while `Paper -> Live` additionally requires live-override review
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
 - Brokerage gateway framework complete: `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`, plus Alpaca/IB/StockSharp adapter implementations
 - WPF shell modernization: native Fluent theme (`ThemeMode="System"`, PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on Charting page (PR #522)
 - Zero-API-key startup: Synthetic provider default when no credentials are present (PR #513)
 - Route/health endpoint reliability: duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
-- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515)
+- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515), now hardened for scheduled/push/manual catalog and manual captures, diagnostics, and one post-matrix screenshot commit
 
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- current working-tree WPF shell consolidation should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- current WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, Batch Backtest results empty guidance, Position Blotter selection review/action readiness, Notification Center history recovery, Trading Hours session briefing, OrderBook order-flow posture, Activity Log triage/export/clear state, Welcome readiness progress, Storage archive posture and preview guidance, Watchlist pinned-first staging, Fund Accounts balance-evidence posture, workspace queue tone styles, the workspace shell context strip, operator queue attention with Account Portfolio and run review-packet routing for actionable blockers, Trading desk briefing hero state selection, and Research desk briefing hero run/promotion handoffs; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- WPF screenshot/manual evidence capture now runs through the hardened refresh workflow with selectable catalog/manual groups, diagnostic artifacts, and a single commit step; it supports validation and release evidence but does not close the active workflow gates
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
+- DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus a signed 2026-04-27 generated parity packet, validated evidence documents, validated explainability/calibration contracts, and packet-bound sign-off evidence; future operator sign-off must stay synchronized against fresh date-stamped packets across the validation script, provider matrix, runbook, sign-off template, and readiness dashboard whenever evidence changes
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
@@ -78,7 +84,7 @@ Goal: preserve the closed Wave 1 trust gate without widening scope, and keep the
 Open work:
 
 - keep the active provider set fixed at Alpaca, Robinhood, and Yahoo across roadmap, status, matrix, and script surfaces
-- keep Robinhood runtime-bounded evidence explicit and current under `artifacts/provider-validation/robinhood/`
+- keep Robinhood runtime-bounded evidence explicit and current through regenerated or attached broker-session evidence for each DK1 review run
 - rerun `run-wave1-provider-validation.ps1` when provider, checkpoint, or Parquet proof surfaces change
 - keep deferred providers labeled consistently outside the active Wave 1 gate
 - continue adjacent backtesting-engine and strategy-run persistence coverage expansion without reopening Wave 1 scope
@@ -89,12 +95,15 @@ The active gate for Alpaca, Robinhood, and Yahoo stays reproducible through `run
 
 ### Track B / Wave 2: Paper-trading cockpit hardening
 
-Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web workstation.
+Goal: harden the existing execution primitives, brokerage adapters, and wired workstation/API flows into a dependable operator cockpit through the shared readiness contract.
 
 Open work:
 
-- tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result, approval controls, session state, and execution-control state with clearer acceptance criteria in the dashboard
+- tighten the existing live positions, open orders, fills, P&L, and risk panels wired to `/api/execution/*` and the shared workstation readiness lane
+- expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, acceptance-gate status, overall readiness, operator work items, actionable latest-run review-packet blockers, and execution-control state from the shared trading-readiness contract and operator-inbox aggregation with clearer acceptance criteria in workstation consumers
+- keep the WPF Trading desk briefing hero, OrderBook posture strip, and main-shell queue routing aligned with shared active-run, workflow-summary, replay/readiness, controls, trust-gate, depth/tape, and brokerage-sync inputs as supporting Wave 2 evidence
+- keep run review-packet inbox items bounded to actionable warning/critical latest-run blockers so the operator inbox improves triage without becoming a duplicate run-history surface
+- keep the WPF Research desk briefing hero aligned with shared selected-run, portfolio, ledger, and promotion-review inputs as supporting Wave 3 evidence
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 
@@ -103,11 +112,13 @@ Primary anchors:
 - `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs`
 - `src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs`
 - `src/Meridian.Execution/`
-- `src/Meridian.Ui/dashboard/`
+- `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs`
+- `src/Meridian.Wpf/Views/TradingWorkspaceShellPage.xaml`
+- retained `src/Meridian.Ui/dashboard/` support tests when those surfaces are touched
 
 Exit signal:
 
-A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web workstation, with live positions and fills visible.
+A strategy researched in backtest can be promoted to paper trading through one connected workstation workflow, with positions and fills visible through shared contracts.
 
 ### Track C / Wave 3: Shared run / portfolio / ledger continuity
 
@@ -118,7 +129,7 @@ Open work:
 - extend run history beyond backtest-first into paper and live-adjacent results
 - deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger and reconciliation continuity in the web dashboard
+- surface ledger and reconciliation continuity in the active web dashboard and retained workstation APIs/WPF support surfaces
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:
@@ -192,14 +203,14 @@ Primary anchors:
 - `src/Meridian.Contracts/SecurityMaster/`
 - `src/Meridian.Storage/SecurityMaster/`
 
-### Track G: QuantScript *(implemented)*
+### Track G: QuantScript _(implemented)_
 
 Goal: ship the QuantScript capability as a real project, not only a blueprint.
 
 **Status: Closed.** The QuantScript project has been fully implemented:
 
 - `src/Meridian.QuantScript/` — Roslyn scripting API, `PriceSeries`/`ReturnSeries` domain types, `StatisticsEngine`, `BacktestProxy`, `QuantDataContext`, `PlotQueue`
-- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics result tabs, ScottPlot charting
+- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics/Run History result tabs, ScottPlot charting, and shared Research handoffs for mirrored runs
 - `tests/Meridian.QuantScript.Tests/` — compiler, runner, statistics engine, plot queue, portfolio builder tests
 - `scripts/example-sharpe.csx` — sample script
 
@@ -289,13 +300,13 @@ References:
 
 ## Recommended Delivery Order
 
-### Wave 1 *(closed, maintain)*
+### Wave 1 _(closed, maintain)_
 
 - Track A: Closed trust-gate maintenance
 
 ### Wave 2
 
-- Track B: Paper trading cockpit web UI and promotion workflow
+- Track B: Shared workstation paper-trading cockpit and promotion workflow
 
 ### Wave 3
 
@@ -315,11 +326,11 @@ References:
 
 ### Optional Wave
 
-- Track G: QuantScript *(implemented — deeper workflow integration and sample scripts remain)*
+- Track G: QuantScript _(implemented — deeper workflow integration and sample scripts remain)_
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
 - Track J: Remaining structural/documentation closure
-- Track K: Phase 1.5 preferred/convertible equity domain extension *(F# domain layer — all acceptance criteria open)*
+- Track K: Phase 1.5 preferred/convertible equity domain extension _(F# domain layer — all acceptance criteria open)_
 
 ---
 
@@ -327,8 +338,8 @@ References:
 
 The repository can reasonably claim core operator-readiness when all of the following are true:
 
-1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, and checkpoint plus Parquet proof remains closed in repo tests.
-2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest → Paper` is explicit and auditable.
+1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites plus generated runtime attachments for bounded scenarios, and checkpoint plus Parquet proof remains closed in repo tests.
+2. **Wave 2 gates:** the workstation exposes a dependable paper-trading cockpit through the shared readiness contract, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
 

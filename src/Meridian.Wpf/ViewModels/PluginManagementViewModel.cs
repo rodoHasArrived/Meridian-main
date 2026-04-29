@@ -38,12 +38,12 @@ public sealed class PluginItem
 
         return new PluginItem
         {
-            AssemblyPath    = result.AssemblyPath,
-            AssemblyFile    = Path.GetFileName(result.AssemblyPath),
-            Status          = result.Success ? "Loaded" : "Failed",
+            AssemblyPath = result.AssemblyPath,
+            AssemblyFile = Path.GetFileName(result.AssemblyPath),
+            Status = result.Success ? "Loaded" : "Failed",
             RegisteredTypes = shortTypes,
-            StatusBrush     = result.Success ? SuccessBrush : FailureBrush,
-            ErrorMessage    = result.ErrorMessage
+            StatusBrush = result.Success ? SuccessBrush : FailureBrush,
+            ErrorMessage = result.ErrorMessage
         };
     }
 
@@ -75,9 +75,9 @@ public sealed class PluginManagementViewModel : BindableBase
     {
         _pluginLoader = pluginLoader ?? throw new ArgumentNullException(nameof(pluginLoader));
 
-        BrowseCommand      = new RelayCommand(ExecuteBrowse);
+        BrowseCommand = new RelayCommand(ExecuteBrowse);
         LoadPluginsCommand = new AsyncRelayCommand(ExecuteLoadAsync, CanLoad);
-        RefreshCommand     = new AsyncRelayCommand(ExecuteLoadAsync, CanLoad);
+        RefreshCommand = new AsyncRelayCommand(ExecuteLoadAsync, CanLoad);
 
         // Show any results already loaded (e.g. auto-loaded at startup via PluginsPath config).
         foreach (var result in _pluginLoader.LoadedPlugins)
@@ -136,10 +136,10 @@ public sealed class PluginManagementViewModel : BindableBase
     {
         using var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
-            Description        = "Select Plugin Directory",
+            Description = "Select Plugin Directory",
             UseDescriptionForTitle = true,
             ShowNewFolderButton = true,
-            SelectedPath       = string.IsNullOrWhiteSpace(PluginsDirectory)
+            SelectedPath = string.IsNullOrWhiteSpace(PluginsDirectory)
                                     ? Environment.CurrentDirectory
                                     : PluginsDirectory
         };
@@ -153,7 +153,7 @@ public sealed class PluginManagementViewModel : BindableBase
         if (string.IsNullOrWhiteSpace(PluginsDirectory))
             return;
 
-        IsLoading     = true;
+        IsLoading = true;
         StatusMessage = "Loading plugins…";
 
         try
@@ -187,9 +187,9 @@ public sealed class PluginManagementViewModel : BindableBase
 
     private void UpdateStatusMessage()
     {
-        var total   = Plugins.Count;
-        var loaded  = Plugins.Count(p => p.Status == "Loaded");
-        var failed  = total - loaded;
+        var total = Plugins.Count;
+        var loaded = Plugins.Count(p => p.Status == "Loaded");
+        var failed = total - loaded;
 
         StatusMessage = total == 0
             ? "No plugins found."

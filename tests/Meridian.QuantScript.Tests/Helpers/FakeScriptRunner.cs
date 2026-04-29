@@ -56,5 +56,7 @@ public sealed class FakeScriptRunner : IScriptRunner
         ConsoleOutput: $"Script ran: {source.Length} chars",
         Metrics: Array.Empty<KeyValuePair<string, string>>(),
         Plots: Array.Empty<PlotRequest>(),
-        TradesSummary: Array.Empty<string>());
+        TradesSummary: Array.Empty<string>(),
+        CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
+        RuntimeParameters: Array.Empty<ParameterDescriptor>());
 }

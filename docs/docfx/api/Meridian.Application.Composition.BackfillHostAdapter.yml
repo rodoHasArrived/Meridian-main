@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillHostAdapter
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 169
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureServices
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 173
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureApplication
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 179
   assemblies:
   - Meridian.Application

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalizationEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCanonicalizationEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared

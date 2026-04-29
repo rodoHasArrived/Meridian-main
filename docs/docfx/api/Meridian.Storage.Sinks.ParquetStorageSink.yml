@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParquetStorageSink
-    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
     startLine: 94
   assemblies:
   - Meridian.Storage
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
-    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
     startLine: 114
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
     startLine: 133
   assemblies:
   - Meridian.Storage
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
     startLine: 608
   assemblies:
   - Meridian.Storage

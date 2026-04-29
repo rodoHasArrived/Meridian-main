@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageManifest
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 9
   assemblies:
   - Meridian.Storage
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageVersion
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageId
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 26
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 32
   assemblies:
   - Meridian.Storage
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 38
   assemblies:
   - Meridian.Storage
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatorVersion
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 44
   assemblies:
   - Meridian.Storage
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 50
   assemblies:
   - Meridian.Storage
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 56
   assemblies:
   - Meridian.Storage
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Encrypted
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 62
   assemblies:
   - Meridian.Storage
@@ -474,7 +474,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compression
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 68
   assemblies:
   - Meridian.Storage
@@ -517,7 +517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageChecksum
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 74
   assemblies:
   - Meridian.Storage
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageSizeBytes
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 80
   assemblies:
   - Meridian.Storage
@@ -603,7 +603,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UncompressedSizeBytes
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 86
   assemblies:
   - Meridian.Storage
@@ -646,7 +646,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 92
   assemblies:
   - Meridian.Storage
@@ -689,7 +689,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 98
   assemblies:
   - Meridian.Storage
@@ -732,7 +732,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 104
   assemblies:
   - Meridian.Storage
@@ -775,7 +775,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 110
   assemblies:
   - Meridian.Storage
@@ -818,7 +818,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 116
   assemblies:
   - Meridian.Storage
@@ -861,7 +861,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 122
   assemblies:
   - Meridian.Storage
@@ -904,7 +904,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Files
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 128
   assemblies:
   - Meridian.Storage
@@ -947,7 +947,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quality
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 134
   assemblies:
   - Meridian.Storage
@@ -990,7 +990,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schemas
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 140
   assemblies:
   - Meridian.Storage
@@ -1033,7 +1033,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Layout
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 146
   assemblies:
   - Meridian.Storage
@@ -1076,7 +1076,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 152
   assemblies:
   - Meridian.Storage
@@ -1119,7 +1119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomMetadata
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 158
   assemblies:
   - Meridian.Storage
@@ -1162,7 +1162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Signature
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 164
   assemblies:
   - Meridian.Storage
@@ -1205,7 +1205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupplementaryFiles
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 170
   assemblies:
   - Meridian.Storage
@@ -1248,7 +1248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartNumber
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 176
   assemblies:
   - Meridian.Storage
@@ -1291,7 +1291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalParts
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 182
   assemblies:
   - Meridian.Storage
@@ -1334,7 +1334,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinRequiredVersion
-    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    path: src/Meridian.Storage/Packaging/PackageManifest.cs
     startLine: 188
   assemblies:
   - Meridian.Storage

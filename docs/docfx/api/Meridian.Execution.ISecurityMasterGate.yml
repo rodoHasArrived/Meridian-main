@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterGate
-    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    path: src/Meridian.Execution/ISecurityMasterGate.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAsync
-    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    path: src/Meridian.Execution/ISecurityMasterGate.cs
     startLine: 24
   assemblies:
   - Meridian.Execution

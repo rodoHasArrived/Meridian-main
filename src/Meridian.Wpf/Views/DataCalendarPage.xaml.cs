@@ -21,10 +21,10 @@ public partial class DataCalendarPage : Page
         _viewModel = new DataCalendarViewModel(
             calendarService,
             successBrush: (Brush)FindResource("SuccessColorBrush"),
-            infoBrush:    (Brush)FindResource("InfoColorBrush"),
+            infoBrush: (Brush)FindResource("InfoColorBrush"),
             warningBrush: (Brush)FindResource("WarningColorBrush"),
-            errorBrush:   (Brush)FindResource("ErrorColorBrush"),
-            mutedBrush:   (Brush)FindResource("ConsoleTextMutedBrush"));
+            errorBrush: (Brush)FindResource("ErrorColorBrush"),
+            mutedBrush: (Brush)FindResource("ConsoleTextMutedBrush"));
 
         DataContext = _viewModel;
     }

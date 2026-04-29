@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoggingSetup
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 11
   assemblies:
   - Meridian.Core
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Logger
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 19
   assemblies:
   - Meridian.Core
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentLevel
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetLogLevel
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 30
   assemblies:
   - Meridian.Core
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetLogLevel
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 46
   assemblies:
   - Meridian.Core
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleDebug
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 59
   assemblies:
   - Meridian.Core
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDebugEnabled
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 74
   assemblies:
   - Meridian.Core
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 82
   assemblies:
   - Meridian.Core
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForContext
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 134
   assemblies:
   - Meridian.Core
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForContext
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 139
   assemblies:
   - Meridian.Core
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForContext
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 144
   assemblies:
   - Meridian.Core
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloseAndFlush
-    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    path: src/Meridian.Core/Logging/LoggingSetup.cs
     startLine: 150
   assemblies:
   - Meridian.Core

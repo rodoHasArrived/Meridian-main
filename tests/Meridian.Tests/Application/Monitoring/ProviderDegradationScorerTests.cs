@@ -84,7 +84,9 @@ public sealed class ProviderDegradationScorerTests : IDisposable
         score.LatencyScore.Should().BeGreaterThan(0.5);
         score.P95LatencyMs.Should().BeGreaterThan(200);
         score.Reasons.Should().NotBeEmpty();
-        score.Reasons.Should().BeInDescendingOrder(r => Math.Abs(r.Contribution));
+        score.Reasons.Select(static r => Math.Abs(r.Contribution)).Should().BeInDescendingOrder();
+        var latencyReason = score.Decision.Reasons.Single(r => r.RuleId == "provider-degradation.latency-p95");
+        latencyReason.Weight.Should().BeApproximately(score.LatencyScore * ProviderDegradationConfig.Default.LatencyWeight, 0.0001);
     }
 
     [Fact]

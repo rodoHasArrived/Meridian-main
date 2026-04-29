@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceExceptionService
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestBreaks
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenExceptions
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 76
   assemblies:
   - Meridian.Application
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDashboard
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkInvestigating
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 107
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resolve
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 111
   assemblies:
   - Meridian.Application

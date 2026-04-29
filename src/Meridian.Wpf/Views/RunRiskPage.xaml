@@ -99,7 +99,7 @@
             </UniformGrid>
 
             <!-- ── Historical Risk chart ────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+            <Border Style="{StaticResource ChartCardStyle}" Margin="0,0,0,20">
                 <StackPanel>
                     <Grid Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
@@ -107,9 +107,9 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Historical Risk" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Historical Risk" Style="{StaticResource ChartHeaderTextStyle}" />
                             <TextBlock Text="21-day rolling annualised volatility (ex-post) from daily returns"
-                                       FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
+                                       FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
                     <scottplot:WpfPlot x:Name="VolatilityChart" Height="280"
@@ -118,9 +118,9 @@
             </Border>
 
             <!-- ── By Symbol Attribution (chart + grid) ────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+            <Border Style="{StaticResource ChartCardStyle}" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="By Symbol Attribution" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,14" />
+                    <TextBlock Text="By Symbol Attribution" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,14" />
 
                     <!-- Attribution chart -->
                     <scottplot:WpfPlot x:Name="AttributionChart" Height="220"
@@ -134,7 +134,7 @@
                               GridLinesVisibility="Horizontal"
                               HeadersVisibility="Column"
                               RowBackground="Transparent"
-                              AlternatingRowBackground="{DynamicResource SubtleBackgroundBrush}"
+                              AlternatingRowBackground="{StaticResource ChartPlotAreaBrush}"
                               BorderThickness="0"
                               CanUserResizeRows="False"
                               CanUserSortColumns="True"
@@ -143,16 +143,17 @@
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="Foreground" Value="{DynamicResource ConsoleTextMutedBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource ChartAxisLabelBrush}" />
                                 <Setter Property="FontSize" Value="11" />
                                 <Setter Property="Padding" Value="8,6" />
-                                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+                                <Setter Property="BorderBrush" Value="{StaticResource ChartBorderBrush}" />
                                 <Setter Property="BorderThickness" Value="0,0,0,1" />
                             </Style>
                         </DataGrid.ColumnHeaderStyle>
                         <DataGrid.CellStyle>
                             <Style TargetType="DataGridCell">
                                 <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="{StaticResource TopBarTextBrush}" />
                                 <Setter Property="BorderThickness" Value="0" />
                                 <Setter Property="Padding" Value="8,5" />
                                 <Setter Property="Template">

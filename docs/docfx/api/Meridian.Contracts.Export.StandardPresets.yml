@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StandardPresets
-    path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
+    path: src/Meridian.Contracts/Export/StandardPresets.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuantConnectFormat
-    path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
+    path: src/Meridian.Contracts/Export/StandardPresets.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PandasDataFrame
-    path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
+    path: src/Meridian.Contracts/Export/StandardPresets.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResearchNotebook
-    path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
+    path: src/Meridian.Contracts/Export/StandardPresets.cs
     startLine: 52
   assemblies:
   - Meridian.Contracts
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
+    path: src/Meridian.Contracts/Export/StandardPresets.cs
     startLine: 70
   assemblies:
   - Meridian.Contracts

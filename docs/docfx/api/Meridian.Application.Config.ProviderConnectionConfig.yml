@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConnectionConfig
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 18
   assemblies:
   - Meridian.Core
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 18
   assemblies:
   - Meridian.Core
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 19
   assemblies:
   - Meridian.Core
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFamilyId
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 20
   assemblies:
   - Meridian.Core
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionType
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 22
   assemblies:
   - Meridian.Core
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionMode
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialReference
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstitutionId
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExternalAccountId
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 27
   assemblies:
   - Meridian.Core
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scope
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 28
   assemblies:
   - Meridian.Core
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 29
   assemblies:
   - Meridian.Core
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 30
   assemblies:
   - Meridian.Core
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProductionReady
-    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
     startLine: 31
   assemblies:
   - Meridian.Core

@@ -3,6 +3,8 @@
 This directory is the navigation index for **reusable AI prompt templates** used by GitHub Copilot
 Chat and other AI tools. The actual prompt files live in `.github/prompts/` where Copilot can
 discover them.
+Prompts should follow the shared provider-agnostic execution flow and safety rules in
+[`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 ---
 
@@ -44,6 +46,7 @@ Full usage instructions are in [`.github/prompts/README.md`](https://github.com/
 | `optimize-performance.prompt.yml` | Identify and fix performance bottlenecks |
 | `configure-deployment.prompt.yml` | Configure deployment (Docker, K8s, systemd) |
 | `wpf-debug-improve.prompt.yml` | Debug and improve WPF desktop UI |
+| `wpf-design-system-screen-impact.prompt.yml` | Identify and update the WPF screens needed for a design-system target page |
 | `simulate-user-panel.prompt.yml` | Generic manifest-driven user-panel review |
 | `simulate-user-panel-design-partner.prompt.yml` | Product-shaping critique for early ideas and surfaces |
 | `simulate-user-panel-release-gate.prompt.yml` | Near-ship release gate for workflows and screens |
@@ -100,10 +103,11 @@ Trigger manually: **Actions → Prompt Generation → Run workflow**
 
 | Resource | Purpose |
 |----------|---------|
+| [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Shared prompt and assistant workflow contract |
 | [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md) | Full prompt usage guide |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Full agent definitions |
 | [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md) | Master AI resource index |
 
 ---
 
-*Last Updated: 2026-04-14*
+*Last Updated: 2026-04-28*

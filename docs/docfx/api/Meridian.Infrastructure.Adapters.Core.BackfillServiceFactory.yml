@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillServiceFactory
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 693
   assemblies:
   - Meridian.Infrastructure
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 697
   assemblies:
   - Meridian.Infrastructure
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateServices
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
     startLine: 705
   assemblies:
   - Meridian.Infrastructure

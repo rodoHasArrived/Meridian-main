@@ -3,8 +3,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Carry Trade Backtest"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
-      Loaded="OnPageLoaded"
-      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="CarryTradeBacktest">
 
     <Page.Resources>

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusHttpServer
-    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Handlers
-    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
     startLine: 80
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterExtendedProviders
-    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
     startLine: 90
   assemblies:
   - Meridian.Application
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
     startLine: 520
   assemblies:
   - Meridian.Application

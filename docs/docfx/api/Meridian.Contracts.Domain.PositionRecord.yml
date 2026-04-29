@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionRecord
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostBasis
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts

@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpHandleResult
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 312
   assemblies:
   - Meridian.Infrastructure
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 312
   assemblies:
   - Meridian.Infrastructure
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSuccess
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 313
   assemblies:
   - Meridian.Infrastructure
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsNotFound
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 314
   assemblies:
   - Meridian.Infrastructure
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRateLimited
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 315
   assemblies:
   - Meridian.Infrastructure
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAuthError
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 316
   assemblies:
   - Meridian.Infrastructure
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryAfter
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 317
   assemblies:
   - Meridian.Infrastructure
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 318
   assemblies:
   - Meridian.Infrastructure
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 321
   assemblies:
   - Meridian.Infrastructure
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 322
   assemblies:
   - Meridian.Infrastructure
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthFailure
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 323
   assemblies:
   - Meridian.Infrastructure
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimited
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 325
   assemblies:
   - Meridian.Infrastructure
@@ -404,7 +404,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 328
   assemblies:
   - Meridian.Infrastructure

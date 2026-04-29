@@ -5,11 +5,17 @@ items:
   id: StrategyRunPromotionSummary
   parent: Meridian.Contracts.Workstation
   children:
-  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String)
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId
   - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.Reason
   - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.RequiresReview
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId
   - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.State
   - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SuggestedNextMode
+  - Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId
   langs:
   - csharp
   - vb
@@ -23,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunPromotionSummary
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 76
   assemblies:
   - Meridian.Contracts
@@ -44,16 +50,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String)
-  commentId: M:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String)
-  id: '#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String)'
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(Meridian.Contracts.Workstation.StrategyRunPromotionState,System.Nullable{Meridian.Contracts.Workstation.StrategyRunMode},System.Boolean,System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
   parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
   langs:
   - csharp
   - vb
-  name: StrategyRunPromotionSummary(StrategyRunPromotionState, StrategyRunMode?, bool, string)
-  nameWithType: StrategyRunPromotionSummary.StrategyRunPromotionSummary(StrategyRunPromotionState, StrategyRunMode?, bool, string)
-  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.StrategyRunPromotionSummary(Meridian.Contracts.Workstation.StrategyRunPromotionState, Meridian.Contracts.Workstation.StrategyRunMode?, bool, string)
+  name: StrategyRunPromotionSummary(StrategyRunPromotionState, StrategyRunMode?, bool, string, string?, string?, string?, string?, string?, string?)
+  nameWithType: StrategyRunPromotionSummary.StrategyRunPromotionSummary(StrategyRunPromotionState, StrategyRunMode?, bool, string, string?, string?, string?, string?, string?, string?)
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.StrategyRunPromotionSummary(Meridian.Contracts.Workstation.StrategyRunPromotionState, Meridian.Contracts.Workstation.StrategyRunMode?, bool, string, string?, string?, string?, string?, string?, string?)
   type: Constructor
   source:
     remote:
@@ -61,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 76
   assemblies:
   - Meridian.Contracts
@@ -69,7 +75,7 @@ items:
   summary: Shared promotion summary used by research, trading, and governance workflows.
   example: []
   syntax:
-    content: public StrategyRunPromotionSummary(StrategyRunPromotionState State, StrategyRunMode? SuggestedNextMode, bool RequiresReview, string Reason)
+    content: public StrategyRunPromotionSummary(StrategyRunPromotionState State, StrategyRunMode? SuggestedNextMode, bool RequiresReview, string Reason, string? SourceRunId = null, string? TargetRunId = null, string? AuditReference = null, string? ApprovalStatus = null, string? ManualOverrideId = null, string? ApprovedBy = null)
     parameters:
     - id: State
       type: Meridian.Contracts.Workstation.StrategyRunPromotionState
@@ -79,11 +85,23 @@ items:
       type: System.Boolean
     - id: Reason
       type: System.String
-    content.vb: Public Sub New(State As StrategyRunPromotionState, SuggestedNextMode As StrategyRunMode?, RequiresReview As Boolean, Reason As String)
+    - id: SourceRunId
+      type: System.String
+    - id: TargetRunId
+      type: System.String
+    - id: AuditReference
+      type: System.String
+    - id: ApprovalStatus
+      type: System.String
+    - id: ManualOverrideId
+      type: System.String
+    - id: ApprovedBy
+      type: System.String
+    content.vb: Public Sub New(State As StrategyRunPromotionState, SuggestedNextMode As StrategyRunMode?, RequiresReview As Boolean, Reason As String, SourceRunId As String = Nothing, TargetRunId As String = Nothing, AuditReference As String = Nothing, ApprovalStatus As String = Nothing, ManualOverrideId As String = Nothing, ApprovedBy As String = Nothing)
   overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor*
-  nameWithType.vb: StrategyRunPromotionSummary.New(StrategyRunPromotionState, StrategyRunMode?, Boolean, String)
-  fullName.vb: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.New(Meridian.Contracts.Workstation.StrategyRunPromotionState, Meridian.Contracts.Workstation.StrategyRunMode?, Boolean, String)
-  name.vb: New(StrategyRunPromotionState, StrategyRunMode?, Boolean, String)
+  nameWithType.vb: StrategyRunPromotionSummary.New(StrategyRunPromotionState, StrategyRunMode?, Boolean, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.New(Meridian.Contracts.Workstation.StrategyRunPromotionState, Meridian.Contracts.Workstation.StrategyRunMode?, Boolean, String, String, String, String, String, String, String)
+  name.vb: New(StrategyRunPromotionState, StrategyRunMode?, Boolean, String, String, String, String, String, String, String)
 - uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.State
   commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.State
   id: State
@@ -101,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 77
   assemblies:
   - Meridian.Contracts
@@ -130,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuggestedNextMode
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -159,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresReview
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 79
   assemblies:
   - Meridian.Contracts
@@ -188,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -200,6 +218,180 @@ items:
       type: System.String
     content.vb: Public Property Reason As String
   overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.Reason*
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId
+  id: SourceRunId
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  langs:
+  - csharp
+  - vb
+  name: SourceRunId
+  nameWithType: StrategyRunPromotionSummary.SourceRunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceRunId
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? SourceRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceRunId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId*
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId
+  id: TargetRunId
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  langs:
+  - csharp
+  - vb
+  name: TargetRunId
+  nameWithType: StrategyRunPromotionSummary.TargetRunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetRunId
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? TargetRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetRunId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId*
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference
+  id: AuditReference
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  langs:
+  - csharp
+  - vb
+  name: AuditReference
+  nameWithType: StrategyRunPromotionSummary.AuditReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditReference
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AuditReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AuditReference As String
+  overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference*
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus
+  id: ApprovalStatus
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  langs:
+  - csharp
+  - vb
+  name: ApprovalStatus
+  nameWithType: StrategyRunPromotionSummary.ApprovalStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApprovalStatus
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ApprovalStatus { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ApprovalStatus As String
+  overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus*
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId
+  id: ManualOverrideId
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  langs:
+  - csharp
+  - vb
+  name: ManualOverrideId
+  nameWithType: StrategyRunPromotionSummary.ManualOverrideId
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManualOverrideId
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ManualOverrideId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ManualOverrideId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId*
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy
+  id: ApprovedBy
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  langs:
+  - csharp
+  - vb
+  name: ApprovedBy
+  nameWithType: StrategyRunPromotionSummary.ApprovedBy
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApprovedBy
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ApprovedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ApprovedBy As String
+  overload: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy*
 references:
 - uid: Meridian.Contracts.Workstation
   commentId: N:Meridian.Contracts.Workstation
@@ -507,7 +699,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor*
   commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.#ctor
-  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary__ctor_Meridian_Contracts_Workstation_StrategyRunPromotionState_System_Nullable_Meridian_Contracts_Workstation_StrategyRunMode__System_Boolean_System_String_
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary__ctor_Meridian_Contracts_Workstation_StrategyRunPromotionState_System_Nullable_Meridian_Contracts_Workstation_StrategyRunMode__System_Boolean_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
   name: StrategyRunPromotionSummary
   nameWithType: StrategyRunPromotionSummary.StrategyRunPromotionSummary
   fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.StrategyRunPromotionSummary
@@ -613,3 +805,39 @@ references:
   name: Reason
   nameWithType: StrategyRunPromotionSummary.Reason
   fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.Reason
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary_SourceRunId
+  name: SourceRunId
+  nameWithType: StrategyRunPromotionSummary.SourceRunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.SourceRunId
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary_TargetRunId
+  name: TargetRunId
+  nameWithType: StrategyRunPromotionSummary.TargetRunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.TargetRunId
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary_AuditReference
+  name: AuditReference
+  nameWithType: StrategyRunPromotionSummary.AuditReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.AuditReference
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary_ApprovalStatus
+  name: ApprovalStatus
+  nameWithType: StrategyRunPromotionSummary.ApprovalStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovalStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary_ManualOverrideId
+  name: ManualOverrideId
+  nameWithType: StrategyRunPromotionSummary.ManualOverrideId
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ManualOverrideId
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html#Meridian_Contracts_Workstation_StrategyRunPromotionSummary_ApprovedBy
+  name: ApprovedBy
+  nameWithType: StrategyRunPromotionSummary.ApprovedBy
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.ApprovedBy

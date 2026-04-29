@@ -20,15 +20,13 @@ public partial class MessagingHubPage : Page
 
         _viewModel = new MessagingHubViewModel(
             messagingService,
-            infoBrush:    (Brush)FindResource("InfoColorBrush"),
+            infoBrush: (Brush)FindResource("InfoColorBrush"),
             successBrush: (Brush)FindResource("SuccessColorBrush"),
-            errorBrush:   (Brush)FindResource("ErrorColorBrush"));
+            errorBrush: (Brush)FindResource("ErrorColorBrush"));
 
         DataContext = _viewModel;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e) => _viewModel.Start();
     private void OnPageUnloaded(object sender, RoutedEventArgs e) => _viewModel.Stop();
-    private void Refresh_Click(object sender, RoutedEventArgs e) => _viewModel.Refresh();
-    private void ClearActivity_Click(object sender, RoutedEventArgs e) => _viewModel.ClearActivity();
 }

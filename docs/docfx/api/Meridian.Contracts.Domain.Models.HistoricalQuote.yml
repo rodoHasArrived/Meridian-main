@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalQuote
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskExchange
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidExchange
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 38
   assemblies:
   - Meridian.Contracts
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -326,7 +326,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Conditions
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 53
   assemblies:
   - Meridian.Contracts
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tape
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -419,7 +419,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 85
   assemblies:
   - Meridian.Contracts
@@ -518,7 +518,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 131
   assemblies:
   - Meridian.Contracts
@@ -549,7 +549,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 136
   assemblies:
   - Meridian.Contracts
@@ -580,7 +580,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadBps
-    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
+    path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
     startLine: 141
   assemblies:
   - Meridian.Contracts

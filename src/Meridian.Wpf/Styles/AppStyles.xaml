@@ -11,7 +11,7 @@
 
     <!-- Clickable Card Style (for navigation items) -->
     <Style x:Key="ClickableCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
@@ -20,14 +20,14 @@
 
     <!-- Elevated Card Style (with subtle shadow effect) -->
     <Style x:Key="ElevatedCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#0F2040" BlurRadius="16" ShadowDepth="2" Direction="270" Opacity="0.09" />
+                <DropShadowEffect Color="#000000" BlurRadius="18" ShadowDepth="2" Direction="270" Opacity="0.30" />
             </Setter.Value>
         </Setter>
     </Style>

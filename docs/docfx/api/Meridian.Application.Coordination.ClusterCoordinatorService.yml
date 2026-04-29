@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClusterCoordinatorService
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLeader
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeadershipChanged
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryBecomeLeaderAsync
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 87
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepDownAsync
-    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
     startLine: 115
   assemblies:
   - Meridian.Application

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSubscriptionRanges
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InteractiveBrokersStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NyseStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReservedStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RangeSize
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure

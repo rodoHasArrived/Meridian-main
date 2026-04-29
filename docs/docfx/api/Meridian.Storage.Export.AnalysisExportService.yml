@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisExportService
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.IO.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.IO.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 24
   assemblies:
   - Meridian.Storage
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProfiles
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 35
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProfile
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 40
   assemblies:
   - Meridian.Storage
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterProfile
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 46
   assemblies:
   - Meridian.Storage
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewAsync
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 56
   assemblies:
   - Meridian.Storage
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateStandaloneLoaderAsync
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 144
   assemblies:
   - Meridian.Storage
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsync
-    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    path: src/Meridian.Storage/Export/AnalysisExportService.cs
     startLine: 199
   assemblies:
   - Meridian.Storage

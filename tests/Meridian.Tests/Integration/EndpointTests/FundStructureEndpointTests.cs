@@ -51,11 +51,62 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task GetWorkspaceView_WithScopeQueryParameters_ParsesSelectionAndReturnsScopedLedgerDto()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=Entity&scopeId=entity-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundOperationsWorkspaceDto>();
+
+        payload.Should().NotBeNull();
+        payload!.Ledger.ScopeKind.Should().Be(FundLedgerScope.Entity);
+        payload.Ledger.ScopeId.Should().Be("entity-alpha");
+        payload.Ledger.TrialBalance.Should().NotBeNull();
+        payload.Ledger.Journal.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceView_WithInvalidScopeKind_FallsBackToConsolidatedScope()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=invalid-value&scopeId=entity-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundOperationsWorkspaceDto>();
+
+        payload.Should().NotBeNull();
+        payload!.Ledger.ScopeKind.Should().Be(FundLedgerScope.Consolidated);
+        payload.Ledger.ScopeId.Should().Be("entity-alpha");
+    }
+
+    [Fact]
     public async Task GetWorkspaceView_WithoutFundProfileId_ReturnsBadRequest()
     {
         var response = await _client.GetAsync("/api/fund-structure/workspace-view");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetWorkspaceView_WithSelectedLedgerIds_ConstrainsWorkspaceProjection()
+    {
+        var seed = await SeedFundWorkspaceAsync(["run-selected-001", "run-selected-002", "run-selected-003"]);
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&selectedLedgerIds=run-selected-001&selectedLedgerIds=run-selected-003");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundOperationsWorkspaceDto>();
+
+        payload.Should().NotBeNull();
+        payload!.RecordedRunCount.Should().Be(2);
+        payload.RelatedRunIds.Should().BeEquivalentTo(["run-selected-001", "run-selected-003"]);
+        payload.Ledger.JournalEntryCount.Should().Be(4);
     }
 
     [Fact]
@@ -83,7 +134,159 @@ public sealed class FundStructureEndpointTests
         payload.AssetClassSectionCount.Should().BeGreaterThan(0);
     }
 
-    private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync()
+    [Fact]
+    public async Task GenerateReportPack_WithSeededFundProfile_ReturnsPersistedSnapshot()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var request = new FundReportPackGenerateRequestDto(
+            FundProfileId: seed.FundProfileId,
+            AuditActor: "endpoint-test",
+            AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            Currency: "USD",
+            CorrelationId: "endpoint-correlation",
+            ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion);
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var payload = await response.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
+
+        payload.Should().NotBeNull();
+        payload!.FundProfileId.Should().Be(seed.FundProfileId);
+        payload.ContractName.Should().Be(GovernanceReportPackContract.ContractName);
+        payload.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
+        payload.DisplayName.Should().Be(seed.DisplayName);
+        payload.AuditActor.Should().Be("endpoint-test");
+        payload.CorrelationId.Should().Be("endpoint-correlation");
+        payload.Provenance.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
+        payload.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        payload.Artifacts.Should().OnlyContain(artifact =>
+            artifact.SchemaVersion == GovernanceReportPackContract.CurrentSchemaVersion);
+        payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+        payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+        payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "workbook" && artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
+        payload.Artifacts.Should().OnlyContain(artifact =>
+            !string.IsNullOrWhiteSpace(artifact.RelativePath)
+            && artifact.SizeBytes > 0
+            && artifact.ChecksumSha256.Length == 64
+            && artifact.SchemaVersion == GovernanceReportPackContract.CurrentSchemaVersion);
+    }
+
+    [Fact]
+    public async Task GetReportPacks_WithSeededFundProfile_ReturnsHistory()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var generated = await GenerateReportPackAsync(seed);
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/report-packs?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&limit=5");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundReportPackHistoryItemDto[]>();
+
+        payload.Should().NotBeNull();
+        payload!.Should().Contain(item => item.ReportId == generated.ReportId);
+        payload.Single(item => item.ReportId == generated.ReportId).RelativeManifestPath.Should().EndWith("manifest.json");
+        payload.Single(item => item.ReportId == generated.ReportId).SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
+    }
+
+    [Fact]
+    public async Task GetReportPack_ReturnsDetailOrNotFound()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var generated = await GenerateReportPackAsync(seed);
+
+        var detailResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{generated.ReportId}");
+        detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var detail = await detailResponse.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
+        detail.Should().NotBeNull();
+        detail!.ReportId.Should().Be(generated.ReportId);
+        detail.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
+
+        var missingResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{Guid.NewGuid()}");
+        missingResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData("", "endpoint-test")]
+    [InlineData("fund-bad", "")]
+    public async Task GenerateReportPack_WithMissingFundOrActor_ReturnsBadRequest(
+        string fundProfileId,
+        string auditActor)
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: auditActor));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GenerateReportPack_WithEmptyOrUnsupportedFormats_ReturnsBadRequest()
+    {
+        var emptyFormatsResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new FundReportPackGenerateRequestDto(
+                FundProfileId: "fund-bad-formats",
+                AuditActor: "endpoint-test",
+                Formats: []));
+        var unsupportedFormatResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new
+            {
+                fundProfileId = "fund-bad-formats",
+                auditActor = "endpoint-test",
+                formats = new[] { 999 }
+            });
+        var unsupportedSchemaResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new
+            {
+                fundProfileId = "fund-bad-formats",
+                auditActor = "endpoint-test",
+                expectedSchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion + 1
+            });
+
+        emptyFormatsResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        unsupportedFormatResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        unsupportedSchemaResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetCashFlowView_WithBlankLedgerGroupId_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetCashFlowView_WithInvalidLedgerGroupId_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=BAD/GROUP");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetCashFlowView_WithCanonicalizedUnassignedLedgerGroupId_ReturnsNormalizedScope()
+    {
+        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20UNASSIGNED%20");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<GovernanceCashFlowViewDto>();
+
+        payload.Should().NotBeNull();
+        payload!.Scope.LedgerGroupId.Should().NotBeNull();
+        payload.Scope.LedgerGroupId.GetValueOrDefault().Should().Be(LedgerGroupId.Unassigned);
+        payload.Scope.DisplayName.Should().Be(LedgerGroupId.UnassignedValue);
+    }
+
+    private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync(IReadOnlyList<string>? runIds = null)
     {
         var fundProfileId = $"fund-endpoint-{Guid.NewGuid():N}";
         var displayName = $"Endpoint Fund {Guid.NewGuid():N}"[..22];
@@ -149,14 +352,32 @@ public sealed class FundStructureEndpointTests
             ],
             LoadedBy: "endpoint-test"));
 
-        await repository.RecordRunAsync(BuildRun(
-            runId: $"run-endpoint-{Guid.NewGuid():N}",
-            strategyId: $"carry-{Guid.NewGuid():N}"[..12],
-            strategyName: "Carry Strategy",
-            fundProfileId: fundProfileId,
-            fundDisplayName: displayName));
+        foreach (var runId in runIds ?? [$"run-endpoint-{Guid.NewGuid():N}"])
+        {
+            await repository.RecordRunAsync(BuildRun(
+                runId: runId,
+                strategyId: $"carry-{Guid.NewGuid():N}"[..12],
+                strategyName: "Carry Strategy",
+                fundProfileId: fundProfileId,
+                fundDisplayName: displayName));
+        }
 
         return new SeededFundWorkspace(fundProfileId, displayName, bankAccount.AccountId);
+    }
+
+    private async Task<FundReportPackSnapshotDto> GenerateReportPackAsync(SeededFundWorkspace seed)
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new FundReportPackGenerateRequestDto(
+                FundProfileId: seed.FundProfileId,
+                AuditActor: "endpoint-test",
+                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+                Formats: [GovernanceReportArtifactFormatDto.Json]));
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var payload = await response.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
+        payload.Should().NotBeNull();
+        return payload!;
     }
 
     private static StrategyRunEntry BuildRun(

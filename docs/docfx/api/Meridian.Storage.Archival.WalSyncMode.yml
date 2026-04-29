@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalSyncMode
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 991
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoSync
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 996
   assemblies:
   - Meridian.Storage
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchedSync
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1001
   assemblies:
   - Meridian.Storage
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EveryWrite
-    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    path: src/Meridian.Storage/Archival/WriteAheadLog.cs
     startLine: 1006
   assemblies:
   - Meridian.Storage

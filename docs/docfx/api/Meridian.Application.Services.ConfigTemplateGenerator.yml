@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigTemplateGenerator
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateMinimal
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFull
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateAlpaca
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 128
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateBackfill
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 173
   assemblies:
   - Meridian.Application
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateProduction
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 235
   assemblies:
   - Meridian.Application
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateDocker
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 289
   assemblies:
   - Meridian.Application
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllTemplates
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 333
   assemblies:
   - Meridian.Application
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTemplate
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 349
   assemblies:
   - Meridian.Application
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFromConfig
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 366
   assemblies:
   - Meridian.Application
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateTemplate
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 380
   assemblies:
   - Meridian.Application

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelinePublisher
-    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
     startLine: 187
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
     startLine: 192
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
-    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
     startLine: 198
   assemblies:
   - Meridian.Application

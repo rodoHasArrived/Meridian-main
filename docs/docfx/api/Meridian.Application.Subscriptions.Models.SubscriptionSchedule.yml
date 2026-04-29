@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionSchedule
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 5
   assemblies:
   - Meridian.Core
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 6
   assemblies:
   - Meridian.Core
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 8
   assemblies:
   - Meridian.Core
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Action
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 12
   assemblies:
   - Meridian.Core
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timing
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 14
   assemblies:
   - Meridian.Core
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
     startLine: 18
   assemblies:
   - Meridian.Core

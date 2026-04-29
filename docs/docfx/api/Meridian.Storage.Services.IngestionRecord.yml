@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionRecord
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 302
   assemblies:
   - Meridian.Storage
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 302
   assemblies:
   - Meridian.Storage
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 303
   assemblies:
   - Meridian.Storage
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 304
   assemblies:
   - Meridian.Storage
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 305
   assemblies:
   - Meridian.Storage
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 306
   assemblies:
   - Meridian.Storage
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 307
   assemblies:
   - Meridian.Storage
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiEndpoint
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 308
   assemblies:
   - Meridian.Storage
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Latency
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 309
   assemblies:
   - Meridian.Storage
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
-    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    path: src/Meridian.Storage/Services/DataLineageService.cs
     startLine: 310
   assemblies:
   - Meridian.Storage

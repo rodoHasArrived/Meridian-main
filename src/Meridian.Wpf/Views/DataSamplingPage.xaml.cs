@@ -18,19 +18,4 @@ public partial class DataSamplingPage : Page
     {
         _viewModel.Initialize();
     }
-
-    private void AddSymbol_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.AddSymbol();
-    }
-
-    private void GenerateSample_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.GenerateSample();
-    }
-
-    private void SavePreset_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.SavePreset();
-    }
 }

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterIngestStatusResponse
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenConflicts
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsImportActive
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveImport
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastCompleted
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetrievedAtUtc
-    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts

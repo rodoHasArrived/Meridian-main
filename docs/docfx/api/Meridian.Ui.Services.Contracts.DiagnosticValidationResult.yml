@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticValidationResult
-    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
     startLine: 121
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
     startLine: 123
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
     startLine: 124
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
     startLine: 125
   assemblies:
   - Meridian.Ui.Services

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProgressTracker
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 15
   assemblies:
   - Meridian.Infrastructure
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordProgress
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkCompleted
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkFailed
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/BackfillProgressTracker.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure

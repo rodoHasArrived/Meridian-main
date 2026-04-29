@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerValidationException
-    path: ../../src/Meridian.Ledger/LedgerValidationException.cs
+    path: src/Meridian.Ledger/LedgerValidationException.cs
     startLine: 7
   assemblies:
   - Meridian.Ledger
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/LedgerValidationException.cs
+    path: src/Meridian.Ledger/LedgerValidationException.cs
     startLine: 10
   assemblies:
   - Meridian.Ledger
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/LedgerValidationException.cs
+    path: src/Meridian.Ledger/LedgerValidationException.cs
     startLine: 13
   assemblies:
   - Meridian.Ledger

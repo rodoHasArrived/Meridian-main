@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderFeatureOptions
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionEnabled
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayEnabled
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 35
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ItchIngestionEnabled
-    path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
+    path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure.CppTrader

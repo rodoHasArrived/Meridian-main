@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DecisionTrace
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaVersion
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KernelVersion
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 38
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluatedAt
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrelationId
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 40
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts

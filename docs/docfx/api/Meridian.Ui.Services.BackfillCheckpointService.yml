@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCheckpointService
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Services
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCheckpointAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSymbolProgressAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Services
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkJobFailedAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 135
   assemblies:
   - Meridian.Ui.Services
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetResumableJobsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 154
   assemblies:
   - Meridian.Ui.Services
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPendingSymbolsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 189
   assemblies:
   - Meridian.Ui.Services
@@ -300,7 +300,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadCheckpointAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 206
   assemblies:
   - Meridian.Ui.Services
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 216
   assemblies:
   - Meridian.Ui.Services
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CleanupOldCheckpointsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 250
   assemblies:
   - Meridian.Ui.Services

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GracefulShutdownService
-    path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
+    path: src/Meridian.Application/Services/GracefulShutdownService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
+    path: src/Meridian.Application/Services/GracefulShutdownService.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
+    path: src/Meridian.Application/Services/GracefulShutdownService.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
+    path: src/Meridian.Application/Services/GracefulShutdownService.cs
     startLine: 43
   assemblies:
   - Meridian.Application

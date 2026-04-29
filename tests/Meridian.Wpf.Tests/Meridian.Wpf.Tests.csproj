@@ -7,10 +7,9 @@
     <IsWindows Condition="'$(IsWindows)' != 'true' AND $([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
     <IsWindows Condition="'$(IsWindows)' != 'true' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'True'">true</IsWindows>
     <IsWindows Condition="'$(IsWindows)' == ''">false</IsWindows>
-    <IsWindows Condition="'$(EnableFullWpfBuild)' != 'true'">false</IsWindows>
   </PropertyGroup>
 
-  <!-- Windows-only: Full test project -->
+  <!-- Windows-only: keep the target graph stable even when full test compilation is disabled -->
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
     <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -19,6 +18,8 @@
     <IsTestProject>true</IsTestProject>
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
+    <!-- Full WPF test sources are opt-in, but restore/build should agree on the Windows target framework. -->
+    <EnableDefaultCompileItems Condition="'$(EnableFullWpfBuild)' != 'true'">false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <!-- Non-Windows: Create empty stub library to allow solution build -->

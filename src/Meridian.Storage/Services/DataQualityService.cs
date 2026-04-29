@@ -16,13 +16,19 @@ public sealed class DataQualityService : IDataQualityService
     private readonly StorageOptions _options;
     private readonly ISourceRegistry? _sourceRegistry;
     private readonly ILogger<DataQualityService> _logger;
+    private readonly IQualityTrendStore _trendStore;
     private readonly ConcurrentDictionary<string, DataQualityScore> _scoreCache = new();
     private readonly ConcurrentDictionary<string, QualityTrend> _trendCache = new();
 
-    public DataQualityService(StorageOptions options, ISourceRegistry? sourceRegistry = null, ILogger<DataQualityService>? logger = null)
+    public DataQualityService(
+        StorageOptions options,
+        ISourceRegistry? sourceRegistry = null,
+        IQualityTrendStore? trendStore = null,
+        ILogger<DataQualityService>? logger = null)
     {
         _options = options;
         _sourceRegistry = sourceRegistry;
+        _trendStore = trendStore ?? new FileQualityTrendStore(options);
         _logger = logger ?? NullLogger<DataQualityService>.Instance;
     }
 
@@ -64,6 +70,7 @@ public sealed class DataQualityService : IDataQualityService
         );
 
         _scoreCache[path] = score;
+        await PersistTrendPointAsync(path, score, ct);
         return score;
     }
 
@@ -268,27 +275,172 @@ public sealed class DataQualityService : IDataQualityService
         );
     }
 
-    public Task<QualityTrend> GetTrendAsync(string symbol, TimeSpan window, CancellationToken ct = default)
+    public async Task<QualityTrend> GetTrendAsync(string symbol, TimeSpan window, CancellationToken ct = default)
     {
-        // In production, this would analyze historical scores
         var cacheKey = $"{symbol}_{window.TotalDays}d";
 
         if (_trendCache.TryGetValue(cacheKey, out var cached))
-            return Task.FromResult(cached);
+            return cached;
+
+        var now = DateTimeOffset.UtcNow;
+        var windowStart = now - window;
+        var baselineStart = windowStart - window;
+        var points = await _trendStore.GetPointsAsync(symbol, baselineStart, now, ct);
+
+        var currentPoints = points.Where(p => p.ScoredAt >= windowStart).OrderBy(p => p.ScoredAt).ToArray();
+        var baselinePoints = points.Where(p => p.ScoredAt >= baselineStart && p.ScoredAt < windowStart).ToArray();
+
+        var currentScore = currentPoints.Length > 0 ? currentPoints[^1].OverallScore : 0d;
+        var baselineScore = baselinePoints.Length > 0
+            ? baselinePoints.Average(p => p.OverallScore)
+            : (currentPoints.Length > 0 ? currentPoints[0].OverallScore : 0d);
+
+        var improving = new List<string>();
+        var degrading = new List<string>();
+        var baselineDims = AverageDimensions(baselinePoints);
+        var currentDims = AverageDimensions(currentPoints);
+
+        foreach (var (name, current) in currentDims)
+        {
+            baselineDims.TryGetValue(name, out var previous);
+            var delta = current - previous;
+            if (delta >= 0.01)
+                improving.Add(name);
+            else if (delta <= -0.01)
+                degrading.Add(name);
+        }
+
+        var scoreHistory = currentPoints.Select(p => p.ScoredAt).ToArray();
+        var scoreValues = currentPoints.Select(p => p.OverallScore).ToArray();
+        var slope = ComputeSlopePerDay(scoreHistory, scoreValues);
+        var dimensionSeries = BuildDimensionSeries(currentPoints);
 
         var trend = new QualityTrend(
             Symbol: symbol,
-            CurrentScore: 0.95,
-            PreviousScore: 0.93,
-            TrendDirection: 0.02,
-            DegradingDimensions: Array.Empty<string>(),
-            ImprovingDimensions: new[] { "Completeness" },
-            ScoreHistory: Array.Empty<DateTimeOffset>(),
-            ScoreValues: Array.Empty<double>()
+            CurrentScore: currentScore,
+            PreviousScore: baselineScore,
+            TrendDirection: slope,
+            DegradingDimensions: degrading.ToArray(),
+            ImprovingDimensions: improving.ToArray(),
+            ScoreHistory: scoreHistory,
+            ScoreValues: scoreValues,
+            WindowGranularity: InferGranularity(scoreHistory),
+            HasConfidence: currentPoints.Length >= 4,
+            IsSparseData: currentPoints.Length < 3,
+            DimensionSeries: dimensionSeries
         );
 
         _trendCache[cacheKey] = trend;
-        return Task.FromResult(trend);
+        return trend;
+    }
+
+    private async Task PersistTrendPointAsync(string path, DataQualityScore score, CancellationToken ct)
+    {
+        var point = new QualityTrendPoint(
+            Symbol: ExtractSymbol(path),
+            Date: DateOnly.FromDateTime(score.EvaluatedAt.UtcDateTime.Date),
+            Provider: ExtractProvider(path),
+            ScoredAt: score.EvaluatedAt,
+            OverallScore: score.OverallScore,
+            DimensionScores: score.Dimensions.ToDictionary(d => d.Name, d => d.Score, StringComparer.OrdinalIgnoreCase));
+
+        await _trendStore.AppendAsync(point, ct);
+    }
+
+    private static Dictionary<string, double> AverageDimensions(IEnumerable<QualityTrendPoint> points)
+    {
+        var buckets = new Dictionary<string, List<double>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var point in points)
+        {
+            foreach (var (name, value) in point.DimensionScores)
+            {
+                if (!buckets.TryGetValue(name, out var values))
+                {
+                    values = new List<double>();
+                    buckets[name] = values;
+                }
+
+                values.Add(value);
+            }
+        }
+
+        return buckets.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Average(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static double ComputeSlopePerDay(DateTimeOffset[] history, double[] values)
+    {
+        if (history.Length < 2 || values.Length < 2 || history.Length != values.Length)
+            return 0d;
+
+        var x0 = history[0];
+        var xs = history.Select(h => (h - x0).TotalDays).ToArray();
+        var xMean = xs.Average();
+        var yMean = values.Average();
+
+        var numerator = 0d;
+        var denominator = 0d;
+        for (var i = 0; i < xs.Length; i++)
+        {
+            var dx = xs[i] - xMean;
+            numerator += dx * (values[i] - yMean);
+            denominator += dx * dx;
+        }
+
+        return denominator <= 0d ? 0d : numerator / denominator;
+    }
+
+    private static IReadOnlyDictionary<string, double[]> BuildDimensionSeries(IEnumerable<QualityTrendPoint> points)
+    {
+        var series = new Dictionary<string, List<double>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var point in points)
+        {
+            foreach (var (name, value) in point.DimensionScores)
+            {
+                if (!series.TryGetValue(name, out var values))
+                {
+                    values = new List<double>();
+                    series[name] = values;
+                }
+
+                values.Add(value);
+            }
+        }
+
+        return series.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string InferGranularity(IReadOnlyList<DateTimeOffset> scoreHistory)
+    {
+        if (scoreHistory.Count < 2)
+            return "unknown";
+
+        var averageHours = scoreHistory.Zip(scoreHistory.Skip(1), (a, b) => (b - a).TotalHours).Average();
+        return averageHours switch
+        {
+            <= 1 => "hour",
+            <= 36 => "day",
+            <= 24 * 10 => "week",
+            _ => "month"
+        };
+    }
+
+    private string ExtractProvider(string path)
+    {
+        var root = Path.GetFullPath(_options.RootPath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(path);
+        if (!fullPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            return "unknown";
+
+        var relative = fullPath[root.Length..].TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var parts = relative.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length > 0 ? parts[0] : "unknown";
+    }
+
+    private static string ExtractSymbol(string path)
+    {
+        var symbol = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(path) ?? string.Empty) ?? string.Empty);
+        return string.IsNullOrWhiteSpace(symbol) ? "UNKNOWN" : symbol;
     }
 
     public Task<QualityAlert[]> GetQualityAlertsAsync(CancellationToken ct = default)
@@ -668,7 +820,11 @@ public sealed record QualityTrend(
     string[] DegradingDimensions,
     string[] ImprovingDimensions,
     DateTimeOffset[] ScoreHistory,
-    double[] ScoreValues
+    double[] ScoreValues,
+    string WindowGranularity = "day",
+    bool HasConfidence = false,
+    bool IsSparseData = true,
+    IReadOnlyDictionary<string, double[]>? DimensionSeries = null
 );
 
 public sealed record QualityAlert(

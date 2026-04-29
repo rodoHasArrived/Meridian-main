@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSEServiceExtensions
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddNYSEDataSource
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure

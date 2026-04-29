@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunPositionContribution
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 30
   assemblies:
   - Meridian.Strategies
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 30
   assemblies:
   - Meridian.Strategies
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 31
   assemblies:
   - Meridian.Strategies
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 32
   assemblies:
   - Meridian.Strategies
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 33
   assemblies:
   - Meridian.Strategies
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostBasis
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 34
   assemblies:
   - Meridian.Strategies
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 35
   assemblies:
   - Meridian.Strategies
