@@ -810,7 +810,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── desktop-end-user-improvements.md
 │       │   ├── desktop-ui-alternatives-evaluation.md
 │       │   ├── high-impact-improvement-brainstorm-2026-03.md
-│       │   └── high-impact-improvements-brainstorm.md
+│       │   ├── high-impact-improvements-brainstorm.md
+│       │   └── ui-redesign.md
 │       ├── c4-context-legacy.png
 │       ├── c4-context-legacy.puml
 │       ├── migrations
@@ -824,7 +825,9 @@ Use these documents together when planning or implementing new work:
 │       │   ├── REPOSITORY_REORGANIZATION_PLAN.md
 │       │   ├── WORKFLOW_IMPROVEMENTS_2026-01-08.md
 │       │   ├── consolidation.md
-│       │   └── repository-cleanup-action-plan.md
+│       │   ├── repository-cleanup-action-plan.md
+│       │   ├── workstation-release-readiness-blueprint.md
+│       │   └── workstation-sprint-1-implementation-backlog.md
 │       └── summaries
 │           ├── 2026-02_PR_SUMMARY.md
 │           ├── 2026-02_UI_IMPROVEMENTS_SUMMARY.md
@@ -1081,7 +1084,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── overview.md
 │   │   ├── provider-management.md
 │   │   ├── storage-design.md
-│   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
 │   │   ├── workflow-library.md
 │   │   ├── wpf-shell-mvvm.md
@@ -4961,6 +4963,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
+│   │   ├── evidence-backed-investment-operations-plan.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
@@ -5006,9 +5009,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ufl-treasury-bill-target-state-v2.md
 │   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── waves-2-4-operator-readiness-addendum.md
-│   │   ├── web-ui-development-pivot.md
-│   │   ├── workstation-release-readiness-blueprint.md
-│   │   └── workstation-sprint-1-implementation-backlog.md
+│   │   └── web-ui-development-pivot.md
 │   ├── providers
 │   │   ├── README.md
 │   │   ├── alpaca-setup.md
@@ -5098,7 +5099,6 @@ Use these documents together when planning or implementing new work:
 │   │   └── known-vulnerabilities.md
 │   ├── status
 │   │   ├── CHANGELOG.md
-│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
@@ -5109,7 +5109,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
-│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
@@ -6705,8 +6704,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DCPn8dmR.css
-│   │           │   └── index-hT8Jo1uA.js
+│   │           │   ├── index-DOBOIzvv.js
+│   │           │   └── index-DSUworEQ.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8171,6 +8170,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-615 directories, 7381 files
+615 directories, 7380 files
 ```
 <!-- readme-tree end -->
