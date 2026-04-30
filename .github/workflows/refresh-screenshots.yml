@@ -435,7 +435,7 @@ jobs:
 
           foreach ($png in $pngs) {
             $artifactRoot = (Resolve-Path _artifacts).Path
-            $rel = $png.FullName.Substring($artifactRoot.Length).TrimStart('\\','/')
+            $rel = $png.FullName.Substring($artifactRoot.Length).TrimStart('\','/')
             $relNormalized = $rel.Replace('\\','/')
 
             # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
