@@ -1,41 +1,40 @@
-name: "Workflow Results - {workflow_name}"
-description: "Address issues found in the {workflow_name} workflow run"
+name: "Workflow Results - test-matrix-yml"
+description: "Address issues found in the test-matrix-yml workflow run"
 # Auto-generated prompt from workflow run analysis
-# Generated: {now}
-# Source: {run_url}
-# Run conclusion: {run_conclusion}
+# Generated: 2026-04-30
+# Source: https://github.com/rodoHasArrived/Meridian-main/actions/runs/25149611241
+# Run conclusion: failure
 # Model-agnostic prompt - works with any capable LLM
 messages:
   - role: system
     content: |
       You are a senior .NET developer analyzing CI/CD workflow results for the Meridian project.
-      The `{workflow_name}` workflow has completed with status: **{run_conclusion}**.
-
-      ## Project Context
-      Meridian is a .NET 9 C#/F# fund-management and trading platform with provider, storage,
-      execution, ledger, web workstation, retained WPF, and MCP surfaces.
-      - Build: `dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true`
-      - Test: run the nearest impacted test project first, then broaden if needed
-      - AI context: `docs/ai/assistant-workflow-contract.md` and `CLAUDE.md`
+      The `test-matrix-yml` workflow has completed with status: **failure**.
 
       ## Findings from Workflow Run
-      {findings_text}
-      {test_section}{code_section}
+      - `Test (Linux)	Checkout repository	2026-04-30T05:47:26.3924579Z hint: to use in all of your new repositories, which will suppress this warning,`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.4370073Z /home/runner/work/Meridian-main/Meridian-main/benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj : warning NU1510: PackageReference System.Text.Json will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary. [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.4411618Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1510: PackageReference Microsoft.Extensions.Hosting will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary. [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.5519453Z /home/runner/work/Meridian-main/Meridian-main/benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.5936253Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:08.1476135Z /home/runner/work/Meridian-main/Meridian-main/tests/Meridian.Tests/Meridian.Tests.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Build	2026-04-30T05:48:09.7237542Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1510: PackageReference Microsoft.Extensions.Hosting will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.`
+      - `Test (Linux)	Build	2026-04-30T05:48:09.7270461Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf`
+
       ## Resolution Guidelines
       1. Prioritize failures by severity (errors > warnings)
-      2. Check docs/ai/ai-known-errors.md for recurring patterns
-      3. Fix root causes, not symptoms
-      4. Follow project conventions (CLAUDE.md)
-      5. Run verification commands before considering resolved
+      2. Fix root causes, not symptoms
+      3. Follow project conventions and coding standards
+      4. Run verification commands before considering resolved
 
   - role: user
     content: |
-      The `{workflow_name}` CI workflow needs attention. Analyze the results and help fix the issues.
+      The `test-matrix-yml` CI workflow needs attention. Analyze the results and help fix the issues.
 
-      Workflow run: {run_url}
+      Workflow run: https://github.com/rodoHasArrived/Meridian-main/actions/runs/25149611241
 
       Additional context:
-      {{{{additional_context}}}}
+      {{additional_context}}
 
       Please provide:
       1. Summary of all issues found

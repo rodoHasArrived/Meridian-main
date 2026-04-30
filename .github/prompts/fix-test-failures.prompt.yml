@@ -1,37 +1,44 @@
 name: "{name}"
-description: "{description}"
-# Auto-generated prompt from workflow results - {workflow_name}
-# Generated: {now}
-# Source: {run_url}
+description: "Fix test failures from CI analysis"
+# Auto-generated prompt from workflow results - test-matrix.yml
+# Generated: 2026-04-30
+# Source: https://github.com/rodoHasArrived/Meridian-main/actions/runs/25149611241
 # Model-agnostic prompt - works with any capable LLM
 messages:
   - role: system
     content: |
-      {system_content}
+      You are a senior .NET test engineer diagnosing and fixing failing tests.
 
-      {error_context}
+      ## Failure Patterns
+      - `Test (Linux)	Checkout repository	2026-04-30T05:47:26.3924579Z hint: to use in all of your new repositories, which will suppress this warning,`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.4370073Z /home/runner/work/Meridian-main/Meridian-main/benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj : warning NU1510: PackageReference System.Text.Json will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary. [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.4411618Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1510: PackageReference Microsoft.Extensions.Hosting will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary. [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.5519453Z /home/runner/work/Meridian-main/Meridian-main/benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:07.5936253Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Restore dependencies	2026-04-30T05:48:08.1476135Z /home/runner/work/Meridian-main/Meridian-main/tests/Meridian.Tests/Meridian.Tests.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf [/home/runner/work/Meridian-main/Meridian-main/Meridian.sln]`
+      - `Test (Linux)	Build	2026-04-30T05:48:09.7237542Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1510: PackageReference Microsoft.Extensions.Hosting will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.`
+      - `Test (Linux)	Build	2026-04-30T05:48:09.7270461Z /home/runner/work/Meridian-main/Meridian-main/src/Meridian/Meridian.csproj : warning NU1903: Package 'DotNetZip' 1.16.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-xhg6-9j5j-w4vf`
+
       ## Resolution Approach
-      1. Read the error messages and stack traces carefully
-      2. Identify the root cause (not just symptoms)
-      3. Check if this is a known pattern in docs/ai/ai-known-errors.md
-      4. Apply the fix following project conventions
-      5. Verify the fix resolves the issue without introducing new problems
-      6. Add tests if the failure was not covered
+      1. Identify and fix the root cause
+      2. Keep changes scoped and production-safe
+      3. Add or update tests when needed
+      4. Verify the fix in CI-equivalent commands
 
   - role: user
     content: |
-      The CI workflow `{workflow_name}` has reported failures that need attention.
+      The CI workflow `test-matrix.yml` has reported failures that need attention.
 
       Error details:
       ```
-      {{{{error_details}}}}
+      {{error_details}}
       ```
 
       Affected files:
-      {{{{affected_files}}}}
+      {{affected_files}}
 
       Please provide:
       1. Root cause analysis of each failure
       2. Specific code fixes with file paths and line numbers
       3. Verification steps to confirm the fix
-      4. Any preventive measures to avoid recurrence
+      4. Preventive measures to avoid recurrence

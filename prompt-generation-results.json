@@ -1,0 +1,16 @@
+{
+  "workflow": "test-matrix.yml",
+  "run_id": "25149611241",
+  "total_generated": 3,
+  "categories": [
+    "code-quality",
+    "test"
+  ],
+  "findings_count": 8,
+  "changed_files": [
+    ".github/prompts/workflow-results-test-matrix.prompt.yml",
+    ".github/prompts/fix-code-quality.prompt.yml",
+    ".github/prompts/fix-test-failures.prompt.yml"
+  ],
+  "dry_run": false
+}
