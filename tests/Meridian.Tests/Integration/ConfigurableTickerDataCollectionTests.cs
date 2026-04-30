@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Domain.Enums;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Xunit;
@@ -92,9 +93,14 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
             return DataGranularity.Minute15;
         }
 
-        return Enum.TryParse<DataGranularity>(envValue, ignoreCase: true, out var granularity)
-            ? granularity
-            : DataGranularity.Minute15;
+        if (Enum.TryParse<DataGranularity>(envValue, ignoreCase: true, out var granularity))
+        {
+            return granularity;
+        }
+
+        System.Console.Error.WriteLine(
+            $"Unsupported YAHOO_TICKER_INTRADAY_GRANULARITY value '{envValueRaw}'. Falling back to {DataGranularity.Minute15}.");
+        return DataGranularity.Minute15;
     }
 
     private static string ToCsvCell(string value)
