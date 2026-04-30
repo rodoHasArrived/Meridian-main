@@ -631,6 +631,8 @@ Meridian-main
 │       ├── docs
 │       │   ├── tests
 │       │   │   ├── test_check_ai_inventory.py
+│       │   │   ├── test_markdown_generation_lint.py
+│       │   │   ├── test_pilot_readiness_dashboard.py
 │       │   │   └── test_scan_todos.py
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
@@ -789,7 +791,6 @@ Meridian-main
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── storage-design.md
-│   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
 │   │   ├── workflow-library.md
 │   │   ├── wpf-shell-mvvm.md
@@ -4668,6 +4669,7 @@ Meridian-main
 │   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
+│   │   ├── evidence-backed-investment-operations-plan.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
@@ -4714,9 +4716,7 @@ Meridian-main
 │   │   ├── ufl-treasury-bill-target-state-v2.md
 │   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── waves-2-4-operator-readiness-addendum.md
-│   │   ├── web-ui-development-pivot.md
-│   │   ├── workstation-release-readiness-blueprint.md
-│   │   └── workstation-sprint-1-implementation-backlog.md
+│   │   └── web-ui-development-pivot.md
 │   ├── providers
 │   │   ├── alpaca-setup.md
 │   │   ├── backfill-guide.md
@@ -4815,7 +4815,6 @@ Meridian-main
 │   │   ├── dk1-trust-rationale-mapping.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
-│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
@@ -4835,7 +4834,6 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
-│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
 │   │   ├── TARGET_END_PRODUCT.md
@@ -5685,6 +5683,7 @@ Meridian-main
 │   │   │   ├── FundLedgerDtos.cs
 │   │   │   ├── FundOperationsDtos.cs
 │   │   │   ├── FundOperationsWorkspaceDtos.cs
+│   │   │   ├── PilotReadinessArtifactDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── ResearchBriefingDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
@@ -6469,7 +6468,9 @@ Meridian-main
 │   │   │   │   │       ├── button.tsx
 │   │   │   │   │       ├── card.tsx
 │   │   │   │   │       ├── dialog.test.tsx
-│   │   │   │   │       └── dialog.tsx
+│   │   │   │   │       ├── dialog.tsx
+│   │   │   │   │       ├── dialog.view-model.test.ts
+│   │   │   │   │       └── dialog.view-model.ts
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
@@ -6488,9 +6489,11 @@ Meridian-main
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── operator-readiness-console.test.tsx
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
 │   │   │   │   │   ├── operator-readiness-console.view-model.ts
+│   │   │   │   │   ├── overview-screen.test.tsx
 │   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── overview-screen.view-model.test.ts
 │   │   │   │   │   ├── overview-screen.view-model.ts
@@ -6529,8 +6532,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DN1W91Kc.js
-│   │           │   └── index-UFtGYQsd.css
+│   │           │   ├── index-DOBOIzvv.js
+│   │           │   └── index-DSUworEQ.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7636,6 +7639,7 @@ Meridian-main
 │   │   │   │   ├── MaintenanceEndpointTests.cs
 │   │   │   │   ├── NegativePathEndpointTests.cs
 │   │   │   │   ├── OptionsEndpointTests.cs
+│   │   │   │   ├── PilotAcceptanceHarnessTests.cs
 │   │   │   │   ├── ProviderEndpointTests.cs
 │   │   │   │   ├── QualityDropsEndpointTests.cs
 │   │   │   │   ├── QualityEndpointContractTests.cs
@@ -7966,6 +7970,7 @@ Meridian-main
 │   │   ├── setup-verification.sh
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py
+│   │   ├── test_central_package_versions.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_cleanup_generated_script.py
@@ -7973,12 +7978,15 @@ Meridian-main
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_documentation_workflow.py
+│   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
+│   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_maintenance_full_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_screenshot_diff_report.py
