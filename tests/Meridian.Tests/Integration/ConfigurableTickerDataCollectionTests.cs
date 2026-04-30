@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
-using Meridian.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
 
