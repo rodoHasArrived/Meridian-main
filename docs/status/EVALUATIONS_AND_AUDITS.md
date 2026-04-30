@@ -334,7 +334,11 @@ Use this document as supporting context. For active prioritization, default to t
 > Source: `../../archive/docs/summaries/desktop-improvements-executive-summary.md`
 > Date: 2026-02-22 | Updated: 2026-03-19 | Status: Archived executive snapshot — implementation guide is the canonical active reference
 
-**Executive Takeaway:** The desktop stack has broad functional coverage already, but the highest-value remaining work is UX consolidation, stronger live-state trust signals, and a workflow-centric trading workstation structure.
+**Executive Takeaway:** This archived desktop snapshot predates the current differentiation
+framing. Its durable signal is still useful: the highest-value remaining work was workflow
+consolidation and stronger trust signals. Read the active product direction through
+`docs/plans/evidence-backed-investment-operations-plan.md` and the browser-first operator pivot,
+not as a generic trading-workstation program.
 
 **Current planning alignment:**
 - Phase 11 — Reorganize the UX around Research, Trading, Data Operations, and Governance workspaces
@@ -756,7 +760,10 @@ The simplification audit still identifies ~2,800-3,400 lines of removable or red
 
 The desktop assessment set is consistent: infrastructure and coverage are much stronger than the remaining operator experience.
 
-**Current state:** The strongest path forward is not net-new page sprawl; it is workflow consolidation, view-model/service extraction, stronger provenance/staleness signals, and alignment to the trading workstation migration blueprint.
+**Current state:** The strongest path forward is not net-new page sprawl; it is workflow
+consolidation, view-model/service extraction, stronger provenance/staleness signals, and
+alignment to the active evidence-backed investment operations plan plus the retained workstation
+migration blueprint where compatibility guidance is still relevant.
 
 ---
 

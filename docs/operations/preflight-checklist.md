@@ -10,8 +10,8 @@ This checklist maps 1:1 to the pre-production checklist in `docs/status/producti
 | Complete remaining provider-confidence hardening for Polygon, StockSharp, IB, and optional NYSE | Provider hardening tracker updated; connector-specific smoke tests passed. |
 | Validate brokerage gateway adapters (Alpaca, IB, StockSharp) against live vendor surfaces | Adapter validation report with timestamps and environment labels (paper/live) archived. |
 | Build paper-trading cockpit in web dashboard wired to brokerage gateways | Paper cockpit walkthrough recorded; create/close paper session evidence captured. |
-| Finish workspace-first trading workstation flows beyond the first shared run baseline | Operator acceptance checklist completed for Research, Trading, Data Operations, Governance pages. |
-| Productize Security Master for workstation use | Security Master read/write path validation complete; sample entity lifecycle exercised. |
+| Finish the evidence-backed operator workflow beyond the first shared run baseline | Operator acceptance checklist completed for `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting` surfaces across the trusted-data -> governed-report path. |
+| Productize Security Master for operator use | Security Master read/write path validation complete; sample entity lifecycle exercised. |
 | Implement multi-ledger, trial-balance, and cash-flow governance views | Governance view screenshots/reports attached; validation scenarios executed. |
 | Implement reconciliation workflows and break-review UX | Reconciliation run created, reviewed, and resolved in pilot environment. |
 | Implement report generation and governed export/report-pack flows | Export/report-pack generation tested with retention and audit metadata checks. |
