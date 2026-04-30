@@ -182,11 +182,15 @@ public sealed class StrategyRunContinuityService
                 Message: $"Run has {securityCoverageIssues} security coverage issue(s) across continuity surfaces."));
         }
 
-        if (!string.IsNullOrWhiteSpace(run.Summary.ParentRunId) && run.Summary.Promotion?.SourceRunId is null)
+        var parentRunId = run.Summary.ParentRunId;
+        var promotionSourceRunId = run.Summary.Promotion?.SourceRunId;
+        if (!string.IsNullOrWhiteSpace(parentRunId)
+            && !string.IsNullOrWhiteSpace(promotionSourceRunId)
+            && !string.Equals(parentRunId, promotionSourceRunId, StringComparison.Ordinal))
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "lineage-promotion-gap",
-                Message: "Parent/child lineage exists but promotion linkage metadata is incomplete."));
+                Message: "Parent/child lineage and promotion linkage metadata reference different source runs."));
         }
 
         return new StrategyRunContinuityStatus(
