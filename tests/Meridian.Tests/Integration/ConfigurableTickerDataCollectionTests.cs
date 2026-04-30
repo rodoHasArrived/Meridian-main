@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Domain.Enums;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Xunit;
@@ -92,9 +93,14 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
             return DataGranularity.Minute15;
         }
 
-        return Enum.TryParse<DataGranularity>(envValue, ignoreCase: true, out var granularity)
-            ? granularity
-            : DataGranularity.Minute15;
+        if (Enum.TryParse<DataGranularity>(envValue, ignoreCase: true, out var granularity))
+        {
+            return granularity;
+        }
+
+        System.Console.Error.WriteLine(
+            $"Unsupported YAHOO_TICKER_INTRADAY_GRANULARITY value '{envValueRaw}'. Falling back to {DataGranularity.Minute15}.");
+        return DataGranularity.Minute15;
     }
 
     private static string ToCsvCell(string value)
@@ -276,6 +282,9 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
                 _output.WriteLine($"  Adjusted bars: {adjustedBarCount}");
                 _output.WriteLine($"  Written to: {adjustedPath}");
 
+                var rawSucceeded = false;
+                var intradaySucceeded = false;
+
                 // Attempt raw bars (may fail due to OHLC validation on some symbols)
                 try
                 {
@@ -335,7 +344,19 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
 
                     _output.WriteLine($"  Raw bars: {rawBarCount}");
                     _output.WriteLine($"  Written to: {rawPath}");
+                    rawSucceeded = true;
+                }
+                catch (Exception ex)
+                {
+                    _output.WriteLine($"  Raw bars FAILED: {ex.Message}");
 
+                    // Write error details
+                    var errorPath = Path.Combine(_outputDir, $"{symbol}_raw_bars_error.txt");
+                    await File.WriteAllTextAsync(errorPath, $"Error fetching raw bars for {symbol}:\n{ex}");
+                }
+
+                try
+                {
                     var intradayTo = DateTimeOffset.UtcNow;
                     var intradayFrom = intradayTo.AddDays(-5);
                     var intradayBars = await _provider.GetAggregateBarsAsync(
@@ -392,17 +413,22 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
 
                     _output.WriteLine($"  Intraday bars ({intradayGranularity}): {intradayBarCount}");
                     _output.WriteLine($"  Written to: {intradayPath}");
-                    status = "OK";
+                    intradaySucceeded = true;
                 }
                 catch (Exception ex)
                 {
-                    _output.WriteLine($"  Raw bars FAILED: {ex.Message}");
-                    status = "Adjusted OK, Raw failed";
-
-                    // Write error details
-                    var errorPath = Path.Combine(_outputDir, $"{symbol}_raw_bars_error.txt");
-                    await File.WriteAllTextAsync(errorPath, $"Error fetching raw bars for {symbol}:\n{ex}");
+                    _output.WriteLine($"  Intraday bars FAILED ({intradayGranularity}): {ex.Message}");
+                    var intradayErrorPath = Path.Combine(_outputDir, $"{symbol}_intraday_error.txt");
+                    await File.WriteAllTextAsync(intradayErrorPath, $"Error fetching intraday bars for {symbol} ({intradayGranularity}):\n{ex}");
                 }
+
+                status = (rawSucceeded, intradaySucceeded) switch
+                {
+                    (true, true) => "OK",
+                    (false, true) => "Adjusted+Intra OK",
+                    (true, false) => "Adjusted+Raw OK",
+                    _ => "Adjusted only",
+                };
 
                 successCount++;
             }
