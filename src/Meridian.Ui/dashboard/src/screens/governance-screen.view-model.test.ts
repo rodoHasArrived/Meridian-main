@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildGovernanceCashFlowViewState,
   buildGovernanceReportingViewState,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
@@ -12,6 +13,7 @@ import {
   resolveSelectedReconciliation
 } from "@/screens/governance-screen.view-model";
 import type {
+  GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
@@ -176,6 +178,48 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("derives cash-flow evidence rows, route context, and variance posture", () => {
+    const cashFlow: GovernanceCashFlowSummary = {
+      totalCash: 120000,
+      totalLedgerCash: 119750,
+      netVariance: -250,
+      totalFinancing: 1400,
+      runsWithCashSignals: 4,
+      runsWithCashVariance: 2,
+      tone: "danger",
+      summary: "Cash-flow coverage is available for 4 runs; 2 runs need variance review."
+    };
+
+    const state = buildGovernanceCashFlowViewState(cashFlow, "/reporting", "reporting");
+
+    expect(state).toMatchObject({
+      title: cashFlow.summary,
+      description: "Reporting packet context at /reporting reuses the shared accounting/reporting cash-flow summary payload.",
+      statusLabel: "Variance review",
+      statusTone: "danger",
+      ariaLabel: "Cash-flow evidence for Reporting packet context at /reporting",
+      statusAriaLabel: "Cash-flow status Variance review. Net variance -$250."
+    });
+    expect(state.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "portfolio-cash", value: "$120,000", tone: "default" }),
+      expect.objectContaining({ id: "net-variance", value: "-$250", tone: "danger", ariaLabel: "Net variance: -$250" }),
+      expect.objectContaining({ id: "variance-runs", value: "2", tone: "danger", ariaLabel: "Runs with variance: 2" })
+    ]));
+    expect(state.statusAnnouncement).toBe("Variance review: Cash-flow coverage is available for 4 runs; 2 runs need variance review.");
+  });
+
+  it("derives pending cash-flow state when the bootstrap payload is unavailable", () => {
+    const state = buildGovernanceCashFlowViewState(null, "/accounting", "ledger");
+
+    expect(state).toMatchObject({
+      title: "Cash-flow evidence loading",
+      statusLabel: "Pending",
+      statusTone: "warning",
+      rows: [],
+      statusAnnouncement: "Cash-flow evidence is loading."
+    });
   });
 
   it("derives search status, result count, and live announcement copy", () => {

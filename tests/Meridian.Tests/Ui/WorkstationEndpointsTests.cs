@@ -3425,14 +3425,18 @@ public sealed class WorkstationEndpointsTests
             }
             : [];
 
+        var runType = promotionState is StrategyRunPromotionState.CandidateForLive or StrategyRunPromotionState.LiveManaged
+            ? RunType.Paper
+            : run.RunType;
+
         return run with
         {
+            RunType = runType,
             Metrics = run.Metrics! with
             {
                 CashFlows = cashFlows,
                 Fills = fills
             },
-            PromotionState = promotionState,
             FundProfileId = "alpha-credit",
             FundDisplayName = "Alpha Credit"
         };

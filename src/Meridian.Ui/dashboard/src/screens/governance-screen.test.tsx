@@ -126,6 +126,9 @@ describe("GovernanceScreen", () => {
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
     expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Cash-flow evidence for Ledger context at /accounting" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
+    expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
   });
 

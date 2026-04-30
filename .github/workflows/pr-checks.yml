@@ -370,7 +370,7 @@ jobs:
         model: gpt-4o-mini
         max-tokens: 1500
         prompt: |
-          You are a senior .NET engineer reviewing a pull request for a market data collection application (.NET 9.0, C# 11, F# 8).
+          You are a senior .NET engineer reviewing a Meridian pull request for a .NET 10 host with net9 shared libraries and C#/F# projects.
 
           Lint result: ${{ needs.lint.result }}
           Build & test result: ${{ needs.build-and-test.result }}

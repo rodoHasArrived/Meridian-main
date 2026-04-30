@@ -116,18 +116,17 @@ public sealed class StrategyRunContinuityService
         RunCashFlowSummary? cashFlow,
         ReconciliationRunDetail? reconciliation)
     {
-        var promotion = run.Summary.Promotion;
-        var hasParent = !string.IsNullOrWhiteSpace(run.Summary.ParentRunId);
+        var summary = run.Summary ?? throw new InvalidOperationException("Strategy run detail is missing summary metadata.");
+        var promotion = summary.Promotion;
+        var hasParent = !string.IsNullOrWhiteSpace(summary.ParentRunId);
         var promotionSource = promotion?.SourceRunId;
         var promotionTarget = promotion?.TargetRunId;
         var promotionState = promotion?.State ?? StrategyRunPromotionState.None;
         var hasPortfolio = run.Portfolio is not null;
         var hasLedger = run.Ledger is not null;
         var hasCashFlow = cashFlow is { TotalEntries: > 0 };
-        var hasFills = (run.Execution?.FillCount ?? run.Summary.FillCount) > 0;
+        var hasFills = (run.Execution?.FillCount ?? summary.FillCount) > 0;
         var hasReconciliation = reconciliation is not null;
-        var hasRun = run.Summary is not null;
-        var hasFills = run.Summary.FillCount > 0;
         var runHealth = GetRunHealth(run);
         var fillsHealth = hasFills ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
         var portfolioHealth = hasPortfolio ? StrategyRunContinuitySeamHealthStatus.Healthy : StrategyRunContinuitySeamHealthStatus.Missing;
@@ -150,13 +149,6 @@ public sealed class StrategyRunContinuityService
                 Severity: StrategyRunContinuityWarningSeverity.Warning,
                 Message: "Run has no recorded cash flows for cash-financing continuity.",
                 SourceSeam: "cash-flow"));
-        }
-
-        if (!hasFills)
-        {
-            warnings.Add(new StrategyRunContinuityWarning(
-                Code: "missing-fills",
-                Message: "Run has no execution fills recorded for continuity review."));
         }
 
         if (!hasReconciliation)
@@ -203,25 +195,33 @@ public sealed class StrategyRunContinuityService
                 SourceSeam: "security-master"));
         }
 
-        if (run.Summary.Promotion?.State is StrategyRunPromotionState.CandidateForLive && run.Summary.Mode is StrategyRunMode.Backtest)
+        if (promotionState is StrategyRunPromotionState.CandidateForLive && !hasParent)
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "lineage-promotion-gap",
-                Message: "Run is promoted toward live operations from a backtest lineage; validate paper lineage continuity."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run is promoted toward live operations without a linked upstream run; validate paper lineage continuity.",
+                SourceSeam: "promotion-lineage"));
+        }
+
         if (hasParent
             && !string.IsNullOrWhiteSpace(promotionSource)
-            && !string.Equals(run.Summary.ParentRunId, promotionSource, StringComparison.Ordinal))
+            && !string.Equals(summary.ParentRunId, promotionSource, StringComparison.Ordinal))
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "lineage-parent-source-mismatch",
-                Message: "Run has a parent link, but promotion source does not match the recorded parent run."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run has a parent link, but promotion source does not match the recorded parent run.",
+                SourceSeam: "promotion-lineage"));
         }
 
         if (!hasParent && !string.IsNullOrWhiteSpace(promotionSource))
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "lineage-missing-parent-with-source",
-                Message: "Run has no parent link, but promotion source claims upstream ancestry."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Run has no parent link, but promotion source claims upstream ancestry.",
+                SourceSeam: "promotion-lineage"));
         }
 
         if ((promotionState is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive)
@@ -229,7 +229,9 @@ public sealed class StrategyRunContinuityService
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "promotion-target-run-missing",
-                Message: "Promotion candidate is missing an expected target run identifier."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: "Promotion candidate is missing an expected target run identifier.",
+                SourceSeam: "promotion-lineage"));
         }
 
         var lineageInconsistent = promotionState switch
@@ -244,11 +246,13 @@ public sealed class StrategyRunContinuityService
         {
             warnings.Add(new StrategyRunContinuityWarning(
                 Code: "promotion-lineage-shape-inconsistent",
-                Message: $"Promotion state '{promotionState}' is inconsistent with the run lineage shape."));
+                Severity: StrategyRunContinuityWarningSeverity.Warning,
+                Message: $"Promotion state '{promotionState}' is inconsistent with the run lineage shape.",
+                SourceSeam: "promotion-lineage"));
         }
 
         return new StrategyRunContinuityStatus(
-            HasRun: hasRun,
+            HasRun: true,
             RunHealth: runHealth,
             HasFills: hasFills,
             FillsHealth: fillsHealth,
@@ -258,7 +262,6 @@ public sealed class StrategyRunContinuityService
             LedgerHealth: ledgerHealth,
             HasCashFlow: hasCashFlow,
             CashFlowHealth: cashFlowHealth,
-            HasFills: hasFills,
             HasReconciliation: hasReconciliation,
             ReconciliationHealth: reconciliationHealth,
             AsOfDriftMinutes: asOfDriftMinutes,

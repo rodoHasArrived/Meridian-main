@@ -16,15 +16,21 @@ export interface ShellStatusItem {
   key: WorkspaceKey;
   label: string;
   detail: string;
+  ariaLabel: string;
 }
 
 export interface ShellStatusPanel {
+  id: string;
+  titleId: string;
+  detailId: string;
   tone: ShellStatusTone;
   title: string;
   detail: string;
   role: "status" | "alert";
   ariaLive: "polite" | "assertive";
   actionLabel: string | null;
+  actionAriaLabel: string | null;
+  itemListLabel: string;
   items: ShellStatusItem[];
 }
 
@@ -98,36 +104,51 @@ function buildShellStatusPanel({
 }): ShellStatusPanel | null {
   if (loading) {
     return {
+      id: "workstation-shell-status-loading",
+      titleId: "workstation-shell-status-loading-title",
+      detailId: "workstation-shell-status-loading-detail",
       tone: "loading",
       title: "Booting workstation shell",
       detail: "Loading session state, workspace summaries, and the initial research slice.",
       role: "status",
       ariaLive: "polite",
       actionLabel: null,
+      actionAriaLabel: null,
+      itemListLabel: "Workspace bootstrap status",
       items: []
     };
   }
 
   if (bootstrapFailed) {
     return {
+      id: "workstation-shell-status-failed",
+      titleId: "workstation-shell-status-failed-title",
+      detailId: "workstation-shell-status-failed-detail",
       tone: "danger",
       title: "Workstation bootstrap failed",
       detail: error ?? "No workstation payloads loaded. Retry the bootstrap before reviewing operator state.",
       role: "alert",
       ariaLive: "assertive",
       actionLabel: "Retry bootstrap",
+      actionAriaLabel: "Retry workstation bootstrap",
+      itemListLabel: "Bootstrap failure details",
       items: failedItems
     };
   }
 
   if (failedItems.length > 0) {
     return {
+      id: "workstation-shell-status-degraded",
+      titleId: "workstation-shell-status-degraded-title",
+      detailId: "workstation-shell-status-degraded-detail",
       tone: "warning",
       title: "Workstation bootstrap is partially degraded",
       detail: `${failedItems.length} workspace ${failedItems.length === 1 ? "slice" : "slices"} failed to load. Available routes remain open while those slices recover.`,
       role: "status",
       ariaLive: "polite",
       actionLabel: "Retry failed slices",
+      actionAriaLabel: "Retry failed workstation slices",
+      itemListLabel: "Failed workspace slices",
       items: failedItems
     };
   }
@@ -143,7 +164,8 @@ function buildWorkspaceFailureItems(workspaceErrors: WorkspaceErrorMap): ShellSt
       return {
         key: workspaceKey,
         label,
-        detail: detail || "Workspace request failed."
+        detail: detail || "Workspace request failed.",
+        ariaLabel: `${label}: ${detail || "Workspace request failed."}`
       };
     })
     .sort((left, right) => left.label.localeCompare(right.label));

@@ -253,7 +253,15 @@ describe("ResearchScreen", () => {
     await waitFor(() => {
       expect(screen.getByText("Position & parameter diff")).toBeInTheDocument();
     });
+    expect(screen.getByRole("region", { name: "Strategy run diff for Mean Reversion FX and Index Momentum" }))
+      .toBeInTheDocument();
+    expect(screen.getByLabelText("Run diff metric summary")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Net P&L delta \+\$1,200/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("1 position change returned")).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: "AAPL Added. Qty +100. P&L +$250." })).toBeInTheDocument();
+    expect(screen.getByText("Qty +100")).toBeInTheDocument();
     expect(screen.getByText("lookback")).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: "lookback changed from 20 to 30." })).toHaveTextContent("20 -> 30");
     expect(api.diffRuns).toHaveBeenCalledOnce();
   });
 
@@ -290,10 +298,8 @@ describe("ResearchScreen", () => {
     await waitFor(() => {
       expect(screen.getByText("No position changes returned for this diff.")).toBeInTheDocument();
     });
-    expect(screen.getAllByText((_, element) =>
-      element?.tagName.toLowerCase() === "li" &&
-      element.textContent === "lookback: Unavailable -> Unavailable"
-    ).length).toBe(1);
+    expect(screen.getByRole("listitem", { name: "lookback changed from Unavailable to Unavailable." }))
+      .toHaveTextContent("Unavailable -> Unavailable");
   });
 
   it("loads and displays promotion history when history button is clicked", async () => {

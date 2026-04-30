@@ -199,7 +199,7 @@ jobs:
           model: gpt-4o-mini
           max-tokens: 1500
           prompt: |
-            You are a .NET code quality expert reviewing analyzer output for a market data collection application (.NET 9.0, C# 11).
+            You are a .NET code quality expert reviewing analyzer output for Meridian, a .NET 10 host with net9 shared libraries.
 
             Format check: ${{ steps.format-check.outcome }}
             Build outcome: ${{ steps.build.outcome }}

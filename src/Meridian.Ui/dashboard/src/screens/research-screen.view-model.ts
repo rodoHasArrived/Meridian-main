@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type {
+  MetricsDiff,
+  ParameterDiff,
+  PositionDiffEntry,
   PromotionRecord,
   ResearchRunRecord,
   ResearchWorkspaceResponse,
@@ -118,23 +121,51 @@ export type ResearchComparisonValueTone = "success" | "danger" | "muted";
 
 export interface ResearchDiffChangeRow {
   key: string;
+  symbolText: string;
+  changeTypeText: string;
+  quantityText: string;
+  pnlText: string;
   text: string;
+  badgeVariant: ResearchDiffBadgeVariant;
+  ariaLabel: string;
 }
 
 export interface ResearchParameterChangeRow {
   key: string;
   baseValueText: string;
   targetValueText: string;
+  valueText: string;
+  ariaLabel: string;
+}
+
+export interface ResearchDiffMetricRow {
+  id: string;
+  label: string;
+  value: string;
+  tone: ResearchDiffMetricTone;
+  ariaLabel: string;
 }
 
 export interface ResearchDiffPanelState {
   title: string;
   description: string;
+  ariaLabel: string;
+  summaryLabel: string;
+  metrics: ResearchDiffMetricRow[];
   positionChanges: ResearchDiffChangeRow[];
   parameterChanges: ResearchParameterChangeRow[];
+  positionSectionLabel: string;
+  parameterSectionLabel: string;
+  positionListLabel: string;
+  parameterListLabel: string;
+  hasPositionChanges: boolean;
+  hasParameterChanges: boolean;
   positionEmptyText: string;
   parameterEmptyText: string;
 }
+
+export type ResearchDiffBadgeVariant = "outline" | "success" | "warning" | "danger";
+export type ResearchDiffMetricTone = "success" | "danger" | "muted";
 
 export interface ResearchPromotionHistoryRow {
   promotionId: string;
@@ -443,8 +474,17 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
     return {
       title: "Position & parameter diff",
       description: "No run diff has been loaded for the selected pair.",
+      ariaLabel: "Strategy run diff result is empty",
+      summaryLabel: "Run diff metric summary",
+      metrics: [],
       positionChanges: [],
       parameterChanges: [],
+      positionSectionLabel: "Position changes",
+      parameterSectionLabel: "Parameter changes",
+      positionListLabel: "No position diff rows",
+      parameterListLabel: "No parameter diff rows",
+      hasPositionChanges: false,
+      hasParameterChanges: false,
       positionEmptyText: "No position diff result is available.",
       parameterEmptyText: "No parameter diff result is available."
     };
@@ -454,23 +494,103 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
     ...runDiff.addedPositions,
     ...runDiff.removedPositions,
     ...runDiff.modifiedPositions
-  ].map((item) => ({
-    key: `${item.symbol}-${item.changeType}`,
-    text: `${formatText(item.symbol)} ${item.changeType}`
-  }));
+  ].map(buildPositionDiffRow);
+  const parameterChanges = runDiff.parameterChanges.map(buildParameterDiffRow);
 
   return {
     title: "Position & parameter diff",
     description: `${runDiff.baseStrategyName} compared with ${runDiff.targetStrategyName}.`,
+    ariaLabel: `Strategy run diff for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}`,
+    summaryLabel: "Run diff metric summary",
+    metrics: buildDiffMetricRows(runDiff.metrics),
     positionChanges,
-    parameterChanges: runDiff.parameterChanges.map((item) => ({
-      key: item.key,
-      baseValueText: formatText(item.baseValue),
-      targetValueText: formatText(item.targetValue)
-    })),
+    parameterChanges,
+    positionSectionLabel: `${positionChanges.length} position ${positionChanges.length === 1 ? "change" : "changes"} returned`,
+    parameterSectionLabel: `${parameterChanges.length} parameter ${parameterChanges.length === 1 ? "change" : "changes"} returned`,
+    positionListLabel: "Position diff rows",
+    parameterListLabel: "Parameter diff rows",
+    hasPositionChanges: positionChanges.length > 0,
+    hasParameterChanges: parameterChanges.length > 0,
     positionEmptyText: "No position changes returned for this diff.",
     parameterEmptyText: "No parameter changes returned for this diff."
   };
+}
+
+function buildDiffMetricRows(metrics: MetricsDiff): ResearchDiffMetricRow[] {
+  const netPnlValue = formatMoney(metrics.netPnlDelta, true);
+  const returnValue = formatSignedPercent(metrics.totalReturnDelta);
+  const fillValue = formatSignedCount(metrics.fillCountDelta);
+
+  return [
+    {
+      id: "net-pnl-delta",
+      label: "Net P&L delta",
+      value: netPnlValue,
+      tone: toneForSignedValue(metrics.netPnlDelta),
+      ariaLabel: `Net P&L delta ${netPnlValue}. Base ${formatMoney(metrics.baseNetPnl)}. Target ${formatMoney(metrics.targetNetPnl)}.`
+    },
+    {
+      id: "return-delta",
+      label: "Return delta",
+      value: returnValue,
+      tone: toneForSignedValue(metrics.totalReturnDelta),
+      ariaLabel: `Return delta ${returnValue}. Base ${formatSignedPercent(metrics.baseTotalReturn)}. Target ${formatSignedPercent(metrics.targetTotalReturn)}.`
+    },
+    {
+      id: "fill-delta",
+      label: "Fill delta",
+      value: fillValue,
+      tone: toneForSignedValue(metrics.fillCountDelta),
+      ariaLabel: `Fill count delta ${fillValue}.`
+    }
+  ];
+}
+
+function buildPositionDiffRow(item: PositionDiffEntry): ResearchDiffChangeRow {
+  const symbolText = formatText(item.symbol);
+  const changeTypeText = formatText(item.changeType);
+  const quantityDelta = item.targetQuantity - item.baseQuantity;
+  const pnlDelta = item.targetPnl - item.basePnl;
+  const quantityText = `Qty ${formatSignedCount(quantityDelta)}`;
+  const pnlText = `P&L ${formatMoney(pnlDelta, true)}`;
+
+  return {
+    key: `${symbolText}-${changeTypeText}`,
+    symbolText,
+    changeTypeText,
+    quantityText,
+    pnlText,
+    text: `${symbolText} ${changeTypeText}`,
+    badgeVariant: badgeVariantForPositionChange(item.changeType),
+    ariaLabel: `${symbolText} ${changeTypeText}. ${quantityText}. ${pnlText}.`
+  };
+}
+
+function buildParameterDiffRow(item: ParameterDiff): ResearchParameterChangeRow {
+  const key = formatText(item.key);
+  const baseValueText = formatText(item.baseValue);
+  const targetValueText = formatText(item.targetValue);
+  const valueText = `${baseValueText} -> ${targetValueText}`;
+
+  return {
+    key,
+    baseValueText,
+    targetValueText,
+    valueText,
+    ariaLabel: `${key} changed from ${baseValueText} to ${targetValueText}.`
+  };
+}
+
+function badgeVariantForPositionChange(changeType: PositionDiffEntry["changeType"]): ResearchDiffBadgeVariant {
+  if (changeType === "Added") {
+    return "success";
+  }
+
+  if (changeType === "Removed") {
+    return "danger";
+  }
+
+  return "warning";
 }
 
 export function buildPromotionHistoryTable(
@@ -579,6 +699,15 @@ function formatMoney(value: number | null | undefined, signed = false): string {
   }
 
   return amount;
+}
+
+function formatSignedCount(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toLocaleString()}`;
 }
 
 function formatSignedPercent(value: number | null | undefined): string {

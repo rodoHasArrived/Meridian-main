@@ -79,6 +79,10 @@ describe("OperatorReadinessConsole", () => {
 
     expect(action).toHaveAttribute("href", "/trading/readiness");
     expect(screen.getAllByText("Promotion checklist incomplete").length).toBeGreaterThan(0);
+    expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Prioritized operator work items" })).toBeInTheDocument();
+    expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(1));
   });
 

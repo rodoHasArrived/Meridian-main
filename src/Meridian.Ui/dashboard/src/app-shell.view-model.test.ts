@@ -50,9 +50,13 @@ describe("app shell view model", () => {
     expect(state.activeWorkspace.label).toBe("Trading");
     expect(state.canRenderRoutes).toBe(false);
     expect(state.statusPanel).toMatchObject({
+      id: "workstation-shell-status-loading",
+      titleId: "workstation-shell-status-loading-title",
+      detailId: "workstation-shell-status-loading-detail",
       tone: "loading",
       role: "status",
       title: "Booting workstation shell",
+      itemListLabel: "Workspace bootstrap status",
       actionLabel: null
     });
   });
@@ -71,21 +75,28 @@ describe("app shell view model", () => {
 
     expect(state.canRenderRoutes).toBe(true);
     expect(state.statusPanel).toMatchObject({
+      id: "workstation-shell-status-degraded",
+      titleId: "workstation-shell-status-degraded-title",
+      detailId: "workstation-shell-status-degraded-detail",
       tone: "warning",
       role: "status",
       title: "Workstation bootstrap is partially degraded",
-      actionLabel: "Retry failed slices"
+      actionLabel: "Retry failed slices",
+      actionAriaLabel: "Retry failed workstation slices",
+      itemListLabel: "Failed workspace slices"
     });
     expect(state.statusPanel?.items).toEqual([
       {
         key: "accounting",
         label: "Accounting",
-        detail: "Reconciliation queue unavailable."
+        detail: "Reconciliation queue unavailable.",
+        ariaLabel: "Accounting: Reconciliation queue unavailable."
       },
       {
         key: "data",
         label: "Data",
-        detail: "Backfill summary timed out."
+        detail: "Backfill summary timed out.",
+        ariaLabel: "Data: Backfill summary timed out."
       }
     ]);
   });
@@ -103,12 +114,17 @@ describe("app shell view model", () => {
 
     expect(state.canRenderRoutes).toBe(false);
     expect(state.statusPanel).toMatchObject({
+      id: "workstation-shell-status-failed",
+      titleId: "workstation-shell-status-failed-title",
+      detailId: "workstation-shell-status-failed-detail",
       tone: "danger",
       role: "alert",
       ariaLive: "assertive",
       title: "Workstation bootstrap failed",
       detail: "Network offline",
-      actionLabel: "Retry bootstrap"
+      actionLabel: "Retry bootstrap",
+      actionAriaLabel: "Retry workstation bootstrap",
+      itemListLabel: "Bootstrap failure details"
     });
   });
 });

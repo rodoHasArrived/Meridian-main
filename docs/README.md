@@ -1,9 +1,9 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-04-09
+**Last Reviewed:** 2026-04-29
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
-This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: a shared platform that now spans research, trading, data operations, governance, provider readiness, and a Windows WPF workstation backed by desktop-local APIs.
+This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: an evidence-backed investment operations platform spanning trusted data, strategy work, paper validation, portfolio/accounting review, reconciliation, governed reports, and retained desktop-local support.
 
 ## Platform At A Glance
 
@@ -25,6 +25,7 @@ Meridian's current solution includes:
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
 - **Current delivery plan:** [Project Roadmap](status/ROADMAP.md)
 - **Target product narrative:** [Target End Product](status/TARGET_END_PRODUCT.md)
+- **Differentiation plan:** [Evidence-Backed Investment Operations Plan](plans/evidence-backed-investment-operations-plan.md)
 
 ## Documentation Zones
 
@@ -92,18 +93,19 @@ Use the documents below to manage that path:
 
 1. [status/ROADMAP_COMBINED.md](status/ROADMAP_COMBINED.md) for the shortest complete roadmap snapshot
 2. [status/ROADMAP.md](status/ROADMAP.md) for the full wave-structured delivery plan
-3. [status/OPPORTUNITY_SCAN.md](status/OPPORTUNITY_SCAN.md) for prioritized repo-grounded opportunities
-4. [status/TARGET_END_PRODUCT.md](status/TARGET_END_PRODUCT.md) for the intended finished product narrative
-5. [plans/README.md](plans/README.md) for the active blueprint and roadmap catalog
-6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
-7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
-8. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for Wave 2 cockpit hardening and Wave 3 shared-model migration shape
-9. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, Security Master, reconciliation, and reporting direction
-10. [plans/backtest-studio-unification-blueprint.md](plans/backtest-studio-unification-blueprint.md) for the Wave 5 backtesting unification follow-on
-11. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
-12. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
-13. [status/production-status.md](status/production-status.md) for current readiness caveats
-14. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+3. [plans/evidence-backed-investment-operations-plan.md](plans/evidence-backed-investment-operations-plan.md) for the differentiation filter and archive rule
+4. [status/OPPORTUNITY_SCAN.md](status/OPPORTUNITY_SCAN.md) for prioritized repo-grounded opportunities
+5. [status/TARGET_END_PRODUCT.md](status/TARGET_END_PRODUCT.md) for the intended finished product narrative
+6. [plans/README.md](plans/README.md) for the active blueprint and roadmap catalog
+7. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
+8. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
+9. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for Wave 2 cockpit hardening and Wave 3 shared-model implementation details
+10. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, Security Master, reconciliation, and reporting direction
+11. [plans/backtest-studio-unification-blueprint.md](plans/backtest-studio-unification-blueprint.md) for the Wave 5 backtesting unification follow-on
+12. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
+13. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
+14. [status/production-status.md](status/production-status.md) for current readiness caveats
+15. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 ## Verified Build And Run References
 
@@ -139,6 +141,6 @@ Historical and superseded material now lives outside the active docs tree under 
 When documentation changes in a PR:
 
 1. Update this index if the main navigation or source-of-truth set changes.
-2. Keep `status/ROADMAP*.md`, `status/OPPORTUNITY_SCAN.md`, `status/TARGET_END_PRODUCT.md`, `status/FEATURE_INVENTORY.md`, and the relevant blueprint docs aligned.
+2. Keep `status/ROADMAP*.md`, `status/OPPORTUNITY_SCAN.md`, `status/TARGET_END_PRODUCT.md`, `status/FEATURE_INVENTORY.md`, `plans/evidence-backed-investment-operations-plan.md`, and the relevant blueprint docs aligned.
 3. Prefer updating folder `README.md` files when you add or retire documents.
 4. Avoid editing generated docs by hand unless you are also updating the generator.

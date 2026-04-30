@@ -9,6 +9,13 @@ WORKFLOW_ROOT = REPO_ROOT / ".github" / "workflows"
 SCHEDULED_MAINTENANCE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "scheduled-maintenance.yml"
 SETUP_DOTNET_CACHE_ACTION = REPO_ROOT / ".github" / "actions" / "setup-dotnet-cache" / "action.yml"
 CODEQL_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "codeql.yml"
+SECURITY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "security.yml"
+PRODUCTION_DOCKERFILE = REPO_ROOT / "deploy" / "docker" / "Dockerfile"
+GENERAL_AI_PROMPT_WORKFLOWS = [
+    REPO_ROOT / ".github" / "workflows" / "code-quality.yml",
+    REPO_ROOT / ".github" / "workflows" / "nightly.yml",
+    REPO_ROOT / ".github" / "workflows" / "pr-checks.yml",
+]
 
 
 def target_framework(project_path: str) -> str:
@@ -30,7 +37,7 @@ def projects_referencing(project_path: str) -> list[str]:
         root = ET.parse(candidate).getroot()
         for reference in root.findall(".//ProjectReference"):
             include = reference.attrib.get("Include")
-            if include and (candidate.parent / include).resolve() == referenced_project:
+            if include and (candidate.parent / include.replace("\\", "/")).resolve() == referenced_project:
                 matching_projects.append(candidate.relative_to(REPO_ROOT).as_posix())
                 break
 
@@ -86,6 +93,29 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
         self.assertNotIn("dotnet-version: '9.0.x'", workflow)
         self.assertNotIn("Restore C# solution", workflow)
         self.assertNotIn("Build C# solution", workflow)
+
+    def test_security_workflow_reports_current_platform(self) -> None:
+        workflow = SECURITY_WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertIn("DOTNET_VERSION: '10.0.x'", workflow)
+        self.assertIn(".NET 10.0 market data collection application", workflow)
+        self.assertNotIn(".NET 9.0 market data collection application", workflow)
+
+    def test_general_ai_workflow_prompts_report_current_platform(self) -> None:
+        for workflow_path in GENERAL_AI_PROMPT_WORKFLOWS:
+            with self.subTest(workflow=workflow_path.relative_to(REPO_ROOT).as_posix()):
+                workflow = workflow_path.read_text(encoding="utf-8")
+
+                self.assertIn(".NET 10 host with net9 shared libraries", workflow)
+                self.assertNotIn(".NET 9.0", workflow)
+
+    def test_production_dockerfile_uses_current_sdk_and_runtime(self) -> None:
+        dockerfile = PRODUCTION_DOCKERFILE.read_text(encoding="utf-8")
+
+        self.assertIn("mcr.microsoft.com/dotnet/sdk:10.0-alpine", dockerfile)
+        self.assertIn("mcr.microsoft.com/dotnet/aspnet:10.0-alpine", dockerfile)
+        self.assertNotIn("mcr.microsoft.com/dotnet/sdk:9", dockerfile)
+        self.assertNotIn("mcr.microsoft.com/dotnet/aspnet:9", dockerfile)
 
 
 if __name__ == "__main__":

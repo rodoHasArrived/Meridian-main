@@ -1,5 +1,5 @@
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
   useExecutionEvidenceViewModel,
   usePaperSessionsViewModel,
   useSessionReplayControlsViewModel,
+  useStrategyLifecycleControlsViewModel,
   useTradingConfirmViewModel,
   useOrderTicketViewModel,
   usePromotionGateViewModel,
@@ -127,8 +128,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
     onSessionEvidenceChanged: refreshSessionEvidence
   });
 
-  // --- Strategy lifecycle ---
-  const [strategyId, setStrategyId] = useState("");
+  const strategyLifecycle = useStrategyLifecycleControlsViewModel({
+    openConfirm: confirmVm.openConfirm
+  });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
 
@@ -808,47 +810,58 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </Card>
 
         {/* Strategy lifecycle controls */}
-        <Card>
+        <Card role="region" aria-labelledby={strategyLifecycle.titleId}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle id={strategyLifecycle.titleId} className="flex items-center gap-2 text-base">
               <PlayCircle className="h-4 w-4 text-primary" />
-              Strategy lifecycle
+              {strategyLifecycle.title}
             </CardTitle>
             <CardDescription>
-              Pause or stop a running strategy by its registered ID. Changes take effect immediately.
+              {strategyLifecycle.description}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Strategy ID
+              <label htmlFor={strategyLifecycle.strategyIdInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {strategyLifecycle.strategyIdLabel}
               </label>
               <input
+                id={strategyLifecycle.strategyIdInputId}
                 type="text"
-                placeholder="e.g. mean-reversion-fx-01"
-                value={strategyId}
-                onChange={(e) => setStrategyId(e.target.value)}
+                placeholder={strategyLifecycle.strategyIdPlaceholder}
+                value={strategyLifecycle.strategyId}
+                aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
+                onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
+              <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
+                {strategyLifecycle.helpText}
+              </p>
+              <p id={strategyLifecycle.strategyIdStatusId} role="status" className="text-xs text-muted-foreground">
+                {strategyLifecycle.statusText}
+              </p>
+              <span className="sr-only" aria-live="polite">{strategyLifecycle.statusAnnouncement}</span>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => confirmVm.openConfirm({ kind: "pause-strategy", strategyId: strategyId.trim() })}
-                disabled={!strategyId.trim()}
+                aria-label={strategyLifecycle.pauseAriaLabel}
+                onClick={strategyLifecycle.openPauseConfirm}
+                disabled={!strategyLifecycle.canPause}
               >
                 <PauseCircle className="mr-2 h-4 w-4" />
-                Pause
+                {strategyLifecycle.pauseButtonLabel}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => confirmVm.openConfirm({ kind: "stop-strategy", strategyId: strategyId.trim() })}
-                disabled={!strategyId.trim()}
+                aria-label={strategyLifecycle.stopAriaLabel}
+                onClick={strategyLifecycle.openStopConfirm}
+                disabled={!strategyLifecycle.canStop}
               >
                 <StopCircle className="mr-2 h-4 w-4" />
-                Stop
+                {strategyLifecycle.stopButtonLabel}
               </Button>
             </div>
           </CardContent>

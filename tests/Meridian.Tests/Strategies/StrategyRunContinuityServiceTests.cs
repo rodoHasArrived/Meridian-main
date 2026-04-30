@@ -22,7 +22,7 @@ public sealed class StrategyRunContinuityServiceTests
 
         var continuityService = BuildContinuityService(
             store,
-            [BuildPromotionRecord("lineage-source-mismatch", "different-parent", "paper-target")]);
+            [BuildPromotionRecord("lineage-source-mismatch", "different-parent", "lineage-source-mismatch")]);
         var continuity = await continuityService.GetRunContinuityAsync("lineage-source-mismatch");
 
         continuity.Should().NotBeNull();
@@ -39,7 +39,7 @@ public sealed class StrategyRunContinuityServiceTests
 
         var continuityService = BuildContinuityService(
             store,
-            [BuildPromotionRecord("lineage-parent-missing", "claimed-parent", "paper-target")]);
+            [BuildPromotionRecord("lineage-parent-missing", "claimed-parent", "lineage-parent-missing")]);
         var continuity = await continuityService.GetRunContinuityAsync("lineage-parent-missing");
 
         continuity.Should().NotBeNull();
@@ -138,7 +138,7 @@ public sealed class StrategyRunContinuityServiceTests
         continuity.ContinuityStatus.HasPortfolio.Should().BeTrue();
         continuity.ContinuityStatus.HasLedger.Should().BeTrue();
         continuity.ContinuityStatus.HasCashFlow.Should().BeTrue();
-        continuity.ContinuityStatus.HasFills.Should().BeFalse();
+        continuity.ContinuityStatus.HasFills.Should().BeTrue();
         continuity.ContinuityStatus.HasReconciliation.Should().BeTrue();
         continuity.ContinuityStatus.HasWarnings.Should().BeTrue();
         continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
@@ -147,6 +147,9 @@ public sealed class StrategyRunContinuityServiceTests
         continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
             .Should()
             .NotContain(["missing-reconciliation", "as-of-drift", "open-reconciliation-breaks"]);
+        continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .NotContain("missing-fills");
     }
 
     [Fact]
@@ -211,8 +214,9 @@ public sealed class StrategyRunContinuityServiceTests
         string runId,
         bool includeCashFlows = true,
         bool includePortfolio = true,
-        bool includeLedger = true)
-    private static StrategyRunEntry BuildContinuityRun(string runId, bool includeCashFlows = true, bool includeFills = false, StrategyRunPromotionState promotionState = StrategyRunPromotionState.None)
+        bool includeLedger = true,
+        bool includeFills = false,
+        StrategyRunPromotionState promotionState = StrategyRunPromotionState.None)
     {
         var startedAt = new DateTimeOffset(2026, 4, 2, 9, 30, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddHours(2);
@@ -291,18 +295,29 @@ public sealed class StrategyRunContinuityServiceTests
             Snapshots: includePortfolio ? [snapshot] : [],
             CashFlows: cashFlows,
             Fills: includeFills
-                ? [new FillEvent(Guid.NewGuid(), "AAPL", "buy", 10L, 40m, 0.5m, startedAt.AddMinutes(15), "ORD-1")]
+                ? [new FillEvent(
+                    FillId: Guid.NewGuid(),
+                    OrderId: Guid.NewGuid(),
+                    Symbol: "AAPL",
+                    FilledQuantity: 10L,
+                    FillPrice: 40m,
+                    Commission: 0.5m,
+                    FilledAt: startedAt.AddMinutes(15),
+                    AccountId: BacktestDefaults.DefaultBrokerageAccountId)]
                 : [],
             Metrics: metrics,
-            Ledger: includeLedger ? CreateLedger(startedAt, completedAt) : null,
+            Ledger: includeLedger ? CreateLedger(startedAt, completedAt) : null!,
             ElapsedTime: TimeSpan.FromHours(2),
             TotalEventsProcessed: 32);
+        var runType = promotionState is StrategyRunPromotionState.CandidateForLive or StrategyRunPromotionState.LiveManaged
+            ? RunType.Paper
+            : RunType.Backtest;
 
         return new StrategyRunEntry(
             RunId: runId,
             StrategyId: "continuity-strategy",
             StrategyName: "Continuity Strategy",
-            RunType: RunType.Backtest,
+            RunType: runType,
             StartedAt: startedAt,
             EndedAt: completedAt,
             Metrics: result,
@@ -317,8 +332,7 @@ public sealed class StrategyRunContinuityServiceTests
                 ["rebalance"] = "weekly"
             },
             FundProfileId: "alpha-credit",
-            FundDisplayName: "Alpha Credit",
-            PromotionState: promotionState);
+            FundDisplayName: "Alpha Credit");
     }
 
     private static StrategyRunContinuityService BuildContinuityService(
@@ -342,16 +356,20 @@ public sealed class StrategyRunContinuityServiceTests
     private static StrategyPromotionRecord BuildPromotionRecord(string runId, string sourceRunId, string? targetRunId)
         => new(
             PromotionId: $"promotion-{runId}",
-            TimestampUtc: new DateTimeOffset(2026, 4, 2, 16, 0, 0, TimeSpan.Zero),
             StrategyId: "continuity-strategy",
             StrategyName: "Continuity Strategy",
             SourceRunId: sourceRunId,
             TargetRunId: targetRunId,
             SourceRunType: RunType.Backtest,
             TargetRunType: RunType.Paper,
+            QualifyingSharpe: 1.2d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
             Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: new DateTimeOffset(2026, 4, 2, 16, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "test fixture",
             ApprovedBy: "test-operator",
-            Reason: "test fixture");
+            AuditReference: $"audit-promotion-{runId}");
 
     private sealed class StubPromotionRecordStore(IReadOnlyList<StrategyPromotionRecord> records) : IPromotionRecordStore
     {

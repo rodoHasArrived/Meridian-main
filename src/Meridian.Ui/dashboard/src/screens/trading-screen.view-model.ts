@@ -1484,6 +1484,108 @@ export type TradingConfirmAction =
   | { kind: "pause-strategy"; strategyId: string }
   | { kind: "stop-strategy"; strategyId: string };
 
+export interface StrategyLifecycleControlsState {
+  strategyId: string;
+  strategyIdValue: string;
+  strategyIdInputId: string;
+  strategyIdHelpId: string;
+  strategyIdStatusId: string;
+  titleId: string;
+  title: string;
+  description: string;
+  strategyIdLabel: string;
+  strategyIdPlaceholder: string;
+  helpText: string;
+  statusText: string;
+  statusAnnouncement: string;
+  canPause: boolean;
+  canStop: boolean;
+  pauseButtonLabel: string;
+  stopButtonLabel: string;
+  pauseAriaLabel: string;
+  stopAriaLabel: string;
+  pauseAction: TradingConfirmAction | null;
+  stopAction: TradingConfirmAction | null;
+}
+
+export interface StrategyLifecycleControlsViewModel extends StrategyLifecycleControlsState {
+  updateStrategyId: (value: string) => void;
+  openPauseConfirm: () => void;
+  openStopConfirm: () => void;
+}
+
+export function useStrategyLifecycleControlsViewModel({
+  openConfirm
+}: {
+  openConfirm: (action: TradingConfirmAction) => void;
+}): StrategyLifecycleControlsViewModel {
+  const [strategyId, setStrategyId] = useState("");
+  const state = useMemo(() => buildStrategyLifecycleControlsState(strategyId), [strategyId]);
+
+  const openPauseConfirm = useCallback(() => {
+    if (state.pauseAction) {
+      openConfirm(state.pauseAction);
+    }
+  }, [openConfirm, state.pauseAction]);
+
+  const openStopConfirm = useCallback(() => {
+    if (state.stopAction) {
+      openConfirm(state.stopAction);
+    }
+  }, [openConfirm, state.stopAction]);
+
+  return {
+    ...state,
+    updateStrategyId: setStrategyId,
+    openPauseConfirm,
+    openStopConfirm
+  };
+}
+
+export function buildStrategyLifecycleControlsState(strategyId: string): StrategyLifecycleControlsState {
+  const strategyIdValue = strategyId.trim();
+  const hasStrategyId = strategyIdValue.length > 0;
+  const pauseAction: TradingConfirmAction | null = hasStrategyId
+    ? { kind: "pause-strategy", strategyId: strategyIdValue }
+    : null;
+  const stopAction: TradingConfirmAction | null = hasStrategyId
+    ? { kind: "stop-strategy", strategyId: strategyIdValue }
+    : null;
+  const statusText = hasStrategyId
+    ? `Ready to open lifecycle confirmation for ${strategyIdValue}.`
+    : "Enter a registered strategy ID to enable lifecycle actions.";
+
+  return {
+    strategyId,
+    strategyIdValue,
+    strategyIdInputId: "trading-strategy-lifecycle-id",
+    strategyIdHelpId: "trading-strategy-lifecycle-help",
+    strategyIdStatusId: "trading-strategy-lifecycle-status",
+    titleId: "trading-strategy-lifecycle-title",
+    title: "Strategy lifecycle",
+    description: "Pause or stop a running strategy by its registered ID. Changes open a confirmation before execution.",
+    strategyIdLabel: "Strategy ID",
+    strategyIdPlaceholder: "e.g. mean-reversion-fx-01",
+    helpText: "Use the registered strategy ID from the active paper session or Strategy run record.",
+    statusText,
+    statusAnnouncement: hasStrategyId
+      ? `Strategy lifecycle controls ready for ${strategyIdValue}.`
+      : "Strategy lifecycle controls are waiting for a strategy ID.",
+    canPause: hasStrategyId,
+    canStop: hasStrategyId,
+    pauseButtonLabel: "Pause",
+    stopButtonLabel: "Stop",
+    pauseAriaLabel: hasStrategyId
+      ? `Open pause confirmation for strategy ${strategyIdValue}`
+      : "Enter a strategy ID before pausing a strategy",
+    stopAriaLabel: hasStrategyId
+      ? `Open stop confirmation for strategy ${strategyIdValue}`
+      : "Enter a strategy ID before stopping a strategy",
+    pauseAction,
+    stopAction
+  };
+}
+
 export interface TradingConfirmState {
   action: TradingConfirmAction | null;
   busy: boolean;

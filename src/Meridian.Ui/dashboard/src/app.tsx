@@ -150,30 +150,41 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
 
   return (
     <Card
+      id={panel.id}
       role={panel.role}
       aria-live={panel.ariaLive}
+      aria-labelledby={panel.titleId}
+      aria-describedby={panel.detailId}
       className={`mb-4 ${toneClass}`}
     >
       <CardHeader className="flex flex-col gap-3 space-y-0 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="eyebrow-label">Shell status</div>
-          <CardTitle className="mt-2 flex items-center gap-2 text-base text-foreground">
-            <Icon className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
+          <CardTitle id={panel.titleId} className="mt-2 flex items-center gap-2 text-base text-foreground">
+            <Icon
+              aria-hidden="true"
+              className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`}
+            />
             {panel.title}
           </CardTitle>
         </div>
         {panel.actionLabel ? (
-          <Button variant="outline" size="sm" onClick={onRetry}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRetry}
+            aria-label={panel.actionAriaLabel ?? panel.actionLabel}
+          >
             {panel.actionLabel}
           </Button>
         ) : null}
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <p className="leading-6 text-foreground/80">{panel.detail}</p>
+        <p id={panel.detailId} className="leading-6 text-foreground/80">{panel.detail}</p>
         {panel.items.length > 0 ? (
-          <ul className="grid gap-2 md:grid-cols-2">
+          <ul aria-label={panel.itemListLabel} className="grid gap-2 md:grid-cols-2">
             {panel.items.map((item) => (
-              <li key={item.key} className="rounded-lg border border-border/60 bg-background/45 px-3 py-2">
+              <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
                 <div className="font-semibold text-foreground">{item.label}</div>
                 <div className="mt-1 text-xs leading-5 text-foreground/70">{item.detail}</div>
               </li>

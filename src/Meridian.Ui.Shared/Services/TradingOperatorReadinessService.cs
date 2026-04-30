@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Promotions;
@@ -969,6 +970,7 @@ public sealed class TradingOperatorReadinessService
         string? auditReference = null,
         string? workItemId = null)
     {
+        var navigation = ResolveWorkItemNavigation(kind, fundAccountId);
         workItems.Add(new OperatorWorkItemDto(
             WorkItemId: workItemId ?? BuildWorkItemId(kind.ToString(), label),
             Kind: kind,
@@ -978,8 +980,36 @@ public sealed class TradingOperatorReadinessService
             CreatedAt: DateTimeOffset.UtcNow,
             RunId: runId,
             FundAccountId: fundAccountId,
-            AuditReference: auditReference));
+            AuditReference: auditReference,
+            Workspace: navigation.Workspace,
+            TargetRoute: navigation.TargetRoute,
+            TargetPageTag: navigation.TargetPageTag));
     }
+
+    private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveWorkItemNavigation(
+        OperatorWorkItemKindDto kind,
+        Guid? fundAccountId)
+        => kind switch
+        {
+            OperatorWorkItemKindDto.SecurityMasterCoverage => (
+                "Governance",
+                UiApiRoutes.WorkstationSecurityMasterSearch,
+                "GovernanceShell"),
+            OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
+                "Governance",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "GovernanceShell"),
+            OperatorWorkItemKindDto.BrokerageSync => (
+                "Trading",
+                fundAccountId.HasValue
+                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
+                "AccountPortfolio"),
+            _ => (
+                "Trading",
+                UiApiRoutes.WorkstationTradingReadiness,
+                "TradingShell")
+        };
 
     private static string BuildWorkItemId(string prefix, string? scope = null)
     {

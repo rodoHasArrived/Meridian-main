@@ -442,7 +442,7 @@ public sealed class BrokeragePortfolioSyncService
                 AccruedInterest: 0m,
                 PendingSettlement: 0m,
                 Source: $"brokerage-sync:{projection.Link.ProviderId}",
-                CapturedBy: projection.Link.LinkedBy ?? "brokerage-sync",
+                RecordedBy: projection.Link.LinkedBy ?? "brokerage-sync",
                 ExternalReference: projection.Link.ExternalAccountId),
             ct).ConfigureAwait(false);
 

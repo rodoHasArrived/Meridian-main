@@ -10,6 +10,7 @@ import {
   searchSecurities
 } from "@/lib/api";
 import type {
+  GovernanceCashFlowSummary,
   GovernanceReportingProfile,
   GovernanceReportingSummary,
   GovernanceWorkspaceResponse,
@@ -145,6 +146,30 @@ export interface ReconciliationBreakQueueState {
   statusAnnouncement: string;
 }
 
+export type CashFlowEvidenceTone = "default" | "success" | "warning" | "danger";
+
+export interface GovernanceCashFlowRowViewModel {
+  id: string;
+  label: string;
+  value: string;
+  tone: CashFlowEvidenceTone;
+  ariaLabel: string;
+}
+
+export interface GovernanceCashFlowViewState {
+  eyebrow: string;
+  title: string;
+  description: string;
+  routePath: string;
+  statusLabel: string;
+  statusTone: CashFlowEvidenceTone;
+  statusAriaLabel: string;
+  ariaLabel: string;
+  rowGroupLabel: string;
+  rows: GovernanceCashFlowRowViewModel[];
+  statusAnnouncement: string;
+}
+
 export interface ReportingProfileBadgeViewModel {
   label: string;
   tone: "primary" | "success" | "warning" | "muted";
@@ -204,6 +229,17 @@ const defaultGovernanceReconciliationServices: GovernanceReconciliationServices 
   resolveBreak: (request) => resolveReconciliationBreak(request),
   getTrialBalance: (runId) => getRunTrialBalance(runId)
 };
+
+export function useGovernanceCashFlowViewModel(
+  cashFlow: GovernanceCashFlowSummary | null,
+  pathname: string,
+  workstream: GovernanceWorkstream
+) {
+  return useMemo(
+    () => buildGovernanceCashFlowViewState(cashFlow, pathname, workstream),
+    [cashFlow, pathname, workstream]
+  );
+}
 
 export function useGovernanceReportingViewModel(
   reporting: GovernanceReportingSummary | null
@@ -795,6 +831,60 @@ export function buildReconciliationBreakRows(
   });
 }
 
+export function buildGovernanceCashFlowViewState(
+  cashFlow: GovernanceCashFlowSummary | null,
+  pathname: string,
+  workstream: GovernanceWorkstream
+): GovernanceCashFlowViewState {
+  const routePath = pathname || "/accounting";
+  const contextLabel = cashFlowContextLabel(workstream);
+
+  if (!cashFlow) {
+    return {
+      eyebrow: "Cash Flow",
+      title: "Cash-flow evidence loading",
+      description: `${contextLabel} is waiting for the shared accounting cash-flow payload.`,
+      routePath,
+      statusLabel: "Pending",
+      statusTone: "warning",
+      statusAriaLabel: "Cash-flow status pending",
+      ariaLabel: `Cash-flow evidence for ${contextLabel} at ${routePath}`,
+      rowGroupLabel: "Cash-flow evidence rows",
+      rows: [],
+      statusAnnouncement: "Cash-flow evidence is loading."
+    };
+  }
+
+  const statusTone = normalizeCashFlowTone(cashFlow.tone, cashFlow.netVariance);
+  const statusLabel = cashFlow.netVariance === 0
+    ? "Balanced"
+    : cashFlow.runsWithCashVariance > 0
+      ? "Variance review"
+      : "Observe";
+  const rows: GovernanceCashFlowRowViewModel[] = [
+    buildCashFlowRow("portfolio-cash", "Portfolio cash", cashFlow.totalCash, "default"),
+    buildCashFlowRow("ledger-cash", "Ledger cash", cashFlow.totalLedgerCash, "default"),
+    buildCashFlowRow("net-variance", "Net variance", cashFlow.netVariance, statusTone),
+    buildCashFlowRow("financing", "Financing", cashFlow.totalFinancing, "default"),
+    buildCashFlowCountRow("cash-signal-runs", "Runs with cash signals", cashFlow.runsWithCashSignals, "default"),
+    buildCashFlowCountRow("variance-runs", "Runs with variance", cashFlow.runsWithCashVariance, statusTone)
+  ];
+
+  return {
+    eyebrow: "Cash Flow",
+    title: cashFlow.summary,
+    description: `${contextLabel} at ${routePath} reuses the shared accounting/reporting cash-flow summary payload.`,
+    routePath,
+    statusLabel,
+    statusTone,
+    statusAriaLabel: `Cash-flow status ${statusLabel}. Net variance ${formatCurrency(cashFlow.netVariance)}.`,
+    ariaLabel: `Cash-flow evidence for ${contextLabel} at ${routePath}`,
+    rowGroupLabel: "Cash-flow evidence rows",
+    rows,
+    statusAnnouncement: `${statusLabel}: ${cashFlow.summary}`
+  };
+}
+
 export function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["reconciliationQueue"][number]) {
   if (item.reconciliationStatus === "Balanced") {
     return "This run is currently balanced. Audit review should focus on evidence completeness and timing freshness rather than open break remediation.";
@@ -909,8 +999,80 @@ function formatReportPackTargets(targets: string[]): string {
   return `Targets: ${targets.join(", ")}.`;
 }
 
+function cashFlowContextLabel(workstream: GovernanceWorkstream): string {
+  if (workstream === "reporting") {
+    return "Reporting packet context";
+  }
+
+  if (workstream === "reconciliation") {
+    return "Reconciliation context";
+  }
+
+  if (workstream === "security-master") {
+    return "Security coverage context";
+  }
+
+  return "Ledger context";
+}
+
+function buildCashFlowRow(
+  id: string,
+  label: string,
+  value: number,
+  tone: CashFlowEvidenceTone
+): GovernanceCashFlowRowViewModel {
+  const formattedValue = formatCurrency(value);
+  return {
+    id,
+    label,
+    value: formattedValue,
+    tone,
+    ariaLabel: `${label}: ${formattedValue}`
+  };
+}
+
+function buildCashFlowCountRow(
+  id: string,
+  label: string,
+  value: number,
+  tone: CashFlowEvidenceTone
+): GovernanceCashFlowRowViewModel {
+  const formattedValue = String(value);
+  return {
+    id,
+    label,
+    value: formattedValue,
+    tone,
+    ariaLabel: `${label}: ${formattedValue}`
+  };
+}
+
+function normalizeCashFlowTone(
+  tone: GovernanceCashFlowSummary["tone"],
+  netVariance: number
+): CashFlowEvidenceTone {
+  if (netVariance === 0) {
+    return "success";
+  }
+
+  if (tone === "danger") {
+    return "danger";
+  }
+
+  if (tone === "success" || tone === "warning") {
+    return tone;
+  }
+
+  return "warning";
+}
+
 function formatCount(count: number, singular: string): string {
   return `${count} ${singular}${count === 1 ? "" : "s"}`;
+}
+
+function formatCurrency(value: number) {
+  const prefix = value >= 0 ? "$" : "-$";
+  return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
 function toDomId(value: string): string {

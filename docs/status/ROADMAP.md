@@ -33,6 +33,8 @@ The next accounting-led commercial wedge should be: **Can Meridian prove, book, 
 
 The umbrella product story can be **Meridian Evidence OS**: a governed investment operating system that proves the lifecycle from data to decision to books to report. Evidence OS should connect the Run Evidence Graph, Evidence Vault, Evidence Completeness Score, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. Treat this as positioning for Waves 2-4, not a new platform implementation or wave.
 
+The documentation rule attached to this positioning is explicit: prior plans, UI notes, and status snapshots that are deprecated by the evidence-backed investment-operations direction should move to `archive/docs/` and be referenced only as historical context. Active roadmap docs should point to the current evidence plan and the Wave 2-4 implementation anchors.
+
 ---
 
 Use this document with:
@@ -44,6 +46,7 @@ Use this document with:
 - [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) - prioritized opportunity framing
 - [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) - concise end-state product summary
 - [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md) - shortest combined roadmap, opportunity, and target-state entry point
+- [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) - active differentiation and product-category filter
 - [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) - golden-path pilot workflow and productization filter
 - [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) - workstation target state
 - [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md) - governance target state
@@ -201,6 +204,8 @@ Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage
 - align cockpit behavior with brokerage-adapter and provider-confidence evidence
 
 **Exit signal:** A strategy can move from backtest into a visible, auditable paper-trading workflow through the shared workstation contract, with the web dashboard and retained local API consuming the same readiness lane.
+
+<a id="wave-3-shared-run--portfolio--ledger-continuity"></a>
 
 ### Wave 3: Shared run / portfolio / ledger continuity
 
@@ -434,6 +439,7 @@ Until then, Meridian is best described as feature-rich, structurally strong, and
 ## Reference Documents
 
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md)
+- [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md)
 - [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md)
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md)
 - [`EVALUATIONS_AND_AUDITS.md`](EVALUATIONS_AND_AUDITS.md)

@@ -339,6 +339,28 @@ describe("operator readiness console view model", () => {
     expect(state.promotionRows.some((row) => row.label === "Promotion checklist")).toBe(true);
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "Targets present", level: "ready" }));
     expect(state.apiSources.map((source) => source.endpoint)).toContain("/api/workstation/operator/inbox");
+    expect(state.apiSourcesLabel).toBe("Shared readiness API sources");
+    expect(state.apiSources[0].ariaLabel).toContain("/api/workstation/trading/readiness");
+    expect(state.metricsLabel).toBe("Operator readiness metrics");
+    expect(state.metrics[0].statusAriaLabel).toBe("Latest runs status Ready");
+    expect(state.latestRuns[0].ariaLabel).toContain("Index Momentum: Needs Review");
+    expect(state.latestRuns[0].detailId).toBe("readiness-row-latest-runs-run-1-detail");
+    expect(state.panels.map((panel) => panel.id)).toEqual([
+      "latest-runs",
+      "active-paper-session",
+      "provider-trust",
+      "reconciliation-breaks",
+      "promotion-blockers",
+      "governance-report-packs"
+    ]);
+    expect(state.panels[0]).toEqual(expect.objectContaining({
+      ariaLabel: "Latest runs readiness evidence",
+      listLabel: "Latest runs rows"
+    }));
+    const detailIds = [...state.promotionRows, ...state.workItems].map((row) => row.detailId);
+    expect(new Set(detailIds).size).toBe(detailIds.length);
+    expect(state.workItemsRegionLabel).toBe("Operator inbox review work items");
+    expect(state.workItemsListLabel).toBe("Prioritized operator work items");
     expect(state.workItems.find((item) => item.id === "promotion-review-run-1")?.action).toEqual({
       label: "Open promotion review",
       route: "/trading/readiness",

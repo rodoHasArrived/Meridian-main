@@ -190,7 +190,7 @@ jobs:
       unavailable-message: "_AI diagnosis was not available for this run._"
       max-tokens: 1500
       prompt: |
-        You are a .NET build/test infrastructure engineer analyzing nightly test failures for a market data collection application (.NET 9.0).
+        You are a .NET build/test infrastructure engineer analyzing nightly test failures for Meridian, a .NET 10 host with net9 shared libraries.
 
         Test matrix result: ${{ needs.test-matrix.result }}
         Benchmark result: ${{ needs.benchmark.result }}

@@ -567,7 +567,6 @@ public sealed record StrategyRunContinuityStatus(
     StrategyRunContinuitySeamHealthStatus LedgerHealth,
     bool HasCashFlow,
     StrategyRunContinuitySeamHealthStatus CashFlowHealth,
-    bool HasFills,
     bool HasReconciliation,
     StrategyRunContinuitySeamHealthStatus ReconciliationHealth,
     int AsOfDriftMinutes,
@@ -579,7 +578,7 @@ public sealed record StrategyRunContinuityStatus(
 /// <summary>
 /// Canonical shared continuity drill-in contract used by Research, Trading, and Governance run drill-ins.
 /// </summary>
-public sealed record StrategyRunContinuityDto(
+public record StrategyRunContinuityDto(
     StrategyRunDetail Run,
     StrategyRunContinuityLineage Lineage,
     StrategyRunCashFlowDigest? CashFlow,

@@ -548,4 +548,21 @@ describe("TradingScreen", () => {
     expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
     expect(screen.getByRole("button", { name: /confirm cancel order po-1/i })).toBeEnabled();
   });
+
+  it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const lifecycle = screen.getByRole("region", { name: /strategy lifecycle/i });
+    const strategyInput = within(lifecycle).getByLabelText("Strategy ID");
+    expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before pausing a strategy/i })).toBeDisabled();
+    expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before stopping a strategy/i })).toBeDisabled();
+
+    await user.type(strategyInput, "  mean-reversion-fx-01  ");
+
+    expect(within(lifecycle).getByText("Ready to open lifecycle confirmation for mean-reversion-fx-01.")).toBeInTheDocument();
+    await user.click(within(lifecycle).getByRole("button", { name: /open pause confirmation for strategy mean-reversion-fx-01/i }));
+    const dialog = screen.getByRole("dialog", { name: /pause strategy - mean-reversion-fx-01/i });
+    expect(dialog).toHaveAccessibleDescription("The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.");
+  });
 });

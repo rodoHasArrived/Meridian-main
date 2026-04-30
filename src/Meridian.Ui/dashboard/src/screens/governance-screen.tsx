@@ -9,6 +9,7 @@ import { workspaceForPath } from "@/lib/workspace";
 import {
   buildReconciliationNarrative,
   resolveGovernanceWorkstream,
+  useGovernanceCashFlowViewModel,
   useGovernanceReconciliationViewModel,
   useGovernanceReportingViewModel,
   useSecurityMasterViewModel
@@ -52,6 +53,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const workspace = workspaceForPath(pathname);
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
   const selectedReconciliation = reconciliation.selectedReconciliation;
+  const cashFlow = useGovernanceCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const identity = securityMaster.identityView;
@@ -106,19 +108,40 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="bg-panel-strong text-slate-50" role="region" aria-label={cashFlow.ariaLabel}>
           <CardHeader>
-            <div className="eyebrow-label">Cash Flow</div>
-            <CardTitle>{data.cashFlow.summary}</CardTitle>
-            <CardDescription className="text-slate-300">
-              Route focus at <code className="rounded-sm bg-background/70 px-1 py-0.5">{pathname}</code> reuses the same accounting/reporting summary payload.
-            </CardDescription>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="eyebrow-label">{cashFlow.eyebrow}</div>
+                <CardTitle>{cashFlow.title}</CardTitle>
+                <CardDescription className="mt-2 text-slate-300">
+                  {cashFlow.description}
+                </CardDescription>
+              </div>
+              <span
+                aria-label={cashFlow.statusAriaLabel}
+                className={cn(
+                  "w-fit rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
+                  cashFlowBadgeClass(cashFlow.statusTone)
+                )}
+              >
+                {cashFlow.statusLabel}
+              </span>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <GovernanceValue label="Portfolio cash" value={formatCurrency(data.cashFlow.totalCash)} />
-            <GovernanceValue label="Ledger cash" value={formatCurrency(data.cashFlow.totalLedgerCash)} />
-            <GovernanceValue label="Net variance" value={formatCurrency(data.cashFlow.netVariance)} tone={data.cashFlow.netVariance === 0 ? "text-success" : "text-warning"} />
-            <GovernanceValue label="Financing" value={formatCurrency(data.cashFlow.totalFinancing)} />
+            <span className="sr-only" aria-live="polite">{cashFlow.statusAnnouncement}</span>
+            <div aria-label={cashFlow.rowGroupLabel} className="grid gap-3 sm:grid-cols-2">
+              {cashFlow.rows.map((row) => (
+                <GovernanceValue
+                  key={row.id}
+                  label={row.label}
+                  value={row.value}
+                  tone={cashFlowTextClass(row.tone)}
+                  ariaLabel={row.ariaLabel}
+                />
+              ))}
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -750,13 +773,27 @@ function GovernanceHighlight({
   );
 }
 
-function GovernanceValue({ label, value, tone }: { label: string; value: string; tone?: string }) {
+function GovernanceValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
+    <div aria-label={ariaLabel} className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-50", tone)}>{value}</span>
     </div>
   );
+}
+
+function cashFlowTextClass(tone: "default" | "success" | "warning" | "danger") {
+  if (tone === "success") return "text-success";
+  if (tone === "warning") return "text-warning";
+  if (tone === "danger") return "text-danger";
+  return "";
+}
+
+function cashFlowBadgeClass(tone: "default" | "success" | "warning" | "danger") {
+  if (tone === "success") return "border-success/35 bg-success/10 text-success";
+  if (tone === "warning") return "border-warning/35 bg-warning/10 text-warning";
+  if (tone === "danger") return "border-danger/35 bg-danger/10 text-danger";
+  return "border-border/70 bg-secondary text-muted-foreground";
 }
 
 function reportingBadgeClass(tone: "primary" | "success" | "warning" | "muted") {

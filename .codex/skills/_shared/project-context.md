@@ -12,9 +12,9 @@ repeating the same facts in every `SKILL.md`.
 - Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization: turn those foundations into one cohesive operator
-  experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
-  `Settings`.
+- The current delivery focus is productization: turn those foundations into one evidence-backed
+  investment operations experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`,
+  `Strategy`, `Data`, and `Settings`.
 - New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
   contracts, regression fixes, or retained desktop support.
 - `src/Meridian.Ui/dashboard/` is now the active browser-based operator UI lane, with production
@@ -33,6 +33,7 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `docs/status/ROADMAP.md`
 - `docs/status/FEATURE_INVENTORY.md`
 - `docs/status/IMPROVEMENTS.md`
+- `docs/plans/evidence-backed-investment-operations-plan.md`
 - `docs/plans/trading-workstation-migration-blueprint.md`
 - `docs/plans/governance-fund-ops-blueprint.md`
 - `docs/plans/meridian-6-week-roadmap.md`

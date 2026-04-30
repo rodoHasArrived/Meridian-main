@@ -5,9 +5,11 @@
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
-Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
+Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
 
 Use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) as the golden-path productization filter for deciding whether a new opportunity strengthens the active pilot lifecycle or distracts from it.
+
+Archived or deprecated planning files should not be used as active opportunity sources unless a current roadmap document explicitly promotes one of their ideas back into the Wave 2-4 path.
 
 ---
 

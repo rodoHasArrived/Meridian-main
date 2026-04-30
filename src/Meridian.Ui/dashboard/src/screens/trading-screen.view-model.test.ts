@@ -3,6 +3,7 @@ import {
   buildPaperSessionCreateRequest,
   buildPaperSessionState,
   buildSessionReplayControlsState,
+  buildStrategyLifecycleControlsState,
   buildTradingConfirmDialogState,
   buildOrderSubmitRequest,
   buildOrderTicketState,
@@ -489,6 +490,31 @@ describe("trading readiness view model", () => {
     expect(mapReadinessStatusLevel("Blocked")).toBe("atRisk");
     expect(mapBrokerageSyncLevel({ ...blockedReadiness.brokerageSync!, health: "Healthy", isStale: false })).toBe("ready");
     expect(mapBrokerageSyncLevel(blockedReadiness.brokerageSync!)).toBe("atRisk");
+  });
+});
+
+describe("strategy lifecycle controls view model", () => {
+  it("keeps destructive lifecycle commands disabled until a strategy ID is present", () => {
+    const state = buildStrategyLifecycleControlsState("   ");
+
+    expect(state.canPause).toBe(false);
+    expect(state.canStop).toBe(false);
+    expect(state.pauseAction).toBeNull();
+    expect(state.stopAction).toBeNull();
+    expect(state.statusText).toBe("Enter a registered strategy ID to enable lifecycle actions.");
+    expect(state.pauseAriaLabel).toBe("Enter a strategy ID before pausing a strategy");
+  });
+
+  it("trims the strategy ID and derives confirmation actions", () => {
+    const state = buildStrategyLifecycleControlsState("  mean-reversion-fx-01  ");
+
+    expect(state.strategyIdValue).toBe("mean-reversion-fx-01");
+    expect(state.canPause).toBe(true);
+    expect(state.canStop).toBe(true);
+    expect(state.pauseAction).toEqual({ kind: "pause-strategy", strategyId: "mean-reversion-fx-01" });
+    expect(state.stopAction).toEqual({ kind: "stop-strategy", strategyId: "mean-reversion-fx-01" });
+    expect(state.statusAnnouncement).toBe("Strategy lifecycle controls ready for mean-reversion-fx-01.");
+    expect(state.stopAriaLabel).toBe("Open stop confirmation for strategy mean-reversion-fx-01");
   });
 });
 

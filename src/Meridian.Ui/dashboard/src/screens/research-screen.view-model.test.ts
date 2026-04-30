@@ -220,6 +220,14 @@ describe("research-screen view model", () => {
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
 
     const emptyDiff = buildDiffPanel(diff);
+    expect(emptyDiff.summaryLabel).toBe("Run diff metric summary");
+    expect(emptyDiff.metrics[0]).toMatchObject({ label: "Net P&L delta", value: "+$1,200", tone: "success" });
+    expect(emptyDiff.metrics[1]).toMatchObject({ label: "Return delta", value: "+1.00%", tone: "success" });
+    expect(emptyDiff.metrics[2]).toMatchObject({ label: "Fill delta", value: "+5", tone: "success" });
+    expect(emptyDiff.hasPositionChanges).toBe(false);
+    expect(emptyDiff.hasParameterChanges).toBe(false);
+    expect(emptyDiff.positionSectionLabel).toBe("0 position changes returned");
+    expect(emptyDiff.parameterSectionLabel).toBe("0 parameter changes returned");
     expect(emptyDiff.positionEmptyText).toBe("No position changes returned for this diff.");
     expect(emptyDiff.parameterEmptyText).toBe("No parameter changes returned for this diff.");
 
@@ -262,6 +270,33 @@ describe("research-screen view model", () => {
     expect(detail.summaryRows).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
     expect(detail.notesText).toBe("No operator notes were recorded for this run.");
     expect(detail.closeButtonAriaLabel).toBe("Close Mean Reversion FX run detail");
+  });
+
+  it("derives accessible diff rows for position and parameter changes", () => {
+    const panel = buildDiffPanel({
+      ...diff,
+      addedPositions: [
+        { symbol: "AAPL", baseQuantity: 0, targetQuantity: 100, basePnl: 0, targetPnl: 250, changeType: "Added" }
+      ],
+      parameterChanges: [{ key: "lookback", baseValue: "20", targetValue: "30" }]
+    });
+
+    expect(panel.ariaLabel).toBe("Strategy run diff for Mean Reversion FX and Index Momentum");
+    expect(panel.hasPositionChanges).toBe(true);
+    expect(panel.positionChanges[0]).toMatchObject({
+      symbolText: "AAPL",
+      changeTypeText: "Added",
+      quantityText: "Qty +100",
+      pnlText: "P&L +$250",
+      badgeVariant: "success",
+      ariaLabel: "AAPL Added. Qty +100. P&L +$250."
+    });
+    expect(panel.hasParameterChanges).toBe(true);
+    expect(panel.parameterChanges[0]).toMatchObject({
+      key: "lookback",
+      valueText: "20 -> 30",
+      ariaLabel: "lookback changed from 20 to 30."
+    });
   });
 
   it("keeps run detail keyboard-close decisions testable outside the view", () => {

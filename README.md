@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into a cohesive web-first operator product across research, trading, data operations, governance, and fund-operations workflows.
+Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into an evidence-backed investment operations product: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports in one explainable chain.
 
 > **Web UI active direction:** New operator UI development is focused on `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets. `src/Meridian.Wpf/` is retained for compatibility, regression fixes, and shared-contract support rather than new desktop-first feature work.
 
@@ -10,8 +10,7 @@ Meridian is a .NET 10 fund-management and trading-platform codebase in active de
 - [Project Roadmap](docs/status/ROADMAP.md)
 - [Feature Inventory](docs/status/FEATURE_INVENTORY.md)
 - [Improvements Tracker](docs/status/IMPROVEMENTS.md)
-- [Trading Workstation Migration Blueprint](docs/plans/trading-workstation-migration-blueprint.md)
-- [Governance and Fund Operations Blueprint](docs/plans/governance-fund-ops-blueprint.md)
+- [Evidence-Backed Investment Operations Plan](docs/plans/evidence-backed-investment-operations-plan.md)
 - [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
 
 ## Current Product Direction
@@ -166,9 +165,10 @@ Use these documents together when planning or implementing new work:
 
 - [docs/status/ROADMAP_COMBINED.md](docs/status/ROADMAP_COMBINED.md) for the shortest roadmap and target-state summary
 - [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: Wave 1 provider confidence and checkpoint evidence, Wave 2 paper-trading cockpit hardening, Wave 3 shared run / portfolio / ledger continuity, and Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
+- [docs/plans/evidence-backed-investment-operations-plan.md](docs/plans/evidence-backed-investment-operations-plan.md) for the product-category filter, commercial differentiation bets, sequencing rule, and archive-placement rule
 - [docs/plans/meridian-6-week-roadmap.md](docs/plans/meridian-6-week-roadmap.md) for the current time-boxed Waves 1-4 execution slice
 - [docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 provider-confidence and checkpoint-evidence gate
-- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model delivery shape
+- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model implementation shape; the evidence-backed investment-operations plan supersedes older generic workstation positioning
 - [docs/plans/governance-fund-ops-blueprint.md](docs/plans/governance-fund-ops-blueprint.md) for Wave 4 governance and fund-operations depth on top of the delivered Security Master baseline
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
 - [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes

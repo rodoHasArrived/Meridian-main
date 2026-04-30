@@ -1,6 +1,6 @@
 # Workstation Sprint 1 Implementation Backlog
 
-Reference blueprint: `docs/plans/workstation-release-readiness-blueprint.md`
+Reference blueprint: `archive/docs/plans/workstation-release-readiness-blueprint.md`
 
 > **Historical note (2026-04-09):** This backlog targets the retired browser workstation shell. Preserve it as historical implementation context only; do not treat the `src/Meridian.Ui/dashboard` tasks here as live delivery work.
 

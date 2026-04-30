@@ -62,6 +62,32 @@ class CentralPackageVersionTests(unittest.TestCase):
                 self.assertEqual(self.versions[package], "$(QuantConnectLeanVersion)")
                 self.assertNotEqual(self.versions[package], "2.5.17677")
 
+    def test_aspnet_test_host_has_central_pin(self) -> None:
+        self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "9.0.15")
+        self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "9.0.15")
+
+    def test_all_project_package_references_have_central_versions(self) -> None:
+        missing: list[str] = []
+
+        for project_path in sorted(REPO_ROOT.glob("**/*.*proj")):
+            if any(part in {"bin", "obj", "node_modules", ".git"} for part in project_path.parts):
+                continue
+
+            root = ET.parse(project_path).getroot()
+            for reference in root.findall(".//PackageReference"):
+                package = reference.attrib.get("Include")
+                if not package:
+                    continue
+
+                if reference.attrib.get("Version") or reference.find("Version") is not None:
+                    continue
+
+                if package not in self.versions:
+                    relative_path = project_path.relative_to(REPO_ROOT).as_posix()
+                    missing.append(f"{relative_path}: {package}")
+
+        self.assertEqual([], missing)
+
 
 if __name__ == "__main__":
     unittest.main()

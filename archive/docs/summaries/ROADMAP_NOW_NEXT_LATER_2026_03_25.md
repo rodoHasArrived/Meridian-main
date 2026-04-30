@@ -1,262 +1,207 @@
-# Meridian — Now / Next / Later Roadmap
+# Meridian - Now / Next / Later Roadmap
 
-**Generated:** 2026-04-03
-**Format:** Now / Next / Later
-**Basis:** ROADMAP.md + FEATURE_INVENTORY.md + production-status.md + workstation/governance blueprints (2026-04-03)
-**Change from prior update (2026-03-31):** Marks WPF workstation shell modernization items as complete (Fluent theme, SVG icons, candlestick charting, zero-API-key startup, workflow guide, screenshot CI). Adds Phase 1.5 preferred/convertible equity domain extension to the Later optional wave.
+**Generated:** 2026-03-25
+**Refreshed:** 2026-04-28
+**Format:** Now / Next / Later compatibility view
+**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, signed DK1 provider-validation evidence, packet-bound DK1 sign-off validation, cockpit readiness projection, stable operator work-item IDs, stable route-aware run review-packet work items now surfaced through the operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata, initial operator-inbox endpoint evidence with route-aware account-scoped WPF shell queue-button consumption and shell-context attention cues, Position Blotter selection review/action-readiness evidence, BatchBacktest results empty guidance, Trading Hours session-briefing evidence, OrderBook order-flow posture evidence, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Trading shared-work-item attention handling, Data Operations hero, Provider Health posture, System Health triage evidence, Notification Center filter-recovery evidence, Activity Log triage/export/clear evidence, Watchlist posture and pinned-first display evidence, Messaging Hub delivery-posture/refresh-recency evidence, StrategyRuns filter-recovery evidence, Security Master runtime/search recovery evidence, Fund Accounts operator and balance-evidence briefing evidence, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, hardened WPF screenshot/manual evidence capture, demo-data fixture semantics, and active workstation/governance plans as of 2026-04-28
+**Status:** Refreshed compatibility view. `ROADMAP.md` and `PROGRAM_STATE.md` remain the canonical wave and status sources.
+
+This document preserves the older Now / Next / Later shape for quick reading, but it no longer defines a separate roadmap. The active roadmap is the Wave 1-6 model in [`ROADMAP.md`](ROADMAP.md), with status labels and target dates sourced from [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
 
 ---
 
 ## How to Read This
 
 | Horizon | Meaning |
-|---------|---------|
-| **Now** | Active delivery — in flight, blocking operator value |
-| **Next** | Committed and sequenced — starts when Now items clear their exit gates |
-| **Later** | Directionally committed — not yet scheduled; requires stable platform foundation |
+| --------- | --------- |
+| **Now** | Active delivery or active maintenance that directly supports core operator-readiness |
+| **Next** | Sequenced work that follows the Wave 2-4 operator-readiness path |
+| **Later** | Optional or later-wave work that should not distract from the current gates |
+
+---
+
+## Current Program State
+
+| Wave | Status | Current meaning |
+| --- | --- | --- |
+| Wave 1 | Done | Closed provider-confidence, checkpoint, and Parquet evidence gate; keep synchronized through the matrix, validation script, DK1 sample-set evidence, the signed 2026-04-27 date-stamped parity packet, and valid packet-bound sign-off evidence. |
+| Wave 2 | In Progress | Harden the existing paper-trading cockpit into a dependable operator workflow. |
+| Wave 3 | In Progress | Make shared run, portfolio, ledger, cash-flow, and reconciliation continuity feel like one product model. |
+| Wave 4 | In Progress | Productize governance and fund operations on top of the delivered Security Master baseline. |
+| Wave 5 | Planned | Unify native and Lean backtesting into one Backtest Studio after the shared model is stable enough. |
+| Wave 6 | Planned | Expand controlled live integration readiness after trust and paper-workflow gates are materially closed. |
 
 ---
 
 ## Now
 
-### 1. Provider Reliability and Data Confidence *(Wave 1 — active)*
+### 1. Wave 1 Trust-Gate Maintenance and DK1 Pilot Parity
 
-The platform's downstream value depends on trustworthy data. Operator confidence in backtesting and execution depends on provder correctness — nothing in Next ships with confidence until this gate closes.
-
-**Delivery scope:**
-
-- Polygon replay coverage across feeds and edge cases
-- IB runtime/bootstrap validation against real vendor surfaces
-- NYSE shared-lifecycle depth coverage
-- StockSharp connector examples and validated adapters
-- Backfill checkpoint reliability and gap detection across providers and date ranges
-- Parquet sink flush-path hardening and ADR-014 cleanup for L2 snapshot persistence
-- NYSE transport hardening: `HttpClientFactory` alignment and cancellation-safe websocket send/resubscribe flows
-
-**Exit gate:** Every major provider has documented replay/runtime evidence and passes its validation suite.
-
----
-
-### 2. Paper Trading Cockpit *(Wave 2 — in progress)*
-
-The paper trading gateway and brokerage adapter framework are implemented. The gap is making them visible and usable through the web dashboard with a clear path from backtest to paper. The REST endpoints were wired in March 2026; the remaining work is the dashboard UI surfaces.
+Wave 1 is no longer an open broad provider push. The active gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
 
 **Delivery scope:**
 
-- Web dashboard: live positions, open orders, fills, P&L, risk state panels — wired to brokerage gateways
-- `Backtest → Paper` promotion: explicit lifecycle step, audit trail, safety gate
-- Paper session persistence and replay
-- Brokerage gateway cockpit integration (Alpaca, IB, StockSharp adapters are implemented)
+- keep Alpaca and Yahoo repo-closed through executable test evidence
+- keep Robinhood explicitly bounded by broker-session runtime evidence regenerated or attached for the review run
+- keep Polygon, Interactive Brokers, NYSE, and StockSharp outside the active Wave 1 closure claim unless the matrix is intentionally widened
+- keep checkpoint reliability and Parquet L2 flush behavior tied to passing repo tests
+- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `scripts/dev/prepare-dk1-operator-signoff.ps1`, `provider-validation-matrix.md`, generated validation summaries, date-stamped parity packets, packet-bound sign-off templates, the DK1 pilot parity runbook, and the cockpit readiness projection synchronized around the emitted `pilotReplaySampleSet`
+- keep the WPF Data Operations hero and Provider Health posture briefing aligned to shared provider, backfill, storage, session, and export state so they support operator handoffs without becoming separate readiness sources
 
-**Exit gate:** A strategy can be researched in backtest and promoted to paper trading through one connected workflow in the web dashboard.
+**Exit gate:** The matrix, roadmap, validation script output, DK1 runbook, generated parity packet, packet-bound sign-off template, dashboard, and operator sign-off all describe the same active provider set and pilot replay/sample contract.
 
 ---
 
-### 3. Native Desktop Workstation Refresh *(active — shell modernization complete, page-level work ongoing)*
+### 2. Wave 2 Paper-Trading Cockpit Hardening
 
-The WPF workstation shell has been substantially modernized. The focus now shifts to page-level workflow redesign and MVVM extraction.
+The execution, paper-session, promotion, risk, and brokerage seams are already in code. The WPF Trading shell also has a desk briefing hero that routes context-required, replay-mismatch, replay-stale, controls-blocked, paper-review, and live-oversight states from shared readiness inputs. The current gap is still operator dependability: restart safety, replay confidence and freshness, audit visibility, and promotion review clarity.
 
-**Completed (2026-04-03):**
+**Delivery scope:**
 
-- ✅ Native Fluent theme via `ThemeMode="System"` in `App.xaml` (PR #524)
-- ✅ SVG icon set — Segoe MDL2 Assets glyphs replacing emoji icons across all pages (PR #512)
-- ✅ Candlestick charting — LiveCharts2 candlestick chart on Charting page (PR #522)
-- ✅ Zero-API-key startup — Synthetic provider default when no credentials are present (PR #513)
-- ✅ Workflow guide (`docs/WORKFLOW_GUIDE.md`) with live UI screenshots (PR #511)
-- ✅ CI: Refresh UI Screenshots GitHub Action (PR #515)
-- ✅ Route and health endpoint reliability — duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
+- harden positions, orders, fills, sessions, replay, risk, and promotion flows already exposed through `/api/execution/*` and `/api/promotion/*`
+- keep `/api/workstation/trading/readiness` as the shared acceptance contract for paper-session state, replay consistency and freshness, execution controls, recent risk/control audit evidence, missing-field explainability warnings, promotion checklist state, brokerage-sync posture, and stable operator work items; use `/api/workstation/operator/inbox` plus the WPF shell queue button as the initial shared aggregation, active-account scoping, and route-aware navigation contract for readiness, latest-run review-packet blockers, Account Portfolio brokerage-sync, Security Master, and reconciliation work items while end-to-end workflow acceptance remains open
+- use the local replay-audit metadata slice for durable readiness reconstruction of replay consistency, compared evidence counts, timestamps, primary mismatch reason, and stale replay coverage after active-session fill/order/ledger counts diverge
+- keep the Trading desk briefing hero and Position Blotter selection-review rail aligned to the shared active-run, workflow-summary, and operator-readiness lane instead of treating them as separate readiness sources
+- keep `Backtest -> Paper` explicit, auditable, and reconstructable after restart
+- preserve operator rationale and blocking reasons for approvals and rejections
+- tie cockpit readiness to DK1 trust evidence instead of page count
 
-**Remaining open scope:**
+**Exit gate:** An operator can create, restore, verify, close, replay, and review a paper session with promotion evidence visible from one coherent workflow.
 
-- Redesign high-traffic workflow pages: Live Data, Provider, Backfill, and Data Quality for clearer operator use
-- Continue MVVM extraction where pages still depend heavily on code-behind orchestration
+---
 
-**Exit gate:** The desktop workstation feels coherent and actively maintained across its core operator pages, not just present in the solution.
+### 3. Wave 3 Shared Run / Portfolio / Ledger Continuity
+
+The shared run, portfolio, ledger, cash-flow, and reconciliation services exist. The product work is to make them the default cross-workspace system of record. The WPF Research shell now has a desk briefing hero that routes selected runs into run-detail, portfolio, and paper-promotion review handoffs from shared workstation data, and the run review packet now emits stable route-aware work items for promotion, Security Master, continuity, and brokerage blockers, so this is support evidence for Wave 3 rather than a separate research roadmap.
+
+**Delivery scope:**
+
+- deepen run history across backtest and paper workflows
+- connect fills, attribution, positions, ledger, cash-flow, and reconciliation through one run-centered model
+- keep WPF shell context, related-workflow routing, Research run/promotion handoffs, and API summaries aligned to the same shared seams
+- keep fallback/fixture payloads clearly separate from readiness claims
+
+**Exit gate:** Research, Trading, and Governance drill-ins use the same run-continuity seam and show explicit lineage, warning, and handoff context.
+
+---
+
+### 4. Wave 4 Governance and Fund-Operations Productization
+
+Security Master is now a delivered baseline, not a future standalone wave. Wave 4 is the productization work on top of that baseline.
+
+**Delivery scope:**
+
+- deepen account/entity, strategy-structure, multi-ledger, cash-flow, reconciliation, and report-pack workflows
+- keep Security Master as the authoritative instrument source for governance DTOs and services
+- keep the Fund Accounts operator brief consuming shared fund-account, provider-route, retained balance-history, and shared-data-access evidence while broader account/entity casework remains open
+- extend the delivered file-backed reconciliation break queue and governed report-pack artifact path into full durable casework, calibrated exception routing, and publishable governed outputs
+- reuse shared run, portfolio, ledger, export, and Security Master reference seams instead of creating a parallel governance stack
+
+**Exit gate:** Governance behaves like an operator workflow with durable queues, review surfaces, provenance, and publishable outputs.
+
+---
+
+### 5. WPF Workflow-First Validation
+
+The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, shell-context strips, the Trading desk briefing hero, Trading Hours live-risk/pre-market/after-hours/closed-planning briefing states, OrderBook order-flow posture, Position Blotter selection review/action readiness, the Research desk briefing hero, the Data Operations desk briefing hero, Provider Health posture briefing, System Health triage briefing, Notification Center filter recovery, Activity Log triage strip with export/clear command state, Watchlist posture strip with pinned-first card ordering, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation, BatchBacktest results empty guidance, QuantScript local run-history handoffs, Security Master runtime/search recovery, Fund Accounts operator and balance-evidence briefing, route-aware account-scoped operator queue button state with shell-context attention cues, neutral demo-data fixture cues, single-instance launch-argument forwarding, and shell/navigation smoke coverage.
+
+RunCashFlow now also contributes shared-run support evidence by replacing blank cash ladder/event grids with selected-run, missing-run, no-event, and loaded-state guidance. Treat it as continuity support for retained run evidence, not as completion of governance-wide cash-flow modeling.
+
+The same baseline now includes Welcome readiness progress for first-run orientation, Storage archive posture for daily growth/capacity/last-scan state, Storage preview scope/guidance for archive-path decisions, compact shared deep-page command chrome that keeps related-workflow and trust-state cues nearby, actionable shell-context attention details, provider-degradation workflow summaries that route directly to `ProviderHealth`, and Trading hero attention handling for warning or critical shared work items. Keep those in the Now bucket as validation support, not readiness completion.
+
+This is a supporting track inside Waves 2-4, not a separate roadmap wave.
+
+**Delivery scope:**
+
+- validate the delivered shell/navigation baseline against high-traffic Wave 2-4 workflows
+- keep scripted workflow launch, screenshot confirmation, manual screenshot catalog capture, and fixture/demo mode aligned to `ResearchShell`, `TradingShell`, `DataOperationsShell`, and `GovernanceShell`
+- keep page-body harmonization focused on cockpit, shared-model, and governance value
+- continue MVVM extraction where it removes active workflow friction
+- avoid widening the shell into a parallel workstation model
+
+**Exit gate:** The desktop shell improves active operator workflows and stays aligned with the same shared read-model seams used by the retained workstation APIs.
 
 ---
 
 ## Next
 
-### 4. Security Master Productization *(new initiative)*
+### 6. Wave 5 Backtest Studio Unification
 
-**Background and rationale:**
-
-The Security Master platform baseline is already present in code: contracts, query/services, PostgreSQL storage, F# domain modules, corporate actions, trading parameters, bulk ingest, conflict resolution endpoints, and a WPF browser. The remaining gap is the shared operator layer.
-
-Today, Security Master is still underrepresented in the web dashboard and broader workstation workflows. The next step is not "build Security Master" but "make Security Master visible and useful across portfolio, ledger, reconciliation, and governance flows."
+Native backtesting and Lean integration both exist, but unifying them should follow stronger Wave 2-4 continuity.
 
 **Delivery scope:**
 
-- Security search panel in the web dashboard: search by ticker, FIGI, CUSIP, ISIN; display classification, economic definition, identifiers, provider mapping
-- Classification browser: view and navigate the security classification hierarchy
-- Economic definition editor: view and edit economic definition fields (coupon, maturity, strike, put/call, etc.) for supported asset classes
-- Cross-provider reconciliation surface: surface provider mapping conflicts and gaps
-- Provider coverage metrics: which symbols have Security Master entries vs. which are streaming without backing definitions
-- Workstation-facing enrichment so portfolio, ledger, and reconciliation DTOs consume one authoritative instrument layer
+- unify native and Lean result models
+- improve run comparison and diff workflows
+- broaden fill-model realism where it materially affects operator trust
+- keep research workflow improvements tied to shared run history and promotion readiness
 
-**Dependencies:**
-
-- Stable provider registry (Now → 1) ensures Security Master entries can be cross-referenced against active providers
-- Web dashboard cockpit infrastructure (Now → 2) establishes the component and layout patterns these panels follow
-
-**Exit gate:** An operator can search for a security, inspect its classification and economic definition, and see which providers have conflicting or missing mappings through the dashboard and shared workstation flows with no code required.
+**Exit gate:** Backtesting feels like one coherent workflow regardless of engine.
 
 ---
 
-### 5. Governance and Fund-Operations Foundation
+### 7. Wave 6 Controlled Live Integration Readiness
 
-The active planning set now treats governance as a connected delivery track rather than a distant optional add-on. Shared run, portfolio, ledger, reconciliation, direct-lending, and export seams already exist; the gap is turning them into explicit operator workflows.
-
-**Delivery scope:**
-
-- Multi-ledger grouping, selection, and consolidated trial-balance read paths
-- Cash-flow modeling and realized-vs-projected governance views
-- Reconciliation expansion from run-scoped history into explicit break queues and operator review flows
-- Governance quick actions and report-pack entry points built on the existing export stack
-
-**Exit gate:** Governance is represented by concrete operator workflows and shared DTOs, not only blueprints and backend services.
-
----
-
-### 6. Portfolio and Strategy Tracking Depth *(Wave 3)*
-
-Strengthen the portfolio read models and multi-run comparison so strategy research produces durable, comparable results.
+Live integration should follow validated provider evidence and a dependable paper workflow.
 
 **Delivery scope:**
 
-- Portfolio drill-ins: attribution by symbol, drawdown breakdown, trade-level analysis
-- Multi-run strategy comparison: overlay performance curves, compare metrics side-by-side
-- Run history covering paper and live-adjacent results, not only backtest runs
-- Ledger reconciliation surface in the web dashboard
+- validate at least one broader brokerage path against a real vendor surface
+- add execution audit trail and human approval controls fit for live-adjacent operation
+- define safe `Paper -> Live` promotion gates
+- formalize manual overrides, circuit breakers, and intervention flows
 
-**Exit gate:** Portfolio and strategy tracking are useful for iterative strategy development across multiple runs, not just single-run review.
-
----
-
-### 7. Backtest Studio Unification *(Wave 4)*
-
-Consolidate the native and Lean backtest experiences into one coherent workflow. The native engine and QuantConnect Lean integration are both operational; the gap is a unified UI and result model.
-
-**Delivery scope:**
-
-- Unified Backtest Studio spanning both engines: single entry point, consistent result model
-- Strategy comparison and run-diff tooling
-- Broader fill model coverage: partial fills, slippage, market impact
-- Backtest performance improvements for large historical windows
-
-**Exit gate:** Backtesting feels like one product whether using the native engine or Lean, with consistent result models and a shared comparison workflow.
+**Exit gate:** Meridian has a controlled, evidence-backed live-readiness story without overclaiming broad live-trading completion.
 
 ---
 
 ## Later
 
-### 7. QuantScript Research Environment *(Wave 7 — new initiative)*
+### 8. Optional Advanced Research and Scale
 
-**Background and rationale:**
+These tracks deepen Meridian's ceiling after the core workstation product is trustworthy and coherent.
 
-The QuantScript backend is already built: `RoslynScriptCompiler`, `ScriptRunner`, `QuantDataContext`, `BacktestProxy`, `DataProxy`, `StatisticsEngine`, `PortfolioBuilder`, `PriceSeries`, `TechnicalSeriesExtensions`, `EfficientFrontierConstraints`, `PlotQueue`, and `ScriptParamAttribute` are all present in `src/Meridian.QuantScript/`. The `QuantScriptPage` and `QuantScriptViewModel` exist in the WPF workstation. The gap is an integrated, operator-ready research surface connected to the live platform and native backtest engine.
-
-**Delivery scope:**
-
-- Polish the QuantScript editor surface (`QuantScriptPage`) in the WPF workstation: code editing, parameter binding, and plot output rendering via `PlotRenderBehavior`
-- Wire `QuantDataContext` to live historical and streaming data so scripts consume real platform data
-- Expose `BacktestProxy` from within scripts so iterative strategy exploration uses the native backtest engine directly
-- Script result export (JSONL/CSV/chart image) through the analysis export pipeline
-- Script library management: save, load, and version user scripts
-- Introductory example scripts demonstrating common research patterns (momentum, pairs, mean-reversion)
-
-**Exit gate:** An operator can write a research script in the QuantScript editor, run it against real platform data, and export or compare results — without leaving the workstation.
-
----
-
-### 8. Operator Observability Platform *(Wave 8 — new initiative)*
-
-**Background and rationale:**
-
-The monitoring backend is rich but its outputs are not surfaced to operators through a unified interface. `DataQualityMonitoringService`, `DataFreshnessSlaMonitor`, `AnomalyDetector`, `CompletenessScoreCalculator`, `CrossProviderComparisonService`, `GapAnalyzer`, `PrometheusMetrics`, `ProviderDegradationScorer`, `ProviderLatencyService`, `SpreadMonitor`, `SequenceErrorTracker`, and `AlertDispatcher` are all present in `src/Meridian.Application/Monitoring/`. Operators currently must inspect logs or wire custom queries to see this data. A unified dashboard surface makes the platform's health observable at a glance.
-
-**Delivery scope:**
-
-- Unified health dashboard in the web dashboard: provider status, SLA compliance, data quality scores, and alert state on one screen
-- SLA enforcement reporting: configurable thresholds, breach timelines, and provider-level accountability summaries
-- Alert management UI: view active alerts, acknowledge, configure suppression windows, and review alert history
-- Cross-provider comparison surface: symbol-level data completeness side-by-side across providers
-- Historical data quality trend charts: completeness scores, gap frequency, and latency histograms over time
-- Prometheus scrape endpoint documentation and a reference Grafana dashboard JSON shipped with the deployment assets
-
-**Exit gate:** An operator can open the observability dashboard, see the current health state of all providers and data streams, drill into an SLA breach, and configure alert thresholds — without inspecting logs or writing queries.
-
----
-
-### 9. Live Integration Readiness *(Wave 5)*
-
-The brokerage gateway framework (`IBrokerageGateway`, `BaseBrokerageGateway`) and provider-specific adapters (Alpaca, IB, StockSharp) are implemented. The remaining work is validating these adapters against live vendor surfaces and adding execution audit trail.
-
-**Delivery scope:**
-
-- Validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
-- Execution audit trail sufficient for live operations
-- Operator controls: circuit breakers, position limits, manual overrides
-- `Paper → Live` promotion gate using the existing brokerage gateway framework
-
-**Prerequisite:** Paper trading cockpit (Now → 2) must be complete and stable before live integration work begins. The gateway without a cockpit leaves operators with no visibility into live order state.
-
-**Exit gate:** At least one brokerage adapter is validated against a live vendor surface, with full audit trail and operator controls in place.
-
----
-
-### 10. Advanced Research and Scale *(Optional Wave)*
-
-Depth multipliers that require a stable platform foundation to deliver value. None of these are prerequisites for core operator value.
-
+- deeper QuantScript sample libraries and workflow integration
 - L3 inference and queue-aware execution simulation
-- Multi-instance collector coordination and horizontal scale-out
-- Phase 16 assembly-level performance optimizations
-- Broader WPF workstation coverage after the current active shell/page refresh stabilizes
-- WPF desktop app (code in `src/Meridian.Wpf/` - included in solution build and back in active development)
-- **Phase 1.5 — Preferred & Convertible Equity domain extension:** add `EquityClassification` discriminated union, `PreferredTerms`, `ConvertibleTerms`, and `LiquidationPreference` types to `src/Meridian.FSharp/Domain/SecurityMaster.fs`; update `EquityTerms` to include optional `Classification` field; add unit tests and update `CLAUDE.domain-naming.md`. *(Issue: `issues/phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md` — all acceptance criteria open)*
+- multi-instance coordination and distributed collector ownership
+- optional assembly/performance optimization work
+- preferred and convertible equity follow-ons after the active governance and shared-model lanes stabilize
 
 ---
 
-## Platform Release Gates
+## Core Operator-Readiness Gates
 
-Meridian can claim core-platform readiness when all of the following are true:
+Meridian can reasonably claim core operator-readiness when all four active gates are green:
 
-1. Every major provider has documented replay/runtime validation evidence
-2. Paper trading is exposed as a full cockpit in the web dashboard
-3. The `Backtest → Paper` promotion workflow is explicit and auditable
-4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
-5. Backfill checkpoint reliability is validated across providers and date ranges
-6. Security Master is operator-accessible via the web dashboard for search, classification, and provider reconciliation
-7. Platform health is observable via the Operator Observability Dashboard without requiring log inspection
+1. **Wave 1:** the active provider gate for Alpaca, Robinhood, and Yahoo is documented in executable suites plus generated runtime attachments for bounded scenarios, checkpoint and Parquet proof remain closed, and the Wave 1 validation script reproduces the offline gate.
+2. **Wave 2:** the workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
+3. **Wave 3:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
+4. **Wave 4:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts.
+
+Waves 5 and 6 deepen the product afterward. They are not prerequisites for the core operator-ready baseline.
 
 ---
 
 ## Risks
 
-**Provider trust is a gating dependency.** Meridian should not overclaim operator readiness where replay/runtime evidence is still thin.
-
-**Paper trading cockpit must precede Paper → Live.** The gateway without a cockpit is incomplete operator tooling. Live integration work is blocked on cockpit completion.
-
-**Backfill reliability directly affects backtest quality.** Data gaps silently corrupt results — checkpoint and gap-detection hardening is not optional.
-
-**Storage-path shutdown safety is part of data trust.** A flush failure in `ParquetStorageSink` undermines the same operator confidence that provider validation is supposed to establish.
-
-**NYSE cancellation gaps remain active reliability debt.** Transport paths that ignore caller cancellation can weaken graceful shutdown and reconnect behavior.
-
-**Security Master productization competes for dashboard resources.** The cockpit and Security Master panels share the same React dashboard. Sequencing them (cockpit first) avoids UI layout conflicts and lets Security Master follow established component patterns.
-
-**QuantScript editor depends on stable backtest engine.** The `BacktestProxy` integration inside QuantScript scripts requires a stable and well-tested native engine; Wave 4 (Backtest Studio) should complete before QuantScript goes into final polish.
-
-**Test coverage must grow with the platform.** Strategy correctness, fill model edge cases, and provider adapters need explicit regression coverage before live integration.
+- Provider language can drift back toward broad live-readiness unless the Wave 1 matrix stays explicit.
+- Cockpit polish can outrun session, replay, and promotion audit evidence.
+- WPF shell work can become a parallel UX program unless it is judged by Wave 2-4 workflow value.
+- Governance can sprawl if it does not stay anchored to Security Master, shared read models, and durable casework/output seams.
+- Live-readiness claims should stay downstream of proven paper-workflow and provider-trust gates.
 
 ---
 
 ## Reference Documents
 
-- [`ROADMAP.md`](ROADMAP.md) — Prior wave-structured roadmap (source for this reorganisation)
-- [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) — Current-vs-target capability status
-- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — Normalised backlog
-- [`EVALUATIONS_AND_AUDITS.md`](EVALUATIONS_AND_AUDITS.md)
+- [`ROADMAP.md`](ROADMAP.md)
+- [`PROGRAM_STATE.md`](PROGRAM_STATE.md)
+- [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md)
+- [`production-status.md`](production-status.md)
+- [`provider-validation-matrix.md`](provider-validation-matrix.md)
+- [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md)
+- [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md)
+- [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md)
+- [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md)
 - [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md)
 - [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md)

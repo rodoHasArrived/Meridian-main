@@ -1,15 +1,15 @@
 # Meridian - System Architecture
 
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-29
 
-Meridian is a modular, event-driven trading platform that is being productized as a comprehensive fund management system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, and desktop workflows. The current roadmap extends that baseline into a connected front-, middle-, and back-office product with stronger governance and fund-operations capabilities.
+Meridian is a modular, event-driven trading platform that is being productized as an evidence-backed investment operations system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, retained desktop workflows, and a browser dashboard. The current roadmap extends that baseline into a connected product where trusted data, research, paper validation, books, reconciliation, approvals, and governed reports share one evidence chain.
 
 ## Current Direction
 
 The architecture now supports two connected product tracks:
 
-1. **Front-office workstation delivery**
-   Research, Trading, Data Operations, and Governance workspaces backed by shared run, portfolio, and ledger models.
+1. **Evidence-backed operator delivery**
+   `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting` workflows backed by shared run, portfolio, ledger, readiness, and evidence models.
 2. **Middle- and back-office delivery**
    Security Master productization, account/entity support, multi-ledger views, trial balance, cash-flow modeling, reconciliation, investor reporting, and governed report generation.
 
@@ -27,7 +27,8 @@ This is an expansion of the existing architecture, not a replacement of it.
 
 ### Presentation layer
 
-- WPF desktop application
+- browser workstation dashboard
+- WPF desktop application retained for compatibility and regression support
 - desktop-local API host and retained workstation API surfaces
 - CLI and operator tooling
 
@@ -104,6 +105,7 @@ These capabilities are intended to live inside the existing Governance workspace
 ## Related Documents
 
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
+- [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
 - [Project Roadmap](../status/ROADMAP.md)
 - [Layer Boundaries](layer-boundaries.md)

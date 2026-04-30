@@ -23,6 +23,8 @@ export interface ReadinessConsoleMetric {
   value: string;
   detail: string;
   level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  statusAriaLabel: string;
 }
 
 export interface ReadinessConsoleApiSource {
@@ -31,6 +33,8 @@ export interface ReadinessConsoleApiSource {
   endpoint: string;
   status: string;
   level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  statusAriaLabel: string;
 }
 
 export interface ReadinessConsoleRow {
@@ -40,7 +44,31 @@ export interface ReadinessConsoleRow {
   detail: string;
   meta: string;
   level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  statusAriaLabel: string;
+  detailId: string;
   action?: ReadinessConsoleRowAction | null;
+}
+
+type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel">;
+type ReadinessConsoleApiSourceBase = Omit<ReadinessConsoleApiSource, "ariaLabel" | "statusAriaLabel">;
+type ReadinessConsoleRowBase = Omit<ReadinessConsoleRow, "ariaLabel" | "statusAriaLabel" | "detailId">;
+
+export type ReadinessConsolePanelId =
+  | "latest-runs"
+  | "active-paper-session"
+  | "provider-trust"
+  | "reconciliation-breaks"
+  | "promotion-blockers"
+  | "governance-report-packs";
+
+export interface ReadinessConsolePanel {
+  id: ReadinessConsolePanelId;
+  title: string;
+  emptyText: string;
+  ariaLabel: string;
+  listLabel: string;
+  rows: ReadinessConsoleRow[];
 }
 
 export interface ReadinessConsoleRowAction {
@@ -62,16 +90,21 @@ export interface ReadinessConsoleState {
   inboxLoadingLabel: string | null;
   inboxErrorText: string | null;
   metrics: ReadinessConsoleMetric[];
+  metricsLabel: string;
   apiSources: ReadinessConsoleApiSource[];
+  apiSourcesLabel: string;
   latestRuns: ReadinessConsoleRow[];
   activeSessionFacts: ReadinessConsoleRow[];
   providerTrustRows: ReadinessConsoleRow[];
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
   reportPackFacts: ReadinessConsoleRow[];
+  panels: ReadinessConsolePanel[];
   workItems: ReadinessConsoleRow[];
   workItemsSummary: string;
   workItemsOverflowText: string | null;
+  workItemsRegionLabel: string;
+  workItemsListLabel: string;
 }
 
 export interface BuildOperatorReadinessConsoleStateOptions {
@@ -150,22 +183,22 @@ export function buildOperatorReadinessConsoleState({
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = trading?.readiness ?? null;
   const workItems = operatorInbox?.items ?? readiness?.workItems ?? [];
-  const latestRuns = buildLatestRunRows(research?.runs ?? []);
-  const activeSessionFacts = buildActiveSessionFacts(readiness);
-  const providerTrustRows = buildProviderTrustRows(readiness, dataOperations?.providers ?? []);
-  const reconciliationRows = buildReconciliationRows(governance);
-  const promotionRows = buildPromotionRows(readiness, workItems);
-  const reportPackFacts = buildReportPackFacts(governance);
+  const latestRuns = withRowPresentation(buildLatestRunRows(research?.runs ?? []), "latest-runs");
+  const activeSessionFacts = withRowPresentation(buildActiveSessionFacts(readiness), "active-session");
+  const providerTrustRows = withRowPresentation(buildProviderTrustRows(readiness, dataOperations?.providers ?? []), "provider-trust");
+  const reconciliationRows = withRowPresentation(buildReconciliationRows(governance), "reconciliation");
+  const promotionRows = withRowPresentation(buildPromotionRows(readiness, workItems), "promotion");
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
-  const workItemRows = buildWorkItemRows(prioritizedWorkItems);
-  const metrics = buildMetrics({
+  const reportPackFacts = withRowPresentation(buildReportPackFacts(governance), "report-pack");
+  const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
+  const metrics = withMetricPresentation(buildMetrics({
     latestRuns,
     readiness,
     providerTrustRows,
     reconciliationRows,
     promotionRows,
     governance
-  });
+  }));
   const overallLevel = determineOverallLevel({
     readiness,
     operatorInbox,
@@ -201,7 +234,8 @@ export function buildOperatorReadinessConsoleState({
     inboxLoadingLabel: inboxLoading ? "Loading operator inbox..." : null,
     inboxErrorText: inboxError,
     metrics,
-    apiSources: buildApiSources({
+    metricsLabel: "Operator readiness metrics",
+    apiSources: withApiSourcePresentation(buildApiSources({
       research,
       trading,
       dataOperations,
@@ -209,20 +243,132 @@ export function buildOperatorReadinessConsoleState({
       operatorInbox,
       inboxLoading,
       inboxError
-    }),
+    })),
+    apiSourcesLabel: "Shared readiness API sources",
     latestRuns,
     activeSessionFacts,
     providerTrustRows,
     reconciliationRows,
     promotionRows,
     reportPackFacts,
+    panels: buildConsolePanels({
+      latestRuns,
+      activeSessionFacts,
+      providerTrustRows,
+      reconciliationRows,
+      promotionRows,
+      reportPackFacts
+    }),
     workItems: workItemRows,
     workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
-    workItemsOverflowText: buildWorkItemsOverflowText(prioritizedWorkItems.length, workItemRows.length)
+    workItemsOverflowText: buildWorkItemsOverflowText(prioritizedWorkItems.length, workItemRows.length),
+    workItemsRegionLabel: "Operator inbox review work items",
+    workItemsListLabel: "Prioritized operator work items"
   };
 }
 
-function buildLatestRunRows(runs: ResearchRunRecord[]): ReadinessConsoleRow[] {
+function withMetricPresentation(metrics: ReadinessConsoleMetricBase[]): ReadinessConsoleMetric[] {
+  return metrics.map((metric) => ({
+    ...metric,
+    ariaLabel: `${metric.label}: ${metric.value}. ${metric.detail}`,
+    statusAriaLabel: `${metric.label} status ${formatLevelText(metric.level)}`
+  }));
+}
+
+function withApiSourcePresentation(sources: ReadinessConsoleApiSourceBase[]): ReadinessConsoleApiSource[] {
+  return sources.map((source) => ({
+    ...source,
+    ariaLabel: `${source.label}: ${source.status}. Endpoint ${source.endpoint}`,
+    statusAriaLabel: `${source.label} status ${source.status}`
+  }));
+}
+
+function withRowPresentation(rows: ReadinessConsoleRowBase[], collectionId: string): ReadinessConsoleRow[] {
+  return rows.map((row) => ({
+    ...row,
+    ariaLabel: `${row.label}: ${row.value}. ${row.detail} ${row.meta}`,
+    statusAriaLabel: `${row.label} status ${row.value}`,
+    detailId: `readiness-row-${slugifyId(collectionId)}-${slugifyId(row.id)}-detail`
+  }));
+}
+
+function buildConsolePanels({
+  latestRuns,
+  activeSessionFacts,
+  providerTrustRows,
+  reconciliationRows,
+  promotionRows,
+  reportPackFacts
+}: {
+  latestRuns: ReadinessConsoleRow[];
+  activeSessionFacts: ReadinessConsoleRow[];
+  providerTrustRows: ReadinessConsoleRow[];
+  reconciliationRows: ReadinessConsoleRow[];
+  promotionRows: ReadinessConsoleRow[];
+  reportPackFacts: ReadinessConsoleRow[];
+}): ReadinessConsolePanel[] {
+  return [
+    buildConsolePanel({
+      id: "latest-runs",
+      title: "Latest runs",
+      emptyText: "No Strategy runs loaded.",
+      rows: latestRuns
+    }),
+    buildConsolePanel({
+      id: "active-paper-session",
+      title: "Active paper session",
+      emptyText: "No active paper session loaded.",
+      rows: activeSessionFacts
+    }),
+    buildConsolePanel({
+      id: "provider-trust",
+      title: "Provider trust",
+      emptyText: "No provider trust rows loaded.",
+      rows: providerTrustRows
+    }),
+    buildConsolePanel({
+      id: "reconciliation-breaks",
+      title: "Reconciliation breaks",
+      emptyText: "No open or in-review reconciliation breaks.",
+      rows: reconciliationRows
+    }),
+    buildConsolePanel({
+      id: "promotion-blockers",
+      title: "Promotion blockers",
+      emptyText: "No promotion blockers surfaced by readiness.",
+      rows: promotionRows
+    }),
+    buildConsolePanel({
+      id: "governance-report-packs",
+      title: "Governance report packs",
+      emptyText: "No reporting readiness payload loaded.",
+      rows: reportPackFacts
+    })
+  ];
+}
+
+function buildConsolePanel({
+  id,
+  title,
+  emptyText,
+  rows
+}: {
+  id: ReadinessConsolePanelId;
+  title: string;
+  emptyText: string;
+  rows: ReadinessConsoleRow[];
+}): ReadinessConsolePanel {
+  return {
+    id,
+    title,
+    emptyText,
+    ariaLabel: `${title} readiness evidence`,
+    listLabel: `${title} rows`,
+    rows
+  };
+}
+
+function buildLatestRunRows(runs: ResearchRunRecord[]): ReadinessConsoleRowBase[] {
   return runs.slice(0, 5).map((run) => ({
     id: run.id,
     label: run.strategyName,
@@ -233,7 +379,7 @@ function buildLatestRunRows(runs: ResearchRunRecord[]): ReadinessConsoleRow[] {
   }));
 }
 
-function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): ReadinessConsoleRow[] {
+function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): ReadinessConsoleRowBase[] {
   const session = readiness?.activeSession ?? null;
   if (!session) {
     return [{
@@ -279,8 +425,8 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
 function buildProviderTrustRows(
   readiness: TradingOperatorReadiness | null,
   providers: DataOperationsProviderRecord[]
-): ReadinessConsoleRow[] {
-  const rows: ReadinessConsoleRow[] = [];
+): ReadinessConsoleRowBase[] {
+  const rows: ReadinessConsoleRowBase[] = [];
   const trustGate = readiness?.trustGate ?? null;
   if (trustGate) {
     rows.push({
@@ -320,7 +466,7 @@ function buildProviderTrustRows(
   return rows;
 }
 
-function buildBrokerageTrustRow(status: WorkstationBrokerageSyncStatus): ReadinessConsoleRow {
+function buildBrokerageTrustRow(status: WorkstationBrokerageSyncStatus): ReadinessConsoleRowBase {
   return {
     id: "brokerage-sync",
     label: "Brokerage sync",
@@ -335,7 +481,7 @@ function buildBrokerageTrustRow(status: WorkstationBrokerageSyncStatus): Readine
   };
 }
 
-function buildReconciliationRows(governance: GovernanceWorkspaceResponse | null): ReadinessConsoleRow[] {
+function buildReconciliationRows(governance: GovernanceWorkspaceResponse | null): ReadinessConsoleRowBase[] {
   const directBreaks = (governance?.breakQueue ?? [])
     .filter((item) => item.status === "Open" || item.status === "InReview")
     .slice(0, 5)
@@ -358,7 +504,7 @@ function buildReconciliationRows(governance: GovernanceWorkspaceResponse | null)
     }));
 }
 
-function buildBreakQueueRow(item: ReconciliationBreakQueueItem): ReadinessConsoleRow {
+function buildBreakQueueRow(item: ReconciliationBreakQueueItem): ReadinessConsoleRowBase {
   return {
     id: item.breakId,
     label: item.strategyName,
@@ -372,8 +518,8 @@ function buildBreakQueueRow(item: ReconciliationBreakQueueItem): ReadinessConsol
 function buildPromotionRows(
   readiness: TradingOperatorReadiness | null,
   workItems: OperatorWorkItem[]
-): ReadinessConsoleRow[] {
-  const rows: ReadinessConsoleRow[] = [];
+): ReadinessConsoleRowBase[] {
+  const rows: ReadinessConsoleRowBase[] = [];
   const promotion = readiness?.promotion ?? null;
 
   if (promotion?.requiresReview) {
@@ -399,7 +545,7 @@ function buildPromotionRows(
   return dedupeRows(rows).slice(0, 6);
 }
 
-function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRow {
+function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRowBase {
   return {
     id: `gate-${gate.gateId}`,
     label: gate.label,
@@ -410,7 +556,7 @@ function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRo
   };
 }
 
-function buildReportPackFacts(governance: GovernanceWorkspaceResponse | null): ReadinessConsoleRow[] {
+function buildReportPackFacts(governance: GovernanceWorkspaceResponse | null): ReadinessConsoleRowBase[] {
   const reporting = governance?.reporting ?? null;
   if (!reporting) {
     return [{
@@ -443,7 +589,7 @@ function buildReportPackFacts(governance: GovernanceWorkspaceResponse | null): R
   ];
 }
 
-function buildWorkItemRows(workItems: OperatorWorkItem[]): ReadinessConsoleRow[] {
+function buildWorkItemRows(workItems: OperatorWorkItem[]): ReadinessConsoleRowBase[] {
   return workItems.slice(0, 6).map((item) => buildWorkItemRow(item, true));
 }
 
@@ -466,7 +612,7 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
     .map(({ item }) => item);
 }
 
-function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRow {
+function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
 
   return {
@@ -616,7 +762,7 @@ function buildMetrics({
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
   governance: GovernanceWorkspaceResponse | null;
-}): ReadinessConsoleMetric[] {
+}): ReadinessConsoleMetricBase[] {
   const activeSession = readiness?.activeSession;
   const reportTargets = governance?.reporting.reportPackTargets.length ?? 0;
 
@@ -682,7 +828,7 @@ function buildApiSources({
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
-}): ReadinessConsoleApiSource[] {
+}): ReadinessConsoleApiSourceBase[] {
   return [
     {
       id: "trading-readiness",
@@ -825,7 +971,7 @@ function buildStatusAnnouncement(
   return `Operator readiness console ${overallLabel.toLowerCase()} as of ${asOf}.`;
 }
 
-function dedupeRows(rows: ReadinessConsoleRow[]): ReadinessConsoleRow[] {
+function dedupeRows(rows: ReadinessConsoleRowBase[]): ReadinessConsoleRowBase[] {
   const seen = new Set<string>();
   return rows.filter((row) => {
     if (seen.has(row.id)) {
@@ -839,6 +985,26 @@ function dedupeRows(rows: ReadinessConsoleRow[]): ReadinessConsoleRow[] {
 
 function formatReadinessStatusValue(status: string): string {
   return status === "ReviewRequired" ? "Review required" : status;
+}
+
+function formatLevelText(level: ReadinessConsoleLevel): string {
+  switch (level) {
+    case "ready":
+      return "Ready";
+    case "review":
+      return "Review";
+    case "blocked":
+      return "Blocked";
+    case "neutral":
+      return "Info";
+  }
+}
+
+function slugifyId(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "row";
 }
 
 function formatEffectiveOverallLabel(

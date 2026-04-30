@@ -17,6 +17,12 @@ const comparisonValueToneClass = {
   muted: "text-muted-foreground"
 } as const;
 
+const diffMetricToneClass = {
+  success: "text-success",
+  danger: "text-danger",
+  muted: "text-muted-foreground"
+} as const;
+
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
 
@@ -173,34 +179,69 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       )}
 
       {vm.showDiffPanel && (
-        <Card>
+        <Card role="region" aria-label={vm.diffPanel.ariaLabel}>
           <CardHeader>
             <CardTitle>{vm.diffPanel.title}</CardTitle>
             <CardDescription>{vm.diffPanel.description}</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-lg border border-border/70 p-4">
-              <div className="text-sm font-semibold">Position changes</div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {vm.diffPanel.positionChanges.length > 0 ? vm.diffPanel.positionChanges.map((item) => (
-                  <li key={item.key} className="font-mono">{item.text}</li>
+          <CardContent className="space-y-4">
+            {vm.diffPanel.metrics.length > 0 && (
+              <section aria-label={vm.diffPanel.summaryLabel} className="grid gap-3 sm:grid-cols-3">
+                {vm.diffPanel.metrics.map((metric) => (
+                  <div key={metric.id} role="group" aria-label={metric.ariaLabel} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
+                    <div className="eyebrow-label">{metric.label}</div>
+                    <div className={cn("mt-2 font-mono text-sm font-semibold", diffMetricToneClass[metric.tone])}>{metric.value}</div>
+                  </div>
+                ))}
+              </section>
+            )}
+            <div className="grid gap-4 md:grid-cols-2">
+              <section aria-label={vm.diffPanel.positionSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-semibold">Position changes</div>
+                  <Badge variant={vm.diffPanel.hasPositionChanges ? "outline" : "warning"}>
+                    {vm.diffPanel.positionChanges.length} rows
+                  </Badge>
+                </div>
+                <ul aria-label={vm.diffPanel.positionListLabel} className="mt-3 space-y-2 text-sm">
+                  {vm.diffPanel.hasPositionChanges ? vm.diffPanel.positionChanges.map((item) => (
+                    <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-mono font-semibold">{item.symbolText}</span>
+                        <Badge variant={item.badgeVariant}>{item.changeTypeText}</Badge>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground">
+                        <span>{item.quantityText}</span>
+                        <span>{item.pnlText}</span>
+                      </div>
+                    </li>
                 )) : (
-                  <li className="text-muted-foreground">{vm.diffPanel.positionEmptyText}</li>
+                    <li className="rounded-md border border-dashed border-border/70 bg-background/35 px-3 py-3 text-muted-foreground">
+                      {vm.diffPanel.positionEmptyText}
+                    </li>
                 )}
-              </ul>
-            </div>
-            <div className="rounded-lg border border-border/70 p-4">
-              <div className="text-sm font-semibold">Parameter changes</div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {vm.diffPanel.parameterChanges.length > 0 ? vm.diffPanel.parameterChanges.map((item) => (
-                  <li key={item.key} className="font-mono">
-                    <span>{item.key}</span>
-                    <span>: {item.baseValueText} {"->"} {item.targetValueText}</span>
-                  </li>
+                </ul>
+              </section>
+              <section aria-label={vm.diffPanel.parameterSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-semibold">Parameter changes</div>
+                  <Badge variant={vm.diffPanel.hasParameterChanges ? "outline" : "warning"}>
+                    {vm.diffPanel.parameterChanges.length} rows
+                  </Badge>
+                </div>
+                <ul aria-label={vm.diffPanel.parameterListLabel} className="mt-3 space-y-2 text-sm">
+                  {vm.diffPanel.hasParameterChanges ? vm.diffPanel.parameterChanges.map((item) => (
+                    <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2 font-mono">
+                      <div className="text-foreground">{item.key}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{item.valueText}</div>
+                    </li>
                 )) : (
-                  <li className="text-muted-foreground">{vm.diffPanel.parameterEmptyText}</li>
+                    <li className="rounded-md border border-dashed border-border/70 bg-background/35 px-3 py-3 text-muted-foreground">
+                      {vm.diffPanel.parameterEmptyText}
+                    </li>
                 )}
-              </ul>
+                </ul>
+              </section>
             </div>
           </CardContent>
         </Card>

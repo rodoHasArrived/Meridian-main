@@ -426,7 +426,7 @@ public static class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404);
 
-        group.MapGet(UiApiRoutes.RunsContinuity, async (string runId, HttpContext context) =>
+        group.MapGet("/runs/{runId}/continuity", async (string runId, HttpContext context) =>
         {
             var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
             if (continuityService is null)
