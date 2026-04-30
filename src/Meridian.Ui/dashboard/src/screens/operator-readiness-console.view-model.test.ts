@@ -405,6 +405,34 @@ describe("operator readiness console view model", () => {
             workspace: "Data",
             targetRoute: "/data/providers",
             targetPageTag: "ProviderTrust"
+          },
+          {
+            workItemId: "legacy-break-route",
+            kind: "ReconciliationBreak",
+            label: "Legacy break route",
+            detail: "Review a break from a legacy governance route.",
+            tone: "Info",
+            createdAt: "2026-04-29T12:04:00Z",
+            runId: "run-1",
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Accounting",
+            targetRoute: "/governance/reconciliation?runId=run-1#cash",
+            targetPageTag: "FundReconciliation"
+          },
+          {
+            workItemId: "api-route",
+            kind: "ReportPackApproval",
+            label: "API route should not render",
+            detail: "Fallback to the Reporting workspace.",
+            tone: "Success",
+            createdAt: "2026-04-29T12:05:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Reporting",
+            targetRoute: "/api/workstation/operator/inbox",
+            targetPageTag: "ReportPackApproval"
           }
         ],
         warningCount: 1,
@@ -426,6 +454,18 @@ describe("operator readiness console view model", () => {
       label: "Open provider trust",
       route: "/data/providers",
       ariaLabel: "Open provider trust: Provider trust gate review",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "legacy-break-route")?.action).toEqual({
+      label: "Open break queue",
+      route: "/accounting/reconciliation?runId=run-1#cash",
+      ariaLabel: "Open break queue: Legacy break route",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "api-route")?.action).toEqual({
+      label: "Open report packs",
+      route: "/reporting",
+      ariaLabel: "Open report packs: API route should not render",
       variant: "outline"
     });
   });

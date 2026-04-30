@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getOperatorInbox } from "@/lib/api";
+import { legacyWorkspaceRedirect, WORKSPACES } from "@/lib/workspace";
 import type {
   DataOperationsProviderRecord,
   DataOperationsWorkspaceResponse,
@@ -124,6 +125,8 @@ export interface OperatorReadinessConsoleServices {
 const defaultServices: OperatorReadinessConsoleServices = {
   getOperatorInbox: () => getOperatorInbox()
 };
+
+const workstationWorkspaceKeys = new Set<string>(WORKSPACES.map((workspace) => workspace.key));
 
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
@@ -647,7 +650,13 @@ function normalizeTargetRoute(route: string | null | undefined): string | null {
     return null;
   }
 
-  return trimmed;
+  const canonicalRoute = legacyWorkspaceRedirect(trimmed) ?? trimmed;
+  const routeWorkspace = canonicalRoute.split(/[/?#]/).filter(Boolean)[0];
+  if (!routeWorkspace || !workstationWorkspaceKeys.has(routeWorkspace)) {
+    return null;
+  }
+
+  return canonicalRoute;
 }
 
 function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
