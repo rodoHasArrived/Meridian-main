@@ -30,6 +30,24 @@ public sealed class QuantScriptOptions
     public string DefaultDataRoot { get; init; } = "./data";
 
     /// <summary>
+    /// Maximum allowed increase in managed memory (bytes) during a single script run.
+    /// Set to 0 or less to disable the guard.
+    /// </summary>
+    public long MaxMemoryDeltaBytes { get; init; } = 0;
+
+    /// <summary>
+    /// Optional guard for maximum elapsed run time in milliseconds, evaluated after each run.
+    /// Set to 0 or less to disable the guard.
+    /// </summary>
+    public int MaxRunElapsedMilliseconds { get; init; } = 0;
+
+    /// <summary>
+    /// Optional guard for maximum emitted artifacts (metrics + plots + captured backtests).
+    /// Set to 0 or less to disable the guard.
+    /// </summary>
+    public int MaxOutputItemsPerRun { get; init; } = 0;
+
+    /// <summary>
     /// File extension used to identify notebook documents in the scripts directory.
     /// Defaults to <c>.ipynb</c>.
     /// </summary>

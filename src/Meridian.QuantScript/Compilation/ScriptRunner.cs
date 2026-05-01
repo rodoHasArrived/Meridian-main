@@ -90,6 +90,7 @@ public sealed class ScriptRunner : IScriptRunner
                     CompileTime: compilationResult.CompilationTime,
                     PeakMemoryBytes: 0,
                     CompilationErrors: compilationResult.Diagnostics,
+                    RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
                     RuntimeError: null,
                     ConsoleOutput: string.Empty,
                     Metrics: Array.Empty<KeyValuePair<string, string>>(),
@@ -131,6 +132,7 @@ public sealed class ScriptRunner : IScriptRunner
 
         string? runtimeError = null;
         IReadOnlyList<ScriptDiagnostic> continuationDiagnostics = Array.Empty<ScriptDiagnostic>();
+        var runtimeDiagnostics = new List<ScriptDiagnostic>();
         ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
         var runPlotQueue = new PlotQueue();
         TimeSpan continuationCompileTime = TimeSpan.Zero;
@@ -198,7 +200,41 @@ public sealed class ScriptRunner : IScriptRunner
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
-        var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0;
+        var metrics = globals.DrainMetrics();
+        var capturedBacktests = globals.Backtest.DrainCapturedResults();
+
+        var outputItemsCount = metrics.Count + plots.Count + capturedBacktests.Count;
+        if (_options.MaxMemoryDeltaBytes > 0 && peakMemory > _options.MaxMemoryDeltaBytes)
+        {
+            runtimeDiagnostics.Add(new ScriptDiagnostic(
+                "RuntimeLimit",
+                $"Memory delta limit exceeded: {peakMemory} bytes > {_options.MaxMemoryDeltaBytes} bytes.",
+                0,
+                0));
+            runtimeError ??= "Script exceeded configured memory delta limit.";
+        }
+
+        if (_options.MaxRunElapsedMilliseconds > 0 && wallClock.ElapsedMilliseconds > _options.MaxRunElapsedMilliseconds)
+        {
+            runtimeDiagnostics.Add(new ScriptDiagnostic(
+                "RuntimeLimit",
+                $"Elapsed limit exceeded: {wallClock.ElapsedMilliseconds} ms > {_options.MaxRunElapsedMilliseconds} ms.",
+                0,
+                0));
+            runtimeError ??= "Script exceeded configured elapsed-time limit.";
+        }
+
+        if (_options.MaxOutputItemsPerRun > 0 && outputItemsCount > _options.MaxOutputItemsPerRun)
+        {
+            runtimeDiagnostics.Add(new ScriptDiagnostic(
+                "RuntimeLimit",
+                $"Output item limit exceeded: {outputItemsCount} items > {_options.MaxOutputItemsPerRun} items.",
+                0,
+                0));
+            runtimeError ??= "Script exceeded configured output-item limit.";
+        }
+
+        var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0 && runtimeDiagnostics.Count == 0;
         if (checkpoint is not null)
             compileTime = continuationCompileTime;
 
@@ -208,12 +244,13 @@ public sealed class ScriptRunner : IScriptRunner
             CompileTime: compileTime,
             PeakMemoryBytes: peakMemory,
             CompilationErrors: continuationDiagnostics,
+            RuntimeDiagnostics: runtimeDiagnostics,
             RuntimeError: runtimeError,
             ConsoleOutput: globals.DrainConsoleOutput(),
-            Metrics: globals.DrainMetrics(),
+            Metrics: metrics,
             Plots: plots,
             TradesSummary: Array.Empty<string>(),
-            CapturedBacktests: globals.Backtest.DrainCapturedResults(),
+            CapturedBacktests: capturedBacktests,
             RuntimeParameters: globals.SnapshotRuntimeParameters(),
             Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
     }
@@ -239,6 +276,7 @@ public sealed class ScriptRunner : IScriptRunner
             CompileTime: TimeSpan.Zero,
             PeakMemoryBytes: 0,
             CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
             RuntimeError: "Script cancelled by user.",
             ConsoleOutput: string.Empty,
             Metrics: Array.Empty<KeyValuePair<string, string>>(),
