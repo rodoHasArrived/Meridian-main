@@ -28,8 +28,13 @@ export function WorkspaceNav() {
 
   return (
     <aside className="operator-rail" aria-label={`${viewModel.brandTitle} ${viewModel.brandSubtitle}`}>
+      <header className="operator-rail-header">
+        <p className="operator-rail-title">{viewModel.brandTitle}</p>
+        <p className="operator-rail-subtitle">{viewModel.brandSubtitle}</p>
+      </header>
+
       <div className="operator-rail-section">{viewModel.modelEyebrow}</div>
-      <div className="mx-2 mb-3 rounded-lg border border-border/80 bg-card px-3 py-3 shadow-panel">
+      <div className="operator-rail-card">
         <p className="text-xs leading-5 text-muted-foreground">
           {viewModel.modelDescription}
         </p>
@@ -63,7 +68,7 @@ export function WorkspaceNav() {
         })}
       </nav>
 
-      <div className="mx-2 mt-5 rounded-lg border border-border bg-secondary/35 px-3 py-3 text-sm">
+      <div className="operator-rail-callout">
         <div className="eyebrow-label">{viewModel.deliveryEyebrow}</div>
         <div className="mt-2 font-semibold text-foreground">{viewModel.deliveryTitle}</div>
         <p className="mt-2 text-xs leading-5 text-muted-foreground">
