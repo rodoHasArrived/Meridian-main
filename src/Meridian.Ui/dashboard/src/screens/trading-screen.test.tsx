@@ -431,6 +431,25 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("renders the order ticket through shared labelled controls", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+
+    expect(screen.getByLabelText("Order symbol")).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByRole("combobox", { name: "Order side" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByRole("combobox", { name: "Order type" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByLabelText("Order symbol")).toHaveAttribute("aria-invalid", "true");
+
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    expect(screen.getByLabelText("Order quantity")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Order quantity")).toHaveAccessibleDescription("Enter an order quantity greater than zero.");
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
+    expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
+  });
+
   it("shows error path when promotion evaluation fails", async () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
     const user = userEvent.setup();

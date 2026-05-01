@@ -410,86 +410,94 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </div>
           </CardHeader>
           {orderTicket.open && (
-            <CardContent id="trading-order-ticket" className="border-b border-border/60 pb-6">
-              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby="order-ticket-requirements">
+            <CardContent id={orderTicket.formId} className="border-b border-border/60 pb-6">
+              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1">
-                    <label htmlFor="order-ticket-symbol" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
-                    <input
-                      id="order-ticket-symbol"
+                    <label htmlFor={orderTicket.controls.symbol.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.symbol.label}</label>
+                    <Input
+                      id={orderTicket.controls.symbol.id}
                       type="text"
                       placeholder="AAPL"
-                      value={orderTicket.form.symbol}
-                      onChange={(e) => orderTicket.updateField("symbol", e.target.value)}
+                      value={orderTicket.controls.symbol.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.symbol.field, e.target.value)}
                       onBlur={orderTicket.normalizeSymbol}
-                      aria-describedby="order-ticket-requirements"
-                      aria-invalid={orderTicket.invalidField === "symbol" ? true : undefined}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      required
+                      aria-label={orderTicket.controls.symbol.ariaLabel}
+                      aria-describedby={orderTicket.controls.symbol.describedBy}
+                      error={orderTicket.controls.symbol.invalid}
+                      className="font-mono"
+                      required={orderTicket.controls.symbol.required}
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="order-ticket-side" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
-                    <select
-                      id="order-ticket-side"
-                      value={orderTicket.form.side}
-                      onChange={(e) => orderTicket.updateField("side", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    <label htmlFor={orderTicket.controls.side.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.side.label}</label>
+                    <Select
+                      id={orderTicket.controls.side.id}
+                      value={orderTicket.controls.side.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.side.field, e.target.value)}
+                      aria-label={orderTicket.controls.side.ariaLabel}
+                      aria-describedby={orderTicket.controls.side.describedBy}
+                      required={orderTicket.controls.side.required}
                     >
-                      <option value="Buy">Buy</option>
-                      <option value="Sell">Sell</option>
-                    </select>
+                      {orderTicket.controls.side.options.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </Select>
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="order-ticket-type" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
-                    <select
-                      id="order-ticket-type"
-                      value={orderTicket.form.type}
-                      onChange={(e) => orderTicket.updateField("type", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    <label htmlFor={orderTicket.controls.type.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.type.label}</label>
+                    <Select
+                      id={orderTicket.controls.type.id}
+                      value={orderTicket.controls.type.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.type.field, e.target.value)}
+                      aria-label={orderTicket.controls.type.ariaLabel}
+                      aria-describedby={orderTicket.controls.type.describedBy}
+                      required={orderTicket.controls.type.required}
                     >
-                      <option value="Market">Market</option>
-                      <option value="Limit">Limit</option>
-                      <option value="Stop">Stop</option>
-                    </select>
+                      {orderTicket.controls.type.options.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </Select>
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="order-ticket-quantity" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
-                    <input
-                      id="order-ticket-quantity"
+                    <label htmlFor={orderTicket.controls.quantity.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.quantity.label}</label>
+                    <Input
+                      id={orderTicket.controls.quantity.id}
                       type="number"
                       min={1}
                       step={1}
-                      value={orderTicket.form.quantity || ""}
-                      onChange={(e) => orderTicket.updateField("quantity", e.target.value)}
-                      aria-describedby="order-ticket-requirements"
-                      aria-invalid={orderTicket.invalidField === "quantity" ? true : undefined}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      required
+                      value={orderTicket.controls.quantity.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.quantity.field, e.target.value)}
+                      aria-label={orderTicket.controls.quantity.ariaLabel}
+                      aria-describedby={orderTicket.controls.quantity.describedBy}
+                      error={orderTicket.controls.quantity.invalid}
+                      className="font-mono"
+                      required={orderTicket.controls.quantity.required}
                     />
                   </div>
-                  {orderTicket.requiresLimitPrice && (
+                  {orderTicket.controls.limitPrice && (
                     <div className="space-y-1">
-                      <label htmlFor="order-ticket-limit-price" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {orderTicket.priceLabel}
+                      <label htmlFor={orderTicket.controls.limitPrice.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {orderTicket.controls.limitPrice.label}
                       </label>
-                      <input
-                        id="order-ticket-limit-price"
+                      <Input
+                        id={orderTicket.controls.limitPrice.id}
                         type="number"
                         min={0}
                         step={0.01}
-                        value={orderTicket.form.limitPrice ?? ""}
-                        onChange={(e) => orderTicket.updateField("limitPrice", e.target.value)}
-                        aria-describedby="order-ticket-requirements"
-                        aria-invalid={orderTicket.invalidField === "limitPrice" ? true : undefined}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        required
+                        value={orderTicket.controls.limitPrice.value}
+                        onChange={(e) => orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
+                        aria-label={orderTicket.controls.limitPrice.ariaLabel}
+                        aria-describedby={orderTicket.controls.limitPrice.describedBy}
+                        error={orderTicket.controls.limitPrice.invalid}
+                        className="font-mono"
+                        required={orderTicket.controls.limitPrice.required}
                       />
                     </div>
                   )}
                 </div>
 
-                <p id="order-ticket-requirements" className="text-xs text-muted-foreground">
+                <p id={orderTicket.requirementId} className="text-xs text-muted-foreground">
                   {orderTicket.requirementText}
                 </p>
                 <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>

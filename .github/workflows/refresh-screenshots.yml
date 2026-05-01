@@ -662,18 +662,57 @@ jobs:
           $includeDesktop = $surfaceSelection -in @('all', 'desktop')
           $includeWeb = $surfaceSelection -in @('all', 'web')
 
-          $includeManuals = $selection -in @('all', 'manuals')
-          $includeCatalog = $selection -in @('all', 'catalog')
-
           $expectedFiles = @()
           if ($includeDesktop) {
-            $normalizedOutputRoot = $outputRoot.Replace('\', '/').Trim('/')
-            $trackedPngs = git ls-files "$outputRoot/**/*.png"
-            foreach ($file in $trackedPngs) {
-              $normalizedFile = $file.Replace('\', '/')
-              $isManual = $normalizedFile -like "$normalizedOutputRoot/manuals/*"
-              if (($isManual -and $includeManuals) -or (-not $isManual -and $includeCatalog)) {
-                $expectedFiles += $file
+            $workflowConfigPath = 'scripts/dev/desktop-workflows.json'
+            if (-not (Test-Path -LiteralPath $workflowConfigPath)) {
+              throw "Workflow definition file not found: $workflowConfigPath"
+            }
+
+            $workflowConfig = Get-Content -LiteralPath $workflowConfigPath -Raw | ConvertFrom-Json
+            $allDefinitions = @($workflowConfig.workflows | Where-Object { $null -ne $_ })
+            if ($null -eq $workflowConfig.workflows -or $allDefinitions.Count -eq 0) {
+              throw 'No workflow definitions found in scripts/dev/desktop-workflows.json'
+            }
+
+            $selectedDefinitions = @()
+            switch ($selection) {
+              'catalog' {
+                $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' })
+              }
+              'manuals' {
+                $selectedDefinitions = @($allDefinitions | Where-Object { [bool]$_.includeInManual })
+              }
+              default {
+                $selectedDefinitions = @($allDefinitions | Where-Object { $_.name -eq 'screenshot-catalog' -or [bool]$_.includeInManual })
+              }
+            }
+
+            if ($selectedDefinitions.Count -eq 0) {
+              throw "No desktop workflow definitions selected for '$selection'."
+            }
+
+            foreach ($definition in $selectedDefinitions) {
+              $workflowName = [string]$definition.name
+              if ([string]::IsNullOrWhiteSpace($workflowName)) {
+                continue
+              }
+
+              $isCatalogWorkflow = $workflowName -eq 'screenshot-catalog'
+              $workflowDir = if ($isCatalogWorkflow) {
+                $outputRoot
+              }
+              else {
+                Join-Path $outputRoot ("manuals/$workflowName")
+              }
+
+              foreach ($step in @($definition.steps)) {
+                $captureName = [string]$step.captureName
+                if ([string]::IsNullOrWhiteSpace($captureName)) {
+                  continue
+                }
+
+                $expectedFiles += (Join-Path $workflowDir "$captureName.png")
               }
             }
           }
@@ -791,6 +830,18 @@ jobs:
             }
 
             $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            if ($missingFiles.Count -gt 0) {
+              Write-Host "Missing files:"
+              $missingFiles | ForEach-Object { Write-Host "  - $_" }
+            }
+            if ($zeroByteFiles.Count -gt 0) {
+              Write-Host "Zero-byte files:"
+              $zeroByteFiles | ForEach-Object { Write-Host "  - $_" }
+            }
+            if ($failedSteps.Count -gt 0) {
+              Write-Host "Failed manifest steps:"
+              $failedSteps | ForEach-Object { Write-Host "  - $_" }
+            }
             throw "Screenshot validation failed."
           }
 

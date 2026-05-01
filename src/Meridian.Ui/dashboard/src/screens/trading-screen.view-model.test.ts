@@ -655,6 +655,27 @@ describe("trading order ticket view model", () => {
     expect(invalid.canSubmit).toBe(false);
     expect(invalid.invalidField).toBe("quantity");
     expect(invalid.requirementText).toBe("Enter an order quantity greater than zero.");
+    expect(invalid.formId).toBe("trading-order-ticket");
+    expect(invalid.requirementId).toBe("order-ticket-requirements");
+    expect(invalid.controls.symbol).toMatchObject({
+      id: "order-ticket-symbol",
+      label: "Symbol",
+      value: "MSFT",
+      describedBy: "order-ticket-requirements",
+      ariaLabel: "Order symbol",
+      invalid: false,
+      required: true
+    });
+    expect(invalid.controls.quantity).toMatchObject({
+      id: "order-ticket-quantity",
+      label: "Quantity",
+      value: "",
+      invalid: true
+    });
+    expect(invalid.controls.side.options).toEqual([
+      { value: "Buy", label: "Buy" },
+      { value: "Sell", label: "Sell" }
+    ]);
 
     const submitting = buildOrderTicketState({
       form: { ...emptyOrderTicketForm, symbol: "MSFT", quantity: 2 },
@@ -666,6 +687,25 @@ describe("trading order ticket view model", () => {
 
     expect(submitting.submitButtonLabel).toBe("Submitting...");
     expect(submitting.statusAnnouncement).toBe("Submitting order request.");
+    expect(submitting.controls.limitPrice).toBeNull();
+
+    const limitOrder = buildOrderTicketState({
+      form: { ...emptyOrderTicketForm, symbol: "MSFT", type: "Limit", quantity: 2, limitPrice: 189.44 },
+      open: true,
+      phase: "idle",
+      orderId: null,
+      errorText: null
+    });
+
+    expect(limitOrder.controls.limitPrice).toMatchObject({
+      id: "order-ticket-limit-price",
+      label: "Limit price",
+      value: "189.44",
+      describedBy: "order-ticket-requirements",
+      ariaLabel: "Limit order price",
+      invalid: false,
+      required: true
+    });
 
     const submitted = buildOrderTicketState({
       form: emptyOrderTicketForm,

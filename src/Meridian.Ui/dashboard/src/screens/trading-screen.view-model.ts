@@ -1903,6 +1903,29 @@ export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
 }
 
+export interface OrderTicketFieldControl {
+  field: OrderTicketField;
+  id: string;
+  label: string;
+  value: string;
+  describedBy: string;
+  ariaLabel: string;
+  invalid: boolean;
+  required: boolean;
+}
+
+export interface OrderTicketSelectControl extends OrderTicketFieldControl {
+  options: Array<{ value: string; label: string }>;
+}
+
+export interface OrderTicketControls {
+  symbol: OrderTicketFieldControl;
+  side: OrderTicketSelectControl;
+  type: OrderTicketSelectControl;
+  quantity: OrderTicketFieldControl;
+  limitPrice: OrderTicketFieldControl | null;
+}
+
 export interface OrderTicketState {
   form: OrderSubmitRequest;
   open: boolean;
@@ -1915,6 +1938,9 @@ export interface OrderTicketState {
   canClose: boolean;
   requiresLimitPrice: boolean;
   priceLabel: string;
+  formId: string;
+  requirementId: string;
+  controls: OrderTicketControls;
   openButtonLabel: string;
   submitButtonLabel: string;
   submitAriaLabel: string;
@@ -2062,6 +2088,8 @@ export function buildOrderTicketState({
   const successText = phase === "submitted"
     ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
     : null;
+  const invalidField = getOrderTicketInvalidField(form);
+  const requirementId = "order-ticket-requirements";
 
   return {
     form,
@@ -2070,17 +2098,90 @@ export function buildOrderTicketState({
     orderId,
     errorText,
     validationError,
-    invalidField: getOrderTicketInvalidField(form),
+    invalidField,
     canSubmit: phase !== "submitting" && validationError === null,
     canClose: phase !== "submitting",
     requiresLimitPrice,
     priceLabel: `${form.type} price`,
+    formId: "trading-order-ticket",
+    requirementId,
+    controls: buildOrderTicketControls(form, invalidField, requirementId),
     openButtonLabel: open ? "Close order ticket" : "New order",
     submitButtonLabel: phase === "submitting" ? "Submitting..." : "Submit order",
     submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
     requirementText: buildOrderRequirementText(form, phase, validationError),
     successText,
     statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId })
+  };
+}
+
+function buildOrderTicketControls(
+  form: OrderSubmitRequest,
+  invalidField: OrderTicketField | null,
+  requirementId: string
+): OrderTicketControls {
+  return {
+    symbol: {
+      field: "symbol",
+      id: "order-ticket-symbol",
+      label: "Symbol",
+      value: form.symbol,
+      describedBy: requirementId,
+      ariaLabel: "Order symbol",
+      invalid: invalidField === "symbol",
+      required: true
+    },
+    side: {
+      field: "side",
+      id: "order-ticket-side",
+      label: "Side",
+      value: form.side,
+      describedBy: requirementId,
+      ariaLabel: "Order side",
+      invalid: false,
+      required: true,
+      options: [
+        { value: "Buy", label: "Buy" },
+        { value: "Sell", label: "Sell" }
+      ]
+    },
+    type: {
+      field: "type",
+      id: "order-ticket-type",
+      label: "Type",
+      value: form.type,
+      describedBy: requirementId,
+      ariaLabel: "Order type",
+      invalid: false,
+      required: true,
+      options: [
+        { value: "Market", label: "Market" },
+        { value: "Limit", label: "Limit" },
+        { value: "Stop", label: "Stop" }
+      ]
+    },
+    quantity: {
+      field: "quantity",
+      id: "order-ticket-quantity",
+      label: "Quantity",
+      value: form.quantity ? String(form.quantity) : "",
+      describedBy: requirementId,
+      ariaLabel: "Order quantity",
+      invalid: invalidField === "quantity",
+      required: true
+    },
+    limitPrice: orderTypeRequiresPrice(form.type)
+      ? {
+          field: "limitPrice",
+          id: "order-ticket-limit-price",
+          label: `${form.type} price`,
+          value: form.limitPrice ? String(form.limitPrice) : "",
+          describedBy: requirementId,
+          ariaLabel: `${form.type} order price`,
+          invalid: invalidField === "limitPrice",
+          required: true
+        }
+      : null
   };
 }
 
