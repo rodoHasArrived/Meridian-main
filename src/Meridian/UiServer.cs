@@ -112,6 +112,8 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ => new JsonlReconciliationGovernanceAuditStore(Path.Combine("artifacts", "reconciliation", "governance-audit.jsonl")));
+        builder.Services.AddSingleton<ReconciliationGovernanceService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<StrategyRunContinuityService>();
         builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);

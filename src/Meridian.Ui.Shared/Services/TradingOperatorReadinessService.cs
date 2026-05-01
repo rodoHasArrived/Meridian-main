@@ -146,6 +146,7 @@ public sealed class TradingOperatorReadinessService
         var promotion = BuildPromotion(latestRun, promotionRecords);
         var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
         var reportPack = await ResolveReportPackReadinessAsync(latestRun, promotion, ct).ConfigureAwait(false);
+        var reconciliationGate = await ResolveReconciliationGateAsync(latestRun, ct).ConfigureAwait(false);
         if (promotion is null)
         {
             AddWorkItem(
@@ -172,6 +173,7 @@ public sealed class TradingOperatorReadinessService
 
         AddTrustGateWorkItem(workItems, trustGate);
         AddReportPackWorkItem(workItems, reportPack, latestRun?.Summary.RunId);
+        AddReconciliationGateWorkItem(workItems, reconciliationGate, latestRun?.Summary.RunId);
 
         var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);
         if (brokerageStatus is not null && brokerageStatus.Health is not WorkstationBrokerageSyncHealth.Healthy)
@@ -216,6 +218,7 @@ public sealed class TradingOperatorReadinessService
             promotion,
             trustGate,
             reportPack,
+            reconciliationGate,
             auditEntries);
         var overallStatus = ResolveOverallStatus(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
@@ -749,6 +752,7 @@ public sealed class TradingOperatorReadinessService
         TradingPromotionReadinessDto? promotion,
         TradingTrustGateReadinessDto trustGate,
         TradingReportPackReadinessDto reportPack,
+        ReconciliationGateEvaluation? reconciliationGate,
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
         =>
         [
@@ -757,7 +761,8 @@ public sealed class TradingOperatorReadinessService
             BuildAuditControlGate(controls, auditEntries),
             BuildPromotionGate(promotion),
             BuildTrustGateAcceptance(trustGate),
-            BuildReportPackGate(reportPack)
+            BuildReportPackGate(reportPack),
+            BuildReconciliationGate(reconciliationGate)
         ];
 
     private static TradingAcceptanceGateDto BuildSessionGate(
@@ -1006,6 +1011,57 @@ public sealed class TradingOperatorReadinessService
         return TradingAcceptanceGateStatusDto.Ready;
     }
 
+
+    private async Task<ReconciliationGateEvaluation?> ResolveReconciliationGateAsync(StrategyRunDetail? latestRun, CancellationToken ct)
+    {
+        if (latestRun is null)
+        {
+            return null;
+        }
+
+        var governance = Resolve<ReconciliationGovernanceService>();
+        if (governance is null)
+        {
+            return null;
+        }
+
+        return await governance.EvaluateGateAsync(latestRun.Summary.RunId, new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, ct).ConfigureAwait(false);
+    }
+
+    private static TradingAcceptanceGateDto BuildReconciliationGate(ReconciliationGateEvaluation? evaluation)
+    {
+        if (evaluation is null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "reconciliation",
+                Label: "Reconciliation policy",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "Reconciliation policy evaluation is not available.");
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "reconciliation",
+            Label: "Reconciliation policy",
+            Status: evaluation.Status,
+            Detail: evaluation.Detail);
+    }
+
+    private static void AddReconciliationGateWorkItem(List<OperatorWorkItemDto> workItems, ReconciliationGateEvaluation? evaluation, string? runId)
+    {
+        if (evaluation is null || evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
+        {
+            return;
+        }
+
+        AddWorkItem(
+            workItems,
+            OperatorWorkItemKindDto.PromotionReview,
+            "Reconciliation policy requires attention",
+            evaluation.Detail,
+            evaluation.Status == TradingAcceptanceGateStatusDto.Blocked ? OperatorWorkItemToneDto.Critical : OperatorWorkItemToneDto.Warning,
+            runId,
+            workItemId: BuildWorkItemId("reconciliation-policy", runId));
+    }
     private static TradingAcceptanceGateStatusDto ResolveOverallStatus(IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
         if (gates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
