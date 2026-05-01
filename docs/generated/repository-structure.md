@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-01 08:28:15 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 09:11:58 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -6477,8 +6477,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BEjAePvx.js
-│   │           │   └── index-DvmGN_1N.css
+│   │           │   ├── index-CH2E29GS.css
+│   │           │   └── index-DpYW71Wb.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
