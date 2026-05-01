@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-05-01T10:17:12.208783+00:00_
+_Generated: 2026-05-01T17:38:05.412235+00:00_
 Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-05-01T10:17:12.202942+00:00
+> Last updated: 2026-05-01T17:38:05.406255+00:00
 
 ## Overall Health Score
 
@@ -19,10 +19,10 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 421 |
-| Total lines | 132,506 |
-| Average file size (lines) | 314.7 |
-| Orphaned files | 116 |
+| Total documentation files | 423 |
+| Total lines | 132,337 |
+| Average file size (lines) | 312.9 |
+| Orphaned files | 118 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 206 |
@@ -64,7 +64,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-code-review/references/architecture.md`
 - `.claude/skills/meridian-code-review/references/schemas.md`
 - `.claude/skills/meridian-implementation-assurance/references/documentation-routing.md`
-- ... and 96 more
+- ... and 98 more
 
 ## Trend
 
@@ -72,7 +72,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-05-01 | 89 | 421 | 116 | 0 |
+| 2026-05-01 | 89 | 423 | 118 | 0 |
 
 ---
 

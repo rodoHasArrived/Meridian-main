@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-01 10:17:04 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 17:37:55 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -671,6 +671,7 @@ Meridian-main
 │   │   ├── 013-bounded-channel-policy.md
 │   │   ├── 014-json-source-generators.md
 │   │   ├── 015-strategy-execution-contract.md
+│   │   ├── 016-custody-cash-reconciliation-break-typing.md
 │   │   ├── 016-platform-architecture-migration.md
 │   │   ├── _template.md
 │   │   └── README.md
@@ -747,6 +748,7 @@ Meridian-main
 │   │   ├── documentation-contribution-guide.md
 │   │   ├── expanding-scripts.md
 │   │   ├── fsharp-decision-rule.md
+│   │   ├── fund-account-traversal.md
 │   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
@@ -4620,6 +4622,7 @@ Meridian-main
 │   │   ├── readability-refactor-technical-design-pack.md
 │   │   ├── README.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
+│   │   ├── runbook-template-registry-modernization-plan.md
 │   │   ├── security-master-productization-roadmap.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-bond-target-state-v2.md
@@ -4672,63 +4675,6 @@ Meridian-main
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
 │   │   └── strategy-promotion-history.md
-│   ├── screenshots
-│   │   ├── desktop
-│   │   │   ├── catalog.json
-│   │   │   ├── wpf-backfill.png
-│   │   │   ├── wpf-backtest.png
-│   │   │   ├── wpf-dashboard.png
-│   │   │   ├── wpf-data-browser.png
-│   │   │   ├── wpf-data-quality.png
-│   │   │   ├── wpf-diagnostics.png
-│   │   │   ├── wpf-live-data.png
-│   │   │   ├── wpf-provider-health.png
-│   │   │   ├── wpf-providers.png
-│   │   │   ├── wpf-quant-script.png
-│   │   │   ├── wpf-research-workspace.png
-│   │   │   ├── wpf-security-master.png
-│   │   │   ├── wpf-settings.png
-│   │   │   ├── wpf-storage.png
-│   │   │   ├── wpf-strategy-runs.png
-│   │   │   └── wpf-symbols.png
-│   │   ├── 01-dashboard.png
-│   │   ├── 02-workstation.png
-│   │   ├── 03-swagger.png
-│   │   ├── 04-status-overview.png
-│   │   ├── 05-data-source.png
-│   │   ├── 06-data-sources.png
-│   │   ├── 07-backfill.png
-│   │   ├── 08-derivatives.png
-│   │   ├── 09-symbols.png
-│   │   ├── 10-status-section.png
-│   │   ├── 10-status.png
-│   │   ├── 11-login.png
-│   │   ├── 12-workstation-research.png
-│   │   ├── 12-workstation-trading.png
-│   │   ├── 13-workstation-data-operations.png
-│   │   ├── 13-workstation-trading.png
-│   │   ├── 14-workstation-data-operations.png
-│   │   ├── 14-workstation-governance.png
-│   │   ├── 14-workstation-trading-orders.png
-│   │   ├── 15-workstation-governance.png
-│   │   ├── 15-workstation-trading-orders.png
-│   │   ├── 15-workstation-trading-positions.png
-│   │   ├── 16-workstation-trading-positions.png
-│   │   ├── 16-workstation-trading-risk.png
-│   │   ├── 17-workstation-data-operations-providers.png
-│   │   ├── 17-workstation-trading-risk.png
-│   │   ├── 18-workstation-data-operations-backfills.png
-│   │   ├── 18-workstation-data-operations-providers.png
-│   │   ├── 19-workstation-data-operations-backfills.png
-│   │   ├── 19-workstation-data-operations-exports.png
-│   │   ├── 20-workstation-data-operations-exports.png
-│   │   ├── 20-workstation-governance-ledger.png
-│   │   ├── 21-workstation-governance-ledger.png
-│   │   ├── 21-workstation-governance-reconciliation.png
-│   │   ├── 22-workstation-governance-reconciliation.png
-│   │   ├── 22-workstation-governance-security-master.png
-│   │   ├── 23-workstation-governance-security-master.png
-│   │   └── README.md
 │   ├── security
 │   │   ├── known-vulnerabilities.md
 │   │   └── README.md
@@ -4841,13 +4787,6 @@ Meridian-main
 │   │   │   ├── trading.svg
 │   │   │   └── watchlist.svg
 │   │   └── app.ico
-│   ├── docs
-│   │   └── screenshots
-│   │       ├── 01-dashboard.png
-│   │       ├── 11-login.png
-│   │       ├── 15-workstation-trading-orders.png
-│   │       ├── 20-workstation-data-operations-exports.png
-│   │       └── 21-workstation-governance-ledger.png
 │   ├── preview
 │   │   ├── brand-icons.html
 │   │   ├── brand-marks.html
@@ -5062,6 +5001,7 @@ Meridian-main
 │   │   │   ├── PackageCommands.cs
 │   │   │   ├── ProviderCalibrationCommand.cs
 │   │   │   ├── QueryCommand.cs
+│   │   │   ├── RunbookCommands.cs
 │   │   │   ├── SchemaCheckCommand.cs
 │   │   │   ├── SecurityMasterCommands.cs
 │   │   │   ├── SelfTestCommand.cs
@@ -5176,7 +5116,9 @@ Meridian-main
 │   │   │   ├── IFundAccountService.cs
 │   │   │   └── InMemoryFundAccountService.cs
 │   │   ├── FundStructure
+│   │   │   ├── FundAccountTraversalQueryService.cs
 │   │   │   ├── GovernanceSharedDataAccessService.cs
+│   │   │   ├── IFundAccountTraversalQueryService.cs
 │   │   │   ├── IFundStructureService.cs
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
 │   │   │   ├── InMemoryFundStructureService.cs
@@ -5260,6 +5202,10 @@ Meridian-main
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
 │   │   │   └── Result.cs
+│   │   ├── Runbooks
+│   │   │   ├── RunbookExecutor.cs
+│   │   │   ├── RunbookModels.cs
+│   │   │   └── RunbookStore.cs
 │   │   ├── Scheduling
 │   │   │   ├── BackfillExecutionLog.cs
 │   │   │   ├── BackfillSchedule.cs
@@ -5575,6 +5521,7 @@ Meridian-main
 │   │   │   ├── AccountManagementDtos.cs
 │   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
+│   │   │   ├── FundStructureContractsJsonContext.cs
 │   │   │   ├── FundStructureDtos.cs
 │   │   │   ├── FundStructureQueries.cs
 │   │   │   └── LedgerGroupId.cs
@@ -5818,6 +5765,7 @@ Meridian-main
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── AccountReconciliation.fs
 │   │   │   ├── AccountStatements.fs
 │   │   │   ├── CashFlowProjection.fs
 │   │   │   ├── CashFlowRules.fs
@@ -5834,6 +5782,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEvents.fs
 │   │   │   ├── SecurityMasterLegacyUpgrade.fs
 │   │   │   ├── SecurityTermModules.fs
+│   │   │   ├── SettlementInstructionCommands.fs
 │   │   │   └── Sides.fs
 │   │   ├── Generated
 │   │   │   └── Meridian.FSharp.Interop.g.cs
@@ -7210,6 +7159,7 @@ Meridian-main
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
+│   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
 │   │   ├── FillModelExpansionTests.cs
@@ -7248,6 +7198,7 @@ Meridian-main
 │   │   ├── PipelineTests.fs
 │   │   ├── PromotionPolicyTests.fs
 │   │   ├── RiskPolicyTests.fs
+│   │   ├── SettlementInstructionCommandsTests.fs
 │   │   ├── TradingTransitionTests.fs
 │   │   └── ValidationTests.fs
 │   ├── Meridian.FundStructure.Tests
@@ -7356,6 +7307,7 @@ Meridian-main
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── FundStructure
+│   │   │   │   ├── FundAccountTraversalQueryServiceTests.cs
 │   │   │   │   ├── LedgerGroupIdTests.cs
 │   │   │   │   └── LedgerGroupingRulesTests.cs
 │   │   │   ├── Indicators
@@ -7442,8 +7394,9 @@ Meridian-main
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── Contracts
-│   │   │   └── Api
-│   │   │       └── UiApiClientTests.cs
+│   │   │   ├── Api
+│   │   │   │   └── UiApiClientTests.cs
+│   │   │   └── FundStructureContractsJsonContextTests.cs
 │   │   ├── Domain
 │   │   │   ├── Collectors
 │   │   │   │   ├── L3OrderBookCollectorTests.cs

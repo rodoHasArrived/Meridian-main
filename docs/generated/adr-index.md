@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-> Auto-generated on 2026-05-01 10:17:04 UTC
+> Auto-generated on 2026-05-01 17:37:56 UTC
 
 | ADR | Title | Status |
 |-----|-------|--------|
@@ -19,6 +19,7 @@
 | [013-bounded-channel-policy.md](../adr/013-bounded-channel-policy.md) | ADR-013: Bounded Channel Pipeline Policy with Backpressure | Accepted |
 | [014-json-source-generators.md](../adr/014-json-source-generators.md) | ADR-014: High-Performance JSON Serialization via Source Generators | Accepted |
 | [015-strategy-execution-contract.md](../adr/015-strategy-execution-contract.md) | ADR-015: Strategy Execution Contract | Accepted |
+| [016-custody-cash-reconciliation-break-typing.md](../adr/016-custody-cash-reconciliation-break-typing.md) | ADR 016: Distinct custody-position and cash reconciliation breaks with shared workflow envelope | Accepted |
 | [016-platform-architecture-migration.md](../adr/016-platform-architecture-migration.md) | ADR-016: Platform Architecture Migration Mandate | Accepted |
 | [README.md](../adr/README.md) | Architectural Decision Records (ADRs) | Accepted |
 | [_template.md](../adr/_template.md) | ADR-XXX: [Title] | Superseded |
