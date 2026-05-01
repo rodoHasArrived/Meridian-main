@@ -5205,6 +5205,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── app.manifest
 │   │   └── runtimeconfig.template.json
 │   ├── Meridian.Application
+│   │   ├── Accounts
+│   │   │   ├── IAccountManagementService.cs
+│   │   │   └── IAccountQueryService.cs
 │   │   ├── Backfill
 │   │   │   ├── AutoGapRemediationService.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
@@ -8154,6 +8157,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-613 directories, 7366 files
+614 directories, 7368 files
 ```
 <!-- readme-tree end -->
