@@ -174,7 +174,7 @@ public sealed class QuantScriptViewModelTests
     public void SelectedExecutionRecord_WithoutMirroredRun_DisablesRunHistoryHandoffs()
     {
         var vm = CreateVm();
-        var record = MakeHistoryRecord(mirroredRunId: null);
+        var record = MakeHistoryRecord(mirroredRunId: null, capturedBacktestCount: 0);
 
         vm.RunHistory.Add(record);
         vm.SelectedExecutionRecord = record;
@@ -184,6 +184,20 @@ public sealed class QuantScriptViewModelTests
         vm.OpenRunBrowserCommand.CanExecute(null).Should().BeFalse();
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
         vm.CompareInResearchCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void SelectedExecutionRecord_WithMultipleCapturedBacktests_ReportsMirroredCountSummary()
+    {
+        var vm = CreateVm();
+        var record = MakeHistoryRecord(mirroredRunId: "run-quant-parent", capturedBacktestCount: 3);
+
+        vm.RunHistory.Add(record);
+        vm.SelectedExecutionRecord = record;
+
+        vm.SelectedHistoryEvidenceText.Should().Be("1 metric | 1 plot | 3 mirrored backtests");
+        vm.SelectedHistoryRunLinkText.Should().Contain("run-quant-parent");
+        vm.OpenRunBrowserCommand.CanExecute(null).Should().BeTrue();
     }
 
     // ── ScriptSource property ─────────────────────────────────────────────────
@@ -340,7 +354,7 @@ public sealed class QuantScriptViewModelTests
         xaml.Should().Contain("{Binding SelectedHistoryConsolePreview}");
     }
 
-    private static QuantScriptExecutionRecord MakeHistoryRecord(string? mirroredRunId)
+    private static QuantScriptExecutionRecord MakeHistoryRecord(string? mirroredRunId, int? capturedBacktestCount = null)
         => new(
             ExecutionId: Guid.NewGuid().ToString("N"),
             DocumentTitle: "Momentum Notebook",
@@ -356,7 +370,7 @@ public sealed class QuantScriptViewModelTests
             ConsoleExcerpt: "Loaded 42 bars",
             Metrics: [new QuantScriptExecutionMetricRecord("Sharpe", "1.23", "Risk")],
             PlotTitles: ["Equity Curve"],
-            CapturedBacktestCount: mirroredRunId is null ? 0 : 1,
+            CapturedBacktestCount: capturedBacktestCount ?? (mirroredRunId is null ? 0 : 1),
             MirroredRunId: mirroredRunId);
 
     private static string GetRepositoryFilePath(string relativePath)
