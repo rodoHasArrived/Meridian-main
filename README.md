@@ -4949,6 +4949,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── portable-data-packager.md
 │   │   ├── preflight-checklist.md
 │   │   ├── provider-degradation-calibration.md
+│   │   ├── reconciliation-operations.md
+│   │   ├── reconciliation-policy-operations.md
+│   │   ├── reconciliation-runbook.md
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── README.md
@@ -5253,6 +5256,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SchemaCheckCommand.cs
 │   │   │   ├── SecurityMasterCommands.cs
 │   │   │   ├── SelfTestCommand.cs
+│   │   │   ├── StatementCommands.cs
+│   │   │   ├── StatementImportCommands.cs
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
 │   │   │   └── WalRepairCommand.cs
@@ -5448,6 +5453,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ProviderOperationsSupportServices.cs
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   └── ProviderRoutingMapper.cs
+│   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementModels.cs
+│   │   │   └── StatementReconciliationService.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
@@ -5909,6 +5917,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AggregateBar.cs
 │   │   │   ├── MarketDepthUpdate.cs
 │   │   │   └── MarketTradeUpdate.cs
+│   │   ├── Reconciliation
+│   │   │   ├── StatementEntities.cs
+│   │   │   └── StatementReconciliationAggregate.cs
 │   │   └── Telemetry
 │   │       └── MarketEventIngressTracing.cs
 │   ├── Meridian.Execution
@@ -6221,6 +6232,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SharedResiliencePolicies.cs
 │   │   ├── Meridian.Infrastructure.csproj
 │   │   ├── NoOpMarketDataClient.cs
+│   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementInfrastructure.cs
+│   │   │   ├── BrokerStatementNormalizer.cs
+│   │   │   └── ReconciliationCaseInfrastructure.cs
 │   │   ├── Resilience
 │   │   │   ├── HttpResiliencePolicy.cs
 │   │   │   ├── WebSocketConnectionConfig.cs
@@ -6558,6 +6573,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LedgerReadService.cs
 │   │   │   ├── PortfolioReadService.cs
 │   │   │   ├── PromotionService.cs
+│   │   │   ├── ReconciliationGovernanceService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── ReconciliationSourceAdapters.cs
@@ -6779,6 +6795,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ProviderManagementService.cs
 │   │       ├── ProviderOperationsResults.cs
 │   │       ├── QualityArchiveStore.cs
+│   │       ├── Reconciliation
+│   │       │   └── ReconciliationApiService.cs
 │   │       ├── RetentionAssuranceModels.cs
 │   │       ├── ScheduleManagerService.cs
 │   │       ├── ScheduledMaintenanceService.cs
@@ -6803,6 +6821,9 @@ Use these documents together when planning or implementing new work:
 │   │       ├── WatchlistService.cs
 │   │       └── WorkspaceModels.cs
 │   ├── Meridian.Ui.Shared
+│   │   ├── Contracts
+│   │   │   └── Reconciliation
+│   │   │       └── StatementImportContracts.cs
 │   │   ├── DtoExtensions.cs
 │   │   ├── Endpoints
 │   │   │   ├── AdminEndpoints.cs
@@ -7609,6 +7630,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
+│   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   ├── EdgarIngestOrchestratorTests.cs
@@ -7826,6 +7848,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DataSourceRegistryTests.cs
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
+│   │   ├── Reconciliation
+│   │   │   ├── ReconciliationCaseServiceTests.cs
+│   │   │   └── StatementImportAndMatchingTests.cs
 │   │   ├── Risk
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
@@ -7852,6 +7877,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SecurityMasterSnapshotStoreTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
+│   │   ├── StatementReconciliationServiceTests.cs
 │   │   ├── Storage
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
@@ -8157,6 +8183,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-614 directories, 7368 files
+621 directories, 7387 files
 ```
 <!-- readme-tree end -->
