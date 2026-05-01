@@ -127,7 +127,28 @@ public sealed record StrategyRunSummary(
     StrategyRunGovernanceSummary? Governance = null,
     string? FundProfileId = null,
     string? FundDisplayName = null,
-    string? ParentRunId = null);
+    string? ParentRunId = null,
+    string? SweepId = null,
+    string? SweepDefinitionHash = null,
+    string? SweepObjective = null);
+
+public sealed record StrategySweepObjectiveRanking(
+    string RunId,
+    string StrategyName,
+    decimal? ObjectiveValue,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    decimal? FinalEquity,
+    DateTimeOffset LastUpdatedAt);
+
+public sealed record StrategySweepResultGroup(
+    string SweepId,
+    string SweepDefinitionHash,
+    string? Objective,
+    DateTimeOffset StartedAt,
+    int RunCount,
+    IReadOnlyList<StrategyRunSummary> Runs,
+    IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings);
 
 /// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.

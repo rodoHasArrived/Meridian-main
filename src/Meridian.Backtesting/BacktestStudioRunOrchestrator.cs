@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Application.Backtesting;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
@@ -42,6 +44,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         var engine = ResolveEngine(request.Engine);
         var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
 
+        var sweepHash = request.SweepDefinitionHash ?? ComputeSweepDefinitionHash(request.SweepObjective, request.Parameters);
         var entry = StrategyRunEntry.Start(
             request.StrategyId,
             request.StrategyName,
@@ -50,7 +53,12 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             datasetReference: request.DatasetReference,
             feedReference: request.FeedReference,
             engine: handle.Engine.ToString(),
-            parameterSet: request.Parameters);
+            parameterSet: request.Parameters) with
+        {
+            SweepId = request.SweepId,
+            SweepDefinitionHash = sweepHash,
+            SweepObjective = request.SweepObjective
+        };
 
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
         _runHandles[handle.RunId] = handle;
@@ -207,5 +215,27 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             return handle;
 
         throw new InvalidOperationException($"Backtest Studio run '{runId}' is not being tracked by the orchestrator.");
+    }
+
+    private static string? ComputeSweepDefinitionHash(string? objective, IReadOnlyDictionary<string, string>? parameters)
+    {
+        if (string.IsNullOrWhiteSpace(objective) && (parameters is null || parameters.Count == 0))
+        {
+            return null;
+        }
+
+        var builder = new StringBuilder();
+        builder.Append(objective?.Trim() ?? string.Empty);
+        builder.Append('|');
+        if (parameters is not null)
+        {
+            foreach (var pair in parameters.OrderBy(static p => p.Key, StringComparer.Ordinal))
+            {
+                builder.Append(pair.Key).Append('=').Append(pair.Value).Append(';');
+            }
+        }
+
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
+        return Convert.ToHexString(bytes);
     }
 }

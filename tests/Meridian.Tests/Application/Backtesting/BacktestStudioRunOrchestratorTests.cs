@@ -28,7 +28,9 @@ public sealed class BacktestStudioRunOrchestratorTests
             Engine: StrategyRunEngine.MeridianNative,
             NativeRequest: BuildRequest(),
             DatasetReference: "dataset:us-equities",
-            Parameters: new Dictionary<string, string> { ["lookback"] = "20" });
+            Parameters: new Dictionary<string, string> { ["lookback"] = "20" },
+            SweepId: "sweep-001",
+            SweepObjective: "FinalEquity");
 
         var handle = await orchestrator.StartAsync(request);
 
@@ -38,6 +40,9 @@ public sealed class BacktestStudioRunOrchestratorTests
         started.Engine.Should().Be("MeridianNative");
         started.DatasetReference.Should().Be("dataset:us-equities");
         started.ParameterSet.Should().ContainKey("lookback").WhoseValue.Should().Be("20");
+        started.SweepId.Should().Be("sweep-001");
+        started.SweepObjective.Should().Be("FinalEquity");
+        started.SweepDefinitionHash.Should().NotBeNullOrWhiteSpace();
         started.EndedAt.Should().BeNull();
 
         engine.Complete(handle.EngineRunHandle, BuildResult(request.NativeRequest));
