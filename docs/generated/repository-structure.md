@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-01 20:30:49 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 20:48:18 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4590,6 +4590,9 @@ Meridian-main
 │   │   ├── preflight-checklist.md
 │   │   ├── provider-degradation-calibration.md
 │   │   ├── README.md
+│   │   ├── reconciliation-operations.md
+│   │   ├── reconciliation-policy-operations.md
+│   │   ├── reconciliation-runbook.md
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── assembly-performance-roadmap.md
@@ -5008,6 +5011,8 @@ Meridian-main
 │   │   │   ├── SchemaCheckCommand.cs
 │   │   │   ├── SecurityMasterCommands.cs
 │   │   │   ├── SelfTestCommand.cs
+│   │   │   ├── StatementCommands.cs
+│   │   │   ├── StatementImportCommands.cs
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
 │   │   │   └── WalRepairCommand.cs
@@ -5201,6 +5206,9 @@ Meridian-main
 │   │   │   ├── ProviderOperationsSupportServices.cs
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   └── ProviderRoutingMapper.cs
+│   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementModels.cs
+│   │   │   └── StatementReconciliationService.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
@@ -5661,6 +5669,9 @@ Meridian-main
 │   │   │   ├── AggregateBar.cs
 │   │   │   ├── MarketDepthUpdate.cs
 │   │   │   └── MarketTradeUpdate.cs
+│   │   ├── Reconciliation
+│   │   │   ├── StatementEntities.cs
+│   │   │   └── StatementReconciliationAggregate.cs
 │   │   ├── Telemetry
 │   │   │   └── MarketEventIngressTracing.cs
 │   │   ├── BannedReferences.txt
@@ -5973,6 +5984,10 @@ Meridian-main
 │   │   ├── Http
 │   │   │   ├── HttpClientConfiguration.cs
 │   │   │   └── SharedResiliencePolicies.cs
+│   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementInfrastructure.cs
+│   │   │   ├── BrokerStatementNormalizer.cs
+│   │   │   └── ReconciliationCaseInfrastructure.cs
 │   │   ├── Resilience
 │   │   │   ├── HttpResiliencePolicy.cs
 │   │   │   ├── WebSocketConnectionConfig.cs
@@ -6311,6 +6326,7 @@ Meridian-main
 │   │   │   ├── LedgerReadService.cs
 │   │   │   ├── PortfolioReadService.cs
 │   │   │   ├── PromotionService.cs
+│   │   │   ├── ReconciliationGovernanceService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── ReconciliationSourceAdapters.cs
@@ -6468,6 +6484,8 @@ Meridian-main
 │   │   │   │   ├── IDataQualityApiClient.cs
 │   │   │   │   ├── IDataQualityPresentationService.cs
 │   │   │   │   └── IDataQualityRefreshService.cs
+│   │   │   ├── Reconciliation
+│   │   │   │   └── ReconciliationApiService.cs
 │   │   │   ├── ActivityFeedService.cs
 │   │   │   ├── AdminMaintenanceModels.cs
 │   │   │   ├── AdminMaintenanceServiceBase.cs
@@ -6558,6 +6576,9 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Ui.Services.csproj
 │   ├── Meridian.Ui.Shared
+│   │   ├── Contracts
+│   │   │   └── Reconciliation
+│   │   │       └── StatementImportContracts.cs
 │   │   ├── Endpoints
 │   │   │   ├── AdminEndpoints.cs
 │   │   │   ├── AnalyticsEndpoints.cs
@@ -7393,6 +7414,7 @@ Meridian-main
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
+│   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   └── ReconciliationRunServiceTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
@@ -7578,6 +7600,9 @@ Meridian-main
 │   │   │   ├── DataSourceRegistryTests.cs
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
+│   │   ├── Reconciliation
+│   │   │   ├── ReconciliationCaseServiceTests.cs
+│   │   │   └── StatementImportAndMatchingTests.cs
 │   │   ├── Risk
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
@@ -7684,6 +7709,7 @@ Meridian-main
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
+│   │   ├── StatementReconciliationServiceTests.cs
 │   │   └── TestCollections.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
