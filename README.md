@@ -4973,6 +4973,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── meridian-main-differentiation-report-2026-04-29.md
 │   │   ├── meridian-pilot-workflow.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
@@ -5706,6 +5707,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
+│   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
 │   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── Quality
@@ -6025,6 +6027,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
 │   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   └── PositionSyncOptions.cs
 │   │   └── TaxLotAccounting
@@ -7704,7 +7707,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
-│   │   │   └── PaperTradingPortfolioTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
+│   │   │   ├── PaperTradingPortfolioTests.cs
+│   │   │   └── PositionLotSelectorTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
@@ -8170,6 +8176,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-615 directories, 7380 files
+615 directories, 7386 files
 ```
 <!-- readme-tree end -->

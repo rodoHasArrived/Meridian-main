@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-30 05:50:59 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 04:43:37 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4606,6 +4606,7 @@ Meridian-main
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── meridian-main-differentiation-report-2026-04-29.md
 │   │   ├── meridian-pilot-workflow.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
@@ -5463,6 +5464,7 @@ Meridian-main
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
+│   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
 │   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── SecurityMasterIngestStatusModels.cs
@@ -5771,6 +5773,7 @@ Meridian-main
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
 │   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   └── PositionSyncOptions.cs
 │   │   ├── TaxLotAccounting
@@ -7458,7 +7461,10 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
-│   │   │   └── PaperTradingPortfolioTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
+│   │   │   ├── PaperTradingPortfolioTests.cs
+│   │   │   └── PositionLotSelectorTests.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
 │   │   │   │   └── CppTraderOrderGatewayTests.cs

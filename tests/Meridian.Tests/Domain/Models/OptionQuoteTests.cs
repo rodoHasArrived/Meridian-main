@@ -81,6 +81,24 @@ public sealed class OptionQuoteTests
             .Which.ParamName.Should().Be("AskPrice");
     }
 
+
+    [Fact]
+    public void Constructor_WithNearZeroNegativeAskPrice_NormalizesToZero()
+    {
+        var quote = CreateQuote(askPrice: -0.0000000000000087380782937286m);
+
+        quote.AskPrice.Should().Be(0m);
+    }
+
+    [Fact]
+    public void Constructor_WithMateriallyNegativeAskPrice_ThrowsArgumentOutOfRangeException()
+    {
+        var act = () => CreateQuote(askPrice: -0.00000000000002m);
+
+        act.Should().Throw<ArgumentOutOfRangeException>()
+            .Which.ParamName.Should().Be("AskPrice");
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]

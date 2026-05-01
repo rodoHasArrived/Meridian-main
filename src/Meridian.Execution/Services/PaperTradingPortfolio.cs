@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Api;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
@@ -20,6 +21,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
     private readonly Meridian.Ledger.Ledger? _ledger;
     private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
+    private readonly PositionLotSelectionMethod _lotSelectionMethod;
     private readonly Lock _lock = new();
 
     // Multi-account state — the default account always exists at key DefaultAccountId.
@@ -35,13 +37,15 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public PaperTradingPortfolio(
         decimal initialCash,
         Meridian.Ledger.Ledger? ledger = null,
-        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null)
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null,
+        PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
     {
         if (initialCash < 0)
             throw new ArgumentOutOfRangeException(nameof(initialCash), "Initial cash must be non-negative.");
 
         _ledger = ledger;
         _corporateActionAdjuster = corporateActionAdjuster;
+        _lotSelectionMethod = lotSelectionMethod;
 
         var defaultAccount = new AccountState(DefaultAccountId, "Default Paper Account", AccountKind.Brokerage, initialCash);
         _accounts[DefaultAccountId] = defaultAccount;
@@ -70,7 +74,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public PaperTradingPortfolio(
         IReadOnlyList<AccountDefinition> accounts,
         Meridian.Ledger.Ledger? ledger = null,
-        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null)
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null,
+        PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
     {
         ArgumentNullException.ThrowIfNull(accounts);
         if (accounts.Count == 0)
@@ -78,6 +83,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         _ledger = ledger;
         _corporateActionAdjuster = corporateActionAdjuster;
+        _lotSelectionMethod = lotSelectionMethod;
 
         foreach (var def in accounts)
         {
@@ -208,6 +214,23 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 .ToArray();
 
             return MultiAccountPortfolioSnapshot.FromAccounts(snapshots);
+        }
+    }
+
+    /// <summary>
+    /// Returns the current open lots for a symbol in the default account.
+    /// </summary>
+    public IReadOnlyList<PositionLotEntry> GetPositionLots(string symbol)
+    {
+        lock (_lock)
+        {
+            if (!_accounts.TryGetValue(DefaultAccountId, out var account) ||
+                !account.Positions.TryGetValue(symbol, out var position))
+            {
+                return [];
+            }
+
+            return position.GetLots();
         }
     }
 
@@ -530,6 +553,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts)
     {
         var notional = qty * price;
+        pos.AddLot(qty, price, ts);
         var newQty = pos.Quantity + qty;
         pos.CostBasis = newQty == 0m ? 0m : (pos.CostBasis * pos.Quantity + notional) / newQty;
         pos.Quantity = newQty;
@@ -571,7 +595,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts)
     {
         var coverQty = Math.Min(qty, Math.Abs(pos.Quantity));
-        var proceedsRemoved = coverQty * pos.CostBasis;
+        var proceedsRemoved = pos.ConsumeLots(coverQty, _lotSelectionMethod, isCoveringShort: true);
         var coverCost = coverQty * price;
         var realised = proceedsRemoved - coverCost;
 
@@ -607,7 +631,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts)
     {
         var closeQty = Math.Min(qty, pos.Quantity);
-        var costBasisRemoved = closeQty * pos.CostBasis;
+        var costBasisRemoved = pos.ConsumeLots(closeQty, _lotSelectionMethod, isCoveringShort: false);
         var proceeds = closeQty * price;
         var realised = proceeds - costBasisRemoved;
 
@@ -642,6 +666,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts)
     {
         var proceeds = qty * price;
+        pos.AddLot(-qty, price, ts);
         var newQty = pos.Quantity - qty;
         pos.CostBasis = newQty == 0m
             ? 0m
@@ -885,6 +910,7 @@ internal sealed class AccountState : IAccountPortfolio
 /// </summary>
 internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 {
+    private readonly List<PositionLot> _lots = [];
     public string Symbol { get; } = symbol;
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
@@ -902,10 +928,92 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         ? (MarketPrice - CostBasis) * Quantity
         : 0m; // short unrealised P&L tracked separately
 
+    public IReadOnlyList<PositionLotEntry> GetLots() => _lots
+        .Select(static lot => new PositionLotEntry(
+            lot.LotId,
+            Math.Abs(lot.OpenQuantity),
+            lot.EntryPrice,
+            lot.OpenedAt))
+        .ToArray();
+
+    public void AddLot(decimal signedQuantity, decimal entryPrice, DateTimeOffset openedAt)
+    {
+        if (signedQuantity == 0m)
+        {
+            return;
+        }
+
+        _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
+    }
+
+    public decimal ConsumeLots(decimal quantity, PositionLotSelectionMethod method, bool isCoveringShort)
+    {
+        if (quantity <= 0m)
+        {
+            return 0m;
+        }
+
+        var remaining = quantity;
+        var removedCostBasis = 0m;
+
+        while (remaining > 0m)
+        {
+            var lot = SelectNextLot(method, isCoveringShort);
+            if (lot is null)
+            {
+                removedCostBasis += remaining * CostBasis;
+                break;
+            }
+
+            var lotAvailable = Math.Abs(lot.OpenQuantity);
+            var consumed = Math.Min(remaining, lotAvailable);
+            removedCostBasis += consumed * lot.EntryPrice;
+            remaining -= consumed;
+
+            var newOpenQty = lot.OpenQuantity > 0m
+                ? lot.OpenQuantity - consumed
+                : lot.OpenQuantity + consumed;
+
+            if (newOpenQty == 0m)
+            {
+                _lots.Remove(lot);
+            }
+            else
+            {
+                lot.OpenQuantity = newOpenQty;
+            }
+        }
+
+        return removedCostBasis;
+    }
+
+    private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)
+    {
+        var candidates = isCoveringShort
+            ? _lots.Where(static lot => lot.OpenQuantity < 0m)
+            : _lots.Where(static lot => lot.OpenQuantity > 0m);
+
+        return method switch
+        {
+            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
+            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt).FirstOrDefault(),
+            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt).FirstOrDefault(),
+            _ => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
+        };
+    }
+
     public ExecutionPosition ToExecutionPosition() => new(
         Symbol,
         (long)Quantity,
         CostBasis,
         UnrealisedPnl,
         0m);  // realised P&L is carried at the account level
+}
+
+internal sealed class PositionLot(string lotId, decimal openQuantity, decimal entryPrice, DateTimeOffset openedAt)
+{
+    public string LotId { get; } = lotId;
+    public decimal OpenQuantity { get; set; } = openQuantity;
+    public decimal EntryPrice { get; } = entryPrice;
+    public DateTimeOffset OpenedAt { get; } = openedAt;
 }

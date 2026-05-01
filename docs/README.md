@@ -1,9 +1,9 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-04-29
+**Last Reviewed:** 2026-05-01
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
-This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: an evidence-backed investment operations platform spanning trusted data, strategy work, paper validation, portfolio/accounting review, reconciliation, governed reports, and retained desktop-local support.
+This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
 
 ## Platform At A Glance
 
@@ -13,7 +13,7 @@ Meridian's current solution includes:
 - application, contracts, core, domain, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Contracts/`, `src/Meridian.Core/`, `src/Meridian.Domain/`, `src/Meridian.Infrastructure/`, `src/Meridian.Infrastructure.CppTrader/`, and `src/Meridian.Storage/`
 - execution, provider, risk, strategy, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.ProviderSdk/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, and `src/Meridian.Backtesting*/`
 - ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`, and `src/Meridian.IbApi.SmokeStub/`
-- desktop UI surfaces in `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
+- operator UI surfaces in `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui/wwwroot/workstation/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Ui.Services/` with retained desktop compatibility in `src/Meridian.Wpf/`
 - scripting and MCP surfaces in `src/Meridian.QuantScript/`, `src/Meridian.Mcp/`, and `src/Meridian.McpServer/`
 
 ## Start Here
@@ -25,13 +25,16 @@ Meridian's current solution includes:
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
 - **Current delivery plan:** [Project Roadmap](status/ROADMAP.md)
 - **Target product narrative:** [Target End Product](status/TARGET_END_PRODUCT.md)
-- **Differentiation plan:** [Evidence-Backed Investment Operations Plan](plans/evidence-backed-investment-operations-plan.md)
+- **Product-category filter:** [Evidence-Backed Investment Operations Plan](plans/evidence-backed-investment-operations-plan.md)
+- **Browser-first operator UI lane:** [Web UI Development Pivot](plans/web-ui-development-pivot.md)
+- **Waves 2-4 execution alignment:** [Waves 2-4 Operator Readiness Addendum](plans/waves-2-4-operator-readiness-addendum.md)
 
 ## Documentation Zones
 
 | Zone | Folders | Audience |
 |------|---------|----------|
 | Product | `getting-started/`, `providers/`, `operations/` | Users and operators |
+| Web Operator UI | `plans/`, `status/`, `development/`, `ai/` | Dashboard, API, and workflow contributors |
 | Engineering | `architecture/`, `adr/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `ai/` | Developers and tool authors |
 | Governance | `status/`, `plans/`, `evaluations/`, `audits/`, `security/` | Core team and stakeholders |
 
@@ -82,30 +85,31 @@ Meridian's current solution includes:
 
 ## Current Planning Source Of Truth
 
-Use these documents together when planning implementation. The active core operator-readiness path is:
+Use these documents together when planning implementation. The active operator-readiness path is:
 
 - Wave 1: provider confidence and checkpoint evidence
-- Wave 2: paper-trading cockpit hardening
-- Wave 3: shared run / portfolio / ledger continuity
+- Wave 2: paper-trading cockpit hardening (web-first readiness console and cockpit posture)
+- Wave 3: shared run / portfolio / ledger continuity through shared contracts and browser workflows
 - Wave 4: governance and fund-operations productization on top of the delivered Security Master baseline
 
 Use the documents below to manage that path:
 
 1. [status/ROADMAP_COMBINED.md](status/ROADMAP_COMBINED.md) for the shortest complete roadmap snapshot
 2. [status/ROADMAP.md](status/ROADMAP.md) for the full wave-structured delivery plan
-3. [plans/evidence-backed-investment-operations-plan.md](plans/evidence-backed-investment-operations-plan.md) for the differentiation filter and archive rule
-4. [status/OPPORTUNITY_SCAN.md](status/OPPORTUNITY_SCAN.md) for prioritized repo-grounded opportunities
-5. [status/TARGET_END_PRODUCT.md](status/TARGET_END_PRODUCT.md) for the intended finished product narrative
-6. [plans/README.md](plans/README.md) for the active blueprint and roadmap catalog
-7. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
-8. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
-9. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for Wave 2 cockpit hardening and Wave 3 shared-model implementation details
-10. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, Security Master, reconciliation, and reporting direction
-11. [plans/backtest-studio-unification-blueprint.md](plans/backtest-studio-unification-blueprint.md) for the Wave 5 backtesting unification follow-on
+3. [plans/evidence-backed-investment-operations-plan.md](plans/evidence-backed-investment-operations-plan.md) for the product-category filter and archive rule
+4. [plans/web-ui-development-pivot.md](plans/web-ui-development-pivot.md) for the browser-first operator UI lane and retained desktop policy
+5. [plans/waves-2-4-operator-readiness-addendum.md](plans/waves-2-4-operator-readiness-addendum.md) for owner lanes, dependencies, and wave exit criteria
+6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
+7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
+8. [plans/paper-trading-cockpit-reliability-sprint.md](plans/paper-trading-cockpit-reliability-sprint.md) for Wave 2 replay/session/risk reliability hardening
+9. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for migration context that should be interpreted through the active web pivot
+10. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, reconciliation, and reporting direction
+11. [plans/fund-management-pr-sequenced-roadmap.md](plans/fund-management-pr-sequenced-roadmap.md) for PR-sized governance and fund-ops implementation slices
 12. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
 13. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
-14. [status/production-status.md](status/production-status.md) for current readiness caveats
-15. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+14. [status/kernel-readiness-dashboard.md](status/kernel-readiness-dashboard.md) for DK gate status and operator sign-off posture
+15. [status/production-status.md](status/production-status.md) for current readiness caveats
+16. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 ## Verified Build And Run References
 
