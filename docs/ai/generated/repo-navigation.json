@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-01T20:48:18Z",
+  "generatedAt": "2026-05-01T21:43:25Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
   "subsystems": [
@@ -1006,7 +1006,9 @@
         "src/Meridian.Ui.Services"
       ],
       "projectReferences": [
-        "..\\Meridian.Contracts\\Meridian.Contracts"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Infrastructure\\Meridian.Infrastructure",
+        "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
       ],
       "relatedDocs": []
     },

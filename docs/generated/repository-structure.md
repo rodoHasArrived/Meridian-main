@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-01 20:48:18 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 21:43:24 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5577,6 +5577,7 @@ Meridian-main
 │   │   │   ├── ResearchBriefingDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
+│   │   │   ├── StrategyRunContractCompatibility.cs
 │   │   │   ├── StrategyRunReadModels.cs
 │   │   │   ├── TradingOperatorReadinessDtos.cs
 │   │   │   ├── WorkflowLibraryDtos.cs
