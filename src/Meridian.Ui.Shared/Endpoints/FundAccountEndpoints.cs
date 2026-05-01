@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
@@ -77,6 +78,27 @@ public static class FundAccountEndpoints
         })
         .WithName("GetFundAccounts")
         .Produces<FundAccountsDto>(StatusCodes.Status200OK);
+
+        app.MapGet("/api/funds/{fundId:guid}/accounts", async (Guid fundId, string? accountType, string? status, HttpContext context) =>
+        {
+            var query = context.RequestServices.GetService<IFundAccountTraversalQueryService>();
+            if (query is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var parsedType = Enum.TryParse<AccountTypeDto>(accountType, ignoreCase: true, out var typeValue)
+                ? typeValue
+                : (AccountTypeDto?)null;
+            var activeOnly = !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(status, "suspended", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(status, "closed", StringComparison.OrdinalIgnoreCase);
+
+            var accounts = await query.GetFundAccountsAsync(fundId, parsedType, activeOnly, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(accounts, jsonOptions);
+        })
+        .WithName("GetFundAccountsByOwnershipTraversal")
+        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK);
 
         group.MapPatch("/{accountId:guid}/custodian-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
