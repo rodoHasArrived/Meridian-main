@@ -57,7 +57,7 @@ compatibility aliases or grouping language, not new root navigation.
 | 5 | Shadow Books and Shadow NAV | Wave 4 later slice | Planned on top of ledger, reconciliation, external-statement import, and report-pack foundations |
 | 6 | Strategy / Promotion Passport | Wave 2 into Wave 3 | Partial support through promotion checklist and review-packet state |
 | 7 | Data Trust Passport | Wave 1 maintenance into Wave 3 | Partial support through DK1 trust packets, validation evidence, and data-quality posture |
-| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness` and shared readiness payloads |
+| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness` and shared readiness payloads; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
 
 Do not expand live-broker breadth, generic analytics, or bank-style governance frameworks ahead of
 these evidence-producing seams unless the roadmap explicitly pulls that work forward.
@@ -75,6 +75,9 @@ These package names are positioning aids, not implementation status:
 ## Sequencing Rule
 
 1. Prove one seeded golden path from trusted data to governed report pack.
+   The trading readiness contract now checks the report-pack link for the latest run lineage and
+   exposes an evidence-completeness summary alongside the existing session, replay, control,
+   promotion, and DK1 gates.
 2. Productize the visible evidence surfaces: Data Trust Passport, Strategy / Promotion Passport,
    Run Evidence Graph, and governed packs.
 3. Deepen daily operations: reconciliation casework, shadow books, close readiness, and statement

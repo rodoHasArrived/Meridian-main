@@ -20,6 +20,8 @@ public interface IGovernanceReportPackRepository
         CancellationToken ct = default);
 
     Task<FundReportPackSnapshotDto?> GetAsync(Guid reportId, CancellationToken ct = default);
+
+    Task<FundReportPackSnapshotDto?> FindLatestByRunIdAsync(string runId, CancellationToken ct = default);
 }
 
 public sealed record GovernanceReportPackArtifactContent(
@@ -192,6 +194,40 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             }
 
             return null;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<FundReportPackSnapshotDto?> FindLatestByRunIdAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!Directory.Exists(_rootDirectory))
+            {
+                return null;
+            }
+
+            var matches = new List<FundReportPackSnapshotDto>();
+            foreach (var manifestPath in Directory.EnumerateFiles(_rootDirectory, "manifest.json", SearchOption.AllDirectories))
+            {
+                ct.ThrowIfCancellationRequested();
+                var snapshot = await TryReadSnapshotAsync(manifestPath, ct).ConfigureAwait(false);
+                if (snapshot?.Provenance.RelatedRunIds.Contains(runId, StringComparer.OrdinalIgnoreCase) == true)
+                {
+                    matches.Add(snapshot);
+                }
+            }
+
+            return matches
+                .OrderByDescending(static snapshot => snapshot.GeneratedAt)
+                .ThenByDescending(static snapshot => snapshot.ReportId)
+                .FirstOrDefault();
         }
         finally
         {

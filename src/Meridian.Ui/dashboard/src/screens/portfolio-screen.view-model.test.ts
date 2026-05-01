@@ -94,6 +94,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.positionRows).toHaveLength(1);
     expect(vm.positionRows[0].symbol).toBe("AAPL");
     expect(vm.positionRows[0].pnlTone).toBe("success");
+    expect(vm.positionRows[0].isSelected).toBe(true);
+    expect(vm.selectedPosition?.title).toBe("AAPL");
   });
 
   it("returns run rows from research data", () => {
@@ -102,6 +104,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.runRows).toHaveLength(1);
     expect(vm.runRows[0].strategyName).toBe("Mean Reversion");
     expect(vm.runRows[0].promotionState).toBe("Promoted");
+    expect(vm.runRows[0].modeBadgeVariant).toBe("paper");
+    expect(vm.runRows[0].pnlTone).toBe("success");
   });
 
   it("surfaces cash-flow summary from governance data", () => {
@@ -116,6 +120,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.hasPositions).toBe(false);
     expect(vm.positionEmptyText).toContain("unavailable");
     expect(vm.metricsFromTrading).toBe(false);
+    expect(vm.selectedPosition).toBeNull();
   });
 
   it("returns empty run text when research data is null", () => {
@@ -131,11 +136,44 @@ describe("buildPortfolioScreenViewModel", () => {
     };
     const vm = buildPortfolioScreenViewModel({ trading: tradingWithLoss, research, governance });
     expect(vm.positionRows[0].pnlTone).toBe("danger");
+    expect(vm.selectedPosition?.fields.find((field) => field.label === "Unrealized P&L")?.tone).toBe("danger");
   });
 
   it("provides fallback stats when trading is available", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
     expect(vm.fallbackStats).toHaveLength(4);
-    expect(vm.fallbackStats.find((s) => s.label === "Open Positions")?.value).toBe("1");
+    expect(vm.fallbackStats.find((s) => s.label === "Open positions")?.value).toBe("1");
+  });
+
+  it("keeps selected holding state in the view model", () => {
+    const tradingWithTwoPositions: TradingWorkspaceResponse = {
+      ...trading,
+      positions: [
+        trading.positions[0],
+        {
+          symbol: "MSFT",
+          side: "Short",
+          quantity: "25",
+          averagePrice: "412.10",
+          markPrice: "410.00",
+          dayPnl: "+$52.50",
+          unrealizedPnl: "+$52.50",
+          exposure: "$10,250"
+        }
+      ]
+    };
+
+    const vm = buildPortfolioScreenViewModel({
+      trading: tradingWithTwoPositions,
+      research,
+      governance,
+      selectedPositionId: "msft-short-1"
+    });
+
+    expect(vm.positionRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.positionRows[1].selectAriaLabel).toBe("Inspect MSFT Short holding");
+    expect(vm.selectedPosition?.title).toBe("MSFT");
+    expect(vm.selectedPosition?.statusDetail).toContain("$10,250 exposure");
+    expect(vm.selectedPosition?.fields.find((field) => field.label === "Guardrails")?.value).toBe("No active guardrails");
   });
 });

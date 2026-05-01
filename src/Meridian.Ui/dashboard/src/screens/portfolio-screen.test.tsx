@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderWithRouter } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import type {
@@ -93,7 +94,9 @@ describe("PortfolioScreen", () => {
   it("renders position table with trading data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
     expect(screen.getByRole("table", { name: /open positions/i })).toBeDefined();
-    expect(screen.getByText("AAPL")).toBeDefined();
+    expect(screen.getByRole("button", { name: /inspect aapl long holding/i })).toBeDefined();
+    expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();
+    expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
   it("renders run-linked equity table with research data", () => {
@@ -104,7 +107,8 @@ describe("PortfolioScreen", () => {
 
   it("shows empty text when trading is null", () => {
     renderWithRouter(<PortfolioScreen trading={null} research={research} governance={governance} />);
-    expect(screen.getByText(/trading workspace data unavailable/i)).toBeDefined();
+    expect(screen.getAllByText(/trading workspace data unavailable/i)).toHaveLength(2);
+    expect(screen.getByText(/no holding selected/i)).toBeDefined();
   });
 
   it("shows empty text when research is null", () => {
@@ -115,5 +119,34 @@ describe("PortfolioScreen", () => {
   it("shows cash-flow posture when governance data is available", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
     expect(screen.getByText(/1 run needs variance review/i)).toBeDefined();
+  });
+
+  it("updates the holding detail panel from the inspect control", async () => {
+    const user = userEvent.setup();
+    const tradingWithTwoPositions: TradingWorkspaceResponse = {
+      ...trading,
+      positions: [
+        trading.positions[0],
+        {
+          symbol: "MSFT",
+          side: "Short",
+          quantity: "25",
+          averagePrice: "412.10",
+          markPrice: "410.00",
+          dayPnl: "+$52.50",
+          unrealizedPnl: "+$52.50",
+          exposure: "$10,250"
+        }
+      ]
+    };
+
+    renderWithRouter(<PortfolioScreen trading={tradingWithTwoPositions} research={research} governance={governance} />);
+
+    const msftButton = screen.getByRole("button", { name: /inspect msft short holding/i });
+    await user.click(msftButton);
+
+    expect(msftButton).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("complementary", { name: /msft holding detail/i })).toBeDefined();
+    expect(screen.getByText(/\$10,250 exposure with \+\$52.50 unrealized p&l/i)).toBeDefined();
   });
 });

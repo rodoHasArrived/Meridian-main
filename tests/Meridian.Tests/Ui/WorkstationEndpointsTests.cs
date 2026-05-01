@@ -555,6 +555,8 @@ public sealed class WorkstationEndpointsTests
             feedReference: "synthetic:equities",
             fundProfileId: fundProfileId).Complete(BuildBacktestResultWithSymbol("AAPL")) with
             {
+                RunId = "run-wave2-backtest",
+                AuditReference = "audit-run-wave2-backtest",
                 FundProfileId = fundProfileId,
                 FundDisplayName = "Wave 2 Readiness Fund"
             });
@@ -613,6 +615,9 @@ public sealed class WorkstationEndpointsTests
                 GovernanceReportArtifactFormatDto.Json,
                 "trial-balance.json",
                 Encoding.UTF8.GetBytes("""{"status":"ready"}"""))]);
+        (await reportPackRepository.FindLatestByRunIdAsync("run-wave2-backtest"))
+            .Should()
+            .NotBeNull();
 
         var client = app.GetTestClient();
         var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
@@ -693,13 +698,14 @@ public sealed class WorkstationEndpointsTests
             gate.GateId == "dk1-trust" &&
             gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
             gate.Detail.Contains("sign-off remains pending", StringComparison.OrdinalIgnoreCase));
+        readiness.ReportPack.Should().NotBeNull();
+        readiness.ReportPack!.Detail.Should().Contain("run-wave2-backtest");
+        readiness.ReportPack.ReportId.Should().Be(reportPack.ReportId);
+        readiness.ReportPack.RelatedRunIds.Should().Contain("run-wave2-backtest");
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "report-pack" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
             gate.AuditReference == reportPack.ReportId.ToString("D"));
-        readiness.ReportPack.Should().NotBeNull();
-        readiness.ReportPack!.ReportId.Should().Be(reportPack.ReportId);
-        readiness.ReportPack.RelatedRunIds.Should().Contain("run-wave2-backtest");
         readiness.EvidenceCompleteness.Should().NotBeNull();
         readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(5);
         readiness.EvidenceCompleteness.TotalGateCount.Should().Be(6);

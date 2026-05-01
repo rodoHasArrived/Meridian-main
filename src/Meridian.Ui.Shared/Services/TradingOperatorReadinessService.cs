@@ -145,7 +145,7 @@ public sealed class TradingOperatorReadinessService
         var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
         var promotion = BuildPromotion(latestRun, promotionRecords);
         var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
-        var reportPack = await ResolveReportPackReadinessAsync(latestRun, ct).ConfigureAwait(false);
+        var reportPack = await ResolveReportPackReadinessAsync(latestRun, promotion, ct).ConfigureAwait(false);
         if (promotion is null)
         {
             AddWorkItem(
@@ -309,6 +309,7 @@ public sealed class TradingOperatorReadinessService
 
     private async Task<TradingReportPackReadinessDto> ResolveReportPackReadinessAsync(
         StrategyRunDetail? latestRun,
+        TradingPromotionReadinessDto? promotion,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -326,27 +327,17 @@ public sealed class TradingOperatorReadinessService
                 ManifestPath: null);
         }
 
+        var candidateRunIds = BuildReportPackRunCandidates(latestRun, promotion);
+        var primaryRunId = candidateRunIds[0];
         var fundProfileId = latestRun.Summary.FundProfileId;
-        if (string.IsNullOrWhiteSpace(fundProfileId))
-        {
-            return new TradingReportPackReadinessDto(
-                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-                Detail: $"Latest run {latestRun.Summary.RunId} has no fund profile, so report-pack lineage cannot be verified.",
-                FundProfileId: null,
-                ReportId: null,
-                GeneratedAt: null,
-                RelatedRunIds: [],
-                ArtifactCount: 0,
-                WarningCount: 0,
-                ManifestPath: null);
-        }
-
         var repository = Resolve<IGovernanceReportPackRepository>();
         if (repository is null)
         {
             return new TradingReportPackReadinessDto(
                 Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-                Detail: $"Governance report-pack repository is not registered for fund {fundProfileId}.",
+                Detail: string.IsNullOrWhiteSpace(fundProfileId)
+                    ? $"Governance report-pack repository is not registered, and latest run {primaryRunId} has no fund profile."
+                    : $"Governance report-pack repository is not registered for fund {fundProfileId}.",
                 FundProfileId: fundProfileId,
                 ReportId: null,
                 GeneratedAt: null,
@@ -356,44 +347,40 @@ public sealed class TradingOperatorReadinessService
                 ManifestPath: null);
         }
 
-        var history = await repository.GetHistoryAsync(fundProfileId, limit: 10, ct).ConfigureAwait(false);
-        foreach (var item in history.OrderByDescending(static item => item.GeneratedAt))
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
         {
-            ct.ThrowIfCancellationRequested();
-            var snapshot = await repository.GetAsync(item.ReportId, ct).ConfigureAwait(false);
-            if (snapshot is null)
+            var history = await repository.GetHistoryAsync(fundProfileId, limit: 10, ct).ConfigureAwait(false);
+            foreach (var item in history.OrderByDescending(static item => item.GeneratedAt))
             {
-                continue;
-            }
+                ct.ThrowIfCancellationRequested();
+                var snapshot = await repository.GetAsync(item.ReportId, ct).ConfigureAwait(false);
+                if (snapshot is null)
+                {
+                    continue;
+                }
 
-            var relatedRunIds = snapshot.Provenance.RelatedRunIds;
-            if (!relatedRunIds.Contains(latestRun.Summary.RunId, StringComparer.OrdinalIgnoreCase))
+                var readiness = BuildReportPackReadinessForRuns(snapshot, candidateRunIds, item.RelativeManifestPath);
+                if (readiness is not null)
+                {
+                    return readiness;
+                }
+            }
+        }
+
+        foreach (var runId in candidateRunIds)
+        {
+            var runLinkedSnapshot = await repository.FindLatestByRunIdAsync(runId, ct).ConfigureAwait(false);
+            if (runLinkedSnapshot is not null)
             {
-                continue;
+                return BuildReportPackReadinessForRuns(runLinkedSnapshot, candidateRunIds, manifestPath: null)!;
             }
-
-            var status = snapshot.Warnings.Count == 0 && snapshot.Artifacts.Count > 0
-                ? TradingAcceptanceGateStatusDto.Ready
-                : TradingAcceptanceGateStatusDto.ReviewRequired;
-            var detail = status == TradingAcceptanceGateStatusDto.Ready
-                ? $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s) and links to run {latestRun.Summary.RunId}."
-                : $"Report pack {snapshot.ReportId:D} links to run {latestRun.Summary.RunId}, but {snapshot.Warnings.Count} warning(s) require review.";
-
-            return new TradingReportPackReadinessDto(
-                Status: status,
-                Detail: detail,
-                FundProfileId: snapshot.FundProfileId,
-                ReportId: snapshot.ReportId,
-                GeneratedAt: snapshot.GeneratedAt,
-                RelatedRunIds: relatedRunIds,
-                ArtifactCount: snapshot.Artifacts.Count,
-                WarningCount: snapshot.Warnings.Count,
-                ManifestPath: item.RelativeManifestPath);
         }
 
         return new TradingReportPackReadinessDto(
             Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-            Detail: $"No governed report pack links fund {fundProfileId} to latest run {latestRun.Summary.RunId}.",
+            Detail: string.IsNullOrWhiteSpace(fundProfileId)
+                ? $"No governed report pack links to latest run {primaryRunId}."
+                : $"No governed report pack links fund {fundProfileId} to latest run {primaryRunId}.",
             FundProfileId: fundProfileId,
             ReportId: null,
             GeneratedAt: null,
@@ -401,6 +388,53 @@ public sealed class TradingOperatorReadinessService
             ArtifactCount: 0,
             WarningCount: 0,
             ManifestPath: null);
+    }
+
+    private static IReadOnlyList<string> BuildReportPackRunCandidates(
+        StrategyRunDetail latestRun,
+        TradingPromotionReadinessDto? promotion)
+        => new[]
+            {
+                latestRun.Summary.RunId,
+                latestRun.Summary.ParentRunId,
+                promotion?.SourceRunId,
+                promotion?.TargetRunId
+            }
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .Select(static runId => runId!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static TradingReportPackReadinessDto? BuildReportPackReadinessForRuns(
+        FundReportPackSnapshotDto snapshot,
+        IReadOnlyList<string> candidateRunIds,
+        string? manifestPath)
+    {
+        var relatedRunIds = snapshot.Provenance.RelatedRunIds;
+        var matchedRunId = candidateRunIds.FirstOrDefault(runId =>
+            relatedRunIds.Contains(runId, StringComparer.OrdinalIgnoreCase));
+        if (matchedRunId is null)
+        {
+            return null;
+        }
+
+        var status = snapshot.Warnings.Count == 0 && snapshot.Artifacts.Count > 0
+            ? TradingAcceptanceGateStatusDto.Ready
+            : TradingAcceptanceGateStatusDto.ReviewRequired;
+        var detail = status == TradingAcceptanceGateStatusDto.Ready
+            ? $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s) and links to run {matchedRunId}."
+            : $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but {snapshot.Warnings.Count} warning(s) require review.";
+
+        return new TradingReportPackReadinessDto(
+            Status: status,
+            Detail: detail,
+            FundProfileId: snapshot.FundProfileId,
+            ReportId: snapshot.ReportId,
+            GeneratedAt: snapshot.GeneratedAt,
+            RelatedRunIds: relatedRunIds,
+            ArtifactCount: snapshot.Artifacts.Count,
+            WarningCount: snapshot.Warnings.Count,
+            ManifestPath: manifestPath);
     }
 
     private static TradingReplayReadinessDto? BuildReplay(
