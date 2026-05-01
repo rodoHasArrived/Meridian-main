@@ -60,9 +60,9 @@ Total items: **83**
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 171 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 135 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 95 | `NOTE` | ❌ | Note: item.ResolutionNote), ct).ConfigureAwait(false); |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 192 | `NOTE` | ❌ | Note: request.ReviewNote), ct).ConfigureAwait(false); |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 265 | `NOTE` | ❌ | Note: request.ResolutionNote), ct).ConfigureAwait(false); |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 97 | `NOTE` | ❌ | Note: item.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 209 | `NOTE` | ❌ | Note: request.ReviewNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 303 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 514 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
@@ -73,7 +73,7 @@ Total items: **83**
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 300 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 108 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 374 | `NOTE` | ❌ | note: provider.note, |
-| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 184 | `NOTE` | ❌ | note: "Ready", |
+| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 186 | `NOTE` | ❌ | note: "Ready", |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 431 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |
