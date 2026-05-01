@@ -454,3 +454,7 @@ python3 generate-api-contract-coverage-dashboard.py \
 - `docs/status/evidence-continuity-dashboard.md` + `.json`
 - `docs/status/governance-readiness-dashboard.md` + `.json`
 - `docs/status/api-contract-coverage-dashboard.md` + `.json`
+
+The pilot readiness dashboard derives readiness from the artifact stage-gate details and evidence
+graph, including required golden-path stage coverage and self-edge checks. Do not treat top-level
+artifact counters as sufficient evidence when the stage details disagree.

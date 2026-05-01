@@ -5,7 +5,7 @@ This checklist maps 1:1 to the pre-production checklist in `docs/status/producti
 ## Checklist Mapping
 
 | Production-status item | Operational verification evidence |
-|---|---|
+| --- | --- |
 | Configure real provider credentials and validate operator startup paths | Credential inventory completed; `--quick-check`, `--test-connectivity`, and `--dry-run` logs attached. |
 | Complete remaining provider-confidence hardening for Polygon, StockSharp, IB, and optional NYSE | Provider hardening tracker updated; connector-specific smoke tests passed. |
 | Validate brokerage gateway adapters (Alpaca, IB, StockSharp) against live vendor surfaces | Adapter validation report with timestamps and environment labels (paper/live) archived. |

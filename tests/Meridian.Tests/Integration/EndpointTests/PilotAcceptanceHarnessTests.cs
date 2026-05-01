@@ -202,6 +202,14 @@ public sealed class PilotAcceptanceHarnessTests
             .ToArray();
         stageNames.Should().Contain("TrustedData");
         stageNames.Should().Contain("GovernedReportPack");
+        artifactDocument.RootElement.GetProperty("stageGates")
+            .EnumerateArray()
+            .SelectMany(stage => stage.GetProperty("evidenceIds").EnumerateArray())
+            .Select(evidenceId => evidenceId.GetString())
+            .Should()
+            .OnlyContain(evidenceId =>
+                !string.IsNullOrWhiteSpace(evidenceId) &&
+                !evidenceId.Contains("missing", StringComparison.OrdinalIgnoreCase));
         var graphRelationships = artifactDocument.RootElement.GetProperty("evidenceGraph")
             .EnumerateArray()
             .Select(item => item.GetProperty("relationship").GetString())
@@ -536,17 +544,17 @@ public sealed class PilotAcceptanceHarnessTests
         string symbol,
         decimal quantity,
         decimal fillPrice) => new()
-    {
-        OrderId = orderId,
-        ReportType = ExecutionReportType.Fill,
-        Symbol = symbol,
-        Side = OrderSide.Buy,
-        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
-        OrderQuantity = quantity,
-        FilledQuantity = quantity,
-        FillPrice = fillPrice,
-        Timestamp = DateTimeOffset.UtcNow
-    };
+        {
+            OrderId = orderId,
+            ReportType = ExecutionReportType.Fill,
+            Symbol = symbol,
+            Side = OrderSide.Buy,
+            OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+            OrderQuantity = quantity,
+            FilledQuantity = quantity,
+            FillPrice = fillPrice,
+            Timestamp = DateTimeOffset.UtcNow
+        };
 
     private static IReadOnlyList<PilotReadinessStageGateDto> BuildPilotStageGates(
         PilotSeed seed,

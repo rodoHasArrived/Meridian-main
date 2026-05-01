@@ -37,6 +37,17 @@ DATA_SOURCES = [
 
 PILOT_ACCEPTANCE_ARTIFACT = "artifacts/pilot-acceptance/latest/pilot-readiness.json"
 
+EXPECTED_STAGE_SEQUENCE = [
+    "TrustedData",
+    "ResearchRun",
+    "RunComparison",
+    "PaperPromotion",
+    "PaperSession",
+    "PortfolioLedgerReview",
+    "Reconciliation",
+    "GovernedReportPack",
+]
+
 CHECKS = [
     {
         "id": "pilot-acceptance-artifact",
@@ -146,6 +157,7 @@ def build_dashboard(root: Path) -> dict:
         checks=CHECKS,
     )
     payload["pilot_acceptance_artifact"] = load_pilot_acceptance_artifact(root)
+    apply_pilot_acceptance_artifact_consistency(payload)
     return payload
 
 
@@ -195,16 +207,80 @@ def load_pilot_acceptance_artifact_from_payload(
         for gate in artifact.get("stageGates", [])
         if isinstance(gate, dict)
     ]
+    stage_names = [gate["stage"] for gate in stage_gates]
+    missing_stages = [stage for stage in EXPECTED_STAGE_SEQUENCE if stage not in stage_names]
+    blocked_stage_count = sum(
+        1
+        for gate in stage_gates
+        if gate["status"] != "Ready" or gate["blockers"]
+    )
+    derived_ready_stage_count = sum(
+        1
+        for gate in stage_gates
+        if gate["status"] == "Ready" and not gate["blockers"]
+    )
+    reported_ready_stage_count = int(artifact.get("readyStageCount", 0))
+    reported_total_stage_count = int(artifact.get("totalStageCount", len(stage_gates)))
+    count_mismatch = (
+        reported_ready_stage_count != derived_ready_stage_count
+        or reported_total_stage_count != len(stage_gates)
+    )
+    all_stages_ready = (
+        bool(stage_gates)
+        and not missing_stages
+        and blocked_stage_count == 0
+        and derived_ready_stage_count == len(stage_gates)
+        and artifact.get("allStagesReady", False) is True
+        and not count_mismatch
+    )
+    consistency_issues: list[str] = []
+    if missing_stages:
+        consistency_issues.append("Missing required stages: " + ", ".join(missing_stages))
+    if blocked_stage_count:
+        consistency_issues.append(f"{blocked_stage_count} stage gate(s) are blocked or require review.")
+    if count_mismatch:
+        consistency_issues.append(
+            "Top-level readiness counts do not match the stage gate details."
+        )
+    if artifact.get("allStagesReady", False) is True and not all_stages_ready:
+        consistency_issues.append(
+            "Top-level allStagesReady=true is inconsistent with the stage gate details."
+        )
+
+    evidence_graph = [
+        {
+            "from_evidence_id": str(edge.get("fromEvidenceId", "")),
+            "to_evidence_id": str(edge.get("toEvidenceId", "")),
+            "relationship": str(edge.get("relationship", "")),
+        }
+        for edge in artifact.get("evidenceGraph", [])
+        if isinstance(edge, dict)
+    ]
+    self_edge_count = sum(
+        1
+        for edge in evidence_graph
+        if edge["from_evidence_id"] and edge["from_evidence_id"] == edge["to_evidence_id"]
+    )
+    if self_edge_count:
+        all_stages_ready = False
+        consistency_issues.append(f"{self_edge_count} evidence graph self-edge(s) detected.")
 
     return {
         "status": "loaded",
         "path": relative_path,
         "generated_at_utc": artifact.get("generatedAtUtc"),
-        "all_stages_ready": bool(artifact.get("allStagesReady", False)),
-        "ready_stage_count": int(artifact.get("readyStageCount", 0)),
-        "total_stage_count": int(artifact.get("totalStageCount", len(stage_gates))),
+        "all_stages_ready": all_stages_ready,
+        "ready_stage_count": derived_ready_stage_count,
+        "total_stage_count": len(stage_gates),
+        "reported_ready_stage_count": reported_ready_stage_count,
+        "reported_total_stage_count": reported_total_stage_count,
+        "missing_stages": missing_stages,
+        "blocked_stage_count": blocked_stage_count,
+        "consistency_issues": consistency_issues,
         "stage_gates": stage_gates,
-        "evidence_edge_count": len(artifact.get("evidenceGraph", [])),
+        "evidence_graph": evidence_graph,
+        "evidence_edge_count": len(evidence_graph),
+        "evidence_self_edge_count": self_edge_count,
         "key_evidence": {
             "provider_evidence_id": artifact.get("providerEvidenceId"),
             "dataset_evidence_id": artifact.get("datasetEvidenceId"),
@@ -219,6 +295,45 @@ def load_pilot_acceptance_artifact_from_payload(
     }
 
 
+def apply_pilot_acceptance_artifact_consistency(payload: dict[str, Any]) -> None:
+    artifact = payload.get("pilot_acceptance_artifact", {})
+    if artifact.get("status") != "loaded" or not artifact.get("consistency_issues"):
+        return
+
+    for check in payload.get("checks", []):
+        if check.get("id") != "pilot-acceptance-artifact":
+            continue
+
+        check["status"] = "gap"
+        check["score"] = 0
+        check["missing_terms"] = [
+            *check.get("missing_terms", []),
+            "consistent stage gates and evidence graph",
+        ]
+        check["detail"] = " ".join(artifact.get("consistency_issues", []))
+        check["remediation"] = (
+            "Regenerate the pilot readiness artifact and verify stage gates, counts, "
+            "and evidence graph edges before claiming golden-path readiness."
+        )
+        break
+
+    checks = payload.get("checks", [])
+    passed_weight = sum(int(check.get("score", 0)) for check in checks)
+    total_weight = sum(int(check.get("weight", 0)) for check in checks)
+    payload["passed_weight"] = passed_weight
+    payload["total_weight"] = total_weight
+    payload["score_percent"] = round((passed_weight / total_weight) * 100, 1) if total_weight else 0.0
+    payload["summary"] = {
+        "check_count": len(checks),
+        "passed_checks": sum(1 for check in checks if check.get("status") == "pass"),
+        "gap_checks": sum(1 for check in checks if check.get("status") != "pass"),
+        "missing_source_count": sum(
+            len(check.get("missing_patterns", [])) for check in checks
+        ),
+        "missing_term_count": sum(len(check.get("missing_terms", [])) for check in checks),
+    }
+
+
 def _format_evidence_ids(evidence_ids: Sequence[str], *, limit: int = 3) -> str:
     if not evidence_ids:
         return "-"
@@ -227,6 +342,10 @@ def _format_evidence_ids(evidence_ids: Sequence[str], *, limit: int = 3) -> str:
     if len(evidence_ids) > limit:
         head.append(f"+{len(evidence_ids) - limit} more")
     return ", ".join(head)
+
+
+def _format_graph_endpoint(value: str) -> str:
+    return f"`{value}`" if value else "-"
 
 
 def render_pilot_acceptance_artifact_section(payload: dict[str, Any]) -> str:
@@ -256,6 +375,7 @@ def render_pilot_acceptance_artifact_section(payload: dict[str, Any]) -> str:
             f"| Stages ready | {artifact.get('ready_stage_count', 0)}/{artifact.get('total_stage_count', 0)} |",
             f"| All stages ready | {artifact.get('all_stages_ready', False)} |",
             f"| Evidence graph edges | {artifact.get('evidence_edge_count', 0)} |",
+            f"| Evidence graph self-edges | {artifact.get('evidence_self_edge_count', 0)} |",
             f"| Dataset evidence | `{key_evidence.get('dataset_evidence_id', '-')}` |",
             f"| Paper session | `{key_evidence.get('paper_session_id', '-')}` |",
             f"| Portfolio evidence | `{key_evidence.get('portfolio_evidence_id', '-')}` |",
@@ -274,13 +394,33 @@ def render_pilot_acceptance_artifact_section(payload: dict[str, Any]) -> str:
             f"{_format_evidence_ids(gate.get('evidence_ids', []))} | {gate.get('validation', '')} |"
         )
 
+    lines.extend(
+        [
+            "",
+            "### Evidence Graph",
+            "",
+            "| From | Relationship | To |",
+            "| --- | --- | --- |",
+        ]
+    )
+    for edge in artifact.get("evidence_graph", []):
+        lines.append(
+            f"| {_format_graph_endpoint(edge.get('from_evidence_id', ''))} | "
+            f"{edge.get('relationship', '')} | "
+            f"{_format_graph_endpoint(edge.get('to_evidence_id', ''))} |"
+        )
+
     blockers = [
         blocker
         for gate in artifact.get("stage_gates", [])
         for blocker in gate.get("blockers", [])
     ]
+    consistency_issues = artifact.get("consistency_issues", [])
     lines.extend(["", "### Artifact Follow-up", ""])
-    if blockers:
+    if consistency_issues:
+        for issue in consistency_issues:
+            lines.append(f"- {issue}")
+    elif blockers:
         for blocker in blockers:
             lines.append(f"- {blocker}")
     else:

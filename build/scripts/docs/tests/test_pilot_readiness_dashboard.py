@@ -46,6 +46,7 @@ class PilotReadinessDashboardTests(unittest.TestCase):
             self.assertTrue(artifact["all_stages_ready"])
             self.assertEqual(8, artifact["ready_stage_count"])
             self.assertEqual(2, artifact["evidence_edge_count"])
+            self.assertEqual(0, artifact["evidence_self_edge_count"])
             self.assertEqual("dataset/pilot/unit", artifact["key_evidence"]["dataset_evidence_id"])
             self.assertEqual("portfolio/unit", artifact["key_evidence"]["portfolio_evidence_id"])
             self.assertEqual("ledger/unit", artifact["key_evidence"]["ledger_evidence_id"])
@@ -54,6 +55,52 @@ class PilotReadinessDashboardTests(unittest.TestCase):
                 check for check in payload["checks"] if check["id"] == "pilot-acceptance-artifact"
             )
             self.assertEqual("pass", acceptance_check["status"])
+
+    def test_dashboard_rejects_inconsistent_stage_count_claims(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = build_artifact()
+            artifact["readyStageCount"] = 8
+            artifact["totalStageCount"] = 8
+            artifact["stageGates"] = artifact["stageGates"][:-1]
+            artifact_path = root / "artifacts" / "pilot-acceptance" / "latest" / "pilot-readiness.json"
+            artifact_path.parent.mkdir(parents=True)
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+            payload = pilot_dashboard.build_dashboard(root)
+
+            acceptance_check = next(
+                check for check in payload["checks"] if check["id"] == "pilot-acceptance-artifact"
+            )
+            artifact_summary = payload["pilot_acceptance_artifact"]
+            self.assertFalse(artifact_summary["all_stages_ready"])
+            self.assertIn("GovernedReportPack", artifact_summary["missing_stages"])
+            self.assertIn(
+                "consistent stage gates and evidence graph",
+                acceptance_check["missing_terms"],
+            )
+            self.assertEqual("gap", acceptance_check["status"])
+
+    def test_dashboard_flags_evidence_graph_self_edges(self) -> None:
+        artifact = build_artifact()
+        artifact["evidenceGraph"].append(
+            {
+                "fromEvidenceId": "run-paper-unit",
+                "toEvidenceId": "run-paper-unit",
+                "relationship": "summarized-by",
+            }
+        )
+
+        loaded = pilot_dashboard.load_pilot_acceptance_artifact_from_payload(
+            artifact,
+            "artifacts/pilot-acceptance/latest/pilot-readiness.json",
+        )
+
+        self.assertEqual(1, loaded["evidence_self_edge_count"])
+        self.assertFalse(loaded["all_stages_ready"])
+        self.assertTrue(
+            any("self-edge" in issue for issue in loaded["consistency_issues"])
+        )
 
     def test_dashboard_marks_missing_pilot_acceptance_artifact_without_failing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -95,6 +142,8 @@ class PilotReadinessDashboardTests(unittest.TestCase):
 
         self.assertIn("## Pilot Acceptance Artifact", rendered)
         self.assertIn("Governed report pack lineage", rendered)
+        self.assertIn("### Evidence Graph", rendered)
+        self.assertIn("feeds-run", rendered)
         self.assertIn("No stage blockers were recorded", rendered)
 
 
@@ -143,6 +192,54 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             evidence_key: ["provider-evidence/unit", "dataset/pilot/unit"],
             "blockers": [],
             "validation": "Unit artifact loaded.",
+        },
+        {
+            "stage": "ResearchRun",
+            "label": "Research run evidence retained",
+            "status": "Ready",
+            evidence_key: ["run-backtest-unit", "dataset/pilot/unit"],
+            "blockers": [],
+            "validation": "Research run loaded.",
+        },
+        {
+            "stage": "RunComparison",
+            "label": "Baseline and candidate run comparison",
+            "status": "Ready",
+            evidence_key: ["run-backtest-unit", "run-paper-unit"],
+            "blockers": [],
+            "validation": "Run comparison loaded.",
+        },
+        {
+            "stage": "PaperPromotion",
+            "label": "Paper promotion approval audit",
+            "status": "Ready",
+            evidence_key: ["promotion-audit-unit"],
+            "blockers": [],
+            "validation": "Promotion audit loaded.",
+        },
+        {
+            "stage": "PaperSession",
+            "label": "Paper session replay verification",
+            "status": "Ready",
+            evidence_key: ["PAPER-UNIT", "replay-audit-unit"],
+            "blockers": [],
+            "validation": "Replay audit loaded.",
+        },
+        {
+            "stage": "PortfolioLedgerReview",
+            "label": "Portfolio and ledger continuity",
+            "status": "Ready",
+            evidence_key: ["portfolio/unit", "ledger/unit"],
+            "blockers": [],
+            "validation": "Portfolio and ledger evidence loaded.",
+        },
+        {
+            "stage": "Reconciliation",
+            "label": "Reconciliation run casework",
+            "status": "Ready",
+            evidence_key: ["reconciliation-unit"],
+            "blockers": [],
+            "validation": "Reconciliation run loaded.",
         },
         {
             "stage": "GovernedReportPack",

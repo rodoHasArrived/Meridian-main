@@ -94,6 +94,62 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task Scenario_LinkedFundAccount_BrokerageStatusUsesStatusDtoBeforeLegacyProjectionExists()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-LINKED",
+                    "Linked Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    "tests",
+                    Institution: "alpaca",
+                    PortfolioId: "portfolio-linked",
+                    CustodianDetails: new CustodianAccountDetailsDto(
+                        "PA-LINKED",
+                        DtcParticipantCode: null,
+                        CrestMemberCode: null,
+                        EuroclearAccountNumber: null,
+                        ClearstreamAccountNumber: null,
+                        PrimebrokerGiveupCode: null,
+                        SafekeepingLocation: null,
+                        ServiceAgreementReference: null)),
+                cts.Token);
+
+            var status = await service.GetStatusAsync(fundAccountId, cts.Token);
+
+            status.FundAccountId.Should().Be(fundAccountId);
+            status.ProviderId.Should().Be("alpaca");
+            status.ExternalAccountId.Should().Be("PA-LINKED");
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Stale);
+            status.IsLinked.Should().BeTrue();
+            status.IsStale.Should().BeTrue();
+            status.LastSuccessfulSyncAt.Should().BeNull();
+            status.Warnings.Should().Contain("Brokerage account is linked, but no sync has been run.");
+            File.Exists(Path.Combine(root, "projections", fundAccountId.ToString("N"), "current.json"))
+                .Should().BeFalse("status readiness must not depend on the deprecated standalone projection before first sync");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_BrokerageCredentialOutage_BrokerageSyncReportsFailedProjectionAndWarnings()
     {
         var root = CreateTempRoot();
@@ -120,6 +176,52 @@ public sealed class BrokeragePortfolioSyncServiceTests
 
             var projectionPath = Path.Combine(root, "projections", fundAccountId.ToString("N"), "current.json");
             File.Exists(projectionPath).Should().BeTrue("failed sync status must survive restart for the operator");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_BrokerageFreshnessWindow_ExpiredProjectionReturnsStaleStatusWarning()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                staleAfter: TimeSpan.Zero);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-STALE",
+                    "Stale Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-2),
+                    "tests"),
+                cts.Token);
+
+            var synced = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-STALE", "ops-review"),
+                cts.Token);
+            synced.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            synced.IsStale.Should().BeFalse();
+
+            var restored = await service.GetStatusAsync(fundAccountId, cts.Token);
+
+            restored.Health.Should().Be(WorkstationBrokerageSyncHealth.Stale);
+            restored.IsStale.Should().BeTrue();
+            restored.LastSuccessfulSyncAt.Should().Be(synced.LastSuccessfulSyncAt);
+            restored.Warnings.Should().Contain("Brokerage sync is stale.");
         }
         finally
         {
@@ -161,7 +263,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
         string root,
         IBrokeragePortfolioSync portfolioAdapter,
         IBrokerageActivitySync activityAdapter,
-        bool includeSecurityLookup)
+        bool includeSecurityLookup,
+        TimeSpan? staleAfter = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
@@ -172,7 +275,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
         var serviceProvider = services.BuildServiceProvider();
 
         var syncService = new BrokeragePortfolioSyncService(
-            new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
+            new BrokeragePortfolioSyncOptions(root, staleAfter ?? TimeSpan.FromMinutes(30), "alpaca"),
             catalogs: [],
             portfolioAdapters: [portfolioAdapter],
             activityAdapters: [activityAdapter],

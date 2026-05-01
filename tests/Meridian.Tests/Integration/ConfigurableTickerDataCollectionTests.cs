@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
+using Meridian.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -82,6 +83,21 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
         return OutputFormat.Json;
     }
 
+    private static DataGranularity GetConfiguredIntradayGranularity()
+    {
+        var envValueRaw = Environment.GetEnvironmentVariable("YAHOO_TICKER_INTRADAY_GRANULARITY");
+        var envValue = envValueRaw?.Trim();
+
+        if (string.IsNullOrEmpty(envValue))
+        {
+            return DataGranularity.Minute15;
+        }
+
+        return Enum.TryParse<DataGranularity>(envValue, ignoreCase: true, out var granularity)
+            ? granularity
+            : DataGranularity.Minute15;
+    }
+
     private static string ToCsvCell(string value)
     {
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
@@ -156,10 +172,12 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
         var symbols = GetConfiguredSymbols();
         var outputFormat = GetConfiguredOutputFormat();
         var extension = outputFormat == OutputFormat.Csv ? "csv" : "json";
+        var intradayGranularity = GetConfiguredIntradayGranularity();
 
         _output.WriteLine($"Configured symbols: {string.Join(", ", symbols)}");
         _output.WriteLine($"Output format: {outputFormat}");
         _output.WriteLine($"Output directory: {_outputDir}");
+        _output.WriteLine($"Intraday granularity: {intradayGranularity}");
         _output.WriteLine("");
 
         var summaryLines = new List<string>
@@ -168,9 +186,10 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
             $"Run Date: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
             $"Symbols: {string.Join(", ", symbols)}",
             $"Output format: {outputFormat}",
+            $"Intraday granularity: {intradayGranularity}",
             "",
-            $"{"Symbol",-12} {"AdjBars",10} {"RawBars",10} {"From",14} {"To",14} {"Status",-20}",
-            new string('-', 82),
+            $"{"Symbol",-12} {"AdjBars",10} {"RawBars",10} {"IntraBars",10} {"From",14} {"To",14} {"Status",-20}",
+            new string('-', 94),
         };
 
         var successCount = 0;
@@ -181,6 +200,7 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
 
             var adjustedBarCount = 0;
             var rawBarCount = 0;
+            var intradayBarCount = 0;
             string dateFrom = "N/A";
             string dateTo = "N/A";
             string status;
@@ -316,6 +336,63 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
 
                     _output.WriteLine($"  Raw bars: {rawBarCount}");
                     _output.WriteLine($"  Written to: {rawPath}");
+
+                    var intradayTo = DateTimeOffset.UtcNow;
+                    var intradayFrom = intradayTo.AddDays(-5);
+                    var intradayBars = await _provider.GetAggregateBarsAsync(
+                        symbol,
+                        intradayGranularity,
+                        intradayFrom,
+                        intradayTo);
+                    intradayBarCount = intradayBars.Count;
+
+                    var intradayRows = intradayBars.Select(b => new
+                    {
+                        b.Symbol,
+                        TimestampUtc = b.TimestampUtc.ToString("O"),
+                        b.Open,
+                        b.High,
+                        b.Low,
+                        b.Close,
+                        b.Volume,
+                        b.Vwap,
+                        b.TradeCount,
+                        b.Timeframe,
+                        b.Source,
+                    }).ToList();
+
+                    var intradayPath = Path.Combine(_outputDir, $"{symbol}_intraday_{intradayGranularity}.{extension}");
+                    if (outputFormat == OutputFormat.Csv)
+                    {
+                        await WriteCsvAsync(
+                            intradayPath,
+                            [
+                                "Symbol", "TimestampUtc", "Open", "High", "Low", "Close", "Volume", "Vwap", "TradeCount", "Timeframe", "Source",
+                            ],
+                            intradayRows,
+                            row =>
+                            [
+                                row.Symbol,
+                                row.TimestampUtc,
+                                ToInvariantString(row.Open),
+                                ToInvariantString(row.High),
+                                ToInvariantString(row.Low),
+                                ToInvariantString(row.Close),
+                                ToInvariantString(row.Volume),
+                                ToInvariantString(row.Vwap),
+                                ToInvariantString(row.TradeCount),
+                                ToInvariantString(row.Timeframe),
+                                row.Source,
+                            ]);
+                    }
+                    else
+                    {
+                        var intradayJson = JsonSerializer.Serialize(intradayRows, JsonOptions);
+                        await File.WriteAllTextAsync(intradayPath, intradayJson);
+                    }
+
+                    _output.WriteLine($"  Intraday bars ({intradayGranularity}): {intradayBarCount}");
+                    _output.WriteLine($"  Written to: {intradayPath}");
                     status = "OK";
                 }
                 catch (Exception ex)
@@ -340,7 +417,7 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
             }
 
             summaryLines.Add(
-                $"{symbol,-12} {adjustedBarCount,10} {rawBarCount,10} {dateFrom,14} {dateTo,14} {status,-20}");
+                $"{symbol,-12} {adjustedBarCount,10} {rawBarCount,10} {intradayBarCount,10} {dateFrom,14} {dateTo,14} {status,-20}");
 
             _output.WriteLine("");
         }

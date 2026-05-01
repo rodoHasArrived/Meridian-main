@@ -25,6 +25,13 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
         self.assertIn("artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md", self.workflow)
         self.assertIn("name: pilot-acceptance-evidence", self.workflow)
 
+    def test_workflow_validates_pilot_readiness_dashboard_renderer(self) -> None:
+        self.assertIn("Validate pilot readiness dashboard renderer", self.workflow)
+        self.assertIn(
+            "python3 -m unittest build/scripts/docs/tests/test_pilot_readiness_dashboard.py",
+            self.workflow,
+        )
+
     def test_workflow_triggers_on_shared_golden_path_surfaces(self) -> None:
         for watched_path in [
             "src/Meridian.Contracts/Workstation/**",

@@ -28,12 +28,36 @@ export function WorkspaceNav() {
 
   return (
     <aside className="operator-rail" aria-label={`${viewModel.brandTitle} ${viewModel.brandSubtitle}`}>
+      <header className="operator-rail-header">
+        <div className="operator-rail-brand">
+          <span className="operator-rail-mark" aria-hidden="true">M</span>
+          <span>
+            <p className="operator-rail-title">{viewModel.brandTitle}</p>
+            <p className="operator-rail-subtitle">{viewModel.brandSubtitle}</p>
+          </span>
+        </div>
+      </header>
+
       <div className="operator-rail-section">{viewModel.modelEyebrow}</div>
-      <div className="mx-2 mb-3 rounded-lg border border-border/80 bg-card px-3 py-3 shadow-panel">
+      <div className="operator-rail-card">
         <p className="text-xs leading-5 text-muted-foreground">
           {viewModel.modelDescription}
         </p>
       </div>
+
+      <section className="operator-rail-current" aria-label={viewModel.currentWorkspace.ariaLabel}>
+        <div className="eyebrow-label">Current workspace</div>
+        <div className="mt-2 flex items-start justify-between gap-2">
+          <p className="operator-rail-current-title">{viewModel.currentWorkspace.label}</p>
+          <span className={`operator-nav-status operator-nav-status-${viewModel.currentWorkspace.statusTone}`}>
+            <span className="operator-nav-status-dot" aria-hidden="true" />
+            {viewModel.currentWorkspace.statusLabel}
+          </span>
+        </div>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
+          {viewModel.currentWorkspace.description}
+        </p>
+      </section>
 
       <nav className="space-y-1" aria-label="Workspaces">
         <div className="operator-rail-section">{viewModel.navEyebrow}</div>
@@ -57,13 +81,16 @@ export function WorkspaceNav() {
                 <span className="block truncate font-semibold">{item.label}</span>
                 <span className="block truncate text-[11px] leading-4 text-muted-foreground">{item.description}</span>
               </span>
-              <span className="operator-nav-status">{item.statusLabel}</span>
+              <span className={`operator-nav-status operator-nav-status-${item.statusTone}`}>
+                <span className="operator-nav-status-dot" aria-hidden="true" />
+                {item.statusLabel}
+              </span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mx-2 mt-5 rounded-lg border border-border bg-secondary/35 px-3 py-3 text-sm">
+      <div className="operator-rail-callout">
         <div className="eyebrow-label">{viewModel.deliveryEyebrow}</div>
         <div className="mt-2 font-semibold text-foreground">{viewModel.deliveryTitle}</div>
         <p className="mt-2 text-xs leading-5 text-muted-foreground">

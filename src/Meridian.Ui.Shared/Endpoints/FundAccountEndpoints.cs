@@ -170,6 +170,7 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
+#pragma warning disable CS0618 // Compatibility routes retain legacy brokerage projection payloads; readiness uses status DTOs.
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             var sync = ResolveBrokerageSyncService(context);
@@ -198,6 +199,7 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
+#pragma warning restore CS0618
 
         // ── Balance snapshots ─────────────────────────────────────────────────
 

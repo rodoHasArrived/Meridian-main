@@ -6,10 +6,12 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
+
+#pragma warning disable CS0618 // Retained compatibility service persists legacy brokerage projection DTOs.
 
 /// <summary>
 /// Configures the durable brokerage read-side sync used by workstation fund ops.
@@ -644,3 +646,5 @@ public sealed class BrokeragePortfolioSyncService
         string LastRawSnapshotPath,
         string LastProjectionPath);
 }
+
+#pragma warning restore CS0618
