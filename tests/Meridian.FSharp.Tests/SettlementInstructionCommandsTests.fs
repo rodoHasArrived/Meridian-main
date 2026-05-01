@@ -18,10 +18,10 @@ module SettlementInstructionFixtures =
           IsClosed = false
           SupersedesInstructionId = supersedes }
 
-module SettlementInstructionCommandsTests =
+open SettlementInstructionFixtures
+open Meridian.FSharp.Domain.SettlementInstructionCommands
 
-    open SettlementInstructionFixtures
-    open Meridian.FSharp.Domain.SettlementInstructionCommands
+module SettlementInstructionCommandsTests =
 
     [<Fact>]
     let ``rejects invalid effective window`` () =

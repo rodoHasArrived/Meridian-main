@@ -126,7 +126,7 @@ create table if not exists __SCHEMA__.bank_statement_line (
 create index if not exists ix_bank_statement_account_date
     on __SCHEMA__.bank_statement_line (account_id, statement_date desc);
 
--- ── Account reconciliation runs and results ───────────────────────────────────
+-- ── Account reconciliation runs and breaks ───────────────────────────────────
 
 create table if not exists __SCHEMA__.account_reconciliation_run (
     reconciliation_run_id   uuid          primary key,
@@ -145,9 +145,10 @@ create table if not exists __SCHEMA__.account_reconciliation_run (
 create index if not exists ix_recon_run_account
     on __SCHEMA__.account_reconciliation_run (account_id, as_of_date desc);
 
-create table if not exists __SCHEMA__.account_reconciliation_result (
+create table if not exists __SCHEMA__.account_reconciliation_breaks (
     result_id               uuid          primary key,
     reconciliation_run_id   uuid          not null references __SCHEMA__.account_reconciliation_run (reconciliation_run_id) on delete cascade,
+    break_type              text          not null,
     check_label             text          not null,
     is_match                boolean       not null,
     category                text          not null,
@@ -158,5 +159,5 @@ create table if not exists __SCHEMA__.account_reconciliation_result (
     reason                  text          not null
 );
 
-create index if not exists ix_recon_result_run
-    on __SCHEMA__.account_reconciliation_result (reconciliation_run_id);
+create index if not exists ix_recon_breaks_run
+    on __SCHEMA__.account_reconciliation_breaks (reconciliation_run_id);
