@@ -82,7 +82,7 @@ COMMANDS:
     --runbook-run <id> [--dry-run]           Execute a runbook
 
 EXAMPLES:
-    Meridian --runbook-create "Daily readiness" \
+    Meridian --runbook-create ""Daily readiness"" \
       --runbook-steps readiness:global,replay:latest
 
     Meridian --runbook-list

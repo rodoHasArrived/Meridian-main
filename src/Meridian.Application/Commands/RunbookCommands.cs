@@ -39,7 +39,7 @@ internal sealed class RunbookCommands(IRunbookStore store, IRunbookExecutor exec
             {
                 Console.Error.WriteLine("Error: --runbook-steps is required for --runbook-create");
                 Console.Error.WriteLine("Example: --runbook-steps readiness:global,replay:session-123");
-                return CliResult.Fail(ErrorCode.Validation);
+                return CliResult.Fail(ErrorCode.ValidationFailed);
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -61,13 +61,13 @@ internal sealed class RunbookCommands(IRunbookStore store, IRunbookExecutor exec
             if (runbook is null)
             {
                 Console.Error.WriteLine($"Runbook '{runId}' not found.");
-                return CliResult.Fail(ErrorCode.Validation);
+                return CliResult.Fail(ErrorCode.ValidationFailed);
             }
 
             var dryRun = CliArguments.HasFlag(args, "--dry-run");
             var result = await executor.ExecuteAsync(runbook, dryRun, ct).ConfigureAwait(false);
             foreach (var message in result.Messages) Console.WriteLine(message);
-            return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.General);
+            return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.InternalError);
         }
 
         return CliResult.Ok();

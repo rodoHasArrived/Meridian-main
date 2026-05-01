@@ -32,7 +32,7 @@ public sealed class FundStructureContractsJsonContextTests
     {
         var create = new CreateAccountRequest(
             Guid.NewGuid(),
-            AccountTypeDto.Custodian,
+            AccountTypeDto.Custody,
             "CUST-001",
             "Custodian Primary",
             "USD",

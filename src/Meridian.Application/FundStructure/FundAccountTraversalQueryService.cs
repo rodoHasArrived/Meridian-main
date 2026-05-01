@@ -38,7 +38,7 @@ public sealed class FundAccountTraversalQueryService : IFundAccountTraversalQuer
 
     private async Task<IReadOnlyList<AccountSummaryDto>> BuildSnapshotAsync(Guid fundId, CancellationToken ct)
     {
-        var graph = await _fundStructureService.GetOrganizationStructureAsync(new OrganizationStructureQuery(FundId: fundId), ct).ConfigureAwait(false);
+        var graph = await _fundStructureService.GetOrganizationStructureAsync(new OrganizationStructureQuery(), ct).ConfigureAwait(false);
         var accountNodeIds = graph.OwnershipLinks
             .Where(link => link.ParentNodeId == fundId)
             .Where(link => link.RelationshipType == OwnershipRelationshipTypeDto.Owns)

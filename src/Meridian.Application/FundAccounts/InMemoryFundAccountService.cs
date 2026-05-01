@@ -557,6 +557,73 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         }
     }
 
+    public Task<IReadOnlyList<PositionReconciliationBreakDto>> GetOpenPositionBreaksAsync(
+        Guid accountId, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return Task.FromResult<IReadOnlyList<PositionReconciliationBreakDto>>([]);
+            }
+
+            var breaks = stored.ReconciliationResults
+                .Where(r => !r.IsMatch && string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase))
+                .Select(r => new PositionReconciliationBreakDto(
+                    r.ResultId,
+                    accountId,
+                    DateOnly.FromDateTime(DateTime.UtcNow),
+                    r.CheckLabel,
+                    r.ExpectedAmount ?? 0m,
+                    r.ActualAmount ?? 0m,
+                    r.Variance ?? 0m,
+                    r.Reason))
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<PositionReconciliationBreakDto>>(breaks);
+        }
+    }
+
+    public Task<IReadOnlyList<CashReconciliationBreakDto>> GetOpenCashBreaksAsync(
+        Guid accountId, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return Task.FromResult<IReadOnlyList<CashReconciliationBreakDto>>([]);
+            }
+
+            var breaks = stored.ReconciliationResults
+                .Where(r => !r.IsMatch && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Select(r => new CashReconciliationBreakDto(
+                    r.ResultId,
+                    accountId,
+                    DateOnly.FromDateTime(DateTime.UtcNow),
+                    "USD",
+                    r.ExpectedAmount ?? 0m,
+                    r.ActualAmount ?? 0m,
+                    r.Variance ?? 0m,
+                    r.Reason))
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<CashReconciliationBreakDto>>(breaks);
+        }
+    }
+
+    public async Task<IReadOnlyList<AccountReconciliationBreakDto>> GetOpenBreaksAsync(
+        Guid accountId, CancellationToken ct = default)
+    {
+        var positionBreaks = await GetOpenPositionBreaksAsync(accountId, ct).ConfigureAwait(false);
+        var cashBreaks = await GetOpenCashBreaksAsync(accountId, ct).ConfigureAwait(false);
+
+        var envelopes = positionBreaks.Select(b => new AccountReconciliationBreakDto(PositionBreak: b))
+            .Concat(cashBreaks.Select(b => new AccountReconciliationBreakDto(CashBreak: b)))
+            .ToList();
+
+        return envelopes;
+    }
+
     private (long Version, string Json)? CaptureSnapshotLocked()
     {
         if (_persistencePath is null)
