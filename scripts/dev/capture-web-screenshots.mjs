@@ -123,7 +123,8 @@ function startViteServer(dashboardDir, host, port, logs) {
         BROWSER: "none",
         MERIDIAN_API_BASE_URL: process.env.MERIDIAN_API_BASE_URL ?? "http://127.0.0.1:8080"
       },
-      stdio: ["ignore", "pipe", "pipe"]
+      stdio: ["ignore", "pipe", "pipe"],
+      detached: process.platform !== "win32"
     }
   );
 
@@ -134,25 +135,47 @@ function startViteServer(dashboardDir, host, port, logs) {
 }
 
 async function stopProcess(child) {
-  if (!child || child.killed || child.exitCode !== null) {
+  if (!child || child.exitCode !== null) {
     return;
   }
 
-  child.kill("SIGTERM");
-
-  await new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      if (!child.killed) {
-        child.kill("SIGKILL");
-      }
-      resolve();
-    }, 5000);
-
-    child.once("exit", () => {
-      clearTimeout(timer);
-      resolve();
+  const waitForExit = (timeoutMs) =>
+    new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(false), timeoutMs);
+      child.once("exit", () => {
+        clearTimeout(timer);
+        resolve(true);
+      });
     });
-  });
+
+  const killUnixGroup = (signal) => {
+    try {
+      process.kill(-child.pid, signal);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (process.platform === "win32") {
+    const taskkill = spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
+    await new Promise((resolve) => taskkill.once("exit", resolve));
+    return;
+  }
+
+  if (!killUnixGroup("SIGTERM")) {
+    child.kill("SIGTERM");
+  }
+
+  const exited = await waitForExit(5000);
+  if (exited) {
+    return;
+  }
+
+  if (!killUnixGroup("SIGKILL")) {
+    child.kill("SIGKILL");
+  }
+  await waitForExit(2000);
 }
 
 async function captureRoute(page, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
