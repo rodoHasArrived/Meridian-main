@@ -58,13 +58,12 @@ public sealed record RecordAccountBalanceSnapshotRequest(
     string Currency,
     decimal CashBalance,
     string Source,
-    bool IsBackfill = false,
     string? RecordedBy = null,
+    bool IsBackfill = false,
     decimal? SecuritiesMarketValue = null,
     decimal? AccruedInterest = null,
     decimal? PendingSettlement = null,
-    string? ExternalReference = null,
-    bool IsBackfill = false);
+    string? ExternalReference = null);
 
 /// <summary>Request to ingest a custodian position statement.</summary>
 public sealed record IngestCustodianStatementRequest(
@@ -73,6 +72,7 @@ public sealed record IngestCustodianStatementRequest(
     DateOnly AsOfDate,
     string CustodianName,
     string SourceFormat,
+    string? Notes,
     IReadOnlyList<CustodianPositionLineDto> Lines,
     string LoadedBy,
     bool IsBackfill = false);
@@ -83,6 +83,7 @@ public sealed record IngestBankStatementRequest(
     Guid AccountId,
     DateOnly StatementDate,
     string BankName,
+    string? Notes,
     IReadOnlyList<BankStatementLineDto> Lines,
     string LoadedBy,
     bool IsBackfill = false);

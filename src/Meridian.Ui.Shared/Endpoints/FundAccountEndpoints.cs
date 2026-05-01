@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
@@ -20,7 +21,7 @@ public static class FundAccountEndpoints
 
         group.MapPost("/", async (JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -37,11 +38,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var result = await service.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var result = await queryService.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccount")
@@ -50,18 +51,34 @@ public static class FundAccountEndpoints
 
         group.MapGet("/", async (HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
-            var query = new AccountStructureQuery(
-                AccountId: Guid.TryParse(q["accountId"], out var aid) ? aid : null,
-                FundId: Guid.TryParse(q["fundId"], out var fid) ? fid : null,
-                EntityId: Guid.TryParse(q["entityId"], out var eid) ? eid : null,
-                ActiveOnly: q["activeOnly"] != "false");
+            var type = Enum.TryParse<AccountTypeDto>(q["accountType"], true, out var parsedType) ? parsedType : (AccountTypeDto?)null;
+            var isActive = q.ContainsKey("activeOnly") ? q["activeOnly"] != "false" : true;
+            var currency = q["currency"].FirstOrDefault();
+            var accountId = TryParseGuidFilter(q["accountId"].FirstOrDefault());
+            var fundId = TryParseGuidFilter(q["fundId"].FirstOrDefault());
+            var entityId = TryParseGuidFilter(q["entityId"].FirstOrDefault());
 
-            var results = await service.QueryAccountsAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.ListAccountsAsync(type, isActive, currency, context.RequestAborted).ConfigureAwait(false);
+            if (accountId.HasValue)
+            {
+                results = results.Where(account => account.AccountId == accountId.Value).ToList();
+            }
+
+            if (fundId.HasValue)
+            {
+                results = results.Where(account => account.FundId == fundId.Value).ToList();
+            }
+
+            if (entityId.HasValue)
+            {
+                results = results.Where(account => account.EntityId == entityId.Value).ToList();
+            }
+
             return Results.Json(results, jsonOptions);
         })
         .WithName("QueryFundAccounts")
@@ -69,11 +86,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/fund/{fundId:guid}", async (Guid fundId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var result = await service.GetFundAccountsAsync(fundId, context.RequestAborted).ConfigureAwait(false);
+            var result = await queryService.GetFundAccountsAsync(fundId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccounts")
@@ -102,7 +119,7 @@ public static class FundAccountEndpoints
 
         group.MapPatch("/{accountId:guid}/custodian-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -126,7 +143,7 @@ public static class FundAccountEndpoints
 
         group.MapPatch("/{accountId:guid}/bank-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -150,7 +167,7 @@ public static class FundAccountEndpoints
 
         group.MapDelete("/{accountId:guid}", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -241,7 +258,7 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/balance-snapshots", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -265,15 +282,15 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/balance-snapshots", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
             DateOnly? from = DateOnly.TryParse(q["from"], out var f) ? f : null;
             DateOnly? to = DateOnly.TryParse(q["to"], out var t) ? t : null;
 
-            var results = await service.GetBalanceHistoryAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetBalanceTimelineAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetAccountBalanceHistory")
@@ -281,11 +298,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/balance-snapshots/latest", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var result = await service.GetLatestBalanceSnapshotAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var result = await queryService.GetLatestBalanceSnapshotAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountBalanceSnapshot")
@@ -296,7 +313,7 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/custodian-statements", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -320,14 +337,14 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/custodian-positions", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             if (!DateOnly.TryParse(context.Request.Query["asOfDate"], out var asOfDate))
                 return Results.Problem("'asOfDate' query parameter is required (YYYY-MM-DD).", statusCode: StatusCodes.Status400BadRequest);
 
-            var results = await service.GetCustodianPositionsAsync(accountId, asOfDate, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetCustodianPositionsAsync(accountId, asOfDate, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetCustodianPositions")
@@ -336,7 +353,7 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/bank-statements", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -360,15 +377,15 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/bank-statement-lines", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
             DateOnly? from = DateOnly.TryParse(q["from"], out var f) ? f : null;
             DateOnly? to = DateOnly.TryParse(q["to"], out var t) ? t : null;
 
-            var results = await service.GetBankStatementLinesAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetBankStatementLinesAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetBankStatementLines")
@@ -378,7 +395,7 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/reconcile", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -395,11 +412,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/reconciliation-runs", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var results = await service.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetAccountReconciliationRuns")
@@ -407,17 +424,16 @@ public static class FundAccountEndpoints
 
         group.MapGet("/reconciliation-runs/{runId:guid}/results", async (Guid runId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var results = await service.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetAccountReconciliationResults")
         .Produces<IReadOnlyList<AccountReconciliationResultDto>>(StatusCodes.Status200OK);
     }
-
 
     private static IResult StatusPolicyConflict(AccountStatusPolicyException ex) => Results.Json(new
     {
@@ -428,11 +444,21 @@ public static class FundAccountEndpoints
         detail = ex.Message
     }, statusCode: StatusCodes.Status409Conflict);
 
-    private static IFundAccountService? ResolveService(HttpContext context) =>
-        context.RequestServices.GetService<IFundAccountService>();
+    private static IAccountManagementService? ResolveManagementService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountManagementService>()
+        ?? context.RequestServices.GetService<IFundAccountService>() as IAccountManagementService;
+
+    private static IAccountQueryService? ResolveQueryService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountQueryService>()
+        ?? context.RequestServices.GetService<IFundAccountService>() as IAccountQueryService;
 
     private static BrokeragePortfolioSyncService? ResolveBrokerageSyncService(HttpContext context) =>
         context.RequestServices.GetService<BrokeragePortfolioSyncService>();
+
+    private static Guid? TryParseGuidFilter(string? raw)
+    {
+        return Guid.TryParse(raw, out var parsed) ? parsed : null;
+    }
 
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund account service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
