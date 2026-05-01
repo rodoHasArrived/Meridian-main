@@ -1598,3 +1598,5 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - `Backtest → Paper` promotion: explicit lifecycle step, audit trail, and safety gate
 - Paper session persistence and replay
 **ROADMAP:** Phase 13
+
+- [ ] Runbook + template registry modernization (approved): add composable workflow definitions, deterministic execution, and audit logs across CLI/API/web with additive migrations and feature-flag rollout (`docs/plans/runbook-template-registry-modernization-plan.md`).

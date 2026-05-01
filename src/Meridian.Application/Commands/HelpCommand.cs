@@ -16,6 +16,7 @@ internal sealed class HelpCommand : ICliCommand
         ["diagnostics"] = ShowDiagnosticsHelp,
         ["providers"] = ShowProvidersHelp,
         ["security-master"] = ShowSecurityMasterHelp,
+        ["runbooks"] = ShowRunbooksHelp,
     };
 
     public bool CanHandle(string[] args)
@@ -59,8 +60,35 @@ internal sealed class HelpCommand : ICliCommand
         Console.WriteLine("  --help diagnostics      Diagnostics and troubleshooting");
         Console.WriteLine("  --help providers        Data provider information");
         Console.WriteLine("  --help security-master  Security Master bulk ingest and conflict resolution");
+        Console.WriteLine("  --help runbooks         Runbook preset create/list/run commands");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
+    }
+
+    private static void ShowRunbooksHelp()
+    {
+        Console.WriteLine(@"
+RUNBOOKS
+════════
+
+Create and run reusable workflow runbooks.
+
+COMMANDS:
+    --runbook-list                           List saved runbooks
+    --runbook-create <name>                  Create or update a runbook
+    --runbook-id <id>                        Optional stable runbook id
+    --runbook-description <text>             Optional description
+    --runbook-steps <kind:payload,...>       Required step list for create
+    --runbook-run <id> [--dry-run]           Execute a runbook
+
+EXAMPLES:
+    Meridian --runbook-create "Daily readiness" \
+      --runbook-steps readiness:global,replay:latest
+
+    Meridian --runbook-list
+
+    Meridian --runbook-run daily-readiness --dry-run
+");
     }
 
     private static void ShowBackfillHelp()
