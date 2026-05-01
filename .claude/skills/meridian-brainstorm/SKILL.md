@@ -68,9 +68,9 @@ The best ideas for Meridian aren't isolated features. They're extensions that **
 ## Project Context
 
 **What Meridian is:**
-A provider-agnostic .NET 9 / C# 13 platform for real-time and historical market data collection, backtesting, live execution, and strategy lifecycle management. Streams from Interactive Brokers TWS, Alpaca Markets, Polygon, NYSE, and (via StockSharp) 90+ additional providers. Sub-2ms event pipeline, JSONL/Parquet storage, WebSocket + REST APIs, OpenTelemetry observability, WPF desktop app + web dashboard, MCP server for AI tooling.
+A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows.
 
-**Tech stack:** C# 13 (infrastructure), F# 8 (domain models), .NET 9, WPF (desktop UI), Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet (simultaneous), GitHub Actions CI/CD.
+**Tech stack:** .NET 10, C# infrastructure, F# domain models, browser workstation UI, retained WPF support, Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet, GitHub Actions CI/CD.
 
 **Four-pillar architecture (ADR-016):**
 - **Data Collection** — streaming ingestion, historical backfill, storage, data quality monitoring
@@ -87,8 +87,8 @@ A provider-agnostic .NET 9 / C# 13 platform for real-time and historical market 
 - Paper trading gateway (`PaperTradingGateway`) for risk-free strategy validation
 - Strategy lifecycle: register, run, pause, promote paper→live
 - Pre-trade risk validation via `CompositeRiskValidator` / `IRiskRule`
-- WPF desktop app: MVVM with `BindableBase`, real-time status, config management
-- Web dashboard: live status, data browser, API endpoints
+- Browser workstation: operator workflows, live status, data browser, and API-backed work queues
+- Retained WPF support: shared contracts, regressions, and existing desktop workflows
 - MCP server layer (`Meridian.Mcp` / `Meridian.McpServer`) exposing tools + prompts for AI agents
 - Deployment: Docker Compose, systemd, Kubernetes
 - Observability: OpenTelemetry tracing, Prometheus metrics, Grafana dashboards

@@ -185,6 +185,36 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertTrue(any(finding.kind == "duplicated-repository-tree" for finding in findings))
 
+    def test_check_catalog_drift_reports_claude_repository_tree_duplication(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "CLAUDE.md",
+                "\n".join(
+                    [
+                        "# Claude Guide",
+                        "",
+                        "## Repository Structure",
+                        "",
+                        "```text",
+                        "Meridian-main",
+                        "src/",
+                        "```",
+                    ]
+                ),
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "duplicated-repository-tree" and finding.path == "CLAUDE.md"
+                    for finding in findings
+                )
+            )
+
     def test_check_catalog_drift_allows_compact_copilot_navigation_guide(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

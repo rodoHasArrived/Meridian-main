@@ -21,10 +21,10 @@
   `Settings`.
 - New desktop feature development in `src/Meridian.Wpf/` is paused unless required for shared
   contracts, regression fixes, or retained desktop support.
-- `src/Meridian.Ui/dashboard/` is now the active browser-based operator UI lane, with production
+- `src/Meridian.Ui/dashboard/` is now the active browser-based operator workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support the web dashboard first while preserving retained desktop compatibility.
+  that should support the web workstation first while preserving retained desktop compatibility.
 - Keep top-level operator navigation to seven workspaces: `Trading`, `Portfolio`, `Accounting`,
   `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
   `Governance` names remain compatibility aliases, not visible root workspaces.
@@ -83,7 +83,7 @@ Prefer the narrowest validation command that matches the touched files.
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
-- `src/Meridian.Ui/dashboard/`: browser-based operator workstation dashboard
+- `src/Meridian.Ui/dashboard/`: browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
   services, workstation endpoints, and the retained WPF shell

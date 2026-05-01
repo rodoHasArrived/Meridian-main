@@ -88,7 +88,7 @@ A unified code review skill that catches architecture violations, performance an
 
 ## Context: What This Project Is
 
-Meridian is a high-throughput .NET 9 / C# 13 system (with F# 8.0 domain models) that captures real-time market microstructure data (trades, quotes, L2 order books) from multiple providers (Alpaca, Polygon, Interactive Brokers, StockSharp, NYSE) and persists it via a backpressured pipeline to JSONL/Parquet storage with WAL durability. Historical backfill from 10+ providers with automatic failover. WPF desktop app (recommended) and web dashboard share services through a layered architecture.
+Meridian is a .NET 10 fund-management and trading-platform system with F# domain models, provider-backed market data, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 
 **Key facts for reviewers (authoritative counts in `../_shared/project-context.md`):**
 - **779 source files**: 769 C#, 14 F#, 266 test files, ~4,135 test methods across 4 test projects

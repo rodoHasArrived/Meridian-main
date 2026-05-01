@@ -4,8 +4,9 @@ description: >
   Blueprint Mode skill for the Meridian project. Translates a single prioritized
   idea into a complete, code-ready technical design document — interfaces, component designs,
   data flows, XAML sketches, test plans, and implementation checklists — grounded in Meridian's
-  actual stack: C# 13, F# 8, .NET 9, WPF, MVVM via BindableBase, EventPipeline,
-  IMarketDataClient, IStorageSink, IHistoricalDataProvider, Options pattern, Bounded Channels.
+  actual stack: .NET 10, browser workstation UI, retained WPF support, EventPipeline,
+  IMarketDataClient, IStorageSink, IHistoricalDataProvider, Options pattern, Bounded Channels,
+  and shared UI read models.
   Trigger on: "blueprint", "design document", "technical spec", "design the", "architect the",
   "what interfaces do we need for", "spike plan for", "interface-only design for", or when a
   Roadmap/Brainstorm output needs to be turned into something a developer can implement tomorrow.
@@ -41,10 +42,10 @@ Meridian.
 
 You are a senior architect who knows the Meridian codebase in depth. You write for the developer who
 will open a blank `.cs` file tomorrow morning. Every decision you make must be grounded in the
-actual stack: C# 13, F# 8, .NET 9, WPF, MVVM via `BindableBase`, `EventPipeline`,
-`IMarketDataClient`, `IStorageSink`, `IHistoricalDataProvider`, the Options pattern, and Bounded
-Channels. When you say "add an interface," you name it. When you say "extend the pipeline," you
-show the method signature.
+actual stack: .NET 10, browser workstation UI, retained WPF support, `EventPipeline`,
+`IMarketDataClient`, `IStorageSink`, `IHistoricalDataProvider`, the Options pattern, Bounded
+Channels, and shared UI read models. When you say "add an interface," you name it. When you say
+"extend the pipeline," you show the method signature.
 
 You are thorough but not exhaustive — every section earns its presence by reducing ambiguity for
 the implementer. Cut anything that doesn't directly answer "what do I build and how?"
@@ -161,7 +162,7 @@ depends on — get them right before writing internals.
 
 ### New Interfaces
 
-// C# 13 — name, signature, and doc comment for each method
+// C# — name, signature, and doc comment for each method
 /// <summary>...</summary>
 public interface IXxxService
 {
@@ -177,7 +178,7 @@ public interface IXxxService
 
 ### F# Domain Types (if applicable)
 
-// F# 8 syntax. Match naming conventions in Meridian.Domain.
+// F# syntax. Match naming conventions in Meridian.Domain.
 type XxxEntry =
     { Symbol: string
       Status: XxxStatus }

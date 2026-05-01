@@ -175,11 +175,11 @@ mdc_code_review_skill = Skill(
     name="meridian-code-review",
     description=dedent("""\
         Code review and architecture compliance skill for the Meridian
-        project — a .NET 9 / C# 13 market data system with WPF desktop app, F# 8.0
-        domain models, real-time streaming pipelines, and tiered JSONL/Parquet
-        storage. Use this skill whenever the user asks to review, audit, refactor,
-        or improve C# or F# code from Meridian, or when they share
-        .cs/.fs files and want feedback.
+        project — a .NET 10 fund-management and trading-platform system with
+        F# domain models, browser workstation UI, retained WPF support, real-time
+        streaming pipelines, and tiered JSONL/Parquet storage. Use this skill whenever
+        the user asks to review, audit, refactor, or improve C# or F# code from Meridian,
+        or when they share .cs/.fs files and want feedback.
         Also trigger on: MVVM compliance, ViewModel extraction, code-behind cleanup,
         real-time performance, hot-path optimization, pipeline throughput, provider
         implementation review, backfill logic, data integrity validation, error
@@ -694,11 +694,11 @@ mdc_blueprint_skill = Skill(
     description=(
         "Blueprint Mode skill for the Meridian project. "
         "Translates a single prioritized idea into a complete, code-ready technical "
-        "design document — interfaces, component designs, data flows, XAML sketches, "
+        "design document — interfaces, component designs, data flows, UI sketches, "
         "test plans, and implementation checklists — grounded in Meridian's actual stack: "
-        "C# 13, F# 8, .NET 9, WPF, MVVM via BindableBase, EventPipeline, "
+        ".NET 10, browser workstation UI, retained WPF support, EventPipeline, "
         "IMarketDataClient, IStorageSink, IHistoricalDataProvider, Options pattern, "
-        "Bounded Channels. "
+        "Bounded Channels, and shared UI read models. "
         "Trigger on: \"blueprint\", \"design document\", \"technical spec\", "
         "\"design the\", \"architect the\", \"what interfaces do we need for\", "
         "\"spike plan for\", \"interface-only design for\", or when a Roadmap/"

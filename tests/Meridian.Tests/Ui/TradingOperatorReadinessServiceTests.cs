@@ -27,7 +27,8 @@ public sealed class TradingOperatorReadinessServiceTests
             "paper-session-missing",
             "execution-audit-empty",
             "promotion-decision-missing",
-            "dk1-trust-packet-unavailable");
+            "dk1-trust-packet-unavailable",
+            "report-pack-lineage");
         secondIds.Should().Equal(firstIds);
         firstIds.Should().NotContain(static id => id.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
 
@@ -37,6 +38,11 @@ public sealed class TradingOperatorReadinessServiceTests
             item.Tone == OperatorWorkItemToneDto.Critical);
         first.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
         first.ReadyForPaperOperation.Should().BeFalse();
+        first.ReportPack.Should().NotBeNull();
+        first.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        first.EvidenceCompleteness.Should().NotBeNull();
+        first.EvidenceCompleteness!.BlockingGateIds.Should().Contain(["session", "replay"]);
+        first.EvidenceCompleteness.ReviewGateIds.Should().Contain("report-pack");
     }
 
     [Fact]

@@ -51,7 +51,7 @@ internal sealed class EtlCommands : ICliCommand
 
     internal static bool TryBuildDefinition(string[] args, out EtlJobDefinition definition)
     {
-        definition = new EtlJobDefinition();
+        definition = null!;
         var sourceKindArg = CliArguments.RequireValue(args, "--etl-source-kind", "--etl-source-kind local|sftp");
         var sourcePath = CliArguments.RequireValue(args, "--etl-source-path", "--etl-source-path <path>");
         if (sourceKindArg is null || sourcePath is null)

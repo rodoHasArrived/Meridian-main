@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
-using Meridian.Domain.Enums;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -337,7 +336,7 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
                     _output.WriteLine($"  Raw bars: {rawBarCount}");
                     _output.WriteLine($"  Written to: {rawPath}");
 
-                    var intradayTo = DateTimeOffset.UtcNow;
+                    var intradayTo = DateOnly.FromDateTime(DateTime.UtcNow);
                     var intradayFrom = intradayTo.AddDays(-5);
                     var intradayBars = await _provider.GetAggregateBarsAsync(
                         symbol,
@@ -349,7 +348,8 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
                     var intradayRows = intradayBars.Select(b => new
                     {
                         b.Symbol,
-                        TimestampUtc = b.TimestampUtc.ToString("O"),
+                        StartTimeUtc = b.StartTime.UtcDateTime.ToString("O"),
+                        EndTimeUtc = b.EndTime.UtcDateTime.ToString("O"),
                         b.Open,
                         b.High,
                         b.Low,
@@ -367,13 +367,14 @@ public sealed class ConfigurableTickerDataCollectionTests : IDisposable
                         await WriteCsvAsync(
                             intradayPath,
                             [
-                                "Symbol", "TimestampUtc", "Open", "High", "Low", "Close", "Volume", "Vwap", "TradeCount", "Timeframe", "Source",
+                                "Symbol", "StartTimeUtc", "EndTimeUtc", "Open", "High", "Low", "Close", "Volume", "Vwap", "TradeCount", "Timeframe", "Source",
                             ],
                             intradayRows,
                             row =>
                             [
                                 row.Symbol,
-                                row.TimestampUtc,
+                                row.StartTimeUtc,
+                                row.EndTimeUtc,
                                 ToInvariantString(row.Open),
                                 ToInvariantString(row.High),
                                 ToInvariantString(row.Low),

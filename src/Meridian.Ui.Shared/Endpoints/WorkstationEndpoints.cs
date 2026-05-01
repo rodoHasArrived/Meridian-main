@@ -1761,12 +1761,12 @@ public static class WorkstationEndpoints
             WorkItemId: "reconciliation-break-queue-unavailable",
             Kind: OperatorWorkItemKindDto.ReconciliationBreak,
             Label: "Reconciliation queue unavailable",
-            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting governance queue coverage.",
+            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting accounting queue coverage.",
             Tone: OperatorWorkItemToneDto.Warning,
             CreatedAt: asOf,
-            Workspace: "Governance",
+            Workspace: "Accounting",
             TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "GovernanceShell");
+            TargetPageTag: "AccountingShell");
 
     private static OperatorWorkItemDto AttachOperatorNavigation(OperatorWorkItemDto item)
     {
@@ -1806,9 +1806,9 @@ public static class WorkstationEndpoints
             CreatedAt: item.DetectedAt,
             RunId: item.RunId,
             AuditReference: item.BreakId,
-            Workspace: "Governance",
+            Workspace: "Accounting",
             TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "GovernanceShell");
+            TargetPageTag: "AccountingShell");
     }
 
     private static string BuildReconciliationRoutingDetail(ReconciliationBreakQueueItem item)
@@ -1838,13 +1838,17 @@ public static class WorkstationEndpoints
         => kind switch
         {
             OperatorWorkItemKindDto.SecurityMasterCoverage => (
-                "Governance",
+                "Data",
                 UiApiRoutes.WorkstationSecurityMasterSearch,
-                "GovernanceShell"),
-            OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
-                "Governance",
+                "DataShell"),
+            OperatorWorkItemKindDto.ReconciliationBreak => (
+                "Accounting",
                 UiApiRoutes.ReconciliationBreakQueue,
-                "GovernanceShell"),
+                "AccountingShell"),
+            OperatorWorkItemKindDto.ReportPackApproval => (
+                "Reporting",
+                UiApiRoutes.FundReportPacks,
+                "ReportingShell"),
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Trading",
                 fundAccountId.HasValue

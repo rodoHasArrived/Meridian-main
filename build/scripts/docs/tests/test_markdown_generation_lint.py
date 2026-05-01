@@ -34,14 +34,15 @@ update_claude_md = load_module("update_claude_md_under_test", "update-claude-md.
 
 
 class MarkdownGenerationLintTests(unittest.TestCase):
-    def test_ai_structure_sync_keeps_blank_line_before_next_heading(self) -> None:
+    def test_ai_structure_sync_keeps_compact_navigation_before_next_heading(self) -> None:
         original = "# Guide\n\n- Previous list item\n## Repository Structure\n\n```text\nold\n```\n## Standard Workflow\n\nBody\n"
-        replacement = "```text\nnew\n```"
+        replacement = "Use docs/ai/generated/repo-navigation.md for routing."
 
         updated = update_claude_md.update_target(original, replacement)
 
         self.assertIn("- Previous list item\n\n## Repository Structure", updated)
-        self.assertIn("```text\nnew\n```\n\n## Standard Workflow", updated)
+        self.assertIn("Use docs/ai/generated/repo-navigation.md for routing.\n\n## Standard Workflow", updated)
+        self.assertNotIn("```text\nold\n```", updated)
 
     def test_todo_scan_table_uses_configured_markdownlint_spacing(self) -> None:
         item = scan_todos.TodoItem(

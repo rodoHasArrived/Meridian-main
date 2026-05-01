@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Execution.Services;
 

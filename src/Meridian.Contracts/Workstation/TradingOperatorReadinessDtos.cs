@@ -63,6 +63,17 @@ public sealed record TradingAcceptanceGateDto(
     string? RunId = null,
     string? AuditReference = null);
 
+public sealed record EvidenceCompletenessSummaryDto(
+    TradingAcceptanceGateStatusDto Status,
+    int ReadyGateCount,
+    int TotalGateCount,
+    int CriticalWorkItemCount,
+    int WarningWorkItemCount,
+    int ScorePercent,
+    IReadOnlyList<string> BlockingGateIds,
+    IReadOnlyList<string> ReviewGateIds,
+    IReadOnlyList<string> MissingEvidenceIds);
+
 public sealed record TradingPaperSessionReadinessDto(
     string SessionId,
     string StrategyId,
@@ -209,6 +220,17 @@ public sealed record TradingTrustGateReadinessDto(
     public TradingTrustGateContractReadinessDto? BaselineThresholdContract { get; init; }
 }
 
+public sealed record TradingReportPackReadinessDto(
+    TradingAcceptanceGateStatusDto Status,
+    string Detail,
+    string? FundProfileId,
+    Guid? ReportId,
+    DateTimeOffset? GeneratedAt,
+    IReadOnlyList<string> RelatedRunIds,
+    int ArtifactCount,
+    int WarningCount,
+    string? ManifestPath);
+
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,
     TradingPaperSessionReadinessDto? ActiveSession,
@@ -226,6 +248,10 @@ public sealed record TradingOperatorReadinessDto(
     public bool ReadyForPaperOperation { get; init; }
 
     public IReadOnlyList<TradingAcceptanceGateDto> AcceptanceGates { get; init; } = [];
+
+    public TradingReportPackReadinessDto? ReportPack { get; init; }
+
+    public EvidenceCompletenessSummaryDto? EvidenceCompleteness { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(
