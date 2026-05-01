@@ -4,11 +4,13 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Application.FundAccounts;
 
+using Meridian.Application.Accounts;
+
 /// <summary>
 /// Thread-safe fund-account service backed by an in-memory working set with optional
 /// durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundAccountService : IFundAccountService
+public sealed class InMemoryFundAccountService : IFundAccountService, IAccountManagementService, IAccountQueryService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -594,3 +596,56 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         }
     }
 }
+
+    public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var results = _accounts.Values.Select(static s => s.Summary)
+                .Where(a => (accountType is null || a.AccountType == accountType)
+                    && (isActive is null || a.IsActive == isActive.Value)
+                    && (string.IsNullOrWhiteSpace(currency) || string.Equals(a.BaseCurrency, currency, StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(static a => a.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return Task.FromResult<IReadOnlyList<AccountSummaryDto>>(results);
+        }
+    }
+
+    public Task<IReadOnlyList<AccountSettlementInstructionView>> ListSettlementInstructionsAsync(Guid? accountId = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var results = _accounts.Values.Select(static a => a.Summary)
+                .Where(a => accountId is null || a.AccountId == accountId)
+                .SelectMany(a => new []
+                {
+                    new AccountSettlementInstructionView(a.AccountId, "Custodian", a.CustodianDetails?.SubAccountNumber, a.Institution),
+                    new AccountSettlementInstructionView(a.AccountId, "Bank", a.BankDetails?.AccountNumber, a.BankDetails?.BankName ?? a.Institution)
+                })
+                .Where(static x => !string.IsNullOrWhiteSpace(x.Reference))
+                .OrderBy(static x => x.AccountId)
+                .ThenBy(static x => x.InstructionType, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return Task.FromResult<IReadOnlyList<AccountSettlementInstructionView>>(results);
+        }
+    }
+
+    public Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceTimelineAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default)
+        => GetBalanceHistoryAsync(accountId, fromDate, toDate, ct);
+
+    public Task<IReadOnlyList<AccountOpenBreakView>> ListOpenBreaksAsync(Guid? accountId = null, CancellationToken ct = default)
+    {
+        lock (_gate)
+        {
+            var results = _accounts.Values
+                .Where(a => accountId is null || a.Summary.AccountId == accountId)
+                .SelectMany(a => a.ReconciliationResults
+                    .Where(static r => !r.IsMatch)
+                    .Select(r => new AccountOpenBreakView(a.Summary.AccountId, r.ReconciliationRunId, r.ResultId, r.CheckLabel, r.Category, r.Variance, r.Reason)))
+                .OrderByDescending(static r => r.Variance ?? 0m)
+                .ThenBy(static r => r.CheckLabel, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return Task.FromResult<IReadOnlyList<AccountOpenBreakView>>(results);
+        }
+    }
+

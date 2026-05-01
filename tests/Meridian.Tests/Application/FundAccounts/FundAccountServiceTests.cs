@@ -1,4 +1,5 @@
 using Meridian.Application.FundAccounts;
+using Meridian.Application.Accounts;
 using Meridian.Contracts.FundStructure;
 
 namespace Meridian.Tests.Application.FundAccounts;
@@ -314,5 +315,23 @@ public sealed class FundAccountServiceTests
         Assert.NotNull(deactivated);
         Assert.False(deactivated!.IsActive);
         Assert.NotNull(deactivated.EffectiveTo);
+    }
+
+    [Fact]
+    public async Task AccountQueryService_FiltersAndSortsReadModels()
+    {
+        var svc = CreateService();
+        var query = (IAccountQueryService)svc;
+        var zulu = await svc.CreateAccountAsync(MakeBankRequest() with { DisplayName = "Zulu Bank", BaseCurrency = "USD" });
+        var alpha = await svc.CreateAccountAsync(MakeBankRequest() with { DisplayName = "Alpha Bank", BaseCurrency = "USD" });
+        await svc.CreateAccountAsync(MakeBankRequest() with { DisplayName = "Euro Bank", BaseCurrency = "EUR" });
+        await svc.DeactivateAccountAsync(zulu.AccountId, "test");
+
+        var filtered = await query.ListAccountsAsync(AccountTypeDto.Bank, true, "USD");
+        Assert.Single(filtered);
+        Assert.Equal(alpha.AccountId, filtered[0].AccountId);
+
+        var sorted = await query.ListAccountsAsync(AccountTypeDto.Bank, null, null);
+        Assert.Equal(new[] { "Alpha Bank", "Euro Bank", "Zulu Bank" }, sorted.Select(static account => account.DisplayName).ToArray());
     }
 }
