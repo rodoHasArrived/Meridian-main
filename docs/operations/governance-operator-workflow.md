@@ -54,3 +54,21 @@ Before release, capture journey evidence that covers:
 2. Security Master → fund portfolio / ledger / reconciliation / cash / report-pack drill-ins.
 3. Governance report-pack preview continuity inside the fund workspace.
 4. Reconciliation queue actions and downstream reporting handoff.
+
+## 6) Architecture guard: instrument metadata in governance/accounting/reporting DTOs
+
+Allowed pattern:
+
+- Governance/accounting/reporting DTOs may include instrument-facing fields **only when** they carry Security Master identity + provenance references (for example `SecurityId` plus `SecurityMasterSource`/`SecurityMasterProvenance`).
+- Read services and export seams must resolve labels/classification through Security Master lookup flow rather than local descriptor synthesis.
+
+Forbidden pattern:
+
+- Adding or deriving local instrument descriptors (ticker/name/classification) in governance DTOs without required Security Master references.
+- Emitting endpoint/export payloads where instrument rows cannot be traced back to Security Master identity.
+
+Remediation:
+
+1. Add required Security Master identity and provenance fields to the DTO.
+2. Replace local descriptor derivation with Security Master lookup + reference projection.
+3. Re-run contract compatibility checks and governance regression slices before merge.
