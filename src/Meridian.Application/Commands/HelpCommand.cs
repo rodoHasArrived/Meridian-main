@@ -17,6 +17,7 @@ internal sealed class HelpCommand : ICliCommand
         ["providers"] = ShowProvidersHelp,
         ["security-master"] = ShowSecurityMasterHelp,
         ["runbooks"] = ShowRunbooksHelp,
+        ["statements"] = ShowStatementsHelp,
     };
 
     public bool CanHandle(string[] args)
@@ -61,6 +62,7 @@ internal sealed class HelpCommand : ICliCommand
         Console.WriteLine("  --help providers        Data provider information");
         Console.WriteLine("  --help security-master  Security Master bulk ingest and conflict resolution");
         Console.WriteLine("  --help runbooks         Runbook preset create/list/run commands");
+        Console.WriteLine("  --help statements       Statement import/validation/reconciliation");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
     }
@@ -91,6 +93,32 @@ EXAMPLES:
 ");
     }
 
+
+    private static void ShowStatementsHelp()
+    {
+        Console.WriteLine(@"
+STATEMENTS
+══════════
+
+Broker statement ingestion and reconciliation.
+
+COMMANDS:
+    --statement-import                         Import normalized statement rows
+    --statement-validate                       Validate schema and balance totals
+    --statement-reconcile                      Run matching and produce unresolved cases
+
+REQUIRED OPTIONS:
+    --statement-source-kind <local|s3|sftp>   Statement source adapter kind
+    --statement-source-path <path>             Source file or directory path
+
+EXAMPLES:
+    Meridian --statement-validate --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+
+    Meridian --statement-import --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+
+    Meridian --statement-reconcile --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+");
+    }
     private static void ShowBackfillHelp()
     {
         Console.WriteLine(@"

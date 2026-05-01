@@ -163,6 +163,18 @@ dotnet run --project src/Meridian/Meridian.csproj -- --etl-resume <job-id>
 `--etl-import`, `--etl-export`, and `--etl-roundtrip` require `--etl-source-kind` and
 `--etl-source-path`. `--etl-resume` requires an existing ETL job ID from a prior run.
 
+
+### Statement import/reconciliation
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+```
+
+`--statement-import`, `--statement-validate`, and `--statement-reconcile` require both
+`--statement-source-kind` and `--statement-source-path`.
+
 ## Build And Test
 
 ### Solution build
