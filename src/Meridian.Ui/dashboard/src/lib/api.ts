@@ -362,9 +362,16 @@ export function resolveSecurityConflict(request: ResolveConflictRequest) {
   );
 }
 
-export function getReconciliationBreakQueue(status?: string) {
-  const params = status ? `?status=${encodeURIComponent(status)}` : "";
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
+  const search = new URLSearchParams();
+  if (status) search.set("status", status);
+  if (fundAccountId) search.set("fundAccountId", fundAccountId);
+  const params = search.toString() ? `?${search.toString()}` : "";
   return getJson<ReconciliationBreakQueueItem[]>(`/api/workstation/reconciliation/break-queue${params}`);
+}
+
+export function getReconciliationBreakDetail(breakId: string) {
+  return getJson<ReconciliationBreakQueueItem>(`/api/workstation/reconciliation/break-queue/${encodeURIComponent(breakId)}`);
 }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {

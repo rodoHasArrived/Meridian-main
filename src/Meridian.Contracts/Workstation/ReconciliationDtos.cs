@@ -198,7 +198,12 @@ public sealed record ReconciliationBreakQueueItem(
     string? ToleranceProfileId = null,
     decimal? ToleranceBand = null,
     string? RequiredSignoffRole = null,
-    string? SignoffStatus = null);
+    string? SignoffStatus = null,
+    string? FundAccountId = null,
+    string? ExplainabilitySummary = null,
+    string? RoutingTarget = null,
+    string? RoutingDetail = null,
+    string? RecommendedAction = null);
 
 /// <summary>
 /// Per-profile rollup for reconciliation tolerance calibration and exception routing.
@@ -252,4 +257,5 @@ public sealed record ResolveReconciliationBreakRequest(
     string BreakId,
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
-    string ResolutionNote);
+    string ResolutionNote,
+    string OperatorRationale);

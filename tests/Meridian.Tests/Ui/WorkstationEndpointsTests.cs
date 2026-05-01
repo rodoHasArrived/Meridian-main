@@ -1724,7 +1724,8 @@ public sealed class WorkstationEndpointsTests
                     BreakId: item.BreakId,
                     Status: ReconciliationBreakQueueStatus.Resolved,
                     ResolvedBy: "qa-resolve",
-                    ResolutionNote: "Tolerance profile accepted for sign-off."));
+                    ResolutionNote: "Tolerance profile accepted for sign-off.",
+                    OperatorRationale: "Tolerance and routing evidence verified."));
             resolve.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
@@ -1812,7 +1813,8 @@ public sealed class WorkstationEndpointsTests
                 BreakId: breakId,
                 Status: ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: "qa-resolve",
-                ResolutionNote: "Skipping review should fail."));
+                ResolutionNote: "Skipping review should fail.",
+                OperatorRationale: "Attempted without review."));
         invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var review = await client.PostAsJsonAsync(
@@ -1830,7 +1832,8 @@ public sealed class WorkstationEndpointsTests
                 BreakId: breakId,
                 Status: ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: "qa-resolve",
-                ResolutionNote: "Issue resolved."));
+                ResolutionNote: "Issue resolved.",
+                OperatorRationale: "Evidence reconciled against source records."));
         resolve.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
