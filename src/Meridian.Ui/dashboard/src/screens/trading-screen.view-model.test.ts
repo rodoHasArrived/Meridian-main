@@ -394,6 +394,13 @@ describe("session replay controls view model", () => {
     expect(ready.statusText).toBe("Ready to replay replay.jsonl.");
     expect(ready.canStart).toBe(true);
     expect(ready.canPause).toBe(false);
+    expect(ready.sectionTitle).toBe("Session replay controls");
+    expect(ready.fileSelectLabel).toBe("Replay file");
+    expect(ready.fileSelectDescribedBy).toBe("session-replay-status");
+    expect(ready.speedLabel).toBe("Replay speed");
+    expect(ready.speedDescribedBy).toBe("session-replay-status session-replay-speed-help");
+    expect(ready.seekLabel).toBe("Seek position");
+    expect(ready.seekDescribedBy).toBe("session-replay-status session-replay-seek-help");
     expect(ready.statusAnnouncement).toBe("Replay file replay.jsonl selected.");
 
     const running = buildSessionReplayControlsState({
@@ -424,6 +431,8 @@ describe("session replay controls view model", () => {
 
     expect(invalid.speedValidationText).toBe("Enter a replay speed greater than 0.");
     expect(invalid.seekValidationText).toBe("Enter a seek position of 0 ms or greater.");
+    expect(invalid.speedDescribedBy).toBe("session-replay-status session-replay-speed-help session-replay-error");
+    expect(invalid.seekDescribedBy).toBe("session-replay-status session-replay-seek-help session-replay-error");
     expect(invalid.canStart).toBe(false);
     expect(invalid.canSeek).toBe(false);
     expect(invalid.canApplySpeed).toBe(false);

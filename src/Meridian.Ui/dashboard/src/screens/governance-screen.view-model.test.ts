@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildGovernanceCashFlowViewState,
   buildGovernanceReportingViewState,
+  buildGovernanceTrialBalanceViewState,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationNarrative,
@@ -15,6 +16,7 @@ import {
 import type {
   GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
+  LedgerTrialBalanceLine,
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
   SecurityMasterEntry,
@@ -165,6 +167,27 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
   }
 ];
 
+const trialBalanceLines: LedgerTrialBalanceLine[] = [
+  {
+    accountName: "Cash",
+    accountType: "Asset",
+    symbol: null,
+    financialAccountId: "acct-cash",
+    balance: 120500,
+    entryCount: 12,
+    security: null
+  },
+  {
+    accountName: "Financing payable",
+    accountType: "Liability",
+    symbol: null,
+    financialAccountId: "acct-financing",
+    balance: -500,
+    entryCount: 2,
+    security: null
+  }
+];
+
 describe("governance-screen view model", () => {
   it("derives the governance workstream and selected reconciliation run", () => {
     expect(resolveGovernanceWorkstream("/accounting/security-master")).toBe("security-master");
@@ -219,6 +242,72 @@ describe("governance-screen view model", () => {
       statusTone: "warning",
       rows: [],
       statusAnnouncement: "Cash-flow evidence is loading."
+    });
+  });
+
+  it("derives trial-balance table rows, labels, and status announcements", () => {
+    const state = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      loading: false,
+      errorText: null
+    });
+
+    expect(state).toMatchObject({
+      title: "Multi-ledger trial balance",
+      description: "Baseline ledger balances for run-42 grouped by account type.",
+      tableLabel: "Trial balance lines for run-42",
+      state: "ready",
+      hasRows: true,
+      statusAnnouncement: "2 trial balance lines loaded for run-42."
+    });
+    expect(state.rows[0]).toMatchObject({
+      rowId: "Cash-Asset-acct-cash",
+      accountLabel: "Cash",
+      accountTypeLabel: "Asset",
+      balanceLabel: "$120,500",
+      balanceTone: "success",
+      entryCountLabel: "12",
+      ariaLabel: "Cash Asset. Balance $120,500. 12 entries"
+    });
+    expect(state.rows[1]).toMatchObject({
+      balanceLabel: "-$500",
+      balanceTone: "danger"
+    });
+  });
+
+  it("derives trial-balance loading, empty, and error states", () => {
+    expect(buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [],
+      loading: true,
+      errorText: null
+    })).toMatchObject({
+      state: "loading",
+      loadingText: "Loading trial balance for run-42.",
+      statusAnnouncement: "Loading trial balance for run-42."
+    });
+
+    expect(buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [],
+      loading: false,
+      errorText: null
+    })).toMatchObject({
+      state: "empty",
+      emptyTitle: "No trial balance lines",
+      statusAnnouncement: "No trial balance lines returned for run-42."
+    });
+
+    expect(buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      loading: false,
+      errorText: "Ledger unavailable."
+    })).toMatchObject({
+      state: "error",
+      errorText: "Ledger unavailable.",
+      statusAnnouncement: "Trial balance failed for run-42: Ledger unavailable."
     });
   });
 

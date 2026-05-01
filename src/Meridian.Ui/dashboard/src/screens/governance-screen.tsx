@@ -215,37 +215,82 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
       {workstream === "ledger" && selectedReconciliation ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card>
+          <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description">
             <CardHeader>
-              <CardTitle>Multi-ledger trial balance</CardTitle>
-              <CardDescription>Baseline ledger balances for {selectedReconciliation.runId} grouped by account type.</CardDescription>
+              <CardTitle id="trial-balance-title">{reconciliation.trialBalanceView.title}</CardTitle>
+              <CardDescription id="trial-balance-description">{reconciliation.trialBalanceView.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto rounded-xl border border-border/70">
-                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                  <thead className="bg-secondary/30">
-                    <tr>{["Account", "Type", "Balance", "Entries"].map((c) => <th key={c} className="px-3 py-2">{c}</th>)}</tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {reconciliation.trialBalance.map((line) => (
-                      <tr key={`${line.accountName}-${line.accountType}`}>
-                        <td className="px-3 py-2">{line.accountName}</td>
-                        <td className="px-3 py-2 font-mono">{line.accountType}</td>
-                        <td className="px-3 py-2 font-mono">{formatCurrency(line.balance)}</td>
-                        <td className="px-3 py-2 font-mono">{line.entryCount}</td>
+              <span className="sr-only" aria-live="polite">{reconciliation.trialBalanceView.statusAnnouncement}</span>
+              {reconciliation.trialBalanceView.hasRows ? (
+                <div className="overflow-x-auto rounded-lg border border-border/70">
+                  <table
+                    aria-label={reconciliation.trialBalanceView.tableLabel}
+                    className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
+                  >
+                    <thead className="bg-secondary/30">
+                      <tr>
+                        {["Account", "Type", "Balance", "Entries"].map((column) => (
+                          <th
+                            key={column}
+                            scope="col"
+                            className={cn("px-3 py-2", column === "Balance" || column === "Entries" ? "text-right" : undefined)}
+                          >
+                            {column}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {reconciliation.trialBalanceLoading && (
-                <p role="status" className="mt-3 text-sm text-muted-foreground">Loading trial balance...</p>
-              )}
-              {reconciliation.trialBalanceErrorText && (
-                <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.trialBalanceErrorText}
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {reconciliation.trialBalanceView.rows.map((line) => (
+                        <tr key={line.rowId} aria-label={line.ariaLabel} className="hover:bg-secondary/20">
+                          <td className="px-3 py-2">{line.accountLabel}</td>
+                          <td className="px-3 py-2 font-mono">{line.accountTypeLabel}</td>
+                          <td className="px-3 py-2 text-right font-mono">
+                            <span
+                              className={cn(
+                                line.balanceTone === "success"
+                                  ? "text-success"
+                                  : line.balanceTone === "danger"
+                                    ? "text-danger"
+                                    : "text-foreground"
+                              )}
+                            >
+                              {line.balanceLabel}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-right font-mono">{line.entryCountLabel}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div
+                  role={reconciliation.trialBalanceView.state === "error" ? "alert" : "status"}
+                  className={cn(
+                    "rounded-lg border px-4 py-4",
+                    reconciliation.trialBalanceView.state === "error"
+                      ? "border-danger/35 bg-danger/10 text-danger"
+                      : "border-border/70 bg-secondary/25 text-muted-foreground"
+                  )}
+                >
+                  <div className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.emptyTitle}</div>
+                  <p className="mt-2 text-sm leading-6">
+                    {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
+                  </p>
                 </div>
               )}
+              {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
+                <p role="status" className="mt-3 text-sm text-muted-foreground">
+                  {reconciliation.trialBalanceView.loadingText}
+                </p>
+              ) : null}
+              {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
+                <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {reconciliation.trialBalanceView.errorText}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
           <Card>
@@ -804,9 +849,4 @@ function reportingBadgeClass(tone: "primary" | "success" | "warning" | "muted") 
     tone === "warning" ? "border-warning/35 bg-warning/10 text-warning" : "",
     tone === "muted" ? "border-border/70 bg-secondary text-muted-foreground" : ""
   );
-}
-
-function formatCurrency(value: number) {
-  const prefix = value >= 0 ? "$" : "-$";
-  return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }

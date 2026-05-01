@@ -27,8 +27,43 @@ export interface BackfillTriggerState {
   canRun: boolean;
   previewButtonLabel: string;
   runButtonLabel: string;
+  previewButtonAriaLabel: string;
+  runButtonAriaLabel: string;
   symbolsHelpText: string;
   statusAnnouncement: string;
+  dialogState: BackfillDialogState;
+}
+
+export interface BackfillDialogFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  describedBy?: string;
+  autoFocus?: boolean;
+}
+
+export interface BackfillDialogActionState {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+  busyLabel: string;
+}
+
+export interface BackfillDialogState {
+  titleId: string;
+  descriptionId: string;
+  formLabel: string;
+  closeButtonLabel: string;
+  closeButtonDisabledReason: string | null;
+  providerField: BackfillDialogFieldState;
+  symbolsField: BackfillDialogFieldState;
+  fromField: BackfillDialogFieldState;
+  toField: BackfillDialogFieldState;
+  previewAction: BackfillDialogActionState;
+  runAction: BackfillDialogActionState;
+  formStatusLabel: string;
 }
 
 export type BackfillResultCardTone = "warning" | "success" | "danger";
@@ -89,6 +124,8 @@ export type DataOperationsProviderTrustField = DataOperationsDetailField;
 
 export interface DataOperationsBackfillRow {
   jobId: string;
+  rowId: string;
+  detailPanelId: string;
   scope: string;
   provider: string;
   status: DataOperationsBackfillRecord["status"];
@@ -97,6 +134,15 @@ export interface DataOperationsBackfillRow {
   selected: boolean;
   detailText: string;
   ariaLabel: string;
+  detailDescription: string;
+}
+
+export interface DataOperationsBackfillDetailState {
+  id: string;
+  title: string;
+  description: string;
+  ariaLabel: string;
+  rows: DataOperationsDetailField[];
 }
 
 export interface DataOperationsExportRow {
@@ -119,6 +165,7 @@ export interface DataOperationsPresentationState {
   providerSection: DataOperationsSectionState<DataOperationsProviderRow>;
   backfillSection: DataOperationsSectionState<DataOperationsBackfillRow>;
   exportSection: DataOperationsSectionState<DataOperationsExportRow>;
+  selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
 }
 
@@ -154,7 +201,6 @@ export function useDataOperationsViewModel(
     () => resolveSelectedBackfill(data?.backfills ?? [], selectedBackfillId),
     [data, selectedBackfillId]
   );
-  const selectedBackfillNarrative = selectedBackfill ? buildBackfillNarrative(selectedBackfill) : null;
   const presentation = useMemo(
     () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream),
     [data, selectedBackfill?.jobId, workstream]
@@ -251,7 +297,6 @@ export function useDataOperationsViewModel(
   return {
     workstream,
     selectedBackfill,
-    selectedBackfillNarrative,
     selectedBackfillId,
     selectBackfill: setSelectedBackfillId,
     ...presentation,
@@ -290,6 +335,7 @@ export function buildDataOperationsPresentationState(
     providerSection: buildProviderSection(providers),
     backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
     exportSection: buildExportSection(exports),
+    selectedBackfillDetail: buildSelectedBackfillDetail(backfills, selectedBackfillId),
     backfillDetailEmptyState: backfills.length === 0
       ? {
           title: "No backfill activity yet",
@@ -372,17 +418,25 @@ export function buildBackfillSection(
   return {
     rows: backfills.map((backfill) => {
       const detailText = `${backfill.scope}. ${backfill.status}; ${backfill.progress}; updated ${backfill.updatedAt}.`;
+      const selected = selectedBackfillId === backfill.jobId;
+      const rowId = buildBackfillRowId(backfill.jobId);
+      const detailPanelId = buildBackfillDetailPanelId(backfill.jobId);
 
       return {
         jobId: backfill.jobId,
+        rowId,
+        detailPanelId,
         scope: backfill.scope,
         provider: backfill.provider,
         status: backfill.status,
         progress: backfill.progress,
         updatedAt: backfill.updatedAt,
-        selected: selectedBackfillId === backfill.jobId,
+        selected,
         detailText,
-        ariaLabel: `Inspect backfill ${backfill.jobId}: ${detailText}`
+        ariaLabel: `${selected ? "Selected" : "Inspect"} backfill ${backfill.jobId}: ${detailText}`,
+        detailDescription: selected
+          ? `Selected backfill ${backfill.jobId}; details are shown in the backfill detail panel.`
+          : `Inspect backfill ${backfill.jobId}; details will replace the current backfill detail panel.`
       };
     }),
     hasRows: backfills.length > 0,
@@ -392,6 +446,32 @@ export function buildBackfillSection(
         ? "Use Trigger backfill to preview a historical repair; queued and review-required jobs will appear here."
         : "Historical repair jobs will appear here after a previewed backfill is submitted."
     }
+  };
+}
+
+export function buildSelectedBackfillDetail(
+  backfills: DataOperationsBackfillRecord[],
+  selectedBackfillId: string | null
+): DataOperationsBackfillDetailState | null {
+  const selected = resolveSelectedBackfill(backfills, selectedBackfillId);
+
+  if (!selected) {
+    return null;
+  }
+
+  const description = buildBackfillNarrative(selected);
+
+  return {
+    id: buildBackfillDetailPanelId(selected.jobId),
+    title: selected.scope,
+    description,
+    ariaLabel: `Backfill detail for ${selected.jobId}: ${selected.scope}. ${description}`,
+    rows: [
+      { id: "provider", label: "Provider", value: selected.provider },
+      { id: "status", label: "Status", value: selected.status },
+      { id: "progress", label: "Progress", value: selected.progress },
+      { id: "updated", label: "Updated", value: selected.updatedAt }
+    ]
   };
 }
 
@@ -502,9 +582,198 @@ export function buildBackfillTriggerState({
     canRun: !busy && preview !== null && validationError === null,
     previewButtonLabel: phase === "previewing" ? "Previewing..." : "Preview",
     runButtonLabel: phase === "running" ? "Running..." : "Run backfill",
+    previewButtonAriaLabel: phase === "previewing"
+      ? "Previewing backfill request"
+      : validationError
+        ? `Preview backfill unavailable: ${validationError}`
+        : "Preview backfill request",
+    runButtonAriaLabel: phase === "running"
+      ? "Running backfill request"
+      : preview === null
+        ? "Run backfill unavailable until preview completes"
+        : validationError
+          ? `Run backfill unavailable: ${validationError}`
+          : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
-    statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result })
+    statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
+    dialogState: buildBackfillDialogState({ busy, phase, validationError, preview, error, result })
   };
+}
+
+export function buildBackfillDialogState({
+  busy,
+  phase,
+  validationError,
+  preview,
+  error = null,
+  result = null
+}: {
+  busy: boolean;
+  phase: BackfillPhase;
+  validationError: string | null;
+  preview: BackfillTriggerResult | null;
+  error?: string | null;
+  result?: BackfillTriggerResult | null;
+}): BackfillDialogState {
+  const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
+  const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
+
+  return {
+    titleId: "backfill-dialog-title",
+    descriptionId: "backfill-dialog-description",
+    formLabel: "Backfill request form",
+    closeButtonLabel: "Close backfill dialog",
+    closeButtonDisabledReason: busy ? "Backfill request is running; wait for the current request to finish before closing." : null,
+    providerField: {
+      id: "backfill-provider",
+      label: "Provider",
+      ariaLabel: "Backfill provider"
+    },
+    symbolsField: {
+      id: "backfill-symbols",
+      label: "Symbols",
+      ariaLabel: "Backfill symbols",
+      describedBy: "backfill-symbols-help backfill-form-status backfill-form-feedback",
+      autoFocus: true
+    },
+    fromField: {
+      id: "backfill-from",
+      label: "From",
+      ariaLabel: "Backfill start date"
+    },
+    toField: {
+      id: "backfill-to",
+      label: "To",
+      ariaLabel: "Backfill end date"
+    },
+    previewAction: {
+      label: phase === "previewing" ? "Previewing..." : "Preview",
+      ariaLabel: phase === "previewing"
+        ? "Previewing backfill request"
+        : validationError
+          ? `Preview backfill unavailable: ${validationError}`
+          : "Preview backfill request",
+      disabled: busy || validationError !== null,
+      disabledReason: previewDisabledReason,
+      busy: phase === "previewing",
+      busyLabel: "Previewing..."
+    },
+    runAction: {
+      label: phase === "running" ? "Running..." : "Run backfill",
+      ariaLabel: phase === "running"
+        ? "Running backfill request"
+        : preview === null
+          ? "Run backfill unavailable until preview completes"
+          : validationError
+            ? `Run backfill unavailable: ${validationError}`
+            : "Run previewed backfill request",
+      disabled: busy || preview === null || validationError !== null,
+      disabledReason: runDisabledReason,
+      busy: phase === "running",
+      busyLabel: "Running..."
+    },
+    formStatusLabel: buildBackfillFormStatusLabel({ busy, phase, validationError, preview, error, result })
+  };
+}
+
+export function resolveBackfillPreviewDisabledReason({
+  busy,
+  phase,
+  validationError
+}: {
+  busy: boolean;
+  phase: BackfillPhase;
+  validationError: string | null;
+}): string | null {
+  if (phase === "previewing") {
+    return "Preview is already running.";
+  }
+
+  if (busy) {
+    return "Wait for the current backfill request to finish.";
+  }
+
+  return validationError;
+}
+
+export function resolveBackfillRunDisabledReason({
+  busy,
+  phase,
+  validationError,
+  preview
+}: {
+  busy: boolean;
+  phase: BackfillPhase;
+  validationError: string | null;
+  preview: BackfillTriggerResult | null;
+}): string | null {
+  if (phase === "running") {
+    return "Backfill is already running.";
+  }
+
+  if (busy) {
+    return "Wait for the current backfill request to finish.";
+  }
+
+  if (validationError) {
+    return validationError;
+  }
+
+  if (!preview) {
+    return "Preview the request before running the backfill.";
+  }
+
+  return null;
+}
+
+export function buildBackfillFormStatusLabel({
+  busy,
+  phase,
+  validationError,
+  preview,
+  error,
+  result
+}: {
+  busy: boolean;
+  phase: BackfillPhase;
+  validationError: string | null;
+  preview: BackfillTriggerResult | null;
+  error: string | null;
+  result: BackfillTriggerResult | null;
+}): string {
+  if (phase === "previewing") {
+    return "Previewing the backfill request.";
+  }
+
+  if (phase === "running") {
+    return "Running the previewed backfill request.";
+  }
+
+  if (busy) {
+    return "Backfill request is busy.";
+  }
+
+  if (error) {
+    return error;
+  }
+
+  if (result?.success) {
+    return "Backfill completed successfully.";
+  }
+
+  if (result && !result.success) {
+    return "Backfill completed with an error.";
+  }
+
+  if (preview) {
+    return "Preview is ready. Review the summary before running.";
+  }
+
+  if (validationError) {
+    return validationError;
+  }
+
+  return "Backfill request is ready to preview.";
 }
 
 export function buildBackfillResultCardState(
@@ -654,6 +923,19 @@ function formatUtcMinute(date: Date): string {
   const minute = String(date.getUTCMinutes()).padStart(2, "0");
 
   return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
+}
+
+function buildBackfillRowId(jobId: string): string {
+  return `backfill-row-${toDomId(jobId)}`;
+}
+
+function buildBackfillDetailPanelId(jobId: string): string {
+  return `backfill-detail-${toDomId(jobId)}`;
+}
+
+function toDomId(value: string): string {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return normalized || "item";
 }
 
 function resolveBackfillResultTone(

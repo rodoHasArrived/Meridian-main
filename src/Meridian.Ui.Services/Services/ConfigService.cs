@@ -33,8 +33,13 @@ public class ConfigService : IConfigService
     public string ConfigPath { get; }
 
     public ConfigService()
+        : this(DefaultPathResolver)
     {
-        var configPath = DefaultPathResolver();
+    }
+
+    internal ConfigService(Func<string> pathResolver)
+    {
+        var configPath = pathResolver();
         ConfigPath = Path.IsPathRooted(configPath)
             ? configPath
             : Path.GetFullPath(configPath);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBackfillSection,
+  buildBackfillDialogState,
   buildBackfillNarrative,
   buildBackfillRequest,
   buildBackfillResultCardState,
@@ -9,6 +10,7 @@ import {
   buildExportSection,
   buildProviderRow,
   buildProviderSection,
+  buildSelectedBackfillDetail,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
   validateBackfillForm
@@ -145,7 +147,49 @@ describe("data-operations-screen view model", () => {
     });
 
     expect(running.runButtonLabel).toBe("Running...");
+    expect(running.runButtonAriaLabel).toBe("Running backfill request");
+    expect(running.dialogState.formStatusLabel).toBe("Running the previewed backfill request.");
+    expect(running.dialogState.runAction).toMatchObject({
+      label: "Running...",
+      disabled: true,
+      disabledReason: "Backfill is already running.",
+      busy: true,
+      busyLabel: "Running..."
+    });
+    expect(running.dialogState.runAction.busy).toBe(true);
+    expect(running.dialogState.closeButtonDisabledReason).toContain("wait for the current request");
     expect(running.statusAnnouncement).toBe("Running backfill request.");
+  });
+
+  it("derives backfill dialog field, focus, and action semantics", () => {
+    const dialog = buildBackfillDialogState({
+      busy: false,
+      phase: "idle",
+      validationError: "Enter at least one symbol before previewing a backfill.",
+      preview: null
+    });
+
+    expect(dialog.titleId).toBe("backfill-dialog-title");
+    expect(dialog.descriptionId).toBe("backfill-dialog-description");
+    expect(dialog.formLabel).toBe("Backfill request form");
+    expect(dialog.closeButtonLabel).toBe("Close backfill dialog");
+    expect(dialog.closeButtonDisabledReason).toBeNull();
+    expect(dialog.symbolsField).toMatchObject({
+      id: "backfill-symbols",
+      ariaLabel: "Backfill symbols",
+      describedBy: "backfill-symbols-help backfill-form-status backfill-form-feedback",
+      autoFocus: true
+    });
+    expect(dialog.previewAction).toMatchObject({
+      label: "Preview",
+      ariaLabel: "Preview backfill unavailable: Enter at least one symbol before previewing a backfill.",
+      disabled: true,
+      disabledReason: "Enter at least one symbol before previewing a backfill.",
+      busy: false
+    });
+    expect(dialog.runAction.ariaLabel).toBe("Run backfill unavailable until preview completes");
+    expect(dialog.runAction.disabledReason).toBe("Enter at least one symbol before previewing a backfill.");
+    expect(dialog.formStatusLabel).toBe("Enter at least one symbol before previewing a backfill.");
   });
 
   it("derives backfill preview and completion result cards", () => {
@@ -202,7 +246,10 @@ describe("data-operations-screen view model", () => {
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
     expect(backfillSection.rows[1].selected).toBe(true);
-    expect(backfillSection.rows[1].ariaLabel).toContain("Inspect backfill BF-1044");
+    expect(backfillSection.rows[1].rowId).toBe("backfill-row-bf-1044");
+    expect(backfillSection.rows[1].detailPanelId).toBe("backfill-detail-bf-1044");
+    expect(backfillSection.rows[1].ariaLabel).toContain("Selected backfill BF-1044");
+    expect(backfillSection.rows[0].detailDescription).toContain("details will replace the current backfill detail panel");
     expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
 
     const exportSection = buildExportSection(exports);
@@ -272,6 +319,17 @@ describe("data-operations-screen view model", () => {
     expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
   });
 
+  it("derives selected backfill detail panel state with stable linkage ids", () => {
+    const detail = buildSelectedBackfillDetail(backfills, "BF-1044");
+
+    expect(detail?.id).toBe("backfill-detail-bf-1044");
+    expect(detail?.title).toBe("Options chains / 7d");
+    expect(detail?.description).toContain("waiting on operator review");
+    expect(detail?.ariaLabel).toContain("Backfill detail for BF-1044");
+    expect(detail?.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
+    expect(buildSelectedBackfillDetail([], null)).toBeNull();
+  });
+
   it("derives a data operations presentation state for empty workspace arrays", () => {
     const emptyData: DataOperationsWorkspaceResponse = {
       metrics: [],
@@ -285,6 +343,7 @@ describe("data-operations-screen view model", () => {
     expect(presentation.providerSection.hasRows).toBe(false);
     expect(presentation.backfillSection.hasRows).toBe(false);
     expect(presentation.exportSection.hasRows).toBe(false);
+    expect(presentation.selectedBackfillDetail).toBeNull();
     expect(presentation.backfillDetailEmptyState?.title).toBe("No backfill activity yet");
   });
 });

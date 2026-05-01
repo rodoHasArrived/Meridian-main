@@ -1,4 +1,6 @@
 import {
+  buildDialogCloseButtonViewModel,
+  buildDialogContentViewModel,
   getFocusableDialogElements,
   resolveDialogTabTarget,
   resolveInitialDialogFocus,
@@ -7,6 +9,42 @@ import {
 } from "@/components/ui/dialog.view-model";
 
 describe("dialog interaction view model", () => {
+  it("derives viewport-safe dialog surface presentation", () => {
+    const viewModel = buildDialogContentViewModel();
+
+    expect(viewModel.role).toBe("dialog");
+    expect(viewModel.ariaModal).toBe(true);
+    expect(viewModel.tabIndex).toBe(-1);
+    expect(viewModel.className).toContain("max-h-[calc(100dvh-2rem)]");
+    expect(viewModel.className).toContain("overflow-y-auto");
+    expect(viewModel.className).toContain("overscroll-contain");
+    expect(viewModel.className).toContain("rounded-lg");
+  });
+
+  it("preserves caller-provided tab target while deriving the dialog surface", () => {
+    expect(buildDialogContentViewModel(0).tabIndex).toBe(0);
+  });
+
+  it("derives accessible close-button semantics", () => {
+    expect(buildDialogCloseButtonViewModel()).toMatchObject({
+      type: "button",
+      ariaLabel: "Close dialog",
+      title: "Close dialog",
+      disabled: false,
+      iconAriaHidden: true
+    });
+
+    expect(buildDialogCloseButtonViewModel({
+      label: "Close backfill dialog",
+      disabled: true,
+      disabledReason: "Backfill request is running."
+    })).toMatchObject({
+      ariaLabel: "Close backfill dialog",
+      title: "Backfill request is running.",
+      disabled: true
+    });
+  });
+
   it("derives close intent from Escape and backdrop targets", () => {
     const backdrop = document.createElement("div");
     const content = document.createElement("div");

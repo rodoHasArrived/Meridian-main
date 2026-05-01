@@ -515,6 +515,12 @@ describe("TradingScreen", () => {
     const user = userEvent.setup();
     await renderTradingScreen();
 
+    const replayControls = screen.getByRole("region", { name: /session replay controls/i });
+    expect(replayControls).toHaveAccessibleDescription("Start and control replay for reconnect/resume validation.");
+    expect(within(replayControls).getByLabelText("Replay file")).toHaveAccessibleDescription(/Ready to replay replay\.jsonl/i);
+    expect(within(replayControls).getByLabelText("Replay speed multiplier")).toHaveAccessibleDescription(/Multiplier greater than 0/i);
+    expect(within(replayControls).getByLabelText("Seek position in milliseconds")).toHaveAccessibleDescription(/Position in milliseconds from replay start/i);
+
     const startButton = await screen.findByRole("button", { name: "Start" });
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(startButton);

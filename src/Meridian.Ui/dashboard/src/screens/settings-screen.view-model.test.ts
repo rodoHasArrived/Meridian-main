@@ -75,21 +75,62 @@ describe("buildSettingsScreenViewModel", () => {
 
   it("surfaces recent events from overview", () => {
     const vm = buildSettingsScreenViewModel(null, overview);
-    expect(vm.hasEvents).toBe(true);
-    expect(vm.recentEvents).toHaveLength(1);
-    expect(vm.recentEvents[0].message).toBe("Backfill completed.");
+    expect(vm.recentEventsSection.state).toBe("ready");
+    expect(vm.recentEventsSection.listLabel).toBe("1 recent system event");
+    expect(vm.recentEventsSection.rows).toHaveLength(1);
+    expect(vm.recentEventsSection.rows[0]).toMatchObject({
+      message: "Backfill completed.",
+      statusCode: "INFO",
+      badgeVariant: "default",
+      tone: "default"
+    });
   });
 
   it("returns empty events when overview has none", () => {
     const noEvents: SystemOverviewResponse = { ...overview, recentEvents: [] };
     const vm = buildSettingsScreenViewModel(null, noEvents);
-    expect(vm.hasEvents).toBe(false);
+    expect(vm.recentEventsSection.state).toBe("empty");
+    expect(vm.recentEventsSection.statusLabel).toBe("No recent events");
+    expect(vm.recentEventsSection.rows).toHaveLength(0);
+  });
+
+  it("returns unavailable recent-event state when overview is null", () => {
+    const vm = buildSettingsScreenViewModel(null, null);
+    expect(vm.recentEventsSection.state).toBe("unavailable");
+    expect(vm.recentEventsSection.statusLabel).toBe("Event stream unavailable");
+    expect(vm.recentEventsSection.statusDetail).toContain("Reconnect");
+  });
+
+  it("derives warning and error event tones with fallback evidence", () => {
+    const eventOverview: SystemOverviewResponse = {
+      ...overview,
+      recentEvents: [
+        { id: "w1", type: "warning", message: "Brokerage sync delayed.", source: "", timestamp: "" },
+        { id: "e1", type: "error", message: "", source: "ConfigService", timestamp: "2026-05-01T00:03:00Z" }
+      ]
+    };
+
+    const vm = buildSettingsScreenViewModel(null, eventOverview);
+
+    expect(vm.recentEventsSection.listLabel).toBe("2 recent system events");
+    expect(vm.recentEventsSection.rows[0]).toMatchObject({
+      statusCode: "OBS",
+      badgeVariant: "warning",
+      source: "Unknown source",
+      timestamp: "Timestamp unavailable"
+    });
+    expect(vm.recentEventsSection.rows[1]).toMatchObject({
+      statusCode: "CRIT",
+      badgeVariant: "danger",
+      message: "Event detail unavailable."
+    });
   });
 
   it("always includes diagnostic links", () => {
     const vm = buildSettingsScreenViewModel(null, null);
     expect(vm.diagnosticLinks.length).toBeGreaterThan(0);
     expect(vm.diagnosticLinks.every((l) => l.href.startsWith("/api/"))).toBe(true);
+    expect(vm.diagnosticLinks.every((l) => l.ariaLabel.includes("diagnostic endpoint"))).toBe(true);
   });
 
   it("builds system summary label", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildOverviewActivityRows,
+  buildOverviewStatusBanner,
   buildOverviewStatusState,
   buildOverviewWorkspaceLinks
 } from "@/screens/overview-screen.view-model";
@@ -30,6 +31,12 @@ describe("overview-screen view model", () => {
     });
 
     expect(state.statusLabel).toBe("System Degraded");
+    expect(state.statusBanner.role).toBe("alert");
+    expect(state.statusBanner.ariaLive).toBe("assertive");
+    expect(state.statusBanner.titleId).toBe("overview-status-title");
+    expect(state.statusBanner.detailId).toBe("overview-status-detail");
+    expect(state.statusBanner.ariaLabel).toContain("System Degraded");
+    expect(state.statusBanner.detailText).toContain("2 of 4 providers online");
     expect(state.providerSummary).toBe("2 of 4 providers online");
     expect(state.storageLabel).toBe("Warning");
     expect(state.hasMetrics).toBe(false);
@@ -71,6 +78,8 @@ describe("overview-screen view model", () => {
     expect(state.current).toBe(overview);
     expect(state.refreshErrorText).toBe("Refresh failed: Provider offline. Showing the last known status.");
     expect(state.refreshAnnouncement).toBe(state.refreshErrorText);
+    expect(state.statusBanner.role).toBe("alert");
+    expect(state.statusBanner.ariaLabel).toContain("Refresh failed: Provider offline");
     expect(state.refreshButtonLabel).toBe("Refresh");
   });
 
@@ -83,6 +92,9 @@ describe("overview-screen view model", () => {
     });
 
     expect(state.statusLabel).toBe("Connecting to system...");
+    expect(state.statusBanner.role).toBe("status");
+    expect(state.statusBanner.ariaLive).toBe("polite");
+    expect(state.statusBanner.detailText).toBe("Waiting for the workstation status payload.");
     expect(state.refreshButtonLabel).toBe("Refreshing...");
     expect(state.refreshAriaLabel).toBe("Refreshing system status");
     expect(state.refreshAnnouncement).toBe("Refreshing system status.");
@@ -145,5 +157,21 @@ describe("overview-screen view model", () => {
       tone: "danger",
       source: "Unknown source"
     });
+  });
+
+  it("derives healthy status banner semantics as a polite status region", () => {
+    const healthy = buildOverviewStatusBanner({
+      current: { ...overview, systemStatus: "Healthy", storageHealth: "Healthy", providersOnline: 4 },
+      statusLabel: "All Systems Healthy",
+      providerSummary: "4 of 4 providers online",
+      storageLabel: "Healthy",
+      lastHeartbeatLabel: "10:15 AM",
+      refreshErrorText: null
+    });
+
+    expect(healthy.role).toBe("status");
+    expect(healthy.ariaLive).toBe("polite");
+    expect(healthy.detailText).toBe("4 of 4 providers online. Storage Healthy. Last heartbeat 10:15 AM.");
+    expect(healthy.ariaLabel).toContain("All Systems Healthy");
   });
 });

@@ -477,6 +477,8 @@ const fixtures = {
   "/api/workstation/trading/readiness": fixtureTradingReadiness,
   "/api/workstation/operator/inbox": fixtureOperatorInbox,
   "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
+  "/api/workstation/accounting": fixtureGovernanceWorkspace,
+  "/api/workstation/reporting": fixtureGovernanceWorkspace,
   "/api/workstation/governance": fixtureGovernanceWorkspace
 } satisfies Record<string, unknown>;
 

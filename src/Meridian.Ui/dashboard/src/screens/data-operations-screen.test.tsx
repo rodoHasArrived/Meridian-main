@@ -107,10 +107,18 @@ describe("DataOperationsScreen", () => {
 
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
-    await user.click(screen.getByRole("button", { name: /BF-1044/i }));
+    const reviewBackfill = screen.getByRole("button", { name: /BF-1044/i });
 
+    expect(screen.getByRole("button", { name: /BF-1042/i })).toHaveAttribute("aria-pressed", "true");
+    expect(reviewBackfill).toHaveAttribute("aria-controls", "backfill-detail-bf-1044");
+
+    await user.click(reviewBackfill);
+
+    expect(reviewBackfill).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
     expect(screen.getAllByText("Options chains / 7d").length).toBeGreaterThan(0);
     expect(screen.getByText(/waiting on operator review/i)).toBeInTheDocument();
+    expect(screen.getByText("5m ago")).toBeInTheDocument();
   });
 
   it("opens the trigger backfill dialog when the Trigger backfill button is clicked", async () => {
@@ -122,7 +130,10 @@ describe("DataOperationsScreen", () => {
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/AAPL MSFT SPY/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toHaveFocus());
+    expect(screen.getByRole("group", { name: "Backfill request form" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close backfill dialog" })).toBeInTheDocument();
+    expect(screen.getByText("Enter at least one symbol before previewing a backfill.")).toBeInTheDocument();
   });
 
   it("keeps preview disabled until the backfill symbols are valid", async () => {
@@ -132,11 +143,14 @@ describe("DataOperationsScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
-    expect(screen.getByRole("button", { name: /^preview$/i })).toBeDisabled();
+    const disabledPreview = screen.getByRole("button", { name: /preview backfill unavailable/i });
+    expect(disabledPreview).toBeDisabled();
+    expect(disabledPreview).toHaveAttribute("title", "Enter at least one symbol before previewing a backfill.");
 
-    await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
 
-    expect(screen.getByRole("button", { name: /^preview$/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Preview backfill request" })).toBeEnabled();
+    expect(screen.getByText("Backfill request is ready to preview.")).toBeInTheDocument();
   });
 
   it("calls previewBackfill and shows preview result", async () => {
@@ -159,8 +173,8 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
-    await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "AAPL");
-    await user.click(screen.getByRole("button", { name: /^preview$/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
 
     await waitFor(() => {
       const previewStatus = screen.getByRole("status", { name: /preview ready — polygon/i });
@@ -169,6 +183,7 @@ describe("DataOperationsScreen", () => {
       expect(previewStatus).toHaveTextContent("2,100");
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
+    expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
   });
 
   it("calls triggerBackfill after preview and shows success result", async () => {
@@ -205,12 +220,12 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
-    await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "MSFT");
-    await user.click(screen.getByRole("button", { name: /^preview$/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "MSFT");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
 
-    await waitFor(() => expect(screen.getByRole("button", { name: /run backfill/i })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Run previewed backfill request" })).toBeInTheDocument());
 
-    await user.click(screen.getByRole("button", { name: /run backfill/i }));
+    await user.click(screen.getByRole("button", { name: "Run previewed backfill request" }));
 
     await waitFor(() => {
       const resultStatus = screen.getByRole("status", { name: /backfill complete — polygon/i });
@@ -228,11 +243,11 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
-    await user.type(screen.getByPlaceholderText(/AAPL MSFT SPY/i), "SPY");
-    await user.click(screen.getByRole("button", { name: /^preview$/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "SPY");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Provider offline")).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent("Provider offline");
     });
   });
 });

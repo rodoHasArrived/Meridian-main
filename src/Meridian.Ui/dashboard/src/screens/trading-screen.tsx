@@ -10,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
 import {
@@ -869,86 +871,101 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <Card>
+        <Card role="region" aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle id={sessionReplay.sectionTitleId} className="flex items-center gap-2 text-base">
               <RotateCcw className="h-4 w-4 text-primary" />
-              Session replay controls
+              {sessionReplay.sectionTitle}
             </CardTitle>
-            <CardDescription>Start and control replay for reconnect/resume validation.</CardDescription>
+            <CardDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-2">
               <label htmlFor={sessionReplay.fileSelectId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Replay file
+                {sessionReplay.fileSelectLabel}
               </label>
-              <select
+              <Select
                 id={sessionReplay.fileSelectId}
-                aria-label="Replay file"
+                aria-label={sessionReplay.fileSelectAriaLabel}
                 value={sessionReplay.selectedFilePath}
                 onChange={(e) => sessionReplay.selectReplayFile(e.target.value)}
                 disabled={sessionReplay.loadingFiles || sessionReplay.fileOptions.length === 0}
-                aria-describedby={sessionReplay.statusId}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                aria-describedby={sessionReplay.fileSelectDescribedBy}
               >
                 {sessionReplay.fileOptions.length === 0 ? (
-                  <option value="">No replay files available</option>
+                  <option value="">{sessionReplay.fileEmptyOptionText}</option>
                 ) : sessionReplay.fileOptions.map((file) => (
                   <option key={file.path} value={file.path} aria-label={file.ariaLabel}>
                     {file.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
-            <div className="flex flex-col gap-2 lg:flex-row">
-              <label htmlFor={sessionReplay.speedInputId} className="sr-only">Replay speed</label>
-              <input
-                id={sessionReplay.speedInputId}
-                aria-label="Replay speed"
-                value={sessionReplay.replaySpeed}
-                onChange={(e) => sessionReplay.updateReplaySpeed(e.target.value)}
-                aria-invalid={sessionReplay.speedValidationText ? "true" : undefined}
-                aria-describedby={`${sessionReplay.statusId}${sessionReplay.speedValidationText ? ` ${sessionReplay.errorId}` : ""}`}
-                inputMode="decimal"
-                className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm lg:w-28"
-              />
-              <Button size="sm" onClick={sessionReplay.startReplay} disabled={!sessionReplay.canStart}>
-                {sessionReplay.startButtonLabel}
-              </Button>
-              <Button size="sm" variant="outline" onClick={sessionReplay.pauseReplay} disabled={!sessionReplay.canPause}>
-                <PauseCircle className="mr-2 h-4 w-4" />
-                {sessionReplay.pauseButtonLabel}
-              </Button>
-              <Button size="sm" variant="outline" onClick={sessionReplay.resumeReplay} disabled={!sessionReplay.canResume}>
-                <PlayCircle className="mr-2 h-4 w-4" />
-                {sessionReplay.resumeButtonLabel}
-              </Button>
-              <Button size="sm" variant="outline" onClick={sessionReplay.stopReplay} disabled={!sessionReplay.canStop}>
-                <StopCircle className="mr-2 h-4 w-4" />
-                {sessionReplay.stopButtonLabel}
-              </Button>
+            <div className="grid gap-3 lg:grid-cols-[minmax(7rem,9rem)_1fr] lg:items-end">
+              <div className="grid gap-1.5">
+                <label htmlFor={sessionReplay.speedInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {sessionReplay.speedLabel}
+                </label>
+                <Input
+                  id={sessionReplay.speedInputId}
+                  aria-label={sessionReplay.speedAriaLabel}
+                  value={sessionReplay.replaySpeed}
+                  onChange={(e) => sessionReplay.updateReplaySpeed(e.target.value)}
+                  aria-describedby={sessionReplay.speedDescribedBy}
+                  inputMode="decimal"
+                  error={Boolean(sessionReplay.speedValidationText)}
+                />
+                <span id={sessionReplay.speedHelpId} className="text-[11px] text-muted-foreground">
+                  {sessionReplay.speedHelpText}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button size="sm" onClick={sessionReplay.startReplay} disabled={!sessionReplay.canStart}>
+                  {sessionReplay.startButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.pauseReplay} disabled={!sessionReplay.canPause}>
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  {sessionReplay.pauseButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.resumeReplay} disabled={!sessionReplay.canResume}>
+                  <PlayCircle className="mr-2 h-4 w-4" />
+                  {sessionReplay.resumeButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.stopReplay} disabled={!sessionReplay.canStop}>
+                  <StopCircle className="mr-2 h-4 w-4" />
+                  {sessionReplay.stopButtonLabel}
+                </Button>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2 lg:flex-row">
-              <label htmlFor={sessionReplay.seekInputId} className="sr-only">Seek ms</label>
-              <input
-                id={sessionReplay.seekInputId}
-                aria-label="Seek ms"
-                value={sessionReplay.seekMs}
-                onChange={(e) => sessionReplay.updateSeekMs(e.target.value)}
-                aria-invalid={sessionReplay.seekValidationText ? "true" : undefined}
-                aria-describedby={`${sessionReplay.statusId}${sessionReplay.seekValidationText ? ` ${sessionReplay.errorId}` : ""}`}
-                inputMode="numeric"
-                className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm lg:w-32"
-              />
-              <Button size="sm" variant="outline" onClick={sessionReplay.seekReplay} disabled={!sessionReplay.canSeek}>
-                {sessionReplay.seekButtonLabel}
-              </Button>
-              <Button size="sm" variant="outline" onClick={sessionReplay.applyReplaySpeed} disabled={!sessionReplay.canApplySpeed}>
-                <FastForward className="mr-2 h-4 w-4" />
-                {sessionReplay.applySpeedButtonLabel}
-              </Button>
+            <div className="grid gap-3 lg:grid-cols-[minmax(8rem,10rem)_1fr] lg:items-end">
+              <div className="grid gap-1.5">
+                <label htmlFor={sessionReplay.seekInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {sessionReplay.seekLabel}
+                </label>
+                <Input
+                  id={sessionReplay.seekInputId}
+                  aria-label={sessionReplay.seekAriaLabel}
+                  value={sessionReplay.seekMs}
+                  onChange={(e) => sessionReplay.updateSeekMs(e.target.value)}
+                  aria-describedby={sessionReplay.seekDescribedBy}
+                  inputMode="numeric"
+                  error={Boolean(sessionReplay.seekValidationText)}
+                />
+                <span id={sessionReplay.seekHelpId} className="text-[11px] text-muted-foreground">
+                  {sessionReplay.seekHelpText}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button size="sm" variant="outline" onClick={sessionReplay.seekReplay} disabled={!sessionReplay.canSeek}>
+                  {sessionReplay.seekButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.applyReplaySpeed} disabled={!sessionReplay.canApplySpeed}>
+                  <FastForward className="mr-2 h-4 w-4" />
+                  {sessionReplay.applySpeedButtonLabel}
+                </Button>
+              </div>
             </div>
 
             <div id={sessionReplay.statusId} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-xs text-muted-foreground">

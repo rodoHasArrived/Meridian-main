@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { GovernanceWorkspaceResponse, SecurityMasterConflict } from "@/types";
+import type { GovernanceWorkspaceResponse, LedgerTrialBalanceLine, SecurityMasterConflict } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -110,6 +110,27 @@ const securityConflict: SecurityMasterConflict = {
   status: "Open"
 };
 
+const trialBalanceLines: LedgerTrialBalanceLine[] = [
+  {
+    accountName: "Cash",
+    accountType: "Asset",
+    symbol: null,
+    financialAccountId: "acct-cash",
+    balance: 120500,
+    entryCount: 12,
+    security: null
+  },
+  {
+    accountName: "Financing payable",
+    accountType: "Liability",
+    symbol: null,
+    financialAccountId: "acct-financing",
+    balance: -500,
+    entryCount: 2,
+    security: null
+  }
+];
+
 async function renderGovernanceScreen(
   screenData: GovernanceWorkspaceResponse = data,
   initialEntry = "/accounting"
@@ -130,6 +151,27 @@ describe("GovernanceScreen", () => {
     expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
     expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
+  });
+
+  it("renders trial-balance rows with accessible table evidence", async () => {
+    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
+
+    await renderGovernanceScreen(data, "/accounting");
+
+    const table = await screen.findByRole("table", { name: "Trial balance lines for run-42" });
+    expect(table).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Cash Asset. Balance $120,500. 12 entries" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Financing payable Liability. Balance -$500. 2 entries" })).toBeInTheDocument();
+    expect(screen.getByText("-$500")).toHaveClass("text-danger");
+  });
+
+  it("renders a useful trial-balance empty state instead of a blank table", async () => {
+    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
+
+    await renderGovernanceScreen(data, "/accounting");
+
+    expect(await screen.findByRole("status")).toHaveTextContent("No trial balance lines");
+    expect(screen.queryByRole("table", { name: "Trial balance lines for run-42" })).not.toBeInTheDocument();
   });
 
   it("renders reporting profile detail state and updates selected profile", async () => {

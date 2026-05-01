@@ -574,6 +574,22 @@ export interface GovernanceWorkspaceResponse {
   reporting: GovernanceReportingSummary;
 }
 
+export interface ExportAnalysisResult {
+  jobId: string | null;
+  success: boolean;
+  status: string;
+  profileId: string;
+  symbols: string[] | null;
+  filesGenerated: number;
+  totalRecords: number;
+  totalBytes: number;
+  outputDirectory: string | null;
+  durationSeconds: number;
+  error: string | null;
+  warnings: string[] | null;
+  timestamp: string;
+}
+
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
 
 export interface ReconciliationBreakQueueItem {

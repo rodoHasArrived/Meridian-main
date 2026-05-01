@@ -4,6 +4,7 @@ import type {
   BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
@@ -123,7 +124,11 @@ export function getDataOperationsWorkspace() {
 }
 
 export function getGovernanceWorkspace() {
-  return getJson<GovernanceWorkspaceResponse>("/api/workstation/governance");
+  return getJson<GovernanceWorkspaceResponse>("/api/workstation/accounting");
+}
+
+export function runAnalysisExport(profileId: string) {
+  return postJson<ExportAnalysisResult>("/api/export/analysis", { profileId });
 }
 
 // --- Promotion workflow ---

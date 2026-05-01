@@ -105,18 +105,22 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
     <div className="space-y-6">
       {/* Status banner */}
       <div
+        role={vm.statusBanner.role}
+        aria-live={vm.statusBanner.ariaLive}
+        aria-labelledby={vm.statusBanner.titleId}
+        aria-describedby={vm.statusBanner.detailId ?? undefined}
         className={cn(
           "flex items-center gap-3 rounded-lg border px-4 py-3",
           statusConfig?.bannerClass ?? "border-border bg-muted/30"
         )}
       >
-        <StatusIcon className={cn("size-5 shrink-0", statusConfig?.className)} />
+        <StatusIcon aria-hidden="true" className={cn("size-5 shrink-0", statusConfig?.className)} />
         <div className="flex-1">
-          <p className={cn("text-sm font-medium", statusConfig?.className)}>
+          <p id={vm.statusBanner.titleId} className={cn("text-sm font-medium", statusConfig?.className)}>
             {vm.statusLabel}
           </p>
           {current && vm.providerSummary && vm.storageLabel && vm.lastHeartbeatLabel && (
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p id={vm.statusBanner.detailId ?? undefined} className="text-xs text-muted-foreground mt-0.5">
               {vm.providerSummary}
               {" · "}
               Storage: <span className={storageHealthConfig[current.storageHealth].className}>
@@ -126,6 +130,11 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
               Last heartbeat: {vm.lastHeartbeatLabel}
             </p>
           )}
+          {!current && vm.statusBanner.detailText ? (
+            <p id={vm.statusBanner.detailId ?? undefined} className="text-xs text-muted-foreground mt-0.5">
+              {vm.statusBanner.detailText}
+            </p>
+          ) : null}
         </div>
         <Button
           variant="ghost"

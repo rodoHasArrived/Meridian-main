@@ -216,6 +216,32 @@ export interface GovernanceReportingViewState {
   nextAction: string;
 }
 
+export type GovernanceTrialBalanceState = "ready" | "loading" | "empty" | "error";
+
+export interface GovernanceTrialBalanceRowViewModel extends LedgerTrialBalanceLine {
+  rowId: string;
+  accountLabel: string;
+  accountTypeLabel: string;
+  balanceLabel: string;
+  balanceTone: "default" | "success" | "danger";
+  entryCountLabel: string;
+  ariaLabel: string;
+}
+
+export interface GovernanceTrialBalanceViewState {
+  title: string;
+  description: string;
+  tableLabel: string;
+  state: GovernanceTrialBalanceState;
+  rows: GovernanceTrialBalanceRowViewModel[];
+  hasRows: boolean;
+  loadingText: string | null;
+  emptyTitle: string;
+  emptyDetail: string;
+  errorText: string | null;
+  statusAnnouncement: string;
+}
+
 const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
   getIdentity: (securityId) => getSecurityIdentity(securityId),
@@ -593,6 +619,15 @@ export function useGovernanceReconciliationViewModel(
     }),
     [breakAction, breakActionError, breakQueue, breakQueueError, breakQueueLoading]
   );
+  const trialBalanceView = useMemo(
+    () => buildGovernanceTrialBalanceViewState({
+      runId: selectedReconciliation?.runId ?? null,
+      rows: trialBalance,
+      loading: trialBalanceLoading,
+      errorText: trialBalanceError
+    }),
+    [selectedReconciliation?.runId, trialBalance, trialBalanceError, trialBalanceLoading]
+  );
 
   return {
     reconciliationQueue,
@@ -602,6 +637,7 @@ export function useGovernanceReconciliationViewModel(
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
+    trialBalanceView,
     breakAction,
     assignBreak,
     resolveBreak,
@@ -989,6 +1025,108 @@ function buildReportingProfileDetail(profile: ReportingProfileRowViewModel): Rep
       { label: "Recommendation", value: profile.recommendationLabel ?? "Not recommended for current packet flow", tone: profile.recommendationLabel ? "success" : "muted" }
     ]
   };
+}
+
+export function buildGovernanceTrialBalanceViewState({
+  runId,
+  rows,
+  loading,
+  errorText
+}: {
+  runId: string | null;
+  rows: LedgerTrialBalanceLine[];
+  loading: boolean;
+  errorText: string | null;
+}): GovernanceTrialBalanceViewState {
+  const runLabel = runId ?? "selected run";
+  const viewRows = rows.map(buildTrialBalanceRow);
+  const hasRows = viewRows.length > 0;
+  const state: GovernanceTrialBalanceState = errorText
+    ? "error"
+    : loading && !hasRows
+      ? "loading"
+      : hasRows
+        ? "ready"
+        : "empty";
+  const loadingText = loading
+    ? hasRows
+      ? `Refreshing trial balance for ${runLabel}.`
+      : `Loading trial balance for ${runLabel}.`
+    : null;
+
+  return {
+    title: "Multi-ledger trial balance",
+    description: `Baseline ledger balances for ${runLabel} grouped by account type.`,
+    tableLabel: `Trial balance lines for ${runLabel}`,
+    state,
+    rows: viewRows,
+    hasRows,
+    loadingText,
+    emptyTitle: "No trial balance lines",
+    emptyDetail: `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
+    errorText,
+    statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })
+  };
+}
+
+function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBalanceRowViewModel {
+  const accountLabel = line.accountName.trim() || "Unnamed account";
+  const accountTypeLabel = line.accountType.trim() || "Unclassified";
+  const balanceLabel = formatCurrency(line.balance);
+  const entryCountLabel = line.entryCount.toLocaleString();
+  const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
+  const rowId = [
+    accountLabel,
+    accountTypeLabel,
+    line.financialAccountId,
+    securityLabel
+  ].filter(Boolean).join("-");
+
+  return {
+    ...line,
+    rowId,
+    accountLabel,
+    accountTypeLabel,
+    balanceLabel,
+    balanceTone: line.balance < 0 ? "danger" : line.balance > 0 ? "success" : "default",
+    entryCountLabel,
+    ariaLabel: [
+      `${accountLabel} ${accountTypeLabel}`,
+      `Balance ${balanceLabel}`,
+      `${entryCountLabel} entries`,
+      securityLabel ? `Security ${securityLabel}` : null
+    ].filter(Boolean).join(". ")
+  };
+}
+
+function buildTrialBalanceAnnouncement({
+  runLabel,
+  state,
+  rowCount,
+  loading,
+  errorText
+}: {
+  runLabel: string;
+  state: GovernanceTrialBalanceState;
+  rowCount: number;
+  loading: boolean;
+  errorText: string | null;
+}): string {
+  if (errorText) {
+    return `Trial balance failed for ${runLabel}: ${errorText}`;
+  }
+
+  if (loading) {
+    return `Loading trial balance for ${runLabel}.`;
+  }
+
+  if (state === "empty") {
+    return `No trial balance lines returned for ${runLabel}.`;
+  }
+
+  return rowCount === 1
+    ? `1 trial balance line loaded for ${runLabel}.`
+    : `${rowCount} trial balance lines loaded for ${runLabel}.`;
 }
 
 function formatReportPackTargets(targets: string[]): string {

@@ -26,6 +26,32 @@ const overview: SystemOverviewResponse = {
 };
 
 describe("OverviewScreen", () => {
+  it("renders system health as a named live status banner", () => {
+    renderWithRouter(<OverviewScreen data={overview} session={null} />);
+
+    const banner = screen.getByRole("alert", {
+      name: "System Degraded"
+    });
+
+    expect(banner).toHaveAttribute("aria-live", "assertive");
+    expect(banner).toHaveAttribute("aria-labelledby", "overview-status-title");
+    expect(banner).toHaveAttribute("aria-describedby", "overview-status-detail");
+    expect(within(banner).getByText("System Degraded")).toBeInTheDocument();
+    expect(within(banner).getByText(/2 of 4 providers online/)).toBeInTheDocument();
+    expect(within(banner).getByText(/Storage:/)).toBeInTheDocument();
+  });
+
+  it("renders loading system health as a polite status banner", () => {
+    renderWithRouter(<OverviewScreen data={null} session={null} />);
+
+    const banner = screen.getByRole("status", {
+      name: "Connecting to system..."
+    });
+
+    expect(banner).toHaveAttribute("aria-live", "polite");
+    expect(within(banner).getByText("Waiting for the workstation status payload.")).toBeInTheDocument();
+  });
+
   it("renders recent activity as accessible status evidence rows", () => {
     renderWithRouter(<OverviewScreen data={overview} session={null} />);
 

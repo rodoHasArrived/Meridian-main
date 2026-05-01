@@ -1037,9 +1037,27 @@ export interface SessionReplayControlsState {
   activeCommand: SessionReplayCommandKind | null;
   errorText: string | null;
   isBusy: boolean;
+  sectionTitleId: string;
+  sectionDescriptionId: string;
+  sectionTitle: string;
+  sectionDescription: string;
   fileSelectId: string;
+  fileSelectLabel: string;
+  fileSelectAriaLabel: string;
+  fileSelectDescribedBy: string;
+  fileEmptyOptionText: string;
   speedInputId: string;
+  speedLabel: string;
+  speedAriaLabel: string;
+  speedHelpId: string;
+  speedHelpText: string;
+  speedDescribedBy: string;
   seekInputId: string;
+  seekLabel: string;
+  seekAriaLabel: string;
+  seekHelpId: string;
+  seekHelpText: string;
+  seekDescribedBy: string;
   statusId: string;
   errorId: string;
   speedValidationText: string | null;
@@ -1310,6 +1328,16 @@ export function buildSessionReplayControlsState({
   const seekValidationText = validateReplaySeekMs(seekMs);
   const isBusy = loadingFiles || activeCommand !== null;
   const hasReplayStatus = replayStatus !== null;
+  const statusId = "session-replay-status";
+  const errorId = "session-replay-error";
+  const speedHelpId = "session-replay-speed-help";
+  const seekHelpId = "session-replay-seek-help";
+  const speedDescribedBy = [statusId, speedHelpId, speedValidationText ? errorId : null]
+    .filter(Boolean)
+    .join(" ");
+  const seekDescribedBy = [statusId, seekHelpId, seekValidationText ? errorId : null]
+    .filter(Boolean)
+    .join(" ");
 
   return {
     files,
@@ -1322,11 +1350,29 @@ export function buildSessionReplayControlsState({
     activeCommand,
     errorText,
     isBusy,
+    sectionTitleId: "session-replay-title",
+    sectionDescriptionId: "session-replay-description",
+    sectionTitle: "Session replay controls",
+    sectionDescription: "Start and control replay for reconnect/resume validation.",
     fileSelectId: "session-replay-file",
+    fileSelectLabel: "Replay file",
+    fileSelectAriaLabel: loadingFiles ? "Replay file, loading files" : "Replay file",
+    fileSelectDescribedBy: statusId,
+    fileEmptyOptionText: loadingFiles ? "Loading replay files..." : "No replay files available",
     speedInputId: "session-replay-speed",
+    speedLabel: "Replay speed",
+    speedAriaLabel: "Replay speed multiplier",
+    speedHelpId,
+    speedHelpText: "Multiplier greater than 0.",
+    speedDescribedBy,
     seekInputId: "session-replay-seek",
-    statusId: "session-replay-status",
-    errorId: "session-replay-error",
+    seekLabel: "Seek position",
+    seekAriaLabel: "Seek position in milliseconds",
+    seekHelpId,
+    seekHelpText: "Position in milliseconds from replay start.",
+    seekDescribedBy,
+    statusId,
+    errorId,
     speedValidationText,
     seekValidationText,
     canStart: !isBusy && selectedFilePath.trim().length > 0 && speedValidationText === null,

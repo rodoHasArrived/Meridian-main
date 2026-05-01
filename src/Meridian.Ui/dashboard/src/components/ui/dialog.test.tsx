@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 describe("Dialog", () => {
   it("requests close when Escape is pressed", async () => {
@@ -109,5 +109,50 @@ describe("Dialog", () => {
 
     await user.tab();
     expect(first).toHaveFocus();
+  });
+
+  it("renders a viewport-contained dialog panel", () => {
+    render(
+      <Dialog open onOpenChange={vi.fn()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Backfill preview</DialogTitle>
+            <DialogDescription>Review the generated provider work before running.</DialogDescription>
+          </DialogHeader>
+          <div style={{ height: "1200px" }}>Long workflow content</div>
+        </DialogContent>
+      </Dialog>
+    );
+
+    expect(screen.getByRole("dialog")).toHaveClass(
+      "max-h-[calc(100dvh-2rem)]",
+      "overflow-y-auto",
+      "overscroll-contain",
+      "rounded-lg"
+    );
+  });
+
+  it("renders an accessible shared close button", async () => {
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <Dialog open onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Backfill preview</DialogTitle>
+            <DialogDescription>Review the generated provider work before running.</DialogDescription>
+          </DialogHeader>
+          <DialogCloseButton label="Close backfill dialog" onClick={() => onOpenChange(false)} />
+        </DialogContent>
+      </Dialog>
+    );
+
+    const close = screen.getByRole("button", { name: "Close backfill dialog" });
+    expect(close).toHaveAttribute("title", "Close backfill dialog");
+
+    await user.click(close);
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });

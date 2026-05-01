@@ -255,6 +255,18 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationGovernance");
 
+        group.MapGet("/accounting", async (HttpContext context) =>
+        {
+            return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationAccounting");
+
+        group.MapGet("/reporting", async (HttpContext context) =>
+        {
+            return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationReporting");
+
         group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();

@@ -40,6 +40,16 @@ export interface OverviewActivityRow {
   ariaLabel: string;
 }
 
+export interface OverviewStatusBannerState {
+  role: "status" | "alert";
+  ariaLive: "polite" | "assertive";
+  titleId: string;
+  detailId: string | null;
+  label: string;
+  detailText: string | null;
+  ariaLabel: string;
+}
+
 export interface OverviewStatusState {
   current: SystemOverviewResponse | null;
   metrics: MetricSnapshot[];
@@ -51,6 +61,7 @@ export interface OverviewStatusState {
   hasMetrics: boolean;
   hasEvents: boolean;
   activityListLabel: string;
+  statusBanner: OverviewStatusBannerState;
   statusLabel: string;
   providerSummary: string | null;
   storageLabel: string | null;
@@ -82,6 +93,10 @@ export function buildOverviewStatusState({
     ? `Refresh failed: ${refreshError}. Showing the last known status.`
     : null;
   const refreshedAtLabel = refreshedAt ? formatTime(refreshedAt) : null;
+  const statusLabel = current ? statusLabels[current.systemStatus] : "Connecting to system...";
+  const providerSummary = current ? `${current.providersOnline} of ${current.providersTotal} providers online` : null;
+  const storageLabel = current ? storageLabels[current.storageHealth] : null;
+  const lastHeartbeatLabel = current ? formatTime(current.lastHeartbeatUtc) : null;
 
   return {
     current,
@@ -94,10 +109,18 @@ export function buildOverviewStatusState({
     hasMetrics: metrics.length > 0,
     hasEvents: activityRows.length > 0,
     activityListLabel: activityRows.length === 1 ? "1 recent system event" : `${activityRows.length} recent system events`,
-    statusLabel: current ? statusLabels[current.systemStatus] : "Connecting to system...",
-    providerSummary: current ? `${current.providersOnline} of ${current.providersTotal} providers online` : null,
-    storageLabel: current ? storageLabels[current.storageHealth] : null,
-    lastHeartbeatLabel: current ? formatTime(current.lastHeartbeatUtc) : null,
+    statusBanner: buildOverviewStatusBanner({
+      current,
+      statusLabel,
+      providerSummary,
+      storageLabel,
+      lastHeartbeatLabel,
+      refreshErrorText
+    }),
+    statusLabel,
+    providerSummary,
+    storageLabel,
+    lastHeartbeatLabel,
     activityEmptyText: current ? "No recent events." : "Loading activity feed...",
     refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh",
     refreshAriaLabel: refreshing ? "Refreshing system status" : "Refresh system status",
@@ -177,6 +200,39 @@ export function buildOverviewActivityRows(events: SystemEventRecord[]): Overview
       ariaLabel: `${typeState.typeLabel} event from ${source} at ${timestampLabel}: ${event.message}`
     };
   });
+}
+
+export function buildOverviewStatusBanner({
+  current,
+  statusLabel,
+  providerSummary,
+  storageLabel,
+  lastHeartbeatLabel,
+  refreshErrorText
+}: {
+  current: SystemOverviewResponse | null;
+  statusLabel: string;
+  providerSummary: string | null;
+  storageLabel: string | null;
+  lastHeartbeatLabel: string | null;
+  refreshErrorText: string | null;
+}): OverviewStatusBannerState {
+  const detailText = current && providerSummary && storageLabel && lastHeartbeatLabel
+    ? `${providerSummary}. Storage ${storageLabel}. Last heartbeat ${lastHeartbeatLabel}.`
+    : current
+      ? "Status detail is unavailable."
+      : "Waiting for the workstation status payload.";
+  const isInterruptive = refreshErrorText !== null || current?.systemStatus === "Degraded" || current?.systemStatus === "Offline";
+
+  return {
+    role: isInterruptive ? "alert" : "status",
+    ariaLive: isInterruptive ? "assertive" : "polite",
+    titleId: "overview-status-title",
+    detailId: detailText ? "overview-status-detail" : null,
+    label: statusLabel,
+    detailText,
+    ariaLabel: `${statusLabel}. ${refreshErrorText ?? detailText}`
+  };
 }
 
 const statusLabels: Record<SystemOverviewResponse["systemStatus"], string> = {

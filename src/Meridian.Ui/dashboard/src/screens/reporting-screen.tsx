@@ -1,4 +1,5 @@
 import { FileText, Landmark } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -17,10 +18,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Loading Reporting</CardTitle>
-          <CardDescription>
-            Waiting for governed report-pack and export-profile data.
-          </CardDescription>
+          <CardTitle>{vm.loadingTitle}</CardTitle>
+          <CardDescription>{vm.loadingDetail}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -70,17 +69,21 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-slate-200">
             {vm.hasPackTargets ? (
-              vm.packTargets.map((target) => (
+              <div role="list" aria-label={vm.packTargetsListLabel} className="space-y-2">
+                {vm.packTargets.map((target) => (
                 <div
-                  key={target}
+                  key={target.id}
+                  role="listitem"
+                  aria-label={target.ariaLabel}
                   className="flex items-center gap-2 rounded-lg border border-border/70 bg-background/20 px-3 py-2"
                 >
                   <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <span className="font-mono capitalize">{target}</span>
+                  <span className="font-mono capitalize">{target.label}</span>
                 </div>
-              ))
+                ))}
+              </div>
             ) : (
-              <p className="text-slate-300">Configure report-pack targets in the governance policy.</p>
+              <p role="status" aria-label="No report-pack targets" className="text-slate-300">Configure report-pack targets in the governance policy.</p>
             )}
           </CardContent>
         </Card>
@@ -143,9 +146,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       {profile.badges.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {profile.badges.map((badge) => (
-                            <span key={badge.label} className={badgeClass(badge.tone)}>
+                            <Badge key={badge.label} variant={badgeVariant(badge.tone)}>
                               {badge.label}
-                            </span>
+                            </Badge>
                           ))}
                         </div>
                       )}
@@ -166,6 +169,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
         <aside
           id={vm.detailId}
+          role="complementary"
+          aria-label={vm.statusTitle}
           aria-live="polite"
           className="h-fit min-w-0 overflow-hidden rounded-lg border border-border/70 bg-background/35 p-4"
         >
@@ -177,6 +182,25 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               <div className="font-semibold text-foreground">{vm.selectedProfile.title}</div>
               <div className="font-mono text-xs text-muted-foreground">{vm.selectedProfile.subtitle}</div>
               <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
+              <div
+                role="status"
+                aria-label={`${vm.selectedProfile.title} readiness`}
+                className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
+              >
+                {vm.selectedProfile.readinessSummary}
+              </div>
+              {vm.exportStatus ? (
+                <div
+                  role="status"
+                  aria-label={vm.exportStatus.ariaLabel}
+                  className={cn(
+                    "rounded-md border px-3 py-2 text-sm leading-6",
+                    exportStatusToneClass(vm.exportStatus.tone)
+                  )}
+                >
+                  {vm.exportStatus.text}
+                </div>
+              ) : null}
               <dl className="grid gap-2">
                 {vm.selectedProfile.fields.map((field) => (
                   <div
@@ -191,16 +215,33 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 ))}
               </dl>
               <div className="flex gap-3 pt-2">
-                <Button asChild size="sm">
-                  <a href="/api/export/preview" target="_blank" rel="noreferrer">
-                    Preview payload
-                  </a>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <a href="/api/export/analysis" target="_blank" rel="noreferrer">
-                    Run export
-                  </a>
-                </Button>
+                {vm.selectedProfile.actions.map((action) => (
+                  <Button
+                    key={action.href}
+                    asChild={action.method === "GET" && !action.isDisabled}
+                    disabled={action.isDisabled}
+                    size="sm"
+                    variant={action.variant}
+                    aria-label={action.ariaLabel}
+                    aria-busy={action.isRunning || undefined}
+                    title={action.disabledReason ?? undefined}
+                    onClick={
+                      action.method === "POST"
+                        ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                        : undefined
+                    }
+                  >
+                    {action.isDisabled ? (
+                      action.label
+                    ) : action.method === "POST" ? (
+                      action.label
+                    ) : (
+                      <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                        {action.label}
+                      </a>
+                    )}
+                  </Button>
+                ))}
               </div>
             </div>
           ) : null}
@@ -219,14 +260,11 @@ function ReportingHighlight({ title, description }: { title: string; description
   );
 }
 
-function badgeClass(tone: "primary" | "success" | "warning" | "muted") {
-  return cn(
-    "rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]",
-    tone === "primary" && "border-primary/35 bg-primary/10 text-primary",
-    tone === "success" && "border-success/35 bg-success/10 text-success",
-    tone === "warning" && "border-warning/35 bg-warning/10 text-warning",
-    tone === "muted" && "border-border/70 bg-secondary text-muted-foreground"
-  );
+function badgeVariant(tone: "primary" | "success" | "warning" | "muted"): "default" | "success" | "warning" | "outline" {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "muted") return "outline";
+  return "default";
 }
 
 function fieldToneClass(tone: "default" | "success" | "warning" | "muted") {
@@ -234,4 +272,10 @@ function fieldToneClass(tone: "default" | "success" | "warning" | "muted") {
   if (tone === "warning") return "text-warning";
   if (tone === "muted") return "text-muted-foreground";
   return "text-foreground";
+}
+
+function exportStatusToneClass(tone: "default" | "success" | "danger") {
+  if (tone === "success") return "border-success/30 bg-success/10 text-success";
+  if (tone === "danger") return "border-danger/35 bg-danger/10 text-danger";
+  return "border-border/70 bg-secondary/25 text-muted-foreground";
 }

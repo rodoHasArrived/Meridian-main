@@ -15,6 +15,28 @@ interface DialogInteractionOptions {
   onOpenChange?: (open: boolean) => void;
 }
 
+export interface DialogContentViewModel {
+  role: "dialog";
+  ariaModal: true;
+  tabIndex: number;
+  className: string;
+}
+
+export interface DialogCloseButtonOptions {
+  label?: string;
+  disabled?: boolean;
+  disabledReason?: string | null;
+}
+
+export interface DialogCloseButtonViewModel {
+  type: "button";
+  ariaLabel: string;
+  title: string;
+  disabled: boolean;
+  iconAriaHidden: true;
+  className: string;
+}
+
 export function useDialogInteractionViewModel({ open, onOpenChange }: DialogInteractionOptions) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -88,6 +110,43 @@ export function useDialogInteractionViewModel({ open, onOpenChange }: DialogInte
   return {
     overlayRef,
     handleBackdropMouseDown
+  };
+}
+
+export function buildDialogContentViewModel(tabIndex = -1): DialogContentViewModel {
+  return {
+    role: "dialog",
+    ariaModal: true,
+    tabIndex,
+    className: [
+      "w-full max-w-lg",
+      "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
+      "rounded-lg border border-border bg-card p-5 text-card-foreground shadow-float backdrop-blur-sm",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    ].join(" ")
+  };
+}
+
+export function buildDialogCloseButtonViewModel({
+  label = "Close dialog",
+  disabled = false,
+  disabledReason = null
+}: DialogCloseButtonOptions = {}): DialogCloseButtonViewModel {
+  const title = disabled && disabledReason ? disabledReason : label;
+
+  return {
+    type: "button",
+    ariaLabel: label,
+    title,
+    disabled,
+    iconAriaHidden: true,
+    className: [
+      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border",
+      "border-border/70 bg-transparent text-muted-foreground transition-colors duration-200",
+      "hover:bg-secondary/55 hover:text-foreground",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+      "disabled:cursor-not-allowed disabled:opacity-50"
+    ].join(" ")
   };
 }
 

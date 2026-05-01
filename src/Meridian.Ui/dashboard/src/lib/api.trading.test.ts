@@ -15,6 +15,7 @@ import {
   getTradingReadiness,
   getTradingWorkspace,
   pauseReplay,
+  runAnalysisExport,
   resumeReplay,
   seekReplay,
   setReplaySpeed,
@@ -108,6 +109,7 @@ describe("trading endpoint wiring", () => {
     await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
     await expect(getDataOperationsWorkspace()).resolves.toMatchObject({ backfills: expect.any(Array) });
     await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/accounting", expect.anything());
   });
 
   it("does not use dev fixtures for order mutations", async () => {
@@ -121,5 +123,17 @@ describe("trading endpoint wiring", () => {
         quantity: 1
       })
     ).rejects.toThrow("Request failed for /api/execution/orders/submit (404)");
+  });
+
+  it("wires analysis export as a POST mutation", async () => {
+    await runAnalysisExport("audit-pack");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/export/analysis",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ profileId: "audit-pack" })
+      })
+    );
   });
 });

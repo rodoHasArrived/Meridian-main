@@ -23,12 +23,67 @@ public static class ExportEndpoints
     {
         var group = app.MapGroup("").WithTags("Export");
 
+        // Export preview - read-only scope check for browser and desktop clients.
+        group.MapGet(UiApiRoutes.ExportPreview, (
+            string? profile,
+            string? profileId,
+            string? symbols,
+            string? eventTypes,
+            DateTime? startDate,
+            DateTime? endDate,
+            int? sampleSize,
+            [FromServices] AnalysisExportService? exportService) =>
+        {
+            var resolvedProfileId = string.IsNullOrWhiteSpace(profileId)
+                ? profile
+                : profileId;
+            resolvedProfileId = string.IsNullOrWhiteSpace(resolvedProfileId)
+                ? "python-pandas"
+                : resolvedProfileId.Trim();
+
+            var requestedSymbols = SplitCsv(symbols);
+            var requestedEventTypes = SplitCsv(eventTypes);
+            if (requestedEventTypes.Length == 0)
+            {
+                requestedEventTypes = new[] { "Trade", "BboQuote" };
+            }
+
+            var profiles = exportService?.GetProfiles();
+            var matchedProfile = profiles?.FirstOrDefault(p =>
+                string.Equals(p.Id, resolvedProfileId, StringComparison.OrdinalIgnoreCase));
+
+            var previewSampleSize = Math.Clamp(sampleSize ?? 25, 1, 500);
+            var from = startDate ?? DateTime.UtcNow.AddDays(-7);
+            var to = endDate ?? DateTime.UtcNow;
+
+            return Results.Json(new
+            {
+                previewOnly = true,
+                profileId = matchedProfile?.Id ?? resolvedProfileId,
+                profileName = matchedProfile?.Name ?? resolvedProfileId,
+                format = matchedProfile?.Format.ToString().ToLowerInvariant(),
+                compression = matchedProfile?.Compression.Type.ToString().ToLowerInvariant(),
+                symbols = requestedSymbols,
+                eventTypes = requestedEventTypes,
+                startDate = from,
+                endDate = to,
+                sampleSize = previewSampleSize,
+                serviceAvailable = exportService is not null,
+                canRunExport = exportService is not null,
+                timestamp = DateTimeOffset.UtcNow
+            }, jsonOptions);
+        })
+        .WithName("PreviewExport")
+        .Produces(200);
+
         // Analysis export — wired to real AnalysisExportService
         group.MapPost(UiApiRoutes.ExportAnalysis, async (
             ExportAnalysisRequest req,
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
+            CleanupOldExportDirectories();
+
             if (exportService is null)
             {
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
@@ -125,6 +180,8 @@ public static class ExportEndpoints
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
+            CleanupOldExportDirectories();
+
             if (exportService is null)
             {
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
@@ -167,6 +224,8 @@ public static class ExportEndpoints
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
+            CleanupOldExportDirectories();
+
             if (exportService is null)
             {
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
@@ -215,6 +274,8 @@ public static class ExportEndpoints
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
+            CleanupOldExportDirectories();
+
             if (exportService is null)
             {
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
@@ -253,6 +314,8 @@ public static class ExportEndpoints
             [FromServices] AnalysisExportService? exportService,
             CancellationToken ct) =>
         {
+            CleanupOldExportDirectories();
+
             if (exportService is null)
             {
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
@@ -297,6 +360,14 @@ public static class ExportEndpoints
     private sealed record QualityReportExportRequest(string? Format, string[]? Symbols);
     private sealed record OrderflowExportRequest(string[]? Symbols, string? Format);
     private sealed record ResearchPackageRequest(string[]? Symbols, bool? IncludeMetadata);
+
+    private static string[] SplitCsv(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Array.Empty<string>();
+
+        return value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    }
 
     /// <summary>
     /// Removes export directories older than <see cref="ExportMaxAge"/> to prevent unbounded disk usage.

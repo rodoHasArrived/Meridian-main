@@ -1,4 +1,5 @@
 import { Activity, ExternalLink, MonitorCheck, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
@@ -16,10 +17,10 @@ const systemToneClass = {
   danger: "border-danger/30"
 } as const;
 
-const eventTypeClass = {
-  info: "text-primary",
-  warning: "text-warning",
-  error: "text-danger"
+const eventToneClass = {
+  default: "border-border/70 bg-secondary/25",
+  warning: "border-warning/35 bg-warning/10",
+  danger: "border-danger/35 bg-danger/10"
 } as const;
 
 const itemToneClass = {
@@ -103,40 +104,70 @@ export function SettingsScreen({ session, overview }: SettingsScreenProps) {
         </Card>
       </section>
 
-      {vm.hasEvents && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4 text-primary" />
-              Recent events
-            </CardTitle>
-            <CardDescription>
-              System events from the active session. Check source subsystems for detail.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div role="list" aria-label="Recent system events" className="space-y-2">
-              {vm.recentEvents.map((event) => (
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Activity className="h-4 w-4 text-primary" />
+                {vm.recentEventsSection.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.recentEventsSection.description}</CardDescription>
+            </div>
+            <Badge
+              variant={
+                vm.recentEventsSection.state === "unavailable"
+                  ? "danger"
+                  : vm.recentEventsSection.state === "empty"
+                    ? "outline"
+                    : "default"
+              }
+              dot={vm.recentEventsSection.state === "ready"}
+            >
+              {vm.recentEventsSection.statusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {vm.recentEventsSection.rows.length > 0 ? (
+            <div role="list" aria-label={vm.recentEventsSection.listLabel} className="space-y-2">
+              {vm.recentEventsSection.rows.map((event) => (
                 <div
                   key={event.id}
-                  role="listitem"
-                  className="flex items-start gap-3 rounded-lg border border-border/60 bg-secondary/25 px-3 py-2"
+                  role="group"
+                  aria-label={event.ariaLabel}
+                  className={cn(
+                    "grid gap-3 rounded-md border px-3 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto]",
+                    eventToneClass[event.tone]
+                  )}
                 >
-                  <span className={cn("mt-0.5 shrink-0 font-mono text-[10px] uppercase tracking-[0.12em]", eventTypeClass[event.type])}>
-                    {event.type}
-                  </span>
-                  <div className="min-w-0 flex-1">
+                  <Badge variant={event.badgeVariant} className="w-fit">
+                    {event.statusCode}
+                  </Badge>
+                  <div className="min-w-0">
                     <p className="text-sm text-foreground">{event.message}</p>
-                    <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                      {event.source} · {event.timestamp}
-                    </p>
+                    <p className="mt-1 font-mono text-xs text-muted-foreground">{event.source}</p>
                   </div>
+                  <span className="font-mono text-xs text-muted-foreground sm:text-right">{event.timestamp}</span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <div
+              role={vm.recentEventsSection.state === "unavailable" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-4 py-4",
+                vm.recentEventsSection.state === "unavailable"
+                  ? "border-danger/35 bg-danger/10"
+                  : "border-border/70 bg-secondary/25"
+              )}
+            >
+              <div className="text-sm font-semibold text-foreground">{vm.recentEventsSection.statusLabel}</div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.recentEventsSection.statusDetail}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -155,6 +186,7 @@ export function SettingsScreen({ session, overview }: SettingsScreenProps) {
               href={link.href}
               target="_blank"
               rel="noreferrer"
+              aria-label={link.ariaLabel}
               className="group flex flex-col gap-1 rounded-lg border border-border/70 bg-secondary/30 px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
               <div className="flex items-center justify-between gap-2">

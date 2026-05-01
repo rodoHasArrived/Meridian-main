@@ -4,7 +4,7 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import { useDataOperationsViewModel } from "@/screens/data-operations-screen.view-model";
@@ -54,17 +54,22 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           </CardContent>
         </Card>
 
-        {vm.selectedBackfill && vm.selectedBackfillNarrative ? (
-          <Card className="bg-panel-strong text-slate-50">
+        {vm.selectedBackfillDetail ? (
+          <Card
+            id={vm.selectedBackfillDetail.id}
+            className="bg-panel-strong text-slate-50"
+            role="region"
+            aria-label={vm.selectedBackfillDetail.ariaLabel}
+          >
             <CardHeader>
               <div className="eyebrow-label">Backfill Detail</div>
-              <CardTitle>{vm.selectedBackfill.scope}</CardTitle>
-              <CardDescription className="text-slate-300">{vm.selectedBackfillNarrative}</CardDescription>
+              <CardTitle>{vm.selectedBackfillDetail.title}</CardTitle>
+              <CardDescription className="text-slate-300">{vm.selectedBackfillDetail.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <DetailRow label="Provider" value={vm.selectedBackfill.provider} />
-              <DetailRow label="Status" value={vm.selectedBackfill.status} />
-              <DetailRow label="Progress" value={vm.selectedBackfill.progress} />
+              {vm.selectedBackfillDetail.rows.map((row) => (
+                <DetailRow key={row.id} label={row.label} value={row.value} />
+              ))}
             </CardContent>
           </Card>
         ) : vm.backfillDetailEmptyState ? (
@@ -152,10 +157,14 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             {vm.backfillSection.hasRows ? vm.backfillSection.rows.map((backfill) => (
               <button
                 key={backfill.jobId}
+                id={backfill.rowId}
                 type="button"
                 aria-label={backfill.ariaLabel}
+                aria-pressed={backfill.selected}
+                aria-controls={backfill.detailPanelId}
+                aria-describedby={`${backfill.rowId}-detail`}
                 className={cn(
-                  "w-full rounded-lg border px-3 py-3 text-left text-sm",
+                  "w-full rounded-lg border px-3 py-3 text-left text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                   backfill.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/25"
                 )}
                 onClick={() => vm.selectBackfill(backfill.jobId)}
@@ -165,6 +174,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                   <span>{backfill.progress}</span>
                 </div>
                 <p className="mt-1 text-muted-foreground">{backfill.scope}</p>
+                <span id={`${backfill.rowId}-detail`} className="sr-only">{backfill.detailDescription}</span>
               </button>
             )) : (
               <EmptyState state={vm.backfillSection.emptyState} />
@@ -213,63 +223,82 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
       </section>
 
       <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
-        <DialogContent aria-labelledby="backfill-dialog-title" aria-describedby="backfill-dialog-description">
+        <DialogContent aria-labelledby={vm.dialogState.titleId} aria-describedby={vm.dialogState.descriptionId}>
           <div className="flex items-start justify-between gap-4">
             <DialogHeader className="mb-0">
               <div className="eyebrow-label">Backfill</div>
-              <DialogTitle id="backfill-dialog-title">Trigger backfill</DialogTitle>
-              <DialogDescription id="backfill-dialog-description">
+              <DialogTitle id={vm.dialogState.titleId}>Trigger backfill</DialogTitle>
+              <DialogDescription id={vm.dialogState.descriptionId}>
                 Preview the request before writing historical bars.
               </DialogDescription>
             </DialogHeader>
-            <Button variant="ghost" size="sm" onClick={vm.closeBackfillDialog} disabled={vm.busy}>Close</Button>
+            <DialogCloseButton
+              label={vm.dialogState.closeButtonLabel}
+              disabled={vm.busy}
+              disabledReason={vm.dialogState.closeButtonDisabledReason}
+              onClick={vm.closeBackfillDialog}
+            />
           </div>
 
-          <div className="mt-5 grid gap-3">
-            <label htmlFor="backfill-provider" className="grid gap-1 text-sm">
-              Provider
+          <div className="mt-5 grid gap-3" role="group" aria-label={vm.dialogState.formLabel}>
+            <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.providerField.label}
               <input
-                id="backfill-provider"
-                className="rounded-md border border-border bg-background px-3 py-2"
+                id={vm.dialogState.providerField.id}
+                className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 value={vm.form.provider}
+                aria-label={vm.dialogState.providerField.ariaLabel}
                 onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
               />
             </label>
-            <label htmlFor="backfill-symbols" className="grid gap-1 text-sm">
-              Symbols
+            <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.symbolsField.label}
               <input
-                id="backfill-symbols"
-                className="rounded-md border border-border bg-background px-3 py-2"
+                id={vm.dialogState.symbolsField.id}
+                className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 placeholder="AAPL MSFT SPY"
                 value={vm.form.symbols}
-                aria-describedby="backfill-symbols-help backfill-form-feedback"
+                aria-label={vm.dialogState.symbolsField.ariaLabel}
+                aria-describedby={vm.dialogState.symbolsField.describedBy}
                 aria-invalid={vm.validationError !== null}
+                data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
                 onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
               />
               <span id="backfill-symbols-help" className="text-xs text-muted-foreground">{vm.symbolsHelpText}</span>
             </label>
             <div className="grid gap-3 md:grid-cols-2">
-              <label htmlFor="backfill-from" className="grid gap-1 text-sm">
-                From
+              <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
+                {vm.dialogState.fromField.label}
                 <input
-                  id="backfill-from"
+                  id={vm.dialogState.fromField.id}
                   type="date"
-                  className="rounded-md border border-border bg-background px-3 py-2"
+                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.form.from}
+                  aria-label={vm.dialogState.fromField.ariaLabel}
                   onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
                 />
               </label>
-              <label htmlFor="backfill-to" className="grid gap-1 text-sm">
-                To
+              <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
+                {vm.dialogState.toField.label}
                 <input
-                  id="backfill-to"
+                  id={vm.dialogState.toField.id}
                   type="date"
-                  className="rounded-md border border-border bg-background px-3 py-2"
+                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.form.to}
+                  aria-label={vm.dialogState.toField.ariaLabel}
                   onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
                 />
               </label>
             </div>
+          </div>
+
+          <div
+            id="backfill-form-status"
+            role="status"
+            aria-live="polite"
+            className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
+          >
+            {vm.dialogState.formStatusLabel}
           </div>
 
           {vm.feedbackText && (
@@ -290,13 +319,28 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
           {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
 
-          <div className="mt-5 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => void vm.previewBackfill()} disabled={!vm.canPreview}>
-              {vm.previewButtonLabel}
+          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => void vm.previewBackfill()}
+              disabled={vm.dialogState.previewAction.disabled}
+              disabledReason={vm.dialogState.previewAction.disabledReason}
+              busy={vm.dialogState.previewAction.busy}
+              busyLabel={vm.dialogState.previewAction.busyLabel}
+              aria-label={vm.dialogState.previewAction.ariaLabel}
+            >
+              {vm.dialogState.previewAction.label}
             </Button>
             {vm.preview && (
-              <Button onClick={() => void vm.runBackfill()} disabled={!vm.canRun}>
-                {vm.runButtonLabel}
+              <Button
+                onClick={() => void vm.runBackfill()}
+                disabled={vm.dialogState.runAction.disabled}
+                disabledReason={vm.dialogState.runAction.disabledReason}
+                busy={vm.dialogState.runAction.busy}
+                busyLabel={vm.dialogState.runAction.busyLabel}
+                aria-label={vm.dialogState.runAction.ariaLabel}
+              >
+                {vm.dialogState.runAction.label}
               </Button>
             )}
           </div>

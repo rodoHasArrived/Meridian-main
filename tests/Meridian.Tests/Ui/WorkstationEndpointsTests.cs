@@ -138,6 +138,12 @@ public sealed class WorkstationEndpointsTests
                                metric.GetProperty("value").GetString() == "4");
         governance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
 
+        using var accounting = await ReadJsonAsync(client, "/api/workstation/accounting");
+        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+
+        using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
+        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
+
         var runs = research.RootElement.GetProperty("runs");
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
