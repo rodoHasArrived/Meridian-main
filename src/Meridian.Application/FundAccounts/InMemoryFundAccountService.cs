@@ -6,6 +6,21 @@ namespace Meridian.Application.FundAccounts;
 
 using Meridian.Application.Accounts;
 
+public sealed class AccountStatusPolicyException : InvalidOperationException
+{
+    public AccountStatusPolicyException(AccountOperationalStatusDto status, string operation, bool backfillAttempted)
+        : base($"Operation '{operation}' is not allowed while account status is '{status}'.")
+    {
+        Status = status;
+        Operation = operation;
+        BackfillAttempted = backfillAttempted;
+    }
+
+    public AccountOperationalStatusDto Status { get; }
+    public string Operation { get; }
+    public bool BackfillAttempted { get; }
+}
+
 /// <summary>
 /// Thread-safe fund-account service backed by an in-memory working set with optional
 /// durable JSON snapshot persistence for local-first workflows.
@@ -77,6 +92,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             request.LedgerReference,
             request.StrategyId,
             request.RunId,
+            request.OperationalStatus,
             request.CustodianDetails,
             request.BankDetails);
 
@@ -154,6 +170,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             {
                 return null;
             }
+            EnsureAllowed(stored.Summary, "update-custodian-details");
 
             updated = stored.Summary with { CustodianDetails = request.Details };
             _accounts[accountId] = stored.WithSummary(updated);
@@ -179,6 +196,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             {
                 return null;
             }
+            EnsureAllowed(stored.Summary, "update-bank-details");
 
             updated = stored.Summary with { BankDetails = request.Details };
             _accounts[accountId] = stored.WithSummary(updated);
@@ -260,6 +278,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
+                EnsureAllowed(stored.Summary, "record-balance-snapshot", request.IsBackfill);
                 stored.Snapshots.Add(dto);
                 snapshot = CaptureSnapshotLocked();
             }
@@ -329,6 +348,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
+                EnsureAllowed(stored.Summary, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
                 stored.CustodianBatches.Add(batch);
                 stored.CustodianPositions.AddRange(request.Lines);
                 snapshot = CaptureSnapshotLocked();
@@ -358,6 +378,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
+                EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
                 stored.BankBatches.Add(batch);
                 stored.BankLines.AddRange(request.Lines);
                 snapshot = CaptureSnapshotLocked();
@@ -366,6 +387,19 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
         return batch;
+    }
+
+    private static void EnsureAllowed(AccountSummaryDto summary, string operation, bool isBackfill = false, bool allowSuspended = false)
+    {
+        if (summary.OperationalStatus == AccountOperationalStatusDto.Closed && !isBackfill)
+        {
+            throw new AccountStatusPolicyException(summary.OperationalStatus, operation, isBackfill);
+        }
+
+        if (summary.OperationalStatus == AccountOperationalStatusDto.Suspended && !allowSuspended)
+        {
+            throw new AccountStatusPolicyException(summary.OperationalStatus, operation, isBackfill);
+        }
     }
 
     public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
@@ -595,7 +629,6 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             // Preserve startup availability for malformed or missing local snapshots.
         }
     }
-}
 
     public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default)
     {
@@ -649,3 +682,4 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         }
     }
 
+}

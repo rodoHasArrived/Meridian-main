@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Domain.Models;
 
 namespace Meridian.Wpf.ViewModels;
 

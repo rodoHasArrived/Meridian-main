@@ -238,6 +238,9 @@ internal static class CommandDispatchPlanner
             cfg.Storage?.ToStorageOptions(dataRoot, cfg.Compress ?? false)
             ?? new StorageOptions { RootPath = dataRoot });
 
+        var runbookStore = new Meridian.Application.Runbooks.JsonRunbookStore(dataRoot);
+        var runbookExecutor = new Meridian.Application.Runbooks.RunbookExecutor();
+
         return new CommandDispatchPlan(new CommandDispatcher(
             new HelpCommand(),
             new ConfigCommands(configService, log),
@@ -253,6 +256,7 @@ internal static class CommandDispatchPlanner
             new QueryCommand(new HistoricalDataQueryService(dataRoot), log),
             new CatalogCommand(storageSearchService, log),
             new GenerateLoaderCommand(dataRoot, log),
+            new RunbookCommands(runbookStore, runbookExecutor),
             new WalRepairCommand(cfg, log),
             new ProviderCalibrationCommand(dataRoot, log),
             // Security Master ingest: importService is null until the full host configures Postgres.

@@ -20,6 +20,7 @@
     <Compile Include="LedgerKernelTests.fs" />
     <Compile Include="DirectLendingInteropTests.fs" />
     <Compile Include="CashFlowProjectorTests.fs" />
+    <Compile Include="SettlementInstructionCommandsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
