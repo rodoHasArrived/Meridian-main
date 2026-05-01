@@ -5823,6 +5823,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ResearchBriefingDtos.cs
 │   │       ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
+│   │       ├── StrategyRunContractCompatibility.cs
 │   │       ├── StrategyRunReadModels.cs
 │   │       ├── TradingOperatorReadinessDtos.cs
 │   │       ├── WorkflowLibraryDtos.cs
@@ -8183,6 +8184,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-621 directories, 7387 files
+621 directories, 7388 files
 ```
 <!-- readme-tree end -->
