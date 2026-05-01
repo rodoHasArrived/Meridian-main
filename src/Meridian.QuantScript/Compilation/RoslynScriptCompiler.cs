@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -164,7 +165,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             MetadataReference definition,
             AssemblyIdentity referenceIdentity) => null;
 
-        public override IEnumerable<PortableExecutableReference> ResolveReference(
+        public override ImmutableArray<PortableExecutableReference> ResolveReference(
             string reference,
             string? baseFilePath,
             MetadataReferenceProperties properties)

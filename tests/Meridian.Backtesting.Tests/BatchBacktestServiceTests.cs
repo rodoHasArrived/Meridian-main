@@ -31,9 +31,9 @@ public sealed class BatchBacktestServiceTests
 
         var summary = await service.RunBatchAsync(request, progress: null!, CancellationToken.None);
 
-        summary.Runs.Should().HaveCount(2);
-        summary.Runs.Select(run => run.Result!.Request.InitialCash).Should().BeEquivalentTo([1_000m, 2_000m]);
-        summary.Runs.Select(run => run.Result!.Metrics.NetPnl).Should().BeEquivalentTo([1_000m, 6_000m]);
+        Assert.Equal(2, summary.Runs.Count);
+        Assert.Equal([1_000m, 2_000m], summary.Runs.Select(run => run.Result!.Request.InitialCash).ToArray());
+        Assert.Equal([1_000m, 6_000m], summary.Runs.Select(run => run.Result!.Metrics.NetPnl).ToArray());
     }
 
     private static BacktestRequest CreateBaseRequest()
@@ -48,7 +48,6 @@ public sealed class BatchBacktestServiceTests
             netPnl,
             netPnl,
             request.InitialCash == 0 ? 0 : netPnl / request.InitialCash,
-            0,
             0,
             0,
             0,
