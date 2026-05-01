@@ -12,6 +12,35 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunReadServiceTests
 {
+
+    [Fact]
+    public async Task GetRunsAsync_ProvidesCanonicalIdentityAndCompatibilityPasses()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun(
+            runId: "run-identity",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 120_000m,
+            netPnl: 20_000m,
+            totalReturn: 0.2m,
+            realizedPnl: 10_000m,
+            unrealizedPnl: 10_000m,
+            fillCount: 2,
+            sharpeRatio: 1.1,
+            maxDrawdown: 3_000m));
+
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var rows = await service.GetRunsAsync();
+
+        rows.Should().ContainSingle();
+        var row = rows[0];
+        row.Identity.Should().NotBeNull();
+        row.Identity!.CanonicalRunKey.Should().Be(row.RunId);
+        row.Identity.Mode.Should().Be(row.Mode);
+        StrategyRunContractCompatibility.EnsureCanonicalIdentity(row);
+    }
+
     [Fact]
     public async Task GetRunDetailAsync_BuildsSharedPortfolioAndLedgerModels()
     {

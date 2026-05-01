@@ -301,6 +301,7 @@ public sealed class StrategyRunReadService
             FillCount: run.Metrics?.Fills.Count ?? 0,
             LastUpdatedAt: GetLastUpdatedAt(run),
             AuditReference: run.AuditReference,
+            Identity: BuildIdentity(run, promotionLookup),
             Execution: BuildExecutionSummary(run),
             Promotion: BuildPromotionSummary(run, promotionLookup),
             Governance: BuildGovernanceSummary(run),
@@ -312,6 +313,25 @@ public sealed class StrategyRunReadService
             SweepObjective: run.SweepObjective);
     }
 
+
+    private static StrategyRunIdentity BuildIdentity(
+        StrategyRunEntry run,
+        IReadOnlyDictionary<string, StrategyPromotionRecord> promotionLookup)
+    {
+        promotionLookup.TryGetValue(run.RunId, out var matchedRecord);
+        var replayReference = run.AuditReference;
+        return new StrategyRunIdentity(
+            CanonicalRunKey: run.RunId,
+            ParentCanonicalRunKey: run.ParentRunId,
+            DerivedCanonicalRunKeys: Array.Empty<string>(),
+            Mode: MapMode(run.RunType),
+            PromotionSourceRunId: matchedRecord?.SourceRunId ?? run.ParentRunId,
+            PromotionTargetRunId: matchedRecord?.TargetRunId,
+            PromotionDecision: matchedRecord?.Decision,
+            ReplayAuditReference: replayReference,
+            ReplayVerifiedAt: run.EndedAt,
+            HasReplayAudit: !string.IsNullOrWhiteSpace(replayReference));
+    }
     private static StrategyRunExecutionSummary BuildExecutionSummary(StrategyRunEntry run)
     {
         var metrics = run.Metrics?.Metrics;
