@@ -184,6 +184,57 @@ public sealed class CorporateActionAdjustmentServiceTests
         result[0].Volume.Should().Be(6000);   // 1000 * 6
     }
 
+
+    [Fact]
+    public async Task AdjustAsync_StreamedLargeHistory_IsEquivalentToBatch()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 6, 1), null, null, null, 2m, null, null, null, null, null, null),
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", new DateOnly(2024, 9, 1), null, 1m, "USD", null, null, null, null, null, null, null)
+        ]);
+
+        var bars = Enumerable.Range(0, 50_000)
+            .Select(i => CreateBar("SPY", new DateOnly(2020, 1, 1).AddDays(i), 100m + i, 101m + i, 99m + i, 100.5m + i, 1_000 + i))
+            .ToArray();
+
+        var batch = await _service.AdjustAsync(bars, "SPY");
+        var streamed = await CollectAsync(_service.AdjustAsync(ToAsync(bars), "SPY"));
+
+        streamed.Should().BeEquivalentTo(batch, options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task AdjustAsync_StreamedLargeHistory_IsIncremental()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        _mockQueryService.SetCorporateActions([]);
+
+        var produced = 0;
+        async IAsyncEnumerable<HistoricalBar> Source()
+        {
+            for (var i = 0; i < 100_000; i++)
+            {
+                produced++;
+                yield return CreateBar("SPY", new DateOnly(2020, 1, 1).AddDays(i), 100m, 101m, 99m, 100m);
+                await Task.Yield();
+            }
+        }
+
+        var consumed = 0;
+        await foreach (var _ in _service.AdjustAsync(Source(), "SPY"))
+        {
+            consumed++;
+            if (consumed == 250)
+            {
+                break;
+            }
+        }
+
+        produced.Should().BeLessThan(500);
+    }
     private static HistoricalBar CreateBar(
         string symbol,
         DateOnly date,
@@ -194,6 +245,27 @@ public sealed class CorporateActionAdjustmentServiceTests
         long volume = 1000000)
     {
         return new HistoricalBar(symbol, date, open, high, low, close, volume);
+    }
+
+
+    private static async IAsyncEnumerable<HistoricalBar> ToAsync(IEnumerable<HistoricalBar> bars)
+    {
+        foreach (var bar in bars)
+        {
+            yield return bar;
+            await Task.Yield();
+        }
+    }
+
+    private static async Task<List<HistoricalBar>> CollectAsync(IAsyncEnumerable<HistoricalBar> source)
+    {
+        var list = new List<HistoricalBar>();
+        await foreach (var item in source)
+        {
+            list.Add(item);
+        }
+
+        return list;
     }
 
     // Mock implementations
