@@ -9,6 +9,8 @@ namespace Meridian.Application.Backtesting;
 /// </summary>
 public sealed class BacktestPreflightService : IBacktestPreflightService
 {
+    private static readonly string[] KnownReplayDataTypes = ["bars", "quotes", "book", "trades"];
+
     public Task<BacktestPreflightReportV2Dto> RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -21,6 +23,11 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
             ValidateDataRoot(request.DataRoot),
             ValidateSymbols(request.Symbols),
         };
+
+        if (Directory.Exists(request.DataRoot))
+        {
+            checks.AddRange(ValidateReplayCoverage(request));
+        }
 
         sw.Stop();
 
@@ -39,6 +46,160 @@ public sealed class BacktestPreflightService : IBacktestPreflightService
             TotalDurationMs: sw.ElapsedMilliseconds,
             CheckedAt: DateTimeOffset.UtcNow,
             SummaryMessage: summary));
+    }
+
+    private static IEnumerable<BacktestPreflightCheckResultDto> ValidateReplayCoverage(BacktestPreflightRequestDto request)
+    {
+        var normalizedSymbols = (request.Symbols ?? [])
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => s.Trim().ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (normalizedSymbols.Length == 0)
+        {
+            yield break;
+        }
+
+        var requiredTypes = ResolveRequiredTypes(request.RequiredReplayDataTypes, request.RequiredExecutionModel);
+        var bySymbolMonth = IndexReplayData(request.DataRoot, normalizedSymbols, request.From, request.To);
+
+        var gaps = new List<string>();
+        var orderBookMissing = new List<string>();
+        foreach (var symbol in normalizedSymbols)
+        {
+            foreach (var month in EnumerateMonths(request.From, request.To))
+            {
+                var key = (symbol, month);
+                bySymbolMonth.TryGetValue(key, out var typesPresent);
+                typesPresent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var requiredType in requiredTypes)
+                {
+                    if (typesPresent.Contains(requiredType))
+                        continue;
+
+                    gaps.Add($"{symbol}:{month:yyyy-MM}:{requiredType}");
+                    if (requiredType.Equals("book", StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(request.RequiredExecutionModel, "OrderBook", StringComparison.OrdinalIgnoreCase))
+                    {
+                        orderBookMissing.Add($"{symbol}:{month:yyyy-MM}");
+                    }
+                }
+            }
+        }
+
+        if (orderBookMissing.Count > 0)
+        {
+            yield return new BacktestPreflightCheckResultDto(
+                Name: "Execution Model Compatibility",
+                Status: BacktestPreflightCheckStatusDto.Failed,
+                Message: "OrderBook execution was requested but Level 2 replay data is missing.",
+                Remediation: "Provide order-book replay files for all requested symbol/month buckets or switch execution model.",
+                Details: new Dictionary<string, string>
+                {
+                    ["executionModel"] = request.RequiredExecutionModel ?? "",
+                    ["missingL2Buckets"] = string.Join(",", orderBookMissing.OrderBy(x => x, StringComparer.Ordinal))
+                });
+        }
+        else if (!string.IsNullOrWhiteSpace(request.RequiredExecutionModel))
+        {
+            yield return new BacktestPreflightCheckResultDto(
+                Name: "Execution Model Compatibility",
+                Status: BacktestPreflightCheckStatusDto.Passed,
+                Message: $"Execution model '{request.RequiredExecutionModel}' is compatible with replay data coverage.");
+        }
+
+        if (gaps.Count > 0)
+        {
+            yield return new BacktestPreflightCheckResultDto(
+                Name: "Replay Coverage",
+                Status: BacktestPreflightCheckStatusDto.Warning,
+                Message: "Replay coverage has gaps by symbol/month for requested data types.",
+                Remediation: "Backfill missing data types for each symbol/month before running high-trust simulations.",
+                Details: new Dictionary<string, string>
+                {
+                    ["requiredTypes"] = string.Join(",", requiredTypes),
+                    ["missingBuckets"] = string.Join(",", gaps.OrderBy(x => x, StringComparer.Ordinal))
+                });
+        }
+        else
+        {
+            yield return new BacktestPreflightCheckResultDto(
+                Name: "Replay Coverage",
+                Status: BacktestPreflightCheckStatusDto.Passed,
+                Message: "Replay data coverage includes requested symbol/month buckets and data types.");
+        }
+    }
+
+    private static Dictionary<(string Symbol, DateOnly Month), HashSet<string>> IndexReplayData(string dataRoot, IReadOnlyList<string> symbols, DateOnly from, DateOnly to)
+    {
+        var symbolSet = new HashSet<string>(symbols, StringComparer.OrdinalIgnoreCase);
+        var dict = new Dictionary<(string Symbol, DateOnly Month), HashSet<string>>();
+
+        foreach (var file in Directory.EnumerateFiles(dataRoot, "*.jsonl*", SearchOption.AllDirectories))
+        {
+            var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
+            var tokens = name.Split(['_', '.'], StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length < 3)
+                continue;
+
+            var symbol = tokens[0].Trim().ToUpperInvariant();
+            if (!symbolSet.Contains(symbol))
+                continue;
+
+            var type = tokens[1].Trim().ToLowerInvariant();
+            if (!KnownReplayDataTypes.Contains(type))
+                continue;
+
+            if (!DateOnly.TryParse(tokens[2], out var date))
+                continue;
+
+            if (date < from || date > to)
+                continue;
+
+            var month = new DateOnly(date.Year, date.Month, 1);
+            var key = (symbol, month);
+            if (!dict.TryGetValue(key, out var types))
+            {
+                types = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                dict[key] = types;
+            }
+
+            types.Add(type);
+        }
+
+        return dict;
+    }
+
+    private static string[] ResolveRequiredTypes(IReadOnlyList<string>? requestedTypes, string? executionModel)
+    {
+        var resolved = (requestedTypes ?? ["bars", "quotes", "trades"])
+            .Select(x => x?.Trim().ToLowerInvariant())
+            .Where(x => !string.IsNullOrWhiteSpace(x) && KnownReplayDataTypes.Contains(x!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (resolved.Count == 0)
+            resolved.AddRange(["bars", "quotes", "trades"]);
+
+        if (string.Equals(executionModel, "OrderBook", StringComparison.OrdinalIgnoreCase) &&
+            !resolved.Contains("book", StringComparer.OrdinalIgnoreCase))
+        {
+            resolved.Add("book");
+        }
+
+        return resolved.ToArray();
+    }
+
+    private static IEnumerable<DateOnly> EnumerateMonths(DateOnly from, DateOnly to)
+    {
+        var cursor = new DateOnly(from.Year, from.Month, 1);
+        var end = new DateOnly(to.Year, to.Month, 1);
+        while (cursor <= end)
+        {
+            yield return cursor;
+            cursor = cursor.AddMonths(1);
+        }
     }
 
     private static BacktestPreflightCheckResultDto ValidateDateRange(DateOnly from, DateOnly to)

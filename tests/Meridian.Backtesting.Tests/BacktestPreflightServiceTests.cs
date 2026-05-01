@@ -61,6 +61,48 @@ public sealed class BacktestPreflightServiceTests : IDisposable
         report.Checks.Should().Contain(c => c.Name == "Symbol Scope" && c.Status == BacktestPreflightCheckStatusDto.Warning);
     }
 
+
+    [Fact]
+    public async Task RunAsync_OrderBookExecutionMissingBookData_ReturnsStructuredFailureAndCoverageWarning()
+    {
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL_bars_2024-01-03.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL_quotes_2024-01-03.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "AAPL_trades_2024-01-03.jsonl"), "{}\n");
+
+        var sut = new BacktestPreflightService();
+        var report = await sut.RunAsync(new BacktestPreflightRequestDto(
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 1, 31),
+            DataRoot: _dataRoot,
+            Symbols: ["AAPL"],
+            RequiredExecutionModel: "OrderBook"));
+
+        report.IsReadyToRun.Should().BeFalse();
+        report.HasWarnings.Should().BeTrue();
+        report.Checks.Should().Contain(c => c.Name == "Execution Model Compatibility" && c.Status == BacktestPreflightCheckStatusDto.Failed);
+        report.Checks.Should().Contain(c => c.Name == "Replay Coverage" && c.Status == BacktestPreflightCheckStatusDto.Warning && c.Details!["missingBuckets"].Contains("AAPL:2024-01:book"));
+    }
+
+    [Fact]
+    public async Task RunAsync_MonthlyCoverageGap_ReturnsStructuredWarningBySymbolMonth()
+    {
+        File.WriteAllText(Path.Combine(_dataRoot, "MSFT_bars_2024-01-05.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "MSFT_quotes_2024-01-05.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(_dataRoot, "MSFT_trades_2024-01-05.jsonl"), "{}\n");
+
+        var sut = new BacktestPreflightService();
+        var report = await sut.RunAsync(new BacktestPreflightRequestDto(
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 2, 29),
+            DataRoot: _dataRoot,
+            Symbols: ["MSFT"],
+            RequiredReplayDataTypes: ["bars", "quotes", "trades"]));
+
+        report.IsReadyToRun.Should().BeTrue();
+        report.HasWarnings.Should().BeTrue();
+        report.Checks.Should().Contain(c => c.Name == "Replay Coverage" && c.Status == BacktestPreflightCheckStatusDto.Warning && c.Details!["missingBuckets"].Contains("MSFT:2024-02:bars"));
+    }
+
     [Fact]
     public async Task RunAsync_Cancelled_ThrowsOperationCanceledException()
     {

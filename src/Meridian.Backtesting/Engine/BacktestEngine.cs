@@ -47,7 +47,7 @@ public sealed class BacktestEngine(
         if (backtestPreflightService is not null)
         {
             var preflightReport = await backtestPreflightService
-                .RunAsync(new BacktestPreflightRequestDto(request.From, request.To, request.DataRoot, request.Symbols), ct)
+                .RunAsync(new BacktestPreflightRequestDto(request.From, request.To, request.DataRoot, request.Symbols, request.DefaultExecutionModel.ToString()), ct)
                 .ConfigureAwait(false);
 
             progress?.Report(new BacktestProgressEvent(
