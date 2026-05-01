@@ -178,6 +178,49 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             "symbol filter must restrict universe to only requested symbols");
     }
 
+    [Fact]
+    public async Task RunAsync_EqualTimestampEvents_RespectStableSymbolOrder()
+    {
+        WriteEventJsonl("MSFT", new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero));
+        WriteEventJsonl("AAPL", new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero));
+
+        var strategy = new OrderedSymbolCaptureStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            Symbols: ["MSFT", "AAPL"],
+            DataRoot: _dataRoot);
+
+        await _engine.RunAsync(request, strategy);
+
+        strategy.BarSymbolsInArrivalOrder.Should().Equal(
+            ["MSFT", "AAPL"],
+            "equal-timestamp events should be ordered by stable stream/symbol order");
+    }
+
+    [Fact]
+    public async Task RunAsync_EqualTimestampEvents_AreRepeatableAcrossRuns()
+    {
+        WriteEventJsonl("MSFT", new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero));
+        WriteEventJsonl("AAPL", new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero));
+
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            Symbols: ["MSFT", "AAPL"],
+            DataRoot: _dataRoot);
+
+        var firstRunStrategy = new OrderedSymbolCaptureStrategy();
+        var secondRunStrategy = new OrderedSymbolCaptureStrategy();
+
+        await _engine.RunAsync(request, firstRunStrategy);
+        await _engine.RunAsync(request, secondRunStrategy);
+
+        firstRunStrategy.BarSymbolsInArrivalOrder.Should().Equal(secondRunStrategy.BarSymbolsInArrivalOrder,
+            "equal-timestamp merge ordering should be deterministic across repeated runs");
+        firstRunStrategy.BarSymbolsInArrivalOrder.Should().Equal(["MSFT", "AAPL"]);
+    }
+
     // ------------------------------------------------------------------ //
     //  UTC date boundary filtering (regression: FilterBySymbolAndDate    //
     //  must use UtcDateTime.Date, not LocalDateTime.Date)                //
@@ -499,6 +542,21 @@ file sealed class BarTrackingStrategy : IBacktestStrategy
         Symbols.Add(bar.Symbol);
     }
 
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
+
+file sealed class OrderedSymbolCaptureStrategy : IBacktestStrategy
+{
+    public string Name => "OrderedSymbolCapture";
+    public List<string> BarSymbolsInArrivalOrder { get; } = [];
+
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) => BarSymbolsInArrivalOrder.Add(bar.Symbol);
     public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
     public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
     public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
