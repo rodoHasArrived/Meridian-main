@@ -4850,6 +4850,8 @@ Meridian-main
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   └── workflow-validation-summary.json
+│   ├── ui
+│   │   └── components.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
@@ -6480,7 +6482,10 @@ Meridian-main
 │   │   │   │   │       ├── dialog.test.tsx
 │   │   │   │   │       ├── dialog.tsx
 │   │   │   │   │       ├── dialog.view-model.test.ts
-│   │   │   │   │       └── dialog.view-model.ts
+│   │   │   │   │       ├── dialog.view-model.ts
+│   │   │   │   │       ├── input.tsx
+│   │   │   │   │       ├── select.tsx
+│   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
@@ -6507,10 +6512,20 @@ Meridian-main
 │   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── overview-screen.view-model.test.ts
 │   │   │   │   │   ├── overview-screen.view-model.ts
+│   │   │   │   │   ├── portfolio-screen.test.tsx
+│   │   │   │   │   ├── portfolio-screen.tsx
+│   │   │   │   │   ├── portfolio-screen.view-model.test.ts
+│   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── reporting-screen.tsx
+│   │   │   │   │   ├── reporting-screen.view-model.test.ts
+│   │   │   │   │   ├── reporting-screen.view-model.ts
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── research-screen.view-model.test.ts
 │   │   │   │   │   ├── research-screen.view-model.ts
+│   │   │   │   │   ├── settings-screen.tsx
+│   │   │   │   │   ├── settings-screen.view-model.test.ts
+│   │   │   │   │   ├── settings-screen.view-model.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
@@ -6542,8 +6557,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CDfmzGrN.css
-│   │           │   └── index-CsM9JqJi.js
+│   │           │   ├── index-BEjAePvx.js
+│   │           │   └── index-DvmGN_1N.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7372,7 +7387,9 @@ Meridian-main
 │   │   │   ├── Commands
 │   │   │   │   ├── CliArgumentsTests.cs
 │   │   │   │   ├── CommandDispatcherTests.cs
+│   │   │   │   ├── DiagnosticsCommandsTests.cs
 │   │   │   │   ├── DryRunCommandTests.cs
+│   │   │   │   ├── EtlCommandsTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
 │   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
@@ -7718,6 +7735,7 @@ Meridian-main
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
+│   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
 │   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
