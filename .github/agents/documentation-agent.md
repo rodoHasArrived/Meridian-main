@@ -6535,8 +6535,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DOBOIzvv.js
-│   │           │   └── index-DSUworEQ.css
+│   │           │   ├── index-CDfmzGrN.css
+│   │           │   └── index-CsM9JqJi.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
