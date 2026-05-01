@@ -252,6 +252,7 @@ internal static class CommandDispatchPlanner
             new SelfTestCommand(log),
             new PackageCommands(cfg, log),
             new EtlCommands(cfgPath, log),
+            new StatementCommands(),
             new ConfigPresetCommand(new AutoConfigurationService(), log),
             new QueryCommand(new HistoricalDataQueryService(dataRoot), log),
             new CatalogCommand(storageSearchService, log),
