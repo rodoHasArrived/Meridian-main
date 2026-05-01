@@ -259,6 +259,43 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
+    [Fact]
+    public async Task Scenario_SyncRetryReplay_DoesNotDuplicateBalanceSnapshotsOrReconciliationRuns()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-IDEMP",
+                    "Idempotent Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-2),
+                    "tests"),
+                cts.Token);
+
+            await service.RunSyncAsync(fundAccountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-IDEMP", "ops-review"), cts.Token);
+            await service.RunSyncAsync(fundAccountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-IDEMP", "ops-review"), cts.Token);
+
+            var balances = await fundAccountService.GetBalanceHistoryAsync(fundAccountId, ct: cts.Token);
+            balances.Should().ContainSingle();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,

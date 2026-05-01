@@ -434,18 +434,35 @@ public sealed class BrokeragePortfolioSyncService
             return;
         }
 
+        var asOfDate = DateOnly.FromDateTime(attemptedAt.UtcDateTime);
+        var source = $"brokerage-sync:{projection.Link.ProviderId}";
+        var externalReference = projection.Link.ExternalAccountId;
+        var latestSnapshot = await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        var isDuplicateSnapshot = latestSnapshot is not null
+            && latestSnapshot.AsOfDate == asOfDate
+            && string.Equals(latestSnapshot.Source, source, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(latestSnapshot.ExternalReference, externalReference, StringComparison.OrdinalIgnoreCase)
+            && latestSnapshot.Currency == projection.Balance.Currency
+            && latestSnapshot.CashBalance == projection.Balance.Cash
+            && latestSnapshot.SecuritiesMarketValue == projection.Balance.Equity - projection.Balance.Cash;
+
+        if (isDuplicateSnapshot)
+        {
+            return;
+        }
+
         await fundAccountService.RecordBalanceSnapshotAsync(
             new RecordAccountBalanceSnapshotRequest(
                 AccountId: fundAccountId,
-                AsOfDate: DateOnly.FromDateTime(attemptedAt.UtcDateTime),
+                AsOfDate: asOfDate,
                 Currency: projection.Balance.Currency,
                 CashBalance: projection.Balance.Cash,
                 SecuritiesMarketValue: projection.Balance.Equity - projection.Balance.Cash,
                 AccruedInterest: 0m,
                 PendingSettlement: 0m,
-                Source: $"brokerage-sync:{projection.Link.ProviderId}",
+                Source: source,
                 RecordedBy: projection.Link.LinkedBy ?? "brokerage-sync",
-                ExternalReference: projection.Link.ExternalAccountId),
+                ExternalReference: externalReference),
             ct).ConfigureAwait(false);
 
         await fundAccountService.ReconcileAccountAsync(
