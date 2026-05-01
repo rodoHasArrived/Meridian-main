@@ -214,6 +214,27 @@ public sealed class OptionsChainServiceTests
         result[0].Should().Be(new DateOnly(2026, 3, 21));
     }
 
+    [Fact]
+    public async Task GetExpirationsAsync_WhenPrimaryReturnsEmpty_FallsBackToNextProvider()
+    {
+        var primary = new StubOptionsChainProvider(
+            "alpaca-options",
+            "Alpaca Options",
+            priority: 8);
+        var fallbackExpirations = new[] { new DateOnly(2026, 4, 18) };
+        var fallback = new StubOptionsChainProvider(
+            "synthetic",
+            "Synthetic Options",
+            priority: 200,
+            expirations: fallbackExpirations);
+
+        var sut = new OptionsChainService(_collector, _logger, new IOptionsChainProvider[] { fallback, primary });
+
+        var result = await sut.GetExpirationsAsync("AAPL");
+
+        result.Should().Equal(fallbackExpirations);
+    }
+
     #endregion
 
     #region GetStrikesAsync Tests
@@ -286,6 +307,30 @@ public sealed class OptionsChainServiceTests
         _providerMock.Verify(p => p.GetChainSnapshotAsync("AAPL", new DateOnly(2026, 3, 21), 10, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task FetchChainSnapshotAsync_WhenPrimaryThrows_FallsBackAndCaches()
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        var fallbackChain = CreateChainSnapshot("AAPL", expiry);
+        var primary = new StubOptionsChainProvider(
+            "alpaca-options",
+            "Alpaca Options",
+            priority: 8,
+            chainException: new InvalidOperationException("offline"));
+        var fallback = new StubOptionsChainProvider(
+            "synthetic",
+            "Synthetic Options",
+            priority: 200,
+            chain: fallbackChain);
+
+        var sut = new OptionsChainService(_collector, _logger, new IOptionsChainProvider[] { fallback, primary });
+
+        var result = await sut.FetchChainSnapshotAsync("AAPL", expiry);
+
+        result.Should().BeSameAs(fallbackChain);
+        sut.GetCachedChain("AAPL", expiry).Should().BeSameAs(fallbackChain);
+    }
+
     #endregion
 
     #region FetchOptionQuoteAsync Tests
@@ -318,6 +363,29 @@ public sealed class OptionsChainServiceTests
 
         // Verify the quote was routed through collector (published as event)
         _publisher.PublishedEvents.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task FetchOptionQuoteAsync_WhenPrimaryReturnsNull_FallsBackAndRoutesToCollector()
+    {
+        var contract = CreateContract("AAPL", 150m, OptionRight.Call);
+        var fallbackQuote = CreateOptionQuote(contract);
+        var primary = new StubOptionsChainProvider(
+            "alpaca-options",
+            "Alpaca Options",
+            priority: 8);
+        var fallback = new StubOptionsChainProvider(
+            "synthetic",
+            "Synthetic Options",
+            priority: 200,
+            quote: fallbackQuote);
+
+        var sut = new OptionsChainService(_collector, _logger, new IOptionsChainProvider[] { fallback, primary });
+
+        var result = await sut.FetchOptionQuoteAsync(contract);
+
+        result.Should().BeSameAs(fallbackQuote);
+        _publisher.PublishedEvents.Should().ContainSingle();
     }
 
     #endregion
@@ -506,25 +574,37 @@ public sealed class OptionsChainServiceTests
 
     #endregion
 
-    private sealed class StubOptionsChainProvider(string providerId, string providerDisplayName) : IOptionsChainProvider
+    private sealed class StubOptionsChainProvider(
+        string providerId,
+        string providerDisplayName,
+        int priority = 100,
+        IReadOnlyList<DateOnly>? expirations = null,
+        OptionChainSnapshot? chain = null,
+        OptionQuote? quote = null,
+        Exception? chainException = null) : IOptionsChainProvider
     {
         public string ProviderId { get; } = providerId;
         public string ProviderDisplayName { get; } = providerDisplayName;
         public string ProviderDescription => "Stub options chain provider";
-        public int ProviderPriority => 100;
+        public int ProviderPriority { get; } = priority;
         public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.OptionsChain();
         public OptionsChainCapabilities Capabilities => OptionsChainCapabilities.Basic;
 
         public Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<DateOnly>>(Array.Empty<DateOnly>());
+            Task.FromResult(expirations ?? Array.Empty<DateOnly>());
 
         public Task<IReadOnlyList<decimal>> GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<decimal>>(Array.Empty<decimal>());
 
-        public Task<OptionChainSnapshot?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default) =>
-            Task.FromResult<OptionChainSnapshot?>(null);
+        public Task<OptionChainSnapshot?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default)
+        {
+            if (chainException is not null)
+                throw chainException;
+
+            return Task.FromResult<OptionChainSnapshot?>(chain);
+        }
 
         public Task<OptionQuote?> GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default) =>
-            Task.FromResult<OptionQuote?>(null);
+            Task.FromResult<OptionQuote?>(quote);
     }
 }

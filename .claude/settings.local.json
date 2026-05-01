@@ -24,7 +24,11 @@
       "Bash(sed:*)",
       "Bash(awk:*)",
       "Bash(echo:*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "PowerShell(git stash pop 2>&1)",
+      "PowerShell(git stash pop --index 2>&1)",
+      "PowerShell(head -20)",
+      "PowerShell(npm --prefix src/Meridian.Ui/dashboard run build 2>&1)"
     ]
   }
 }

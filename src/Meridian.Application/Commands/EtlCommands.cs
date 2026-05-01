@@ -34,7 +34,9 @@ internal sealed class EtlCommands : ICliCommand
             return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.Unknown);
         }
 
-        var definition = BuildDefinition(args);
+        if (!TryBuildDefinition(args, out var definition))
+            return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+
         var job = await svc.CreateJobAsync(definition, ct).ConfigureAwait(false);
         var run = await svc.RunAsync(job.JobId, ct).ConfigureAwait(false);
         if (!run.Success)
@@ -47,12 +49,18 @@ internal sealed class EtlCommands : ICliCommand
         return CliResult.Ok();
     }
 
-    private static EtlJobDefinition BuildDefinition(string[] args)
+    internal static bool TryBuildDefinition(string[] args, out EtlJobDefinition definition)
     {
-        var sourceKind = ParseSourceKind(CliArguments.RequireValue(args, "--etl-source-kind", "--etl-source-kind local|sftp")!);
+        definition = new EtlJobDefinition();
+        var sourceKindArg = CliArguments.RequireValue(args, "--etl-source-kind", "--etl-source-kind local|sftp");
+        var sourcePath = CliArguments.RequireValue(args, "--etl-source-path", "--etl-source-path <path>");
+        if (sourceKindArg is null || sourcePath is null)
+            return false;
+
+        var sourceKind = ParseSourceKind(sourceKindArg);
         var flowDirection = CliArguments.HasFlag(args, "--etl-roundtrip") ? EtlFlowDirection.RoundTrip : CliArguments.HasFlag(args, "--etl-export") ? EtlFlowDirection.Export : EtlFlowDirection.Import;
         var destinationKind = ParseDestinationKind(CliArguments.GetValue(args, "--etl-destination-kind") ?? "storage");
-        return new EtlJobDefinition
+        definition = new EtlJobDefinition
         {
             JobId = Guid.NewGuid().ToString(),
             FlowDirection = flowDirection,
@@ -61,7 +69,7 @@ internal sealed class EtlCommands : ICliCommand
             Source = new EtlSourceDefinition
             {
                 Kind = sourceKind,
-                Location = CliArguments.RequireValue(args, "--etl-source-path", "--etl-source-path <path>")!,
+                Location = sourcePath,
                 FilePattern = CliArguments.GetValue(args, "--etl-file-pattern") ?? "*.csv",
                 Username = CliArguments.GetValue(args, "--etl-source-username"),
                 SecretRef = CliArguments.GetValue(args, "--etl-source-secret-ref"),
@@ -84,6 +92,7 @@ internal sealed class EtlCommands : ICliCommand
             PublishNormalizedExtract = CliArguments.HasFlag(args, "--etl-publish-normalized"),
             ContinueOnRecordError = CliArguments.HasFlag(args, "--etl-continue-on-error")
         };
+        return true;
     }
 
     private static EtlSourceKind ParseSourceKind(string value)

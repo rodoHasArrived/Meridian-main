@@ -91,6 +91,7 @@ For the WPF desktop host, startup now pins both the UI shell and the launched ba
 <a id="troubleshooting"></a>
 
 ```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
@@ -140,10 +141,27 @@ dotnet run --project src/Meridian/Meridian.csproj -- --import-package ./packages
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas
 dotnet run --project src/Meridian/Meridian.csproj -- --strict-schemas
+dotnet run --project src/Meridian/Meridian.csproj -- --replay ./data/session/events.jsonl
+dotnet run --project src/Meridian/Meridian.csproj -- --replay ./data/session/
 dotnet run --project src/Meridian/Meridian.csproj -- --dry-run
 dotnet run --project src/Meridian/Meridian.csproj -- --offline
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 ```
+
+`--replay` accepts either one JSONL/JSONL.GZ file or a directory tree containing `*.jsonl*`
+files. Directory replay processes files in stable path order.
+
+### ETL import/export
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-import --etl-source-kind local --etl-source-path ./incoming/trades --etl-schema partner.trades.csv.v1
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-export --etl-source-kind local --etl-source-path ./data --etl-destination-kind local --etl-destination-path ./exports --etl-symbols AAPL,MSFT --etl-publish-normalized
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-roundtrip --etl-source-kind local --etl-source-path ./incoming/trades --etl-destination-kind local --etl-destination-path ./exports --etl-publish-package
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-resume <job-id>
+```
+
+`--etl-import`, `--etl-export`, and `--etl-roundtrip` require `--etl-source-kind` and
+`--etl-source-path`. `--etl-resume` requires an existing ETL job ID from a prior run.
 
 ## Build And Test
 

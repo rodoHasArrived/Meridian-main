@@ -10,14 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
-import { legacyWorkspaceRedirect, workspaceForKey } from "@/lib/workspace";
+import { legacyWorkspaceRedirect } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
+import { PortfolioScreen } from "@/screens/portfolio-screen";
+import { ReportingScreen } from "@/screens/reporting-screen";
 import { ResearchScreen } from "@/screens/research-screen";
+import { SettingsScreen } from "@/screens/settings-screen";
 import { TradingScreen } from "@/screens/trading-screen";
-import { WorkspacePlaceholderScreen } from "@/screens/workspace-placeholder-screen";
-import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -100,12 +101,12 @@ export function App() {
                   />
                 )} />
                 <Route path="/trading/*" element={<TradingScreen data={trading} />} />
-                <Route path="/portfolio/*" element={<Placeholder workspaceKey="portfolio" session={session} overview={overview} />} />
+                <Route path="/portfolio/*" element={<PortfolioScreen trading={trading} research={research} governance={governance} />} />
                 <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
-                <Route path="/reporting/*" element={<GovernanceScreen data={governance} />} />
+                <Route path="/reporting/*" element={<ReportingScreen data={governance} />} />
                 <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                 <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
-                <Route path="/settings/*" element={<Placeholder workspaceKey="settings" session={session} overview={overview} />} />
+                <Route path="/settings/*" element={<SettingsScreen session={session} overview={overview} />} />
                 <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
                 <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                 <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
@@ -120,18 +121,6 @@ export function App() {
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   );
-}
-
-function Placeholder({
-  workspaceKey,
-  session,
-  overview
-}: {
-  workspaceKey: WorkspaceKey;
-  session: SessionInfo | null;
-  overview: SystemOverviewResponse | null;
-}) {
-  return <WorkspacePlaceholderScreen workspace={workspaceForKey(workspaceKey)} session={session} overview={overview} />;
 }
 
 function LegacyWorkspaceRedirect() {

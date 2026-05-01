@@ -79,8 +79,8 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         });
 
         // Options chain providers — register the default providers first.
-        // CollectorFeatureRegistration resolves a single IOptionsChainProvider, and Microsoft DI
-        // returns the last registration for single-service resolution.
+        // CollectorFeatureRegistration resolves all IOptionsChainProvider registrations so
+        // OptionsChainService can walk the provider chain before using synthetic fallback data.
         RegisterOptionsChainProviders(services);
         RegisterOptionsChainProviders(services, options);
         // Keep ProviderFactory for backward compatibility
@@ -379,10 +379,8 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     ///   <item>Otherwise, the <see cref="SyntheticOptionsChainProvider"/> is used as the fallback.</item>
     /// </list>
     /// <see cref="CollectorFeatureRegistration"/> resolves
-    /// <c>IOptionsChainProvider</c> via <c>GetService&lt;IOptionsChainProvider&gt;()</c>;
-    /// Microsoft DI returns the last registration for single-service resolution.
-    /// All providers are also exposed via <c>IEnumerable&lt;IOptionsChainProvider&gt;</c>
-    /// for enumeration and health checks.
+    /// <c>IEnumerable&lt;IOptionsChainProvider&gt;</c> so <see cref="OptionsChainService"/>
+    /// can try configured providers before falling back to deterministic synthetic data.
     /// </summary>
     private static void RegisterOptionsChainProviders(IServiceCollection services)
     {
@@ -395,9 +393,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         // 3. Synthetic — always available, deterministic offline fallback
         services.AddSingleton<SyntheticOptionsChainProvider>();
 
-        // Register via the interface:
-        //   • GetService<IOptionsChainProvider>() → Synthetic by default (last registration wins)
-        //   • GetServices<IOptionsChainProvider>() → all three (for enumeration)
+        // Register concrete providers for ordered enumeration and provider-catalog projection.
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<AlpacaOptionsChainProvider>());
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<PolygonOptionsChainProvider>());
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<SyntheticOptionsChainProvider>());

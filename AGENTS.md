@@ -126,27 +126,25 @@ dotnet run --project src/Meridian/Meridian.csproj -- --wal-repair --dry-run --ou
 dotnet run --project src/Meridian/Meridian.csproj -- --generate-loader python --output ./loaders
 ```
 
-TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`,
-`--etl-export`, `--etl-roundtrip`, and `--etl-resume`, but `docs/HELP.md` does not yet document
-operator examples. Verify the intended ETL workflow before adding those as standard commands.
+`src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, `--etl-export`,
+`--etl-roundtrip`, and `--etl-resume`. Use `docs/HELP.md` for the verified local-file ETL
+operator examples and required `--etl-source-kind` / `--etl-source-path` arguments.
 
 TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
 and `--calibrate-provider-degradation`, but their prerequisites are specialized. Use
 `--help security-master` for Security Master details, and verify current operator setup before
 adding short-form examples here.
 
-TODO: `docs/HELP.md` mentions `--diagnostics`, but `DiagnosticsCommands` currently handles
-specific flags (`--quick-check`, `--test-connectivity`, `--show-config`, `--error-codes`, and
-`--validate-credentials`) rather than a standalone `--diagnostics` flag. Use `--help diagnostics`
-for the reference topic unless that flag is implemented.
+`--diagnostics` is a standalone CLI flag that prints the configuration summary and runs the quick
+configuration health check. Use the specific flags (`--quick-check`, `--test-connectivity`,
+`--show-config`, `--error-codes`, and `--validate-credentials`) when a narrower probe is needed.
 
 TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently
 maps `--package-format` to zip, tar.gz/tgz, or 7z. Verify the intended CSV export workflow before
 adding that as a standard package command.
 
-TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but
-`JsonlReplayer` currently treats the value as a directory root while help text describes a JSONL
-file path. Verify the intended replay path semantics before adding a standard CLI replay example.
+`--replay` accepts either a single JSONL/JSONL.GZ file or a directory tree containing `*.jsonl*`
+files. Directory replay processes files in stable path order.
 
 TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI
 workflow, but no command handler was found. Keep it out of standard command examples until it is
