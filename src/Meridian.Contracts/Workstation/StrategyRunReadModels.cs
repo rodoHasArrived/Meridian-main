@@ -82,6 +82,7 @@ public sealed record StrategyRunPromotionSummary(
     string? SourceRunId = null,
     string? TargetRunId = null,
     string? AuditReference = null,
+    StrategyRunIdentity? Identity = null,
     string? ApprovalStatus = null,
     string? ManualOverrideId = null,
     string? ApprovedBy = null,
@@ -99,6 +100,22 @@ public sealed record StrategyRunGovernanceSummary(
     string? AuditReference,
     string? DatasetReference,
     string? FeedReference);
+
+/// <summary>
+/// Canonical run identity and provenance contract shared by run projections.
+/// </summary>
+
+public sealed record StrategyRunIdentity(
+    string CanonicalRunKey,
+    string? ParentCanonicalRunKey,
+    IReadOnlyList<string> DerivedCanonicalRunKeys,
+    StrategyRunMode Mode,
+    string? PromotionSourceRunId,
+    string? PromotionTargetRunId,
+    string? PromotionDecision,
+    string? ReplayAuditReference,
+    DateTimeOffset? ReplayVerifiedAt,
+    bool HasReplayAudit);
 
 /// <summary>
 /// Summary row shown in a run browser or recent-run list.
@@ -122,6 +139,7 @@ public sealed record StrategyRunSummary(
     int FillCount,
     DateTimeOffset LastUpdatedAt,
     string? AuditReference = null,
+    StrategyRunIdentity? Identity = null,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
     StrategyRunGovernanceSummary? Governance = null,
