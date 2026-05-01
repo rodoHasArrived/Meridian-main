@@ -56,10 +56,28 @@ public static class FundAccountEndpoints
 
             var q = context.Request.Query;
             var type = Enum.TryParse<AccountTypeDto>(q["accountType"], true, out var parsedType) ? parsedType : (AccountTypeDto?)null;
-            var isActive = q.ContainsKey("activeOnly") ? q["activeOnly"] != "false" : null;
+            var isActive = q.ContainsKey("activeOnly") ? q["activeOnly"] != "false" : true;
             var currency = q["currency"].FirstOrDefault();
+            var accountId = TryParseGuidFilter(q["accountId"].FirstOrDefault());
+            var fundId = TryParseGuidFilter(q["fundId"].FirstOrDefault());
+            var entityId = TryParseGuidFilter(q["entityId"].FirstOrDefault());
 
             var results = await queryService.ListAccountsAsync(type, isActive, currency, context.RequestAborted).ConfigureAwait(false);
+            if (accountId.HasValue)
+            {
+                results = results.Where(account => account.AccountId == accountId.Value).ToList();
+            }
+
+            if (fundId.HasValue)
+            {
+                results = results.Where(account => account.FundId == fundId.Value).ToList();
+            }
+
+            if (entityId.HasValue)
+            {
+                results = results.Where(account => account.EntityId == entityId.Value).ToList();
+            }
+
             return Results.Json(results, jsonOptions);
         })
         .WithName("QueryFundAccounts")
@@ -368,6 +386,11 @@ public static class FundAccountEndpoints
 
     private static BrokeragePortfolioSyncService? ResolveBrokerageSyncService(HttpContext context) =>
         context.RequestServices.GetService<BrokeragePortfolioSyncService>();
+
+    private static Guid? TryParseGuidFilter(string? raw)
+    {
+        return Guid.TryParse(raw, out var parsed) ? parsed : null;
+    }
 
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund account service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
