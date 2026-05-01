@@ -209,6 +209,13 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 Item: null,
                 Error: "Resolve transition only supports Resolved or Dismissed.");
         }
+        if (string.IsNullOrWhiteSpace(request.OperatorRationale))
+        {
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.InvalidTransition,
+                Item: null,
+                Error: "Operator rationale is required.");
+        }
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try

@@ -608,6 +608,11 @@ export interface ReconciliationBreakQueueItem {
   resolvedBy: string | null;
   resolvedAt: string | null;
   resolutionNote: string | null;
+  fundAccountId?: string | null;
+  explainabilitySummary?: string | null;
+  routingTarget?: string | null;
+  routingDetail?: string | null;
+  recommendedAction?: string | null;
 }
 
 export interface ReviewReconciliationBreakRequest {
@@ -622,6 +627,7 @@ export interface ResolveReconciliationBreakRequest {
   status: "Resolved" | "Dismissed";
   resolvedBy: string;
   resolutionNote: string;
+  operatorRationale: string;
 }
 
 // --- Trading action result ---

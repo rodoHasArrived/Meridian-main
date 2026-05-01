@@ -335,20 +335,36 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/break-queue", async (string? status, HttpContext context) =>
+        group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
 
+        group.MapGet("/reconciliation/break-queue/{breakId}", async (string breakId, HttpContext context) =>
+        {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakQueueItem")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(404);
+
         group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
         {
             var asOf = DateTimeOffset.UtcNow;
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
         })
@@ -405,6 +421,10 @@ public static class WorkstationEndpoints
             if (request.Status is not ReconciliationBreakQueueStatus.Resolved and not ReconciliationBreakQueueStatus.Dismissed)
             {
                 return Results.BadRequest(new { error = "Status must be Resolved or Dismissed for resolve action." });
+            }
+            if (string.IsNullOrWhiteSpace(request.OperatorRationale))
+            {
+                return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -1768,6 +1788,7 @@ public static class WorkstationEndpoints
             var reconciliationBreaks = await GetBreakQueueItemsAsync(
                 context.RequestServices,
                 status: null,
+                fundAccountId: null,
                 context.RequestAborted).ConfigureAwait(false);
             workItems.AddRange(reconciliationBreaks
                 .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
@@ -2351,7 +2372,7 @@ public static class WorkstationEndpoints
                 .Zip(details, static (run, detail) => (run, detail))
                 .Zip(reconciliations, (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
                 .ToArray(),
-            breakQueue = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false),
+            breakQueue = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false),
             workspace = new
             {
                 totalRuns = allRuns.Length,
@@ -3729,7 +3750,12 @@ public static class WorkstationEndpoints
                         ToleranceProfileId: routing.ToleranceProfileId,
                         ToleranceBand: routing.ToleranceBand,
                         RequiredSignoffRole: routing.RequiredSignoffRole,
-                        SignoffStatus: routing.SignoffStatus),
+                        SignoffStatus: routing.SignoffStatus,
+                        FundAccountId: run.FundProfileId,
+                        ExplainabilitySummary: reconciliationBreak.Reason,
+                        RoutingTarget: "/accounting/reconciliation",
+                        RoutingDetail: $"Review reconciliation break {breakId} in accounting queue.",
+                        RecommendedAction: "ReviewAndResolve"),
                     ct).ConfigureAwait(false);
             }
         }
@@ -3820,6 +3846,7 @@ public static class WorkstationEndpoints
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
         IServiceProvider services,
         string? status,
+        string? fundAccountId,
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
@@ -3834,7 +3861,13 @@ public static class WorkstationEndpoints
             parsed = statusValue;
         }
 
-        return await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
+        var items = await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(fundAccountId))
+        {
+            return items;
+        }
+
+        return items.Where(item => string.Equals(item.FundAccountId, fundAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
     }
 
     private static ReconciliationCalibrationSummaryDto BuildReconciliationCalibrationSummary(
