@@ -1,5 +1,7 @@
 namespace Meridian.Contracts.FundStructure;
 
+using System.Text.Json.Serialization;
+
 /// <summary>Snapshot of an account's balance at a point in time.</summary>
 public sealed record AccountBalanceSnapshotDto(
     Guid SnapshotId,
@@ -131,6 +133,12 @@ public sealed record AccountReconciliationResultDto(
     decimal? Variance,
     string Reason);
 
+/// <summary>Polymorphic envelope for account-type specific details.</summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+[JsonDerivedType(typeof(CustodianAccountDetailsEnvelopeDto), "custodian")]
+[JsonDerivedType(typeof(BankAccountDetailsEnvelopeDto), "bank")]
+public abstract record AccountDetailsDto;
+
 /// <summary>Custodian-specific account details.</summary>
 public sealed record CustodianAccountDetailsDto(
     string? SubAccountNumber,
@@ -141,6 +149,9 @@ public sealed record CustodianAccountDetailsDto(
     string? PrimebrokerGiveupCode,
     string? SafekeepingLocation,
     string? ServiceAgreementReference);
+
+/// <summary>Polymorphic envelope for custodian account details.</summary>
+public sealed record CustodianAccountDetailsEnvelopeDto(CustodianAccountDetailsDto Details) : AccountDetailsDto;
 
 /// <summary>Bank-specific account details.</summary>
 public sealed record BankAccountDetailsDto(
@@ -155,6 +166,9 @@ public sealed record BankAccountDetailsDto(
     string? IntermediaryBankName,
     string? BeneficiaryName,
     string? BeneficiaryAddress);
+
+/// <summary>Polymorphic envelope for bank account details.</summary>
+public sealed record BankAccountDetailsEnvelopeDto(BankAccountDetailsDto Details) : AccountDetailsDto;
 
 /// <summary>Request to create a new fund account.</summary>
 public sealed record CreateAccountRequest(
