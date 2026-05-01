@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-01 09:11:58 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 10:06:09 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -6397,7 +6397,10 @@ Meridian-main
 │   │   │   │   │   │   └── workspace-nav.view-model.ts
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── button.test.tsx
 │   │   │   │   │       ├── button.tsx
+│   │   │   │   │       ├── button.view-model.test.ts
+│   │   │   │   │       ├── button.view-model.ts
 │   │   │   │   │       ├── card.tsx
 │   │   │   │   │       ├── dialog.test.tsx
 │   │   │   │   │       ├── dialog.tsx
@@ -6436,6 +6439,7 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-screen.tsx
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
 │   │   │   │   │   ├── reporting-screen.view-model.ts
@@ -6443,6 +6447,7 @@ Meridian-main
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── research-screen.view-model.test.ts
 │   │   │   │   │   ├── research-screen.view-model.ts
+│   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
@@ -6477,8 +6482,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CH2E29GS.css
-│   │           │   └── index-DpYW71Wb.js
+│   │           │   ├── index-BojNfJBy.js
+│   │           │   └── index-CBqpAeRW.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7715,6 +7720,7 @@ Meridian-main
 │   │   │   ├── EdgarReferenceDataEndpointsTests.cs
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
+│   │   │   ├── ExportEndpointsTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
@@ -7733,6 +7739,7 @@ Meridian-main
 │   │   │   ├── ActivityFeedServiceTests.cs
 │   │   │   ├── AlertServiceTests.cs
 │   │   │   ├── AnalysisExportServiceBaseTests.cs
+│   │   │   ├── AnalysisExportWizardServiceTests.cs
 │   │   │   ├── ApiClientServiceTests.cs
 │   │   │   ├── ArchiveBrowserServiceTests.cs
 │   │   │   ├── BackendServiceManagerBaseTests.cs
