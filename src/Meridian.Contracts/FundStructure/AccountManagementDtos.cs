@@ -56,6 +56,7 @@ public sealed record RecordAccountBalanceSnapshotRequest(
     string Currency,
     decimal CashBalance,
     string Source,
+    bool IsBackfill = false,
     string? RecordedBy = null,
     decimal? SecuritiesMarketValue = null,
     decimal? AccruedInterest = null,
@@ -69,6 +70,7 @@ public sealed record IngestCustodianStatementRequest(
     DateOnly AsOfDate,
     string CustodianName,
     string SourceFormat,
+    bool IsBackfill = false,
     string? Notes,
     IReadOnlyList<CustodianPositionLineDto> Lines,
     string LoadedBy);
@@ -79,6 +81,7 @@ public sealed record IngestBankStatementRequest(
     Guid AccountId,
     DateOnly StatementDate,
     string BankName,
+    bool IsBackfill = false,
     string? Notes,
     IReadOnlyList<BankStatementLineDto> Lines,
     string LoadedBy);
@@ -174,6 +177,7 @@ public sealed record CreateAccountRequest(
     string? LedgerReference = null,
     string? StrategyId = null,
     string? RunId = null,
+    AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active,
     CustodianAccountDetailsDto? CustodianDetails = null,
     BankAccountDetailsDto? BankDetails = null);
 

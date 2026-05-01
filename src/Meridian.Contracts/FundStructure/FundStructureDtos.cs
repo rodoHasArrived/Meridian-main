@@ -58,6 +58,14 @@ public enum AccountTypeDto
     Other
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountOperationalStatusDto>))]
+public enum AccountOperationalStatusDto
+{
+    Active,
+    Suspended,
+    Closed
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<OwnershipRelationshipTypeDto>))]
 public enum OwnershipRelationshipTypeDto
 {
@@ -209,6 +217,7 @@ public sealed record AccountSummaryDto(
     string? LedgerReference,
     string? StrategyId,
     string? RunId,
+    AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active,
     CustodianAccountDetailsDto? CustodianDetails = null,
     BankAccountDetailsDto? BankDetails = null,
     FundStructureSharedDataAccessDto? SharedDataAccess = null);

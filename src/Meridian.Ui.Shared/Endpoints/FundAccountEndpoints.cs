@@ -88,8 +88,15 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+                        try
+            {
+                var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("UpdateCustodianAccountDetails")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
@@ -105,8 +112,15 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+                        try
+            {
+                var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("UpdateBankAccountDetails")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
@@ -213,8 +227,15 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("RecordAccountBalanceSnapshot")
         .Produces<AccountBalanceSnapshotDto>(StatusCodes.Status201Created)
@@ -261,8 +282,15 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("IngestCustodianStatement")
         .Produces<CustodianStatementBatchDto>(StatusCodes.Status201Created)
@@ -294,8 +322,15 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("IngestBankStatement")
         .Produces<BankStatementBatchDto>(StatusCodes.Status201Created)
@@ -360,6 +395,16 @@ public static class FundAccountEndpoints
         .WithName("GetAccountReconciliationResults")
         .Produces<IReadOnlyList<AccountReconciliationResultDto>>(StatusCodes.Status200OK);
     }
+
+
+    private static IResult StatusPolicyConflict(AccountStatusPolicyException ex) => Results.Json(new
+    {
+        error = "account_status_policy_violation",
+        status = ex.Status.ToString(),
+        operation = ex.Operation,
+        backfillAttempted = ex.BackfillAttempted,
+        detail = ex.Message
+    }, statusCode: StatusCodes.Status409Conflict);
 
     private static IFundAccountService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundAccountService>();
