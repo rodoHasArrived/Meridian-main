@@ -86,6 +86,9 @@ public sealed class BrokeragePortfolioSyncServiceTests
             var reconciliationRuns = await fundAccountService.GetReconciliationRunsAsync(fundAccountId, cts.Token);
             reconciliationRuns.Should().ContainSingle();
             reconciliationRuns[0].Status.Should().NotBeNullOrWhiteSpace();
+
+            var reconciliationResults = await fundAccountService.GetReconciliationResultsAsync(reconciliationRuns[0].ReconciliationRunId, cts.Token);
+            reconciliationResults.Should().Contain(result => result.Category == "Cash");
         }
         finally
         {
@@ -260,7 +263,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
-    public async Task Scenario_SyncRetryReplay_DoesNotDuplicateBalanceSnapshotsOrReconciliationRuns()
+    public async Task Scenario_RunDerivedAndAccountSyncSnapshots_ContinuityDeltaIsEmitted()
     {
         var root = CreateTempRoot();
         try
@@ -277,18 +280,30 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 new CreateAccountRequest(
                     fundAccountId,
                     AccountTypeDto.Brokerage,
-                    "BRK-IDEMP",
-                    "Idempotent Brokerage",
+                    "BRK-CONT",
+                    "Continuity Brokerage",
                     "USD",
                     DateTimeOffset.UtcNow.AddDays(-2),
                     "tests"),
                 cts.Token);
+            await fundAccountService.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    fundAccountId,
+                    DateOnly.FromDateTime(DateTime.UtcNow),
+                    "USD",
+                    CashBalance: 49900m,
+                    Source: "run-derived:paper",
+                    RecordedBy: "tests"),
+                cts.Token);
 
-            await service.RunSyncAsync(fundAccountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-IDEMP", "ops-review"), cts.Token);
-            await service.RunSyncAsync(fundAccountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-IDEMP", "ops-review"), cts.Token);
+            _ = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-CONT", "ops-review"),
+                cts.Token);
 
-            var balances = await fundAccountService.GetBalanceHistoryAsync(fundAccountId, ct: cts.Token);
-            balances.Should().ContainSingle();
+            var runs = await fundAccountService.GetReconciliationRunsAsync(fundAccountId, cts.Token);
+            var results = await fundAccountService.GetReconciliationResultsAsync(runs[0].ReconciliationRunId, cts.Token);
+            results.Should().ContainSingle(r => r.CheckLabel == "RunVsAccountSyncCashContinuity" && r.Category == "Continuity" && r.IsMatch == false);
         }
         finally
         {

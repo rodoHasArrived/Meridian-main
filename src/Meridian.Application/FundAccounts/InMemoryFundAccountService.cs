@@ -350,7 +350,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             {
                 EnsureAllowed(stored.Summary, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
                 stored.CustodianBatches.Add(batch);
-                stored.CustodianPositions.AddRange(request.Lines);
+                UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
                 snapshot = CaptureSnapshotLocked();
             }
         }
@@ -380,7 +380,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             {
                 EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
                 stored.BankBatches.Add(batch);
-                stored.BankLines.AddRange(request.Lines);
+                UpsertBankStatementLines(stored.BankLines, request.Lines);
                 snapshot = CaptureSnapshotLocked();
             }
         }
@@ -485,6 +485,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 Reason: "Cash balance matches internal ledger"));
         }
 
+        AddContinuityCheckResults(runId, request.AsOfDate, results, request.AccountId);
+
         if (positions.Count > 0)
         {
             results.Add(new AccountReconciliationResultDto(
@@ -529,6 +531,97 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
         await PersistSnapshotAsync(snapshotToPersist, ct).ConfigureAwait(false);
         return run;
+    }
+
+    private static void UpsertCustodianPositions(
+        List<CustodianPositionLineDto> existing,
+        IReadOnlyList<CustodianPositionLineDto> incoming)
+    {
+        var index = existing.ToDictionary(
+            static line => BuildCustodianDedupKey(line),
+            static line => line,
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var line in incoming)
+        {
+            index[BuildCustodianDedupKey(line)] = line;
+        }
+
+        existing.Clear();
+        existing.AddRange(index.Values.OrderBy(static line => line.AsOfDate).ThenBy(static line => line.Identifier, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static void UpsertBankStatementLines(
+        List<BankStatementLineDto> existing,
+        IReadOnlyList<BankStatementLineDto> incoming)
+    {
+        var index = existing.ToDictionary(
+            static line => BuildBankDedupKey(line),
+            static line => line,
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var line in incoming)
+        {
+            index[BuildBankDedupKey(line)] = line;
+        }
+
+        existing.Clear();
+        existing.AddRange(index.Values.OrderBy(static line => line.TransactionDate).ThenBy(static line => line.Reference, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static string BuildCustodianDedupKey(CustodianPositionLineDto line)
+        => $"{line.AccountId:N}|{line.AsOfDate:yyyyMMdd}|{line.IdentifierType}|{line.Identifier}".ToUpperInvariant();
+
+    private static string BuildBankDedupKey(BankStatementLineDto line)
+        => $"{line.AccountId:N}|{line.TransactionDate:yyyyMMdd}|{line.ValueDate:yyyyMMdd}|{line.Currency}|{line.Amount:0.########}|{line.TransactionType}|{line.Reference ?? line.Description}".ToUpperInvariant();
+
+    private void AddContinuityCheckResults(
+        Guid runId,
+        DateOnly asOfDate,
+        List<AccountReconciliationResultDto> results,
+        Guid accountId)
+    {
+        AccountBalanceSnapshotDto? accountSync = null;
+        AccountBalanceSnapshotDto? runDerived = null;
+
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return;
+            }
+
+            accountSync = stored.Snapshots
+                .Where(static s => s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
+                .Where(s => s.AsOfDate == asOfDate)
+                .OrderByDescending(static s => s.RecordedAt)
+                .FirstOrDefault();
+            runDerived = stored.Snapshots
+                .Where(static s => !s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
+                .Where(s => s.AsOfDate == asOfDate)
+                .OrderByDescending(static s => s.RecordedAt)
+                .FirstOrDefault();
+        }
+
+        if (accountSync is null || runDerived is null)
+        {
+            return;
+        }
+
+        var variance = accountSync.CashBalance - runDerived.CashBalance;
+        results.Add(new AccountReconciliationResultDto(
+            Guid.NewGuid(),
+            runId,
+            CheckLabel: "RunVsAccountSyncCashContinuity",
+            IsMatch: variance == 0m,
+            Category: "Continuity",
+            Status: variance == 0m ? "Matched" : "Break",
+            ExpectedAmount: runDerived.CashBalance,
+            ActualAmount: accountSync.CashBalance,
+            Variance: variance,
+            Reason: variance == 0m
+                ? "Run-derived and account-sync-derived balances agree."
+                : "Run-derived and account-sync-derived balances diverge."));
     }
 
     public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
