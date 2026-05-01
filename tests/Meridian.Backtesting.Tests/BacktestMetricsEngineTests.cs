@@ -10,6 +10,73 @@ namespace Meridian.Backtesting.Tests;
 /// </summary>
 public sealed class BacktestMetricsEngineTests
 {
+
+    [Fact]
+    public void Compute_ScalarRiskFreeRateFallback_UsesConstantDailyExcessReturns()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 102m, 101m, 103m], startDate);
+
+        var request = new BacktestRequest(
+            From: startDate,
+            To: startDate.AddDays(3),
+            InitialCash: 100m,
+            RiskFreeRate: 0.05);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        var returns = snapshots.Select(s => (double)s.DailyReturn).ToList();
+        var dailyRf = 0.05 / 252.0;
+        var excess = returns.Select(r => r - dailyRf).ToList();
+        var mean = excess.Average();
+        var std = SampleStdDev(excess);
+        var downside = excess.Where(r => r < 0).ToList();
+        var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
+        var expectedSharpe = mean / std * Math.Sqrt(252.0);
+        var expectedSortino = mean / downsideDev * Math.Sqrt(252.0);
+
+        metrics.SharpeRatio.Should().BeApproximately(expectedSharpe, 1e-10);
+        metrics.SortinoRatio.Should().BeApproximately(expectedSortino, 1e-10);
+    }
+
+    [Fact]
+    public void Compute_RiskFreeRateSeries_UsesDateMatchedRatesWithFallback()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 102m, 101m, 103m], startDate);
+
+        var series = new Dictionary<DateOnly, double>
+        {
+            [startDate] = 0.00,
+            [startDate.AddDays(1)] = 0.252, // daily 0.1%
+            [startDate.AddDays(3)] = 0.126  // daily 0.05%
+        };
+
+        var request = new BacktestRequest(
+            From: startDate,
+            To: startDate.AddDays(3),
+            InitialCash: 100m,
+            RiskFreeRate: 0.05,
+            RiskFreeRateSeries: series);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        var expectedExcess = snapshots
+            .Select(s =>
+            {
+                var annual = series.TryGetValue(s.Date, out var rate) ? rate : 0.05;
+                return (double)s.DailyReturn - annual / 252.0;
+            })
+            .ToList();
+        var mean = expectedExcess.Average();
+        var std = SampleStdDev(expectedExcess);
+        var downside = expectedExcess.Where(r => r < 0).ToList();
+        var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
+
+        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(252.0), 1e-10);
+        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-10);
+    }
+
     // ------------------------------------------------------------------ //
     //  ComputeMaxDrawdown — explicit peak tracking (regression: recovery  //
     //  days must use the recorded peak, not an algebraic reconstruction) //
@@ -131,6 +198,18 @@ public sealed class BacktestMetricsEngineTests
     // ------------------------------------------------------------------ //
     //  Helper                                                             //
     // ------------------------------------------------------------------ //
+
+    private static double SampleStdDev(IReadOnlyList<double> values)
+    {
+        if (values.Count < 2)
+        {
+            return 0.0;
+        }
+
+        var mean = values.Average();
+        var variance = values.Sum(v => (v - mean) * (v - mean)) / (values.Count - 1);
+        return Math.Sqrt(variance);
+    }
 
     private static IReadOnlyList<PortfolioSnapshot> BuildSnapshots(
         IEnumerable<decimal> equityValues,
