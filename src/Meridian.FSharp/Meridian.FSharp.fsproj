@@ -31,6 +31,7 @@
     <Compile Include="Domain/SecurityMasterEvents.fs" />
     <Compile Include="Domain/SecurityMasterCommands.fs" />
     <Compile Include="Domain/FundStructure.fs" />
+    <Compile Include="Domain/AccountReconciliation.fs" />
     <Compile Include="Domain/DirectLending.fs" />
 
     <!-- Comprehensive security master domain — self-contained, no inter-domain dependencies -->
