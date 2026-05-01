@@ -32,7 +32,44 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         if (bars.Count == 0)
             return bars;
 
-        // Resolve ticker to security ID
+        var sortedActions = await GetSortedCorporateActionsAsync(ticker, ct).ConfigureAwait(false);
+        if (sortedActions is null)
+            return bars;
+
+        var adjustedBars = new List<HistoricalBar>(bars.Count);
+        foreach (var bar in bars)
+        {
+            adjustedBars.Add(ApplyAdjustments(bar, sortedActions));
+        }
+
+        return adjustedBars;
+    }
+
+
+    public async IAsyncEnumerable<HistoricalBar> AdjustAsync(
+        IAsyncEnumerable<HistoricalBar> bars,
+        string ticker,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var sortedActions = await GetSortedCorporateActionsAsync(ticker, ct).ConfigureAwait(false);
+        if (sortedActions is null)
+        {
+            await foreach (var bar in bars.WithCancellation(ct).ConfigureAwait(false))
+            {
+                yield return bar;
+            }
+
+            yield break;
+        }
+
+        await foreach (var bar in bars.WithCancellation(ct).ConfigureAwait(false))
+        {
+            yield return ApplyAdjustments(bar, sortedActions);
+        }
+    }
+
+    private async Task<List<CorporateActionDto>?> GetSortedCorporateActionsAsync(string ticker, CancellationToken ct)
+    {
         var securityId = await _resolver.ResolveAsync(
             new ResolveSecurityRequest(
                 IdentifierKind: SecurityIdentifierKind.Ticker,
@@ -44,72 +81,45 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         if (securityId is null)
         {
             _logger.LogWarning("Security not found in master for ticker {Ticker}", ticker);
-            return bars;
+            return null;
         }
 
-        // Get corporate actions
         var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)
             .ConfigureAwait(false);
 
         if (actions.Count == 0)
-            return bars;
+            return null;
 
-        _logger.LogInformation(
-            "Adjusted {Count} bars for {Ticker} using {ActionCount} corporate actions",
-            bars.Count, ticker, actions.Count);
+        return actions.OrderBy(a => a.ExDate).ToList();
+    }
 
-        // Sort actions by ExDate ascending
-        var sortedActions = actions.OrderBy(a => a.ExDate).ToList();
+    private static HistoricalBar ApplyAdjustments(HistoricalBar bar, IReadOnlyList<CorporateActionDto> sortedActions)
+    {
+        var barDate = bar.SessionDate;
+        decimal splitFactor = 1m;
+        decimal dividendAdjustment = 0m;
 
-        var adjustedBars = new List<HistoricalBar>(bars.Count);
-
-        // Process bars backward to forward through time
-        foreach (var bar in bars)
+        foreach (var action in sortedActions)
         {
-            var barDate = bar.SessionDate;
+            if (action.ExDate <= barDate)
+                continue;
 
-            // Accumulate split and dividend adjustments for all actions that occurred after this bar
-            decimal splitFactor = 1m;
-            decimal dividendAdjustment = 0m;
-
-            foreach (var action in sortedActions)
-            {
-                // Only apply actions with ExDate strictly after the bar date
-                if (action.ExDate <= barDate)
-                    continue;
-
-                if (action.EventType == "StockSplit" && action.SplitRatio.HasValue)
-                {
-                    splitFactor *= action.SplitRatio.Value;
-                }
-                else if (action.EventType == "Dividend" && action.DividendPerShare.HasValue)
-                {
-                    dividendAdjustment += action.DividendPerShare.Value;
-                }
-            }
-
-            // Apply adjustments
-            var adjustedOpen = (bar.Open - dividendAdjustment) / splitFactor;
-            var adjustedHigh = (bar.High - dividendAdjustment) / splitFactor;
-            var adjustedLow = (bar.Low - dividendAdjustment) / splitFactor;
-            var adjustedClose = (bar.Close - dividendAdjustment) / splitFactor;
-            var adjustedVolume = (long)(bar.Volume * splitFactor);
-
-            var adjustedBar = new HistoricalBar(
-                Symbol: bar.Symbol,
-                SessionDate: bar.SessionDate,
-                Open: adjustedOpen,
-                High: adjustedHigh,
-                Low: adjustedLow,
-                Close: adjustedClose,
-                Volume: adjustedVolume,
-                Source: bar.Source,
-                SequenceNumber: bar.SequenceNumber);
-
-            adjustedBars.Add(adjustedBar);
+            if (action.EventType == "StockSplit" && action.SplitRatio.HasValue)
+                splitFactor *= action.SplitRatio.Value;
+            else if (action.EventType == "Dividend" && action.DividendPerShare.HasValue)
+                dividendAdjustment += action.DividendPerShare.Value;
         }
 
-        return adjustedBars;
+        return new HistoricalBar(
+            Symbol: bar.Symbol,
+            SessionDate: bar.SessionDate,
+            Open: (bar.Open - dividendAdjustment) / splitFactor,
+            High: (bar.High - dividendAdjustment) / splitFactor,
+            Low: (bar.Low - dividendAdjustment) / splitFactor,
+            Close: (bar.Close - dividendAdjustment) / splitFactor,
+            Volume: (long)(bar.Volume * splitFactor),
+            Source: bar.Source,
+            SequenceNumber: bar.SequenceNumber);
     }
 
     /// <inheritdoc />
