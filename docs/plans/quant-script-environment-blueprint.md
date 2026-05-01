@@ -83,6 +83,19 @@ The current repository already includes:
 - keep shared run-browser, run-detail, and comparison workflows inside the existing Research surface instead of building parallel QuantScript-only run management
 - route detailed UI, ViewModel, and interaction design to the page implementation guide instead of duplicating it here
 
+### Script Compilation Safety Contract (`QuantScriptOptions.EnableUnsafeScripts`)
+
+- `EnableUnsafeScripts = false` (default, **safe mode**) keeps QuantScript focused on Meridian-shipped APIs and references only.
+  - Script-level assembly loading is blocked (`#r` fails during compilation).
+  - Script-level source loading is blocked (`#load` and path-based source resolution fail during compilation).
+  - Path-based metadata/source reference resolution is disabled through explicit Roslyn resolver constraints.
+- `EnableUnsafeScripts = true` (**unsafe mode**) restores Roslyn's default script reference behavior for advanced research workflows.
+  - `#r` assembly references are allowed.
+  - `#load` source inclusion is allowed.
+  - Researchers can opt into external/reference-heavy scenarios, accepting the broader script trust surface.
+
+This flag is an intentional trust boundary: keep safe mode for standard operator/research environments and enable unsafe mode only for explicitly trusted local experimentation.
+
 ---
 
 ## Remaining Optional Work

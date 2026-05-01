@@ -17,6 +17,9 @@ namespace Meridian.QuantScript.Compilation;
 /// </summary>
 public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 {
+    private static readonly MetadataReferenceResolver SafeMetadataReferenceResolver = new RestrictedMetadataReferenceResolver();
+    private static readonly SourceReferenceResolver SafeSourceReferenceResolver = new RestrictedSourceReferenceResolver();
+
     // Parameter comment convention: // @param Name:Label:Default:Min:Max:Description
     private static readonly Regex ParamRegex = new(
         @"//\s*@param\s+(\w+):([^:]*):([^:]*):([^:]*):([^:]*):?(.*)",
@@ -123,8 +126,9 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             BuildScriptOptions(),
             globalsType: typeof(QuantScriptGlobals));
 
-    private static ScriptOptions BuildScriptOptions() =>
-        ScriptOptions.Default
+    private ScriptOptions BuildScriptOptions()
+    {
+        var scriptOptions = ScriptOptions.Default
             .AddReferences(
                 typeof(QuantScriptGlobals).Assembly,
                 typeof(Backtesting.Engine.BacktestEngine).Assembly,
@@ -139,6 +143,51 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
                 "Meridian.QuantScript.Api",
                 "Meridian.Backtesting.Sdk",
                 "Meridian.Contracts.Domain.Models");
+
+        if (!_options.Value.EnableUnsafeScripts)
+        {
+            scriptOptions = scriptOptions
+                .WithMetadataResolver(SafeMetadataReferenceResolver)
+                .WithSourceResolver(SafeSourceReferenceResolver);
+        }
+
+        return scriptOptions;
+    }
+
+    private sealed class RestrictedMetadataReferenceResolver : MetadataReferenceResolver
+    {
+        public override bool Equals(object? other) => other is RestrictedMetadataReferenceResolver;
+
+        public override int GetHashCode() => typeof(RestrictedMetadataReferenceResolver).GetHashCode();
+
+        public override PortableExecutableReference? ResolveMissingAssembly(
+            MetadataReference definition,
+            AssemblyIdentity referenceIdentity) => null;
+
+        public override IEnumerable<PortableExecutableReference> ResolveReference(
+            string reference,
+            string? baseFilePath,
+            MetadataReferenceProperties properties)
+        {
+            throw new InvalidOperationException("Script-level assembly loading is disabled in safe mode.");
+        }
+    }
+
+    private sealed class RestrictedSourceReferenceResolver : SourceReferenceResolver
+    {
+        public override bool Equals(object? other) => other is RestrictedSourceReferenceResolver;
+
+        public override int GetHashCode() => typeof(RestrictedSourceReferenceResolver).GetHashCode();
+
+        public override string? NormalizePath(string path, string? baseFilePath) => null;
+
+        public override Stream OpenRead(string resolvedPath)
+        {
+            throw new InvalidOperationException("Script-level source loading is disabled in safe mode.");
+        }
+
+        public override string? ResolveReference(string path, string? baseFilePath) => null;
+    }
 
     /// <inheritdoc/>
     public IReadOnlyList<ParameterDescriptor> ExtractParameters(string source)
