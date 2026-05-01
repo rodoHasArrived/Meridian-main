@@ -119,11 +119,11 @@ export interface BuildOperatorReadinessConsoleStateOptions {
 }
 
 export interface OperatorReadinessConsoleServices {
-  getOperatorInbox: () => Promise<OperatorInbox>;
+  getOperatorInbox: (fundAccountId?: string) => Promise<OperatorInbox>;
 }
 
 const defaultServices: OperatorReadinessConsoleServices = {
-  getOperatorInbox: () => getOperatorInbox()
+  getOperatorInbox: (fundAccountId?: string) => getOperatorInbox(fundAccountId)
 };
 
 const workstationWorkspaceKeys = new Set<string>(WORKSPACES.map((workspace) => workspace.key));
@@ -136,12 +136,14 @@ export function useOperatorReadinessConsoleViewModel(
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
 
+  const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
+
   useEffect(() => {
     let cancelled = false;
     setInboxLoading(true);
     setInboxError(null);
 
-    services.getOperatorInbox()
+    services.getOperatorInbox(activeFundAccountId)
       .then((inbox) => {
         if (!cancelled) {
           setOperatorInbox(inbox);
@@ -162,7 +164,7 @@ export function useOperatorReadinessConsoleViewModel(
     return () => {
       cancelled = true;
     };
-  }, [services]);
+  }, [activeFundAccountId, services]);
 
   return useMemo(
     () => buildOperatorReadinessConsoleState({

@@ -1,4 +1,6 @@
-import { buildOperatorReadinessConsoleState } from "@/screens/operator-readiness-console.view-model";
+import { renderHook, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
@@ -612,4 +614,41 @@ describe("operator readiness console view model", () => {
     expect(state.overallDetail).toContain("report-pack readiness item(s) still need review");
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No targets", level: "review" }));
   });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("requests a scoped operator inbox when trading readiness includes an active fund account", async () => {
+    const getOperatorInbox = vi.fn().mockResolvedValue(cleanInbox);
+
+    renderHook(() => useOperatorReadinessConsoleViewModel({
+      research,
+      trading,
+      dataOperations,
+      governance
+    }, { getOperatorInbox }));
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenCalledWith("fund-1"));
+  });
+
+  it("requests an unscoped operator inbox when no active account context is available", async () => {
+    const getOperatorInbox = vi.fn().mockResolvedValue(cleanInbox);
+
+    renderHook(() => useOperatorReadinessConsoleViewModel({
+      research,
+      trading: {
+        ...trading,
+        readiness: {
+          ...readiness,
+          brokerageSync: null
+        }
+      },
+      dataOperations,
+      governance
+    }, { getOperatorInbox }));
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenCalledWith(undefined));
+  });
+
 });
