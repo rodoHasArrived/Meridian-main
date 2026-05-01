@@ -5544,6 +5544,7 @@ Meridian-main
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
+│   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
 │   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── SecurityMasterIngestStatusModels.cs
@@ -5852,6 +5853,7 @@ Meridian-main
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
 │   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   └── PositionSyncOptions.cs
 │   │   ├── TaxLotAccounting
@@ -7539,7 +7541,10 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
-│   │   │   └── PaperTradingPortfolioTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
+│   │   │   ├── PaperTradingPortfolioTests.cs
+│   │   │   └── PositionLotSelectorTests.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
 │   │   │   │   └── CppTraderOrderGatewayTests.cs

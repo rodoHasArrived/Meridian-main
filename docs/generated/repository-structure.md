@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-30 21:52:44 UTC. Do not edit manually.
+> Auto-generated on 2026-05-01 04:11:32 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5464,6 +5464,7 @@ Meridian-main
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
+│   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
 │   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── SecurityMasterIngestStatusModels.cs
@@ -5772,6 +5773,7 @@ Meridian-main
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
 │   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   └── PositionSyncOptions.cs
 │   │   ├── TaxLotAccounting
@@ -7459,7 +7461,10 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
-│   │   │   └── PaperTradingPortfolioTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
+│   │   │   ├── PaperTradingPortfolioTests.cs
+│   │   │   └── PositionLotSelectorTests.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
 │   │   │   │   └── CppTraderOrderGatewayTests.cs
