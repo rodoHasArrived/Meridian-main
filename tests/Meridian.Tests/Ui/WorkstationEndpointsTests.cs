@@ -1017,16 +1017,63 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeRunReviewPacketWorkItems()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldExcludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
     {
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
         });
 
-        var runId = $"run-inbox-review-packet-{Guid.NewGuid():N}";
+        var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
+        var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildContinuityRun(runId));
+
+        await store.RecordRunAsync(BuildContinuityRun(olderRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero)
+        });
+
+        await store.RecordRunAsync(BuildReconciliationReadyRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 18, 30, 0, TimeSpan.Zero)
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotContain(item =>
+            item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeLatestRunReviewPacketBlockers()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
+        var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+
+        await store.RecordRunAsync(BuildReconciliationReadyRun(olderRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero)
+        });
+
+        await store.RecordRunAsync(BuildContinuityRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 18, 30, 0, TimeSpan.Zero)
+        });
 
         var inbox = await app
             .GetTestClient()
@@ -1036,15 +1083,19 @@ public sealed class WorkstationEndpointsTests
 
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+
         var reviewItem = inbox.Items.Should().ContainSingle(item =>
-            item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
+            item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PromotionReview).Which;
 
         reviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
         reviewItem.Workspace.Should().Be("Trading");
-        reviewItem.RunId.Should().Be(runId);
-        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal));
+        reviewItem.RunId.Should().Be(newestRunId);
+        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", newestRunId, StringComparison.Ordinal));
         reviewItem.TargetPageTag.Should().Be("TradingShell");
+        inbox.Items.Should().OnlyContain(item =>
+            !item.WorkItemId.StartsWith("promotion-review-", StringComparison.OrdinalIgnoreCase) ||
+            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
         inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
     }
 

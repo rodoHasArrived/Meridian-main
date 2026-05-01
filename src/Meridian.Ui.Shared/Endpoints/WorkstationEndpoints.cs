@@ -1716,20 +1716,25 @@ public static class WorkstationEndpoints
                 .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
                 .ConfigureAwait(false);
 
-            foreach (var run in runs.Where(ShouldSurfaceRunReviewWorkItems))
+            var latestRun = runs
+                .OrderByDescending(GetRunReviewTimestamp)
+                .FirstOrDefault();
+            if (latestRun is null || !ShouldSurfaceRunReviewWorkItems(latestRun))
             {
-                var packet = await reviewPacketService
-                    .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
-                    .ConfigureAwait(false);
-                if (packet is null)
-                {
-                    continue;
-                }
-
-                workItems.AddRange(packet.WorkItems
-                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
-                    .Select(AttachOperatorNavigation));
+                return;
             }
+
+            var packet = await reviewPacketService
+                .GetAsync(latestRun.RunId, fundAccountId, context.RequestAborted)
+                .ConfigureAwait(false);
+            if (packet is null)
+            {
+                return;
+            }
+
+            workItems.AddRange(packet.WorkItems
+                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                .Select(AttachOperatorNavigation));
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
@@ -1744,6 +1749,9 @@ public static class WorkstationEndpoints
     private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
         => run.Promotion?.RequiresReview == true ||
            run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled;
+
+    private static DateTimeOffset GetRunReviewTimestamp(StrategyRunSummary run)
+        => run.CompletedAt ?? run.LastUpdatedAt;
 
     private static OperatorWorkItemDto BuildRunReviewPacketUnavailableWorkItem(DateTimeOffset asOf)
         => new(
