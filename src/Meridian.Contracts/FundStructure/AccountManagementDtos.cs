@@ -72,10 +72,10 @@ public sealed record IngestCustodianStatementRequest(
     DateOnly AsOfDate,
     string CustodianName,
     string SourceFormat,
-    bool IsBackfill = false,
-    string? Notes,
     IReadOnlyList<CustodianPositionLineDto> Lines,
-    string LoadedBy);
+    string LoadedBy,
+    bool IsBackfill = false,
+    string? Notes = null);
 
 /// <summary>Request to ingest a bank statement.</summary>
 public sealed record IngestBankStatementRequest(
@@ -83,10 +83,10 @@ public sealed record IngestBankStatementRequest(
     Guid AccountId,
     DateOnly StatementDate,
     string BankName,
-    bool IsBackfill = false,
-    string? Notes,
     IReadOnlyList<BankStatementLineDto> Lines,
-    string LoadedBy);
+    string LoadedBy,
+    bool IsBackfill = false,
+    string? Notes = null);
 
 
 public sealed record CustodianStatementBatchDto(
