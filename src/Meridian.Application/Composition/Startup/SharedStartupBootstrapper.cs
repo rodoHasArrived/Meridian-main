@@ -11,6 +11,7 @@ using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Serilog;
@@ -260,6 +261,7 @@ internal static class CommandDispatchPlanner
             new RunbookCommands(runbookStore, runbookExecutor),
             new WalRepairCommand(cfg, log),
             new ProviderCalibrationCommand(dataRoot, log),
+            new StatementImportCommands(dataRoot, log),
             // Security Master ingest: importService is null until the full host configures Postgres.
             new SecurityMasterCommands(importService: null, log)));
     }
