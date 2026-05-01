@@ -24,7 +24,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<CreateAccountRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.CreateAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -106,7 +106,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<UpdateCustodianAccountDetailsRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.UpdateCustodianAccountDetailsRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -130,7 +130,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<UpdateBankAccountDetailsRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.UpdateBankAccountDetailsRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -245,7 +245,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<RecordAccountBalanceSnapshotRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -300,7 +300,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<IngestCustodianStatementRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestCustodianStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -340,7 +340,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<IngestBankStatementRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestBankStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -382,7 +382,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<ReconcileAccountRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.ReconcileAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
