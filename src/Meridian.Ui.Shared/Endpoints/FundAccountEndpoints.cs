@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
@@ -23,7 +24,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<CreateAccountRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.CreateAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -78,18 +79,46 @@ public static class FundAccountEndpoints
         .WithName("GetFundAccounts")
         .Produces<FundAccountsDto>(StatusCodes.Status200OK);
 
+        app.MapGet("/api/funds/{fundId:guid}/accounts", async (Guid fundId, string? accountType, string? status, HttpContext context) =>
+        {
+            var query = context.RequestServices.GetService<IFundAccountTraversalQueryService>();
+            if (query is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var parsedType = Enum.TryParse<AccountTypeDto>(accountType, ignoreCase: true, out var typeValue)
+                ? typeValue
+                : (AccountTypeDto?)null;
+            var activeOnly = !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(status, "suspended", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(status, "closed", StringComparison.OrdinalIgnoreCase);
+
+            var accounts = await query.GetFundAccountsAsync(fundId, parsedType, activeOnly, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(accounts, jsonOptions);
+        })
+        .WithName("GetFundAccountsByOwnershipTraversal")
+        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK);
+
         group.MapPatch("/{accountId:guid}/custodian-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<UpdateCustodianAccountDetailsRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.UpdateCustodianAccountDetailsRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+                        try
+            {
+                var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("UpdateCustodianAccountDetails")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
@@ -101,12 +130,19 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<UpdateBankAccountDetailsRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.UpdateBankAccountDetailsRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+                        try
+            {
+                var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("UpdateBankAccountDetails")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
@@ -209,12 +245,19 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<RecordAccountBalanceSnapshotRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("RecordAccountBalanceSnapshot")
         .Produces<AccountBalanceSnapshotDto>(StatusCodes.Status201Created)
@@ -257,12 +300,19 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<IngestCustodianStatementRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestCustodianStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("IngestCustodianStatement")
         .Produces<CustodianStatementBatchDto>(StatusCodes.Status201Created)
@@ -290,12 +340,19 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<IngestBankStatementRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestBankStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("IngestBankStatement")
         .Produces<BankStatementBatchDto>(StatusCodes.Status201Created)
@@ -325,7 +382,7 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<ReconcileAccountRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.ReconcileAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -360,6 +417,16 @@ public static class FundAccountEndpoints
         .WithName("GetAccountReconciliationResults")
         .Produces<IReadOnlyList<AccountReconciliationResultDto>>(StatusCodes.Status200OK);
     }
+
+
+    private static IResult StatusPolicyConflict(AccountStatusPolicyException ex) => Results.Json(new
+    {
+        error = "account_status_policy_violation",
+        status = ex.Status.ToString(),
+        operation = ex.Operation,
+        backfillAttempted = ex.BackfillAttempted,
+        detail = ex.Message
+    }, statusCode: StatusCodes.Status409Conflict);
 
     private static IFundAccountService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundAccountService>();
