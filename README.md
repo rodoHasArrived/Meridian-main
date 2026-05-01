@@ -6649,7 +6649,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── workspace-nav.view-model.ts
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── button.test.tsx
 │   │   │   │   │       ├── button.tsx
+│   │   │   │   │       ├── button.view-model.test.ts
+│   │   │   │   │       ├── button.view-model.ts
 │   │   │   │   │       ├── card.tsx
 │   │   │   │   │       ├── dialog.test.tsx
 │   │   │   │   │       ├── dialog.tsx
@@ -6690,6 +6693,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── portfolio-screen.tsx
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
 │   │   │   │   │   ├── reporting-screen.view-model.ts
@@ -6697,6 +6701,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── research-screen.view-model.test.ts
 │   │   │   │   │   ├── research-screen.view-model.ts
+│   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
@@ -6722,8 +6727,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CH2E29GS.css
-│   │           │   └── index-DpYW71Wb.js
+│   │           │   ├── index-BojNfJBy.js
+│   │           │   └── index-CBqpAeRW.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7964,6 +7969,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── EdgarReferenceDataEndpointsTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
+│   │       ├── ExportEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
@@ -7979,6 +7985,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ActivityFeedServiceTests.cs
 │   │       ├── AlertServiceTests.cs
 │   │       ├── AnalysisExportServiceBaseTests.cs
+│   │       ├── AnalysisExportWizardServiceTests.cs
 │   │       ├── ApiClientServiceTests.cs
 │   │       ├── ArchiveBrowserServiceTests.cs
 │   │       ├── BackendServiceManagerBaseTests.cs
@@ -8194,6 +8201,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-616 directories, 7403 files
+616 directories, 7410 files
 ```
 <!-- readme-tree end -->

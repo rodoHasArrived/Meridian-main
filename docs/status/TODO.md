@@ -70,10 +70,10 @@ Total items: **84**
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 320 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 332 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 61 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 253 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 73 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 328 | `NOTE` | ❌ | note: provider.note, |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 63 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.test.ts` | 300 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 108 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.view-model.ts` | 374 | `NOTE` | ❌ | note: provider.note, |
 | `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 184 | `NOTE` | ❌ | note: "Ready", |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 431 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
