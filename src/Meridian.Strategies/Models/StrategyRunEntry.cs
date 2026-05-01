@@ -25,7 +25,10 @@ public sealed record StrategyRunEntry(
     StrategyRunStatus? TerminalStatus = null,
     string? ParentRunId = null,
     string? FundProfileId = null,
-    string? FundDisplayName = null)
+    string? FundDisplayName = null,
+    string? SweepId = null,
+    string? SweepDefinitionHash = null,
+    string? SweepObjective = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>

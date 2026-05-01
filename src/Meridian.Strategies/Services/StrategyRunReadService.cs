@@ -238,6 +238,45 @@ public sealed class StrategyRunReadService
             .ToArray();
     }
 
+    public async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default)
+    {
+        var runs = await GetRunsAsync(new StrategyRunHistoryQuery(Limit: Math.Clamp(limit * 20, 1, 500)), ct).ConfigureAwait(false);
+        return runs
+            .Where(static run => !string.IsNullOrWhiteSpace(run.SweepId) && !string.IsNullOrWhiteSpace(run.SweepDefinitionHash))
+            .GroupBy(static run => $"{run.SweepId}|{run.SweepDefinitionHash}", StringComparer.Ordinal)
+            .OrderByDescending(static group => group.Max(run => run.StartedAt))
+            .Take(Math.Clamp(limit, 1, 100))
+            .Select(group =>
+            {
+                var groupedRuns = group.OrderByDescending(static run => run.StartedAt).ToArray();
+                var topObjective = groupedRuns
+                    .Where(static run => run.Status == StrategyRunStatus.Completed)
+                    .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
+                    .ThenByDescending(static run => run.NetPnl ?? decimal.MinValue)
+                    .Take(10)
+                    .Select(static run => new StrategySweepObjectiveRanking(
+                        run.RunId,
+                        run.StrategyName,
+                        run.FinalEquity,
+                        run.NetPnl,
+                        run.TotalReturn,
+                        run.FinalEquity,
+                        run.LastUpdatedAt))
+                    .ToArray();
+
+                var head = groupedRuns[0];
+                return new StrategySweepResultGroup(
+                    SweepId: head.SweepId!,
+                    SweepDefinitionHash: head.SweepDefinitionHash!,
+                    Objective: head.SweepObjective,
+                    StartedAt: groupedRuns.Min(static run => run.StartedAt),
+                    RunCount: groupedRuns.Length,
+                    Runs: groupedRuns,
+                    ObjectiveRankings: topObjective);
+            })
+            .ToArray();
+    }
+
     private StrategyRunSummary ToSummary(
         StrategyRunEntry run,
         IReadOnlyDictionary<string, StrategyPromotionRecord> promotionLookup)
@@ -267,7 +306,10 @@ public sealed class StrategyRunReadService
             Governance: BuildGovernanceSummary(run),
             FundProfileId: run.FundProfileId,
             FundDisplayName: run.FundDisplayName,
-            ParentRunId: run.ParentRunId);
+            ParentRunId: run.ParentRunId,
+            SweepId: run.SweepId,
+            SweepDefinitionHash: run.SweepDefinitionHash,
+            SweepObjective: run.SweepObjective);
     }
 
     private static StrategyRunExecutionSummary BuildExecutionSummary(StrategyRunEntry run)

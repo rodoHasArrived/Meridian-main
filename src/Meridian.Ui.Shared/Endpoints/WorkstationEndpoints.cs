@@ -875,6 +875,21 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
         .Produces(501);
 
+        group.MapGet("/runs/sweeps", async (int? limit, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var sweeps = await readService.GetSweepResultGroupsAsync(limit ?? 25, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(sweeps, jsonOptions);
+        })
+        .WithName("GetWorkstationSweepResults")
+        .Produces<IReadOnlyList<StrategySweepResultGroup>>(200)
+        .Produces(501);
+
         app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();

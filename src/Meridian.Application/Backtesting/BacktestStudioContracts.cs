@@ -16,7 +16,10 @@ public sealed record BacktestStudioRunRequest(
     string? FeedReference = null,
     string? BenchmarkSymbol = null,
     IReadOnlyDictionary<string, string>? Parameters = null,
-    IReadOnlyDictionary<string, string>? ExternalEngineOptions = null);
+    IReadOnlyDictionary<string, string>? ExternalEngineOptions = null,
+    string? SweepId = null,
+    string? SweepDefinitionHash = null,
+    string? SweepObjective = null);
 
 /// <summary>
 /// Stable handle returned when a Backtest Studio run is accepted by an engine.
