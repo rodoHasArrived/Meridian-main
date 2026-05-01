@@ -25,13 +25,13 @@ internal static class BacktestMetricsEngine
         var totalShortRebates = allCashFlows.OfType<ShortRebateCashFlow>().Sum(c => c.Amount);
         var netPnl = grossPnl - totalCommissions - totalMarginInterest + totalShortRebates;
 
-        var dailyReturns = snapshots.Select(s => (double)s.DailyReturn).ToList();
+        var datedDailyReturns = snapshots.Select(s => (Date: s.Date, Return: (double)s.DailyReturn)).ToList();
         var years = Math.Max((snapshots[^1].Date.ToDateTime(TimeOnly.MinValue) - snapshots[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays / 365.0, 1.0 / 365.0);
 
         var totalReturn = initial == 0 ? 0m : (final - initial) / initial;
         var annualisedReturn = (decimal)(Math.Pow(1.0 + (double)totalReturn, 1.0 / years) - 1.0);
-        var sharpe = ComputeSharpe(dailyReturns, request.RiskFreeRate);
-        var sortino = ComputeSortino(dailyReturns, request.RiskFreeRate);
+        var sharpe = ComputeSharpe(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
+        var sortino = ComputeSortino(datedDailyReturns, request.RiskFreeRate, request.RiskFreeRateSeries);
         var (maxDrawdown, maxDrawdownPct, recoveryDays) = ComputeMaxDrawdown(snapshots);
         var calmar = maxDrawdown == 0 ? 0.0 : (double)annualisedReturn / (double)maxDrawdownPct;
 
@@ -66,29 +66,48 @@ internal static class BacktestMetricsEngine
 
     // ── Statistical helpers ──────────────────────────────────────────────────
 
-    private static double ComputeSharpe(IReadOnlyList<double> dailyReturns, double annualRfr)
+    private static double ComputeSharpe(
+        IReadOnlyList<(DateOnly Date, double Return)> dailyReturns,
+        double annualRfr,
+        IReadOnlyDictionary<DateOnly, double>? annualRfrSeries)
     {
         if (dailyReturns.Count < 2)
             return 0.0;
-        var dailyRfr = annualRfr / 252.0;
-        var excess = dailyReturns.Select(r => r - dailyRfr).ToList();
+        var excess = dailyReturns
+            .Select(period => period.Return - ResolveDailyRiskFreeRate(period.Date, annualRfr, annualRfrSeries))
+            .ToList();
         var mean = excess.Average();
         var std = StdDev(excess);
         return std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(252.0);
     }
 
-    private static double ComputeSortino(IReadOnlyList<double> dailyReturns, double annualRfr)
+    private static double ComputeSortino(
+        IReadOnlyList<(DateOnly Date, double Return)> dailyReturns,
+        double annualRfr,
+        IReadOnlyDictionary<DateOnly, double>? annualRfrSeries)
     {
         if (dailyReturns.Count < 2)
             return 0.0;
-        var dailyRfr = annualRfr / 252.0;
-        var excess = dailyReturns.Select(r => r - dailyRfr).ToList();
+        var excess = dailyReturns
+            .Select(period => period.Return - ResolveDailyRiskFreeRate(period.Date, annualRfr, annualRfrSeries))
+            .ToList();
         var mean = excess.Average();
         var downside = excess.Where(r => r < 0).ToList();
         if (downside.Count == 0)
             return double.PositiveInfinity;
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
         return downsideDev < 1e-10 ? 0.0 : mean / downsideDev * Math.Sqrt(252.0);
+    }
+
+    private static double ResolveDailyRiskFreeRate(
+        DateOnly date,
+        double annualRfrFallback,
+        IReadOnlyDictionary<DateOnly, double>? annualRfrSeries)
+    {
+        var annualRate = annualRfrSeries is not null && annualRfrSeries.TryGetValue(date, out var value)
+            ? value
+            : annualRfrFallback;
+        return annualRate / 252.0;
     }
 
     private static (decimal maxDrawdown, decimal maxDrawdownPct, int recoveryDays) ComputeMaxDrawdown(
