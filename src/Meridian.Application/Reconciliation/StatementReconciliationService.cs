@@ -34,14 +34,14 @@ public sealed class StatementReconciliationService
             }
 
             cases.Add(new ReconciliationCase(
-                $"case:{row.RowId}",
-                string.Empty,
-                "Open",
-                "No deterministic match candidate met confidence threshold.",
-                0m,
-                string.Empty,
-                DateTimeOffset.UtcNow,
-                []));
+                CaseId: $"case:{row.RowId}",
+                ImportId: string.Empty,
+                Status: "Open",
+                Reason: "No deterministic match candidate met confidence threshold.",
+                Confidence: 0m,
+                Rationale: string.Empty,
+                CreatedAtUtc: DateTimeOffset.UtcNow,
+                History: []));
         }
 
         return (matches, cases);
