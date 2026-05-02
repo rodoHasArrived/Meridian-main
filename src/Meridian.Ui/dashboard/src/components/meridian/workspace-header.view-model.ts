@@ -24,6 +24,14 @@ export interface WorkspaceHeaderAction {
   disabled: boolean;
 }
 
+export interface LiveEnvironmentBanner {
+  label: string;
+  detail: string;
+  ariaLabel: string;
+  role: "alert";
+  ariaLive: "assertive";
+}
+
 export interface WorkspaceHeaderViewModel {
   eyebrow: string;
   title: string;
@@ -36,6 +44,8 @@ export interface WorkspaceHeaderViewModel {
   commandAction: WorkspaceHeaderAction;
   liveAnnouncement: string;
   ariaBusy: boolean;
+  isLiveEnvironment: boolean;
+  liveBanner: LiveEnvironmentBanner | null;
 }
 
 interface BuildWorkspaceHeaderViewModelOptions {
@@ -51,6 +61,7 @@ export function buildWorkspaceHeaderViewModel({
   canRefresh,
   refreshing = false
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
+  const isLiveEnvironment = session?.environment === "live";
   const environmentBadge = session
     ? {
         id: "environment",
@@ -104,7 +115,17 @@ export function buildWorkspaceHeaderViewModel({
       disabled: false
     },
     liveAnnouncement: refreshing ? `Refreshing ${workspace.label} workspace data.` : "",
-    ariaBusy: refreshing
+    ariaBusy: refreshing,
+    isLiveEnvironment,
+    liveBanner: isLiveEnvironment
+      ? {
+          label: "LIVE ENVIRONMENT",
+          detail: "All orders and position changes are executed against real accounts. Review all actions carefully before confirming.",
+          ariaLabel: "Live environment warning: all actions execute against real accounts",
+          role: "alert",
+          ariaLive: "assertive"
+        }
+      : null
   };
 }
 

@@ -635,9 +635,12 @@ public sealed class BrokeragePortfolioSyncService
 
     private static string SanitizePathSegment(string value)
     {
-        var invalid = Path.GetInvalidFileNameChars();
-        return new string(value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
+        return new string(value.Select(static ch => IsPortablePathSegmentCharacter(ch) ? ch : '_').ToArray());
     }
+
+    private static bool IsPortablePathSegmentCharacter(char ch)
+        => ch >= ' '
+            && ch is not '<' and not '>' and not ':' and not '"' and not '/' and not '\\' and not '|' and not '?' and not '*';
 
     private static async Task WriteJsonAsync<T>(string path, T value, CancellationToken ct)
     {

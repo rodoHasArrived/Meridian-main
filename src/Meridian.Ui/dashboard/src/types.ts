@@ -956,6 +956,43 @@ export interface ResolveConflictRequest {
   reason?: string;
 }
 
+// --- Provider setup types ---
+
+export type ProviderKind =
+  | "polygon"
+  | "databento"
+  | "alpaca"
+  | "interactivebrokers"
+  | "yahoo"
+  | "custom";
+
+export interface ProviderKindMeta {
+  kind: ProviderKind;
+  label: string;
+  description: string;
+  needsApiKey: boolean;
+  needsApiSecret: boolean;
+  needsEndpoint: boolean;
+  defaultCapabilities: string[];
+}
+
+export interface ProviderSetupRequest {
+  kind: ProviderKind | string;
+  displayName: string;
+  apiKey: string | null;
+  apiSecret: string | null;
+  endpoint: string | null;
+  capabilities: string[];
+}
+
+export interface ProviderSetupResult {
+  success: boolean;
+  providerId: string | null;
+  providerName: string;
+  message: string;
+  error: string | null;
+}
+
 // --- Backfill mutation types ---
 
 export interface BackfillTriggerRequest {

@@ -153,6 +153,51 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderAccountIdWithPathCharacters_BrokerageSyncUsesPortableRawSnapshotPath()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-PORTABLE",
+                    "Portable Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    "tests"),
+                cts.Token);
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA:123/OPS?", "ops-review"),
+                cts.Token);
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            Directory.GetFiles(Path.Combine(root, "raw", "alpaca", "PA_123_OPS_"), "*.json")
+                .Should()
+                .ContainSingle("raw brokerage evidence paths must be stable across Windows, Linux, and macOS");
+            Directory.Exists(Path.Combine(root, "raw", "alpaca", "PA:123"))
+                .Should()
+                .BeFalse("provider account ids must not create OS-specific nested raw snapshot folders");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_BrokerageCredentialOutage_BrokerageSyncReportsFailedProjectionAndWarnings()
     {
         var root = CreateTempRoot();

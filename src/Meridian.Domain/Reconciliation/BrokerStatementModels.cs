@@ -1,6 +1,4 @@
-using Meridian.Domain.Reconciliation;
-
-namespace Meridian.Application.Reconciliation;
+namespace Meridian.Domain.Reconciliation;
 
 public sealed record BrokerStatementImportRequest(string Broker, string SourcePath, DateOnly StatementDate);
 

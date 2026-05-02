@@ -1,5 +1,5 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React, { useMemo } from "react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import React, { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetBody,
+  SheetCloseButton,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
 import {
@@ -136,6 +145,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
 
+  const [strategySheetOpen, setStrategySheetOpen] = useState(false);
+  const [replaySheetOpen, setReplaySheetOpen] = useState(false);
+  const [promotionSheetOpen, setPromotionSheetOpen] = useState(false);
+
   async function refreshSessionEvidence() {
     await Promise.all([
       executionEvidence.refresh(),
@@ -227,6 +240,23 @@ export function TradingScreen({ data }: TradingScreenProps) {
         items={cockpitAcceptance}
         readinessVm={tradingReadiness}
       />
+
+      {/* Workflow tools strip — triggered workflows live in side panels, not inline */}
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
+        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workflow tools</span>
+        <Button size="sm" variant="outline" onClick={() => setStrategySheetOpen(true)}>
+          <PlayCircle className="mr-2 h-4 w-4" />
+          Strategy controls
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setReplaySheetOpen(true)}>
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Session replay
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setPromotionSheetOpen(true)}>
+          <FlaskConical className="mr-2 h-4 w-4" />
+          Promotion gate
+        </Button>
+      </div>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
@@ -819,18 +849,21 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
 
-        {/* Strategy lifecycle controls */}
-        <Card role="region" aria-labelledby={strategyLifecycle.titleId}>
-          <CardHeader>
-            <CardTitle id={strategyLifecycle.titleId} className="flex items-center gap-2 text-base">
+        {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
+      </section>
+
+      {/* ---- Strategy Controls Sheet ---- */}
+      <Sheet open={strategySheetOpen} onOpenChange={setStrategySheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
               <PlayCircle className="h-4 w-4 text-primary" />
               {strategyLifecycle.title}
-            </CardTitle>
-            <CardDescription>
-              {strategyLifecycle.description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </SheetTitle>
+            <SheetDescription>{strategyLifecycle.description}</SheetDescription>
+            <SheetCloseButton onClick={() => setStrategySheetOpen(false)} />
+          </SheetHeader>
+          <SheetBody>
             <div className="space-y-1">
               <label htmlFor={strategyLifecycle.strategyIdInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 {strategyLifecycle.strategyIdLabel}
@@ -874,20 +907,22 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 {strategyLifecycle.stopButtonLabel}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </section>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <Card role="region" aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
-          <CardHeader>
-            <CardTitle id={sessionReplay.sectionTitleId} className="flex items-center gap-2 text-base">
+      {/* ---- Session Replay Sheet ---- */}
+      <Sheet open={replaySheetOpen} onOpenChange={setReplaySheetOpen}>
+        <SheetContent aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
+          <SheetHeader>
+            <SheetTitle id={sessionReplay.sectionTitleId}>
               <RotateCcw className="h-4 w-4 text-primary" />
               {sessionReplay.sectionTitle}
-            </CardTitle>
-            <CardDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+            </SheetTitle>
+            <SheetDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</SheetDescription>
+            <SheetCloseButton onClick={() => setReplaySheetOpen(false)} />
+          </SheetHeader>
+          <SheetBody className="space-y-3">
             <div className="grid gap-2">
               <label htmlFor={sessionReplay.fileSelectId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 {sessionReplay.fileSelectLabel}
@@ -985,15 +1020,22 @@ export function TradingScreen({ data }: TradingScreenProps) {
               </p>
             )}
             <span className="sr-only" aria-live="polite">{sessionReplay.statusAnnouncement}</span>
-          </CardContent>
-        </Card>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Backtest → Paper promotion gate</CardTitle>
-            <CardDescription>Requires eligibility check before confirmation and audit refresh.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      {/* ---- Promotion Gate Sheet ---- */}
+      <Sheet open={promotionSheetOpen} onOpenChange={setPromotionSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
+              <FlaskConical className="h-4 w-4 text-primary" />
+              Backtest → Paper promotion gate
+            </SheetTitle>
+            <SheetDescription>Requires eligibility check before confirmation and audit refresh.</SheetDescription>
+            <SheetCloseButton onClick={() => setPromotionSheetOpen(false)} />
+          </SheetHeader>
+          <SheetBody className="space-y-3">
             <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
               <div className="eyebrow-label">Action state</div>
               <p className="mt-2 text-sm font-semibold text-foreground">{promotionGate.nextActionText}</p>
@@ -1138,9 +1180,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 ))}
               </ul>
             </div>
-          </CardContent>
-        </Card>
-      </section>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
 
       <ConfirmActionDialog vm={confirmVm} />
     </div>

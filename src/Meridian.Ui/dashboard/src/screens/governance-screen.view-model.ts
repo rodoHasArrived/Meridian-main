@@ -789,7 +789,8 @@ export function useGovernanceReconciliationViewModel(
         breakId,
         status,
         resolvedBy: "ops.gov",
-        resolutionNote: "Reviewed in governance panel."
+        resolutionNote: "Reviewed in governance panel.",
+        operatorRationale: "Operator reviewed the break evidence in the governance reconciliation queue."
       });
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {

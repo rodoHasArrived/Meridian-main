@@ -419,6 +419,20 @@ export function previewBackfill(request: BackfillTriggerRequest) {
   return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
 }
 
+// --- Provider management ---
+
+export function setupProvider(request: import("@/types").ProviderSetupRequest) {
+  return postJson<import("@/types").ProviderSetupResult>("/api/providers/configure", request);
+}
+
+export function removeProvider(providerId: string) {
+  return postJson<{ success: boolean; message: string }>(`/api/providers/${encodeURIComponent(providerId)}/remove`);
+}
+
+export function testProviderConnection(providerId: string) {
+  return postJson<{ success: boolean; latency: string | null; message: string }>(`/api/providers/${encodeURIComponent(providerId)}/test`);
+}
+
 // --- System overview ---
 
 export function getSystemStatus() {
