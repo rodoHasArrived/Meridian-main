@@ -382,3 +382,50 @@ npm --prefix src/Meridian.Ui/dashboard test -- trading-screen api.trading
 - Answered 2026-04-26: `Backtest -> Paper` approvals require operator and rationale context now, while `Paper -> Live` additionally requires live-override review.
 - Answered 2026-04-26: expose shared operator work items through `GET /api/workstation/operator/inbox`, seeded from trading readiness plus reconciliation break-queue state, instead of making each client build its own blocker queue.
 - Answered 2026-04-25: use `GET /api/workstation/trading/readiness` as the single cockpit readiness endpoint, while keeping the existing focused session, replay, controls, audit, and promotion routes for drill-in and write actions.
+
+## Cross-Surface Run Continuity Acceptance Matrix (Wave 2 hard gate)
+
+The sprint is not complete until API, web Research, retained WPF, and operator work-item routing stay aligned for canonical run identity and continuity.
+
+### Cross-surface acceptance criteria
+
+- Canonical run selection: every run-centric surface resolves a single canonical `runId` for active context, compare pairs, and promotion decisions.
+- Compare/diff continuity: compare and diff views continue to render the same run pair after navigation, replay verification refresh, and restart hydration.
+- Promotion history integrity: promotion history rows preserve lineage (`sourceRunId`, `targetRunId` when present), decision state, operator rationale, and audit reference after replay/restart.
+- Route-stable blocker packets: readiness work items and review packets keep stable identities and actionable routes across API polling and surface transitions.
+
+### Capability matrix
+
+| Run-centric workflow | Shared read-model dependencies | Required state coverage |
+| --- | --- | --- |
+| Run detail | `ResearchWorkspaceResponse.runs`, `TradingWorkspaceResponse.readiness.workItems` | loading, empty, partial, error, stale |
+| Portfolio handoff | `ResearchWorkspaceResponse.runs`, `TradingWorkspaceResponse.positions`, `GovernanceWorkspaceResponse.cashFlow` | loading, empty, partial, error, stale |
+| Paper-promotion review | `TradingWorkspaceResponse.readiness.promotion`, `PromotionRecord[]`, `TradingAcceptanceGate[]` | loading, empty, partial, error, stale |
+| QuantScript mirrored-run handoff | `ResearchWorkspaceResponse.runs`, `OperatorInbox.items`, workstation route metadata (`targetRoute`, `workspace`, `targetPageTag`) | loading, empty, partial, error, stale |
+| StrategyRuns filter recovery | `ResearchWorkspaceResponse.runs`, run compare/diff read models, `OperatorInbox` work-item linkage | loading, empty, partial, error, stale |
+
+### Required test slices
+
+- Run-pair compare selection: verify canonical pair selection survives toggle churn, compare/diff command transitions, and empty-result recoveries.
+- Mirrored-run handoff behavior: verify run-linked work items preserve run identity and route metadata when mirrored from readiness into operator inbox consumers.
+- Route-aware packet continuity: verify review/blocker packets keep stable work-item IDs and routing targets across navigation boundaries.
+
+### Operational telemetry contract
+
+Readiness dashboards must expose continuity failures as first-class operational telemetry:
+
+- `run_continuity_missing_lineage_total`: promotion history or run review packet missing source/target lineage.
+- `run_continuity_stale_projection_total`: active run projection differs from latest persisted replay/promotions evidence.
+- `run_continuity_unresolved_blocker_linkage_total`: blocker packet exists without valid run-linked route metadata.
+- `run_continuity_cross_surface_identity_mismatch_total`: API/web/WPF/operator-inbox disagree on canonical run identity.
+
+Telemetry events must include `runId`, `sessionId` (if any), `workItemId` (if any), source surface (`api`, `web-research`, `wpf`, `operator-inbox`), and detection timestamp.
+
+### Exit rule
+
+Declare this matrix complete only when **every row is green** under:
+
+1. replay + restart scenarios, and
+2. account-scoped brokerage sync update scenarios.
+
+Fixture-seeded success alone is not sufficient for Wave 2 exit.

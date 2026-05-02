@@ -612,4 +612,48 @@ describe("operator readiness console view model", () => {
     expect(state.overallDetail).toContain("report-pack readiness item(s) still need review");
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No targets", level: "review" }));
   });
+
+  it("keeps mirrored run-handoff identity and route metadata in operator work items", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading,
+      dataOperations,
+      governance,
+      operatorInbox: inbox,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    const promotionItem = state.workItems.find((item) => item.id === "promotion-review-run-1");
+    expect(promotionItem).toBeDefined();
+    expect(promotionItem?.meta).toContain("run-1");
+    expect(promotionItem?.action).toEqual(expect.objectContaining({ route: "/trading/readiness" }));
+
+    const reconciliationItem = state.workItems.find((item) => item.id === "reconciliation-break-run-1-cash");
+    expect(reconciliationItem).toBeDefined();
+    expect(reconciliationItem?.meta).toContain("run-1");
+    expect(reconciliationItem?.action).toEqual(expect.objectContaining({ route: "/accounting/reconciliation" }));
+  });
+
+  it("preserves route-aware packet continuity for blocker rows across state slices", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading,
+      dataOperations,
+      governance,
+      operatorInbox: inbox,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    const queueRoutes = state.workItems
+      .filter((row) => row.action)
+      .map((row) => `${row.id}:${row.action?.route}`);
+    const queueIds = new Set(state.workItems.map((row) => row.id));
+
+    expect(queueRoutes).toContain("promotion-review-run-1:/trading/readiness");
+    expect(queueRoutes).toContain("reconciliation-break-run-1-cash:/accounting/reconciliation");
+    expect(queueIds.has("promotion-review-run-1")).toBe(true);
+    expect(queueIds.has("reconciliation-break-run-1-cash")).toBe(true);
+  });
 });
