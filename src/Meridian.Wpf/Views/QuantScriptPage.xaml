@@ -5,6 +5,7 @@
       xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:behaviors="clr-namespace:Meridian.Wpf.Behaviors"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded">
 
@@ -608,18 +609,22 @@
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <avalonEdit:TextEditor x:Name="ScriptEditor"
-                                   Grid.Row="0"
-                                   Background="{StaticResource ChartPlotAreaBrush}"
-                                   behaviors:AvalonEditNotebookBehavior.Text="{Binding ScriptSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                   behaviors:AvalonEditNotebookBehavior.RunCommand="{Binding RunScriptCommand}"
-                                   behaviors:AvalonEditNotebookBehavior.RunAndAdvanceCommand="{Binding RunAndAdvanceCommand}"
-                                   FontFamily="{StaticResource MeridianDataFontFamily}"
-                                   FontSize="13"
-                                   Foreground="{StaticResource TopBarTextBrush}"
-                                   ShowLineNumbers="True"
-                                   SyntaxHighlighting="C#"
-                                   WordWrap="False" />
+            <!-- AutomationLeafBorder prevents FindFirst(TreeScope.Descendants) from
+                 entering AvalonEdit's visual subtree, which would hang the
+                 run-desktop-workflow.ps1 shell-readiness poll. -->
+            <controls:AutomationLeafBorder Grid.Row="0">
+              <avalonEdit:TextEditor x:Name="ScriptEditor"
+                                     Background="{StaticResource ChartPlotAreaBrush}"
+                                     behaviors:AvalonEditNotebookBehavior.Text="{Binding ScriptSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     behaviors:AvalonEditNotebookBehavior.RunCommand="{Binding RunScriptCommand}"
+                                     behaviors:AvalonEditNotebookBehavior.RunAndAdvanceCommand="{Binding RunAndAdvanceCommand}"
+                                     FontFamily="{StaticResource MeridianDataFontFamily}"
+                                     FontSize="13"
+                                     Foreground="{StaticResource TopBarTextBrush}"
+                                     ShowLineNumbers="True"
+                                     SyntaxHighlighting="C#"
+                                     WordWrap="False" />
+            </controls:AutomationLeafBorder>
 
             <!-- Status strip for editor -->
             <Border Grid.Row="1"
