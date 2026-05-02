@@ -96,5 +96,5 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
         }
     }
 
-    private sealed record SessionEntry(string Username, Contracts.Auth.UserRole Role, DateTimeOffset ExpiresAt);
+    private sealed record SessionEntry(string Username, Meridian.Contracts.Auth.UserRole Role, DateTimeOffset ExpiresAt);
 }

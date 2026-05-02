@@ -1,11 +1,10 @@
-using Meridian.Application.Reconciliation;
 using Meridian.Domain.Reconciliation;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
 public sealed class BrokerStatementNormalizer
 {
-    public NormalizedStatementRow Normalize(string rowId, StatementRowKind kind, IDictionary<string, string> fields)
+    public NormalizedStatementRow Normalize(string rowId, StatementRowKind kind, IReadOnlyDictionary<string, string> fields)
     {
         var symbol = fields.GetValueOrDefault("symbol") ?? string.Empty;
         var quantity = decimal.TryParse(fields.GetValueOrDefault("quantity"), out var q) ? q : 0m;

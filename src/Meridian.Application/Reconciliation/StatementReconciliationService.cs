@@ -33,24 +33,17 @@ public sealed class StatementReconciliationService
                 continue;
             }
 
-            cases.Add(new ReconciliationCase
-            {
-                CaseId = $"case:{row.RowId}",
-                RowId = row.RowId,
-                Severity = "medium",
-                Reason = "No deterministic match candidate met confidence threshold."
-            });
+            cases.Add(new ReconciliationCase(
+                $"case:{row.RowId}",
+                string.Empty,
+                "Open",
+                "No deterministic match candidate met confidence threshold.",
+                0m,
+                string.Empty,
+                DateTimeOffset.UtcNow,
+                []));
         }
 
         return (matches, cases);
-    }
-}
-
-public static class DeterministicFingerprint
-{
-    public static string Compute(string value)
-    {
-        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

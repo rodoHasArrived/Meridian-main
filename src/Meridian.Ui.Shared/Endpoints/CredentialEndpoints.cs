@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -39,14 +40,14 @@ public static class CredentialEndpoints
         var group = app.MapGroup("").WithTags("Credentials");
 
         // GET /api/credentials — list all providers with their credential status
-        group.MapGet(Contracts.Api.UiApiRoutes.Credentials, () =>
+        group.MapGet(UiApiRoutes.Credentials, () =>
         {
             var result = KnownProviders.Select(p => BuildStatus(p));
             return Results.Json(result, jsonOptions);
         });
 
         // GET /api/credentials/{provider}
-        group.MapGet(Contracts.Api.UiApiRoutes.CredentialByProvider, (string provider) =>
+        group.MapGet(UiApiRoutes.CredentialByProvider, (string provider) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -73,7 +74,7 @@ public static class CredentialEndpoints
         });
 
         // POST /api/credentials/{provider} — set env vars for a provider
-        group.MapPost(Contracts.Api.UiApiRoutes.CredentialByProvider, async (string provider, HttpContext ctx) =>
+        group.MapPost(UiApiRoutes.CredentialByProvider, async (string provider, HttpContext ctx) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -107,7 +108,7 @@ public static class CredentialEndpoints
         });
 
         // DELETE /api/credentials/{provider} — clear env vars
-        group.MapDelete(Contracts.Api.UiApiRoutes.CredentialByProvider, (string provider) =>
+        group.MapDelete(UiApiRoutes.CredentialByProvider, (string provider) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -124,7 +125,7 @@ public static class CredentialEndpoints
         });
 
         // POST /api/credentials/{provider}/test — verify credentials present
-        group.MapPost(Contracts.Api.UiApiRoutes.CredentialTest, (string provider) =>
+        group.MapPost(UiApiRoutes.CredentialTest, (string provider) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)

@@ -1095,7 +1095,7 @@ public sealed class WorkstationEndpointsTests
         reviewItem.TargetPageTag.Should().Be("TradingShell");
         inbox.Items.Should().OnlyContain(item =>
             !item.WorkItemId.StartsWith("promotion-review-", StringComparison.OrdinalIgnoreCase) ||
-            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
+            item.Tone == OperatorWorkItemToneDto.Warning || item.Tone == OperatorWorkItemToneDto.Critical);
         inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
     }
 

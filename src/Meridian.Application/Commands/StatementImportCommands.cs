@@ -1,4 +1,5 @@
-using Meridian.Application.Reconciliation;
+using Meridian.Application.ResultTypes;
+using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Serilog;
 
@@ -25,7 +26,7 @@ public sealed class StatementImportCommands(string dataRoot, ILogger log) : ICli
             var result = await service.ValidateAsync(request, ct);
             Console.WriteLine($"valid={result.IsValid}; rows={result.RowCount}");
             foreach (var error in result.Errors) Console.WriteLine($"error={error}");
-            return result.IsValid ? CliResult.Ok() : CliResult.Invalid("Statement validation failed.");
+            return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
         }
 
         var imported = await service.ImportAsync(request, ct);
