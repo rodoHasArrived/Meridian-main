@@ -1071,3 +1071,65 @@ export interface QualityDashboardResponse {
   recentGaps: QualityGapEntry[];
   recentAnomalies: QualityAnomalyEntry[];
 }
+
+export interface ReconciliationCalibrationProfile {
+  toleranceProfileId: string;
+  exceptionRoute: string;
+  highestSeverity: string;
+  maxToleranceBand: number | null;
+  totalBreakCount: number;
+  openBreakCount: number;
+  inReviewBreakCount: number;
+  resolvedBreakCount: number;
+  dismissedBreakCount: number;
+  pendingSignoffCount: number;
+  signedOffCount: number;
+  lastUpdatedAt: string;
+}
+
+export type ReconciliationCalibrationStatus = "Ready" | "ReviewRequired" | "Blocked";
+
+export interface ReconciliationCalibrationSummary {
+  asOf: string;
+  status: ReconciliationCalibrationStatus;
+  summary: string;
+  totalBreakCount: number;
+  activeBreakCount: number;
+  openBreakCount: number;
+  inReviewBreakCount: number;
+  resolvedBreakCount: number;
+  dismissedBreakCount: number;
+  criticalOpenBreakCount: number;
+  pendingSignoffCount: number;
+  signedOffCount: number;
+  missingCalibrationMetadataCount: number;
+  profiles: ReconciliationCalibrationProfile[];
+}
+
+export interface CorporateAction {
+  corpActId: string;
+  securityId: string;
+  eventType: string;
+  exDate: string;
+  payDate: string | null;
+  dividendPerShare: number | null;
+  currency: string | null;
+  splitRatio: number | null;
+  newSecurityId: string | null;
+  distributionRatio: number | null;
+  acquirerSecurityId: string | null;
+  exchangeRatio: number | null;
+  subscriptionPricePerShare: number | null;
+  rightsPerShare: number | null;
+}
+
+export interface TradingParameters {
+  securityId: string;
+  lotSize: number | null;
+  tickSize: number | null;
+  contractMultiplier: number | null;
+  marginRequirementPct: number | null;
+  tradingHoursUtc: string | null;
+  circuitBreakerThresholdPct: number | null;
+  asOf: string;
+}

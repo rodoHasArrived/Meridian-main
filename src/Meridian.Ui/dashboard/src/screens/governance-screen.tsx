@@ -1,4 +1,4 @@
-import { BookCheck, Landmark, Search, ShieldCheck, WalletCards } from "lucide-react";
+import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,11 @@ import {
   useGovernanceReconciliationViewModel,
   useGovernanceReportingViewModel,
   useSecurityMasterViewModel
+} from "@/screens/governance-screen.view-model";
+import type {
+  CalibrationSummaryViewState,
+  CorporateActionRowViewModel,
+  TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
 
@@ -722,11 +727,25 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
             </CardContent>
           </Card>
+
+          {/* Corporate actions and trading parameters — shown when a security is selected */}
+          {securityMaster.selectedSecurityId && (
+            <div className="grid gap-4 xl:grid-cols-2">
+              <CorporateActionsPanel
+                securityId={securityMaster.selectedSecurityId}
+                rows={securityMaster.corporateActionRows}
+                loading={securityMaster.corporateActionsLoading}
+                errorText={securityMaster.corporateActionsErrorText}
+                hasActions={securityMaster.hasCorporateActions}
+              />
+              <TradingParametersPanel view={securityMaster.tradingParametersView} />
+            </div>
+          )}
         </section>
       )}
 
       {workstream === "reconciliation" && (
-        <section>
+        <section className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Reconciliation break queue</CardTitle>
@@ -794,9 +813,202 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               ))}
             </CardContent>
           </Card>
+
+          <CalibrationSummaryPanel view={reconciliation.calibrationView} />
         </section>
       )}
     </div>
+  );
+}
+
+function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }) {
+  const StatusIcon = view.statusTone === "success" ? CheckCircle2 : view.statusTone === "danger" ? AlertCircle : AlertCircle;
+  const statusClass = view.statusTone === "success" ? "text-success" : view.statusTone === "danger" ? "text-danger" : "text-warning";
+  const bannerClass = view.statusTone === "success" ? "border-success/30 bg-success/5" : view.statusTone === "danger" ? "border-danger/30 bg-danger/5" : "border-warning/30 bg-warning/5";
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <BookCheck className="h-4 w-4 text-primary" />
+          Calibration summary
+        </CardTitle>
+        <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            {view.errorText}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && (
+          <>
+            <div className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", bannerClass)}>
+              <StatusIcon aria-hidden="true" className={cn("size-4 shrink-0", statusClass)} />
+              <div className="flex-1 min-w-0">
+                <span className={cn("text-sm font-semibold", statusClass)}>{view.statusLabel}</span>
+                {view.summary && <p className="mt-0.5 text-xs text-muted-foreground">{view.summary}</p>}
+              </div>
+              <span className="shrink-0 font-mono text-xs text-muted-foreground">as of {view.asOfLabel}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {[
+                { label: "Total breaks", value: view.totalBreakCount },
+                { label: "Open", value: view.openBreakCount, warn: view.openBreakCount > 0 },
+                { label: "Critical open", value: view.criticalOpenBreakCount, warn: view.criticalOpenBreakCount > 0 },
+                { label: "Pending sign-off", value: view.pendingSignoffCount, warn: view.pendingSignoffCount > 0 },
+                { label: "Signed off", value: view.signedOffCount },
+                { label: "Missing metadata", value: view.missingMetadataCount, warn: view.missingMetadataCount > 0 }
+              ].map(({ label, value, warn }) => (
+                <div key={label} className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center">
+                  <div className="text-xs text-muted-foreground">{label}</div>
+                  <div className={cn("mt-1 font-mono text-lg font-semibold tabular-nums", warn ? "text-warning" : "text-foreground")}>
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {view.hasProfiles && (
+              <div>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+                    <thead className="bg-secondary/30">
+                      <tr>
+                        {["Profile", "Route", "Severity", "Open", "Resolved", "Pending sign-off", "Updated"].map((col) => (
+                          <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {view.profileRows.map((row) => (
+                        <tr key={row.toleranceProfileId} aria-label={row.ariaLabel} className="hover:bg-secondary/20">
+                          <td className="px-3 py-2 font-mono text-foreground">{row.toleranceProfileId}</td>
+                          <td className="px-3 py-2 text-muted-foreground">{row.exceptionRoute}</td>
+                          <td className="px-3 py-2 font-mono">{row.highestSeverity}</td>
+                          <td className={cn("px-3 py-2 font-mono", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</td>
+                          <td className="px-3 py-2 font-mono text-foreground">{row.resolvedBreakCount}</td>
+                          <td className={cn("px-3 py-2 font-mono", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>{row.pendingSignoffCount}</td>
+                          <td className="px-3 py-2 font-mono text-muted-foreground">{row.lastUpdatedLabel}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CorporateActionsPanel({
+  securityId,
+  rows,
+  loading,
+  errorText,
+  hasActions
+}: {
+  securityId: string;
+  rows: CorporateActionRowViewModel[];
+  loading: boolean;
+  errorText: string | null;
+  hasActions: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Table2 className="h-4 w-4 text-primary" />
+          Corporate actions
+        </CardTitle>
+        <CardDescription>
+          Dividends, splits, spin-offs, and other corporate events for <span className="font-mono">{securityId}</span>.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading && <p role="status" className="text-sm text-muted-foreground">Loading corporate actions…</p>}
+        {errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            {errorText}
+          </div>
+        )}
+        {!loading && !errorText && !hasActions && (
+          <p className="text-sm text-muted-foreground">No corporate actions recorded for this security.</p>
+        )}
+        {hasActions && (
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table aria-label={`Corporate actions for ${securityId}`} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+              <thead className="bg-secondary/30">
+                <tr>
+                  {["Event type", "Ex-date", "Pay date", "Amount"].map((col) => (
+                    <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {rows.map((row) => (
+                  <tr key={row.rowId} aria-label={row.ariaLabel} className="hover:bg-secondary/20">
+                    <td className="px-3 py-2 font-semibold text-foreground">{row.eventTypeLabel}</td>
+                    <td className="px-3 py-2 font-mono text-muted-foreground">{row.exDateLabel}</td>
+                    <td className="px-3 py-2 font-mono text-muted-foreground">{row.payDateLabel}</td>
+                    <td className="px-3 py-2 font-mono text-foreground">{row.amountLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TradingParametersPanel({ view }: { view: TradingParametersViewState }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          Trading parameters
+        </CardTitle>
+        <CardDescription>
+          Lot size, tick size, margin, and circuit-breaker constraints
+          {view.securityId ? <> for <span className="font-mono">{view.securityId}</span></> : null}
+          {view.asOfLabel !== "—" ? <> as of {view.asOfLabel}</> : null}.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            {view.errorText}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && view.fields.length === 0 && (
+          <p className="text-sm text-muted-foreground">No trading parameters available for this security.</p>
+        )}
+        {view.fields.length > 0 && (
+          <dl className="grid gap-2">
+            {view.fields.map((field) => (
+              <div key={field.label} className="grid min-w-0 grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
+                <dt className="min-w-0 text-xs text-muted-foreground">{field.label}</dt>
+                <dd className={cn(
+                  "min-w-0 break-words text-right font-mono text-xs",
+                  field.tone === "warning" ? "text-warning" : "text-foreground"
+                )}>
+                  {field.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

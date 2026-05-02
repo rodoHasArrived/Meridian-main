@@ -1,11 +1,14 @@
 import type {
+  CorporateAction,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   OperatorInbox,
+  ReconciliationCalibrationSummary,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   TradingOperatorReadiness,
+  TradingParameters,
   TradingWorkspaceResponse
 } from "@/types";
 
@@ -469,6 +472,98 @@ const fixtureOperatorInbox: OperatorInbox = {
   ]
 };
 
+const fixtureCalibrationSummary: ReconciliationCalibrationSummary = {
+  asOf: "2026-04-28T18:15:00Z",
+  status: "ReviewRequired",
+  summary: "2 open breaks remain across 2 tolerance profiles. 1 critical break requires immediate review before sign-off.",
+  totalBreakCount: 3,
+  activeBreakCount: 2,
+  openBreakCount: 2,
+  inReviewBreakCount: 0,
+  resolvedBreakCount: 1,
+  dismissedBreakCount: 0,
+  criticalOpenBreakCount: 1,
+  pendingSignoffCount: 1,
+  signedOffCount: 2,
+  missingCalibrationMetadataCount: 0,
+  profiles: [
+    {
+      toleranceProfileId: "tp-cash-variance",
+      exceptionRoute: "ops.gov",
+      highestSeverity: "Critical",
+      maxToleranceBand: 250,
+      totalBreakCount: 2,
+      openBreakCount: 1,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 1,
+      dismissedBreakCount: 0,
+      pendingSignoffCount: 1,
+      signedOffCount: 1,
+      lastUpdatedAt: "2026-04-28T18:10:00Z"
+    },
+    {
+      toleranceProfileId: "tp-timing-drift",
+      exceptionRoute: "ops.gov",
+      highestSeverity: "Warning",
+      maxToleranceBand: null,
+      totalBreakCount: 1,
+      openBreakCount: 1,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 0,
+      dismissedBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 1,
+      lastUpdatedAt: "2026-04-28T18:05:00Z"
+    }
+  ]
+};
+
+const fixtureCorporateActions: CorporateAction[] = [
+  {
+    corpActId: "ca-aapl-div-2026-02",
+    securityId: "sec-dev-001",
+    eventType: "Dividend",
+    exDate: "2026-02-07",
+    payDate: "2026-02-13",
+    dividendPerShare: 0.25,
+    currency: "USD",
+    splitRatio: null,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  },
+  {
+    corpActId: "ca-aapl-split-2020-08",
+    securityId: "sec-dev-001",
+    eventType: "StockSplit",
+    exDate: "2020-08-31",
+    payDate: null,
+    dividendPerShare: null,
+    currency: null,
+    splitRatio: 4,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  }
+];
+
+const fixtureTradingParameters: TradingParameters = {
+  securityId: "sec-dev-001",
+  lotSize: 1,
+  tickSize: 0.01,
+  contractMultiplier: null,
+  marginRequirementPct: 25,
+  tradingHoursUtc: "13:30–20:00",
+  circuitBreakerThresholdPct: 20,
+  asOf: "2026-04-28T18:15:00Z"
+};
+
 const fixtures = {
   "/api/status": fixtureSystemOverview,
   "/api/workstation/session": fixtureSession,
@@ -479,12 +574,29 @@ const fixtures = {
   "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
   "/api/workstation/accounting": fixtureGovernanceWorkspace,
   "/api/workstation/reporting": fixtureGovernanceWorkspace,
-  "/api/workstation/governance": fixtureGovernanceWorkspace
+  "/api/workstation/governance": fixtureGovernanceWorkspace,
+  "/api/workstation/reconciliation/calibration-summary": fixtureCalibrationSummary
 } satisfies Record<string, unknown>;
 
+const dynamicFixturePatterns: Array<{ pattern: RegExp; fixture: unknown }> = [
+  { pattern: /^\/api\/security-master\/[^/]+\/corporate-actions$/, fixture: fixtureCorporateActions },
+  { pattern: /^\/api\/security-master\/[^/]+\/trading-parameters$/, fixture: fixtureTradingParameters }
+];
+
 export function resolveDevFixture<T>(path: string): T | undefined {
-  const fixture = fixtures[path.split("?")[0] as keyof typeof fixtures];
-  return fixture === undefined ? undefined : cloneFixture(fixture as T);
+  const cleanPath = path.split("?")[0];
+  const exact = fixtures[cleanPath as keyof typeof fixtures];
+  if (exact !== undefined) {
+    return cloneFixture(exact as T);
+  }
+
+  for (const { pattern, fixture } of dynamicFixturePatterns) {
+    if (pattern.test(cleanPath)) {
+      return cloneFixture(fixture as T);
+    }
+  }
+
+  return undefined;
 }
 
 function cloneFixture<T>(fixture: T): T {
