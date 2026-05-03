@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-01 20:48:18 UTC. Do not edit manually.
+> Auto-generated on 2026-05-03 07:13:47 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5207,7 +5207,6 @@ Meridian-main
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   └── ProviderRoutingMapper.cs
 │   │   ├── Reconciliation
-│   │   │   ├── BrokerStatementModels.cs
 │   │   │   └── StatementReconciliationService.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
@@ -5577,6 +5576,7 @@ Meridian-main
 │   │   │   ├── ResearchBriefingDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
+│   │   │   ├── StrategyRunContractCompatibility.cs
 │   │   │   ├── StrategyRunReadModels.cs
 │   │   │   ├── TradingOperatorReadinessDtos.cs
 │   │   │   ├── WorkflowLibraryDtos.cs
@@ -5670,6 +5670,7 @@ Meridian-main
 │   │   │   ├── MarketDepthUpdate.cs
 │   │   │   └── MarketTradeUpdate.cs
 │   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementModels.cs
 │   │   │   ├── StatementEntities.cs
 │   │   │   └── StatementReconciliationAggregate.cs
 │   │   ├── Telemetry
@@ -6376,6 +6377,7 @@ Meridian-main
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── input.tsx
 │   │   │   │   │       ├── select.tsx
+│   │   │   │   │       ├── sheet.tsx
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
@@ -6450,8 +6452,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BLeOgkJ6.js
-│   │           │   └── index-CBqpAeRW.css
+│   │           │   ├── index-Bt1jnUdW.js
+│   │           │   └── index-C-UoWgmp.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6735,6 +6737,8 @@ Meridian-main
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
+│       ├── Controls
+│       │   └── AutomationLeafBorder.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs

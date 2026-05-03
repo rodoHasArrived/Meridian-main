@@ -1,4 +1,6 @@
-import { buildOperatorReadinessConsoleState } from "@/screens/operator-readiness-console.view-model";
+import { renderHook, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,

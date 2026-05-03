@@ -88,11 +88,20 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 EventType: "Seeded",
                 PreviousStatus: null,
                 NewStatus: item.Status,
+                PreviousLifecycleState: null,
+                NewLifecycleState: item.LifecycleState,
                 OccurredAt: item.DetectedAt,
                 AssignedTo: item.AssignedTo,
                 ReviewedBy: item.ReviewedBy,
                 ResolvedBy: item.ResolvedBy,
-                Note: item.ResolutionNote), ct).ConfigureAwait(false);
+                Note: item.ResolutionNote,
+                ExceptionRoute: item.ExceptionRoute,
+                ToleranceBand: item.ToleranceBand,
+                RequiredSignoffRole: item.RequiredSignoffRole,
+                SignoffStatus: item.SignoffStatus,
+                ExternalAccountId: item.ExternalAccountId,
+                CustodianId: item.CustodianId,
+                UpstreamSyncCursor: item.UpstreamSyncCursor), ct).ConfigureAwait(false);
 
             return true;
         }
@@ -174,7 +183,13 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ReviewedAt = now,
                 LastUpdatedAt = now,
                 ResolutionNote = request.ReviewNote,
-                SignoffStatus = "in-review"
+                SignoffStatus = "in-review",
+                LifecycleState = ReconciliationCaseLifecycleState.Triaged,
+                LifecycleRationale = request.ReviewNote,
+                StateTransitions = (item.StateTransitions ?? []).Concat(
+                [
+                    new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, ReconciliationCaseLifecycleState.Triaged, request.ReviewedBy, request.ReviewNote, now)
+                ]).ToArray()
             };
 
             _items[request.BreakId] = updated;
@@ -185,11 +200,20 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 EventType: "ReviewStarted",
                 PreviousStatus: item.Status,
                 NewStatus: updated.Status,
+                PreviousLifecycleState: item.LifecycleState,
+                NewLifecycleState: updated.LifecycleState,
                 OccurredAt: now,
                 AssignedTo: request.AssignedTo,
                 ReviewedBy: request.ReviewedBy,
                 ResolvedBy: null,
-                Note: request.ReviewNote), ct).ConfigureAwait(false);
+                Note: request.ReviewNote,
+                ExceptionRoute: updated.ExceptionRoute,
+                ToleranceBand: updated.ToleranceBand,
+                RequiredSignoffRole: updated.RequiredSignoffRole,
+                SignoffStatus: updated.SignoffStatus,
+                ExternalAccountId: updated.ExternalAccountId,
+                CustodianId: updated.CustodianId,
+                UpstreamSyncCursor: updated.UpstreamSyncCursor), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }
@@ -247,7 +271,19 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ResolutionNote = request.ResolutionNote,
                 SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
                     ? "signed-off"
-                    : "dismissed"
+                    : "dismissed",
+                LifecycleState = request.Status == ReconciliationBreakQueueStatus.Resolved
+                    ? ReconciliationCaseLifecycleState.Closed
+                    : ReconciliationCaseLifecycleState.Superseded,
+                LifecycleRationale = request.OperatorRationale,
+                SignoffHistory = (item.SignoffHistory ?? []).Concat(
+                [
+                    new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
+                ]).ToArray(),
+                StateTransitions = (item.StateTransitions ?? []).Concat(
+                [
+                    new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, request.Status == ReconciliationBreakQueueStatus.Resolved ? ReconciliationCaseLifecycleState.Closed : ReconciliationCaseLifecycleState.Superseded, request.ResolvedBy, request.OperatorRationale, now)
+                ]).ToArray()
             };
 
             _items[request.BreakId] = updated;
@@ -258,11 +294,20 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 EventType: request.Status.ToString(),
                 PreviousStatus: item.Status,
                 NewStatus: updated.Status,
+                PreviousLifecycleState: item.LifecycleState,
+                NewLifecycleState: updated.LifecycleState,
                 OccurredAt: now,
                 AssignedTo: updated.AssignedTo,
                 ReviewedBy: updated.ReviewedBy,
                 ResolvedBy: request.ResolvedBy,
-                Note: request.ResolutionNote), ct).ConfigureAwait(false);
+                Note: request.ResolutionNote,
+                ExceptionRoute: updated.ExceptionRoute,
+                ToleranceBand: updated.ToleranceBand,
+                RequiredSignoffRole: updated.RequiredSignoffRole,
+                SignoffStatus: updated.SignoffStatus,
+                ExternalAccountId: updated.ExternalAccountId,
+                CustodianId: updated.CustodianId,
+                UpstreamSyncCursor: updated.UpstreamSyncCursor), ct).ConfigureAwait(false);
 
             return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
         }

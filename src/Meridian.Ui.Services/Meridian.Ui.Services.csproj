@@ -30,6 +30,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
+    <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
   </ItemGroup>
 
 </Project>

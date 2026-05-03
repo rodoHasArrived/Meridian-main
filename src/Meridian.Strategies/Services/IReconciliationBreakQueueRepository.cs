@@ -39,8 +39,17 @@ public sealed record ReconciliationBreakQueueAuditEvent(
     string EventType,
     ReconciliationBreakQueueStatus? PreviousStatus,
     ReconciliationBreakQueueStatus NewStatus,
+    ReconciliationCaseLifecycleState? PreviousLifecycleState,
+    ReconciliationCaseLifecycleState NewLifecycleState,
     DateTimeOffset OccurredAt,
     string? AssignedTo,
     string? ReviewedBy,
     string? ResolvedBy,
-    string? Note);
+    string? Note,
+    string? ExceptionRoute = null,
+    decimal? ToleranceBand = null,
+    string? RequiredSignoffRole = null,
+    string? SignoffStatus = null,
+    string? ExternalAccountId = null,
+    string? CustodianId = null,
+    string? UpstreamSyncCursor = null);

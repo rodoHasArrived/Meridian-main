@@ -33,13 +33,15 @@ public sealed class StatementReconciliationService
                 continue;
             }
 
-            cases.Add(new ReconciliationCase
-            {
-                CaseId = $"case:{row.RowId}",
-                RowId = row.RowId,
-                Severity = "medium",
-                Reason = "No deterministic match candidate met confidence threshold."
-            });
+            cases.Add(new ReconciliationCase(
+                $"case:{row.RowId}",
+                row.Fingerprint,
+                "Open",
+                "No deterministic match candidate met confidence threshold.",
+                0.35m,
+                "No deterministic match candidate met confidence threshold.",
+                DateTimeOffset.UtcNow,
+                [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.")]));
         }
 
         return (matches, cases);

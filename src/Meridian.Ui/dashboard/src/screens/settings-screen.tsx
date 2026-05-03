@@ -1,13 +1,29 @@
-import { Activity, ExternalLink, MonitorCheck, User } from "lucide-react";
+import { Activity, ExternalLink, LoaderCircle, MonitorCheck, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type {
+  DataOperationsWorkspaceResponse,
+  GovernanceWorkspaceResponse,
+  ResearchWorkspaceResponse,
+  SessionInfo,
+  SystemOverviewResponse,
+  TradingWorkspaceResponse,
+  WorkspaceKey
+} from "@/types";
 
 interface SettingsScreenProps {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
+  research?: ResearchWorkspaceResponse | null;
+  trading?: TradingWorkspaceResponse | null;
+  dataOperations?: DataOperationsWorkspaceResponse | null;
+  governance?: GovernanceWorkspaceResponse | null;
+  reporting?: GovernanceWorkspaceResponse | null;
+  loading?: boolean;
+  error?: string | null;
+  workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
 }
 
 const systemToneClass = {
@@ -31,8 +47,37 @@ const itemToneClass = {
   muted: "text-muted-foreground"
 } as const;
 
-export function SettingsScreen({ session, overview }: SettingsScreenProps) {
-  const vm = buildSettingsScreenViewModel(session, overview);
+const diagnosticToneClass = {
+  default: "border-border/70 bg-secondary/30",
+  success: "border-success/30 bg-success/10",
+  warning: "border-warning/35 bg-warning/10",
+  danger: "border-danger/35 bg-danger/10"
+} as const;
+
+export function SettingsScreen({
+  session,
+  overview,
+  research = null,
+  trading = null,
+  dataOperations = null,
+  governance = null,
+  reporting = null,
+  loading = false,
+  error = null,
+  workspaceErrors = {}
+}: SettingsScreenProps) {
+  const vm = buildSettingsScreenViewModel({
+    session,
+    overview,
+    research,
+    trading,
+    dataOperations,
+    governance,
+    reporting,
+    loading,
+    error,
+    workspaceErrors
+  });
 
   return (
     <div className="space-y-8">
@@ -171,33 +216,52 @@ export function SettingsScreen({ session, overview }: SettingsScreenProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ExternalLink className="h-4 w-4 text-primary" />
-            Diagnostic endpoints
-          </CardTitle>
-          <CardDescription>
-            Live API endpoints for verifying workstation data and subsystem connectivity.
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ExternalLink className="h-4 w-4 text-primary" />
+                Diagnostic endpoints
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
+            </div>
+            <Badge variant={vm.diagnosticStatusVariant} dot={vm.diagnosticStatusVariant === "success"}>
+              {vm.diagnosticStatusLabel}
+            </Badge>
+          </div>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
+        <CardContent className="grid gap-3 md:grid-cols-2" role="list" aria-label={vm.diagnosticListLabel}>
           {vm.diagnosticLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={link.ariaLabel}
-              className="group flex flex-col gap-1 rounded-lg border border-border/70 bg-secondary/30 px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {link.label}
-                </span>
-                <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-              </div>
-              <p className="text-xs leading-5 text-muted-foreground">{link.description}</p>
-              <span className="mt-1 font-mono text-[10px] text-muted-foreground">{link.href}</span>
-            </a>
+            <div key={link.href} role="listitem">
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={link.ariaLabel}
+                className={cn(
+                  "group flex h-full flex-col gap-2 rounded-lg border px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40",
+                  diagnosticToneClass[link.tone]
+                )}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {link.label}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <Badge variant={link.badgeVariant} className="shrink-0">
+                      {link.statusLabel}
+                    </Badge>
+                    {link.isLoading ? (
+                      <LoaderCircle className="h-3 w-3 shrink-0 animate-spin text-warning" aria-hidden="true" />
+                    ) : (
+                      <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    )}
+                  </span>
+                </div>
+                <p className="text-xs leading-5 text-muted-foreground">{link.description}</p>
+                <p className="text-xs leading-5 text-foreground/75">{link.statusDetail}</p>
+                <span className="mt-1 font-mono text-[10px] text-muted-foreground">{link.href}</span>
+              </a>
+            </div>
           ))}
         </CardContent>
       </Card>

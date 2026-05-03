@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   getDataOperationsWorkspace,
   getGovernanceWorkspace,
+  getReportingWorkspace,
   getResearchWorkspace,
   getSession,
   getSystemStatus,
@@ -26,6 +27,7 @@ interface WorkstationDataState {
   trading: TradingWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
+  reporting: GovernanceWorkspaceResponse | null;
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
@@ -38,6 +40,7 @@ const initialState: WorkstationDataState = {
   trading: null,
   dataOperations: null,
   governance: null,
+  reporting: null,
   loading: true,
   error: null,
   workspaceErrors: {}
@@ -55,14 +58,16 @@ export function useWorkstationData() {
       research,
       trading,
       dataOperations,
-      governance
+      governance,
+      reporting
     ] = await Promise.allSettled([
       getSession(),
       getSystemStatus(),
       getResearchWorkspace(),
       getTradingWorkspace(),
       getDataOperationsWorkspace(),
-      getGovernanceWorkspace()
+      getGovernanceWorkspace(),
+      getReportingWorkspace()
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
@@ -94,7 +99,8 @@ export function useWorkstationData() {
       research: readWorkspace(["strategy"], research),
       trading: readWorkspace(["trading"], trading),
       dataOperations: readWorkspace(["data"], dataOperations),
-      governance: readWorkspace(["accounting", "reporting"], governance),
+      governance: readWorkspace(["accounting"], governance),
+      reporting: readWorkspace(["reporting"], reporting),
       loading: false,
       error: Object.values(workspaceErrors)[0] ?? bootstrapErrors[0] ?? null,
       workspaceErrors

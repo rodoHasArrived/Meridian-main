@@ -1,7 +1,7 @@
 # Meridian - Consolidated Evaluations & Audits
 
-**Version:** 1.7.1
-**Last Updated:** 2026-04-08
+**Version:** 1.7.2
+**Last Updated:** 2026-05-01
 **Status:** Consolidated reference document (supporting reference, not the live execution backlog)
 
 This document consolidates all architecture evaluations, code audits, desktop assessments, improvement brainstorms, and architecture proposals into a single navigable reference. It replaces the need to read 20+ individual files across `docs/evaluations/`, `docs/audits/`, and `docs/development/` for a complete project health picture.
@@ -38,6 +38,7 @@ Use this document as supporting context. For active prioritization, default to t
   - [Debug Code Analysis (H3)](#debug-code-analysis-h3)
   - [Platform Cleanup (UWP Removal)](#platform-cleanup-uwp-removal)
   - [Further Simplification Opportunities](#further-simplification-opportunities)
+  - [Workspace Visual Audit (April 2026)](#workspace-visual-audit-april-2026)
 - [Repository Cleanup](#repository-cleanup)
   - [Cleanup Action Plan Status](#cleanup-action-plan-status)
   - [Config Consolidation](#config-consolidation)
@@ -64,7 +65,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Historical Providers | Well-designed | Alpaca + Polygon primary; Stooq + Yahoo free fallback; validate Polygon rate limits | [Evaluation](#historical-data-providers) |
 | Ingestion Orchestration | Uneven maturity | Strong building blocks; needs unified job model for realtime + backfill workloads | [Evaluation](#ingestion-orchestration) |
 | Operational Readiness | Pilot Ready | Good monitoring baseline; needs standardized SLOs and runbook-linked alerts | [Evaluation](#operational-readiness) |
-| Desktop UX | Partial parity | 49 pages, 104 services; key features implemented; remaining gaps in live backend integration | [Assessment](#desktop-ux-assessment) |
+| Desktop UX | Retained support | 49 XAML pages retained for compatibility; new WPF feature work paused; browser workstation is the active operator UI lane | [Assessment](#desktop-ux-assessment) |
 | Code Quality | Excellent | Debug code is intentional; no cleanup required; repository hygiene complete | [Audit](#debug-code-analysis-h3) |
 | Repository Cleanup | Complete | Phases 1-6 done; generated docs refresh and HtmlTemplateGenerator CSS/JS extraction remain | [Audit](#cleanup-action-plan-status) |
 | Simplification Backlog | ~2,800-3,400 LOC removable | 12 categories identified; highest priority: bare catches, dead code, Task.Run misuse | [Audit](#further-simplification-opportunities) |
@@ -74,6 +75,13 @@ Use this document as supporting context. For active prioritization, default to t
 | Next Frontier (March 2026) | 94%+ core complete | 11 capabilities shipped; correlation engine, ML anomaly detection, cloud sinks remain future work | [Brainstorm](#next-frontier-brainstorm-march-2026) |
 
 ## Refresh Highlights
+
+**This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the browser-first operator UI pivot, and the April 2026 workspace visual audit:**
+
+- Wave 1 trust gate is **closed** as of 2026-04-17 with a signed DK1 parity packet and valid operator sign-off. The Project Health Summary and production-status posture are updated accordingly.
+- New WPF feature development is **paused**; the active operator UI lane is the web dashboard in `src/Meridian.Ui/dashboard/`. The Desktop UX summary is updated to reflect retained support scope rather than active parity targets.
+- The **Workspace Visual Audit Checklist (2026-04-22)** is now indexed under [Code Audits](#workspace-visual-audit-april-2026). It confirms shared spacing/rhythm tokens, card composition patterns, badge semantics, and summary-tile ordering are in place across the four workspace shells; four visual outliers are flagged for follow-up cleanup.
+- Version updated to 1.7.2 to align with `production-status.md`.
 
 **This 2026-04-08 refresh keeps the consolidated document aligned with the current planning set:**
 
@@ -283,6 +291,8 @@ Use this document as supporting context. For active prioritization, default to t
 
 ## Desktop Assessments
 
+> **Note (2026-05-01):** New WPF feature development is paused. The active operator UI lane is the browser-based workstation dashboard in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The desktop shell is retained support evidence for shared contracts, regression fixes, and compatibility checks. The assessments below reflect the desktop-first evaluation history. For the active UI direction see [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
+
 ### Desktop UX Assessment
 
 > Source: `../../archive/docs/assessments/desktop-end-user-improvements.md`
@@ -447,6 +457,34 @@ not as a generic trading-workstation program.
 2. Mechanical refactors (Medium priority, Low risk): Items 2, 8, 10
 3. Structural simplification (Medium priority, Medium risk): Items 1, 3, 5
 4. Architecture evaluation (Low priority, Medium risk): Items 4, 11, 12
+
+---
+
+### Workspace Visual Audit (April 2026)
+
+> Source: `docs/audits/workspace-visual-audit-checklist-2026-04-22.md`
+> Date: 2026-04-22 | Status: Complete — 4 outliers identified for follow-up cleanup
+
+**Scope:** Research, Trading, Data Operations, and Governance workspace shell pages (`ResearchWorkspaceShellPage.xaml`, `TradingWorkspaceShellPage.xaml`, `DataOperationsWorkspaceShellPage.xaml`, `GovernanceWorkspaceShellPage.xaml`).
+
+**Checklist outcome:** All items confirmed:
+
+- Shared spacing/rhythm tokens available for section gaps, card paddings, and divider margins.
+- Shared card composition patterns exist for header/body/footer alignment.
+- Badge semantics mapped to Info/Warning/Success/Danger resources.
+- Summary tiles consistently use `label → value → trend/detail` ordering.
+- Workspace shell pages consume the standardized styles where practical.
+
+**Outliers for follow-up cleanup:**
+
+| # | Location | Issue |
+| --- | --------- | ------- |
+| 1 | Research hero identity card | Bespoke dark treatment (`#12253A` / `#22486B`) not consuming semantic card/badge token set |
+| 2 | Research Run Studio informational callout | Custom accent border/background values; should migrate to a shared semantic callout style |
+| 3 | Governance empty-state warning icon card | Custom border + icon composition rather than a reusable warning callout style |
+| 4 | Trading context card and active run card | Bespoke compositions close to shared patterns but still manually defining padding and internal spacing |
+
+Outliers are intentionally preserved to avoid altering contextual visual hierarchy in one step.
 
 ---
 
@@ -833,6 +871,7 @@ All source documents that feed into this consolidation:
 | Cleanup Opportunities | `../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md` | Audit | Archived |
 | Debug Code Analysis | `../../archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md` | Audit | Archived |
 | Further Simplification | `docs/audits/FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | Audit | Documented |
+| Workspace Visual Audit Checklist (Apr 2026) | `docs/audits/workspace-visual-audit-checklist-2026-04-22.md` | Audit | Current |
 | UWP Comprehensive Audit | `../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md` | Audit | Archived |
 | Repository Cleanup Plan | `../../archive/docs/plans/repository-cleanup-action-plan.md` | Plan | Archived |
 | Config Consolidation Report | `../../archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md` | Report | Archived |
@@ -842,4 +881,4 @@ All source documents that feed into this consolidation:
 
 ---
 
-_Last Updated: 2026-04-30_
+_Last Updated: 2026-05-01_

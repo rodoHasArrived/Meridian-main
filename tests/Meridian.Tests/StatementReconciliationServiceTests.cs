@@ -26,6 +26,6 @@ public sealed class StatementReconciliationServiceTests
         var result = svc.MatchRows(rows);
         Assert.Single(result.Matches);
         Assert.Single(result.Cases);
-        Assert.Equal("2", result.Cases[0].RowId);
+        Assert.Equal("case:2", result.Cases[0].CaseId);
     }
 }

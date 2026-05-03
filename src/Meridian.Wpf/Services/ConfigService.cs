@@ -290,7 +290,7 @@ public sealed class ConfigService : ConfigServiceBase
                 return new AppConfigDto();
             }
 
-            var json = await File.ReadAllTextAsync(ConfigPath, ct);
+            var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(json))
             {
                 return new AppConfigDto();
@@ -322,7 +322,7 @@ public sealed class ConfigService : ConfigServiceBase
                 : config.DataRoot;
 
             var json = JsonSerializer.Serialize(config, SharedJsonOptions);
-            await File.WriteAllTextAsync(ConfigPath, json, ct);
+            await File.WriteAllTextAsync(ConfigPath, json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

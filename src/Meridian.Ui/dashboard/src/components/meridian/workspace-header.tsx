@@ -1,4 +1,4 @@
-import { RefreshCcw } from "lucide-react";
+import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
@@ -27,8 +27,27 @@ export function WorkspaceHeader({
   });
 
   return (
-    <header className="border-b border-border bg-[#0B1520] px-4 py-4 lg:px-6" aria-busy={viewModel.ariaBusy}>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <header className="border-b border-border bg-[#0B1520]" aria-busy={viewModel.ariaBusy}>
+      {viewModel.liveBanner ? (
+        <div
+          className="flex items-center gap-3 border-b px-4 py-2 lg:px-6"
+          style={{
+            backgroundColor: "var(--state-live-bg)",
+            borderColor: "var(--state-live-bd)",
+            color: "var(--state-live-fg)"
+          }}
+          role={viewModel.liveBanner.role}
+          aria-live={viewModel.liveBanner.ariaLive}
+          aria-label={viewModel.liveBanner.ariaLabel}
+        >
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em]">
+            {viewModel.liveBanner.label}
+          </span>
+          <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
+        </div>
+      ) : null}
+      <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between lg:px-6">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             {viewModel.badges.map((badge) => (
