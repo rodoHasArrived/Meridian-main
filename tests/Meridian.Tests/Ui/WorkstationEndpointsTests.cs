@@ -2559,6 +2559,38 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CompareRuns_ShouldReturnBadRequestWhenTooManyRunIdsProvided()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runIds = Enumerable.Range(1, 11).Select(index => $"cmp-{index}").ToArray();
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task MapStrategyRunsCompare_ShouldReturnBadRequestWhenTooManyRunIdsProvided()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var ids = string.Join(',', Enumerable.Range(1, 11).Select(index => $"cmp-{index}"));
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/strategies/runs/compare?ids={ids}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_CompareRuns_ShouldFilterByModeWhenRequested()
     {
         await using var app = await CreateAppAsync(services =>
