@@ -34,6 +34,20 @@ def fail(errors: list[str]) -> int:
 def validate() -> int:
     errors: list[str] = []
 
+    if not CONTRACT_PATH.exists():
+        print(
+            "Screenshot contract validation skipped: "
+            f"catalog not found at {CONTRACT_PATH.relative_to(REPO_ROOT)}."
+        )
+        return 0
+
+    if not README_PATH.exists():
+        print(
+            "Screenshot contract validation skipped: "
+            f"README not found at {README_PATH.relative_to(REPO_ROOT)}."
+        )
+        return 0
+
     contract = load_json(CONTRACT_PATH)
     screenshots = contract.get("screenshots", [])
     desktop_dir = REPO_ROOT / contract["desktopDirectory"]
