@@ -4,7 +4,9 @@
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
 
-Current roadmap refresh note: the 2026-04-29 direction pivots new operator UI work to the browser dashboard in `src/Meridian.Ui/dashboard/`. Treat WPF plans and automation as retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Waves 2-4 still require cockpit, shared-model, and governance acceptance evidence, now with web-first UI delivery.
+Current roadmap refresh note: the 2026-04-29 direction positions Meridian as an evidence-backed investment operations platform. New operator UI work stays in the browser dashboard in `src/Meridian.Ui/dashboard/`; WPF plans and automation remain retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Waves 2-4 still require cockpit, shared-model, accounting, reconciliation, and governed-report acceptance evidence, now with web-first UI delivery.
+
+Deprecated, superseded, or historical plans belong under `archive/docs/` rather than in this active plans folder. Keep active plan references current, and point to archived files only for historical context.
 
 ## Core Operator-Ready Path (Waves 1-4)
 
@@ -12,13 +14,12 @@ These are the plan documents that directly support the current path to the core 
 
 | Document | Purpose |
 | --- | --- |
+| [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Active product-category filter: trusted data -> research -> paper -> books -> reconciliation -> governed report evidence |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current six-week execution slice for Waves 1-4 |
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner-lane, dependency, and exit-criteria addendum for the active Waves 2-4 path |
 | [provider-reliability-data-confidence-wave-1-blueprint.md](provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 provider-confidence and checkpoint-evidence blueprint |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability sprint blueprint for replay confidence, session persistence, risk auditability, and promotion traceability |
 | [web-ui-development-pivot.md](web-ui-development-pivot.md) | Active plan for pausing desktop feature work and making the browser dashboard the operator UI lane |
-| [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Historical browser-workstation checklist; reuse remaining items only when they support the active web dashboard |
-| [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint backlog for workstation delivery |
 | [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Historical WPF-first migration blueprint; re-scope open items to web-first workstation delivery |
 | [meridian-analytics-productization-blueprint.md](meridian-analytics-productization-blueprint.md) | Research -> Trading -> Governance analytics productization blueprint for notebooks, comparison, exports, handoff, and governed artifacts |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, reconciliation, and reporting blueprint on top of shared seams |
@@ -74,6 +75,13 @@ Active UFL target-state references include direct lending, equity, options, futu
 | --- | --- |
 | [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint |
 | [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct lending implementation roadmap |
+
+## Archived Planning Context
+
+The following prior planning files have been moved out of the active plans tree:
+
+- [`../../archive/docs/plans/workstation-release-readiness-blueprint.md`](../../archive/docs/plans/workstation-release-readiness-blueprint.md) - historical browser-workstation release checklist
+- [`../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md`](../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md) - historical sprint backlog tied to the retired release checklist
 
 ---
 

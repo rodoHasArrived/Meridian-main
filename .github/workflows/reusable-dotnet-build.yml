@@ -25,7 +25,7 @@ on:
         description: '.NET SDK version'
         required: false
         type: string
-        default: '9.0.x'
+        default: '10.0.x'
       configuration:
         description: 'Build configuration'
         required: false

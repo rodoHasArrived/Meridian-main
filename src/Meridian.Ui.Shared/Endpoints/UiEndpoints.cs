@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
+using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
@@ -55,6 +56,8 @@ public static class UiEndpoints
         RegisterStrategyWorkstationServices(services);
 
         services.AddMutationRateLimiter();
+        services.AddMemoryCache();
+        services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         // Register LeanAutoExportService as a background hosted service
         services.AddSingleton<LeanAutoExportService>();
@@ -91,6 +94,8 @@ public static class UiEndpoints
 
         services.AddSingleton(statusHandlers);
         services.AddMutationRateLimiter();
+        services.AddMemoryCache();
+        services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         // Register LeanAutoExportService as a background hosted service
         services.AddSingleton<LeanAutoExportService>();

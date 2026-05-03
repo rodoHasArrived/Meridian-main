@@ -16,6 +16,8 @@ internal sealed class HelpCommand : ICliCommand
         ["diagnostics"] = ShowDiagnosticsHelp,
         ["providers"] = ShowProvidersHelp,
         ["security-master"] = ShowSecurityMasterHelp,
+        ["runbooks"] = ShowRunbooksHelp,
+        ["statements"] = ShowStatementsHelp,
     };
 
     public bool CanHandle(string[] args)
@@ -59,10 +61,64 @@ internal sealed class HelpCommand : ICliCommand
         Console.WriteLine("  --help diagnostics      Diagnostics and troubleshooting");
         Console.WriteLine("  --help providers        Data provider information");
         Console.WriteLine("  --help security-master  Security Master bulk ingest and conflict resolution");
+        Console.WriteLine("  --help runbooks         Runbook preset create/list/run commands");
+        Console.WriteLine("  --help statements       Statement import/validation/reconciliation");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
     }
 
+    private static void ShowRunbooksHelp()
+    {
+        Console.WriteLine(@"
+RUNBOOKS
+════════
+
+Create and run reusable workflow runbooks.
+
+COMMANDS:
+    --runbook-list                           List saved runbooks
+    --runbook-create <name>                  Create or update a runbook
+    --runbook-id <id>                        Optional stable runbook id
+    --runbook-description <text>             Optional description
+    --runbook-steps <kind:payload,...>       Required step list for create
+    --runbook-run <id> [--dry-run]           Execute a runbook
+
+EXAMPLES:
+    Meridian --runbook-create ""Daily readiness"" \
+      --runbook-steps readiness:global,replay:latest
+
+    Meridian --runbook-list
+
+    Meridian --runbook-run daily-readiness --dry-run
+");
+    }
+
+
+    private static void ShowStatementsHelp()
+    {
+        Console.WriteLine(@"
+STATEMENTS
+══════════
+
+Broker statement ingestion and reconciliation.
+
+COMMANDS:
+    --statement-import                         Import normalized statement rows
+    --statement-validate                       Validate schema and balance totals
+    --statement-reconcile                      Run matching and produce unresolved cases
+
+REQUIRED OPTIONS:
+    --statement-source-kind <local|s3|sftp>   Statement source adapter kind
+    --statement-source-path <path>             Source file or directory path
+
+EXAMPLES:
+    Meridian --statement-validate --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+
+    Meridian --statement-import --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+
+    Meridian --statement-reconcile --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+");
+    }
     private static void ShowBackfillHelp()
     {
         Console.WriteLine(@"

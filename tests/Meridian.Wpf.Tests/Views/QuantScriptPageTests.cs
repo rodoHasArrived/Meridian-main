@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,7 @@ using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Wpf.Controls;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -37,6 +39,22 @@ public sealed class QuantScriptPageTests
 
             page.FindName("ChartRow").Should().BeOfType<RowDefinition>().Subject.Height.Value.Should().Be(300);
             page.FindName("EditorRow").Should().BeOfType<RowDefinition>().Subject.Height.Value.Should().Be(400);
+        });
+    }
+
+    [Fact]
+    public void AutomationLeafBorder_GetChildren_ReturnsEmpty()
+    {
+        // Regression guard: AvalonEdit's TextEditor is wrapped in AutomationLeafBorder so that
+        // FindFirst(TreeScope.Descendants) in run-desktop-workflow.ps1 does not hang indefinitely
+        // when the QuantScript page is active. The peer must report no children.
+        WpfTestThread.Run(() =>
+        {
+            var border = new AutomationLeafBorder();
+            var peer = UIElementAutomationPeer.CreatePeerForElement(border);
+
+            peer.Should().NotBeNull();
+            peer!.GetChildren().Should().BeNullOrEmpty();
         });
     }
 

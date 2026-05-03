@@ -42,6 +42,20 @@ function Format-MeridianBuildBytes {
     return "$Bytes B"
 }
 
+function Get-MeridianBuildArtifactMaxRootSizeMB {
+    $raw = $env:MERIDIAN_BUILD_ARTIFACT_MAX_ROOT_SIZE_MB
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        return 4096
+    }
+
+    try {
+        return [int]$raw
+    }
+    catch {
+        return 4096
+    }
+}
+
 function Get-MeridianDirectorySizeBytes {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -57,15 +71,17 @@ function Invoke-MeridianBuildArtifactRetention {
     param(
         [Parameter(Mandatory = $true)][string]$RepoRoot,
         [int]$MaxAgeDays = 14,
-        [int]$RetainLatest = 10
+        [int]$RetainLatest = 10,
+        [int]$MaxRootSizeMB = (Get-MeridianBuildArtifactMaxRootSizeMB)
     )
 
-    if ($script:MeridianBuildArtifactRetentionApplied -or ($MaxAgeDays -le 0 -and $RetainLatest -le 0)) {
+    if ($script:MeridianBuildArtifactRetentionApplied -or ($MaxAgeDays -le 0 -and $RetainLatest -le 0 -and $MaxRootSizeMB -le 0)) {
         return
     }
 
     $script:MeridianBuildArtifactRetentionApplied = $true
     $cutoffUtc = (Get-Date).ToUniversalTime().AddDays(-$MaxAgeDays)
+    $maxRootBytes = if ($MaxRootSizeMB -gt 0) { [int64]$MaxRootSizeMB * 1024 * 1024 } else { 0L }
     $artifactRoots = @(
         (Join-Path $RepoRoot 'artifacts/bin')
         (Join-Path $RepoRoot 'artifacts/obj')
@@ -93,13 +109,7 @@ function Invoke-MeridianBuildArtifactRetention {
             continue
         }
 
-        $retainedDirectories = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
-        if ($RetainLatest -gt 0) {
-            foreach ($directory in ($artifactDirectories | Select-Object -First $RetainLatest)) {
-                [void]$retainedDirectories.Add([System.IO.Path]::GetFullPath($directory.FullName))
-            }
-        }
-
+        $candidateEntries = New-Object System.Collections.Generic.List[object]
         foreach ($directory in $artifactDirectories) {
             $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
             if (-not $candidatePath.StartsWith($resolvedRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -107,30 +117,93 @@ function Invoke-MeridianBuildArtifactRetention {
                 continue
             }
 
-            $ageExpired = $MaxAgeDays -gt 0 -and $directory.LastWriteTimeUtc -lt $cutoffUtc
-            $countExceeded = $RetainLatest -gt 0 -and -not $retainedDirectories.Contains($candidatePath)
-            if (-not $ageExpired -and -not $countExceeded) {
+            $candidateEntries.Add([PSCustomObject]@{
+                    Path             = $candidatePath
+                    Bytes            = Get-MeridianDirectorySizeBytes -Path $candidatePath
+                    LastWriteTimeUtc = $directory.LastWriteTimeUtc
+                })
+        }
+
+        if ($candidateEntries.Count -eq 0) {
+            continue
+        }
+
+        $retainedDirectories = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+        if ($RetainLatest -gt 0) {
+            foreach ($entry in ($candidateEntries | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First $RetainLatest)) {
+                [void]$retainedDirectories.Add($entry.Path)
+            }
+        }
+
+        $deletePaths = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($entry in $candidateEntries) {
+            $ageExpired = $MaxAgeDays -gt 0 -and $entry.LastWriteTimeUtc -lt $cutoffUtc
+            $countExceeded = $RetainLatest -gt 0 -and -not $retainedDirectories.Contains($entry.Path)
+            if ($ageExpired -or $countExceeded) {
+                [void]$deletePaths.Add($entry.Path)
+            }
+        }
+
+        if ($maxRootBytes -gt 0) {
+            $projectedRootBytes = 0L
+            foreach ($entry in $candidateEntries) {
+                $projectedRootBytes += [int64]$entry.Bytes
+            }
+
+            foreach ($entry in $candidateEntries) {
+                if ($deletePaths.Contains($entry.Path)) {
+                    $projectedRootBytes -= [int64]$entry.Bytes
+                }
+            }
+
+            foreach ($entry in ($candidateEntries | Sort-Object LastWriteTimeUtc)) {
+                if ($projectedRootBytes -le $maxRootBytes) {
+                    break
+                }
+
+                if ($deletePaths.Contains($entry.Path)) {
+                    continue
+                }
+
+                [void]$deletePaths.Add($entry.Path)
+                $projectedRootBytes -= [int64]$entry.Bytes
+            }
+        }
+
+        foreach ($entry in $candidateEntries) {
+            if (-not $deletePaths.Contains($entry.Path)) {
                 continue
             }
 
             try {
-                $candidateBytes = Get-MeridianDirectorySizeBytes -Path $candidatePath
-                Remove-Item -LiteralPath $candidatePath -Recurse -Force -ErrorAction Stop
+                Remove-Item -LiteralPath $entry.Path -Recurse -Force -ErrorAction Stop
                 $deletedCount++
-                $freedBytes += $candidateBytes
+                $freedBytes += [int64]$entry.Bytes
             }
             catch {
-                Write-Warning "Failed to prune stale build artifact directory '$candidatePath': $($_.Exception.Message)"
+                Write-Warning "Failed to prune stale build artifact directory '$($entry.Path)': $($_.Exception.Message)"
             }
         }
     }
 
     if ($deletedCount -gt 0) {
-        Write-Host ("[INFO] Pruned {0} isolated build artifact director{1} using age/count retention (older than {2} days or beyond latest {3} per root) from artifacts/bin and artifacts/obj ({4} recovered)." -f `
+        $policies = New-Object System.Collections.Generic.List[string]
+        if ($MaxAgeDays -gt 0) {
+            $policies.Add("older than $MaxAgeDays days")
+        }
+
+        if ($RetainLatest -gt 0) {
+            $policies.Add("beyond latest $RetainLatest per root")
+        }
+
+        if ($MaxRootSizeMB -gt 0) {
+            $policies.Add("above $MaxRootSizeMB MB per root")
+        }
+
+        Write-Host ("[INFO] Pruned {0} isolated build artifact director{1} using age/count/size retention ({2}) from artifacts/bin and artifacts/obj ({3} recovered)." -f `
                 $deletedCount, `
                 $(if ($deletedCount -eq 1) { 'y' } else { 'ies' }), `
-                $MaxAgeDays, `
-                $RetainLatest, `
+                ([string]::Join(' or ', $policies)), `
                 (Format-MeridianBuildBytes -Bytes $freedBytes))
     }
 }

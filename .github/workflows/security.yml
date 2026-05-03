@@ -51,7 +51,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -411,7 +411,7 @@ jobs:
           model: gpt-4o-mini
           max-tokens: 1500
           prompt: |
-            You are a security engineer reviewing scan results for a .NET 9.0 market data collection application.
+            You are a security engineer reviewing scan results for a .NET 10.0 market data collection application.
 
             Dependency scan result: ${{ needs.dependency-vulnerability-scan.result }}
             Secret detection result: ${{ needs.secret-detection.result }}

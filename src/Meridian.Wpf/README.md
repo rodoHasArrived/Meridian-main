@@ -76,7 +76,7 @@ The WPF application remains Meridian's primary desktop surface, but it is now th
 - **Data** - providers, symbols, backfill, storage, schedules, quality, package, and export workflows
 - **Settings** - credentials, diagnostics, service management, health, activity, notifications, help, and setup
 
-See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/trading-workstation-migration-blueprint.md) for the active migration blueprint, [`docs/status/ROADMAP.md`](../../docs/status/ROADMAP.md) for the active delivery waves, and [`docs/architecture/ui-redesign.md`](../../docs/architecture/ui-redesign.md) for the target information architecture.
+See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/trading-workstation-migration-blueprint.md) for the active migration blueprint, [`docs/status/ROADMAP.md`](../../docs/status/ROADMAP.md) for the active delivery waves, and [`docs/plans/evidence-backed-investment-operations-plan.md`](../../docs/plans/evidence-backed-investment-operations-plan.md) for the current product-category filter. Historical UI redesign notes now live in [`archive/docs/assessments/ui-redesign.md`](../../archive/docs/assessments/ui-redesign.md).
 
 ## Architecture
 

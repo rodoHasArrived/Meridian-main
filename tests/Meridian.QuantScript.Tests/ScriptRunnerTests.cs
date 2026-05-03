@@ -16,7 +16,10 @@ public sealed class ScriptRunnerTests
         IQuantScriptCompiler? compiler = null,
         IQuantDataContext? dataContext = null,
         PlotQueue? plotQueue = null,
-        int runTimeoutSeconds = 10)
+        int runTimeoutSeconds = 10,
+        long maxMemoryDeltaBytes = 0,
+        int maxRunElapsedMilliseconds = 0,
+        int maxOutputItemsPerRun = 0)
     {
         compiler ??= new RoslynScriptCompiler(
             Options.Create(new QuantScriptOptions()),
@@ -29,7 +32,13 @@ public sealed class ScriptRunnerTests
             compiler,
             dataContext,
             plotQueue ?? new PlotQueue(),
-            Options.Create(new QuantScriptOptions { RunTimeoutSeconds = runTimeoutSeconds }),
+            Options.Create(new QuantScriptOptions
+            {
+                RunTimeoutSeconds = runTimeoutSeconds,
+                MaxMemoryDeltaBytes = maxMemoryDeltaBytes,
+                MaxRunElapsedMilliseconds = maxRunElapsedMilliseconds,
+                MaxOutputItemsPerRun = maxOutputItemsPerRun
+            }),
             NullLogger<ScriptRunner>.Instance,
             null);
     }
@@ -215,6 +224,30 @@ public sealed class ScriptRunnerTests
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script timed out.");
         result.Checkpoint.Should().BeSameAs(first.Checkpoint);
+    }
+
+    [Fact]
+    public async Task RunAsync_ElapsedLimitExceeded_ReturnsRuntimeLimitDiagnostic()
+    {
+        var runner = BuildRunner(maxRunElapsedMilliseconds: 1);
+
+        var result = await runner.RunAsync("System.Threading.Thread.Sleep(25);", NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured elapsed-time limit.");
+        result.RuntimeDiagnostics.Should().ContainSingle(x => x.Severity == "RuntimeLimit");
+    }
+
+    [Fact]
+    public async Task RunAsync_OutputLimitExceeded_ReturnsRuntimeLimitDiagnostic()
+    {
+        var runner = BuildRunner(maxOutputItemsPerRun: 1);
+
+        var result = await runner.RunAsync("PrintMetric(\"One\", 1); PrintMetric(\"Two\", 2);", NoParams);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script exceeded configured output-item limit.");
+        result.RuntimeDiagnostics.Should().Contain(x => x.Message.Contains("Output item limit exceeded"));
     }
 
     // ── Data access ───────────────────────────────────────────────────────────

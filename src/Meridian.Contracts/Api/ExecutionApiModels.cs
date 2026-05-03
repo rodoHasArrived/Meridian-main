@@ -33,11 +33,13 @@ public sealed record ExecutionPositionDetailResponse(
     string? Right = null,
     bool SupportsClose = true,
     bool SupportsUpsize = true,
-    IReadOnlyDictionary<string, string>? Metadata = null);
+    IReadOnlyDictionary<string, string>? Metadata = null,
+    IReadOnlyList<PositionLotEntry>? Lots = null);
 
 /// <summary>
 /// Request for a blotter-driven execution action against a specific position.
 /// </summary>
 public sealed record ExecutionPositionActionRequest(
     string PositionKey,
-    decimal? Quantity = null);
+    decimal? Quantity = null,
+    PositionLotSelection? LotSelection = null);

@@ -4,7 +4,7 @@
 **Date:** 2026-04-29
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
-Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
+Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
 
 ---
 
@@ -41,7 +41,7 @@ These modules describe Meridian's sellable product direction. They are conservat
 | Close Readiness Score | 📝 | Planned period-end readiness score for Security Master, positions, cash, ledger, pricing, reconciliation, reports, and approvals. Should be shared-contract-first before dashboard scoring UI. |
 | Broker Statement Reconciliation | 📝 | Planned statement-import and mapping workflow for positions, cash, and transactions that can create reconciliation cases linked back to internal positions, ledger entries, orders/fills, and run evidence. |
 | Explain the Break | 📝 | Planned reconciliation explanation summary with probable cause, source systems, linked run/session/order/fill, ledger impact, suggested route, required sign-off, and similar-break history. |
-| Evidence Completeness Score | 📝 | Planned shared readiness summary for runs, promotions, paper sessions, reconciliation cases, and report-pack previews. Should start as `EvidenceCompletenessSummary` before screen-specific badges or scoring UI. |
+| Evidence Completeness Score | 🔄 | Shared `EvidenceCompletenessSummaryDto` is now emitted by trading readiness from acceptance gates and operator work items, including report-pack lineage posture. Broader close/report-pack scoring across reconciliation cases and report previews remains planned. |
 | Meridian Assurance Score | 📝 | Planned cross-workflow score combining data trust, replay confidence, ledger integrity, reconciliation readiness, and approval completeness for runs, promotions, report packs, close readiness, and dashboards. |
 | Evidence SLA | 📝 | Planned freshness and expiration policy for provider validation, replay verification, reconciliation completion, report-pack currency, and approval windows. Current readiness checks are inputs, not an SLA engine. |
 | Evidence Vault | 📝 | Planned durable artifact store for run packets, report packs, approvals, screenshots, validation outputs, external statements, reconciliation decisions, and generated certificates. Every artifact should retain lineage. |
@@ -410,6 +410,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 - WPF now includes a first-pass `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-in pages, completed backtests are mirrored into that shared workstation flow, and QuantScript exposes local execution history with run-browser, run-detail, and compare handoffs when a mirrored Strategy Run exists.
 - Run-scoped reconciliation contracts and service flows now exist through `ReconciliationRunRequest`, `ReconciliationRunSummary`, `ReconciliationRunDetail`, `ReconciliationRunService`, and `/api/workstation/reconciliation/*`.
 - Governance fund operations now exposes explicit fund cash-flow projection ladders/events and account-linked multi-ledger views across consolidated, entity, sleeve, and vehicle dimensions.
+- **Allowed sync data-flow path:** brokerage/provider sync ingestion must flow through fund-account scope first (`/api/fund-accounts/*` + `WorkstationBrokerageSyncStatusDto`), then shared run/portfolio/ledger/reconciliation services, and finally continuity/governance workstation DTOs (`/api/workstation/trading/readiness`, `/api/workstation/operator/inbox`, and reconciliation queue projections). Avoid introducing standalone sync projection endpoint contracts that bypass fund-account and shared services.
 - The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, deeper per-entity/per-sleeve/per-vehicle posting fidelity, richer reconciliation UX, and more complete cockpit-style workflow integration.
 
 ### Known WPF limitations

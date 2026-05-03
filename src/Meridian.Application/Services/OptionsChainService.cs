@@ -17,30 +17,42 @@ namespace Meridian.Application.Services;
 public sealed class OptionsChainService
 {
     private readonly OptionDataCollector _collector;
-    private readonly IOptionsChainProvider? _provider;
+    private readonly IReadOnlyList<IOptionsChainProvider> _providers;
     private readonly ILogger<OptionsChainService> _logger;
 
     public OptionsChainService(
         OptionDataCollector collector,
         ILogger<OptionsChainService> logger,
         IOptionsChainProvider? provider = null)
+        : this(
+            collector,
+            logger,
+            provider is null ? Array.Empty<IOptionsChainProvider>() : new[] { provider })
+    {
+    }
+
+    public OptionsChainService(
+        OptionDataCollector collector,
+        ILogger<OptionsChainService> logger,
+        IEnumerable<IOptionsChainProvider>? providers)
     {
         _collector = collector ?? throw new ArgumentNullException(nameof(collector));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _provider = provider;
+        _providers = NormalizeProviders(providers);
     }
 
     /// <summary>
     /// Returns whether an options chain provider is available.
     /// </summary>
-    public bool IsProviderAvailable => _provider is not null;
+    public bool IsProviderAvailable => _providers.Count > 0;
 
     /// <summary>
     /// Returns a UI-friendly status summary for the active options provider.
     /// </summary>
     public OptionsProviderStatus GetProviderStatus()
     {
-        if (_provider is null)
+        var provider = GetPrimaryProvider();
+        if (provider is null)
         {
             return new OptionsProviderStatus(
                 ProviderId: null,
@@ -50,15 +62,15 @@ public sealed class OptionsChainService
                 Message: "No options provider configured.");
         }
 
-        var isFallback = string.Equals(_provider.ProviderId, "synthetic", StringComparison.OrdinalIgnoreCase);
+        var isFallback = string.Equals(provider.ProviderId, "synthetic", StringComparison.OrdinalIgnoreCase);
         var mode = isFallback ? "Fallback" : "Configured";
         var message = isFallback
-            ? $"{_provider.ProviderDisplayName} fallback is active."
-            : $"{_provider.ProviderDisplayName} is configured.";
+            ? $"{provider.ProviderDisplayName} fallback is active."
+            : $"{provider.ProviderDisplayName} is configured.";
 
         return new OptionsProviderStatus(
-            ProviderId: _provider.ProviderId,
-            ProviderDisplayName: _provider.ProviderDisplayName,
+            ProviderId: provider.ProviderId,
+            ProviderDisplayName: provider.ProviderDisplayName,
             Mode: mode,
             IsFallback: isFallback,
             Message: message);
@@ -73,13 +85,19 @@ public sealed class OptionsChainService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
-        if (_provider is null)
+        var expirations = await QueryProvidersAsync(
+            provider => provider.GetExpirationsAsync(underlyingSymbol, ct),
+            static result => result.Count > 0,
+            $"expirations for {underlyingSymbol}",
+            ct).ConfigureAwait(false);
+
+        if (expirations is null)
         {
             _logger.LogWarning("No options chain provider configured; returning empty expirations for {Symbol}", underlyingSymbol);
             return Array.Empty<DateOnly>();
         }
 
-        return await _provider.GetExpirationsAsync(underlyingSymbol, ct).ConfigureAwait(false);
+        return expirations;
     }
 
     /// <summary>
@@ -92,13 +110,19 @@ public sealed class OptionsChainService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
-        if (_provider is null)
+        var strikes = await QueryProvidersAsync(
+            provider => provider.GetStrikesAsync(underlyingSymbol, expiration, ct),
+            static result => result.Count > 0,
+            $"strikes for {underlyingSymbol} {expiration}",
+            ct).ConfigureAwait(false);
+
+        if (strikes is null)
         {
             _logger.LogWarning("No options chain provider configured; returning empty strikes for {Symbol}", underlyingSymbol);
             return Array.Empty<decimal>();
         }
 
-        return await _provider.GetStrikesAsync(underlyingSymbol, expiration, ct).ConfigureAwait(false);
+        return strikes;
     }
 
     /// <summary>
@@ -113,22 +137,22 @@ public sealed class OptionsChainService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
-        if (_provider is null)
+        var chain = await QueryProvidersAsync(
+            provider => provider.GetChainSnapshotAsync(underlyingSymbol, expiration, strikeRange, ct),
+            static result => result is not null,
+            $"chain snapshot for {underlyingSymbol} {expiration}",
+            ct).ConfigureAwait(false);
+
+        if (chain is null)
         {
-            _logger.LogWarning("No options chain provider configured; cannot fetch chain for {Symbol}", underlyingSymbol);
+            _logger.LogWarning("No options chain provider returned a chain for {Symbol}", underlyingSymbol);
             return null;
         }
 
-        var chain = await _provider.GetChainSnapshotAsync(underlyingSymbol, expiration, strikeRange, ct)
-            .ConfigureAwait(false);
-
-        if (chain is not null)
-        {
-            _collector.OnChainSnapshot(chain);
-            _logger.LogInformation(
-                "Fetched chain snapshot for {Symbol} expiration {Expiration} with {Contracts} contracts",
-                underlyingSymbol, expiration, chain.TotalContracts);
-        }
+        _collector.OnChainSnapshot(chain);
+        _logger.LogInformation(
+            "Fetched chain snapshot for {Symbol} expiration {Expiration} with {Contracts} contracts",
+            underlyingSymbol, expiration, chain.TotalContracts);
 
         return chain;
     }
@@ -142,18 +166,19 @@ public sealed class OptionsChainService
     {
         ArgumentNullException.ThrowIfNull(contract);
 
-        if (_provider is null)
+        var quote = await QueryProvidersAsync(
+            provider => provider.GetOptionQuoteAsync(contract, ct),
+            static result => result is not null,
+            $"quote for {contract}",
+            ct).ConfigureAwait(false);
+
+        if (quote is null)
         {
-            _logger.LogWarning("No options chain provider configured; cannot fetch quote for {Contract}", contract);
+            _logger.LogWarning("No options chain provider returned a quote for {Contract}", contract);
             return null;
         }
 
-        var quote = await _provider.GetOptionQuoteAsync(contract, ct).ConfigureAwait(false);
-
-        if (quote is not null)
-        {
-            _collector.OnOptionQuote(quote);
-        }
+        _collector.OnOptionQuote(quote);
 
         return quote;
     }
@@ -169,7 +194,7 @@ public sealed class OptionsChainService
         if (config is null)
             throw new ArgumentNullException(nameof(config));
 
-        if (!config.Enabled || _provider is null)
+        if (!config.Enabled || _providers.Count == 0)
         {
             return Array.Empty<OptionChainSnapshot>();
         }
@@ -183,7 +208,11 @@ public sealed class OptionsChainService
 
             try
             {
-                var expirations = await _provider.GetExpirationsAsync(underlying, ct).ConfigureAwait(false);
+                var expirations = await QueryProvidersAsync(
+                    provider => provider.GetExpirationsAsync(underlying, ct),
+                    static result => result.Count > 0,
+                    $"configured expirations for {underlying}",
+                    ct).ConfigureAwait(false) ?? Array.Empty<DateOnly>();
 
                 var filtered = FilterExpirations(expirations, config);
 
@@ -191,8 +220,11 @@ public sealed class OptionsChainService
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    var chain = await _provider.GetChainSnapshotAsync(
-                        underlying, expiry, config.StrikeRange, ct).ConfigureAwait(false);
+                    var chain = await QueryProvidersAsync(
+                        provider => provider.GetChainSnapshotAsync(underlying, expiry, config.StrikeRange, ct),
+                        static result => result is not null,
+                        $"configured chain snapshot for {underlying} {expiry}",
+                        ct).ConfigureAwait(false);
 
                     if (chain is not null)
                     {
@@ -254,6 +286,55 @@ public sealed class OptionsChainService
     /// </summary>
     public IReadOnlyList<string> GetTrackedUnderlyings()
         => _collector.GetTrackedUnderlyings();
+
+    private IOptionsChainProvider? GetPrimaryProvider()
+        => _providers.Count == 0 ? null : _providers[0];
+
+    private async Task<T?> QueryProvidersAsync<T>(
+        Func<IOptionsChainProvider, Task<T>> query,
+        Func<T, bool> hasResult,
+        string operation,
+        CancellationToken ct)
+    {
+        foreach (var provider in _providers)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            try
+            {
+                var result = await query(provider).ConfigureAwait(false);
+                if (hasResult(result))
+                    return result;
+
+                _logger.LogDebug(
+                    "Options provider {ProviderId} returned no data for {Operation}; trying fallback provider.",
+                    provider.ProviderId,
+                    operation);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Options provider {ProviderId} failed while fetching {Operation}; trying fallback provider.",
+                    provider.ProviderId,
+                    operation);
+            }
+        }
+
+        return default;
+    }
+
+    private static IReadOnlyList<IOptionsChainProvider> NormalizeProviders(IEnumerable<IOptionsChainProvider>? providers)
+    {
+        if (providers is null)
+            return Array.Empty<IOptionsChainProvider>();
+
+        return providers
+            .GroupBy(static provider => provider.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static provider => provider.ProviderPriority)
+            .ToArray();
+    }
 
     private static IReadOnlyList<DateOnly> FilterExpirations(
         IReadOnlyList<DateOnly> expirations,

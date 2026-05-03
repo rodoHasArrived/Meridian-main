@@ -396,7 +396,7 @@ The following documentation should remain aligned with this blueprint during imp
 
 - `README.md`
 - `docs/README.md`
-- `docs/architecture/ui-redesign.md`
+- `archive/docs/assessments/ui-redesign.md` (historical UI redesign context only)
 - `docs/status/ROADMAP.md`
 - `docs/status/FEATURE_INVENTORY.md`
 - `docs/status/production-status.md`

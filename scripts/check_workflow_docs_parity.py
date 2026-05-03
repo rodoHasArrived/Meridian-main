@@ -30,10 +30,10 @@ COMMAND_PREFIXES = (
     "./scripts/",
     "scripts/",
 )
-CODE_FENCE_RE = re.compile(r"^```(?P<lang>[A-Za-z0-9_+#-]*)\\s*$")
+CODE_FENCE_RE = re.compile(r"^```(?P<lang>[A-Za-z0-9_+#-]*)\s*$")
 FLAG_RE = re.compile(r"--[a-z0-9][a-z0-9-]*")
 PLACEHOLDER_RE = re.compile(r"^<[^>]+>$")
-SPECIAL_CONTEXT_RE = re.compile(r"\\b(TODO|specialized|verify|intended|prerequisite|planned)\\b", re.IGNORECASE)
+SPECIAL_CONTEXT_RE = re.compile(r"\b(TODO|specialized|verify|intended|prerequisite|planned)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -85,14 +85,14 @@ class ParityChecker:
         scripts: set[str] = set()
         for path in (self.root / "scripts").rglob("*"):
             if path.is_file():
-                scripts.add(str(path.relative_to(self.root)).replace("\\\\", "/"))
+                scripts.add(str(path.relative_to(self.root)).replace("\\", "/"))
         for path in (self.root / "build" / "scripts").rglob("*"):
             if path.is_file():
-                scripts.add(str(path.relative_to(self.root)).replace("\\\\", "/"))
+                scripts.add(str(path.relative_to(self.root)).replace("\\", "/"))
         return scripts
 
     def _collect_csproj_paths(self) -> set[str]:
-        return {str(path.relative_to(self.root)).replace("\\\\", "/") for path in self.root.rglob("*.csproj")}
+        return {str(path.relative_to(self.root)).replace("\\", "/") for path in self.root.rglob("*.csproj")}
 
     def _collect_cli_flags_from_source(self) -> set[str]:
         flags: set[str] = set()
@@ -240,7 +240,7 @@ class ParityChecker:
             if token.startswith("-") or token.startswith("http://") or token.startswith("https://"):
                 continue
             normalized = token.lstrip("./")
-            normalized = normalized.replace("\\\\", "/")
+            normalized = normalized.replace("\\", "/")
             if normalized.startswith("scripts/") or normalized.startswith("build/scripts/"):
                 if normalized not in self.known_scripts:
                     suggestion = self._closest(normalized, self.known_scripts)

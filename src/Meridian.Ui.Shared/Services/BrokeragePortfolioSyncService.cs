@@ -6,9 +6,12 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
+
+#pragma warning disable CS0618 // Retained compatibility service persists legacy brokerage projection DTOs.
 
 /// <summary>
 /// Configures the durable brokerage read-side sync used by workstation fund ops.
@@ -235,6 +238,7 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+        await EnrichSharedReadServicesAsync(fundAccountId, attemptedAt, projection, ct).ConfigureAwait(false);
         return projection.Status;
     }
 
@@ -418,6 +422,57 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
     }
 
+    private async Task EnrichSharedReadServicesAsync(
+        Guid fundAccountId,
+        DateTimeOffset attemptedAt,
+        WorkstationBrokerageSyncViewDto projection,
+        CancellationToken ct)
+    {
+        var fundAccountService = _services.GetService<IFundAccountService>();
+        if (fundAccountService is null || projection.Balance is null)
+        {
+            return;
+        }
+
+        var asOfDate = DateOnly.FromDateTime(attemptedAt.UtcDateTime);
+        var source = $"brokerage-sync:{projection.Link.ProviderId}";
+        var externalReference = projection.Link.ExternalAccountId;
+        var latestSnapshot = await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        var isDuplicateSnapshot = latestSnapshot is not null
+            && latestSnapshot.AsOfDate == asOfDate
+            && string.Equals(latestSnapshot.Source, source, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(latestSnapshot.ExternalReference, externalReference, StringComparison.OrdinalIgnoreCase)
+            && latestSnapshot.Currency == projection.Balance.Currency
+            && latestSnapshot.CashBalance == projection.Balance.Cash
+            && latestSnapshot.SecuritiesMarketValue == projection.Balance.Equity - projection.Balance.Cash;
+
+        if (isDuplicateSnapshot)
+        {
+            return;
+        }
+
+        await fundAccountService.RecordBalanceSnapshotAsync(
+            new RecordAccountBalanceSnapshotRequest(
+                AccountId: fundAccountId,
+                AsOfDate: asOfDate,
+                Currency: projection.Balance.Currency,
+                CashBalance: projection.Balance.Cash,
+                SecuritiesMarketValue: projection.Balance.Equity - projection.Balance.Cash,
+                AccruedInterest: 0m,
+                PendingSettlement: 0m,
+                Source: source,
+                RecordedBy: projection.Link.LinkedBy ?? "brokerage-sync",
+                ExternalReference: externalReference),
+            ct).ConfigureAwait(false);
+
+        await fundAccountService.ReconcileAccountAsync(
+            new ReconcileAccountRequest(
+                fundAccountId,
+                DateOnly.FromDateTime(attemptedAt.UtcDateTime),
+                projection.Link.LinkedBy ?? "brokerage-sync"),
+            ct).ConfigureAwait(false);
+    }
+
     private async Task<WorkstationBrokerageSyncViewDto?> LoadProjectionAsync(Guid fundAccountId, CancellationToken ct)
     {
         var path = BuildProjectionPath(fundAccountId);
@@ -580,9 +635,12 @@ public sealed class BrokeragePortfolioSyncService
 
     private static string SanitizePathSegment(string value)
     {
-        var invalid = Path.GetInvalidFileNameChars();
-        return new string(value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
+        return new string(value.Select(static ch => IsPortablePathSegmentCharacter(ch) ? ch : '_').ToArray());
     }
+
+    private static bool IsPortablePathSegmentCharacter(char ch)
+        => ch >= ' '
+            && ch is not '<' and not '>' and not ':' and not '"' and not '/' and not '\\' and not '|' and not '?' and not '*';
 
     private static async Task WriteJsonAsync<T>(string path, T value, CancellationToken ct)
     {
@@ -608,3 +666,5 @@ public sealed class BrokeragePortfolioSyncService
         string LastRawSnapshotPath,
         string LastProjectionPath);
 }
+
+#pragma warning restore CS0618

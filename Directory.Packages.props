@@ -23,6 +23,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <QuantConnectLeanVersion>2.5.17414</QuantConnectLeanVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Microsoft.Extensions">
@@ -35,12 +36,12 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.5" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="10.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.7" />
   </ItemGroup>
@@ -117,10 +118,10 @@
   </ItemGroup>
 
   <ItemGroup Label="QuantConnect Lean">
-    <PackageVersion Include="QuantConnect.Lean" Version="2.5.17677" />
-    <PackageVersion Include="QuantConnect.Lean.Engine" Version="2.5.17677" />
-    <PackageVersion Include="QuantConnect.Common" Version="2.5.17677" />
-    <PackageVersion Include="QuantConnect.Indicators" Version="2.5.17677" />
+    <PackageVersion Include="QuantConnect.Lean" Version="$(QuantConnectLeanVersion)" />
+    <PackageVersion Include="QuantConnect.Lean.Engine" Version="$(QuantConnectLeanVersion)" />
+    <PackageVersion Include="QuantConnect.Common" Version="$(QuantConnectLeanVersion)" />
+    <PackageVersion Include="QuantConnect.Indicators" Version="$(QuantConnectLeanVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="Technical Analysis">

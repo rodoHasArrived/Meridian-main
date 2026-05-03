@@ -78,9 +78,11 @@ make history                 # Build history summary
 When `buildctl.py build` runs with `--isolation-key`, it writes generated MSBuild output under
 `artifacts/bin/<key>/` and `artifacts/obj/<key>/` and prunes stale isolated output directories older
 than 14 days before starting the build. It also trims excess same-day output beyond the latest 10
-runs per artifact root so repeated local automation does not fill the disk before age-based cleanup
-can run. Override the age window with `--isolation-retention-days <days>` and the count guard with
-`--isolation-retain-latest <count>`, or set both to `0` for a run that must skip cleanup.
+runs per artifact root, and prunes oldest generated runs when either root exceeds 4096 MB, so
+repeated local automation does not fill the disk before age-based cleanup can run. Override the age
+window with `--isolation-retention-days <days>`, the count guard with
+`--isolation-retain-latest <count>`, and the size guard with
+`--isolation-max-root-size-mb <mb>`, or set all three to `0` for a run that must skip cleanup.
 
 `build/scripts/publish/publish.ps1` keeps the default `./dist` publish behavior unchanged. When
 automation points `-OutputDir` under `artifacts/publish/<run-name>`, the script prunes sibling

@@ -1,10 +1,19 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-29
+
+This blueprint is subordinate to
+[`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md)
+and should be read as the Wave 4 implementation shape for the accounting, reconciliation, and
+governed-output parts of Meridian's active differentiation plan.
 
 ## Summary
 
-Implement a Meridian-native governance and fund-operations capability set that makes `account and entity management`, `multi-ledger accounting`, `trial balance`, `cash-flow modeling`, `reconciliation`, `trade-management support`, and `report generation` first-class product workflows inside the existing `Governance` workstation and broader fund-management product, building on Meridian's already-delivered `Security Master` seam.
+Implement a Meridian-native governance and fund-operations capability set that makes `account and
+entity management`, `multi-ledger accounting`, `trial balance`, `cash-flow modeling`,
+`reconciliation`, `trade-management support`, and `report generation` first-class product
+workflows inside Meridian's evidence-backed investment operations path, building on the
+already-delivered `Security Master` seam.
 
 This blueprint starts from the current repository state:
 
@@ -17,7 +26,12 @@ This blueprint starts from the current repository state:
 - `/api/workstation/operator/inbox` now includes open and in-review reconciliation breaks with Governance navigation targets, and the WPF shell queue button resolves the primary work item's route metadata into the concrete `FundReconciliation` workbench when applicable
 - `FundAccountsPage` now includes a stateful operator brief that projects fund-context, account-queue, provider-routing, blocked-route, shared-data-access, balance-evidence snapshot posture, and ready-for-reconciliation states from already-loaded account, provider, and balance-history evidence
 
-The design goal is to finish these capabilities without creating a parallel architecture outside Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian credible as a comprehensive front-, middle-, and back-office fund-management platform. Security Master should be treated as a delivered baseline in this blueprint, not as a future foundation wave.
+The design goal is to finish these capabilities without creating a parallel architecture outside
+Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian
+credible as an evidence-backed investment operations platform that can prove books,
+reconciliation, approvals, and governed outputs from the same underlying evidence chain. Security
+Master should be treated as a delivered baseline in this blueprint, not as a future foundation
+wave.
 
 For the first deep vertical implementation of these governance patterns in direct lending, see [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md).
 
@@ -80,7 +94,7 @@ This is intentionally still an early governance slice. Durable local-first persi
 
 ### Assumptions
 
-- Governance remains a workstation inside Meridian, not a separate app.
+- Governance remains an integrated Meridian workflow set, not a separate app or isolated stack.
 - Core financial kernels should prefer F# when the logic is math-heavy, state-heavy, or rule-heavy.
 - Existing C# services remain the orchestration boundary for WPF, HTTP, and export flows.
 - External statement ingestion will start from structured files and explicit adapters, not unstructured PDFs.

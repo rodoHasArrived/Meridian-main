@@ -131,6 +131,57 @@ public sealed class ProviderEndpointTests
 
     #endregion
 
+    #region POST /api/providers/configure
+
+    [Fact]
+    public async Task ConfigureProvider_WithValidPolygonPayload_ReturnsSetupResult()
+    {
+        var payload = new
+        {
+            Kind = "polygon",
+            DisplayName = $"Polygon Test {Guid.NewGuid():N}",
+            ApiKey = "test-key",
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming", "backfill", "reference" }
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/providers/configure", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await DeserializeAsync(response);
+        json["success"].GetBoolean().Should().BeTrue();
+        json["providerId"].GetString().Should().StartWith("polygon");
+        json["providerName"].GetString().Should().Be(payload.DisplayName);
+        json["error"].ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task ConfigureProvider_WithUnsupportedProvider_ReturnsBadRequestResult()
+    {
+        var payload = new
+        {
+            Kind = "databento",
+            DisplayName = "Databento Trial",
+            ApiKey = "test-key",
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill" }
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/providers/configure", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var json = await DeserializeAsync(response);
+        json["success"].GetBoolean().Should().BeFalse();
+        json["providerName"].GetString().Should().Be("Databento Trial");
+        json["error"].GetString().Should().Contain("not yet supported");
+    }
+
+    #endregion
+
     #region Data Source CRUD
 
     [Fact]

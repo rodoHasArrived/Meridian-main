@@ -52,6 +52,7 @@ public sealed class FakeScriptRunner : IScriptRunner
         CompileTime: TimeSpan.FromMilliseconds(10),
         PeakMemoryBytes: 0,
         CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+        RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
         RuntimeError: null,
         ConsoleOutput: $"Script ran: {source.Length} chars",
         Metrics: Array.Empty<KeyValuePair<string, string>>(),

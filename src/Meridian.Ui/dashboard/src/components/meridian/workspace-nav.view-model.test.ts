@@ -12,13 +12,21 @@ describe("workspace nav view model", () => {
       active: true,
       ariaCurrent: "page",
       statusLabel: "Preview · Current",
+      statusTone: "preview",
       ariaLabel: "Portfolio workspace, current route, Preview"
+    });
+    expect(model.currentWorkspace).toMatchObject({
+      label: "Portfolio",
+      statusLabel: "Preview posture",
+      statusTone: "preview",
+      ariaLabel: "Current workspace: Portfolio, Preview posture"
     });
     expect(model.items.find((item) => item.key === "trading")).toMatchObject({
       route: "/trading",
       active: false,
       ariaCurrent: undefined,
       statusLabel: "Review",
+      statusTone: "review",
       ariaLabel: "Open Trading workspace, Review"
     });
   });
@@ -29,7 +37,13 @@ describe("workspace nav view model", () => {
     expect(model.items.find((item) => item.key === "data")).toMatchObject({
       active: true,
       ariaCurrent: "page",
-      statusLabel: "Live · Current"
+      statusLabel: "Live · Current",
+      statusTone: "live"
+    });
+    expect(model.currentWorkspace).toMatchObject({
+      label: "Data",
+      statusLabel: "Live posture",
+      statusTone: "live"
     });
   });
 });

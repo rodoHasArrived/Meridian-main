@@ -227,16 +227,25 @@ public static class SamplingEndpoints
             stream = new GZipStream(fs, CompressionMode.Decompress);
 
         using var reader = new StreamReader(stream);
-        while (!reader.EndOfStream)
+        while (true)
         {
             ct.ThrowIfCancellationRequested();
             var line = await reader.ReadLineAsync(ct);
+            if (line is null)
+            {
+                break;
+            }
+
             if (!string.IsNullOrWhiteSpace(line))
+            {
                 lines.Add(line);
+            }
 
             // Safety limit to avoid reading enormous files
             if (lines.Count >= 100_000)
+            {
                 break;
+            }
         }
 
         return lines;

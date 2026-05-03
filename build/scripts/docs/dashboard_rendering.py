@@ -40,13 +40,22 @@ def render_markdown_from_json(
     ``render_body`` should accept the parsed JSON payload and return markdown body
     content for the specific dashboard.
     """
-    lines = [
-        "> Auto-generated from canonical JSON payload.",
-        f"> Generated: {json_payload.get('generated_at', current_utc_timestamp())}",
-        f"> Data sources: {', '.join(data_sources)}",
+    metadata = [
+        "_Auto-generated from canonical JSON payload._",
+        f"_Generated: {json_payload.get('generated_at', current_utc_timestamp())}_",
+        "Data sources: " + ", ".join(f"`{source}`" for source in data_sources),
         "",
     ]
-    lines.append(render_body(json_payload).rstrip())
+
+    body = render_body(json_payload).rstrip()
+    if body.startswith("# "):
+        heading, _, remainder = body.partition("\n")
+        lines = [heading, "", *metadata]
+        if remainder.strip():
+            lines.append(remainder.rstrip())
+    else:
+        lines = ["# Generated Dashboard", "", *metadata, body]
+
     lines.append("")
     return "\n".join(lines)
 
@@ -215,7 +224,7 @@ def render_text_signal_dashboard_body(payload: dict[str, Any]) -> str:
         "## Summary",
         "",
         "| Metric | Value |",
-        "|---|---:|",
+        "| --- | ---: |",
         f"| Score | {payload.get('score_percent', 0.0)}% |",
         f"| Passed checks | {summary.get('passed_checks', 0)} |",
         f"| Gap checks | {summary.get('gap_checks', 0)} |",
@@ -225,7 +234,7 @@ def render_text_signal_dashboard_body(payload: dict[str, Any]) -> str:
         "## Evidence Checks",
         "",
         "| Category | Check | Status | Score | Evidence | Missing |",
-        "|---|---|---|---:|---|---|",
+        "| --- | --- | --- | ---: | --- | --- |",
     ]
 
     for check in payload.get("checks", []):
@@ -247,7 +256,7 @@ def render_text_signal_dashboard_body(payload: dict[str, Any]) -> str:
     else:
         lines.extend(["", "## Follow-up Queue", "", "No gaps detected by this dashboard."])
 
-    lines.extend(["", "---", "", "*This dashboard is auto-generated. Do not edit manually.*", ""])
+    lines.extend(["", "---", "", "_This dashboard is auto-generated. Do not edit manually._", ""])
     return "\n".join(lines)
 
 

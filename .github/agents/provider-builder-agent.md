@@ -78,7 +78,7 @@ What does this provider supply?
 | Brokerage gateway | `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` |
 | Options chain | No template — model from `IOptionsChainProvider` interface and existing providers |
 
-Read the full template before writing any code. Templates contain inline `// TODO:` comments
+Read the full template before writing any code. Templates contain inline guidance comments
 explaining every required section.
 
 ### Step 2 — Create the Provider Directory

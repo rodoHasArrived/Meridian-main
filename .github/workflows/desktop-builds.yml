@@ -57,7 +57,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   WPF_PROJECT: 'src/Meridian.Wpf/Meridian.Wpf.csproj'
   BUILD_CONFIG: ${{ inputs.build_config || 'Release' }}
   VERBOSE_LOGGING: ${{ inputs.verbose_logging || 'false' }}

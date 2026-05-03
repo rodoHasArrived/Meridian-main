@@ -12,6 +12,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/development/desktop-testing-guide.md` for WPF test slices and shell-first regression bundles.
 - `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
 - `docs/plans/web-ui-development-pivot.md` for the active browser-first operator UI pivot.
+- `docs/plans/evidence-backed-investment-operations-plan.md` for the active differentiation plan and archive rule.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
@@ -24,7 +25,8 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 ## Current Direction
 
-- Meridian is a .NET 9 fund-management and trading-platform codebase.
+- Meridian is a .NET 10 fund-management and trading-platform codebase.
+- Position new roadmap and docs work around evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports.
 - New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
 - `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the web dashboard and retained desktop shell.
@@ -124,27 +126,25 @@ dotnet run --project src/Meridian/Meridian.csproj -- --wal-repair --dry-run --ou
 dotnet run --project src/Meridian/Meridian.csproj -- --generate-loader python --output ./loaders
 ```
 
-TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`,
-`--etl-export`, `--etl-roundtrip`, and `--etl-resume`, but `docs/HELP.md` does not yet document
-operator examples. Verify the intended ETL workflow before adding those as standard commands.
+`src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, `--etl-export`,
+`--etl-roundtrip`, and `--etl-resume`. Use `docs/HELP.md` for the verified local-file ETL
+operator examples and required `--etl-source-kind` / `--etl-source-path` arguments.
 
 TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
 and `--calibrate-provider-degradation`, but their prerequisites are specialized. Use
 `--help security-master` for Security Master details, and verify current operator setup before
 adding short-form examples here.
 
-TODO: `docs/HELP.md` mentions `--diagnostics`, but `DiagnosticsCommands` currently handles
-specific flags (`--quick-check`, `--test-connectivity`, `--show-config`, `--error-codes`, and
-`--validate-credentials`) rather than a standalone `--diagnostics` flag. Use `--help diagnostics`
-for the reference topic unless that flag is implemented.
+`--diagnostics` is a standalone CLI flag that prints the configuration summary and runs the quick
+configuration health check. Use the specific flags (`--quick-check`, `--test-connectivity`,
+`--show-config`, `--error-codes`, and `--validate-credentials`) when a narrower probe is needed.
 
 TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently
 maps `--package-format` to zip, tar.gz/tgz, or 7z. Verify the intended CSV export workflow before
 adding that as a standard package command.
 
-TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but
-`JsonlReplayer` currently treats the value as a directory root while help text describes a JSONL
-file path. Verify the intended replay path semantics before adding a standard CLI replay example.
+`--replay` accepts either a single JSONL/JSONL.GZ file or a directory tree containing `*.jsonl*`
+files. Directory replay processes files in stable path order.
 
 TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI
 workflow, but no command handler was found. Keep it out of standard command examples until it is
@@ -221,9 +221,10 @@ python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.W
 
 `buildctl.py build --isolation-key ...` prunes stale isolated output directories older than 14 days
 from `artifacts/bin` and `artifacts/obj` before the build starts, and trims excess same-day output
-beyond the latest 10 runs per artifact root; use `--isolation-retention-days <days>` and
-`--isolation-retain-latest <count>` to tune those limits, or set both to `0` to disable cleanup for a
-run.
+beyond the latest 10 runs per artifact root. It also prunes oldest generated runs when either root
+exceeds 4096 MB; use `--isolation-retention-days <days>`,
+`--isolation-retain-latest <count>`, and `--isolation-max-root-size-mb <mb>` to tune those limits,
+or set all three to `0` to disable cleanup for a run.
 `build/scripts/publish/publish.ps1 -OutputDir artifacts/publish/<run-name>` also prunes generated
 publish-output siblings older than 14 days or beyond the latest 5 runs; use
 `-OutputRetentionDays <days>` and `-OutputRetainLatest <count>` to tune that guard, or set both to

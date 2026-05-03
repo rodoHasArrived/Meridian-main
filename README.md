@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into a cohesive web-first operator product across research, trading, data operations, governance, and fund-operations workflows.
+Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a local API host, a retained Windows WPF workstation shell, and a browser-based workstation dashboard. The current delivery focus is turning that breadth into an evidence-backed investment operations product: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports in one explainable chain.
 
 > **Web UI active direction:** New operator UI development is focused on `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets. `src/Meridian.Wpf/` is retained for compatibility, regression fixes, and shared-contract support rather than new desktop-first feature work.
 
@@ -10,8 +10,7 @@ Meridian is a .NET 9 fund-management and trading-platform codebase in active del
 - [Project Roadmap](docs/status/ROADMAP.md)
 - [Feature Inventory](docs/status/FEATURE_INVENTORY.md)
 - [Improvements Tracker](docs/status/IMPROVEMENTS.md)
-- [Trading Workstation Migration Blueprint](docs/plans/trading-workstation-migration-blueprint.md)
-- [Governance and Fund Operations Blueprint](docs/plans/governance-fund-ops-blueprint.md)
+- [Evidence-Backed Investment Operations Plan](docs/plans/evidence-backed-investment-operations-plan.md)
 - [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
 
 ## Current Product Direction
@@ -166,9 +165,10 @@ Use these documents together when planning or implementing new work:
 
 - [docs/status/ROADMAP_COMBINED.md](docs/status/ROADMAP_COMBINED.md) for the shortest roadmap and target-state summary
 - [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: Wave 1 provider confidence and checkpoint evidence, Wave 2 paper-trading cockpit hardening, Wave 3 shared run / portfolio / ledger continuity, and Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
+- [docs/plans/evidence-backed-investment-operations-plan.md](docs/plans/evidence-backed-investment-operations-plan.md) for the product-category filter, commercial differentiation bets, sequencing rule, and archive-placement rule
 - [docs/plans/meridian-6-week-roadmap.md](docs/plans/meridian-6-week-roadmap.md) for the current time-boxed Waves 1-4 execution slice
 - [docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 provider-confidence and checkpoint-evidence gate
-- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model delivery shape
+- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model implementation shape; the evidence-backed investment-operations plan supersedes older generic workstation positioning
 - [docs/plans/governance-fund-ops-blueprint.md](docs/plans/governance-fund-ops-blueprint.md) for Wave 4 governance and fund-operations depth on top of the delivered Security Master baseline
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
 - [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes
@@ -729,13 +729,6 @@ Use these documents together when planning or implementing new work:
 │   │       ├── trading.svg
 │   │       └── watchlist.svg
 │   ├── colors_and_type.css
-│   ├── docs
-│   │   └── screenshots
-│   │       ├── 01-dashboard.png
-│   │       ├── 11-login.png
-│   │       ├── 15-workstation-trading-orders.png
-│   │       ├── 20-workstation-data-operations-exports.png
-│   │       └── 21-workstation-governance-ledger.png
 │   ├── governance-baseline.json
 │   ├── index.html
 │   ├── preview
@@ -810,7 +803,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── desktop-end-user-improvements.md
 │       │   ├── desktop-ui-alternatives-evaluation.md
 │       │   ├── high-impact-improvement-brainstorm-2026-03.md
-│       │   └── high-impact-improvements-brainstorm.md
+│       │   ├── high-impact-improvements-brainstorm.md
+│       │   └── ui-redesign.md
 │       ├── c4-context-legacy.png
 │       ├── c4-context-legacy.puml
 │       ├── migrations
@@ -824,7 +818,9 @@ Use these documents together when planning or implementing new work:
 │       │   ├── REPOSITORY_REORGANIZATION_PLAN.md
 │       │   ├── WORKFLOW_IMPROVEMENTS_2026-01-08.md
 │       │   ├── consolidation.md
-│       │   └── repository-cleanup-action-plan.md
+│       │   ├── repository-cleanup-action-plan.md
+│       │   ├── workstation-release-readiness-blueprint.md
+│       │   └── workstation-sprint-1-implementation-backlog.md
 │       └── summaries
 │           ├── 2026-02_PR_SUMMARY.md
 │           ├── 2026-02_UI_IMPROVEMENTS_SUMMARY.md
@@ -946,6 +942,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── test-scripts.py
 │       │   ├── tests
 │       │   │   ├── test_check_ai_inventory.py
+│       │   │   ├── test_markdown_generation_lint.py
+│       │   │   ├── test_pilot_readiness_dashboard.py
 │       │   │   └── test_scan_todos.py
 │       │   ├── update-claude-md.py
 │       │   ├── validate-api-docs.py
@@ -1032,6 +1030,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 013-bounded-channel-policy.md
 │   │   ├── 014-json-source-generators.md
 │   │   ├── 015-strategy-execution-contract.md
+│   │   ├── 016-custody-cash-reconciliation-break-typing.md
 │   │   ├── 016-platform-architecture-migration.md
 │   │   ├── README.md
 │   │   └── _template.md
@@ -1079,7 +1078,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── overview.md
 │   │   ├── provider-management.md
 │   │   ├── storage-design.md
-│   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
 │   │   ├── workflow-library.md
 │   │   ├── wpf-shell-mvvm.md
@@ -1107,6 +1105,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── documentation-contribution-guide.md
 │   │   ├── expanding-scripts.md
 │   │   ├── fsharp-decision-rule.md
+│   │   ├── fund-account-traversal.md
 │   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
@@ -4950,6 +4949,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── portable-data-packager.md
 │   │   ├── preflight-checklist.md
 │   │   ├── provider-degradation-calibration.md
+│   │   ├── reconciliation-operations.md
+│   │   ├── reconciliation-policy-operations.md
+│   │   ├── reconciliation-runbook.md
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── README.md
@@ -4959,6 +4961,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
+│   │   ├── evidence-backed-investment-operations-plan.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
@@ -4968,6 +4971,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── meridian-main-differentiation-report-2026-04-29.md
 │   │   ├── meridian-pilot-workflow.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
@@ -4980,6 +4984,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── readability-refactor-roadmap.md
 │   │   ├── readability-refactor-technical-design-pack.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
+│   │   ├── runbook-template-registry-modernization-plan.md
 │   │   ├── security-master-productization-roadmap.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-bond-target-state-v2.md
@@ -5004,9 +5009,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ufl-treasury-bill-target-state-v2.md
 │   │   ├── ufl-warrant-target-state-v2.md
 │   │   ├── waves-2-4-operator-readiness-addendum.md
-│   │   ├── web-ui-development-pivot.md
-│   │   ├── workstation-release-readiness-blueprint.md
-│   │   └── workstation-sprint-1-implementation-backlog.md
+│   │   └── web-ui-development-pivot.md
 │   ├── providers
 │   │   ├── README.md
 │   │   ├── alpaca-setup.md
@@ -5034,69 +5037,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
 │   │   └── strategy-promotion-history.md
-│   ├── screenshots
-│   │   ├── 01-dashboard.png
-│   │   ├── 02-workstation.png
-│   │   ├── 03-swagger.png
-│   │   ├── 04-status-overview.png
-│   │   ├── 05-data-source.png
-│   │   ├── 06-data-sources.png
-│   │   ├── 07-backfill.png
-│   │   ├── 08-derivatives.png
-│   │   ├── 09-symbols.png
-│   │   ├── 10-status-section.png
-│   │   ├── 10-status.png
-│   │   ├── 11-login.png
-│   │   ├── 12-workstation-research.png
-│   │   ├── 12-workstation-trading.png
-│   │   ├── 13-workstation-data-operations.png
-│   │   ├── 13-workstation-trading.png
-│   │   ├── 14-workstation-data-operations.png
-│   │   ├── 14-workstation-governance.png
-│   │   ├── 14-workstation-trading-orders.png
-│   │   ├── 15-workstation-governance.png
-│   │   ├── 15-workstation-trading-orders.png
-│   │   ├── 15-workstation-trading-positions.png
-│   │   ├── 16-workstation-trading-positions.png
-│   │   ├── 16-workstation-trading-risk.png
-│   │   ├── 17-workstation-data-operations-providers.png
-│   │   ├── 17-workstation-trading-risk.png
-│   │   ├── 18-workstation-data-operations-backfills.png
-│   │   ├── 18-workstation-data-operations-providers.png
-│   │   ├── 19-workstation-data-operations-backfills.png
-│   │   ├── 19-workstation-data-operations-exports.png
-│   │   ├── 20-workstation-data-operations-exports.png
-│   │   ├── 20-workstation-governance-ledger.png
-│   │   ├── 21-workstation-governance-ledger.png
-│   │   ├── 21-workstation-governance-reconciliation.png
-│   │   ├── 22-workstation-governance-reconciliation.png
-│   │   ├── 22-workstation-governance-security-master.png
-│   │   ├── 23-workstation-governance-security-master.png
-│   │   ├── README.md
-│   │   └── desktop
-│   │       ├── catalog.json
-│   │       ├── wpf-backfill.png
-│   │       ├── wpf-backtest.png
-│   │       ├── wpf-dashboard.png
-│   │       ├── wpf-data-browser.png
-│   │       ├── wpf-data-quality.png
-│   │       ├── wpf-diagnostics.png
-│   │       ├── wpf-live-data.png
-│   │       ├── wpf-provider-health.png
-│   │       ├── wpf-providers.png
-│   │       ├── wpf-quant-script.png
-│   │       ├── wpf-research-workspace.png
-│   │       ├── wpf-security-master.png
-│   │       ├── wpf-settings.png
-│   │       ├── wpf-storage.png
-│   │       ├── wpf-strategy-runs.png
-│   │       └── wpf-symbols.png
 │   ├── security
 │   │   ├── README.md
 │   │   └── known-vulnerabilities.md
 │   ├── status
 │   │   ├── CHANGELOG.md
-│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
@@ -5107,7 +5052,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
-│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
@@ -5134,7 +5078,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   └── workflow-validation-summary.json
-│   └── toc.yml
+│   ├── toc.yml
+│   └── ui
+│       └── components.md
 ├── environment.yml
 ├── global.json
 ├── make
@@ -5262,6 +5208,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── app.manifest
 │   │   └── runtimeconfig.template.json
 │   ├── Meridian.Application
+│   │   ├── Accounts
+│   │   │   ├── IAccountManagementService.cs
+│   │   │   └── IAccountQueryService.cs
 │   │   ├── Backfill
 │   │   │   ├── AutoGapRemediationService.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
@@ -5303,9 +5252,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PackageCommands.cs
 │   │   │   ├── ProviderCalibrationCommand.cs
 │   │   │   ├── QueryCommand.cs
+│   │   │   ├── RunbookCommands.cs
 │   │   │   ├── SchemaCheckCommand.cs
 │   │   │   ├── SecurityMasterCommands.cs
 │   │   │   ├── SelfTestCommand.cs
+│   │   │   ├── StatementCommands.cs
+│   │   │   ├── StatementImportCommands.cs
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
 │   │   │   └── WalRepairCommand.cs
@@ -5417,7 +5369,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IFundAccountService.cs
 │   │   │   └── InMemoryFundAccountService.cs
 │   │   ├── FundStructure
+│   │   │   ├── FundAccountTraversalQueryService.cs
 │   │   │   ├── GovernanceSharedDataAccessService.cs
+│   │   │   ├── IFundAccountTraversalQueryService.cs
 │   │   │   ├── IFundStructureService.cs
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
 │   │   │   ├── InMemoryFundStructureService.cs
@@ -5499,10 +5453,16 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ProviderOperationsSupportServices.cs
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   └── ProviderRoutingMapper.cs
+│   │   ├── Reconciliation
+│   │   │   └── StatementReconciliationService.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
 │   │   │   └── Result.cs
+│   │   ├── Runbooks
+│   │   │   ├── RunbookExecutor.cs
+│   │   │   ├── RunbookModels.cs
+│   │   │   └── RunbookStore.cs
 │   │   ├── Scheduling
 │   │   │   ├── BackfillExecutionLog.cs
 │   │   │   ├── BackfillSchedule.cs
@@ -5705,6 +5665,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
+│   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
 │   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── Quality
@@ -5815,6 +5776,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AccountManagementDtos.cs
 │   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
+│   │   │   ├── FundStructureContractsJsonContext.cs
 │   │   │   ├── FundStructureDtos.cs
 │   │   │   ├── FundStructureQueries.cs
 │   │   │   └── LedgerGroupId.cs
@@ -5855,14 +5817,17 @@ Use these documents together when planning or implementing new work:
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
 │   │       ├── FundOperationsWorkspaceDtos.cs
+│   │       ├── PilotReadinessArtifactDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── ResearchBriefingDtos.cs
 │   │       ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
+│   │       ├── StrategyRunContractCompatibility.cs
 │   │       ├── StrategyRunReadModels.cs
 │   │       ├── TradingOperatorReadinessDtos.cs
 │   │       ├── WorkflowLibraryDtos.cs
-│   │       └── WorkflowSummaryDtos.cs
+│   │       ├── WorkflowSummaryDtos.cs
+│   │       └── WorkstationBootstrapDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
 │   │   │   ├── AlpacaOptions.cs
@@ -5953,6 +5918,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AggregateBar.cs
 │   │   │   ├── MarketDepthUpdate.cs
 │   │   │   └── MarketTradeUpdate.cs
+│   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementModels.cs
+│   │   │   ├── StatementEntities.cs
+│   │   │   └── StatementReconciliationAggregate.cs
 │   │   └── Telemetry
 │   │       └── MarketEventIngressTracing.cs
 │   ├── Meridian.Execution
@@ -6023,6 +5992,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
 │   │   │   ├── PortfolioRegistry.cs
+│   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   └── PositionSyncOptions.cs
 │   │   └── TaxLotAccounting
@@ -6056,6 +6026,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── AccountReconciliation.fs
 │   │   │   ├── AccountStatements.fs
 │   │   │   ├── CashFlowProjection.fs
 │   │   │   ├── CashFlowRules.fs
@@ -6072,6 +6043,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterEvents.fs
 │   │   │   ├── SecurityMasterLegacyUpgrade.fs
 │   │   │   ├── SecurityTermModules.fs
+│   │   │   ├── SettlementInstructionCommands.fs
 │   │   │   └── Sides.fs
 │   │   ├── Generated
 │   │   │   └── Meridian.FSharp.Interop.g.cs
@@ -6262,6 +6234,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SharedResiliencePolicies.cs
 │   │   ├── Meridian.Infrastructure.csproj
 │   │   ├── NoOpMarketDataClient.cs
+│   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementInfrastructure.cs
+│   │   │   ├── BrokerStatementNormalizer.cs
+│   │   │   └── ReconciliationCaseInfrastructure.cs
 │   │   ├── Resilience
 │   │   │   ├── HttpResiliencePolicy.cs
 │   │   │   ├── WebSocketConnectionConfig.cs
@@ -6599,6 +6575,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── LedgerReadService.cs
 │   │   │   ├── PortfolioReadService.cs
 │   │   │   ├── PromotionService.cs
+│   │   │   ├── ReconciliationGovernanceService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── ReconciliationSourceAdapters.cs
@@ -6642,10 +6619,19 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   └── workspace-nav.view-model.ts
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── button.test.tsx
 │   │   │   │   │       ├── button.tsx
+│   │   │   │   │       ├── button.view-model.test.ts
+│   │   │   │   │       ├── button.view-model.ts
 │   │   │   │   │       ├── card.tsx
 │   │   │   │   │       ├── dialog.test.tsx
-│   │   │   │   │       └── dialog.tsx
+│   │   │   │   │       ├── dialog.tsx
+│   │   │   │   │       ├── dialog.view-model.test.ts
+│   │   │   │   │       ├── dialog.view-model.ts
+│   │   │   │   │       ├── input.tsx
+│   │   │   │   │       ├── select.tsx
+│   │   │   │   │       ├── sheet.tsx
+│   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── hooks
 │   │   │   │   │   └── use-workstation-data.ts
@@ -6666,16 +6652,30 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── operator-readiness-console.test.tsx
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
 │   │   │   │   │   ├── operator-readiness-console.view-model.ts
+│   │   │   │   │   ├── overview-screen.test.tsx
 │   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── overview-screen.view-model.test.ts
 │   │   │   │   │   ├── overview-screen.view-model.ts
+│   │   │   │   │   ├── portfolio-screen.test.tsx
+│   │   │   │   │   ├── portfolio-screen.tsx
+│   │   │   │   │   ├── portfolio-screen.view-model.test.ts
+│   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── reporting-screen.test.tsx
+│   │   │   │   │   ├── reporting-screen.tsx
+│   │   │   │   │   ├── reporting-screen.view-model.test.ts
+│   │   │   │   │   ├── reporting-screen.view-model.ts
 │   │   │   │   │   ├── research-screen.test.tsx
 │   │   │   │   │   ├── research-screen.tsx
 │   │   │   │   │   ├── research-screen.view-model.test.ts
 │   │   │   │   │   ├── research-screen.view-model.ts
+│   │   │   │   │   ├── settings-screen.test.tsx
+│   │   │   │   │   ├── settings-screen.tsx
+│   │   │   │   │   ├── settings-screen.view-model.test.ts
+│   │   │   │   │   ├── settings-screen.view-model.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
@@ -6698,8 +6698,9 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DN1W91Kc.js
-│   │           │   └── index-UFtGYQsd.css
+│   │           │   ├── index-Bt1jnUdW.js
+│   │           │   ├── index-C-UoWgmp.css
+│   │           │   └── index-HZREMjYN.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6798,6 +6799,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ProviderManagementService.cs
 │   │       ├── ProviderOperationsResults.cs
 │   │       ├── QualityArchiveStore.cs
+│   │       ├── Reconciliation
+│   │       │   └── ReconciliationApiService.cs
 │   │       ├── RetentionAssuranceModels.cs
 │   │       ├── ScheduleManagerService.cs
 │   │       ├── ScheduledMaintenanceService.cs
@@ -6822,6 +6825,9 @@ Use these documents together when planning or implementing new work:
 │   │       ├── WatchlistService.cs
 │   │       └── WorkspaceModels.cs
 │   ├── Meridian.Ui.Shared
+│   │   ├── Contracts
+│   │   │   └── Reconciliation
+│   │   │       └── StatementImportContracts.cs
 │   │   ├── DtoExtensions.cs
 │   │   ├── Endpoints
 │   │   │   ├── AdminEndpoints.cs
@@ -6981,6 +6987,8 @@ Use these documents together when planning or implementing new work:
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
+│       ├── Controls
+│       │   └── AutomationLeafBorder.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs
@@ -7427,6 +7435,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
+│   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
 │   │   ├── FillModelExpansionTests.cs
@@ -7465,6 +7474,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── PipelineTests.fs
 │   │   ├── PromotionPolicyTests.fs
 │   │   ├── RiskPolicyTests.fs
+│   │   ├── SettlementInstructionCommandsTests.fs
 │   │   ├── TradingTransitionTests.fs
 │   │   └── ValidationTests.fs
 │   ├── Meridian.FundStructure.Tests
@@ -7529,7 +7539,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Commands
 │   │   │   │   ├── CliArgumentsTests.cs
 │   │   │   │   ├── CommandDispatcherTests.cs
+│   │   │   │   ├── DiagnosticsCommandsTests.cs
 │   │   │   │   ├── DryRunCommandTests.cs
+│   │   │   │   ├── EtlCommandsTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
 │   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
@@ -7572,6 +7584,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── FundStructure
+│   │   │   │   ├── FundAccountTraversalQueryServiceTests.cs
 │   │   │   │   ├── LedgerGroupIdTests.cs
 │   │   │   │   └── LedgerGroupingRulesTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
@@ -7623,6 +7636,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
+│   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   ├── EdgarIngestOrchestratorTests.cs
@@ -7657,8 +7671,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── Contracts
-│   │   │   └── Api
-│   │   │       └── UiApiClientTests.cs
+│   │   │   ├── Api
+│   │   │   │   └── UiApiClientTests.cs
+│   │   │   └── FundStructureContractsJsonContextTests.cs
 │   │   ├── Domain
 │   │   │   ├── Collectors
 │   │   │   │   ├── L3OrderBookCollectorTests.cs
@@ -7698,7 +7713,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
-│   │   │   └── PaperTradingPortfolioTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
+│   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
+│   │   │   ├── PaperTradingPortfolioTests.cs
+│   │   │   └── PositionLotSelectorTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
@@ -7810,6 +7828,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MaintenanceEndpointTests.cs
 │   │   │   │   ├── NegativePathEndpointTests.cs
 │   │   │   │   ├── OptionsEndpointTests.cs
+│   │   │   │   ├── PilotAcceptanceHarnessTests.cs
 │   │   │   │   ├── ProviderEndpointTests.cs
 │   │   │   │   ├── QualityDropsEndpointTests.cs
 │   │   │   │   ├── QualityEndpointContractTests.cs
@@ -7835,6 +7854,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DataSourceRegistryTests.cs
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
+│   │   ├── Reconciliation
+│   │   │   ├── ReconciliationCaseServiceTests.cs
+│   │   │   └── StatementImportAndMatchingTests.cs
 │   │   ├── Risk
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
@@ -7861,6 +7883,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SecurityMasterSnapshotStoreTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
+│   │   ├── StatementReconciliationServiceTests.cs
 │   │   ├── Storage
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
@@ -7873,6 +7896,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
+│   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
 │   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
@@ -7933,6 +7957,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── EdgarReferenceDataEndpointsTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
+│   │       ├── ExportEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
@@ -7948,6 +7973,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ActivityFeedServiceTests.cs
 │   │       ├── AlertServiceTests.cs
 │   │       ├── AnalysisExportServiceBaseTests.cs
+│   │       ├── AnalysisExportWizardServiceTests.cs
 │   │       ├── ApiClientServiceTests.cs
 │   │       ├── ArchiveBrowserServiceTests.cs
 │   │       ├── BackendServiceManagerBaseTests.cs
@@ -8137,6 +8163,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── setup-verification.sh
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py
+│   │   ├── test_central_package_versions.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_cleanup_generated_script.py
@@ -8144,12 +8171,15 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_documentation_workflow.py
+│   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
+│   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_maintenance_full_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_screenshot_diff_report.py
@@ -8159,6 +8189,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-615 directories, 7369 files
+622 directories, 7392 files
 ```
 <!-- readme-tree end -->

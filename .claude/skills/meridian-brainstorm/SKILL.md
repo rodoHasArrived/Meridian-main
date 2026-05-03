@@ -35,7 +35,7 @@ Every brainstorming task follows this 4-step workflow:
 ### 1 — GATHER CONTEXT (MCP)
 - Fetch the GitHub issue, discussion, or feature request that prompted the brainstorm
 - Read `../_shared/project-context.md` for authoritative project stats and abstraction paths
-- Review `references/competitive-landscape.md` for competitive signals relevant to the request
+- Review [`references/competitive-landscape.md`](references/competitive-landscape.md) for competitive signals relevant to the request
 
 ### 2 — ANALYZE & PLAN (Agents)
 - Detect the brainstorm mode (Open Exploration, Problem-Focused, Persona-Focused, etc.) using the mode table
@@ -68,9 +68,9 @@ The best ideas for Meridian aren't isolated features. They're extensions that **
 ## Project Context
 
 **What Meridian is:**
-A provider-agnostic .NET 9 / C# 13 platform for real-time and historical market data collection, backtesting, live execution, and strategy lifecycle management. Streams from Interactive Brokers TWS, Alpaca Markets, Polygon, NYSE, and (via StockSharp) 90+ additional providers. Sub-2ms event pipeline, JSONL/Parquet storage, WebSocket + REST APIs, OpenTelemetry observability, WPF desktop app + web dashboard, MCP server for AI tooling.
+A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows.
 
-**Tech stack:** C# 13 (infrastructure), F# 8 (domain models), .NET 9, WPF (desktop UI), Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet (simultaneous), GitHub Actions CI/CD.
+**Tech stack:** .NET 10, C# infrastructure, F# domain models, browser workstation UI, retained WPF support, Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet, GitHub Actions CI/CD.
 
 **Four-pillar architecture (ADR-016):**
 - **Data Collection** — streaming ingestion, historical backfill, storage, data quality monitoring
@@ -87,8 +87,8 @@ A provider-agnostic .NET 9 / C# 13 platform for real-time and historical market 
 - Paper trading gateway (`PaperTradingGateway`) for risk-free strategy validation
 - Strategy lifecycle: register, run, pause, promote paper→live
 - Pre-trade risk validation via `CompositeRiskValidator` / `IRiskRule`
-- WPF desktop app: MVVM with `BindableBase`, real-time status, config management
-- Web dashboard: live status, data browser, API endpoints
+- Browser workstation: operator workflows, live status, data browser, and API-backed work queues
+- Retained WPF support: shared contracts, regressions, and existing desktop workflows
 - MCP server layer (`Meridian.Mcp` / `Meridian.McpServer`) exposing tools + prompts for AI agents
 - Deployment: Docker Compose, systemd, Kubernetes
 - Observability: OpenTelemetry tracing, Prometheus metrics, Grafana dashboards
@@ -249,7 +249,7 @@ This prevents the same ideas from appearing session after session and surfaces g
 
 ## Idea Generation Reference
 
-When brainstorming, read `references/idea-dimensions.md` for the full seeded concept bank organized by category. The file includes a **codebase anchor table** mapping concept names to file paths for precise implementation references.
+When brainstorming, read [`references/idea-dimensions.md`](references/idea-dimensions.md) for the full seeded concept bank organized by category. The file includes a **codebase anchor table** mapping concept names to file paths for precise implementation references.
 
 **Quick-access dimensions:**
 
@@ -268,6 +268,6 @@ When brainstorming, read `references/idea-dimensions.md` for the full seeded con
 
 ## Reference Files
 
-- `references/idea-dimensions.md` — Seeded idea bank organized by category, including codebase anchor table
-- `references/competitive-landscape.md` — What Bloomberg, Databento, Polygon, Refinitiv, and open-source tools offer (read for competitive signals in every synthesis section)
+- [`references/idea-dimensions.md`](references/idea-dimensions.md) — Seeded idea bank organized by category, including codebase anchor table
+- [`references/competitive-landscape.md`](references/competitive-landscape.md) — What Bloomberg, Databento, Polygon, Refinitiv, and open-source tools offer (read for competitive signals in every synthesis section)
 - `../_shared/project-context.md` — Authoritative project stats, abstraction file paths, provider inventory

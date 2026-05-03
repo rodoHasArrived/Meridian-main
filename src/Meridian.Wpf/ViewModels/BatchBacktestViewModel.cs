@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Domain.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -579,8 +580,23 @@ public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErr
         {
             BaseRequest = baseRequest,
             ParameterGrid = BuildParameterGrid(),
-            MaxConcurrency = MaxConcurrency
+            MaxConcurrency = MaxConcurrency,
+            StrategyDescriptor = "NoOp",
+            StrategyFactory = static _ => new NoOpBatchSweepStrategy()
         };
+    }
+
+    private sealed class NoOpBatchSweepStrategy : IBacktestStrategy
+    {
+        public string Name => "NoOp";
+        public void Initialize(IBacktestContext ctx) { }
+        public void OnTrade(Trade trade, IBacktestContext ctx) { }
+        public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+        public void OnBar(HistoricalBar bar, IBacktestContext ctx) { }
+        public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+        public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+        public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+        public void OnFinished(IBacktestContext ctx) { }
     }
 
     private IReadOnlyList<Dictionary<string, object>> BuildParameterGrid()

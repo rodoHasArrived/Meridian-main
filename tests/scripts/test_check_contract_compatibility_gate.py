@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import tempfile
 import sys
 import unittest
 from pathlib import Path
@@ -87,6 +88,61 @@ diff --git a/src/Meridian.Strategies/Services/StrategyRunReadService.cs b/src/Me
 """
 
         self.assertFalse(gate.patch_has_breaking_removal(patch))
+
+    def test_patch_has_breaking_removal_detects_continuity_dto_member_removal(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/ReconciliationContinuityDtos.cs b/src/Meridian.Contracts/Workstation/ReconciliationContinuityDtos.cs
+@@ -31 +31,0 @@ public sealed record ReconciliationContinuityDto(
+-    decimal PendingCashFlow,
+"""
+
+        self.assertTrue(gate.patch_has_breaking_removal(patch))
+
+
+    def test_patch_has_breaking_removal_detects_continuity_dto_member_rename(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs b/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs
+@@ -18 +18 @@ public sealed record LedgerContinuityDto(
+-    decimal SettledCash,
++    decimal AvailableCash,
+"""
+
+        self.assertTrue(gate.patch_has_breaking_removal(patch))
+
+
+    def test_find_missing_security_master_instrument_references_flags_governance_dto_without_identity_fields(self) -> None:
+        with tempfile.TemporaryDirectory(dir="src/Meridian.Contracts/Workstation") as tmp_dir:
+            temp_path = Path(tmp_dir) / "GovernanceInstrumentContractDto.cs"
+            temp_path.write_text("public sealed record GovernanceInstrumentContractDto(string InstrumentTicker);", encoding="utf-8")
+            changed_files = [str(temp_path)]
+            patch = f"""
+diff --git a/{temp_path} b/{temp_path}
+--- a/{temp_path}
++++ b/{temp_path}
+@@ -1,0 +1 @@
++    string InstrumentTicker,
+"""
+            violations = gate.find_missing_security_master_instrument_references(changed_files, patch)
+            self.assertEqual(changed_files, violations)
+
+
+    def test_find_missing_security_master_instrument_references_allows_security_master_linked_dto(self) -> None:
+        with tempfile.TemporaryDirectory(dir="src/Meridian.Contracts/Workstation") as tmp_dir:
+            temp_path = Path(tmp_dir) / "GovernanceInstrumentContractDto.cs"
+            temp_path.write_text(
+                "public sealed record GovernanceInstrumentContractDto(string InstrumentTicker, Guid SecurityId, string SecurityMasterSource);",
+                encoding="utf-8")
+            changed_files = [str(temp_path)]
+            patch = f"""
+diff --git a/{temp_path} b/{temp_path}
+--- a/{temp_path}
++++ b/{temp_path}
+@@ -1,0 +1,2 @@
++    string InstrumentTicker,
++    Guid SecurityId,
+"""
+            violations = gate.find_missing_security_master_instrument_references(changed_files, patch)
+            self.assertEqual([], violations)
 
 
 if __name__ == "__main__":

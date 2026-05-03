@@ -202,12 +202,32 @@ describe("research-screen view model", () => {
         fillCount: Number.NaN
       }
     ]);
-    expect(comparisonTable.caption).toBe("Run comparison results returned by the workstation API.");
+    expect(comparisonTable.caption).toBe("Run comparison evidence returned by the workstation API.");
+    expect(comparisonTable.rows[0].modeBadgeVariant).toBe("paper");
+    expect(comparisonTable.rows[0].statusBadgeVariant).toBe("warning");
+    expect(comparisonTable.rows[0].netPnlText).toBe("+$3,200");
+    expect(comparisonTable.rows[0].netPnlTone).toBe("success");
+    expect(comparisonTable.rows[0].totalReturnText).toBe("+4.20%");
+    expect(comparisonTable.rows[0].totalReturnTone).toBe("success");
+    expect(comparisonTable.rows[0].maxDrawdownText).toBe("-1.80%");
+    expect(comparisonTable.rows[0].maxDrawdownTone).toBe("danger");
+    expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
+    expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
+    expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
+    expect(comparisonTable.rows[0].ariaLabel).toContain("Mean Reversion FX: Running; net P&L +$3,200");
     expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
     expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
 
     const emptyDiff = buildDiffPanel(diff);
+    expect(emptyDiff.summaryLabel).toBe("Run diff metric summary");
+    expect(emptyDiff.metrics[0]).toMatchObject({ label: "Net P&L delta", value: "+$1,200", tone: "success" });
+    expect(emptyDiff.metrics[1]).toMatchObject({ label: "Return delta", value: "+1.00%", tone: "success" });
+    expect(emptyDiff.metrics[2]).toMatchObject({ label: "Fill delta", value: "+5", tone: "success" });
+    expect(emptyDiff.hasPositionChanges).toBe(false);
+    expect(emptyDiff.hasParameterChanges).toBe(false);
+    expect(emptyDiff.positionSectionLabel).toBe("0 position changes returned");
+    expect(emptyDiff.parameterSectionLabel).toBe("0 parameter changes returned");
     expect(emptyDiff.positionEmptyText).toBe("No position changes returned for this diff.");
     expect(emptyDiff.parameterEmptyText).toBe("No parameter changes returned for this diff.");
 
@@ -252,9 +272,80 @@ describe("research-screen view model", () => {
     expect(detail.closeButtonAriaLabel).toBe("Close Mean Reversion FX run detail");
   });
 
+  it("derives accessible diff rows for position and parameter changes", () => {
+    const panel = buildDiffPanel({
+      ...diff,
+      addedPositions: [
+        { symbol: "AAPL", baseQuantity: 0, targetQuantity: 100, basePnl: 0, targetPnl: 250, changeType: "Added" }
+      ],
+      parameterChanges: [{ key: "lookback", baseValue: "20", targetValue: "30" }]
+    });
+
+    expect(panel.ariaLabel).toBe("Strategy run diff for Mean Reversion FX and Index Momentum");
+    expect(panel.hasPositionChanges).toBe(true);
+    expect(panel.positionChanges[0]).toMatchObject({
+      symbolText: "AAPL",
+      changeTypeText: "Added",
+      quantityText: "Qty +100",
+      pnlText: "P&L +$250",
+      badgeVariant: "success",
+      ariaLabel: "AAPL Added. Qty +100. P&L +$250."
+    });
+    expect(panel.hasParameterChanges).toBe(true);
+    expect(panel.parameterChanges[0]).toMatchObject({
+      key: "lookback",
+      valueText: "20 -> 30",
+      ariaLabel: "lookback changed from 20 to 30."
+    });
+  });
+
   it("keeps run detail keyboard-close decisions testable outside the view", () => {
     expect(shouldCloseRunDetailForKey("Escape")).toBe(true);
     expect(shouldCloseRunDetailForKey("Esc")).toBe(true);
     expect(shouldCloseRunDetailForKey("Enter")).toBe(false);
+  });
+
+  it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {
+    let selected = toggleRunSelection([], "run-1");
+    selected = toggleRunSelection(selected, "run-2");
+    selected = toggleRunSelection(selected, "run-3");
+
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: selected,
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(selected).toEqual(["run-2", "run-3"]);
+    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-2", "run-3"]);
+    expect(state.canCompare).toBe(true);
+    expect(state.canDiff).toBe(true);
+    expect(state.selectionText).toBe("Index Momentum vs Carry Alpha");
+  });
+
+  it("keeps pair-selection continuity when compare returns empty rows", () => {
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      comparisonLoaded: true,
+      runDiffLoaded: false,
+      promotionHistoryLoaded: false,
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.showComparisonPanel).toBe(true);
+    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-1", "run-2"]);
+    expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
+    expect(state.statusAnnouncement).toBe("No comparison rows returned for the selected pair.");
   });
 });

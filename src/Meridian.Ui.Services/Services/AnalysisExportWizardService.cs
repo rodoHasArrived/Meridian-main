@@ -14,10 +14,15 @@ public sealed class AnalysisExportWizardService
     private readonly ConfigService _configService;
 
     public AnalysisExportWizardService()
+        : this(ConfigService.Instance)
+    {
+    }
+
+    internal AnalysisExportWizardService(ConfigService configService)
     {
         _completenessService = new DataCompletenessService(ManifestService.Instance, new TradingCalendarService());
         _storageService = StorageAnalyticsService.Instance;
-        _configService = ConfigService.Instance;
+        _configService = configService;
     }
 
     /// <summary>
@@ -539,10 +544,18 @@ public sealed class AnalysisExportWizardService
                 result.TotalRecordsExported += exportedRecords.RecordCount;
                 result.OutputSizeBytes += exportedRecords.OutputBytes;
 
-                if (!string.IsNullOrEmpty(exportedRecords.OutputFile))
+                if (!string.IsNullOrEmpty(exportedRecords.ErrorMessage))
                 {
-                    result.GeneratedFiles.Add(exportedRecords.OutputFile);
+                    result.Success = false;
+                    result.ErrorMessage = exportedRecords.ErrorMessage;
+                    result.EndTime = DateTime.UtcNow;
+                    return result;
                 }
+
+                if (!string.IsNullOrEmpty(exportedRecords.OutputFile))
+                    result.GeneratedFiles.Add(exportedRecords.OutputFile);
+
+                result.GeneratedFiles.AddRange(exportedRecords.GeneratedFiles);
 
                 processedSymbols++;
                 result.ProcessedSymbols++;
@@ -653,8 +666,9 @@ public sealed class AnalysisExportWizardService
                 _ => await ExportToCsvAsync(symbol, sourceFiles, config, ct) // Default to CSV
             };
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            result.ErrorMessage = $"Failed to export {symbol}: {ex.Message}";
         }
 
         return result;
@@ -703,37 +717,29 @@ public sealed class AnalysisExportWizardService
     /// <summary>
     /// Exports data to CSV format.
     /// </summary>
-    private async Task<SymbolExportResult> ExportToCsvAsync(
+    internal static async Task<SymbolExportResult> ExportToCsvAsync(
         string symbol,
         List<string> sourceFiles,
         ExportConfiguration config,
         CancellationToken ct)
     {
         var result = new SymbolExportResult { Symbol = symbol };
-        var outputFile = Path.Combine(config.OutputPath, $"{symbol}.csv");
+        var outputFile = Path.Combine(config.OutputPath, $"{CreateSafeFileStem(symbol)}.csv");
+        var headers = await DiscoverCsvHeadersAsync(sourceFiles, ct);
 
         await using var writer = new StreamWriter(outputFile, false, Encoding.UTF8);
 
-        var headerWritten = false;
         long recordCount = 0;
+        if (headers.Count > 0)
+        {
+            await writer.WriteLineAsync(string.Join(",", headers.Select(EscapeCsvHeader)));
+        }
 
         foreach (var sourceFile in sourceFiles)
         {
             ct.ThrowIfCancellationRequested();
 
-            // Handle gzipped files
-            Stream inputStream;
-            if (sourceFile.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
-            {
-                var fileStream = File.OpenRead(sourceFile);
-                inputStream = new System.IO.Compression.GZipStream(fileStream, System.IO.Compression.CompressionMode.Decompress);
-            }
-            else
-            {
-                inputStream = File.OpenRead(sourceFile);
-            }
-
-            await using (inputStream)
+            await using (var inputStream = OpenPossiblyCompressedRead(sourceFile))
             using (var reader = new StreamReader(inputStream))
             {
                 string? line;
@@ -749,17 +755,13 @@ public sealed class AnalysisExportWizardService
                         // Parse JSONL and convert to CSV
                         using var doc = JsonDocument.Parse(line);
                         var root = doc.RootElement;
+                        if (root.ValueKind != JsonValueKind.Object)
+                            continue;
 
-                        // Write header on first record
-                        if (!headerWritten)
-                        {
-                            var headers = root.EnumerateObject().Select(p => p.Name);
-                            await writer.WriteLineAsync(string.Join(",", headers));
-                            headerWritten = true;
-                        }
-
-                        // Write values
-                        var values = root.EnumerateObject().Select(p => FormatCsvValue(p.Value));
+                        var row = root.EnumerateObject()
+                            .ToDictionary(p => p.Name, p => p.Value.Clone(), StringComparer.Ordinal);
+                        var values = headers.Select(header =>
+                            row.TryGetValue(header, out var value) ? FormatCsvValue(value) : string.Empty);
                         await writer.WriteLineAsync(string.Join(",", values));
                         recordCount++;
                     }
@@ -778,10 +780,68 @@ public sealed class AnalysisExportWizardService
         return result;
     }
 
+    private static async Task<List<string>> DiscoverCsvHeadersAsync(
+        IReadOnlyCollection<string> sourceFiles,
+        CancellationToken ct)
+    {
+        var headers = new List<string>();
+        var seenHeaders = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var sourceFile in sourceFiles)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            await using (var inputStream = OpenPossiblyCompressedRead(sourceFile))
+            using (var reader = new StreamReader(inputStream))
+            {
+                string? line;
+                while ((line = await reader.ReadLineAsync(ct)) != null)
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(line);
+                        var root = doc.RootElement;
+                        if (root.ValueKind != JsonValueKind.Object)
+                            continue;
+
+                        foreach (var property in root.EnumerateObject())
+                        {
+                            if (seenHeaders.Add(property.Name))
+                                headers.Add(property.Name);
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                    }
+                }
+            }
+        }
+
+        return headers;
+    }
+
+    private static Stream OpenPossiblyCompressedRead(string sourceFile)
+    {
+        var fileStream = File.OpenRead(sourceFile);
+        if (sourceFile.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+        {
+            return new System.IO.Compression.GZipStream(
+                fileStream,
+                System.IO.Compression.CompressionMode.Decompress);
+        }
+
+        return fileStream;
+    }
+
     /// <summary>
     /// Formats a JSON value for CSV output.
     /// </summary>
-    private static string FormatCsvValue(JsonElement element)
+    internal static string FormatCsvValue(JsonElement element)
     {
         var value = element.ValueKind switch
         {
@@ -802,6 +862,39 @@ public sealed class AnalysisExportWizardService
         return value;
     }
 
+    private static string EscapeCsvHeader(string header)
+        => FormatCsvValue(JsonSerializer.SerializeToElement(header));
+
+    internal static string CreateSafeFileStem(string symbol)
+    {
+        var trimmed = symbol.Trim();
+        if (trimmed.Length == 0)
+            return "symbol";
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var builder = new StringBuilder(trimmed.Length);
+        foreach (var character in trimmed)
+        {
+            builder.Append(invalid.Contains(character) || character is '/' or '\\' or ':' or '"' or '\'' or ';'
+                ? '_'
+                : character);
+        }
+
+        var safe = builder.ToString().Trim('.', ' ');
+        return safe.Length == 0 ? "symbol" : safe;
+    }
+
+    internal static string CreateSafeSqlIdentifier(string prefix, string symbol)
+    {
+        var builder = new StringBuilder(prefix);
+        foreach (var character in symbol.Trim().ToLowerInvariant())
+        {
+            builder.Append(char.IsLetterOrDigit(character) || character == '_' ? character : '_');
+        }
+
+        return builder.ToString();
+    }
+
     /// <summary>
     /// Placeholder for Parquet export (requires Apache.Arrow or Parquet.Net library).
     /// </summary>
@@ -814,19 +907,22 @@ public sealed class AnalysisExportWizardService
         // Parquet export requires additional libraries (Apache.Arrow.Parquet)
         // For now, fall back to CSV with a note
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
+        var safeStem = CreateSafeFileStem(symbol);
 
         // Rename to indicate it's a placeholder
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
-            var parquetNote = Path.Combine(config.OutputPath, $"{symbol}_parquet_note.txt");
+            var parquetNote = Path.Combine(config.OutputPath, $"{safeStem}_parquet_note.txt");
             await File.WriteAllTextAsync(parquetNote,
                 "Note: Full Parquet export requires Apache.Arrow library.\n" +
                 "CSV data has been exported as a fallback.\n" +
                 "To convert to Parquet, use the generated Python loader with pandas:\n" +
-                "  df = pd.read_csv('" + $"{symbol}.csv" + "')\n" +
-                "  df.to_parquet('" + $"{symbol}.parquet" + "')", ct);
+                "  df = pd.read_csv('" + $"{safeStem}.csv" + "')\n" +
+                "  df.to_parquet('" + $"{safeStem}.parquet" + "')", ct);
             result.OutputFile = csvFile;
+            result.GeneratedFiles.Add(parquetNote);
+            result.OutputBytes += new FileInfo(parquetNote).Length;
         }
 
         return result;
@@ -845,12 +941,13 @@ public sealed class AnalysisExportWizardService
         // Excel export requires additional libraries (EPPlus, ClosedXML, etc.)
         // For now, export to CSV which can be opened in Excel
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
+        var safeStem = CreateSafeFileStem(symbol);
 
         // Add a note file explaining the Excel fallback
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
-            var excelNote = Path.Combine(config.OutputPath, $"{symbol}_excel_note.txt");
+            var excelNote = Path.Combine(config.OutputPath, $"{safeStem}_excel_note.txt");
             await File.WriteAllTextAsync(excelNote,
                 "Note: Full Excel (.xlsx) export requires the EPPlus library.\n" +
                 "CSV data has been exported as a fallback.\n\n" +
@@ -858,12 +955,14 @@ public sealed class AnalysisExportWizardService
                 "  Option 1: Open the CSV directly in Excel and save as .xlsx\n" +
                 "  Option 2: Use Python with openpyxl:\n" +
                 "    import pandas as pd\n" +
-                $"    df = pd.read_csv('{symbol}.csv')\n" +
-                $"    df.to_excel('{symbol}.xlsx', index=False)\n\n" +
+                $"    df = pd.read_csv('{safeStem}.csv')\n" +
+                $"    df.to_excel('{safeStem}.xlsx', index=False)\n\n" +
                 "  Option 3: Use the generated Python loader and export to Excel\n\n" +
                 "The CSV file is fully compatible with Excel and can be imported using:\n" +
                 "  Data > From Text/CSV > Select the file", ct);
             result.OutputFile = csvFile;
+            result.GeneratedFiles.Add(excelNote);
+            result.OutputBytes += new FileInfo(excelNote).Length;
         }
 
         return result;
@@ -882,11 +981,12 @@ public sealed class AnalysisExportWizardService
         // HDF5 export requires additional libraries (HDF5.NET, or Python h5py)
         // For now, export to CSV with conversion instructions
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
+        var safeStem = CreateSafeFileStem(symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
-            var hdf5Note = Path.Combine(config.OutputPath, $"{symbol}_hdf5_note.txt");
+            var hdf5Note = Path.Combine(config.OutputPath, $"{safeStem}_hdf5_note.txt");
             await File.WriteAllTextAsync(hdf5Note,
                 "Note: Full HDF5 (.h5) export requires the h5py library in Python.\n" +
                 "CSV data has been exported as a fallback.\n\n" +
@@ -894,8 +994,8 @@ public sealed class AnalysisExportWizardService
                 "  import pandas as pd\n" +
                 "  import h5py\n" +
                 "  import numpy as np\n\n" +
-                $"  df = pd.read_csv('{symbol}.csv')\n" +
-                $"  with h5py.File('{symbol}.h5', 'w') as f:\n" +
+                $"  df = pd.read_csv('{safeStem}.csv')\n" +
+                $"  with h5py.File('{safeStem}.h5', 'w') as f:\n" +
                 "      # Store numeric columns as datasets\n" +
                 "      for col in df.select_dtypes(include=[np.number]).columns:\n" +
                 "          f.create_dataset(col, data=df[col].values)\n" +
@@ -907,6 +1007,8 @@ public sealed class AnalysisExportWizardService
                 "  - Native support in PyTorch/TensorFlow\n" +
                 "  - Compression support built-in", ct);
             result.OutputFile = csvFile;
+            result.GeneratedFiles.Add(hdf5Note);
+            result.OutputBytes += new FileInfo(hdf5Note).Length;
         }
 
         return result;
@@ -925,17 +1027,19 @@ public sealed class AnalysisExportWizardService
         // ClickHouse native export requires ClickHouse client tools
         // Export to CSV with ClickHouse import instructions
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
+        var safeStem = CreateSafeFileStem(symbol);
+        var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
-            var chScript = Path.Combine(config.OutputPath, $"{symbol}_clickhouse_import.sql");
+            var chScript = Path.Combine(config.OutputPath, $"{safeStem}_clickhouse_import.sql");
             var sb = new StringBuilder();
             sb.AppendLine($"-- ClickHouse Import Script for {symbol}");
             sb.AppendLine($"-- Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
             sb.AppendLine();
             sb.AppendLine("-- Create table for market data");
-            sb.AppendLine($"CREATE TABLE IF NOT EXISTS market_data_{symbol.ToLower()} (");
+            sb.AppendLine($"CREATE TABLE IF NOT EXISTS {tableName} (");
             sb.AppendLine("    timestamp DateTime64(3),");
             sb.AppendLine("    symbol LowCardinality(String),");
             sb.AppendLine("    price Decimal64(8),");
@@ -945,10 +1049,10 @@ public sealed class AnalysisExportWizardService
             sb.AppendLine("ORDER BY (symbol, timestamp);");
             sb.AppendLine();
             sb.AppendLine("-- Import from CSV using clickhouse-client:");
-            sb.AppendLine($"-- clickhouse-client --query=\"INSERT INTO market_data_{symbol.ToLower()} FORMAT CSV\" < {symbol}.csv");
+            sb.AppendLine($"-- clickhouse-client --query=\"INSERT INTO {tableName} FORMAT CSV\" < {safeStem}.csv");
             sb.AppendLine();
             sb.AppendLine("-- Or using HTTP interface:");
-            sb.AppendLine($"-- curl 'http://localhost:8123/?query=INSERT%20INTO%20market_data_{symbol.ToLower()}%20FORMAT%20CSV' --data-binary @{symbol}.csv");
+            sb.AppendLine($"-- curl 'http://localhost:8123/?query=INSERT%20INTO%20{tableName}%20FORMAT%20CSV' --data-binary @{safeStem}.csv");
             sb.AppendLine();
             sb.AppendLine("-- Benefits of ClickHouse:");
             sb.AppendLine("--   - Columnar storage with high compression");
@@ -957,6 +1061,7 @@ public sealed class AnalysisExportWizardService
 
             await File.WriteAllTextAsync(chScript, sb.ToString(), ct);
             result.OutputFile = csvFile;
+            result.GeneratedFiles.Add(chScript);
             result.OutputBytes += new FileInfo(chScript).Length;
         }
 
@@ -976,11 +1081,12 @@ public sealed class AnalysisExportWizardService
         // Lean format requires specific directory structure and format
         // Export to CSV with instructions for Lean format conversion
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
+        var safeStem = CreateSafeFileStem(symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
         {
-            var leanNote = Path.Combine(config.OutputPath, $"{symbol}_lean_note.txt");
+            var leanNote = Path.Combine(config.OutputPath, $"{safeStem}_lean_note.txt");
             await File.WriteAllTextAsync(leanNote,
                 "Note: Full QuantConnect Lean format export requires specific data structure.\n" +
                 "CSV data has been exported as a fallback.\n\n" +
@@ -999,6 +1105,8 @@ public sealed class AnalysisExportWizardService
                 "For more information:\n" +
                 "  https://www.quantconnect.com/docs/v2/writing-algorithms/importing-custom-data", ct);
             result.OutputFile = csvFile;
+            result.GeneratedFiles.Add(leanNote);
+            result.OutputBytes += new FileInfo(leanNote).Length;
         }
 
         return result;
@@ -1007,26 +1115,28 @@ public sealed class AnalysisExportWizardService
     /// <summary>
     /// Exports data to SQL COPY format for PostgreSQL/TimescaleDB.
     /// </summary>
-    private async Task<SymbolExportResult> ExportToSqlAsync(
+    internal static async Task<SymbolExportResult> ExportToSqlAsync(
         string symbol,
         List<string> sourceFiles,
         ExportConfiguration config,
         CancellationToken ct)
     {
         var result = new SymbolExportResult { Symbol = symbol };
+        var safeStem = CreateSafeFileStem(symbol);
+        var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
 
         // First export data as CSV for COPY command
         var csvResult = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
 
         // Generate SQL loader script
-        var sqlFile = Path.Combine(config.OutputPath, $"{symbol}_load.sql");
+        var sqlFile = Path.Combine(config.OutputPath, $"{safeStem}_load.sql");
         var sb = new StringBuilder();
 
         sb.AppendLine($"-- SQL loader for {symbol}");
         sb.AppendLine($"-- Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
         sb.AppendLine();
         sb.AppendLine("-- Create table if not exists");
-        sb.AppendLine($"CREATE TABLE IF NOT EXISTS market_data_{symbol.ToLower()} (");
+        sb.AppendLine($"CREATE TABLE IF NOT EXISTS {tableName} (");
         sb.AppendLine("    id BIGSERIAL PRIMARY KEY,");
         sb.AppendLine("    timestamp TIMESTAMPTZ NOT NULL,");
         sb.AppendLine("    price DECIMAL(18,8),");
@@ -1035,16 +1145,17 @@ public sealed class AnalysisExportWizardService
         sb.AppendLine(");");
         sb.AppendLine();
         sb.AppendLine("-- Load data from CSV");
-        sb.AppendLine($"\\COPY market_data_{symbol.ToLower()} FROM '{symbol}.csv' WITH CSV HEADER;");
+        sb.AppendLine($"\\COPY {tableName} FROM '{safeStem}.csv' WITH CSV HEADER;");
         sb.AppendLine();
         sb.AppendLine("-- Create index for time-series queries");
-        sb.AppendLine($"CREATE INDEX IF NOT EXISTS idx_{symbol.ToLower()}_timestamp ON market_data_{symbol.ToLower()} (timestamp DESC);");
+        sb.AppendLine($"CREATE INDEX IF NOT EXISTS idx_{CreateSafeSqlIdentifier(string.Empty, symbol)}_timestamp ON {tableName} (timestamp DESC);");
 
         await File.WriteAllTextAsync(sqlFile, sb.ToString(), ct);
 
         result.OutputFile = csvResult.OutputFile;
         result.RecordCount = csvResult.RecordCount;
         result.OutputBytes = csvResult.OutputBytes + new FileInfo(sqlFile).Length;
+        result.GeneratedFiles.Add(sqlFile);
 
         return result;
     }
@@ -1060,9 +1171,10 @@ public sealed class AnalysisExportWizardService
     {
         // First export as CSV
         var csvResult = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
+        var safeStem = CreateSafeFileStem(symbol);
 
         // Generate Jupyter notebook
-        var notebookFile = Path.Combine(config.OutputPath, $"{symbol}_analysis.ipynb");
+        var notebookFile = Path.Combine(config.OutputPath, $"{safeStem}_analysis.ipynb");
 
         var notebook = new
         {
@@ -1102,7 +1214,7 @@ public sealed class AnalysisExportWizardService
                         "from pathlib import Path\n",
                         "\n",
                         "# Load data\n",
-                        $"df = pd.read_csv('{symbol}.csv')\n",
+                        $"df = pd.read_csv('{safeStem}.csv')\n",
                         "print(f'Loaded {len(df):,} records')\n",
                         "df.head()"
                     },
@@ -1149,6 +1261,7 @@ public sealed class AnalysisExportWizardService
 
         var result = csvResult;
         result.OutputBytes += new FileInfo(notebookFile).Length;
+        result.GeneratedFiles.Add(notebookFile);
 
         return result;
     }
@@ -1186,12 +1299,14 @@ public sealed class AnalysisExportWizardService
     /// <summary>
     /// Result of exporting a single symbol.
     /// </summary>
-    private sealed class SymbolExportResult
+    internal sealed class SymbolExportResult
     {
         public string Symbol { get; set; } = string.Empty;
         public string OutputFile { get; set; } = string.Empty;
         public long RecordCount { get; set; }
         public long OutputBytes { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
+        public List<string> GeneratedFiles { get; } = new();
     }
 
     private string GetLoaderExtension(string language)

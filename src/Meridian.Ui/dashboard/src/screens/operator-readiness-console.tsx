@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import {
   useOperatorReadinessConsoleViewModel,
+  type ReadinessConsolePanel,
   type ReadinessConsoleLevel,
   type ReadinessConsoleRow
 } from "@/screens/operator-readiness-console.view-model";
@@ -21,6 +22,7 @@ interface OperatorReadinessConsoleProps {
   trading: TradingWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
+  reporting: GovernanceWorkspaceResponse | null;
 }
 
 const levelBadge: Record<ReadinessConsoleLevel, "success" | "warning" | "danger" | "outline"> = {
@@ -44,17 +46,28 @@ const levelText: Record<ReadinessConsoleLevel, string> = {
   neutral: "Info"
 };
 
+const panelIcons: Record<ReadinessConsolePanel["id"], typeof ShieldCheck> = {
+  "latest-runs": TrendingUp,
+  "active-paper-session": Activity,
+  "provider-trust": RadioTower,
+  "reconciliation-breaks": ClipboardList,
+  "promotion-blockers": ShieldCheck,
+  "governance-report-packs": FileCheck2
+};
+
 export function OperatorReadinessConsole({
   research,
   trading,
   dataOperations,
-  governance
+  governance,
+  reporting
 }: OperatorReadinessConsoleProps) {
   const vm = useOperatorReadinessConsoleViewModel({
     research,
     trading,
     dataOperations,
-    governance
+    governance,
+    reporting
   });
 
   return (
@@ -105,18 +118,23 @@ export function OperatorReadinessConsole({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card aria-labelledby="api-contract-coverage-title">
           <CardHeader>
             <div className="eyebrow-label">API Contract Coverage</div>
-            <CardTitle>Shared sources</CardTitle>
+            <CardTitle id="api-contract-coverage-title">Shared sources</CardTitle>
             <CardDescription>Local API payload health for readiness review.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2" role="list" aria-label={vm.apiSourcesLabel}>
             {vm.apiSources.map((source) => (
-              <div key={source.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2">
+              <div
+                key={source.id}
+                role="listitem"
+                aria-label={source.ariaLabel}
+                className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{source.label}</span>
-                  <Badge variant={levelBadge[source.level]}>{source.status}</Badge>
+                  <Badge variant={levelBadge[source.level]} aria-label={source.statusAriaLabel}>{source.status}</Badge>
                 </div>
                 <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
               </div>
@@ -125,15 +143,20 @@ export function OperatorReadinessConsole({
         </Card>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-6" aria-label="Operator readiness metrics">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-6" aria-label={vm.metricsLabel}>
         {vm.metrics.map((metric) => (
-          <div key={metric.id} className={cn("rounded-lg border px-3 py-3", levelPanel[metric.level])}>
+          <div
+            key={metric.id}
+            role="group"
+            aria-label={metric.ariaLabel}
+            className={cn("rounded-lg border px-3 py-3", levelPanel[metric.level])}
+          >
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="eyebrow-label">{metric.label}</p>
                 <p className="mt-2 break-words font-mono text-sm font-semibold text-foreground">{metric.value}</p>
               </div>
-              <Badge variant={levelBadge[metric.level]}>{levelText[metric.level]}</Badge>
+              <Badge variant={levelBadge[metric.level]} aria-label={metric.statusAriaLabel}>{levelText[metric.level]}</Badge>
             </div>
             <p className="mt-2 text-xs leading-5 text-foreground/75">{metric.detail}</p>
           </div>
@@ -141,24 +164,30 @@ export function OperatorReadinessConsole({
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <ConsolePanel icon={TrendingUp} title="Latest runs" emptyText="No Strategy runs loaded." rows={vm.latestRuns} />
-        <ConsolePanel icon={Activity} title="Active paper session" emptyText="No active paper session loaded." rows={vm.activeSessionFacts} />
-        <ConsolePanel icon={RadioTower} title="Provider trust" emptyText="No provider trust rows loaded." rows={vm.providerTrustRows} />
-        <ConsolePanel icon={ClipboardList} title="Reconciliation breaks" emptyText="No open or in-review reconciliation breaks." rows={vm.reconciliationRows} />
-        <ConsolePanel icon={ShieldCheck} title="Promotion blockers" emptyText="No promotion blockers surfaced by readiness." rows={vm.promotionRows} />
-        <ConsolePanel icon={FileCheck2} title="Governance report packs" emptyText="No reporting readiness payload loaded." rows={vm.reportPackFacts} />
+        {vm.panels.map((panel) => (
+          <ConsolePanel key={panel.id} panel={panel} />
+        ))}
       </section>
 
-      <Card>
+      <Card role="region" aria-label={vm.workItemsRegionLabel}>
         <CardHeader>
           <div className="eyebrow-label">Operator Inbox</div>
           <CardTitle>Review work items</CardTitle>
-          <CardDescription>Warning and critical items from the shared operator-inbox contract.</CardDescription>
+          <CardDescription>{vm.workItemsSummary}</CardDescription>
         </CardHeader>
         <CardContent>
+          {vm.workItemsOverflowText ? (
+            <p role="status" className="mb-3 rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+              {vm.workItemsOverflowText}
+            </p>
+          ) : null}
           {vm.workItems.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {vm.workItems.map((item) => <ReadinessRow key={item.id} row={item} />)}
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="list" aria-label={vm.workItemsListLabel}>
+              {vm.workItems.map((item) => (
+                <div key={item.id} role="listitem">
+                  <ReadinessRow row={item} />
+                </div>
+              ))}
             </div>
           ) : (
             <EmptyConsoleState text="No operator work items returned." />
@@ -169,27 +198,30 @@ export function OperatorReadinessConsole({
   );
 }
 
-function ConsolePanel({
-  icon: Icon,
-  title,
-  emptyText,
-  rows
-}: {
-  icon: typeof ShieldCheck;
-  title: string;
-  emptyText: string;
-  rows: ReadinessConsoleRow[];
-}) {
+function ConsolePanel({ panel }: { panel: ReadinessConsolePanel }) {
+  const Icon = panelIcons[panel.id];
+  const titleId = `${panel.id}-title`;
+
   return (
-    <Card>
+    <Card role="region" aria-label={panel.ariaLabel}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle id={titleId} className="flex items-center gap-2 text-base">
           <Icon className="h-4 w-4 text-primary" />
-          {title}
+          {panel.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {rows.length > 0 ? rows.map((row) => <ReadinessRow key={row.id} row={row} />) : <EmptyConsoleState text={emptyText} />}
+        {panel.rows.length > 0 ? (
+          <div role="list" aria-label={panel.listLabel} className="space-y-3">
+            {panel.rows.map((row) => (
+              <div key={row.id} role="listitem">
+                <ReadinessRow row={row} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyConsoleState text={panel.emptyText} />
+        )}
       </CardContent>
     </Card>
   );
@@ -197,15 +229,29 @@ function ConsolePanel({
 
 function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
   return (
-    <div className={cn("rounded-lg border px-3 py-3", levelPanel[row.level])}>
+    <div
+      role="group"
+      aria-label={row.ariaLabel}
+      aria-describedby={row.detailId}
+      className={cn("rounded-lg border px-3 py-3", levelPanel[row.level])}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-foreground">{row.label}</div>
           <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{row.meta}</div>
         </div>
-        <Badge variant={levelBadge[row.level]}>{row.value}</Badge>
+        <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
       </div>
-      <p className="mt-2 text-xs leading-5 text-foreground/80">{row.detail}</p>
+      <p id={row.detailId} className="mt-2 text-xs leading-5 text-foreground/80">{row.detail}</p>
+      {row.action ? (
+        <div className="mt-3">
+          <Button asChild variant={row.action.variant} size="sm">
+            <Link to={row.action.route} aria-label={row.action.ariaLabel}>
+              {row.action.label}
+            </Link>
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -60,11 +60,43 @@ install_dotnet_if_missing() {
     }
 }
 
+resolve_dotnet_root() {
+    if [[ -n "${DOTNET_ROOT:-}" && -d "$DOTNET_ROOT/host/fxr" ]]; then
+        printf '%s\n' "$DOTNET_ROOT"
+        return 0
+    fi
+
+    if have dotnet; then
+        local dotnet_path
+        dotnet_path="$(command -v dotnet)"
+        local dotnet_realpath
+        dotnet_realpath="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$dotnet_path" 2>/dev/null || readlink -f "$dotnet_path")"
+        local dotnet_dir
+        dotnet_dir="$(cd "$(dirname "$dotnet_realpath")" && pwd -P)"
+
+        local parent_dir
+        parent_dir="$(cd "$dotnet_dir/.." && pwd -P)"
+        local candidate
+        for candidate in "$dotnet_dir" "$parent_dir" "$HOME/.dotnet"; do
+            if [[ -d "$candidate/host/fxr" ]]; then
+                printf '%s\n' "$candidate"
+                return 0
+            fi
+        done
+    fi
+
+    printf '%s\n' "$HOME/.dotnet"
+}
+
 write_env_file() {
-    cat >"$ENV_FILE" <<'EOF'
+    local dotnet_root
+    dotnet_root="$(resolve_dotnet_root)"
+
+    cat >"$ENV_FILE" <<EOF
 #!/usr/bin/env bash
-export DOTNET_ROOT="$HOME/.dotnet"
-export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+export DOTNET_ROOT="$dotnet_root"
+export DOTNET_ROOT_X64="$dotnet_root"
+export PATH="$dotnet_root:$dotnet_root/tools:\$PATH"
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export DOTNET_NOLOGO=true
 export DOTNET_CLI_TELEMETRY_OPTOUT=1

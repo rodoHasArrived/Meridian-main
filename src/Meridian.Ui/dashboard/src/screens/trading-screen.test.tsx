@@ -1,4 +1,4 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
@@ -296,9 +296,10 @@ describe("TradingScreen", () => {
     await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
-    expect(screen.getByText(/Breaker Closed/i)).toBeInTheDocument();
-    expect(screen.getByText(/Default limit:/i)).toHaveTextContent("5000");
-    expect(screen.getByText(/Active overrides:/i)).toHaveTextContent("BypassOrderControls (AAPL)");
+    expect(screen.getAllByText(/Breaker Closed/i).length).toBeGreaterThan(0);
+    const controls = screen.getByLabelText(/Execution controls snapshot: breaker closed/i);
+    expect(within(controls).getByText("5000")).toBeInTheDocument();
+    expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
   });
 
   it("surfaces cockpit readiness against operator acceptance gates", async () => {
@@ -430,6 +431,25 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("renders the order ticket through shared labelled controls", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+
+    expect(screen.getByLabelText("Order symbol")).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByRole("combobox", { name: "Order side" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByRole("combobox", { name: "Order type" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByLabelText("Order symbol")).toHaveAttribute("aria-invalid", "true");
+
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    expect(screen.getByLabelText("Order quantity")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Order quantity")).toHaveAccessibleDescription("Enter an order quantity greater than zero.");
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
+    expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
+  });
+
   it("shows error path when promotion evaluation fails", async () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
     const user = userEvent.setup();
@@ -514,10 +534,18 @@ describe("TradingScreen", () => {
     const user = userEvent.setup();
     await renderTradingScreen();
 
-    await user.click(screen.getByRole("button", { name: "Start" }));
-    await screen.findByText(/Replay running/i);
+    const replayControls = screen.getByRole("region", { name: /session replay controls/i });
+    expect(replayControls).toHaveAccessibleDescription("Start and control replay for reconnect/resume validation.");
+    expect(within(replayControls).getByLabelText("Replay file")).toHaveAccessibleDescription(/Ready to replay replay\.jsonl/i);
+    expect(within(replayControls).getByLabelText("Replay speed multiplier")).toHaveAccessibleDescription(/Multiplier greater than 0/i);
+    expect(within(replayControls).getByLabelText("Seek position in milliseconds")).toHaveAccessibleDescription(/Position in milliseconds from replay start/i);
 
-    await user.click(screen.getByRole("button", { name: "Restore" }));
+    const startButton = await screen.findByRole("button", { name: "Start" });
+    await waitFor(() => expect(startButton).toBeEnabled());
+    await user.click(startButton);
+    await screen.findByText("Replay running · 3/10 (30%)");
+
+    await user.click(screen.getByRole("button", { name: /restore paper session sess-1/i }));
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Selected session: sess-1/i)).toBeInTheDocument();
     expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
@@ -531,7 +559,7 @@ describe("TradingScreen", () => {
     await user.click(await screen.findByRole("button", { name: /verify replay/i }));
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
-    expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: /replay verification matched current state for sess-1/i })).toHaveTextContent(/Matched current state/i);
     expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
     expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
@@ -541,6 +569,25 @@ describe("TradingScreen", () => {
   it("opens confirmation dialog when Cancel order button is clicked", async () => {
     await renderTradingScreen();
     fireEvent.click(screen.getByTitle("Cancel order"));
-    expect(screen.getByText(/cancel order PO-1/i)).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /cancel order PO-1/i });
+    expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
+    expect(screen.getByRole("button", { name: /confirm cancel order po-1/i })).toBeEnabled();
+  });
+
+  it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const lifecycle = screen.getByRole("region", { name: /strategy lifecycle/i });
+    const strategyInput = within(lifecycle).getByLabelText("Strategy ID");
+    expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before pausing a strategy/i })).toBeDisabled();
+    expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before stopping a strategy/i })).toBeDisabled();
+
+    await user.type(strategyInput, "  mean-reversion-fx-01  ");
+
+    expect(within(lifecycle).getByText("Ready to open lifecycle confirmation for mean-reversion-fx-01.")).toBeInTheDocument();
+    await user.click(within(lifecycle).getByRole("button", { name: /open pause confirmation for strategy mean-reversion-fx-01/i }));
+    const dialog = screen.getByRole("dialog", { name: /pause strategy - mean-reversion-fx-01/i });
+    expect(dialog).toHaveAccessibleDescription("The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.");
   });
 });

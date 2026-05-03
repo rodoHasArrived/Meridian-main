@@ -1,5 +1,7 @@
 namespace Meridian.Contracts.FundStructure;
 
+using System.Text.Json.Serialization;
+
 /// <summary>Snapshot of an account's balance at a point in time.</summary>
 public sealed record AccountBalanceSnapshotDto(
     Guid SnapshotId,
@@ -57,6 +59,7 @@ public sealed record RecordAccountBalanceSnapshotRequest(
     decimal CashBalance,
     string Source,
     string? RecordedBy = null,
+    bool IsBackfill = false,
     decimal? SecuritiesMarketValue = null,
     decimal? AccruedInterest = null,
     decimal? PendingSettlement = null,
@@ -71,7 +74,8 @@ public sealed record IngestCustodianStatementRequest(
     string SourceFormat,
     string? Notes,
     IReadOnlyList<CustodianPositionLineDto> Lines,
-    string LoadedBy);
+    string LoadedBy,
+    bool IsBackfill = false);
 
 /// <summary>Request to ingest a bank statement.</summary>
 public sealed record IngestBankStatementRequest(
@@ -81,7 +85,8 @@ public sealed record IngestBankStatementRequest(
     string BankName,
     string? Notes,
     IReadOnlyList<BankStatementLineDto> Lines,
-    string LoadedBy);
+    string LoadedBy,
+    bool IsBackfill = false);
 
 
 public sealed record CustodianStatementBatchDto(
@@ -131,6 +136,12 @@ public sealed record AccountReconciliationResultDto(
     decimal? Variance,
     string Reason);
 
+/// <summary>Polymorphic envelope for account-type specific details.</summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+[JsonDerivedType(typeof(CustodianAccountDetailsEnvelopeDto), "custodian")]
+[JsonDerivedType(typeof(BankAccountDetailsEnvelopeDto), "bank")]
+public abstract record AccountDetailsDto;
+
 /// <summary>Custodian-specific account details.</summary>
 public sealed record CustodianAccountDetailsDto(
     string? SubAccountNumber,
@@ -141,6 +152,9 @@ public sealed record CustodianAccountDetailsDto(
     string? PrimebrokerGiveupCode,
     string? SafekeepingLocation,
     string? ServiceAgreementReference);
+
+/// <summary>Polymorphic envelope for custodian account details.</summary>
+public sealed record CustodianAccountDetailsEnvelopeDto(CustodianAccountDetailsDto Details) : AccountDetailsDto;
 
 /// <summary>Bank-specific account details.</summary>
 public sealed record BankAccountDetailsDto(
@@ -155,6 +169,9 @@ public sealed record BankAccountDetailsDto(
     string? IntermediaryBankName,
     string? BeneficiaryName,
     string? BeneficiaryAddress);
+
+/// <summary>Polymorphic envelope for bank account details.</summary>
+public sealed record BankAccountDetailsEnvelopeDto(BankAccountDetailsDto Details) : AccountDetailsDto;
 
 /// <summary>Request to create a new fund account.</summary>
 public sealed record CreateAccountRequest(
@@ -174,6 +191,7 @@ public sealed record CreateAccountRequest(
     string? LedgerReference = null,
     string? StrategyId = null,
     string? RunId = null,
+    AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active,
     CustodianAccountDetailsDto? CustodianDetails = null,
     BankAccountDetailsDto? BankDetails = null);
 

@@ -1,12 +1,13 @@
 # Meridian - Consolidated Evaluations & Audits
 
-**Version:** 1.7.1
-**Last Updated:** 2026-04-08
+**Version:** 1.7.2
+**Last Updated:** 2026-05-01
 **Status:** Consolidated reference document (supporting reference, not the live execution backlog)
 
 This document consolidates all architecture evaluations, code audits, desktop assessments, improvement brainstorms, and architecture proposals into a single navigable reference. It replaces the need to read 20+ individual files across `docs/evaluations/`, `docs/audits/`, and `docs/development/` for a complete project health picture.
 
 **Canonical tracking documents (not merged here):**
+
 - [`ROADMAP.md`](ROADMAP.md) — wave-structured delivery roadmap and core operator-readiness gates
 - [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — normalized active implementation backlog aligned to the roadmap
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking with legacy milestone tags retained for traceability
@@ -37,12 +38,13 @@ Use this document as supporting context. For active prioritization, default to t
   - [Debug Code Analysis (H3)](#debug-code-analysis-h3)
   - [Platform Cleanup (UWP Removal)](#platform-cleanup-uwp-removal)
   - [Further Simplification Opportunities](#further-simplification-opportunities)
+  - [Workspace Visual Audit (April 2026)](#workspace-visual-audit-april-2026)
 - [Repository Cleanup](#repository-cleanup)
   - [Cleanup Action Plan Status](#cleanup-action-plan-status)
   - [Config Consolidation](#config-consolidation)
 - [Improvement Brainstorms](#improvement-brainstorms)
   - [High-Impact Improvement Brainstorm (March 2026)](#high-impact-improvement-brainstorm-march-2026)
-  - [High-Impact Improvements Brainstorm (Feb/Mar 2026)](#high-impact-improvements-brainstorm-febmar-2026)
+  - [High-Impact Improvements Brainstorm (Feb/Mar 2026)](#high-impact-improvements-brainstorm-febmar-2026-archived)
   - [High-Value Low-Cost Improvements](#high-value-low-cost-improvements)
 - [Architecture Proposals](#architecture-proposals)
   - [Nautilus-Inspired Restructuring](#nautilus-inspired-restructuring)
@@ -56,23 +58,30 @@ Use this document as supporting context. For active prioritization, default to t
 ## Project Health Summary
 
 | Domain | Assessment | Key Finding | Source |
-|--------|-----------|-------------|--------|
+| -------- | ----------- | ------------- | -------- |
 | Streaming Architecture | Sound | Polly resilience patterns good; optimize pipeline throughput and backpressure signaling | [Evaluation](#real-time-streaming-architecture) |
 | Storage Architecture | Well-designed | JSONL + Parquet dual-format provides excellent write/query balance; WAL ensures durability | [Evaluation](#storage-architecture) |
 | Data Quality Monitoring | Comprehensive | 12+ specialized services; improve automated remediation and ML anomaly detection | [Evaluation](#data-quality-monitoring) |
 | Historical Providers | Well-designed | Alpaca + Polygon primary; Stooq + Yahoo free fallback; validate Polygon rate limits | [Evaluation](#historical-data-providers) |
 | Ingestion Orchestration | Uneven maturity | Strong building blocks; needs unified job model for realtime + backfill workloads | [Evaluation](#ingestion-orchestration) |
 | Operational Readiness | Pilot Ready | Good monitoring baseline; needs standardized SLOs and runbook-linked alerts | [Evaluation](#operational-readiness) |
-| Desktop UX | Partial parity | 49 pages, 104 services; key features implemented; remaining gaps in live backend integration | [Assessment](#desktop-ux-assessment) |
+| Desktop UX | Retained support | 49 XAML pages retained for compatibility; new WPF feature work paused; browser workstation is the active operator UI lane | [Assessment](#desktop-ux-assessment) |
 | Code Quality | Excellent | Debug code is intentional; no cleanup required; repository hygiene complete | [Audit](#debug-code-analysis-h3) |
 | Repository Cleanup | Complete | Phases 1-6 done; generated docs refresh and HtmlTemplateGenerator CSS/JS extraction remain | [Audit](#cleanup-action-plan-status) |
 | Simplification Backlog | ~2,800-3,400 LOC removable | 12 categories identified; highest priority: bare catches, dead code, Task.Run misuse | [Audit](#further-simplification-opportunities) |
 | Critical Defects (March 2026) | 6.5/10 — Architecturally Sound, Operationally Risky | Silent data-loss paths in flush semantics, WAL transactions, price precision, and deduplication | [Brainstorm](#high-impact-improvement-brainstorm-march-2026) |
-| Code Generalization | Strong domain types needed | Stringly-typed identifiers, thin singletons, and duplicated WebSocket lifecycle code are top risks | [Brainstorm](#high-impact-improvements-brainstorm-febmar-2026) |
+| Code Generalization | Strong domain types needed | Stringly-typed identifiers, thin singletons, and duplicated WebSocket lifecycle code are top risks | [Brainstorm](#high-impact-improvements-brainstorm-febmar-2026-archived) |
 | Nautilus-Inspired Restructuring | Partially Implemented | 5/12 proposals implemented; co-located provider configs, parsing layer, FSM base still open | [Proposal](#nautilus-inspired-restructuring) |
 | Next Frontier (March 2026) | 94%+ core complete | 11 capabilities shipped; correlation engine, ML anomaly detection, cloud sinks remain future work | [Brainstorm](#next-frontier-brainstorm-march-2026) |
 
 ## Refresh Highlights
+
+**This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the browser-first operator UI pivot, and the April 2026 workspace visual audit:**
+
+- Wave 1 trust gate is **closed** as of 2026-04-17 with a signed DK1 parity packet and valid operator sign-off. The Project Health Summary and production-status posture are updated accordingly.
+- New WPF feature development is **paused**; the active operator UI lane is the web dashboard in `src/Meridian.Ui/dashboard/`. The Desktop UX summary is updated to reflect retained support scope rather than active parity targets.
+- The **Workspace Visual Audit Checklist (2026-04-22)** is now indexed under [Code Audits](#workspace-visual-audit-april-2026). It confirms shared spacing/rhythm tokens, card composition patterns, badge semantics, and summary-tile ordering are in place across the four workspace shells; four visual outliers are flagged for follow-up cleanup.
+- Version updated to 1.7.2 to align with `production-status.md`.
 
 **This 2026-04-08 refresh keeps the consolidated document aligned with the current planning set:**
 
@@ -95,6 +104,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Verdict:** Fundamentally sound with good resilience patterns.
 
 **Strengths:**
+
 - 5 streaming providers behind `IMarketDataClient` abstraction (Alpaca, Polygon, IB, StockSharp, NYSE)
 - `EventPipeline` uses `System.Threading.Channels` with bounded capacity (100,000 events) and configurable backpressure
 - Polly-based retry and circuit breaker policies for WebSocket connections
@@ -102,8 +112,9 @@ Use this document as supporting context. For active prioritization, default to t
 - `SubscriptionManager` tracks active subscriptions for recovery on reconnect
 
 **Improvement Opportunities:**
+
 | Priority | Opportunity | Status |
-|----------|-------------|--------|
+| ---------- | ------------- | -------- |
 | P1 | Optimize EventPipeline throughput for >100 Hz scenarios | Partially addressed (C4 injectable metrics done) |
 | P1 | Enhance backpressure signaling to prevent data loss under load | `DroppedEventAuditTrail` implemented (B1 done) |
 | P2 | Unify WebSocket lifecycle across providers via base class | Open (C3 in IMPROVEMENTS.md) |
@@ -119,6 +130,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Verdict:** Well-designed for archival-first market data collection.
 
 **Strengths:**
+
 - Dual-format: JSONL (human-readable, append-only) + Parquet (columnar, compressed)
 - Write-Ahead Log (WAL) with SHA256 checksums for crash-safe persistence
 - 4 naming conventions (BySymbol, ByDate, ByType, Flat) for flexible organization
@@ -126,8 +138,9 @@ Use this document as supporting context. For active prioritization, default to t
 - Tiered storage (Hot/Warm/Cold) with configurable retention and automatic migration
 
 **Improvement Opportunities:**
+
 | Priority | Opportunity | Status |
-|----------|-------------|--------|
+| ---------- | ------------- | -------- |
 | P1 | CompositeSink for multi-format writes with fault isolation | Done (C6) |
 | P2 | Optimize Parquet write batching for reduced memory pressure | Open |
 | P2 | Add storage space forecasting and quota warnings | QuotaEnforcementService exists |
@@ -147,7 +160,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Service Inventory:**
 
 | Service | Responsibility |
-|---------|----------------|
+| --------- | ---------------- |
 | `DataQualityMonitoringService` | Orchestrates all quality checks |
 | `CompletenessScoreCalculator` | Data completeness percentage |
 | `GapAnalyzer` | Missing data period detection |
@@ -162,8 +175,9 @@ Use this document as supporting context. For active prioritization, default to t
 | `SpreadMonitor` | Bid-ask spread monitoring |
 
 **Improvement Opportunities:**
+
 | Priority | Opportunity | Status |
-|----------|-------------|--------|
+| ---------- | ------------- | -------- |
 | P1 | Automated gap remediation (trigger backfill on detected gaps) | Open |
 | P2 | ML-based anomaly detection (move beyond threshold-based rules) | Open |
 | P2 | Quality scoring per provider for intelligent routing | Partial (degradation scoring done via H4) |
@@ -181,7 +195,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Provider Recommendations:**
 
 | Tier | Provider | Best For | Free Tier |
-|------|----------|----------|-----------|
+| ------ | ---------- | ---------- | ----------- |
 | Primary | Alpaca | US equities, intraday bars | Yes (with account) |
 | Primary | Polygon | Professional tick data, aggregates | Limited |
 | Secondary | Interactive Brokers | Comprehensive coverage, all types | Yes (with account and official `IBApi` runtime path) |
@@ -191,14 +205,16 @@ Use this document as supporting context. For active prioritization, default to t
 | Supplementary | Finnhub, Alpha Vantage, Nasdaq Data Link | Specialized use cases | Limited/Yes |
 
 **Key Architecture Features:**
+
 - `CompositeHistoricalDataProvider` with priority-based fallback chain
 - `ProviderRateLimitTracker` enforces per-provider rate limits (H1 done)
 - Health monitoring and automatic provider deprioritization
 - Symbol resolution across providers
 
 **Improvement Opportunities:**
+
 | Priority | Opportunity | Status |
-|----------|-------------|--------|
+| ---------- | ------------- | -------- |
 | P1 | Validate Polygon rate-limit assumptions against current docs | Open |
 | P2 | Add tick-level historical data from IB for verification | Requires the official `IBApi` runtime path; `EnableIbApiSmoke=true` is compile-only |
 | P3 | Provider SDK auto-documentation from attributes | Open (I4 in ROADMAP) |
@@ -213,6 +229,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Verdict:** Strong building blocks; orchestration maturity is uneven.
 
 **Strengths:**
+
 - Clean provider and storage abstractions enable scheduler-independent execution
 - WAL + tiered storage reduces data-loss risk for long-running jobs
 - Existing health and quality monitoring can be reused for orchestration signals
@@ -221,7 +238,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Gap Analysis:**
 
 | Gap | Risk | Priority |
-|-----|------|----------|
+| ----- | ------ | ---------- |
 | No unified job contract across realtime/backfill flows | Inconsistent behaviors | P0 — **Resolved**: `IngestionJobService` manages unified `IngestionJob` lifecycle with state machine; API endpoints at `/api/ingestion/jobs` |
 | Limited checkpoint semantics exposed to users | Manual reruns after partial failures | P0 — **Resolved**: `IngestionJobService.UpdateCheckpointAsync()` + `/api/ingestion/jobs/resumable` endpoint exposes checkpoint semantics |
 | Retry policy lacks workload-level intent | Over-retry, provider throttling | P1 |
@@ -229,6 +246,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Weak operator timeline/audit view | Harder post-incident analysis | P1 |
 
 **Target Capabilities:**
+
 1. **Unified Ingestion Job State Machine** — `Draft → Queued → Running → Paused → Completed | Failed | Cancelled`
 2. **Policy-Driven Scheduler** — Cron, session-aware, signal-triggered
 3. **Deterministic Resumability** — Resume from last committed checkpoint
@@ -246,6 +264,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Latest Status (2026-03-19):** SLO framework operational (7 SLO definitions), alert-to-runbook linkage implemented (`AlertRunbookRegistry`), health checks operational, operator runbook comprehensive. Remaining: formal post-incident review process, standardized rollback testing per release.
 
 **Strengths:**
+
 - Docker and systemd deployment artifacts present
 - Extensive GitHub Actions workflows (22 workflows)
 - Prometheus metrics and alert rule definitions available
@@ -254,7 +273,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Risk Matrix:**
 
 | Risk | Impact | Priority |
-|------|--------|----------|
+| ------ | -------- | ---------- |
 | SLOs not consistently documented per subsystem | Hard to calibrate alerts | P0 — **Resolved**: `SloDefinitionRegistry` provides 7 runtime SLO definitions across 6 subsystems, each linked to alert rules and runbook sections. Full docs in `service-level-objectives.md` |
 | Alert-to-runbook linkage is implicit | Slower incident triage | P0 — **Resolved**: `AlertRunbookRegistry` maps all 11 Prometheus alerts to runbook sections with probable causes, immediate actions, and SLO references. `EnrichWithRunbook()` augments dispatched alerts |
 | Release readiness criteria are dispersed | Regressions reaching production | P1 |
@@ -262,6 +281,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Capacity thresholds under-specified | Late scaling detection | P2 |
 
 **60-Day Plan:**
+
 1. Weeks 1-2: Document SLOs for ingestion, storage, and export paths
 2. Weeks 3-4: Embed runbook URLs into critical alert annotations
 3. Weeks 5-6: Introduce consolidated release gate checklist in CI
@@ -270,6 +290,8 @@ Use this document as supporting context. For active prioritization, default to t
 ---
 
 ## Desktop Assessments
+
+> **Note (2026-05-01):** New WPF feature development is paused. The active operator UI lane is the browser-based workstation dashboard in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The desktop shell is retained support evidence for shared contracts, regression fixes, and compatibility checks. The assessments below reflect the desktop-first evaluation history. For the active UI direction see [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
 
 ### Desktop UX Assessment
 
@@ -281,7 +303,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Implemented Features:**
 
 | Feature | Status | Details |
-|---------|--------|---------|
+| --------- | -------- | --------- |
 | Command Palette (Ctrl+K) | Done | 47 commands, fuzzy search, recent tracking |
 | Onboarding Tours | Done | 5 built-in tours with progress persistence |
 | Workspace Persistence | Done | 4 default workspaces, session state, window bounds |
@@ -292,7 +314,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Remaining Priorities:**
 
 | Priority | Gap | Impact |
-|----------|-----|--------|
+| ---------- | ----- | -------- |
 | P0 | Replace demo/simulated values with live backend state | Users can trust what they see — **Resolved**: `StatusServiceBase` now populates `DataProvenance` field ("live"/"fixture"/"offline") on `SimpleStatus`; `FixtureModeDetector` integration drives the banner |
 | P0 | Resumable jobs with crash recovery for backfill/exports | Long-running work not lost — **Resolved**: `IngestionJobService` with checkpoint persistence + `/api/ingestion/jobs/resumable` endpoint |
 | P0 | Explicit staleness + source provenance on key metrics | Prevents decisions on stale data — **Resolved**: `SimpleStatus` now includes `RetrievedAtUtc`, `SourceProvider`, `IsStale`, `AgeSeconds`, `DataProvenance` fields |
@@ -310,6 +332,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Key Finding:** Provider abstraction is solid (`IHistoricalDataProvider`, `CompositeHistoricalDataProvider`), but WPF Backfill page is mostly demo/static and lacks per-provider operational settings UI.
 
 **Implementation Status (2026-03-19):**
+
 - ✅ Type-safe DTOs: `BackfillConfigDto.Providers`, `BackfillProvidersConfigDto`, `BackfillProviderOptionsDto`
 - ✅ Config service methods: `GetBackfillProvidersConfigAsync()`, `SetBackfillProviderOptionsAsync()`
 - ✅ WPF ViewModels: `BackfillProviderSettingsViewModel` with ObservableCollection binding
@@ -324,6 +347,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Purpose:** Turns the desktop evaluations into concrete delivery work across testing, fixture mode, DI cleanup, and workflow-focused operator UX.
 
 **Most relevant active guidance:**
+
 - Establish deterministic desktop testing paths before expanding workflow surfaces further
 - Prefer fixture/live provenance cues over simulated placeholder values
 - Continue moving page-specific logic into testable services/view models
@@ -334,9 +358,14 @@ Use this document as supporting context. For active prioritization, default to t
 > Source: `../../archive/docs/summaries/desktop-improvements-executive-summary.md`
 > Date: 2026-02-22 | Updated: 2026-03-19 | Status: Archived executive snapshot — implementation guide is the canonical active reference
 
-**Executive Takeaway:** The desktop stack has broad functional coverage already, but the highest-value remaining work is UX consolidation, stronger live-state trust signals, and a workflow-centric trading workstation structure.
+**Executive Takeaway:** This archived desktop snapshot predates the current differentiation
+framing. Its durable signal is still useful: the highest-value remaining work was workflow
+consolidation and stronger trust signals. Read the active product direction through
+`docs/plans/evidence-backed-investment-operations-plan.md` and the browser-first operator pivot,
+not as a generic trading-workstation program.
 
 **Current planning alignment:**
+
 - Phase 11 — Reorganize the UX around Research, Trading, Data Operations, and Governance workspaces
 - Phase 12 — Standardize shared run / portfolio / ledger read models
 - Phase 13 — Unify native backtesting, Lean integration, and paper-trading workflows
@@ -351,7 +380,7 @@ Use this document as supporting context. For active prioritization, default to t
 > Date: 2026-02-10 | Status: Complete
 
 | Item | Issue | Resolution |
-|------|-------|------------|
+| ------ | ------- | ------------ |
 | H1 | Accidental artifact file tracked in repo | Removed; `.gitignore` patterns added |
 | H2 | `build-output.log` (93,549 bytes) in version control | Removed; `*.log` pattern prevents recurrence |
 | H3 | Root-level narrative docs diluting discoverability | Moved to `../../archive/docs/` with date prefixes |
@@ -366,7 +395,7 @@ Use this document as supporting context. For active prioritization, default to t
 > Date: 2026-02-10 | Status: Complete
 
 | Category | Instances | Verdict |
-|----------|-----------|---------|
+| ---------- | ----------- | --------- |
 | `Console.WriteLine` | 20 | All intentional (CLI output, user-facing diagnostics) |
 | `Debug.WriteLine` | 20 | All properly conditional (`#if DEBUG` or diagnostic context) |
 | Skipped Tests | Reviewed | All have documented rationale |
@@ -383,7 +412,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Summary of Completed Work:**
 
 | Category | Status |
-|----------|--------|
+| ---------- | -------- |
 | Repository Hygiene (H1-H3) | Done |
 | UiServer Endpoint Extraction (3,030 → 260 LOC, 91.4% reduction) | Done |
 | UWP Platform Removal (project deleted, solution cleaned, tests removed) | Done |
@@ -394,6 +423,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Architecture Debt (DataGapRepair DI, SubscriptionManager rename) | Done |
 
 **Remaining:**
+
 - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded
 - HtmlTemplateGenerator still embeds CSS/JS inline (2,533 LOC) — could move to `wwwroot/`
 
@@ -407,7 +437,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Total estimated removable/simplifiable code: ~2,800-3,400 lines**
 
 | # | Category | Est. Lines | Risk | Priority |
-|---|----------|-----------|------|----------|
+| --- | ---------- | ----------- | ------ | ---------- |
 | 1 | Thin WPF service wrappers | 800-950 | Low | Medium |
 | 2 | Manual double-checked locking → `Lazy<T>` | 350-430 | Low | Medium |
 | 3 | Endpoint boilerplate helpers | 400-600 | Low | Medium |
@@ -422,10 +452,39 @@ Use this document as supporting context. For active prioritization, default to t
 | 12 | Duplicate model definitions across layers | TBD | Medium | Low |
 
 **Recommended Execution Order:**
+
 1. Quick wins (High priority, Low risk): Items 7, 9, 6
 2. Mechanical refactors (Medium priority, Low risk): Items 2, 8, 10
 3. Structural simplification (Medium priority, Medium risk): Items 1, 3, 5
 4. Architecture evaluation (Low priority, Medium risk): Items 4, 11, 12
+
+---
+
+### Workspace Visual Audit (April 2026)
+
+> Source: `docs/audits/workspace-visual-audit-checklist-2026-04-22.md`
+> Date: 2026-04-22 | Status: Complete — 4 outliers identified for follow-up cleanup
+
+**Scope:** Research, Trading, Data Operations, and Governance workspace shell pages (`ResearchWorkspaceShellPage.xaml`, `TradingWorkspaceShellPage.xaml`, `DataOperationsWorkspaceShellPage.xaml`, `GovernanceWorkspaceShellPage.xaml`).
+
+**Checklist outcome:** All items confirmed:
+
+- Shared spacing/rhythm tokens available for section gaps, card paddings, and divider margins.
+- Shared card composition patterns exist for header/body/footer alignment.
+- Badge semantics mapped to Info/Warning/Success/Danger resources.
+- Summary tiles consistently use `label → value → trend/detail` ordering.
+- Workspace shell pages consume the standardized styles where practical.
+
+**Outliers for follow-up cleanup:**
+
+| # | Location | Issue |
+| --- | --------- | ------- |
+| 1 | Research hero identity card | Bespoke dark treatment (`#12253A` / `#22486B`) not consuming semantic card/badge token set |
+| 2 | Research Run Studio informational callout | Custom accent border/background values; should migrate to a shared semantic callout style |
+| 3 | Governance empty-state warning icon card | Custom border + icon composition rather than a reusable warning callout style |
+| 4 | Trading context card and active run card | Bespoke compositions close to shared patterns but still manually defining padding and internal spacing |
+
+Outliers are intentionally preserved to avoid altering contextual visual hierarchy in one step.
 
 ---
 
@@ -437,7 +496,7 @@ Use this document as supporting context. For active prioritization, default to t
 > Version: 1.2 | Date: 2026-02-16 | Status: Phases 1-6 Complete
 
 | Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
+| -------- | -------- | ------- | ------------- |
 | Duplicate Code | ~3,000 lines | ~500 lines | 83% reduction |
 | Unused Files | ~260 KB | 0 KB | 100% removed |
 | Duplicate Interfaces | 9 | 0 | 100% consolidated |
@@ -445,6 +504,7 @@ Use this document as supporting context. For active prioritization, default to t
 | Orphaned Tests | ~15 files | 0 files | 100% aligned |
 
 **Phase Status:**
+
 1. Phase 1 (Immediate Wins): Done
 2. Phase 2 (Interface Consolidation): Done
 3. Phase 3 (Service Deduplication): Done
@@ -460,6 +520,7 @@ Use this document as supporting context. For active prioritization, default to t
 > Date: 2026-02-10 | Status: Complete
 
 **Findings:**
+
 - Props/targets files: No duplicates (3 files, each distinct purpose)
 - Global config: Removed duplicate diagnostic suppressions
 - Application config: No duplication found
@@ -476,7 +537,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Overall Rating:** 6.5/10 — Architecturally Sound, Operationally Risky
 
 | Component | Design | Implementation | Robustness |
-|-----------|--------|----------------|------------|
+| ----------- | -------- | ---------------- | ------------ |
 | Event Pipeline | 9/10 | 5/10 | 5/10 |
 | Write-Ahead Log | 8/10 | 4/10 | 4/10 |
 | Alpaca Client | 7/10 | 4/10 | 4/10 |
@@ -490,7 +551,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Category 1 — Data Integrity & Correctness:**
 
 | # | Issue | Status |
-|---|-------|--------|
+| --- | ------- | -------- |
 | 1.1 | EventPipeline flush semantics count dropped events as persisted — silent data loss | Open |
 | 1.2 | WAL-to-Sink transaction gap — crash recovery may produce duplicates | Open |
 | 1.3 | Alpaca price precision loss (`double → decimal` round-trip) and large trade size truncation | ✅ Fixed (2026-03-10): `GetInt64()` for sizes; timestamps reject on parse failure |
@@ -500,7 +561,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Category 2 — Resource Management & Stability:**
 
 | # | Issue | Status |
-|---|-------|--------|
+| --- | ------- | -------- |
 | 2.1 | Memory leaks in `SequenceErrorTracker`, `GapAnalyzer`, `CompletenessScoreCalculator` — entries never evicted | Open |
 | 2.2 | `GapAnalyzer.GetEffectiveConfig()` allocates a new record per event on the hot path | Open |
 | 2.3 | `EventPipeline` sink flush has no timeout — hung sink stalls the entire pipeline | ✅ Fixed (2026-03-11): 60 s configurable flush timeout |
@@ -511,7 +572,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Category 3 — Architectural Improvements:**
 
 | # | Improvement | Status |
-|---|-------------|--------|
+| --- | ------------- | -------- |
 | 3.1 | End-to-end trace context propagation via `System.Diagnostics.Activity` | Open |
 | 3.2 | WebSocket provider base class (historically grouped Polygon, NYSE, StockSharp lifecycle duplication) | Re-scoped: Polygon and NYSE addressed; StockSharp is now treated as a connector-runtime exception |
 | 3.3 | Decide F# strategy: deepen validation/calculation coverage or remove interop overhead | Open |
@@ -522,7 +583,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Category 4 — Observability & Operational Excellence:**
 
 | # | Improvement | Status |
-|---|-------------|--------|
+| --- | ------------- | -------- |
 | 4.1 | Alert-to-runbook linkage in Prometheus alert rule annotations | Open |
 | 4.2 | Backpressure alerting is single-shot; sustained load produces only one warning | Open |
 | 4.3 | WAL corruption alerting — invalid checksums are silently skipped | ✅ Fixed (2026-03-10): `WalCorruptionMode` enum (Skip/Alert/Halt) |
@@ -531,7 +592,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Category 5 — Test Infrastructure:**
 
 | # | Improvement | Status |
-|---|-------------|--------|
+| --- | ------------- | -------- |
 | 5.1 | Timing-dependent skipped tests (`Task.Delay`-based synchronization) | ✅ Fixed (2026-03-11): deterministic `BlockingStorageSink` synchronization |
 | 5.2 | Mock sinks support no error injection — pipeline failure modes untested | Open |
 | 5.3 | No provider resilience tests (rate limits, malformed JSON, reconnection under loss) | Open |
@@ -540,7 +601,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Category 6-7 — Code Quality & Correctness by Construction:**
 
 | # | Improvement | Status |
-|---|-------------|--------|
+| --- | ------------- | -------- |
 | 6.1 | 42-service `Lazy<T>` singleton anti-pattern — untestable, tightly coupled | Open |
 | 6.2 | `ServiceCompositionRoot` 50-100+ service registrations in one file | Open |
 | 6.3 | Inconsistent error handling across providers | Open |
@@ -558,7 +619,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Top themes from deep codebase analysis:**
 
 | Theme | Summary |
-|-------|---------|
+| ------- | --------- |
 | Stringly-typed identifiers | `string Symbol`, `string Source`, provider IDs are bare strings; introduce value-object wrappers (`Symbol`, `CanonicalSymbol`, `ProviderId`, `Venue`, `StreamId`) |
 | Provider registration unification | 3 separate creation mechanisms; consolidate via `ProviderFactory` + `DataSourceRegistry` |
 | Endpoint response contract | HTTP endpoints lack versioned OpenAPI schemas; response shapes evolve silently |
@@ -580,7 +641,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Top categories:**
 
 | Category | Key Improvements |
-|----------|-----------------|
+| ---------- | ----------------- |
 | Startup & Configuration Hardening | Credential validation in `PreflightChecker`; deprecation warning for legacy `DataSource` string config |
 | Provider Resilience | Per-provider retry budget; explicit provider degradation thresholds configurable per environment |
 | Developer Experience | Shared test double library; `[Theory]`-based provider message parsing tests |
@@ -603,7 +664,7 @@ Use this document as supporting context. For active prioritization, default to t
 **Implementation Status:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 1.1 | Unified Per-Provider Directories | ✅ Implemented — reorganized under `Adapters/` by vendor |
 | 1.2 | Provider Template Scaffold | ⚠️ Partial — `ProviderTemplate.cs` factory exists; no `_Template/` scaffold dir |
 | 1.3 | Co-located Provider Configuration | ❌ Not Started — configs remain in `Application/Config/` |
@@ -635,7 +696,7 @@ paths.
 **Highest-potential candidates (7 evaluated; 6 viable for immediate delivery):**
 
 | # | Area | Opportunity | Viability | Priority |
-|---|------|-------------|-----------|----------|
+| --- | ------ | ------------- | ----------- | ---------- |
 | 1 | `MemoryMappedJsonlReader` — newline scan | `SearchValues<byte>` / AVX2 vectorized `\n` search | High | 1 |
 | 2 | `MemoryMappedJsonlReader` — UTF-16 deferral | Pass `ReadOnlyMemory<byte>` slices; defer `GetString` | Medium | 2 |
 | 3 | `DataQualityScoringService` — sequence extraction | `TryExtractSequenceUtf8` byte-span helper; `PipeReader` input | High | 3 |
@@ -661,7 +722,7 @@ paths.
 **Area 1 — Data Intelligence & Analytics:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 1.1 | Cross-Symbol Correlation Engine (rolling correlation matrices, lead-lag) | 📝 Future |
 | 1.2 | Microstructure Event Annotations (sweep, block, halt, spread spike) | 📝 Future |
 | 1.3 | Cost-Per-Query Estimator for Backfill | ✅ Implemented — `BackfillCostEstimator`, `/api/backfill/cost-estimate` |
@@ -669,7 +730,7 @@ paths.
 **Area 2 — Resilience & Operational Maturity:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 2.1 | Replay-Based Regression Testing (golden snapshot diffs) | 🔄 Partial — infrastructure in place; drift-canary CI job pending |
 | 2.2 | Provider Health Scorecard with Trend Analysis | 🔄 Partial — current-state metrics implemented; historical snapshot + trend pending |
 | 2.3 | Circuit Breaker Dashboard | ✅ Implemented — `CircuitBreakerStatusService`, `/api/resilience/circuit-breakers` |
@@ -677,7 +738,7 @@ paths.
 **Area 3 — Developer & User Experience:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 3.1 | Data Catalog with Search & Discovery | 🔄 Partial — `StorageSearchService`, `DataBrowserPage` done; CLI shortcut + Gantt timeline pending |
 | 3.2 | Provider Credential Rotation Automation | 🔄 Partial — expiry states and OAuth refresh implemented; proactive rotation pending |
 | 3.3 | Interactive Backfill Planner | 🔄 Partial — cost estimator, calendar, checkpoints done; pause/resume and conflict UI pending |
@@ -685,7 +746,7 @@ paths.
 **Area 4 — Data Integrity & Governance:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 4.1 | Data Lineage Visualization | ✅ Implemented — `DataLineageService` |
 | 4.2 | Automated Data Retention Compliance Reports | ✅ Implemented — `RetentionComplianceReporter`, `/api/resilience/compliance-report` |
 | 4.3 | Schema Evolution & Migration Toolkit | 🔄 Partial — `ISchemaUpcaster`, `SchemaVersionManager`, `SchemaUpcasterRegistry` done; lazy upcasting + migration CLI pending |
@@ -693,7 +754,7 @@ paths.
 **Area 5 — Ecosystem & Integration:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 5.1 | Webhook & Notification Framework | 🔄 Partial — `AlertDispatcher`, webhooks implemented; user-defined JSON rule engine pending |
 | 5.2 | Data Export to Cloud Storage (S3, GCS, Azure Blob) | 📝 Future |
 | 5.3 | QuantConnect Lean Tight Integration | ✅ Implemented — `LeanIntegrationService`, `LeanAutoExportService`, `LeanSymbolMapper` |
@@ -701,14 +762,14 @@ paths.
 **Area 6 — Performance & Scale:**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 6.1 | Tiered Memory Buffer with Spill-to-Disk | 📝 Future |
 | 6.2 | Parallel Backfill Orchestration | ✅ Implemented — `PriorityBackfillQueue`, `BackfillJobManager`, `BackfillWorkerService` |
 
 **Area 7 — Architecture & Technical Debt (added 2026-03-12):**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 7.1 | WebSocket Provider Base Class Consolidation | 📝 Future |
 | 7.2 | End-to-End OpenTelemetry Trace Propagation | 📝 Future |
 | 7.3 | WPF MVVM Full Migration (all pages beyond `DashboardViewModel`) | 📝 Future |
@@ -716,7 +777,7 @@ paths.
 **Area 8 — New Capabilities (added 2026-03-12):**
 
 | # | Proposal | Status |
-|---|----------|--------|
+| --- | ---------- | -------- |
 | 8.1 | ML-Based Anomaly Detection (Isolation Forest / LSTM) | 📝 Future |
 | 8.2 | Reference Data Integration (corporate actions, earnings, economic calendar) | 📝 Future |
 | 8.3 | Multi-Instance Coordination (horizontal scaling, symbol partitioning) | 📝 Future |
@@ -756,7 +817,10 @@ The simplification audit still identifies ~2,800-3,400 lines of removable or red
 
 The desktop assessment set is consistent: infrastructure and coverage are much stronger than the remaining operator experience.
 
-**Current state:** The strongest path forward is not net-new page sprawl; it is workflow consolidation, view-model/service extraction, stronger provenance/staleness signals, and alignment to the trading workstation migration blueprint.
+**Current state:** The strongest path forward is not net-new page sprawl; it is workflow
+consolidation, view-model/service extraction, stronger provenance/staleness signals, and
+alignment to the active evidence-backed investment operations plan plus the retained workstation
+migration blueprint where compatibility guidance is still relevant.
 
 ---
 
@@ -765,7 +829,7 @@ The desktop assessment set is consistent: infrastructure and coverage are much s
 These evaluations are superseded or no longer applicable:
 
 | Document | Location | Reason Archived |
-|----------|----------|----------------|
+| ---------- | ---------- | ---------------- |
 | `desktop-end-user-improvements-shortlist.md` | `../../archive/docs/` | All P0 items resolved; superseded by current desktop assessment |
 | `desktop-ui-alternatives-evaluation.md` | `../../archive/docs/` | Decision made: WPF is sole desktop platform |
 | `UWP_COMPREHENSIVE_AUDIT.md` | `../../archive/docs/` | UWP fully removed from codebase |
@@ -788,7 +852,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 All source documents that feed into this consolidation:
 
 | Document | Path | Category | Status |
-|----------|------|----------|--------|
+| ---------- | ------ | ---------- | -------- |
 | Real-Time Streaming Evaluation | `docs/evaluations/realtime-streaming-architecture-evaluation.md` | Evaluation | Current |
 | Storage Architecture Evaluation | `docs/evaluations/storage-architecture-evaluation.md` | Evaluation | Current |
 | Data Quality Monitoring Evaluation | `docs/evaluations/data-quality-monitoring-evaluation.md` | Evaluation | Current |
@@ -807,6 +871,7 @@ All source documents that feed into this consolidation:
 | Cleanup Opportunities | `../../archive/docs/assessments/CLEANUP_OPPORTUNITIES.md` | Audit | Archived |
 | Debug Code Analysis | `../../archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md` | Audit | Archived |
 | Further Simplification | `docs/audits/FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | Audit | Documented |
+| Workspace Visual Audit Checklist (Apr 2026) | `docs/audits/workspace-visual-audit-checklist-2026-04-22.md` | Audit | Current |
 | UWP Comprehensive Audit | `../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md` | Audit | Archived |
 | Repository Cleanup Plan | `../../archive/docs/plans/repository-cleanup-action-plan.md` | Plan | Archived |
 | Config Consolidation Report | `../../archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md` | Report | Archived |
@@ -816,4 +881,4 @@ All source documents that feed into this consolidation:
 
 ---
 
-*Last Updated: 2026-04-08*
+_Last Updated: 2026-05-01_

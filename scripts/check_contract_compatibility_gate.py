@@ -12,6 +12,7 @@ from pathlib import Path
 
 TRACKED_PREFIXES = (
     "src/Meridian.Contracts/Workstation/",
+    "src/Meridian.Contracts/FundStructure/",
     "src/Meridian.Strategies/Services/",
     "src/Meridian.Ledger/",
 )
@@ -48,6 +49,22 @@ BREAKING_CONTRACT_SHAPE_PATTERNS = (
 )
 
 GIT_EXECUTABLE = shutil.which("git") or shutil.which("git.cmd") or "git"
+
+GOVERNANCE_DTO_PATH_HINTS = ("workstation", "fundstructure", "governance", "accounting", "reporting")
+INSTRUMENT_FIELD_HINTS = (
+    "instrument",
+    "symbol",
+    "ticker",
+    "cusip",
+    "isin",
+    "figi",
+)
+REQUIRED_SECURITY_MASTER_HINTS = (
+    "securityid",
+    "securitymaster",
+    "provenance",
+    "source",
+)
 
 
 def run_git(args: list[str]) -> str:
@@ -97,6 +114,42 @@ def patch_has_breaking_removal(patch: str) -> bool:
     return any(is_breaking_removal_line(line) for line in patch.splitlines())
 
 
+def _is_governance_contract_dto_path(path: str) -> bool:
+    normalized = path.lower()
+    return normalized.startswith("src/meridian.contracts/") and normalized.endswith(".cs") and any(
+        hint in normalized for hint in GOVERNANCE_DTO_PATH_HINTS
+    )
+
+
+def find_missing_security_master_instrument_references(changed_files: list[str], patch: str) -> list[str]:
+    instrument_touched_by_file: dict[str, bool] = {}
+    for raw_line in patch.splitlines():
+        if raw_line.startswith("+++ b/"):
+            path = raw_line[len("+++ b/"):].strip()
+            instrument_touched_by_file[path] = False
+            continue
+        if not raw_line.startswith("+") or raw_line.startswith("+++"):
+            continue
+        line = raw_line[1:].strip().lower()
+        if any(hint in line for hint in INSTRUMENT_FIELD_HINTS):
+            current = next(reversed(instrument_touched_by_file), None)
+            if current:
+                instrument_touched_by_file[current] = True
+
+    violations: list[str] = []
+    for file_path in changed_files:
+        if not _is_governance_contract_dto_path(file_path):
+            continue
+        if not instrument_touched_by_file.get(file_path):
+            continue
+        body = Path(file_path).read_text(encoding="utf-8").lower()
+        if any(hint in body for hint in REQUIRED_SECURITY_MASTER_HINTS):
+            continue
+        violations.append(file_path)
+
+    return violations
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Enforce contract compatibility migration-note requirements.")
     parser.add_argument("--base", required=True, help="Base git ref for comparison.")
@@ -123,6 +176,13 @@ def main() -> int:
         print(f"  - {path}")
 
     patch = run_git(["diff", "--unified=0", diff_range, "--", *tracked_changed_files])
+    security_master_reference_violations = find_missing_security_master_instrument_references(tracked_changed_files, patch)
+    if security_master_reference_violations:
+        print("Contract compatibility gate failed: governance/accounting/reporting DTO instrument metadata must include Security Master identity/provenance fields.")
+        for violation in security_master_reference_violations:
+            print(f"- Add required Security Master identity/provenance fields to `{violation}` (for example: SecurityId + SecurityMasterSource/Provenance).")
+        return 1
+
     is_breaking = patch_has_breaking_removal(patch)
 
     if not is_breaking:

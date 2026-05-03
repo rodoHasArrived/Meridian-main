@@ -80,4 +80,13 @@ public interface IFundAccountService
 
     Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
         Guid reconciliationRunId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<PositionReconciliationBreakDto>> GetOpenPositionBreaksAsync(
+        Guid accountId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<CashReconciliationBreakDto>> GetOpenCashBreaksAsync(
+        Guid accountId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AccountReconciliationBreakDto>> GetOpenBreaksAsync(
+        Guid accountId, CancellationToken ct = default);
 }

@@ -472,7 +472,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                     succeeded = false;
                     _session.RecordFailedRun(identities, index);
                     cell.State = NotebookCellExecutionState.Error;
-                    cell.StatusText = result.CompilationErrors.Count > 0 ? $"{result.CompilationErrors.Count} error(s)" : "Failed";
+                    cell.StatusText = result.CompilationErrors.Count > 0
+                        ? $"{result.CompilationErrors.Count} error(s)"
+                        : result.RuntimeDiagnostics.Count > 0
+                            ? "Resource limit"
+                            : "Failed";
                     MarkCellsStaleFrom(index + 1);
                     break;
                 }
@@ -537,6 +541,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
         foreach (var diagnostic in result.CompilationErrors)
             AppendConsole($"[{diagnostic.Line}:{diagnostic.Column}] {diagnostic.Message}", ConsoleEntryKind.Error);
+
+        foreach (var runtimeDiagnostic in result.RuntimeDiagnostics)
+        {
+            AppendConsole($"[{runtimeDiagnostic.Severity}] {runtimeDiagnostic.Message}", ConsoleEntryKind.Error);
+            Diagnostics.Add(new DiagnosticEntry(runtimeDiagnostic.Severity, runtimeDiagnostic.Message));
+        }
 
         foreach (var metric in result.Metrics)
             AddOrUpdateMetric(metric.Key, metric.Value);

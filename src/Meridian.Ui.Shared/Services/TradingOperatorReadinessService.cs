@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Promotions;
@@ -144,6 +145,8 @@ public sealed class TradingOperatorReadinessService
         var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
         var promotion = BuildPromotion(latestRun, promotionRecords);
         var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
+        var reportPack = await ResolveReportPackReadinessAsync(latestRun, promotion, ct).ConfigureAwait(false);
+        var reconciliationGate = await ResolveReconciliationGateAsync(latestRun, ct).ConfigureAwait(false);
         if (promotion is null)
         {
             AddWorkItem(
@@ -169,6 +172,8 @@ public sealed class TradingOperatorReadinessService
         }
 
         AddTrustGateWorkItem(workItems, trustGate);
+        AddReportPackWorkItem(workItems, reportPack, latestRun?.Summary.RunId);
+        AddReconciliationGateWorkItem(workItems, reconciliationGate, latestRun?.Summary.RunId);
 
         var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);
         if (brokerageStatus is not null && brokerageStatus.Health is not WorkstationBrokerageSyncHealth.Healthy)
@@ -212,8 +217,11 @@ public sealed class TradingOperatorReadinessService
             controls,
             promotion,
             trustGate,
+            reportPack,
+            reconciliationGate,
             auditEntries);
         var overallStatus = ResolveOverallStatus(acceptanceGates);
+        var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
 
         warnings.AddRange(workItems
             .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
@@ -241,8 +249,10 @@ public sealed class TradingOperatorReadinessService
             Warnings: warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray())
         {
             AcceptanceGates = acceptanceGates,
+            EvidenceCompleteness = evidenceCompleteness,
             OverallStatus = overallStatus,
-            ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready
+            ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
+            ReportPack = reportPack
         };
     }
 
@@ -298,6 +308,136 @@ public sealed class TradingOperatorReadinessService
         return trustGateService is null
             ? Dk1TrustGateReadinessService.CreateUnavailable("DK1 trust-gate packet service is not registered.")
             : await trustGateService.GetCurrentAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<TradingReportPackReadinessDto> ResolveReportPackReadinessAsync(
+        StrategyRunDetail? latestRun,
+        TradingPromotionReadinessDto? promotion,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (latestRun is null)
+        {
+            return new TradingReportPackReadinessDto(
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "A retained strategy run is required before a governed report pack can satisfy readiness.",
+                FundProfileId: null,
+                ReportId: null,
+                GeneratedAt: null,
+                RelatedRunIds: [],
+                ArtifactCount: 0,
+                WarningCount: 0,
+                ManifestPath: null);
+        }
+
+        var candidateRunIds = BuildReportPackRunCandidates(latestRun, promotion);
+        var primaryRunId = candidateRunIds[0];
+        var fundProfileId = latestRun.Summary.FundProfileId;
+        var repository = Resolve<IGovernanceReportPackRepository>();
+        if (repository is null)
+        {
+            return new TradingReportPackReadinessDto(
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: string.IsNullOrWhiteSpace(fundProfileId)
+                    ? $"Governance report-pack repository is not registered, and latest run {primaryRunId} has no fund profile."
+                    : $"Governance report-pack repository is not registered for fund {fundProfileId}.",
+                FundProfileId: fundProfileId,
+                ReportId: null,
+                GeneratedAt: null,
+                RelatedRunIds: [],
+                ArtifactCount: 0,
+                WarningCount: 0,
+                ManifestPath: null);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            var history = await repository.GetHistoryAsync(fundProfileId, limit: 10, ct).ConfigureAwait(false);
+            foreach (var item in history.OrderByDescending(static item => item.GeneratedAt))
+            {
+                ct.ThrowIfCancellationRequested();
+                var snapshot = await repository.GetAsync(item.ReportId, ct).ConfigureAwait(false);
+                if (snapshot is null)
+                {
+                    continue;
+                }
+
+                var readiness = BuildReportPackReadinessForRuns(snapshot, candidateRunIds, item.RelativeManifestPath);
+                if (readiness is not null)
+                {
+                    return readiness;
+                }
+            }
+        }
+
+        foreach (var runId in candidateRunIds)
+        {
+            var runLinkedSnapshot = await repository.FindLatestByRunIdAsync(runId, ct).ConfigureAwait(false);
+            if (runLinkedSnapshot is not null)
+            {
+                return BuildReportPackReadinessForRuns(runLinkedSnapshot, candidateRunIds, manifestPath: null)!;
+            }
+        }
+
+        return new TradingReportPackReadinessDto(
+            Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+            Detail: string.IsNullOrWhiteSpace(fundProfileId)
+                ? $"No governed report pack links to latest run {primaryRunId}."
+                : $"No governed report pack links fund {fundProfileId} to latest run {primaryRunId}.",
+            FundProfileId: fundProfileId,
+            ReportId: null,
+            GeneratedAt: null,
+            RelatedRunIds: [],
+            ArtifactCount: 0,
+            WarningCount: 0,
+            ManifestPath: null);
+    }
+
+    private static IReadOnlyList<string> BuildReportPackRunCandidates(
+        StrategyRunDetail latestRun,
+        TradingPromotionReadinessDto? promotion)
+        => new[]
+            {
+                latestRun.Summary.RunId,
+                latestRun.Summary.ParentRunId,
+                promotion?.SourceRunId,
+                promotion?.TargetRunId
+            }
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .Select(static runId => runId!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static TradingReportPackReadinessDto? BuildReportPackReadinessForRuns(
+        FundReportPackSnapshotDto snapshot,
+        IReadOnlyList<string> candidateRunIds,
+        string? manifestPath)
+    {
+        var relatedRunIds = snapshot.Provenance.RelatedRunIds;
+        var matchedRunId = candidateRunIds.FirstOrDefault(runId =>
+            relatedRunIds.Contains(runId, StringComparer.OrdinalIgnoreCase));
+        if (matchedRunId is null)
+        {
+            return null;
+        }
+
+        var status = snapshot.Warnings.Count == 0 && snapshot.Artifacts.Count > 0
+            ? TradingAcceptanceGateStatusDto.Ready
+            : TradingAcceptanceGateStatusDto.ReviewRequired;
+        var detail = status == TradingAcceptanceGateStatusDto.Ready
+            ? $"Report pack {snapshot.ReportId:D} retains {snapshot.Artifacts.Count} artifact(s) and links to run {matchedRunId}."
+            : $"Report pack {snapshot.ReportId:D} links to run {matchedRunId}, but {snapshot.Warnings.Count} warning(s) require review.";
+
+        return new TradingReportPackReadinessDto(
+            Status: status,
+            Detail: detail,
+            FundProfileId: snapshot.FundProfileId,
+            ReportId: snapshot.ReportId,
+            GeneratedAt: snapshot.GeneratedAt,
+            RelatedRunIds: relatedRunIds,
+            ArtifactCount: snapshot.Artifacts.Count,
+            WarningCount: snapshot.Warnings.Count,
+            ManifestPath: manifestPath);
     }
 
     private static TradingReplayReadinessDto? BuildReplay(
@@ -611,6 +751,8 @@ public sealed class TradingOperatorReadinessService
         TradingControlReadinessDto controls,
         TradingPromotionReadinessDto? promotion,
         TradingTrustGateReadinessDto trustGate,
+        TradingReportPackReadinessDto reportPack,
+        ReconciliationGateEvaluation? reconciliationGate,
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
         =>
         [
@@ -618,7 +760,9 @@ public sealed class TradingOperatorReadinessService
             BuildReplayGate(activeSession, replay),
             BuildAuditControlGate(controls, auditEntries),
             BuildPromotionGate(promotion),
-            BuildTrustGateAcceptance(trustGate)
+            BuildTrustGateAcceptance(trustGate),
+            BuildReportPackGate(reportPack),
+            BuildReconciliationGate(reconciliationGate)
         ];
 
     private static TradingAcceptanceGateDto BuildSessionGate(
@@ -838,6 +982,15 @@ public sealed class TradingOperatorReadinessService
             AuditReference: trustGate.PacketPath);
     }
 
+    private static TradingAcceptanceGateDto BuildReportPackGate(TradingReportPackReadinessDto reportPack)
+        => new(
+            GateId: "report-pack",
+            Label: "Report pack lineage",
+            Status: reportPack.Status,
+            Detail: reportPack.Detail,
+            RunId: reportPack.RelatedRunIds.FirstOrDefault(),
+            AuditReference: reportPack.ReportId?.ToString("D") ?? reportPack.ManifestPath);
+
     private static TradingAcceptanceGateStatusDto ResolveTrustGateAcceptanceStatus(TradingTrustGateReadinessDto trustGate)
     {
         if (string.Equals(trustGate.Status, "packet-unavailable", StringComparison.OrdinalIgnoreCase))
@@ -858,6 +1011,57 @@ public sealed class TradingOperatorReadinessService
         return TradingAcceptanceGateStatusDto.Ready;
     }
 
+
+    private async Task<ReconciliationGateEvaluation?> ResolveReconciliationGateAsync(StrategyRunDetail? latestRun, CancellationToken ct)
+    {
+        if (latestRun is null)
+        {
+            return null;
+        }
+
+        var governance = Resolve<ReconciliationGovernanceService>();
+        if (governance is null)
+        {
+            return null;
+        }
+
+        return await governance.EvaluateGateAsync(latestRun.Summary.RunId, new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, ct).ConfigureAwait(false);
+    }
+
+    private static TradingAcceptanceGateDto BuildReconciliationGate(ReconciliationGateEvaluation? evaluation)
+    {
+        if (evaluation is null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "reconciliation",
+                Label: "Reconciliation policy",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "Reconciliation policy evaluation is not available.");
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "reconciliation",
+            Label: "Reconciliation policy",
+            Status: evaluation.Status,
+            Detail: evaluation.Detail);
+    }
+
+    private static void AddReconciliationGateWorkItem(List<OperatorWorkItemDto> workItems, ReconciliationGateEvaluation? evaluation, string? runId)
+    {
+        if (evaluation is null || evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
+        {
+            return;
+        }
+
+        AddWorkItem(
+            workItems,
+            OperatorWorkItemKindDto.PromotionReview,
+            "Reconciliation policy requires attention",
+            evaluation.Detail,
+            evaluation.Status == TradingAcceptanceGateStatusDto.Blocked ? OperatorWorkItemToneDto.Critical : OperatorWorkItemToneDto.Warning,
+            runId,
+            workItemId: BuildWorkItemId("reconciliation-policy", runId));
+    }
     private static TradingAcceptanceGateStatusDto ResolveOverallStatus(IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
         if (gates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
@@ -910,6 +1114,66 @@ public sealed class TradingOperatorReadinessService
                 auditReference: trustGate.PacketPath,
                 workItemId: "dk1-operator-signoff-pending");
         }
+    }
+
+    private static void AddReportPackWorkItem(
+        ICollection<OperatorWorkItemDto> workItems,
+        TradingReportPackReadinessDto reportPack,
+        string? latestRunId)
+    {
+        if (reportPack.Status == TradingAcceptanceGateStatusDto.Ready)
+        {
+            return;
+        }
+
+        AddWorkItem(
+            workItems,
+            OperatorWorkItemKindDto.ReportPackApproval,
+            reportPack.Status == TradingAcceptanceGateStatusDto.Blocked
+                ? "Report pack blocked"
+                : "Report pack lineage requires review",
+            reportPack.Detail,
+            reportPack.Status == TradingAcceptanceGateStatusDto.Blocked
+                ? OperatorWorkItemToneDto.Critical
+                : OperatorWorkItemToneDto.Warning,
+            latestRunId,
+            auditReference: reportPack.ReportId?.ToString("D") ?? reportPack.ManifestPath,
+            workItemId: BuildWorkItemId("report-pack-lineage", latestRunId ?? reportPack.FundProfileId));
+    }
+
+    private static EvidenceCompletenessSummaryDto BuildEvidenceCompleteness(
+        IReadOnlyList<TradingAcceptanceGateDto> gates,
+        IReadOnlyList<OperatorWorkItemDto> workItems)
+    {
+        var readyGateCount = gates.Count(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        var totalGateCount = gates.Count;
+        var scorePercent = totalGateCount == 0
+            ? 0
+            : (int)Math.Round(readyGateCount * 100m / totalGateCount, MidpointRounding.AwayFromZero);
+        var criticalCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
+        var warningCount = workItems.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
+        var status = ResolveOverallStatus(gates);
+
+        return new EvidenceCompletenessSummaryDto(
+            Status: status,
+            ReadyGateCount: readyGateCount,
+            TotalGateCount: totalGateCount,
+            CriticalWorkItemCount: criticalCount,
+            WarningWorkItemCount: warningCount,
+            ScorePercent: scorePercent,
+            BlockingGateIds: gates
+                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked)
+                .Select(static gate => gate.GateId)
+                .ToArray(),
+            ReviewGateIds: gates
+                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired)
+                .Select(static gate => gate.GateId)
+                .ToArray(),
+            MissingEvidenceIds: workItems
+                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                .Select(static item => item.AuditReference ?? item.RunId ?? item.WorkItemId)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray());
     }
 
     private static bool IsOperatorSignoffComplete(string status) =>
@@ -969,6 +1233,7 @@ public sealed class TradingOperatorReadinessService
         string? auditReference = null,
         string? workItemId = null)
     {
+        var navigation = ResolveWorkItemNavigation(kind, fundAccountId);
         workItems.Add(new OperatorWorkItemDto(
             WorkItemId: workItemId ?? BuildWorkItemId(kind.ToString(), label),
             Kind: kind,
@@ -978,8 +1243,40 @@ public sealed class TradingOperatorReadinessService
             CreatedAt: DateTimeOffset.UtcNow,
             RunId: runId,
             FundAccountId: fundAccountId,
-            AuditReference: auditReference));
+            AuditReference: auditReference,
+            Workspace: navigation.Workspace,
+            TargetRoute: navigation.TargetRoute,
+            TargetPageTag: navigation.TargetPageTag));
     }
+
+    private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveWorkItemNavigation(
+        OperatorWorkItemKindDto kind,
+        Guid? fundAccountId)
+        => kind switch
+        {
+            OperatorWorkItemKindDto.SecurityMasterCoverage => (
+                "Data",
+                UiApiRoutes.WorkstationSecurityMasterSearch,
+                "DataShell"),
+            OperatorWorkItemKindDto.ReconciliationBreak => (
+                "Accounting",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "AccountingShell"),
+            OperatorWorkItemKindDto.ReportPackApproval => (
+                "Reporting",
+                UiApiRoutes.FundReportPacks,
+                "ReportingShell"),
+            OperatorWorkItemKindDto.BrokerageSync => (
+                "Trading",
+                fundAccountId.HasValue
+                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
+                "AccountPortfolio"),
+            _ => (
+                "Trading",
+                UiApiRoutes.WorkstationTradingReadiness,
+                "TradingShell")
+        };
 
     private static string BuildWorkItemId(string prefix, string? scope = null)
     {

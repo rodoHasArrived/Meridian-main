@@ -1,10 +1,15 @@
 import { Children, cloneElement, forwardRef, isValidElement } from "react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { buildButtonCommandViewModel } from "@/components/ui/button.view-model";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm";
+  busy?: boolean;
+  busyLabel?: string | null;
+  disabledReason?: string | null;
 }
 
 const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
@@ -21,19 +26,41 @@ const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ asChild = false, children, className, variant = "default", size = "default", ...props }, ref) => {
+  ({
+    asChild = false,
+    children,
+    className,
+    variant = "default",
+    size = "default",
+    busy = false,
+    busyLabel = null,
+    disabled = false,
+    disabledReason = null,
+    title,
+    ...props
+  }, ref) => {
+    const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
       "inline-flex items-center justify-center gap-2 rounded-md border font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
       variantClasses[variant],
       sizeClasses[size],
+      vm.disabled && asChild && "pointer-events-none opacity-50",
       className
     );
 
     if (asChild && isValidElement(children)) {
-      const child = Children.only(children) as React.ReactElement<{ className?: string }>;
+      const child = Children.only(children) as React.ReactElement<{
+        className?: string;
+        "aria-busy"?: true;
+        "aria-disabled"?: true;
+        title?: string;
+      }>;
 
       return cloneElement(child, {
-        className: cn(classes, child.props.className)
+        className: cn(classes, child.props.className),
+        "aria-busy": vm.ariaBusy,
+        "aria-disabled": vm.ariaDisabled,
+        title: vm.title ?? child.props.title
       });
     }
 
@@ -41,9 +68,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={classes}
+        disabled={vm.disabled}
+        aria-busy={vm.ariaBusy}
+        title={vm.title}
         {...props}
       >
-        {children}
+        {vm.showBusyIndicator && <Loader2 className="h-4 w-4 animate-spin" aria-hidden={vm.iconAriaHidden} />}
+        {vm.displayBusyLabel ?? children}
       </button>
     );
   }

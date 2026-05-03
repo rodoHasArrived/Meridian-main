@@ -8,7 +8,9 @@ describe("WorkspaceNav", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/reconciliation"] });
 
     expect(screen.getByRole("navigation", { name: "Workspaces" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Current workspace: Accounting, Review posture")).toBeInTheDocument();
     expect(screen.getByLabelText("Accounting workspace, current route, Review")).toHaveAttribute("aria-current", "page");
     expect(screen.getByText("Review · Current")).toBeInTheDocument();
+    expect(screen.getByText("Review posture")).toHaveClass("operator-nav-status-review");
   });
 });

@@ -18,6 +18,7 @@ The accounting-led product question is: can Meridian prove, book, reconcile, app
 The umbrella product story is **Meridian Evidence OS**: a governed investment operating system that connects evidence graph, vault, completeness scoring, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. In current docs this is positioning language, not a delivered platform layer.
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
+For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).
 
 ---
 

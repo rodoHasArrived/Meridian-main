@@ -1,8 +1,11 @@
-import { buildOperatorReadinessConsoleState } from "@/screens/operator-readiness-console.view-model";
+import { renderHook, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   OperatorInbox,
+  OperatorWorkItem,
   ResearchWorkspaceResponse,
   TradingOperatorReadiness,
   TradingWorkspaceResponse
@@ -338,6 +341,200 @@ describe("operator readiness console view model", () => {
     expect(state.promotionRows.some((row) => row.label === "Promotion checklist")).toBe(true);
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "Targets present", level: "ready" }));
     expect(state.apiSources.map((source) => source.endpoint)).toContain("/api/workstation/operator/inbox");
+    expect(state.apiSourcesLabel).toBe("Shared readiness API sources");
+    expect(state.apiSources[0].ariaLabel).toContain("/api/workstation/trading/readiness");
+    expect(state.metricsLabel).toBe("Operator readiness metrics");
+    expect(state.metrics[0].statusAriaLabel).toBe("Latest runs status Ready");
+    expect(state.latestRuns[0].ariaLabel).toContain("Index Momentum: Needs Review");
+    expect(state.latestRuns[0].detailId).toBe("readiness-row-latest-runs-run-1-detail");
+    expect(state.panels.map((panel) => panel.id)).toEqual([
+      "latest-runs",
+      "active-paper-session",
+      "provider-trust",
+      "reconciliation-breaks",
+      "promotion-blockers",
+      "governance-report-packs"
+    ]);
+    expect(state.panels[0]).toEqual(expect.objectContaining({
+      ariaLabel: "Latest runs readiness evidence",
+      listLabel: "Latest runs rows"
+    }));
+    const detailIds = [...state.promotionRows, ...state.workItems].map((row) => row.detailId);
+    expect(new Set(detailIds).size).toBe(detailIds.length);
+    expect(state.workItemsRegionLabel).toBe("Operator inbox review work items");
+    expect(state.workItemsListLabel).toBe("Prioritized operator work items");
+    expect(state.workItems.find((item) => item.id === "promotion-review-run-1")?.action).toEqual({
+      label: "Open promotion review",
+      route: "/trading/readiness",
+      ariaLabel: "Open promotion review: Promotion checklist incomplete",
+      variant: "outline"
+    });
+  });
+
+  it("derives safe work-item routes and fallback actions in the view model", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      operatorInbox: {
+        ...cleanInbox,
+        items: [
+          {
+            workItemId: "security-master-gap",
+            kind: "SecurityMasterCoverage",
+            label: "Security coverage open",
+            detail: "Resolve missing identifier coverage.",
+            tone: "Critical",
+            createdAt: "2026-04-29T12:02:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Accounting",
+            targetRoute: "https://example.test/accounting/security-master",
+            targetPageTag: "SecurityMaster"
+          },
+          {
+            workItemId: "provider-trust",
+            kind: "ProviderTrustGate",
+            label: "Provider trust gate review",
+            detail: "Review provider evidence.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:03:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Data",
+            targetRoute: "/data/providers",
+            targetPageTag: "ProviderTrust"
+          },
+          {
+            workItemId: "legacy-break-route",
+            kind: "ReconciliationBreak",
+            label: "Legacy break route",
+            detail: "Review a break from a legacy governance route.",
+            tone: "Info",
+            createdAt: "2026-04-29T12:04:00Z",
+            runId: "run-1",
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Accounting",
+            targetRoute: "/governance/reconciliation?runId=run-1#cash",
+            targetPageTag: "FundReconciliation"
+          },
+          {
+            workItemId: "api-route",
+            kind: "ReportPackApproval",
+            label: "API route should not render",
+            detail: "Fallback to the Reporting workspace.",
+            tone: "Success",
+            createdAt: "2026-04-29T12:05:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Reporting",
+            targetRoute: "/api/workstation/operator/inbox",
+            targetPageTag: "ReportPackApproval"
+          }
+        ],
+        warningCount: 1,
+        criticalCount: 1,
+        reviewCount: 2,
+        summary: "2 review items need attention."
+      },
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.workItems[0].action).toEqual({
+      label: "Open Security Master",
+      route: "/accounting/security-master",
+      ariaLabel: "Open Security Master: Security coverage open",
+      variant: "secondary"
+    });
+    expect(state.workItems[1].action).toEqual({
+      label: "Open provider trust",
+      route: "/data/providers",
+      ariaLabel: "Open provider trust: Provider trust gate review",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "legacy-break-route")?.action).toEqual({
+      label: "Open break queue",
+      route: "/accounting/reconciliation?runId=run-1#cash",
+      ariaLabel: "Open break queue: Legacy break route",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "api-route")?.action).toEqual({
+      label: "Open report packs",
+      route: "/reporting",
+      ariaLabel: "Open report packs: API route should not render",
+      variant: "outline"
+    });
+  });
+
+  it("prioritizes critical operator inbox work items before truncating the visible queue", () => {
+    const warningItems: OperatorWorkItem[] = Array.from({ length: 6 }, (_, index) => ({
+      ...readiness.workItems[0],
+      workItemId: `warning-${index}`,
+      kind: "ReportPackApproval",
+      label: `Warning item ${index}`,
+      detail: `Warning detail ${index}`,
+      tone: "Warning",
+      createdAt: `2026-04-29T12:0${index}:00Z`,
+      workspace: "Reporting",
+      targetRoute: "/reporting",
+      targetPageTag: "ReportPackApproval"
+    }));
+    const criticalItem: OperatorWorkItem = {
+      ...readiness.workItems[0],
+      workItemId: "critical-security-gap",
+      kind: "SecurityMasterCoverage",
+      label: "Critical security coverage gap",
+      detail: "Resolve missing identifier coverage before accepting readiness.",
+      tone: "Critical",
+      createdAt: "2026-04-29T11:00:00Z",
+      workspace: "Accounting",
+      targetRoute: "/accounting/security-master",
+      targetPageTag: "SecurityMaster"
+    };
+    const infoItem: OperatorWorkItem = {
+      ...readiness.workItems[0],
+      workItemId: "info-item",
+      kind: "BrokerageSync",
+      label: "Info item",
+      detail: "Brokerage heartbeat recorded.",
+      tone: "Info",
+      createdAt: "2026-04-29T12:10:00Z",
+      workspace: "Trading",
+      targetRoute: "/trading/readiness",
+      targetPageTag: "BrokerageSync"
+    };
+
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      operatorInbox: {
+        ...cleanInbox,
+        items: [...warningItems, criticalItem, infoItem],
+        criticalCount: 1,
+        warningCount: 6,
+        reviewCount: 7,
+        summary: "7 review items need attention."
+      },
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.workItems).toHaveLength(6);
+    expect(state.workItems[0]).toEqual(expect.objectContaining({
+      label: "Critical security coverage gap",
+      level: "blocked"
+    }));
+    expect(state.workItems.map((item) => item.label)).not.toContain("Info item");
+    expect(state.workItemsSummary).toBe("Showing 6 of 8 operator work items; 1 critical item, 6 warnings, 1 info item. Critical items sort first.");
+    expect(state.workItemsOverflowText).toBe("2 additional work items hidden from this view after priority sorting.");
   });
 
   it("surfaces operator inbox failures while keeping payload fallbacks visible", () => {
@@ -416,5 +613,49 @@ describe("operator readiness console view model", () => {
     expect(state.overallLabel).toBe("Review pending");
     expect(state.overallDetail).toContain("report-pack readiness item(s) still need review");
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No targets", level: "review" }));
+  });
+
+  it("keeps mirrored run-handoff identity and route metadata in operator work items", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading,
+      dataOperations,
+      governance,
+      operatorInbox: inbox,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    const promotionItem = state.workItems.find((item) => item.id === "promotion-review-run-1");
+    expect(promotionItem).toBeDefined();
+    expect(promotionItem?.meta).toContain("run-1");
+    expect(promotionItem?.action).toEqual(expect.objectContaining({ route: "/trading/readiness" }));
+
+    const reconciliationItem = state.workItems.find((item) => item.id === "reconciliation-break-run-1-cash");
+    expect(reconciliationItem).toBeDefined();
+    expect(reconciliationItem?.meta).toContain("run-1");
+    expect(reconciliationItem?.action).toEqual(expect.objectContaining({ route: "/accounting/reconciliation" }));
+  });
+
+  it("preserves route-aware packet continuity for blocker rows across state slices", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading,
+      dataOperations,
+      governance,
+      operatorInbox: inbox,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    const queueRoutes = state.workItems
+      .filter((row) => row.action)
+      .map((row) => `${row.id}:${row.action?.route}`);
+    const queueIds = new Set(state.workItems.map((row) => row.id));
+
+    expect(queueRoutes).toContain("promotion-review-run-1:/trading/readiness");
+    expect(queueRoutes).toContain("reconciliation-break-run-1-cash:/accounting/reconciliation");
+    expect(queueIds.has("promotion-review-run-1")).toBe(true);
+    expect(queueIds.has("reconciliation-break-run-1-cash")).toBe(true);
   });
 });

@@ -2,8 +2,10 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  CorporateAction,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
@@ -18,12 +20,13 @@ import type {
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
-  ResearchRunRecord,
-  ResearchWorkspaceResponse,
   ReconciliationBreakQueueItem,
+  ReconciliationCalibrationSummary,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
+  ResearchRunRecord,
+  ResearchWorkspaceResponse,
   RunAttributionSummary,
   RunComparisonRow,
   RunDiff,
@@ -36,6 +39,7 @@ import type {
   ReplayStatus,
   TradingActionResult,
   TradingOperatorReadiness,
+  TradingParameters,
   TradingWorkspaceResponse,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride
@@ -123,7 +127,15 @@ export function getDataOperationsWorkspace() {
 }
 
 export function getGovernanceWorkspace() {
-  return getJson<GovernanceWorkspaceResponse>("/api/workstation/governance");
+  return getJson<GovernanceWorkspaceResponse>("/api/workstation/accounting");
+}
+
+export function getReportingWorkspace() {
+  return getJson<GovernanceWorkspaceResponse>("/api/workstation/reporting");
+}
+
+export function runAnalysisExport(profileId: string) {
+  return postJson<ExportAnalysisResult>("/api/export/analysis", { profileId });
 }
 
 // --- Promotion workflow ---
@@ -344,6 +356,16 @@ export function upsertSecurityAlias(request: Record<string, unknown>) {
   return postJson<Record<string, unknown>>("/api/security-master/aliases/upsert", request);
 }
 
+// --- Security Master corporate actions and trading parameters ---
+
+export function getCorporateActions(securityId: string) {
+  return getJson<CorporateAction[]>(`/api/security-master/${encodeURIComponent(securityId)}/corporate-actions`);
+}
+
+export function getTradingParameters(securityId: string) {
+  return getJson<TradingParameters>(`/api/security-master/${encodeURIComponent(securityId)}/trading-parameters`);
+}
+
 // --- Security Master conflicts ---
 
 export function getSecurityConflicts() {
@@ -357,9 +379,16 @@ export function resolveSecurityConflict(request: ResolveConflictRequest) {
   );
 }
 
-export function getReconciliationBreakQueue(status?: string) {
-  const params = status ? `?status=${encodeURIComponent(status)}` : "";
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
+  const search = new URLSearchParams();
+  if (status) search.set("status", status);
+  if (fundAccountId) search.set("fundAccountId", fundAccountId);
+  const params = search.toString() ? `?${search.toString()}` : "";
   return getJson<ReconciliationBreakQueueItem[]>(`/api/workstation/reconciliation/break-queue${params}`);
+}
+
+export function getReconciliationBreakDetail(breakId: string) {
+  return getJson<ReconciliationBreakQueueItem>(`/api/workstation/reconciliation/break-queue/${encodeURIComponent(breakId)}`);
 }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
@@ -376,6 +405,10 @@ export function resolveReconciliationBreak(request: ResolveReconciliationBreakRe
   );
 }
 
+export function getReconciliationCalibrationSummary() {
+  return getJson<ReconciliationCalibrationSummary>("/api/workstation/reconciliation/calibration-summary");
+}
+
 // --- Backfill mutations ---
 
 export function getBackfillProgress() {
@@ -388,6 +421,20 @@ export function triggerBackfill(request: BackfillTriggerRequest) {
 
 export function previewBackfill(request: BackfillTriggerRequest) {
   return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
+}
+
+// --- Provider management ---
+
+export function setupProvider(request: import("@/types").ProviderSetupRequest) {
+  return postJson<import("@/types").ProviderSetupResult>("/api/providers/configure", request);
+}
+
+export function removeProvider(providerId: string) {
+  return postJson<{ success: boolean; message: string }>(`/api/providers/${encodeURIComponent(providerId)}/remove`);
+}
+
+export function testProviderConnection(providerId: string) {
+  return postJson<{ success: boolean; latency: string | null; message: string }>(`/api/providers/${encodeURIComponent(providerId)}/test`);
 }
 
 // --- System overview ---

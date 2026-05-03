@@ -127,7 +127,9 @@ public sealed record OptionQuote : MarketEventPayload
         if (BidPrice < 0)
             throw new ArgumentOutOfRangeException(nameof(BidPrice), BidPrice, "Bid price cannot be negative");
 
-        if (AskPrice < 0)
+        var normalizedAskPrice = NormalizePrice(AskPrice);
+
+        if (normalizedAskPrice < 0)
             throw new ArgumentOutOfRangeException(nameof(AskPrice), AskPrice, "Ask price cannot be negative");
 
         if (UnderlyingPrice <= 0)
@@ -138,7 +140,7 @@ public sealed record OptionQuote : MarketEventPayload
         this.Contract = Contract ?? throw new ArgumentNullException(nameof(Contract));
         this.BidPrice = BidPrice;
         this.BidSize = BidSize;
-        this.AskPrice = AskPrice;
+        this.AskPrice = normalizedAskPrice;
         this.AskSize = AskSize;
         this.UnderlyingPrice = UnderlyingPrice;
         this.LastPrice = LastPrice;
@@ -188,4 +190,10 @@ public sealed record OptionQuote : MarketEventPayload
     /// Values &gt; 1 indicate in-the-money for calls; &lt; 1 for puts.
     /// </summary>
     public decimal Moneyness => Contract.Strike > 0 ? UnderlyingPrice / Contract.Strike : 0m;
+    private static decimal NormalizePrice(decimal price)
+    {
+        const decimal epsilon = 0.00000000000001m;
+        return price < 0m && price > -epsilon ? 0m : price;
+    }
+
 }

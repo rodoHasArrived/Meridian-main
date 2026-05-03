@@ -1,5 +1,7 @@
 using System.Text.Json;
+using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
@@ -19,11 +21,11 @@ public static class FundAccountEndpoints
 
         group.MapPost("/", async (JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<CreateAccountRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.CreateAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -36,11 +38,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var result = await service.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var result = await queryService.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccount")
@@ -49,18 +51,34 @@ public static class FundAccountEndpoints
 
         group.MapGet("/", async (HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
-            var query = new AccountStructureQuery(
-                AccountId: Guid.TryParse(q["accountId"], out var aid) ? aid : null,
-                FundId: Guid.TryParse(q["fundId"], out var fid) ? fid : null,
-                EntityId: Guid.TryParse(q["entityId"], out var eid) ? eid : null,
-                ActiveOnly: q["activeOnly"] != "false");
+            var type = Enum.TryParse<AccountTypeDto>(q["accountType"], true, out var parsedType) ? parsedType : (AccountTypeDto?)null;
+            var isActive = q.ContainsKey("activeOnly") ? q["activeOnly"] != "false" : true;
+            var currency = q["currency"].FirstOrDefault();
+            var accountId = TryParseGuidFilter(q["accountId"].FirstOrDefault());
+            var fundId = TryParseGuidFilter(q["fundId"].FirstOrDefault());
+            var entityId = TryParseGuidFilter(q["entityId"].FirstOrDefault());
 
-            var results = await service.QueryAccountsAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.ListAccountsAsync(type, isActive, currency, context.RequestAborted).ConfigureAwait(false);
+            if (accountId.HasValue)
+            {
+                results = results.Where(account => account.AccountId == accountId.Value).ToList();
+            }
+
+            if (fundId.HasValue)
+            {
+                results = results.Where(account => account.FundId == fundId.Value).ToList();
+            }
+
+            if (entityId.HasValue)
+            {
+                results = results.Where(account => account.EntityId == entityId.Value).ToList();
+            }
+
             return Results.Json(results, jsonOptions);
         })
         .WithName("QueryFundAccounts")
@@ -68,28 +86,56 @@ public static class FundAccountEndpoints
 
         group.MapGet("/fund/{fundId:guid}", async (Guid fundId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var result = await service.GetFundAccountsAsync(fundId, context.RequestAborted).ConfigureAwait(false);
+            var result = await queryService.GetFundAccountsAsync(fundId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccounts")
         .Produces<FundAccountsDto>(StatusCodes.Status200OK);
 
+        app.MapGet("/api/funds/{fundId:guid}/accounts", async (Guid fundId, string? accountType, string? status, HttpContext context) =>
+        {
+            var query = context.RequestServices.GetService<IFundAccountTraversalQueryService>();
+            if (query is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var parsedType = Enum.TryParse<AccountTypeDto>(accountType, ignoreCase: true, out var typeValue)
+                ? typeValue
+                : (AccountTypeDto?)null;
+            var activeOnly = !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(status, "suspended", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(status, "closed", StringComparison.OrdinalIgnoreCase);
+
+            var accounts = await query.GetFundAccountsAsync(fundId, parsedType, activeOnly, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(accounts, jsonOptions);
+        })
+        .WithName("GetFundAccountsByOwnershipTraversal")
+        .Produces<IReadOnlyList<AccountSummaryDto>>(StatusCodes.Status200OK);
+
         group.MapPatch("/{accountId:guid}/custodian-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<UpdateCustodianAccountDetailsRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.UpdateCustodianAccountDetailsRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+                        try
+            {
+                var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("UpdateCustodianAccountDetails")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
@@ -97,16 +143,23 @@ public static class FundAccountEndpoints
 
         group.MapPatch("/{accountId:guid}/bank-details", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<UpdateBankAccountDetailsRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.UpdateBankAccountDetailsRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
-            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+                        try
+            {
+                var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("UpdateBankAccountDetails")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
@@ -114,7 +167,7 @@ public static class FundAccountEndpoints
 
         group.MapDelete("/{accountId:guid}", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
@@ -170,6 +223,7 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
+#pragma warning disable CS0618 // Compatibility routes retain legacy brokerage projection payloads; readiness uses status DTOs.
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             var sync = ResolveBrokerageSyncService(context);
@@ -198,21 +252,29 @@ public static class FundAccountEndpoints
         .Produces<WorkstationBrokerageSyncViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
+#pragma warning restore CS0618
 
         // ── Balance snapshots ─────────────────────────────────────────────────
 
         group.MapPost("/{accountId:guid}/balance-snapshots", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<RecordAccountBalanceSnapshotRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("RecordAccountBalanceSnapshot")
         .Produces<AccountBalanceSnapshotDto>(StatusCodes.Status201Created)
@@ -220,15 +282,15 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/balance-snapshots", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
             DateOnly? from = DateOnly.TryParse(q["from"], out var f) ? f : null;
             DateOnly? to = DateOnly.TryParse(q["to"], out var t) ? t : null;
 
-            var results = await service.GetBalanceHistoryAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetBalanceTimelineAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetAccountBalanceHistory")
@@ -236,11 +298,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/balance-snapshots/latest", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var result = await service.GetLatestBalanceSnapshotAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var result = await queryService.GetLatestBalanceSnapshotAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountBalanceSnapshot")
@@ -251,16 +313,23 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/custodian-statements", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<IngestCustodianStatementRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestCustodianStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("IngestCustodianStatement")
         .Produces<CustodianStatementBatchDto>(StatusCodes.Status201Created)
@@ -268,14 +337,14 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/custodian-positions", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             if (!DateOnly.TryParse(context.Request.Query["asOfDate"], out var asOfDate))
                 return Results.Problem("'asOfDate' query parameter is required (YYYY-MM-DD).", statusCode: StatusCodes.Status400BadRequest);
 
-            var results = await service.GetCustodianPositionsAsync(accountId, asOfDate, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetCustodianPositionsAsync(accountId, asOfDate, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetCustodianPositions")
@@ -284,16 +353,23 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/bank-statements", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<IngestBankStatementRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestBankStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-            var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+                        try
+            {
+                var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (AccountStatusPolicyException ex)
+            {
+                return StatusPolicyConflict(ex);
+            }
         })
         .WithName("IngestBankStatement")
         .Produces<BankStatementBatchDto>(StatusCodes.Status201Created)
@@ -301,15 +377,15 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/bank-statement-lines", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
             var q = context.Request.Query;
             DateOnly? from = DateOnly.TryParse(q["from"], out var f) ? f : null;
             DateOnly? to = DateOnly.TryParse(q["to"], out var t) ? t : null;
 
-            var results = await service.GetBankStatementLinesAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetBankStatementLinesAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetBankStatementLines")
@@ -319,11 +395,11 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/reconcile", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
-            var service = ResolveService(context);
+            var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var request = JsonSerializer.Deserialize<ReconcileAccountRequest>(body.GetRawText(), jsonOptions);
+            var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.ReconcileAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
@@ -336,11 +412,11 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/reconciliation-runs", async (Guid accountId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var results = await service.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetReconciliationRunsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetAccountReconciliationRuns")
@@ -348,22 +424,41 @@ public static class FundAccountEndpoints
 
         group.MapGet("/reconciliation-runs/{runId:guid}/results", async (Guid runId, HttpContext context) =>
         {
-            var service = ResolveService(context);
-            if (service is null)
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
                 return ServiceUnavailable();
 
-            var results = await service.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
         .WithName("GetAccountReconciliationResults")
         .Produces<IReadOnlyList<AccountReconciliationResultDto>>(StatusCodes.Status200OK);
     }
 
-    private static IFundAccountService? ResolveService(HttpContext context) =>
-        context.RequestServices.GetService<IFundAccountService>();
+    private static IResult StatusPolicyConflict(AccountStatusPolicyException ex) => Results.Json(new
+    {
+        error = "account_status_policy_violation",
+        status = ex.Status.ToString(),
+        operation = ex.Operation,
+        backfillAttempted = ex.BackfillAttempted,
+        detail = ex.Message
+    }, statusCode: StatusCodes.Status409Conflict);
+
+    private static IAccountManagementService? ResolveManagementService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountManagementService>()
+        ?? context.RequestServices.GetService<IFundAccountService>() as IAccountManagementService;
+
+    private static IAccountQueryService? ResolveQueryService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountQueryService>()
+        ?? context.RequestServices.GetService<IFundAccountService>() as IAccountQueryService;
 
     private static BrokeragePortfolioSyncService? ResolveBrokerageSyncService(HttpContext context) =>
         context.RequestServices.GetService<BrokeragePortfolioSyncService>();
+
+    private static Guid? TryParseGuidFilter(string? raw)
+    {
+        return Guid.TryParse(raw, out var parsed) ? parsed : null;
+    }
 
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund account service is not registered.", statusCode: StatusCodes.Status501NotImplemented);

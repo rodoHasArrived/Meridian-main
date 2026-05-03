@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-29
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
 > Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a
@@ -13,10 +13,16 @@
 > Master search recovery, and Fund Accounts operator briefing have moved several rows from
 > "planned" to "in progress" or "implemented baseline"; operator-readiness still depends on the
 > active Wave 2-4 gates.
+>
+> Differentiation refresh (2026-04-29): the active product category is **evidence-backed
+> investment operations**. Read this matrix through the trusted data -> research -> paper ->
+> books -> reconciliation -> governed report path rather than as a generic front-to-back suite.
 
 ## 1. Product Vision
 
-Meridian's target end state is a comprehensive self-hosted fund management platform that supports the full investment and operations lifecycle across front office, middle office, and back office workflows.
+Meridian's target end state is a self-hosted evidence-backed investment operations platform that
+supports the investment and operations lifecycle from trusted data and research through paper
+validation, books, reconciliation, approvals, and governed outputs.
 
 The product should let a fund operator move through one connected system for:
 
@@ -43,14 +49,19 @@ Meridian should feel like one coherent operating platform rather than a collecti
 
 ## 3. Product Operating Model
 
-The target product is organized into four top-level product surfaces:
+The target product is organized into seven visible top-level operator workspaces, with older
+terms such as `Research`, `Data Operations`, and `Governance` retained only as planning shorthand
+or compatibility aliases:
 
 | Surface | Purpose |
 | --------- | --------- |
-| Research | Strategy ideation, data validation, backtesting, analytics, and experiment comparison |
-| Trading | Implementation, order workflow, execution monitoring, positions, and trade-management operations |
-| Data Operations | Providers, symbols, backfills, storage, replay, exports, and data quality |
-| Governance | Security Master, accounts, entities, ledgers, reconciliation, cash-flow, reporting, and audit workflows |
+| Data | Providers, symbols, backfills, storage, replay, exports, trust posture, and data quality |
+| Strategy | Strategy ideation, backtesting, run comparison, QuantScript handoffs, and promotion review |
+| Trading | Paper promotion, paper-session workflow, execution monitoring, positions, and trade-management operations |
+| Portfolio | Positions, exposure, attribution, balances, and portfolio posture review |
+| Accounting | Ledger, trial balance, cash-flow, reconciliation, and sign-off casework |
+| Reporting | Governed report-pack previews, generated artifacts, approvals, and restatement posture |
+| Settings | Credentials, environment posture, storage roots, and operator configuration |
 
 These surfaces are user-facing shells, not isolated subsystems. They should share common identifiers, shared read models, and consistent drill-through behavior.
 
@@ -105,7 +116,7 @@ Primary outcomes:
 - observability and replay remain strong enough to support later operator workflows
 - shared contracts and composition patterns stay stable
 
-### Phase 1: Workstation Core
+### Phase 1: Operator Core
 
 Objective: turn the current workspace taxonomy into a real front-office operating shell.
 
@@ -186,7 +197,7 @@ The main gap is operator-readiness and workflow cohesion, not a total absence of
 
 The highest-value tracks from the current state are:
 
-1. Complete the workstation shell and shared run model
+1. Complete the browser-first operator shell and shared evidence model
 2. Productize Security Master and account/entity concepts
 3. Add trade-management and implementation workflows
 4. Add multi-ledger, trial-balance, and cash-flow capabilities
@@ -197,8 +208,9 @@ The highest-value tracks from the current state are:
 
 Meridian should be considered successful against this vision when:
 
-- a fund team can use one product for research, implementation, operations, accounting support, and reporting workflows
-- core objects remain consistent across front, middle, and back office surfaces
+- a fund team can use one product for trusted data, research, paper validation, operations,
+  accounting support, reconciliation, and governed reporting workflows
+- core objects remain consistent from data to decision to books to report
 - reconciliation, accounting, and reporting workflows are first-class product experiences rather than ad hoc exports
 - the platform remains self-hosted, auditable, and operationally understandable
 
@@ -207,6 +219,7 @@ Meridian should be considered successful against this vision when:
 - [Project Roadmap](../status/ROADMAP.md)
 - [Feature Inventory](../status/FEATURE_INVENTORY.md)
 - [Improvements Tracker](../status/IMPROVEMENTS.md)
+- [Evidence-Backed Investment Operations Plan](evidence-backed-investment-operations-plan.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
 

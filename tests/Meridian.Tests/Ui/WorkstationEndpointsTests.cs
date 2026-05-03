@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
@@ -136,6 +137,12 @@ public sealed class WorkstationEndpointsTests
             .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
                                metric.GetProperty("value").GetString() == "4");
         governance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+
+        using var accounting = await ReadJsonAsync(client, "/api/workstation/accounting");
+        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+
+        using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
+        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
 
         var runs = research.RootElement.GetProperty("runs");
         runs.GetArrayLength().Should().Be(1);
@@ -530,6 +537,9 @@ public sealed class WorkstationEndpointsTests
             services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
                 Path.Combine(rootPath, "promotions"),
                 NullLogger<JsonlPromotionRecordStore>.Instance));
+            services.AddSingleton<IGovernanceReportPackRepository>(_ => new FileGovernanceReportPackRepository(
+                Path.Combine(rootPath, "report-packs"),
+                NullLogger<FileGovernanceReportPackRepository>.Instance));
             services.AddSingleton<PromotionService>(sp => new PromotionService(
                 sp.GetRequiredService<IStrategyRepository>(),
                 sp.GetRequiredService<BacktestToLivePromoter>(),
@@ -540,6 +550,7 @@ public sealed class WorkstationEndpointsTests
         });
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
+        const string fundProfileId = "wave2-readiness-fund";
         await store.RecordRunAsync(BuildRun(
             runId: "run-wave2-backtest",
             strategyId: "strat-wave2",
@@ -547,7 +558,14 @@ public sealed class WorkstationEndpointsTests
             runType: RunType.Backtest,
             startedAt: new DateTimeOffset(2026, 4, 24, 15, 30, 0, TimeSpan.Zero),
             datasetReference: "dataset/us/equities",
-            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+            feedReference: "synthetic:equities",
+            fundProfileId: fundProfileId).Complete(BuildBacktestResultWithSymbol("AAPL")) with
+            {
+                RunId = "run-wave2-backtest",
+                AuditReference = "audit-run-wave2-backtest",
+                FundProfileId = fundProfileId,
+                FundDisplayName = "Wave 2 Readiness Fund"
+            });
 
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
@@ -572,6 +590,40 @@ public sealed class WorkstationEndpointsTests
             ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
 
         decision.Success.Should().BeTrue();
+        var reportPackRepository = app.Services.GetRequiredService<IGovernanceReportPackRepository>();
+        var reportPack = await reportPackRepository.SaveAsync(
+            new FundReportPackSnapshotDto(
+                ReportId: Guid.NewGuid(),
+                FundProfileId: fundProfileId,
+                DisplayName: "Wave 2 Readiness Fund",
+                ReportKind: GovernanceReportKindDto.TrialBalance,
+                Currency: "USD",
+                AsOf: new DateTimeOffset(2026, 4, 24, 16, 0, 0, TimeSpan.Zero),
+                GeneratedAt: new DateTimeOffset(2026, 4, 24, 16, 5, 0, TimeSpan.Zero),
+                TotalNetAssets: 250_000m,
+                AuditActor: "ops.lead",
+                CorrelationId: "wave2-report-pack",
+                DecisionRationale: "Wave 2 readiness evidence accepted.",
+                Provenance: new FundReportPackProvenanceDto(
+                    RelatedRunIds: ["run-wave2-backtest"],
+                    JournalEntryCount: 1,
+                    LedgerEntryCount: 2,
+                    TrialBalanceLineCount: 2,
+                    ReconciliationRunCount: 0,
+                    OpenReconciliationBreakCount: 0,
+                    SecurityResolvedCount: 1,
+                    SecurityMissingCount: 0,
+                    SourceSnapshotHash: new string('a', 64)),
+                Artifacts: [],
+                Warnings: []),
+            [new GovernanceReportPackArtifactContent(
+                "trial-balance",
+                GovernanceReportArtifactFormatDto.Json,
+                "trial-balance.json",
+                Encoding.UTF8.GetBytes("""{"status":"ready"}"""))]);
+        (await reportPackRepository.FindLatestByRunIdAsync("run-wave2-backtest"))
+            .Should()
+            .NotBeNull();
 
         var client = app.GetTestClient();
         var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
@@ -632,7 +684,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
         readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ReadyForPaperOperation.Should().BeFalse();
-        readiness.AcceptanceGates.Should().HaveCount(5);
+        readiness.AcceptanceGates.Should().HaveCount(6);
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "session" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
@@ -652,6 +704,18 @@ public sealed class WorkstationEndpointsTests
             gate.GateId == "dk1-trust" &&
             gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
             gate.Detail.Contains("sign-off remains pending", StringComparison.OrdinalIgnoreCase));
+        readiness.ReportPack.Should().NotBeNull();
+        readiness.ReportPack!.Detail.Should().Contain("run-wave2-backtest");
+        readiness.ReportPack.ReportId.Should().Be(reportPack.ReportId);
+        readiness.ReportPack.RelatedRunIds.Should().Contain("run-wave2-backtest");
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "report-pack" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == reportPack.ReportId.ToString("D"));
+        readiness.EvidenceCompleteness.Should().NotBeNull();
+        readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(5);
+        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(6);
+        readiness.EvidenceCompleteness.ReviewGateIds.Should().ContainSingle().Which.Should().Be("dk1-trust");
         readiness.WorkItems.Should().ContainSingle(item =>
             item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
@@ -871,7 +935,11 @@ public sealed class WorkstationEndpointsTests
         readiness.AcceptanceGates
             .Select(static gate => gate.GateId)
             .Should()
-            .Equal("session", "replay", "audit-controls", "promotion", "dk1-trust");
+            .Equal("session", "replay", "audit-controls", "promotion", "dk1-trust", "report-pack");
+        readiness.ReportPack.Should().NotBeNull();
+        readiness.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.EvidenceCompleteness.Should().NotBeNull();
+        readiness.EvidenceCompleteness!.ReviewGateIds.Should().Contain("report-pack");
         readiness.WorkItems.Should().ContainSingle(item =>
             item.WorkItemId == "paper-session-missing" &&
             item.Label == "No active paper session" &&
@@ -879,6 +947,47 @@ public sealed class WorkstationEndpointsTests
         readiness.WorkItems.Should().ContainSingle(item =>
             item.WorkItemId == "promotion-decision-missing" &&
             item.Label == "Promotion decision required");
+    }
+
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_WithFundAccountId_ShouldSurfaceBrokerageSyncFreshnessAndDivergencePosture()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-readiness", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            var status = await brokerageSync.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+
+            var readiness = await app
+                .GetTestClient()
+                .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                    $"/api/workstation/trading/readiness?fundAccountId={fundAccountId:D}",
+                    ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.BrokerageSync.Should().NotBeNull();
+            readiness.BrokerageSync!.FundAccountId.Should().Be(fundAccountId);
+            readiness.BrokerageSync.Health.Should().Be(WorkstationBrokerageSyncHealth.Failed);
+            readiness.BrokerageSync.SecurityMissingCount.Should().BeGreaterThanOrEqualTo(0);
+            readiness.BrokerageSync.Warnings.Should().Contain(w => w.Contains("missing", StringComparison.OrdinalIgnoreCase));
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == fundAccountId &&
+                item.TargetRoute == UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
     }
 
     [Fact]
@@ -908,16 +1017,63 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeRunReviewPacketWorkItems()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldExcludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
     {
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
         });
 
-        var runId = $"run-inbox-review-packet-{Guid.NewGuid():N}";
+        var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
+        var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildContinuityRun(runId));
+
+        await store.RecordRunAsync(BuildContinuityRun(olderRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero)
+        });
+
+        await store.RecordRunAsync(BuildReconciliationReadyRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 18, 30, 0, TimeSpan.Zero)
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotContain(item =>
+            item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeLatestRunReviewPacketBlockers()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var olderRunId = $"run-inbox-review-packet-older-{Guid.NewGuid():N}";
+        var newestRunId = $"run-inbox-review-packet-newest-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+
+        await store.RecordRunAsync(BuildReconciliationReadyRun(olderRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero)
+        });
+
+        await store.RecordRunAsync(BuildContinuityRun(newestRunId) with
+        {
+            StartedAt = new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            EndedAt = new DateTimeOffset(2026, 3, 21, 18, 30, 0, TimeSpan.Zero)
+        });
 
         var inbox = await app
             .GetTestClient()
@@ -927,15 +1083,20 @@ public sealed class WorkstationEndpointsTests
 
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+
         var reviewItem = inbox.Items.Should().ContainSingle(item =>
-            item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
+            item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PromotionReview).Which;
 
         reviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
         reviewItem.Workspace.Should().Be("Trading");
-        reviewItem.RunId.Should().Be(runId);
-        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal));
+        reviewItem.RunId.Should().Be(newestRunId);
+        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", newestRunId, StringComparison.Ordinal));
         reviewItem.TargetPageTag.Should().Be("TradingShell");
+        inbox.Items.Should().OnlyContain(item =>
+            !item.WorkItemId.StartsWith("promotion-review-", StringComparison.OrdinalIgnoreCase) ||
+            item.Tone == OperatorWorkItemToneDto.Warning ||
+            item.Tone == OperatorWorkItemToneDto.Critical);
         inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
     }
 
@@ -1013,14 +1174,14 @@ public sealed class WorkstationEndpointsTests
         inbox!.Items.Should().Contain(item =>
             item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
             item.RunId == runId &&
-            item.Workspace == "Governance");
+            item.Workspace == "Accounting");
         var breakItem = inbox.Items.First(item =>
             item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
             item.RunId == runId &&
-            item.Workspace == "Governance");
+            item.Workspace == "Accounting");
         breakItem.WorkItemId.Should().StartWith("reconciliation-break-");
         breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
-        breakItem.TargetPageTag.Should().Be("GovernanceShell");
+        breakItem.TargetPageTag.Should().Be("AccountingShell");
         breakItem.Detail.Should().Contain("The break is open");
         breakItem.Detail.Should().Contain("Exception route:");
         breakItem.Detail.Should().Contain("sign-off");
@@ -1066,7 +1227,7 @@ public sealed class WorkstationEndpointsTests
             item.AuditReference == breakId);
         breakItem.Label.Should().Be("Reconciliation break in review");
         breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
-        breakItem.TargetPageTag.Should().Be("GovernanceShell");
+        breakItem.TargetPageTag.Should().Be("AccountingShell");
         breakItem.Detail.Should().Contain("The break is in review");
     }
 
@@ -1093,9 +1254,9 @@ public sealed class WorkstationEndpointsTests
             item.WorkItemId == "reconciliation-break-queue-unavailable" &&
             item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
-            item.Workspace == "Governance" &&
+            item.Workspace == "Accounting" &&
             item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
-            item.TargetPageTag == "GovernanceShell");
+            item.TargetPageTag == "AccountingShell");
         inbox.WarningCount.Should().BeGreaterThanOrEqualTo(1);
     }
 
@@ -1615,7 +1776,8 @@ public sealed class WorkstationEndpointsTests
                     BreakId: item.BreakId,
                     Status: ReconciliationBreakQueueStatus.Resolved,
                     ResolvedBy: "qa-resolve",
-                    ResolutionNote: "Tolerance profile accepted for sign-off."));
+                    ResolutionNote: "Tolerance profile accepted for sign-off.",
+                    OperatorRationale: "Tolerance and routing evidence verified."));
             resolve.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
@@ -1703,7 +1865,8 @@ public sealed class WorkstationEndpointsTests
                 BreakId: breakId,
                 Status: ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: "qa-resolve",
-                ResolutionNote: "Skipping review should fail."));
+                ResolutionNote: "Skipping review should fail.",
+                OperatorRationale: "Attempted without review."));
         invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var review = await client.PostAsJsonAsync(
@@ -1721,7 +1884,8 @@ public sealed class WorkstationEndpointsTests
                 BreakId: breakId,
                 Status: ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: "qa-resolve",
-                ResolutionNote: "Issue resolved."));
+                ResolutionNote: "Issue resolved.",
+                OperatorRationale: "Evidence reconciled against source records."));
         resolve.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
@@ -1780,6 +1944,46 @@ public sealed class WorkstationEndpointsTests
             .Contain("security-coverage");
     }
 
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ContinuityWarnings_ShouldFlowAcrossResearchTradingGovernanceAndReviewPacket()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runId = $"run-cross-surface-continuity-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun(runId, includeCashFlows: false, includeFills: false, promotionState: StrategyRunPromotionState.CandidateForLive));
+
+        var client = app.GetTestClient();
+
+        var reviewPacket = await client.GetFromJsonAsync<StrategyRunReviewPacketDto>($"/api/workstation/runs/{runId}/review-packet", ServerJsonOptions);
+        reviewPacket.Should().NotBeNull();
+        reviewPacket!.Continuity.Should().NotBeNull();
+        reviewPacket.Continuity!.ContinuityStatus.HasFills.Should().BeFalse();
+
+        var warningCodes = reviewPacket.Continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code).ToArray();
+        warningCodes.Should().Contain(["missing-fills", "lineage-promotion-gap"]);
+
+        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => item.WorkItemId.StartsWith("continuity-missing-fills", StringComparison.Ordinal));
+        inbox.Items.Should().Contain(item => item.WorkItemId.StartsWith("continuity-lineage-promotion-gap", StringComparison.Ordinal));
+
+        using var continuity = await ReadJsonAsync(client, $"/api/workstation/runs/{runId}/continuity");
+        var continuityWarnings = continuity.RootElement
+            .GetProperty("continuityStatus")
+            .GetProperty("warnings")
+            .EnumerateArray()
+            .Select(static warning => warning.GetProperty("code").GetString())
+            .ToArray();
+
+        continuity.RootElement.GetProperty("continuityStatus").GetProperty("hasFills").GetBoolean().Should().BeFalse();
+        continuityWarnings.Should().Contain(["missing-fills", "lineage-promotion-gap"]);
+        continuityWarnings.Should().Contain(warningCodes);
+    }
     [Fact]
     public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnNotFoundForMissingRun()
     {
@@ -1795,6 +1999,32 @@ public sealed class WorkstationEndpointsTests
         var response = await client.GetAsync("/api/workstation/runs/no-such-run/continuity");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ContinuityDrillInsAcrossSurfaces_ShouldUseCanonicalRouteAndSharedSchema()
+    {
+        await using var app = await CreateAppAsync(RegisterRunReadServices);
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await store.RecordRunAsync(BuildContinuityRun("run-continuity-shared"));
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-continuity-shared"));
+
+        var client = app.GetTestClient();
+        var canonicalContinuityRoute = UiApiRoutes.RunsContinuity.Replace("{runId}", "run-continuity-shared", StringComparison.Ordinal);
+
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+        using var briefing = await ReadJsonAsync(client, "/api/workstation/research/briefing");
+
+        ContainsStringValue(research.RootElement, canonicalContinuityRoute).Should().BeTrue();
+        ContainsStringValue(trading.RootElement, canonicalContinuityRoute).Should().BeTrue();
+        ContainsStringValue(briefing.RootElement, canonicalContinuityRoute).Should().BeTrue();
+
+        using var continuity = await ReadJsonAsync(client, canonicalContinuityRoute);
+        var propertyNames = continuity.RootElement.EnumerateObject().Select(static property => property.Name).ToArray();
+        propertyNames.Should().BeEquivalentTo(["run", "lineage", "cashFlow", "reconciliation", "continuityStatus"]);
+        continuity.RootElement.TryGetProperty("continuity", out _).Should().BeFalse("surfaces must not emit continuity-only envelope fields outside the shared DTO contract");
     }
 
     [Fact]
@@ -2952,6 +3182,17 @@ public sealed class WorkstationEndpointsTests
         return await JsonDocument.ParseAsync(stream);
     }
 
+    private static bool ContainsStringValue(JsonElement element, string expectedValue)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => string.Equals(element.GetString(), expectedValue, StringComparison.Ordinal),
+            JsonValueKind.Object => element.EnumerateObject().Any(property => ContainsStringValue(property.Value, expectedValue)),
+            JsonValueKind.Array => element.EnumerateArray().Any(item => ContainsStringValue(item, expectedValue)),
+            _ => false
+        };
+    }
+
     private static async Task<OperatorWorkflowHomeSummary> ReadWorkflowSummaryAsync(HttpClient client, string path)
     {
         var response = await client.GetAsync(path, HttpCompletionOption.ResponseHeadersRead);
@@ -2972,7 +3213,8 @@ public sealed class WorkstationEndpointsTests
         RunType runType,
         DateTimeOffset startedAt,
         string? datasetReference = null,
-        string? feedReference = null)
+        string? feedReference = null,
+        string? fundProfileId = null)
     {
         return StrategyRunEntry.Start(strategyId, strategyName, runType) with
         {
@@ -2983,7 +3225,8 @@ public sealed class WorkstationEndpointsTests
             FeedReference = feedReference,
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
             LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
-            AuditReference = $"audit-{runId}"
+            AuditReference = $"audit-{runId}",
+            FundProfileId = fundProfileId
         };
     }
 
@@ -3281,21 +3524,43 @@ public sealed class WorkstationEndpointsTests
         };
     }
 
-    private static StrategyRunEntry BuildContinuityRun(string runId)
+    private static StrategyRunEntry BuildContinuityRun(string runId, bool includeCashFlows = true, bool includeFills = false, StrategyRunPromotionState promotionState = StrategyRunPromotionState.None)
     {
         var run = BuildReconciliationReadyRun(runId);
-        var cashFlows = new CashFlowEntry[]
-        {
-            new TradeCashFlow(run.StartedAt.AddMinutes(10), -400m, "AAPL", 10L, 40m),
-            new CommissionCashFlow(run.StartedAt.AddMinutes(10), -1m, "AAPL", Guid.NewGuid()),
-            new DividendCashFlow(run.StartedAt.AddDays(3), 25m, "AAPL", 10L, 2.5m)
-        };
+        var cashFlows = includeCashFlows
+            ? new CashFlowEntry[]
+            {
+                new TradeCashFlow(run.StartedAt.AddMinutes(10), -400m, "AAPL", 10L, 40m),
+                new CommissionCashFlow(run.StartedAt.AddMinutes(10), -1m, "AAPL", Guid.NewGuid()),
+                new DividendCashFlow(run.StartedAt.AddDays(3), 25m, "AAPL", 10L, 2.5m)
+            }
+            : [];
+        var fills = includeFills
+            ? new FillEvent[]
+            {
+                new(
+                    FillId: Guid.NewGuid(),
+                    OrderId: Guid.NewGuid(),
+                    Symbol: "AAPL",
+                    FilledQuantity: 10L,
+                    FillPrice: 40m,
+                    Commission: 1m,
+                    FilledAt: run.StartedAt.AddMinutes(10),
+                    AccountId: "default-brokerage")
+            }
+            : [];
+
+        var runType = promotionState is StrategyRunPromotionState.CandidateForLive or StrategyRunPromotionState.LiveManaged
+            ? RunType.Paper
+            : run.RunType;
 
         return run with
         {
+            RunType = runType,
             Metrics = run.Metrics! with
             {
-                CashFlows = cashFlows
+                CashFlows = cashFlows,
+                Fills = fills
             },
             FundProfileId = "alpha-credit",
             FundDisplayName = "Alpha Credit"

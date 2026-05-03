@@ -147,6 +147,29 @@ diff --git a/src/Meridian.Contracts/Api/UiApiRoutes.cs b/src/Meridian.Contracts/
         self.assertIn("src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs", markdown)
         self.assertIn("workstation-endpoints", markdown)
 
+    def test_build_review_packet_blocks_continuity_member_rename_without_migration_notes(self) -> None:
+        patch = """
+diff --git a/src/Meridian.Contracts/Workstation/PortfolioContinuityDtos.cs b/src/Meridian.Contracts/Workstation/PortfolioContinuityDtos.cs
+@@ -22 +22 @@ public sealed record PortfolioContinuityDto(
+-    decimal UnsettledCash,
++    decimal PendingCash,
+"""
+
+        packet = packet_module.build_review_packet(
+            base_ref="origin/main",
+            head_ref="HEAD",
+            changed_files=["src/Meridian.Contracts/Workstation/PortfolioContinuityDtos.cs"],
+            patch=patch,
+            matrix_doc_path="docs/status/contract-compatibility-matrix.md",
+            matrix_updated=False,
+            matrix_migration_note_added=False,
+            pr_migration_notes_present=False,
+            generated_at_utc="2026-04-27T00:00:00+00:00",
+        )
+
+        self.assertEqual(packet["summary"]["contractChangeCategory"], "potential-breaking")
+        self.assertFalse(packet["summary"]["readyForCadenceReview"])
+
 
 if __name__ == "__main__":
     unittest.main()

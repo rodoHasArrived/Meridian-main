@@ -1,7 +1,7 @@
 # Project Status Documentation
 
 **Last Reviewed:** 2026-04-29
-**Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
+**Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to evidence-backed investment operations across cockpit hardening, shared-model continuity, accounting, reconciliation, and governed report productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
 
@@ -33,12 +33,6 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
 | [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
 
-## Compatibility Views
-
-| Document | Description |
-| --- | --- |
-| [ROADMAP_NOW_NEXT_LATER_2026_03_25.md](ROADMAP_NOW_NEXT_LATER_2026_03_25.md) | Refreshed Now / Next / Later compatibility view for the canonical roadmap |
-
 ## Generated Status Reports
 
 | Document | Description |
@@ -69,7 +63,8 @@ For dashboard purpose, required evidence inputs, `.md` + `.json` output paths, b
 
 These dated snapshots remain useful for history, but they no longer act as active status guidance:
 
-- [Documentation triage (2026-03-21)](DOCUMENTATION_TRIAGE_2026_03_21.md)
+- [Documentation triage (2026-03-21)](../../archive/docs/summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
+- [Now / Next / Later roadmap (2026-03-25)](../../archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
 
 ## Recommended Reading Order
 
@@ -103,11 +98,13 @@ When authoring or editing these doc categories, include the required section hea
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans
+- **Archive state:** Deprecated prior release checklists, UI notes, and dated snapshots should live under `archive/docs/` and stay out of the active status tree
 - **DK program state:** Active implementation window (2026-04-20 to 2026-06-26) with weekly dashboard updates and subsystem milestones
 
 ## Related Documentation
 
 - [Plans Overview](../plans/README.md)
+- [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
 - [Backtest Studio Unification Blueprint](../plans/backtest-studio-unification-blueprint.md)

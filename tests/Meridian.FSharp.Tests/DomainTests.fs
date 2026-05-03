@@ -646,3 +646,232 @@ let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
     sp.IsInterestOnly |> should equal true
     sp.IsPrincipalOnly |> should equal false
     sp.NotionalBalance |> should equal (Some 10_000_000m)
+
+// ---------------------------------------------------------------------------
+// SecurityClassification helper functions
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``SecurityClassification.assetClassName returns canonical string for each AssetClass`` () =
+    let cases =
+        [
+            AssetClass.Equity,       "Equity"
+            AssetClass.FixedIncome,  "FixedIncome"
+            AssetClass.Fund,         "Fund"
+            AssetClass.CashEquivalent, "CashEquivalent"
+            AssetClass.Financing,    "Financing"
+            AssetClass.Derivative,   "Derivative"
+            AssetClass.PrivateCredit,"PrivateCredit"
+            AssetClass.Other,        "Other"
+        ]
+
+    for (ac, expected) in cases do
+        SecurityClassification.assetClassName ac |> should equal expected
+
+[<Fact>]
+let ``SecurityClassification.familyName returns canonical string for each AssetFamily`` () =
+    let cases =
+        [
+            AssetFamily.Sovereign,           "Sovereign"
+            AssetFamily.CorporateDebt,       "CorporateDebt"
+            AssetFamily.BankProduct,         "BankProduct"
+            AssetFamily.CommonEquity,        "CommonEquity"
+            AssetFamily.MoneyMarket,         "MoneyMarket"
+            AssetFamily.RepurchaseAgreement, "RepurchaseAgreement"
+            AssetFamily.ListedDerivative,    "ListedDerivative"
+            AssetFamily.PrivateLoan,         "PrivateLoan"
+            AssetFamily.OtherFamily "Crypto","Crypto"
+        ]
+
+    for (fam, expected) in cases do
+        SecurityClassification.familyName fam |> should equal expected
+
+[<Fact>]
+let ``SecurityClassification.subTypeName returns canonical string for common sub-types`` () =
+    let cases =
+        [
+            SecuritySubType.TreasuryBill,    "TreasuryBill"
+            SecuritySubType.CorporateBond,   "CorporateBond"
+            SecuritySubType.CommonShare,     "CommonShare"
+            SecuritySubType.OptionContract,  "OptionContract"
+            SecuritySubType.FutureContract,  "FutureContract"
+            SecuritySubType.Repo,            "Repo"
+            SecuritySubType.MoneyMarketFund, "MoneyMarketFund"
+            SecuritySubType.OtherSubType "DigitalAsset", "DigitalAsset"
+        ]
+
+    for (st, expected) in cases do
+        SecurityClassification.subTypeName st |> should equal expected
+
+// ---------------------------------------------------------------------------
+// SectorTaxonomy construction
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``SectorTaxonomy can be constructed with all optional fields absent`` () =
+    let taxonomy =
+        {
+            TaxonomyScheme     = "GICS"
+            SectorCode         = None
+            IndustryGroupCode  = None
+            IndustryCode       = None
+            SubIndustryCode    = None
+        }
+
+    taxonomy.TaxonomyScheme     |> should equal "GICS"
+    taxonomy.SectorCode         |> should equal None
+    taxonomy.IndustryGroupCode  |> should equal None
+    taxonomy.IndustryCode       |> should equal None
+    taxonomy.SubIndustryCode    |> should equal None
+
+[<Fact>]
+let ``SectorTaxonomy can be constructed with all optional fields populated`` () =
+    let taxonomy =
+        {
+            TaxonomyScheme     = "GICS"
+            SectorCode         = Some "45"
+            IndustryGroupCode  = Some "4510"
+            IndustryCode       = Some "451020"
+            SubIndustryCode    = Some "45102010"
+        }
+
+    taxonomy.SectorCode        |> should equal (Some "45")
+    taxonomy.IndustryGroupCode |> should equal (Some "4510")
+    taxonomy.SubIndustryCode   |> should equal (Some "45102010")
+
+[<Fact>]
+let ``SectorTaxonomy supports non-GICS schemes`` () =
+    let taxonomy =
+        {
+            TaxonomyScheme    = "SIC"
+            SectorCode        = Some "7372"
+            IndustryGroupCode = None
+            IndustryCode      = None
+            SubIndustryCode   = None
+        }
+
+    taxonomy.TaxonomyScheme |> should equal "SIC"
+    taxonomy.SectorCode     |> should equal (Some "7372")
+
+// ---------------------------------------------------------------------------
+// SecurityEconomicDefinition.normalize — trims and uppercases core fields
+// ---------------------------------------------------------------------------
+
+let private makeTestProvenance () : Provenance =
+    {
+        SourceSystem   = " bloomberg "
+        SourceRecordId = Some "BBG001S5N8V8"
+        AsOf           = DateTimeOffset.UtcNow
+        UpdatedBy      = " data-feed "
+        Reason         = None
+    }
+
+let private makeTestCommonTerms () : CommonTerms =
+    {
+        DisplayName         = "  Apple Inc.  "
+        Currency            = " usd "
+        CountryOfRisk       = Some "US"
+        IssuerName          = Some "Apple Inc."
+        Exchange            = None
+        LotSize             = None
+        TickSize            = None
+        PrimaryListingMic   = Some " xnas "
+        CountryOfIncorporation = None
+        SettlementCycleDays = Some 1
+        HolidayCalendarId   = None
+    }
+
+let private makeTestClassification () : SecurityClassification =
+    {
+        AssetClass  = AssetClass.Equity
+        Family      = Some AssetFamily.CommonEquity
+        SubType     = SecuritySubType.CommonShare
+        TypeName    = "CommonShare"
+        IssuerType  = Some "Corporate"
+        RiskCountry = Some "US"
+        Taxonomy    = None
+    }
+
+[<Fact>]
+let ``SecurityEconomicDefinition.normalize trims DisplayName and uppercases Currency`` () =
+    let definition : SecurityEconomicDefinition =
+        {
+            SecurityId     = SecurityId (System.Guid.NewGuid())
+            Classification = makeTestClassification ()
+            Common         = makeTestCommonTerms ()
+            Terms          = SecurityTermModules.empty
+            Identifiers    = []
+            Status         = SecurityStatus.Active
+            Version        = 1L
+            EffectiveFrom  = DateTimeOffset.UtcNow.AddDays(-30.0)
+            EffectiveTo    = None
+            Provenance     = makeTestProvenance ()
+        }
+
+    let normalized = SecurityEconomicDefinition.normalize definition
+
+    normalized.Common.DisplayName |> should equal "Apple Inc."
+    normalized.Common.Currency    |> should equal "USD"
+
+[<Fact>]
+let ``SecurityEconomicDefinition.normalize uppercases PrimaryListingMic`` () =
+    let definition : SecurityEconomicDefinition =
+        {
+            SecurityId     = SecurityId (System.Guid.NewGuid())
+            Classification = makeTestClassification ()
+            Common         = makeTestCommonTerms ()
+            Terms          = SecurityTermModules.empty
+            Identifiers    = []
+            Status         = SecurityStatus.Active
+            Version        = 1L
+            EffectiveFrom  = DateTimeOffset.UtcNow.AddDays(-30.0)
+            EffectiveTo    = None
+            Provenance     = makeTestProvenance ()
+        }
+
+    let normalized = SecurityEconomicDefinition.normalize definition
+
+    normalized.Common.PrimaryListingMic |> should equal (Some "XNAS")
+
+[<Fact>]
+let ``SecurityEconomicDefinition.normalize trims Provenance SourceSystem and UpdatedBy`` () =
+    let definition : SecurityEconomicDefinition =
+        {
+            SecurityId     = SecurityId (System.Guid.NewGuid())
+            Classification = makeTestClassification ()
+            Common         = makeTestCommonTerms ()
+            Terms          = SecurityTermModules.empty
+            Identifiers    = []
+            Status         = SecurityStatus.Active
+            Version        = 1L
+            EffectiveFrom  = DateTimeOffset.UtcNow.AddDays(-30.0)
+            EffectiveTo    = None
+            Provenance     = makeTestProvenance ()
+        }
+
+    let normalized = SecurityEconomicDefinition.normalize definition
+
+    normalized.Provenance.SourceSystem |> should equal "bloomberg"
+    normalized.Provenance.UpdatedBy    |> should equal "data-feed"
+
+[<Fact>]
+let ``SecurityEconomicDefinition.normalize preserves unchanged optional fields`` () =
+    let definition : SecurityEconomicDefinition =
+        {
+            SecurityId     = SecurityId (System.Guid.NewGuid())
+            Classification = makeTestClassification ()
+            Common         = makeTestCommonTerms ()
+            Terms          = SecurityTermModules.empty
+            Identifiers    = []
+            Status         = SecurityStatus.Active
+            Version        = 1L
+            EffectiveFrom  = DateTimeOffset.UtcNow.AddDays(-30.0)
+            EffectiveTo    = None
+            Provenance     = makeTestProvenance ()
+        }
+
+    let normalized = SecurityEconomicDefinition.normalize definition
+
+    normalized.Common.CountryOfRisk    |> should equal (Some "US")
+    normalized.Common.SettlementCycleDays |> should equal (Some 1)
+    normalized.Classification          |> should equal (makeTestClassification ())

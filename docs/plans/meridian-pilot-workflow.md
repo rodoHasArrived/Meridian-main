@@ -153,6 +153,7 @@ The scenario should fail loudly if any stage has only display state and no retai
 ## Near-Term Implementation Order
 
 1. **Pilot fixture and acceptance harness:** one repeatable dataset, strategy pair, paper session, restart/replay verification, reconciliation queue, and report-pack output.
+   - Validation lane: `PilotAcceptanceHarnessTests` seeds the shared endpoint path and writes `artifacts/pilot-acceptance/latest/pilot-readiness.json` with stage gates, evidence-graph edges, and provider, dataset, run, promotion, session, replay, portfolio, ledger, reconciliation, continuity, and report-pack evidence IDs. `.github/workflows/golden-path-validation.yml` now runs that harness, renders the pilot readiness dashboard from the generated artifact, uploads the acceptance evidence, and treats the artifact itself as a weighted dashboard readiness check.
 2. **Run Evidence Graph skeleton:** a shared evidence model that links provider evidence, dataset snapshots, run parameters, fills, orders, positions, ledger entries, reconciliation breaks, promotion decisions, report artifacts, and audit events.
 3. **Generated readiness dashboard:** one dashboard that reports pilot-stage readiness, blockers, source evidence, and the validation command or artifact proving the current state.
 4. **Paper-session health and mismatch diagnostics:** operator-visible stale replay, count divergence, and replay mismatch reasons.

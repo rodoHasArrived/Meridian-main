@@ -13,7 +13,7 @@
 3. [Dependency Graph](#3-dependency-graph)
 4. [Core Abstractions](#4-core-abstractions)
 5. [Pipeline Architecture](#5-pipeline-architecture)
-6. [WPF Desktop App Layer](#6-wpf-desktop-app-layer)
+6. [Operator UI Layers](#6-operator-ui-layers)
 7. [Provider & Backfill Architecture](#7-provider--backfill-architecture)
 8. [F# Domain Models](#8-f-domain-models)
 9. [Testing Architecture](#9-testing-architecture)
@@ -25,7 +25,7 @@
 
 ## 1. Project Overview
 
-Meridian is a .NET 9 / C# 13 application (with F# 8.0 domain models) for capturing real-time market microstructure data (trades, quotes, L2 order books) from multiple providers. It also supports historical backfill from 10+ providers with automatic failover. It persists data via a backpressured pipeline to JSONL/Parquet storage with WAL durability. Two UI surfaces: a WPF desktop app (recommended) and a web dashboard; they share services through a layered architecture. **UWP was fully removed.**
+Meridian is a .NET 10 fund-management and trading-platform application with F# domain models, provider-backed market data, historical backfill, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`. **UWP was fully removed.**
 
 **Performance contract**: millisecond-accurate timestamping of market events. UI work must never starve the data pipeline.
 
@@ -69,7 +69,7 @@ Meridian.sln
 │   │   └── Integrations/
 │   │       └── Lean/                    # QuantConnect Lean backtesting integration
 │   │
-│   ├── Meridian.FSharp/      # F# 8.0 domain models (17 files)
+│   ├── Meridian.FSharp/      # F# domain models
 │   │                                    # Discriminated unions, record types for
 │   │                                    # type-safe market data representation
 │   │
@@ -81,7 +81,7 @@ Meridian.sln
 │   │                                    # Rate limit tracking, reconnection helpers
 │   │                                    # Depends on Contracts only
 │   │
-│   ├── Meridian.Ui/          # Web dashboard (ASP.NET)
+│   ├── Meridian.Ui/          # Browser workstation host and static assets
 │   │
 │   ├── Meridian.Ui.Shared/   # Shared UI endpoint handlers
 │   │                                    # Must be platform-neutral (no WPF/UWP APIs)
@@ -90,7 +90,7 @@ Meridian.sln
 │   │                                    # CollectorService, status, backfill logic
 │   │                                    # Must be platform-neutral
 │   │
-│   ├── Meridian.Wpf/         # WPF desktop app (RECOMMENDED)
+│   ├── Meridian.Wpf/         # Retained WPF desktop shell
 │   │   ├── App.xaml / App.xaml.cs
 │   │   ├── Views/                       # XAML pages and windows
 │   │   │   ├── DashboardPage.xaml(.cs)
@@ -243,7 +243,7 @@ Provider(s)  →  IMarketDataClient
 
 ---
 
-## 6. WPF Desktop App Layer
+## 6. Operator UI Layers
 
 ### MVVM Role Assignments
 
@@ -364,7 +364,7 @@ The project supports `--watch-config` for live configuration changes:
 
 ## 8. F# Domain Models
 
-`Meridian.FSharp` contains 17 F# 8.0 files with type-safe domain representations:
+`Meridian.FSharp` contains F# files with type-safe domain representations:
 
 **Key interop rules for C# consumers:**
 - F# `option<T>` becomes `FSharpOption<T>` in C# — use `FSharpOption.get_IsSome()` / `FSharpOption.get_Value()`, not null checks
