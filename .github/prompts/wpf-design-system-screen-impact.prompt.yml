@@ -11,7 +11,7 @@ messages:
       desktop screens must change to support it, then implement only the narrow changes needed.
 
       ## Repository Context
-      - Meridian is a .NET 9 fund-management and trading-platform codebase.
+      - Meridian is a .NET 10 fund-management and trading-platform codebase.
       - The active operator UI lane is `src/Meridian.Ui/dashboard/`, with built assets in `src/Meridian.Ui/wwwroot/workstation/`.
       - Use this prompt only for retained WPF shell support, regression fixes, or explicitly requested desktop work.
       - Keep visible operator navigation limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.

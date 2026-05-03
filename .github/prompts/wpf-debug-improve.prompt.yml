@@ -12,7 +12,7 @@ messages:
 
       ## WPF Project Context
       - Project: src/Meridian.Wpf/Meridian.Wpf.csproj
-      - Framework: .NET 9.0 with WPF
+      - Framework: .NET 10.0 with WPF
       - UI stack: WPF XAML + MVVM-style view models
       - Services: NavigationService, StatusService, WatchlistService, ThemeService, LoggingService
       - App styles: src/Meridian.Wpf/Styles/AppStyles.xaml

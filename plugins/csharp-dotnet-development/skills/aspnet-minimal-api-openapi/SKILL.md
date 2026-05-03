@@ -28,7 +28,7 @@ Your goal is to help me create well-structured ASP.NET Minimal API endpoints wit
 - Leverage nullable annotations and init-only properties.
 
 ## OpenAPI Documentation
-- Use built-in OpenAPI document support available in .NET 9.
+- Use built-in OpenAPI document support available in .NET 10.
 - Define operation summary and description.
 - Add operation IDs via `WithName`.
 - Add property/parameter descriptions with `[Description()]`.

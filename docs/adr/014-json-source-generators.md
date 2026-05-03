@@ -215,7 +215,7 @@ Hand-write JSON serialization for critical paths.
 
 - Generated serializers are partial classes (can be extended)
 - Options objects are reusable (static fields)
-- Requires .NET 7+ (already on .NET 9)
+- Requires .NET 7+ (already on .NET 10)
 
 ## Compliance
 

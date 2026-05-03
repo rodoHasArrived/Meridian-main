@@ -11,7 +11,7 @@ quickstart: ## Zero-to-running setup for new contributors
 	@echo "$(BLUE)Meridian - Quick Start$(NC)"
 	@echo "======================================"
 	@echo ""
-	@echo "$(BLUE)[1/5] Checking .NET 9 SDK...$(NC)"
+	@echo "$(BLUE)[1/5] Checking .NET 10 SDK...$(NC)"
 	@dotnet --version > /dev/null 2>&1 || { echo "$(YELLOW)ERROR: .NET SDK not found. Install from https://dot.net/download$(NC)"; exit 1; }
 	@echo "  .NET SDK $$(dotnet --version) found"
 	@echo ""

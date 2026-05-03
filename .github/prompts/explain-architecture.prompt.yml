@@ -8,7 +8,7 @@ messages:
 
       ## System Overview
 
-      Meridian is a production-ready .NET 9.0 / C# 13 / F# 8.0 integrated trading platform for
+      Meridian is a production-ready .NET 10.0 / C# 13 / F# 8.0 integrated trading platform for
       capturing high-fidelity market microstructure data, backtesting strategies at tick resolution,
       executing strategies via paper trading and brokerage gateways, and tracking portfolio performance.
 
@@ -107,7 +107,7 @@ messages:
       | `Meridian.Ui` | Web dashboard host (React SPA + ASP.NET minimal API) |
       | `Meridian.Ui.Shared` | 300+ shared REST endpoint implementations |
       | `Meridian.Ui.Services` | Platform-independent UI service layer |
-      | `Meridian.Wpf` | WPF desktop app (Windows-only, net9.0-windows, MVVM) |
+      | `Meridian.Wpf` | WPF desktop app (Windows-only, net10.0-windows, MVVM) |
       | `Meridian.Mcp` | Internal MCP server (ADR tools, audit, convention tools) |
       | `Meridian.McpServer` | Market-data MCP server (backfill, storage, symbol, provider tools) |
 
@@ -263,7 +263,7 @@ messages:
       - Both use the Model Context Protocol (MCP) SDK with ASP.NET minimal API hosting
 
       #### WPF Desktop Architecture
-      - Project: `src/Meridian.Wpf/` (Windows-only, `net9.0-windows`)
+      - Project: `src/Meridian.Wpf/` (Windows-only, `net10.0-windows`)
       - MVVM via `BindableBase` (`SetProperty<T>`, no direct `INotifyPropertyChanged` wiring)
       - Views are thin XAML + `InitializeComponent()` only; zero business logic in code-behind
       - Services injected into ViewModels — never into Pages/Windows directly

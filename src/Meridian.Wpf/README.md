@@ -1,6 +1,6 @@
 # Meridian - WPF Desktop Application
 
-This is the WPF (.NET 9) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
+This is the WPF (.NET 10) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
 
 ## Overview
 
@@ -82,7 +82,7 @@ See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/t
 
 ### Technology Stack
 
-- **.NET 9.0**
+- **.NET 10.0**
 - **WPF**
 - **MVVM pattern**
 - **Microsoft.Extensions.DependencyInjection**
@@ -100,7 +100,7 @@ See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/t
 
 ### Requirements
 
-- **.NET 9 SDK**
+- **.NET 10 SDK**
 - **Windows** for a functional WPF build
 - **Visual Studio 2022** optional, but useful for XAML work
 

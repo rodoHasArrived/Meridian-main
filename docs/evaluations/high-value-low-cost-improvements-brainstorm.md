@@ -240,7 +240,7 @@ The `--dry-run --offline` combination already exists but may not cover all these
 **Problem:** New contributors must read CLAUDE.md, install the SDK, copy config, set env vars, and run the build. A `make quickstart` target could automate the happy path.
 
 **Improvement:** Add a Makefile target that:
-1. Checks .NET 9 SDK is installed
+1. Checks .NET 10 SDK is installed
 2. Copies `appsettings.sample.json` to `appsettings.json` if not present
 3. Runs `dotnet restore`
 4. Runs `dotnet build`

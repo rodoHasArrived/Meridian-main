@@ -27,7 +27,7 @@ user growth strategy, or technical debt ideation.
 
 ## Context: What This Project Is
 
-Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. It already
+Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. It already
 spans provider ingestion and backfill, tiered storage, replay, backtesting, execution and risk
 seams, shared run, portfolio, and ledger models, QuantScript, MCP, a browser-based operator
 workstation, and retained WPF support. The current delivery focus is turning that breadth into one

@@ -43,8 +43,8 @@ check_dotnet() {
     local ver
     ver=$(dotnet --version)
     info "  .NET SDK ${ver} found"
-    if [[ "${ver%%.*}" -lt 9 ]]; then
-        error ".NET SDK 9.0.100 or later is required by global.json (found ${ver}). Please install .NET 9 from https://dot.net/download"
+    if [[ "${ver%%.*}" -lt 10 ]]; then
+        error ".NET SDK 10.0.100 or later is required by global.json (found ${ver}). Please install .NET 10 from https://dot.net/download"
     fi
 }
 
@@ -136,7 +136,7 @@ check_prerequisites() {
         ver=$(dotnet --version)
         success "  .NET SDK ${ver}"
         if [[ "${ver%%.*}" -lt 9 ]]; then
-            warn "  .NET SDK ${ver} is too old — 9.0.100 or later is required (see global.json)"
+            warn "  .NET SDK ${ver} is too old — 10.0.100 or later is required (see global.json)"
             ok=false
         fi
     else
@@ -178,7 +178,7 @@ interactive() {
     info "How would you like to install Meridian?"
     info ""
     info "  1) Docker   — recommended, easiest setup"
-    info "  2) Native   — requires .NET 9 SDK"
+    info "  2) Native   — requires .NET 10 SDK"
     info "  3) Check    — verify prerequisites only"
     info "  q) Quit"
     info ""

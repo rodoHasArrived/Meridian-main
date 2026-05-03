@@ -113,7 +113,7 @@ docker inspect --format='{{.State.Health.Status}}' meridian
 
 ### Prerequisites
 
-- .NET 9.0 Runtime or SDK installed
+- .NET 10.0 Runtime or SDK installed
 - Linux with systemd
 - Dedicated service account
 

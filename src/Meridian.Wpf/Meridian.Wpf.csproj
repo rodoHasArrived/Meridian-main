@@ -12,7 +12,7 @@
 
   <!-- Non-Windows: Create a minimal stub that compiles but produces nothing -->
   <PropertyGroup Condition="'$(IsWindows)' != 'true'">
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>Meridian.Wpf</RootNamespace>
     <Nullable>enable</Nullable>
@@ -24,7 +24,7 @@
   <!-- Windows: Full WPF application -->
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Meridian.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
     <!-- Required for System.Windows.Forms.NotifyIcon (balloon-tip notifications) -->

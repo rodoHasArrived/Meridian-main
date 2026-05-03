@@ -470,8 +470,8 @@ public sealed record ProviderCatalogEntry(
     bool SupportsBrokerage = false)
 {
     public string[] RequiredEnvVars => CredentialFields
-        .Where(field => field.Required)
-        .SelectMany(field => field.AllEnvironmentVariables)
+        .Where(f => f.Required)
+        .SelectMany(f => f.AllEnvironmentVariables)
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
 }

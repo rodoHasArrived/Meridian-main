@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [string]$Configuration = "Release",
-    [string]$Framework = "net9.0-windows10.0.19041.0",
+    [string]$Framework = "net10.0-windows10.0.19041.0",
     [string]$OutputRoot = "artifacts/wpf-validation/operator-inbox-route",
     [string]$Filter = "FullyQualifiedName~MainPageUiWorkflowTests|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~WorkspaceShellContextStripControlTests"
 )

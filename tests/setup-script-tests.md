@@ -95,7 +95,7 @@ source .ai/env.sh
 All prerequisites are installed in the test environment:
 - Docker ✅
 - Docker Compose ✅
-- .NET 9.0 SDK ✅
+- .NET 10.0 SDK ✅
 - Git ✅
 - curl ✅
 

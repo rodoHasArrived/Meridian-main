@@ -503,8 +503,9 @@ public sealed class WorkstationEndpointsTests
 
         var brokerage = trading.RootElement.GetProperty("brokerage");
         brokerage.GetProperty("provider").GetString().Should().Be("Paper trading");
-        brokerage.GetProperty("notes").GetString().Should().Contain("blocked");
-        brokerage.GetProperty("notes").GetString().Should().Contain("paper trading");
+        var brokerageNotes = string.Join(" ", brokerage.GetProperty("notes").EnumerateArray().Select(n => n.GetString()));
+        brokerageNotes.Should().Contain("blocked");
+        brokerageNotes.Should().Contain("paper trading");
     }
 
     [Fact]

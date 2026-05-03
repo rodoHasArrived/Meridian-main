@@ -3,7 +3,7 @@
 param(
     [string]$ProjectPath = "src/Meridian.Wpf/Meridian.Wpf.csproj",
     [string]$Configuration = "Release",
-    [string]$Framework = "net9.0-windows10.0.19041.0",
+    [string]$Framework = "net10.0-windows10.0.19041.0",
     [string]$ExecutablePath = "",
     [string]$OutputDirectory = "artifacts/desktop-workflows/robinhood-options-smoke",
     [string]$SeedWorkspacePath = "scripts/dev/fixtures/robinhood-options-smoke.seed.json",

@@ -27,7 +27,7 @@ $retentionProfile = Get-MeridianWorkflowProfileValue -Table $screenshotsProfile 
 
 $ProjectPath = if ($PSBoundParameters.ContainsKey('ProjectPath')) { $ProjectPath } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'projectPath' -Fallback 'src/Meridian.Wpf/Meridian.Wpf.csproj') }
 $Configuration = if ($PSBoundParameters.ContainsKey('Configuration')) { $Configuration } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'configuration' -Fallback 'Release') }
-$Framework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framework } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'framework' -Fallback 'net9.0-windows10.0.19041.0') }
+$Framework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framework } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'framework' -Fallback 'net10.0-windows10.0.19041.0') }
 $ExeName = if ($PSBoundParameters.ContainsKey('ExeName')) { $ExeName } else { [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'exeName' -Fallback 'Meridian.Desktop.exe') }
 $OutputDir = if ($PSBoundParameters.ContainsKey('OutputDir')) { $OutputDir } else { [string](Get-MeridianWorkflowProfileValue -Table $screenshotsProfile -Key 'outputRoot' -Fallback 'docs/screenshots/desktop') }
 $fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $true)

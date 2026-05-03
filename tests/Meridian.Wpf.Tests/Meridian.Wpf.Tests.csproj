@@ -11,7 +11,7 @@
 
   <!-- Windows-only: keep the target graph stable even when full test compilation is disabled -->
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,7 +24,7 @@
 
   <!-- Non-Windows: Create empty stub library to allow solution build -->
   <PropertyGroup Condition="'$(IsWindows)' != 'true'">
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>

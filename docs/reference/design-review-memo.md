@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-**Meridian** is a high-performance, event-driven trading platform built on .NET 9.0 / C# 13 / F# 8.0. It provides:
+**Meridian** is a high-performance, event-driven trading platform built on .NET 10.0 / C# 13 / F# 8.0. It provides:
 
 1. **📡 Data Collection** — Real-time streaming (90+ sources via Interactive Brokers, Alpaca, NYSE Direct, Polygon, StockSharp, and others) with historical backfill (10+ providers) and symbol search (5 providers). All data flows through a unified event pipeline with integrity validation, sequence monitoring, and data quality SLA enforcement.
 

@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [string]$Configuration = "Release",
-    [string]$Framework = "net9.0-windows10.0.19041.0",
+    [string]$Framework = "net10.0-windows10.0.19041.0",
     [string]$OutputRoot = "artifacts/wpf-validation/position-blotter-route",
     [string]$Filter = "FullyQualifiedName~PositionBlotterViewModelTests|FullyQualifiedName~ShellNavigationCatalogTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~TradingWorkspaceShellPageTests"
 )

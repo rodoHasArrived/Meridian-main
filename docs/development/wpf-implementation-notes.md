@@ -10,7 +10,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 
 ### Stack
 
-- **.NET 9.0 + WPF** — Windows-only, `.csproj` targets `net9.0-windows`
+- **.NET 10.0 + WPF** — Windows-only, `.csproj` targets `net10.0-windows`
 - **MVVM** — `BindableBase` (from `Meridian.Ui.Services.Services`) + `INotifyPropertyChanged`
 - **DI** — `Microsoft.Extensions.Hosting`; singleton services resolved via `IServiceProvider`
 - **Shared services** — `Meridian.Ui.Services` and `Meridian.Ui.Shared` for cross-surface logic

@@ -29,21 +29,21 @@ if (-not (Test-Command "dotnet")) {
     Error ".NET SDK not found"
     $validationErrors += "dotnet command not found in PATH"
     Write-Host ""
-    Write-Host "Fix: Install .NET 9 SDK from https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Yellow
+    Write-Host "Fix: Install .NET 10 SDK from https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Yellow
     exit 1
 }
 
 $dotnetVersion = (& dotnet --version).Trim()
 Info "Detected .NET SDK: $dotnetVersion"
 
-# Check if .NET 9 is installed
+# Check if .NET 10 is installed
 if (-not $dotnetVersion.StartsWith("9.")) {
-    Warn ".NET 9 SDK not detected (found: $dotnetVersion)"
-    $validationWarnings += ".NET 9 SDK recommended but not installed"
+    Warn ".NET 10 SDK not detected (found: $dotnetVersion)"
+    $validationWarnings += ".NET 10 SDK recommended but not installed"
     Write-Host ""
-    Write-Host "Fix: Install .NET 9 SDK from https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Yellow
+    Write-Host "Fix: Install .NET 10 SDK from https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Yellow
 } else {
-    Ok ".NET 9 SDK detected: $dotnetVersion"
+    Ok ".NET 10 SDK detected: $dotnetVersion"
 }
 
 # Check for required workloads
