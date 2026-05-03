@@ -6985,6 +6985,8 @@ Use these documents together when planning or implementing new work:
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
+│       ├── Controls
+│       │   └── AutomationLeafBorder.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs
@@ -8185,6 +8187,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-621 directories, 7389 files
+622 directories, 7390 files
 ```
 <!-- readme-tree end -->
