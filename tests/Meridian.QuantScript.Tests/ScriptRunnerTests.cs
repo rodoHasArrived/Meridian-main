@@ -301,10 +301,10 @@ public sealed class ScriptRunnerTests
             """;
         var parameters = new Dictionary<string, object?>
         {
-            ["symbol"] = "SPY",
-            ["from"] = new DateOnly(2024, 1, 2),
-            ["to"] = new DateOnly(2024, 2, 3),
-            ["interval"] = "daily"
+            ["context.symbol"] = "SPY",
+            ["context.from"] = new DateOnly(2024, 1, 2),
+            ["context.to"] = new DateOnly(2024, 2, 3),
+            ["context.interval"] = "daily"
         };
 
         var result = await runner.RunAsync(source, parameters);
