@@ -37,7 +37,7 @@ $dotnetVersion = (& dotnet --version).Trim()
 Info "Detected .NET SDK: $dotnetVersion"
 
 # Check if .NET 10 is installed
-if (-not $dotnetVersion.StartsWith("9.")) {
+if (-not $dotnetVersion.StartsWith("10.")) {
     Warn ".NET 10 SDK not detected (found: $dotnetVersion)"
     $validationWarnings += ".NET 10 SDK recommended but not installed"
     Write-Host ""
