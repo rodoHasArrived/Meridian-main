@@ -112,7 +112,7 @@ Use this lane whenever the task creates or updates a skill or agent package.
 
 Load these only when the task requires the deeper context they provide:
 
-- `references/documentation-routing.md`
+- [`references/documentation-routing.md`](references/documentation-routing.md)
 - `references/evaluation-harness.md`
 
 ## Bundled Scripts

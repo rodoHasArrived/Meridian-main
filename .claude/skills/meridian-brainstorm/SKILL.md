@@ -35,7 +35,7 @@ Every brainstorming task follows this 4-step workflow:
 ### 1 — GATHER CONTEXT (MCP)
 - Fetch the GitHub issue, discussion, or feature request that prompted the brainstorm
 - Read `../_shared/project-context.md` for authoritative project stats and abstraction paths
-- Review `references/competitive-landscape.md` for competitive signals relevant to the request
+- Review [`references/competitive-landscape.md`](references/competitive-landscape.md) for competitive signals relevant to the request
 
 ### 2 — ANALYZE & PLAN (Agents)
 - Detect the brainstorm mode (Open Exploration, Problem-Focused, Persona-Focused, etc.) using the mode table
@@ -249,7 +249,7 @@ This prevents the same ideas from appearing session after session and surfaces g
 
 ## Idea Generation Reference
 
-When brainstorming, read `references/idea-dimensions.md` for the full seeded concept bank organized by category. The file includes a **codebase anchor table** mapping concept names to file paths for precise implementation references.
+When brainstorming, read [`references/idea-dimensions.md`](references/idea-dimensions.md) for the full seeded concept bank organized by category. The file includes a **codebase anchor table** mapping concept names to file paths for precise implementation references.
 
 **Quick-access dimensions:**
 
@@ -268,6 +268,6 @@ When brainstorming, read `references/idea-dimensions.md` for the full seeded con
 
 ## Reference Files
 
-- `references/idea-dimensions.md` — Seeded idea bank organized by category, including codebase anchor table
-- `references/competitive-landscape.md` — What Bloomberg, Databento, Polygon, Refinitiv, and open-source tools offer (read for competitive signals in every synthesis section)
+- [`references/idea-dimensions.md`](references/idea-dimensions.md) — Seeded idea bank organized by category, including codebase anchor table
+- [`references/competitive-landscape.md`](references/competitive-landscape.md) — What Bloomberg, Databento, Polygon, Refinitiv, and open-source tools offer (read for competitive signals in every synthesis section)
 - `../_shared/project-context.md` — Authoritative project stats, abstraction file paths, provider inventory
