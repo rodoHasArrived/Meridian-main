@@ -8166,6 +8166,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_central_package_versions.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_program_state_consistency.py
+│   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
@@ -8189,6 +8190,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-622 directories, 7392 files
+622 directories, 7393 files
 ```
 <!-- readme-tree end -->
