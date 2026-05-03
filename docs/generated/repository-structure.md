@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-03 07:13:47 UTC. Do not edit manually.
+> Auto-generated on 2026-05-03 08:10:34 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5580,7 +5580,8 @@ Meridian-main
 │   │   │   ├── StrategyRunReadModels.cs
 │   │   │   ├── TradingOperatorReadinessDtos.cs
 │   │   │   ├── WorkflowLibraryDtos.cs
-│   │   │   └── WorkflowSummaryDtos.cs
+│   │   │   ├── WorkflowSummaryDtos.cs
+│   │   │   └── WorkstationBootstrapDtos.cs
 │   │   └── Meridian.Contracts.csproj
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -6453,7 +6454,8 @@ Meridian-main
 │   │       └── workstation
 │   │           ├── assets
 │   │           │   ├── index-Bt1jnUdW.js
-│   │           │   └── index-C-UoWgmp.css
+│   │           │   ├── index-C-UoWgmp.css
+│   │           │   └── index-HZREMjYN.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
