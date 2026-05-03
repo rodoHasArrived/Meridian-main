@@ -174,3 +174,43 @@ Many of the P0 and P1 recommendations from this evaluation have been adopted:
 **Verdict:** The system is **production-ready** with good observability and incident response foundations. Remaining work is incremental hardening and process standardization.
 
 ---
+
+## H. Implementation Follow-Up (2026-05-03)
+
+**Overall Status:** All P0 recommendations closed; P1 recommendations substantially complete; P2 capacity planning remains open.
+
+### Current State Assessment (May 2026)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| **SLO Framework** | ✅ Operational | 7 SLO definitions across 6 subsystems; burn-rate multi-window alerts linked to runbook sections |
+| **Monitoring Infrastructure** | ✅ Operational | Prometheus, Grafana dashboards, Alertmanager; alert annotations now embed `runbook_url`, `probable_causes`, `immediate_mitigation`, and `rollback_criteria` |
+| **Alert-to-Runbook Linkage** | ✅ Complete | Every alert in `deploy/monitoring/alert-rules.yml` carries an explicit `runbook_url` annotation pointing to the exact operator runbook section; `AlertRunbookRegistry` provides code-side registry for all alert identifiers |
+| **Health Checks** | ✅ Operational | `/healthz`, `/readyz`, `/livez` endpoints with detailed subsystem checks |
+| **Operator Runbook** | ✅ Operational | Comprehensive procedures covering ingestion, storage, backfill, execution, reconciliation, and governance paths |
+| **Release Gate (Preflight)** | ✅ Formalized | `docs/operations/preflight-checklist.md` provides a single 1:1 gate checklist tied to `production-status.md`; contract compatibility gate (`scripts/check_contract_compatibility_gate.py`) enforces shared-interop surface checks per PR and on a weekly Wednesday cadence |
+| **Incident Response** | 🔄 Partial | Severity matrix and escalation SLAs documented in kernel readiness dashboard (Mon/Wed/Fri cadence); formal post-incident review (PIR) template and schedule not yet standardized |
+| **Rollback Procedures** | 🔄 Partial | Deployment rollback tested in CI; application-level rollback documented in operator runbook; per-release rollback drill verification not yet standardized |
+| **Capacity Planning** | 📝 Open | Capacity thresholds remain undocumented; no automated alerting on storage growth rate or symbol-subscription ceiling |
+
+### Key Achievements Since March 2026
+
+1. ✅ **Wave 1 / DK1 Trust Gate Closed** — Full operator sign-off completed 2026-04-17; evidence at `artifacts/provider-validation/_automation/2026-04-27/`; `Dk1TrustGateReadinessService` projects live gate status into `GET /api/workstation/trading/readiness`
+2. ✅ **Preflight Checklist Formalized** — `docs/operations/preflight-checklist.md` maps go/no-go evidence requirements 1:1 to the production-status pre-production checklist; closes the open "consolidated release gate" P1 gap
+3. ✅ **Alert Annotations Complete** — All critical and warning rules in `deploy/monitoring/alert-rules.yml` now embed `runbook_url`, `probable_causes`, `immediate_mitigation`, and `rollback_criteria` fields; closes the P0 alert-to-runbook gap fully
+4. ✅ **Contract Compatibility Gate** — Weekly shared-interop review cadence established; `scripts/check_contract_compatibility_gate.py` and `scripts/generate_contract_review_packet.py` enforce and document shared-surface changes; `docs/status/contract-compatibility-matrix.md` tracks compatibility posture per wave
+5. ✅ **Report-Pack Schema Versioning** — Governed report packs carry `contractName=governance-report-pack` and `schemaVersion=1`; generation requests can pin `expectedSchemaVersion`; incompatible future manifests are skipped
+6. ✅ **Promotion Audit Fields** — Promotion approvals now require a structured `approvalChecklist` alongside rationale, operator, source/target run type, lineage, and audit reference; acceptance covered by `ExecutionWriteEndpointsTests`
+7. ✅ **Reconciliation Break Queue with Governance Sign-off** — `FileReconciliationBreakQueueRepository` persists break queue and JSONL audit history; tolerance profiles, exception routing, sign-off role, and calibration-summary rollup endpoints are live
+
+### Remaining Gaps
+
+- **Post-incident review (PIR):** No standardized template or scheduled review cadence; incidents are resolved but learnings are not systematically captured
+- **Per-release rollback drill:** Rollback procedures exist in the operator runbook but are not exercised as a required pre-release gate step
+- **Capacity planning thresholds:** Storage growth rate, symbol-subscription ceiling, and pipeline throughput limits are not documented or alerted; scheduled for P2 resolution before Wave 4 exit
+
+### Updated Recommendation
+
+All original P0 risks from the February 2026 evaluation are closed. The system operates with full SLO-aligned alerting, embedded runbook linkage, formalized release gates, and active delivery cadence governance. Focus for the next 60 days is PIR process adoption, per-release rollback drills, and capacity threshold documentation ahead of Wave 4 (governance/fund operations) go-live.
+
+---
