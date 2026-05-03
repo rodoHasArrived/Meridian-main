@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -321,7 +322,7 @@ public sealed class ProviderEndpointTests
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Assert: stored credentials were preserved despite the sentinel values in the request
-        var store = _fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
+        var store = _fixture.Services.GetRequiredService<ConfigStore>();
         var cfg = store.Load();
         var storedSource = cfg.DataSources?.Sources?.FirstOrDefault(s =>
             string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
@@ -371,7 +372,7 @@ public sealed class ProviderEndpointTests
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Assert: empty KeyId was restored from storage; new SecretKey was persisted
-        var store = _fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
+        var store = _fixture.Services.GetRequiredService<ConfigStore>();
         var cfg = store.Load();
         var storedSource = cfg.DataSources?.Sources?.FirstOrDefault(s =>
             string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));

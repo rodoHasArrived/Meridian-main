@@ -85,7 +85,7 @@ public static class ProviderEndpoints
         failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
     };
 
-    private static async Task<IResult> UpsertDataSourceAsync(ConfigStore store, DataSourceConfigRequest req)
+    private static async Task<IResult> UpsertDataSourceAsync(ConfigStore store, DataSourceConfigRequest req, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(req.Name))
             return Results.BadRequest("Name is required.");
