@@ -1746,25 +1746,22 @@ public static class WorkstationEndpoints
                 .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
                 .ConfigureAwait(false);
 
-            var latestRun = runs
-                .OrderByDescending(GetRunReviewTimestamp)
-                .FirstOrDefault();
-            if (latestRun is null || !ShouldSurfaceRunReviewWorkItems(latestRun))
+            foreach (var run in runs
+                         .Where(ShouldSurfaceRunReviewWorkItems)
+                         .OrderByDescending(GetRunReviewTimestamp))
             {
-                return;
-            }
+                var packet = await reviewPacketService
+                    .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (packet is null)
+                {
+                    continue;
+                }
 
-            var packet = await reviewPacketService
-                .GetAsync(latestRun.RunId, fundAccountId, context.RequestAborted)
-                .ConfigureAwait(false);
-            if (packet is null)
-            {
-                return;
+                workItems.AddRange(packet.WorkItems
+                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                    .Select(AttachOperatorNavigation));
             }
-
-            workItems.AddRange(packet.WorkItems
-                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
-                .Select(AttachOperatorNavigation));
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
