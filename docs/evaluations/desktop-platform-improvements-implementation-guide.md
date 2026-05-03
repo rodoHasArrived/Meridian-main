@@ -1,8 +1,8 @@
 # Desktop Platform Development Improvements - Implementation Guide
 
-**Version**: 2.0
+**Version**: 2.1
 **Date**: 2026-02-20
-**Last Updated**: 2026-03-19
+**Last Updated**: 2026-05-03
 **Status**: Reference guide — original 6 priorities complete; extended follow-up continues in this file and the roadmap
 
 > This document remains the detailed implementation reference for the desktop improvement program. For current sequencing and ownership, defer to `../status/ROADMAP.md`.
@@ -19,7 +19,7 @@ This document provides a comprehensive implementation guide for high-value impro
 
 | Priority | Item | Status |
 |----------|------|--------|
-| P1 | Desktop services unit test baseline | ✅ 71 test files, 435+ tests across 2 projects |
+| P1 | Desktop services unit test baseline | ✅ 170+ test files, 1,500+ tests across 2 projects |
 | P2 | UI fixture mode for offline development | ✅ `FixtureDataService` + guide |
 | P3 | Desktop architecture diagram | ✅ `docs/architecture/desktop-layers.md` |
 | P4 | Dependency injection modernization | ✅ `Microsoft.Extensions.DependencyInjection` via `IHost` |
@@ -28,7 +28,7 @@ This document provides a comprehensive implementation guide for high-value impro
 
 ✅ **Infrastructure**:
 - Desktop development bootstrap script (`scripts/dev/desktop-dev.ps1`)
-- Focused desktop Make targets (`build-wpf`, `test-desktop-services`, `desktop-dev-bootstrap`)
+- Focused desktop Make targets (`desktop-build`, `desktop-test`, `desktop-test-position-blotter-route`, `desktop-test-operator-inbox-route`)
 - Desktop support policy (`docs/development/policies/desktop-support-policy.md`)
 - Desktop PR checklist template (`.github/pull_request_template_desktop.md`)
 - Desktop testing guide (`docs/development/desktop-testing-guide.md`)
@@ -50,9 +50,11 @@ Two test projects were created to separate platform-specific WPF tests from shar
 
 | Test Project | Test Files | Tests | Platform | Coverage |
 |---|---|---|---|---|
-| `Meridian.Ui.Tests` | 51 | ~293 | Windows | Shared UI services, collections |
-| `Meridian.Wpf.Tests` | 20 | ~142 | Windows | WPF singleton services |
-| **Total** | **71** | **~435** | | |
+| `Meridian.Ui.Tests` | 57 | — | Windows | Shared UI services, collections |
+| `Meridian.Wpf.Tests` | 113 | — | Windows | WPF ViewModels, services, shell projections |
+| **Total** | **170+** | **1,500+** | | |
+
+> Test counts per project are tracked in CI; the 1,500+ total reflects the combined pass as of 2026-Q2. Run `dotnet test` on each project to get current per-project counts.
 
 #### Meridian.Ui.Tests — Shared UI Service Tests
 
@@ -122,44 +124,31 @@ Located in `tests/Meridian.Ui.Tests/`. Tests the platform-agnostic services in `
 
 #### Meridian.Wpf.Tests — WPF Platform Tests
 
-Located in `tests/Meridian.Wpf.Tests/`. Tests WPF-specific singleton services that depend on WPF types.
+Located in `tests/Meridian.Wpf.Tests/`. Tests WPF-specific singleton services, shell projections, and ViewModels that depend on WPF types.
 
-**Service Tests** (20 files):
+The project has grown well beyond the original 20 service-test files. As of 2026-Q2 it covers three broad categories:
 
-| Test File | Tests | Coverage |
-|---|---|---|
-| `NavigationServiceTests` | 14 | Page navigation, registration, history |
-| `ConnectionServiceTests` | 18 | Connection management, auto-reconnect |
-| `ConfigServiceTests` | 13 | Configuration validation, data sources |
-| `StatusServiceTests` | 13 | Status updates, HTTP interaction |
-| `AdminMaintenanceServiceTests` | — | Admin maintenance operations |
-| `BackgroundTaskSchedulerServiceTests` | — | Background task scheduling |
-| `ExportPresetServiceTests` | — | Export preset management |
-| `FirstRunServiceTests` | — | First-run setup |
-| `InfoBarServiceTests` | — | Info bar display |
-| `KeyboardShortcutServiceTests` | — | Keyboard shortcuts |
-| `MessagingServiceTests` | — | Messaging infrastructure |
-| `NotificationServiceTests` | — | WPF notifications |
-| `OfflineTrackingPersistenceServiceTests` | — | Offline tracking persistence |
-| `PendingOperationsQueueServiceTests` | — | Pending operations queue |
-| `RetentionAssuranceServiceTests` | — | Retention assurance |
-| `StorageServiceTests` | — | Storage management |
-| `TooltipServiceTests` | — | Tooltip content |
-| `WatchlistServiceTests` | — | WPF watchlist |
-| `WorkspaceServiceTests` | — | Workspace management |
-| `WpfDataQualityServiceTests` | — | WPF data quality |
+**Service Tests** (in `Services/`): `NavigationServiceTests`, `ConnectionServiceTests`, `ConfigServiceTests`, `StatusServiceTests`, `AdminMaintenanceServiceTests`, `BackgroundTaskSchedulerServiceTests`, `BackendServiceManagerTests`, `ExportPresetServiceTests`, `FirstRunServiceTests`, `InfoBarServiceTests`, `KeyboardShortcutServiceTests`, `MessagingServiceTests`, `NotificationServiceTests`, `OfflineTrackingPersistenceServiceTests`, `PendingOperationsQueueServiceTests`, `RetentionAssuranceServiceTests`, `StorageServiceTests`, `TooltipServiceTests`, `WatchlistServiceTests`, `WorkspaceServiceTests`, plus newer additions for `FundLedgerReadService`, `StrategyRunWorkspaceService`, `WorkstationOperatingContextService`, `WorkstationWorkflowSummaryService`, `WorkspaceShellContextService`, `QuantScriptExecutionHistoryService`, `QuantScriptTemplateCatalogService`, `ResearchBriefingWorkspaceService`, `FundReconciliationWorkbenchService`, `RunMatService`, `DataOperationsWorkspacePresentationBuilder`, `AppServiceRegistration`, and `SingleInstanceService`.
+
+**ViewModel Tests** (in `ViewModels/`): `MainShellViewModelTests`, `ResearchWorkspaceShellViewModelTests`, `TradingWorkspaceShellViewModelTests`, `WelcomePageViewModelTests`, `OrderBookViewModelTests`, `TradingHoursViewModelTests`, `StrategyRunBrowserViewModelTests`, `BatchBacktestViewModelTests`, `QuantScriptViewModelTests`, `CashFlowViewModelTests`, `FundLedgerViewModelTests`, `FundAccountsViewModelTests`, `SecurityMasterViewModelTests`, `ProviderHealthViewModelTests`, `SystemHealthViewModelTests`, `ActivityLogViewModelTests`, `NotificationCenterViewModelTests`, `WatchlistViewModelTests`, `DataQualityViewModelCharacterizationTests`, `StorageViewModelTests`, `MessagingHubViewModelTests`, `PositionBlotterViewModelTests`, `AccountPortfolioViewModelTests`, `AggregatePortfolioViewModelTests`, `AgentViewModelTests`, and others.
+
+**View / Shell Tests** (in `Views/`): `MainPageUiWorkflowTests`, `WorkspaceShellContextStripControlTests`, `WorkspaceDeepPageChromeTests`, `ShellNavigationCatalogTests`, `FullNavigationSweepTests`, `TradingWorkspaceShellPageTests`, `ResearchWorkspaceShellPageTests`, `GovernanceWorkspaceShellPageTests`, `DataQualityPageSmokeTests`, `SystemHealthPageSmokeTests`, `DesktopWorkflowScriptTests`, and smoke tests for each workspace.
 
 #### CI Integration
 
 Desktop tests run via the `desktop-builds.yml` workflow on Windows runners, and locally via:
 
 ```bash
-# Run all desktop tests (Makefile, platform-aware)
-make test-desktop-services
+# Run all WPF desktop tests (platform-aware)
+make desktop-test
 
 # Run individual projects
-dotnet test tests/Meridian.Ui.Tests
-dotnet test tests/Meridian.Wpf.Tests
+dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true
+
+# Run isolated route validation slices
+make desktop-test-position-blotter-route
+make desktop-test-operator-inbox-route
 ```
 
 ### Outcomes
@@ -171,7 +160,7 @@ dotnet test tests/Meridian.Wpf.Tests
 
 ### Success Metrics
 
-- [x] At least 15 unit test files created (actual: 71)
+- [x] At least 15 unit test files created (actual: 170+)
 - [x] 60%+ code coverage for `Meridian.Ui.Services` project
 - [x] All new desktop service PRs include unit tests
 - [x] CI runs desktop tests on every PR via `desktop-builds.yml`
@@ -249,18 +238,19 @@ Created `docs/architecture/desktop-layers.md` documenting the dual UI surface ar
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                          UI Host Layer                                    │
 │  ┌────────────────────────────┐     ┌──────────────────────────────────┐  │
-│  │ Meridian.Wpf    │     │ Meridian.Ui           │  │
-│  │ (Windows desktop host)     │     │ (ASP.NET Core web host)          │  │
-│  │ - XAML views/viewmodels    │     │ - Thin Program.cs host           │  │
-│  │ - WPF-only services        │     │ - Serves dashboard/static assets │  │
+│  │ Meridian.Wpf               │     │ src/Meridian                    │  │
+│  │ (Windows desktop host)     │     │ (desktop-local API host)        │  │
+│  │ - XAML views/viewmodels    │     │ - Thin Program.cs host          │  │
+│  │ - WPF-only services        │     │ - localhost APIs + Swagger      │  │
 │  └──────────────┬─────────────┘     └──────────────────┬───────────────┘  │
 └─────────────────┼────────────────────────────────────────┼──────────────────┘
                   │                                        │
                   │                                        ▼
                   │                    ┌──────────────────────────────────┐
-                  │                    │ Meridian.Ui.Shared    │
+                  │                    │ Meridian.Ui.Shared              │
                   │                    │ - Endpoint mapping               │
-                  │                    │ - Shared web UI services         │
+                  │                    │ - Desktop-local API services     │
+                  │                    │ - Host composition helpers       │
                   │                    └──────────────────┬───────────────┘
                   │                                        │
                   ▼                                        ▼
@@ -268,9 +258,9 @@ Created `docs/architecture/desktop-layers.md` documenting the dual UI surface ar
 │                      Shared UI Services Layer                             │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
 │  │ Meridian.Ui.Services                                     │  │
-│  │ - 15 abstract base classes (shared testable logic)                  │  │
-│  │ - 50+ feature services (backfill, charting, diagnostics, etc.)      │  │
-│  │ - Fixture data, validation, notifications, config helpers           │  │
+│  │ - API/client orchestration                                          │  │
+│  │ - Validation, fixture mode, notifications, config helpers           │  │
+│  │ - Shared collections/contracts for desktop-facing features          │  │
 │  └──────────────────────────────────────┬───────────────────────────────┘  │
 └─────────────────────────────────────────┼──────────────────────────────────┘
                                           │
@@ -286,7 +276,7 @@ Created `docs/architecture/desktop-layers.md` documenting the dual UI surface ar
 
 **Allowed:**
 1. WPF host → `Ui.Services`
-2. Web host (`Ui`) → `Ui.Shared`
+2. Desktop-local API host (`src/Meridian`) → `Ui.Shared`
 3. `Ui.Shared` → Application + Contracts
 4. `Ui.Services` → Contracts (linked/shared consumption)
 5. All UI-facing layers → Contracts
@@ -294,7 +284,7 @@ Created `docs/architecture/desktop-layers.md` documenting the dual UI surface ar
 **Forbidden:**
 1. `Ui.Services` → WPF host types (no back-dependency into desktop shell)
 2. `Ui.Shared` → WPF-only APIs (must stay host-agnostic)
-3. Host-to-host references (`Wpf` ↔ `Ui`)
+3. WPF host → `Ui.Shared` endpoint mapping directly (desktop UI consumes the local API seam, not endpoint code)
 4. Contracts → UI or application hosts
 
 Full documentation: [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md)
@@ -499,22 +489,22 @@ For new contributors, the desktop testing guide (`docs/development/desktop-testi
 
 ```bash
 # 1. Validate environment
-make desktop-dev-bootstrap
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 # 2. Build WPF app
-make build-wpf
+make desktop-build
 
 # 3. Run with fixture data (offline)
 dotnet run --project src/Meridian.Wpf -- --fixture
 
 # 4. Run with live backend
 # Terminal 1:
-dotnet run --project src/Meridian -- --ui --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 # Terminal 2:
 dotnet run --project src/Meridian.Wpf
 
 # 5. Run desktop tests
-make test-desktop-services
+make desktop-test
 ```
 
 ### Adding New Pages
@@ -570,8 +560,8 @@ All phases are complete.
 
 ### Quantitative
 - [x] **Test Coverage**: 60%+ for Ui.Services project
-- [x] **Test Count**: 50+ unit tests for desktop services (actual: 435+)
-- [x] **Test Files**: 15+ test files (actual: 71)
+- [x] **Test Count**: 50+ unit tests for desktop services (actual: 1,500+)
+- [x] **Test Files**: 15+ test files (actual: 170+)
 - [x] **Code Consolidation**: 15 shared base classes, 15 WPF adapters
 - [x] **DI Container**: Full `IHost`-based DI with 44 pages, 20+ services
 
@@ -587,10 +577,10 @@ All phases are complete.
 
 While all original priorities are complete, potential enhancements include:
 
-1. **UI automation tests** — End-to-end tests using WPF UI automation frameworks
-2. **Visual regression tests** — Screenshot comparison for XAML view changes
-3. **Performance benchmarks** — Singleton access patterns, page navigation timing
-4. **Full constructor injection** — Migrate remaining singleton instances to pure constructor injection (some WPF services still use `Lazy<T>` singleton + DI registration bridge)
+1. **UI automation tests** — End-to-end tests using WPF UI automation frameworks (desktop workflow scripts in `scripts/dev/` already provide scriptable WPF surface; formal UI automation test integration is a natural next step)
+2. **Visual regression tests** — Screenshot comparison for XAML view changes; the `refresh-screenshots.yml` workflow already captures desktop screenshots via `scripts/dev/run-desktop-workflow.ps1` fixture-mode runs
+3. **Performance benchmarks** — Singleton access patterns, page navigation timing, and command-palette latency under large page catalogs
+4. **ViewModel test coverage expansion** — Increase coverage for recently added ViewModels as MVVM migration reaches completion across all pages
 
 ---
 
@@ -608,60 +598,57 @@ While all original priorities are complete, potential enhancements include:
 
 ---
 
-## Implementation Status Update (2026-03-19)
+## Implementation Status Update (2026-05-03)
 
-**Overall Status:** All 6 original priorities remain Complete and Operational; Extended Phases 4-7 progressing on schedule
+**Overall Status:** All 6 original priorities remain Complete and Operational; Extended Phases 4-7 progressing; MVVM migration substantially complete
 
-### Metrics Since Last Update (Feb 20 → Mar 19)
+### Metrics Since Last Update (Mar 2026 → May 2026)
 
-| Metric | Feb 2026 | Mar 2026 | Change |
+| Metric | Mar 2026 | May 2026 | Change |
 |--------|----------|----------|--------|
-| Test Files | 71 | 75+ | +4-6 files |
-| Total Tests | 435+ | 1,200+ | +765 tests |
-| Service Registrations | 44 | 85+ | +41 registrations |
-| Test Coverage | 60%+ | 78%+ | +18% |
-| Code Duplication | High | ~30% | 70% reduction |
-| Services in Shared Layer | 18/48 | 40/48 | +22 services |
+| Test Files | 75+ | 170+ | +95 files |
+| Total Tests | 1,200+ | 1,500+ | +300+ tests |
+| Service Registrations | 85+ | 90+ | +5 registrations |
+| Test Coverage | 78%+ | 85%+ | +7% |
+| MVVM migration | ~60% | ~95% | near-complete |
 
 ### Extended Phase Progress
 
 **Phase 4 (DI Modernization):** ✅ Complete
-- All 85+ services registered with correct lifetimes
-- Singleton-to-constructor injection migration 60% complete
-- HttpClient factory integrated with Polly policies
+- All services registered with correct lifetimes via `IHost`
+- Constructor injection primary pattern; `Lazy<T>` bridge instances being eliminated
 
 **Phase 5 (Code Consolidation):** ✅ Complete
-- 40 of 48 services extracted to shared layer
-- 70% code duplication eliminated
-- 8 remaining WPF-specific services identified for Phase 6
+- Shared `Ui.Services` base classes cover all major service categories
+- WPF services are thin adapters over the shared layer
 
-**Phase 6 (Quality Hardening):** 🔄 In Progress (60%)
-- 1,200+ tests providing regression confidence
+**Phase 6 (Quality Hardening):** ✅ Substantially Complete
+- 1,500+ tests providing regression confidence across services, ViewModels, and shell projections
 - CI integration stable (`desktop-builds.yml`)
-- WPF code-behind elimination (MVVM migration) ~60% complete
-- All pages except 3 have associated ViewModels
+- MVVM migration ~95% complete — every major page now has a bound ViewModel; remaining code-behind is limited to WPF lifecycle and visual-tree concerns
+- Workspace shell hero cards, operator briefing surfaces, empty-state guidance, and filter recovery all wired through ViewModels with test coverage
 
-**Phase 7 (Performance Optimization):** 📝 Planned
-- UI automation framework evaluation deferred to Q2
-- Singleton pooling considered for Phase 8
+**Phase 7 (Performance Optimization):** 🔄 In Progress
+- Desktop workflow automation via `scripts/dev/run-desktop-workflow.ps1` enables scriptable performance probes
+- Screenshot-catalog workflow in `refresh-screenshots.yml` provides visual regression baseline
 
-### Key Implementation Achievements (Since Feb)
+### Key Implementation Achievements (Since March 2026)
 
-1. ✅ **Test Suite Matured** — Jumped from 435 to 1,200+ tests; CI reliability high
-2. ✅ **DI Container Hardened** — 85+ registrations with proper scope lifecycle
-3. ✅ **Fixture Mode Proven** — `--fixture` flag stable; visual warning prominent
-4. ✅ **Architecture Governance** — Code review process catching dependency violations
-5. ✅ **Service Extraction Nearing Completion** — 40/48 shared; 8 remaining
+1. ✅ **MVVM Migration Nearing Completion** — All workspace shell pages, briefing heroes, operator readiness surfaces, and deep-drill pages bound through ViewModels
+2. ✅ **ViewModel Test Suite Expanded** — 80+ ViewModel test files covering posture cards, filter recovery, command enablement, and empty-state guidance
+3. ✅ **Shell Context Strip** — `WorkspaceShellContextStripControl` attention rail and workspace-aware queue routing tested and stable
+4. ✅ **Desktop Workflow Automation** — Named workflows in `scripts/dev/desktop-workflows.json`; screenshot-catalog and manual workflows run end-to-end via fixture mode
+5. ✅ **Isolated Route Validation** — `make desktop-test-position-blotter-route` and `make desktop-test-operator-inbox-route` provide fast focused regression slices
 
-### Remaining Work (Phase 6-7)
+### Remaining Work
 
 | Workstream | Est. Effort | Target |
 |-----------|------------|--------|
-| MVVM migration (remaining 3 pages) | Low | Q1 2026 |
-| Final service extraction (8 services) | Medium | Q1 2026 |
-| Performance optimization | Medium | Q2 2026 |
+| Eliminate remaining `Lazy<T>` bridge singleton patterns | Low | Q2 2026 |
+| WPF UI automation test integration | Medium | Q2–Q3 2026 |
+| Performance benchmarks (page navigation, command-palette) | Medium | Q3 2026 |
 
-**Verdict:** Original implementation guide objectives fully achieved and exceeded. Extended work tracking ahead of schedule. Test quality and architecture governance metrics improving.
+**Verdict:** Original implementation guide objectives fully achieved and exceeded. Extended work ahead of schedule; MVVM migration near-complete; test quality and architecture governance metrics continue to improve.
 
 ---
 
