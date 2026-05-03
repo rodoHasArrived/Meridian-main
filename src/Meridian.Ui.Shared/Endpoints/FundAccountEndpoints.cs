@@ -17,6 +17,7 @@ public static class FundAccountEndpoints
     public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/fund-accounts").WithTags("Fund Accounts");
+        group.AddEndpointFilter(RequireFundAccountAccess);
 
         // ── Account CRUD ─────────────────────────────────────────────────────
 
@@ -474,6 +475,33 @@ public static class FundAccountEndpoints
     private static Guid? TryParseGuidFilter(string? raw)
     {
         return Guid.TryParse(raw, out var parsed) ? parsed : null;
+    }
+
+    private static ValueTask<object?> RequireFundAccountAccess(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        if (!TryGetCurrentRole(context.HttpContext, out var role))
+        {
+            return ValueTask.FromResult<object?>(Results.Unauthorized());
+        }
+
+        if (role is UserRole.Admin or UserRole.Developer or UserRole.Accounting)
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(Results.Forbid());
+    }
+
+    private static bool TryGetCurrentRole(HttpContext context, out UserRole role)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var item) && item is UserRole currentRole)
+        {
+            role = currentRole;
+            return true;
+        }
+
+        role = default;
+        return false;
     }
 
     private static IResult ServiceUnavailable() =>
