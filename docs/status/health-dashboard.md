@@ -1,17 +1,17 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-05-03T09:48:37.392395+00:00_
+_Generated: 2026-05-03T11:26:56.436747+00:00_
 Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-05-03T09:48:37.386538+00:00
+> Last updated: 2026-05-03T11:26:56.430879+00:00
 
 ## Overall Health Score
 
 ```text
-  [###########################---] 91/100
+  [############################--] 92/100
   Rating: Excellent
 ```
 
@@ -20,13 +20,13 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 | Metric | Value |
 | -------- | ------- |
 | Total documentation files | 426 |
-| Total lines | 132,637 |
+| Total lines | 132,655 |
 | Average file size (lines) | 311.4 |
-| Orphaned files | 99 |
+| Orphaned files | 80 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 204 |
-| **Health score** | **91/100** |
+| **Health score** | **92/100** |
 
 ### Score Breakdown
 
@@ -44,27 +44,27 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.artifacts/link-repair-report.md`
-- `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
-- `.claude/skills/meridian-roadmap-strategist/references/roadmap-source-map.md`
-- `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
-- `.claude/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
-- `.claude/skills/meridian-simulated-user-panel/references/personas.md`
-- `.claude/skills/meridian-simulated-user-panel/references/review-contract.md`
-- `.claude/skills/meridian-simulated-user-panel/references/review-modes.md`
-- `.claude/skills/meridian-simulated-user-panel/references/sample-prompts.md`
-- `.codex/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/generated/repository-structure.md`
-- `.codex/skills/meridian-archive-organizer/references/archive-placement-guide.md`
-- `.codex/skills/meridian-archive-organizer/references/evaluation-harness.md`
-- `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
 - `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
-- ... and 79 more
+- `.codex/skills/meridian-implementation-assurance/references/documentation-routing.md`
+- `.codex/skills/meridian-implementation-assurance/references/evaluation-harness.md`
+- `.codex/skills/meridian-provider-builder/references/provider-patterns.md`
+- `.codex/skills/meridian-roadmap-strategist/references/roadmap-source-map.md`
+- `.codex/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
+- `.codex/skills/meridian-simulated-user-panel/references/personas.md`
+- `.codex/skills/meridian-simulated-user-panel/references/review-contract.md`
+- `.codex/skills/meridian-simulated-user-panel/references/review-modes.md`
+- `.codex/skills/meridian-test-writer/references/test-patterns.md`
+- `AGENTS.md`
+- `Meridian Design System/CONTENT_FUNDAMENTALS.md`
+- `Meridian Design System/ICONOGRAPHY.md`
+- `Meridian Design System/INSPIRATION_BRIEF.md`
+- `Meridian Design System/SKILL.md`
+- `Meridian Design System/VISUAL_FOUNDATIONS.md`
+- `archive/docs/INDEX.md`
+- `archive/docs/assessments/ARTIFACT_ACTIONS_DOWNGRADE.md`
+- `archive/docs/assessments/CODE_REVIEW_2026-03-16.md`
+- `archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md`
+- ... and 60 more
 
 ## Trend
 
@@ -72,7 +72,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-05-03 | 91 | 426 | 99 | 0 |
+| 2026-05-03 | 92 | 426 | 80 | 0 |
 
 ---
 
