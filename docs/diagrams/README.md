@@ -82,7 +82,7 @@ Shows the major deployable units:
 
 - **Presentation Layer**: Desktop-local API host, WPF Desktop App, CLI Interface
 - **Onboarding & Diagnostics Layer**: Configuration Wizard, Auto-Configuration, Diagnostic Services, Error Formatter
-- **Core Collector Service** (.NET 9 console with 100K bounded channel policy)
+- **Core Collector Service** (.NET 10 console with 100K bounded channel policy)
 - **F# Domain Library** (Type-safe validation, discriminated unions)
 - **Contracts Library** (Shared DTOs, pipeline contracts)
 - **Storage Layer** (WAL → JSONL → Parquet with tiered storage)

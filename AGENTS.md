@@ -270,7 +270,7 @@ pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFix
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1
-pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0
+pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net10.0-windows10.0.19041.0
 pwsh -File ./scripts/dev/robinhood-options-smoke.ps1
 pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall
 ```
@@ -287,7 +287,7 @@ Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 forwards page/deep-link args through the single-instance pipe and waits on `ShellAutomationState`.
 During desktop workflow and screenshot-catalog runs, restore lets shared projects use their
 declared target frameworks while the build step pins the WPF shell to
-`net9.0-windows10.0.19041.0`.
+`net10.0-windows10.0.19041.0`.
 `robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
 fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
 Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release WPF build, such as

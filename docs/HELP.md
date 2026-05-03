@@ -249,7 +249,7 @@ See [Getting Started](getting-started/README.md) for initial setup steps and pro
 
 Common issues and resolutions:
 
-- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 9 SDK is installed.
+- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 10 SDK is installed.
 - **Provider connectivity:** Run `dotnet run --project src/Meridian/Meridian.csproj -- --selftest` to validate connectivity.
 - **Missing configuration:** Confirm `config/appsettings.json` exists and contains valid provider entries.
 - **WPF test failures on Linux/macOS:** WPF tests require Windows. Use `/p:EnableWindowsTargeting=true` or skip with `--filter "Category!=WPF"`.
@@ -325,7 +325,7 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 - Owners: @desktop-shell, @operator-experience
 - Commands:
   - `pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop`
-  - `pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0`
+  - `pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net10.0-windows10.0.19041.0`
 
 #### `provider-validation-wave1`
 

@@ -33,7 +33,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 This script validates:
 
-- ✅ .NET 9 SDK installation
+- ✅ .NET 10 SDK installation
 - ✅ Windows SDK presence (Windows only)
 - ✅ Visual Studio Build Tools
 - ✅ XAML tooling support
@@ -249,7 +249,7 @@ Do **not** move mapping, filtering, or refresh-state logic into this project unl
 
 | Project | Tests | Platform | Coverage Areas |
 | --- | --- | --- | --- |
-| **Meridian.Tests** | Cross-platform | Any OS with .NET 9 | Startup, composition, contracts, endpoint shape, and core/backend logic |
+| **Meridian.Tests** | Cross-platform | Any OS with .NET 10 | Startup, composition, contracts, endpoint shape, and core/backend logic |
 | **Meridian.Ui.Tests** | Varies by slice | Windows target | Shared UI services, collections, form validation, scheduler-backed shared refresh logic |
 | **Meridian.Wpf.Tests** | Varies by slice | Windows | WPF-specific binding, navigation, and host wiring |
 | **Desktop-specific test projects** | Varies by slice | Windows | Shared desktop services plus WPF-only integration points |
@@ -339,11 +339,11 @@ Older notes may still mention `output/manual-captures/robinhood-options-smoke.ps
 
 ## Common Issues and Solutions
 
-### Missing .NET 9 SDK
+### Missing .NET 10 SDK
 
 **Symptom**: Bootstrap script reports .NET SDK not found or wrong version.
 
-**Fix**: Install .NET 9 SDK from https://dotnet.microsoft.com/download/dotnet/9.0
+**Fix**: Install .NET 10 SDK from https://dotnet.microsoft.com/download/dotnet/9.0
 
 ### Missing Visual Studio Build Tools
 

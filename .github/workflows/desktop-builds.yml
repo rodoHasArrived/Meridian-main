@@ -97,7 +97,7 @@ jobs:
         run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
 
       - name: Build
-        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
+        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net10.0-windows10.0.19041.0 --verbosity minimal
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -144,7 +144,7 @@ jobs:
             -r ${{ matrix.rid }} `
             -o ./publish/${{ matrix.rid }} `
             --self-contained true `
-            -p:TargetFramework=net9.0-windows10.0.19041.0 `
+            -p:TargetFramework=net10.0-windows10.0.19041.0 `
             -p:PublishSingleFile=true `
             -p:PublishReadyToRun=false `
             -p:EnableCompressionInSingleFile=true `
@@ -157,7 +157,7 @@ jobs:
             -r ${{ matrix.rid }} `
             -o ./publish/${{ matrix.rid }}-fdd `
             --self-contained false `
-            -p:TargetFramework=net9.0-windows10.0.19041.0 `
+            -p:TargetFramework=net10.0-windows10.0.19041.0 `
             -p:PublishSingleFile=true `
             -p:PublishReadyToRun=false
 
@@ -265,7 +265,7 @@ jobs:
           max-tokens: 1500
           prompt: |
             A desktop application build has failed in a CI/CD pipeline.
-            The project is a .NET 9.0 WPF desktop application for market data collection.
+            The project is a .NET 10.0 WPF desktop application for market data collection.
 
             Common failure patterns include:
             - XAML compiler errors

@@ -37,7 +37,7 @@ current source instead.
 
 ## Current Product Framing
 
-Meridian is a .NET 9 fund-management and trading platform. The active operator UI lane is
+Meridian is a .NET 10 fund-management and trading platform. The active operator UI lane is
 [`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/), with built assets in
 [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
 [`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/) is retained for shared contracts,

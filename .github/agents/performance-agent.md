@@ -56,7 +56,7 @@ introduces bugs.
 ```bash
 # Run BenchmarkDotNet suite
 dotnet run --project benchmarks/ -c Release -- \
-  --filter "*" --runtimes net9.0 --exporters json
+  --filter "*" --runtimes net10.0 --exporters json
 
 # Build with diagnostics for dotnet-trace / dotnet-counters
 dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true

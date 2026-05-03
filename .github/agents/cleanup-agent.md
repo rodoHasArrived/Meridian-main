@@ -2,7 +2,7 @@
 name: Cleanup Agent
 description: Code cleanup specialist for the Meridian project, removing dead code,
   deprecated/obsolete members, anti-patterns, irrelevant logs, and stale documentation
-  across C# 13, F# 8, WPF, and .NET 9 source files — without changing observable behaviour
+  across C# 13, F# 8, WPF, and .NET 10 source files — without changing observable behaviour
   or altering ADR contracts.
 ---
 

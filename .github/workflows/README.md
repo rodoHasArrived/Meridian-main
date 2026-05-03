@@ -31,7 +31,7 @@ Workflows have been consolidated from 37 to 33 files, reducing duplication and a
 - **Trigger**: Manual workflow dispatch
 - **Purpose**: Builds, tests, and publishes multi-platform releases on demand
 - **Features**:
-  - Builds on Ubuntu with .NET 9.0
+  - Builds on Ubuntu with .NET 10.0
   - Runs the full test suite
   - Multi-platform publishing (Linux, Windows, macOS x64/ARM64)
   - Prepares artifacts for release distribution

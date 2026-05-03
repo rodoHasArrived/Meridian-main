@@ -6,7 +6,7 @@ This guide covers the fastest verified ways to get Meridian running locally. For
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - Git
 - One configured data provider if you want live or credentialed historical data
 

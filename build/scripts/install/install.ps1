@@ -750,7 +750,7 @@ function Install-Desktop {
                     -Suggestion "Install missing prerequisites or use -AutoInstallPrereqs flag" `
                     -Details @(
                         "Missing: $($prereqResult.Missing.Display -join ', ')",
-                        "The Windows Desktop App requires .NET 9.0 SDK",
+                        "The Windows Desktop App requires .NET 10.0 SDK",
                         "Windows App SDK 1.6+ is also required (installed via NuGet)"
                     )
             }
