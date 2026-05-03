@@ -351,14 +351,18 @@ function Get-MeridianBuildArguments {
         [string]$IsolationKey,
         [string]$TargetFramework,
         [string[]]$AdditionalProperties = @(),
-        [switch]$EnableFullWpfBuild
+        [switch]$EnableFullWpfBuild,
+        [int]$MaxCpuCount = 0
     )
 
     $args = @(
         '/p:EnableWindowsTargeting=true',
-        '-maxcpucount:1',
         '/nr:false'
     )
+
+    if ($MaxCpuCount -gt 0) {
+        $args += "-maxcpucount:$MaxCpuCount"
+    }
 
     if (-not [string]::IsNullOrWhiteSpace($IsolationKey)) {
         $args += "/p:MeridianBuildIsolationKey=$IsolationKey"
