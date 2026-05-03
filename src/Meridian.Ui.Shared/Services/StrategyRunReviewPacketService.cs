@@ -1,5 +1,6 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Application.Monitoring;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
 
@@ -51,6 +52,7 @@ public sealed class StrategyRunReviewPacketService
         }
 
         var continuity = await continuityTask.ConfigureAwait(false);
+        RecordContinuityMetrics(continuity);
         var brokerageStatus = await brokerageTask.ConfigureAwait(false);
         var workItems = BuildWorkItems(run, continuity, brokerageStatus, fundAccountId);
         var warnings = workItems
@@ -69,6 +71,38 @@ public sealed class StrategyRunReviewPacketService
             BrokerageSync: brokerageStatus,
             WorkItems: workItems,
             Warnings: warnings);
+    }
+
+    private static void RecordContinuityMetrics(StrategyRunContinuityDetail? continuity)
+    {
+        if (continuity is null)
+        {
+            return;
+        }
+
+        if (continuity.ContinuityStatus.RunHealth == StrategyRunContinuitySeamHealthStatus.Stale)
+        {
+            PrometheusMetrics.RecordRunContinuityStaleProjection("operator-inbox", "run-health-stale");
+        }
+
+        foreach (var warning in continuity.ContinuityStatus.Warnings)
+        {
+            switch (warning.Code)
+            {
+                case "as-of-drift":
+                    PrometheusMetrics.RecordRunContinuityStaleProjection("operator-inbox", warning.Code);
+                    break;
+                case "lineage-parent-source-mismatch":
+                case "lineage-promotion-gap":
+                    PrometheusMetrics.RecordRunContinuityCrossSurfaceIdentityMismatch("operator-inbox", warning.Code);
+                    break;
+                case "lineage-missing-parent-with-source":
+                case "promotion-target-run-missing":
+                case "promotion-lineage-shape-inconsistent":
+                    PrometheusMetrics.RecordRunContinuityMissingLineage("operator-inbox", warning.Code);
+                    break;
+            }
+        }
     }
 
     private async Task<WorkstationBrokerageSyncStatusDto?> ResolveBrokerageStatusAsync(

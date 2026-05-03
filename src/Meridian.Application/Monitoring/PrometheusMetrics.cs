@@ -412,6 +412,26 @@ public static class PrometheusMetrics
         "Total alerts raised for sudden jumps in kernel critical-severity rate by domain",
         new CounterConfiguration { LabelNames = new[] { "domain" } });
 
+    private static readonly Counter RunContinuityMissingLineageTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_run_continuity_missing_lineage_total",
+        "Total run continuity failures where required lineage or trace metadata is missing",
+        new CounterConfiguration { LabelNames = new[] { "surface", "failure_kind" } });
+
+    private static readonly Counter RunContinuityStaleProjectionTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_run_continuity_stale_projection_total",
+        "Total run continuity failures where projected readiness evidence is stale or drifted",
+        new CounterConfiguration { LabelNames = new[] { "surface", "failure_kind" } });
+
+    private static readonly Counter RunContinuityUnresolvedBlockerLinkageTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_run_continuity_unresolved_blocker_linkage_total",
+        "Total run continuity failures where blocking work items lack navigable linkage",
+        new CounterConfiguration { LabelNames = new[] { "surface", "failure_kind" } });
+
+    private static readonly Counter RunContinuityCrossSurfaceIdentityMismatchTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_run_continuity_cross_surface_identity_mismatch_total",
+        "Total run continuity failures where canonical run identity disagrees across shared surfaces",
+        new CounterConfiguration { LabelNames = new[] { "surface", "failure_kind" } });
+
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
     /// Should be called periodically (e.g., every 1-5 seconds) to keep metrics current.
@@ -658,6 +678,81 @@ public static class PrometheusMetrics
         {
             CanonicalizationDurationSeconds.Observe(snapshot.AverageDurationUs / 1_000_000);
         }
+    }
+
+    /// <summary>
+    /// Records a run continuity lineage failure for the specified surface.
+    /// </summary>
+    public static void RecordRunContinuityMissingLineage(string surface, string failureKind)
+    {
+        RunContinuityMissingLineageTotal
+            .WithLabels(NormalizeContinuityLabel(surface), NormalizeContinuityLabel(failureKind))
+            .Inc();
+    }
+
+    /// <summary>
+    /// Records a run continuity stale projection failure for the specified surface.
+    /// </summary>
+    public static void RecordRunContinuityStaleProjection(string surface, string failureKind)
+    {
+        RunContinuityStaleProjectionTotal
+            .WithLabels(NormalizeContinuityLabel(surface), NormalizeContinuityLabel(failureKind))
+            .Inc();
+    }
+
+    /// <summary>
+    /// Records a run continuity blocker-linkage failure for the specified surface.
+    /// </summary>
+    public static void RecordRunContinuityUnresolvedBlockerLinkage(string surface, string failureKind)
+    {
+        RunContinuityUnresolvedBlockerLinkageTotal
+            .WithLabels(NormalizeContinuityLabel(surface), NormalizeContinuityLabel(failureKind))
+            .Inc();
+    }
+
+    /// <summary>
+    /// Records a cross-surface run identity mismatch for the specified surface.
+    /// </summary>
+    public static void RecordRunContinuityCrossSurfaceIdentityMismatch(string surface, string failureKind)
+    {
+        RunContinuityCrossSurfaceIdentityMismatchTotal
+            .WithLabels(NormalizeContinuityLabel(surface), NormalizeContinuityLabel(failureKind))
+            .Inc();
+    }
+
+    private static string NormalizeContinuityLabel(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "unknown";
+        }
+
+        Span<char> buffer = stackalloc char[value.Length];
+        var length = 0;
+        var previousWasSeparator = false;
+
+        foreach (var character in value.Trim())
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                buffer[length++] = char.ToLowerInvariant(character);
+                previousWasSeparator = false;
+                continue;
+            }
+
+            if (!previousWasSeparator && length > 0)
+            {
+                buffer[length++] = '-';
+                previousWasSeparator = true;
+            }
+        }
+
+        if (length > 0 && buffer[length - 1] == '-')
+        {
+            length--;
+        }
+
+        return length == 0 ? "unknown" : new string(buffer[..length]);
     }
 
     /// <summary>

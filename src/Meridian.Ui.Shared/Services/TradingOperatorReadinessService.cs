@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
@@ -69,6 +70,7 @@ public sealed class TradingOperatorReadinessService
         }
         else if (!replay.IsConsistent)
         {
+            PrometheusMetrics.RecordRunContinuityStaleProjection("api", "replay-mismatch");
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PaperReplay,
@@ -81,6 +83,7 @@ public sealed class TradingOperatorReadinessService
         }
         else if (IsReplayCoverageStale(activeSession, replay))
         {
+            PrometheusMetrics.RecordRunContinuityStaleProjection("api", "replay-stale");
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PaperReplay,
@@ -160,6 +163,7 @@ public sealed class TradingOperatorReadinessService
         }
         else if (promotion.RequiresReview || !IsPromotionTraceComplete(promotion))
         {
+            PrometheusMetrics.RecordRunContinuityMissingLineage("api", "promotion-trace-incomplete");
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PromotionReview,
@@ -173,6 +177,11 @@ public sealed class TradingOperatorReadinessService
 
         AddTrustGateWorkItem(workItems, trustGate);
         AddReportPackWorkItem(workItems, reportPack, latestRun?.Summary.RunId);
+        if (reportPack.Status != TradingAcceptanceGateStatusDto.Ready)
+        {
+            PrometheusMetrics.RecordRunContinuityMissingLineage("api", "report-pack-lineage");
+        }
+
         AddReconciliationGateWorkItem(workItems, reconciliationGate, latestRun?.Summary.RunId);
 
         var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);

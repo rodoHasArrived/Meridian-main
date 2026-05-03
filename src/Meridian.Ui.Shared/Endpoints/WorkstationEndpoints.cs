@@ -1691,6 +1691,8 @@ public static class WorkstationEndpoints
             .ThenBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+        RecordOperatorInboxContinuityMetrics(items);
+
         var criticalCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
         var warningCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
         var reviewCount = criticalCount + warningCount;
@@ -1702,6 +1704,27 @@ public static class WorkstationEndpoints
             WarningCount: warningCount,
             ReviewCount: reviewCount,
             Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
+    }
+
+    private static void RecordOperatorInboxContinuityMetrics(IReadOnlyList<OperatorWorkItemDto> items)
+    {
+        foreach (var item in items)
+        {
+            if (item.Tone is not (OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.Workspace)
+                || string.IsNullOrWhiteSpace(item.TargetRoute)
+                || string.IsNullOrWhiteSpace(item.TargetPageTag))
+            {
+                var failureKind = string.IsNullOrWhiteSpace(item.WorkItemId)
+                    ? "missing-navigation"
+                    : item.WorkItemId;
+                PrometheusMetrics.RecordRunContinuityUnresolvedBlockerLinkage("operator-inbox", failureKind);
+            }
+        }
     }
 
     private static async Task AddRunReviewPacketWorkItemsAsync(

@@ -64,6 +64,38 @@ public class PrometheusMetricsTests
     }
 
     [Fact]
+    public void RecordRunContinuityMissingLineage_ShouldNotThrow()
+    {
+        var act = () => PrometheusMetrics.RecordRunContinuityMissingLineage("api", "promotion-trace-incomplete");
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void RecordRunContinuityStaleProjection_ShouldNotThrow()
+    {
+        var act = () => PrometheusMetrics.RecordRunContinuityStaleProjection("operator-inbox", "as-of-drift");
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void RecordRunContinuityUnresolvedBlockerLinkage_ShouldNotThrow()
+    {
+        var act = () => PrometheusMetrics.RecordRunContinuityUnresolvedBlockerLinkage("operator-inbox", "missing-navigation");
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void RecordRunContinuityCrossSurfaceIdentityMismatch_ShouldNotThrow()
+    {
+        var act = () => PrometheusMetrics.RecordRunContinuityCrossSurfaceIdentityMismatch("operator-inbox", "lineage-parent-source-mismatch");
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
     public void Registry_ShouldNotBeNull()
     {
         // Act
