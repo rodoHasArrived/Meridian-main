@@ -63,11 +63,44 @@ describe("SettingsScreen", () => {
   });
 
   it("labels diagnostic endpoint links", () => {
-    renderWithRouter(<SettingsScreen session={session} overview={overview} />);
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        research={{ metrics: [], runs: [] }}
+        trading={{} as never}
+        dataOperations={{ metrics: [], providers: [], backfills: [], exports: [] }}
+        governance={{} as never}
+        reporting={{} as never}
+      />
+    );
 
     expect(screen.getByRole("link", { name: "Open System overview diagnostic endpoint" })).toHaveAttribute(
       "href",
-      "/api/workstation/overview"
+      "/api/status"
     );
+    expect(screen.getByRole("list", { name: "Diagnostic endpoint availability" })).toBeInTheDocument();
+    expect(screen.getByText("All reachable")).toBeInTheDocument();
+  });
+
+  it("renders diagnostic endpoint failures as accessible endpoint cards", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        research={null}
+        trading={null}
+        dataOperations={null}
+        governance={null}
+        error="Workstation request failed."
+        workspaceErrors={{ trading: "Trading API returned 503." }}
+      />
+    );
+
+    const tradingLink = screen.getByRole("link", { name: "Open Trading workspace diagnostic endpoint" });
+
+    expect(tradingLink).toHaveAttribute("href", "/api/workstation/trading");
+    expect(within(tradingLink).getByText("Failed")).toBeInTheDocument();
+    expect(within(tradingLink).getByText("Trading API returned 503.")).toBeInTheDocument();
   });
 });

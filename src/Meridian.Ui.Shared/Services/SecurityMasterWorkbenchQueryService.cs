@@ -111,7 +111,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 EffectiveFrom: detail.EffectiveFrom,
                 EffectiveTo: detail.EffectiveTo,
                 Identifiers: detail.Identifiers,
-                Aliases: detail.Aliases),
+                Aliases: detail.Aliases,
+                IssuerName: TryGetJsonString(detail.CommonTerms, "issuerName"),
+                CountryOfRisk: TryGetJsonString(detail.CommonTerms, "countryOfRisk"),
+                PrimaryListingMic: TryGetJsonString(detail.CommonTerms, "primaryListingMic"),
+                SettlementCycleDays: TryGetJsonInt(detail.CommonTerms, "settlementCycleDays")),
             EconomicDefinition: MapToEconomicDefinition(detail, economic, winningSource),
             TrustPosture: trustPosture,
             ProvenanceCandidates: provenanceCandidates,
@@ -974,6 +978,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var primaryIdentifier = detail.Identifiers.FirstOrDefault(static identifier => identifier.IsPrimary)
             ?? detail.Identifiers.FirstOrDefault();
 
+        var riskCountry = economic?.RiskCountry
+            ?? TryGetJsonString(detail.CommonTerms, "countryOfRisk");
+
         return new SecurityMasterWorkstationDto(
             SecurityId: detail.SecurityId,
             DisplayName: detail.DisplayName,
@@ -982,7 +989,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 AssetClass: detail.AssetClass,
                 SubType: economic?.SubType,
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
-                PrimaryIdentifierValue: primaryIdentifier?.Value),
+                PrimaryIdentifierValue: primaryIdentifier?.Value,
+                RiskCountry: riskCountry,
+                IssuerType: economic?.IssuerType,
+                TypeName: economic?.TypeName),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: detail.Currency,
                 Version: detail.Version,
@@ -990,7 +1000,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 EffectiveTo: detail.EffectiveTo,
                 SubType: economic?.SubType,
                 AssetFamily: economic?.AssetFamily,
-                IssuerType: economic?.IssuerType));
+                IssuerType: economic?.IssuerType,
+                RiskCountry: riskCountry,
+                TypeName: economic?.TypeName));
     }
 
     private static SecurityMasterEconomicDefinitionDrillInDto MapToEconomicDefinition(
@@ -1320,6 +1332,28 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return DateTimeOffset.TryParse(property.GetString(), out var parsed)
             ? parsed
             : null;
+    }
+
+    private static int? TryGetJsonInt(JsonElement element, string propertyName)
+    {
+        if (!TryGetPropertyCaseInsensitive(element, propertyName, out var property))
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out var intValue))
+        {
+            return intValue;
+        }
+
+        // CommonTerms may encode numeric fields as strings in some older records.
+        if (property.ValueKind == JsonValueKind.String
+            && int.TryParse(property.GetString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
     }
 
     private static string? FormatNullableDecimal(decimal? value)

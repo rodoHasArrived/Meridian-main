@@ -1,4 +1,4 @@
-using Meridian.Application.Reconciliation;
+using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 
 namespace Meridian.Tests.Reconciliation;

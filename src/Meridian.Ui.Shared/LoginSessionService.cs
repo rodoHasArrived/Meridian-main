@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using Meridian.Contracts.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.Hosting;
 
@@ -96,5 +97,5 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
         }
     }
 
-    private sealed record SessionEntry(string Username, Contracts.Auth.UserRole Role, DateTimeOffset ExpiresAt);
+    private sealed record SessionEntry(string Username, UserRole Role, DateTimeOffset ExpiresAt);
 }

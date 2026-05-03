@@ -133,10 +133,67 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.diagnosticLinks.every((l) => l.ariaLabel.includes("diagnostic endpoint"))).toBe(true);
   });
 
+  it("derives diagnostic endpoint posture from loaded workspace payloads", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      research: { metrics: [], runs: [] },
+      trading: {} as never,
+      dataOperations: { metrics: [], providers: [], backfills: [], exports: [] },
+      governance: {} as never,
+      reporting: {} as never,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    expect(vm.diagnosticStatusLabel).toBe("All reachable");
+    expect(vm.diagnosticStatusVariant).toBe("success");
+    expect(vm.diagnosticLinks.every((link) => link.statusLabel === "Loaded")).toBe(true);
+  });
+
+  it("surfaces workspace diagnostic failures without hiding endpoint links", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      loading: false,
+      error: "Workstation request failed.",
+      workspaceErrors: {
+        trading: "Trading API returned 503.",
+        reporting: "Reporting API returned 500."
+      }
+    });
+
+    const tradingLink = vm.diagnosticLinks.find((link) => link.label === "Trading workspace");
+    const reportingLink = vm.diagnosticLinks.find((link) => link.label === "Reporting workspace");
+
+    expect(vm.diagnosticStatusVariant).toBe("danger");
+    expect(tradingLink).toMatchObject({
+      href: "/api/workstation/trading",
+      statusLabel: "Failed",
+      statusDetail: "Trading API returned 503."
+    });
+    expect(reportingLink).toMatchObject({
+      href: "/api/workstation/reporting",
+      statusLabel: "Failed",
+      statusDetail: "Reporting API returned 500."
+    });
+  });
+
   it("builds system summary label", () => {
     const vm = buildSettingsScreenViewModel(null, overview);
     expect(vm.systemSummary).toContain("Healthy");
     expect(vm.systemSummary).toContain("3/3");
+  });
+
+  it("points system overview diagnostics at the mapped status endpoint", () => {
+    const vm = buildSettingsScreenViewModel(session, overview);
+    expect(vm.diagnosticLinks.find((link) => link.label === "System overview")?.href).toBe("/api/status");
   });
 
   it("handles null overview gracefully", () => {

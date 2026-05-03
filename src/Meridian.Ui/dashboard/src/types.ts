@@ -956,6 +956,43 @@ export interface ResolveConflictRequest {
   reason?: string;
 }
 
+// --- Provider setup types ---
+
+export type ProviderKind =
+  | "polygon"
+  | "databento"
+  | "alpaca"
+  | "interactivebrokers"
+  | "yahoo"
+  | "custom";
+
+export interface ProviderKindMeta {
+  kind: ProviderKind;
+  label: string;
+  description: string;
+  needsApiKey: boolean;
+  needsApiSecret: boolean;
+  needsEndpoint: boolean;
+  defaultCapabilities: string[];
+}
+
+export interface ProviderSetupRequest {
+  kind: ProviderKind | string;
+  displayName: string;
+  apiKey: string | null;
+  apiSecret: string | null;
+  endpoint: string | null;
+  capabilities: string[];
+}
+
+export interface ProviderSetupResult {
+  success: boolean;
+  providerId: string | null;
+  providerName: string;
+  message: string;
+  error: string | null;
+}
+
 // --- Backfill mutation types ---
 
 export interface BackfillTriggerRequest {
@@ -1070,4 +1107,66 @@ export interface QualityDashboardResponse {
   symbols: QualitySymbolScore[];
   recentGaps: QualityGapEntry[];
   recentAnomalies: QualityAnomalyEntry[];
+}
+
+export interface ReconciliationCalibrationProfile {
+  toleranceProfileId: string;
+  exceptionRoute: string;
+  highestSeverity: string;
+  maxToleranceBand: number | null;
+  totalBreakCount: number;
+  openBreakCount: number;
+  inReviewBreakCount: number;
+  resolvedBreakCount: number;
+  dismissedBreakCount: number;
+  pendingSignoffCount: number;
+  signedOffCount: number;
+  lastUpdatedAt: string;
+}
+
+export type ReconciliationCalibrationStatus = "Ready" | "ReviewRequired" | "Blocked";
+
+export interface ReconciliationCalibrationSummary {
+  asOf: string;
+  status: ReconciliationCalibrationStatus;
+  summary: string;
+  totalBreakCount: number;
+  activeBreakCount: number;
+  openBreakCount: number;
+  inReviewBreakCount: number;
+  resolvedBreakCount: number;
+  dismissedBreakCount: number;
+  criticalOpenBreakCount: number;
+  pendingSignoffCount: number;
+  signedOffCount: number;
+  missingCalibrationMetadataCount: number;
+  profiles: ReconciliationCalibrationProfile[];
+}
+
+export interface CorporateAction {
+  corpActId: string;
+  securityId: string;
+  eventType: string;
+  exDate: string;
+  payDate: string | null;
+  dividendPerShare: number | null;
+  currency: string | null;
+  splitRatio: number | null;
+  newSecurityId: string | null;
+  distributionRatio: number | null;
+  acquirerSecurityId: string | null;
+  exchangeRatio: number | null;
+  subscriptionPricePerShare: number | null;
+  rightsPerShare: number | null;
+}
+
+export interface TradingParameters {
+  securityId: string;
+  lotSize: number | null;
+  tickSize: number | null;
+  contractMultiplier: number | null;
+  marginRequirementPct: number | null;
+  tradingHoursUtc: string | null;
+  circuitBreakerThresholdPct: number | null;
+  asOf: string;
 }

@@ -26,6 +26,7 @@
   --ring:              198 72% 50%;
   --paper:             214 82% 68%;
   --live:              198 72% 50%;
+  --live-env:            0 75% 59%;   /* LIVE environment alarm — distinct from data-posture cyan */
   --warning:            36 80% 58%;
   --success:           158 66% 44%;
   --danger:            354 68% 62%;
@@ -54,7 +55,7 @@
   --cyan-focus:        #20D3F7;  /* keyboard focus ring ONLY (matches WPF FocusBrush) */
   --cyan-pressed:      #2D9CDB;  /* hover/pressed on cyan interactive elements (WPF HoverBrush) */
   --cyan-crosshair:    #2AB2D4;  /* chart crosshair & price labels */
-  --cyan-live:         #2AB2D4;  /* LIVE environment badge */
+  --cyan-live:         #2AB2D4;  /* deprecated: use --state-live-* for LIVE environment; kept for nav status posture tint */
   --cyan-nav:          #2AB2D4;  /* active nav inset / underline */
 
   /* ================================================
@@ -87,6 +88,11 @@
   --state-research-fg: #93B4DA;
   --state-research-bd: rgba(147, 180, 218, 0.35);
   --state-research-bg: rgba(147, 180, 218, 0.10);
+
+  /* Live environment — real-money alarm (distinct from danger/error) */
+  --state-live-fg:     #E84545;
+  --state-live-bd:     rgba(232, 69, 69, 0.40);
+  --state-live-bg:     rgba(232, 69, 69, 0.12);
 
   /* Neutral / inactive / muted */
   --state-muted-fg:    #7C8A9B;

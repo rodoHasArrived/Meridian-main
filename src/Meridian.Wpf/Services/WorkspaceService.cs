@@ -1091,7 +1091,9 @@ public sealed class WorkspaceService
             ActiveWorkspaceId = session.ActiveWorkspaceId,
             WorkstationLayout = session.WorkstationLayout is null
                 ? null
-                : CloneWorkstationLayoutState(session.WorkstationLayout)
+                : CloneWorkstationLayoutState(session.WorkstationLayout),
+            // PR-01: preserve cached summary stats across clone so shell tiles stay populated
+            CachedSummaryStats = session.CachedSummaryStats
         };
     }
 
@@ -1374,4 +1376,123 @@ public sealed class WorkspaceService
         => GetWorkspaceLayoutStateAsync(workspaceId, operatingContextKey, ct);
 
     private readonly Dictionary<string, string> _dockLayouts = new(StringComparer.OrdinalIgnoreCase);
+
+    // ── PR-01: quick-action and summary-stats surface ─────────────────────────
+
+    /// <summary>
+    /// Returns a live <see cref="WorkspaceSummaryStats"/> for the currently active workspace
+    /// derived from <see cref="LastSession"/>. Falls back to an empty instance when no session
+    /// is present. This is a fast, synchronous read that does not hit any remote service.
+    /// </summary>
+    public WorkspaceSummaryStats GetSummaryStatsForActiveWorkspace()
+        => WithStateLock(() => BuildSummaryStats(_lastSession));
+
+    /// <summary>
+    /// Returns the cached <see cref="WorkspaceSummaryStats"/> from the last persisted session
+    /// without recomputing it. Useful for cold-start display before the first full load.
+    /// </summary>
+    public WorkspaceSummaryStats? GetCachedSummaryStats()
+        => WithStateLock(() => _lastSession?.CachedSummaryStats);
+
+    /// <summary>
+    /// Updates the quick-action list on the active workspace template and persists the change.
+    /// Replaces the existing list; pass an empty collection to clear all quick actions.
+    /// </summary>
+    public Task SaveQuickActionsAsync(
+        string workspaceId,
+        IEnumerable<WorkspaceQuickAction> actions,
+        CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+
+            var normalizedId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            var workspace = _workspaces.FirstOrDefault(w =>
+                string.Equals(w.Id, normalizedId, StringComparison.OrdinalIgnoreCase));
+            if (workspace is null)
+            {
+                return;
+            }
+
+            workspace.QuickActions = actions
+                .OrderBy(static a => a.Order)
+                .ThenBy(static a => a.ActionId, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            workspace.UpdatedAt = DateTime.UtcNow;
+
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+        }, ct);
+
+    /// <summary>
+    /// Returns the quick-action list for the specified workspace, or an empty list when
+    /// the workspace does not exist or has no actions configured.
+    /// </summary>
+    public IReadOnlyList<WorkspaceQuickAction> GetQuickActionsForWorkspace(string workspaceId)
+        => WithStateLock(() =>
+        {
+            var normalizedId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
+            var workspace = _workspaces.FirstOrDefault(w =>
+                string.Equals(w.Id, normalizedId, StringComparison.OrdinalIgnoreCase));
+
+            if (workspace is null || workspace.QuickActions.Count == 0)
+            {
+                return (IReadOnlyList<WorkspaceQuickAction>)Array.Empty<WorkspaceQuickAction>();
+            }
+
+            return workspace.QuickActions
+                .Select(static a => new WorkspaceQuickAction
+                {
+                    ActionId = a.ActionId,
+                    Label = a.Label,
+                    Description = a.Description,
+                    TargetPageTag = a.TargetPageTag,
+                    Tone = a.Tone,
+                    IsEnabled = a.IsEnabled,
+                    Order = a.Order
+                })
+                .ToArray();
+        });
+
+    /// <summary>
+    /// Computes and caches a <see cref="WorkspaceSummaryStats"/> on the active session
+    /// so it is available for fast shell rendering on the next startup without a service call.
+    /// Called automatically by <see cref="SaveSessionStateAsync"/> when stats can be derived.
+    /// </summary>
+    private static WorkspaceSummaryStats BuildSummaryStats(SessionState? session)
+    {
+        if (session is null)
+        {
+            return new WorkspaceSummaryStats();
+        }
+
+        // Derive stats from open pages and filters persisted in the session.
+        // Full run-level stats are enriched by StrategyRunWorkspaceService when available.
+        var lastActivity = session.OpenPages
+            .Select(static p => (DateTimeOffset?)DateTimeOffset.UtcNow)
+            .FirstOrDefault()
+            ?? (session.SavedAt == default ? (DateTimeOffset?)null : session.SavedAt);
+
+        return new WorkspaceSummaryStats
+        {
+            LastActivityAt = lastActivity,
+            Digest = BuildSummaryDigest(session)
+        };
+    }
+
+    private static string BuildSummaryDigest(SessionState session)
+    {
+        var parts = new List<string>(4);
+
+        if (!string.IsNullOrWhiteSpace(session.ActivePageTag))
+        {
+            parts.Add($"last: {session.ActivePageTag}");
+        }
+
+        if (session.OpenPages.Count > 0)
+        {
+            parts.Add($"{session.OpenPages.Count} open page{(session.OpenPages.Count == 1 ? string.Empty : "s")}");
+        }
+
+        return parts.Count == 0 ? string.Empty : string.Join(" · ", parts);
+    }
 }

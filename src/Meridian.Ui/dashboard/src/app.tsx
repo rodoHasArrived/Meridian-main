@@ -23,7 +23,7 @@ import { TradingScreen } from "@/screens/trading-screen";
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
-  const { session, overview, research, trading, dataOperations, governance, loading, error, workspaceErrors, refresh } = useWorkstationData();
+  const { session, overview, research, trading, dataOperations, governance, reporting, loading, error, workspaceErrors, refresh } = useWorkstationData();
   const shell = buildAppShellViewState({
     pathname,
     loading,
@@ -35,7 +35,8 @@ export function App() {
       research,
       trading,
       dataOperations,
-      governance
+      governance,
+      reporting
     }
   });
 
@@ -98,15 +99,29 @@ export function App() {
                     trading={trading}
                     dataOperations={dataOperations}
                     governance={governance}
+                    reporting={reporting}
                   />
                 )} />
                 <Route path="/trading/*" element={<TradingScreen data={trading} />} />
                 <Route path="/portfolio/*" element={<PortfolioScreen trading={trading} research={research} governance={governance} />} />
                 <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
-                <Route path="/reporting/*" element={<ReportingScreen data={governance} />} />
+                <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                 <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                 <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
-                <Route path="/settings/*" element={<SettingsScreen session={session} overview={overview} />} />
+                <Route path="/settings/*" element={(
+                  <SettingsScreen
+                    session={session}
+                    overview={overview}
+                    research={research}
+                    trading={trading}
+                    dataOperations={dataOperations}
+                    governance={governance}
+                    reporting={reporting}
+                    loading={loading}
+                    error={error}
+                    workspaceErrors={workspaceErrors}
+                  />
+                )} />
                 <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
                 <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                 <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />

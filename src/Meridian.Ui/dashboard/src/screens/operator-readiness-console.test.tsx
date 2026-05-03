@@ -151,6 +151,7 @@ describe("OperatorReadinessConsole", () => {
         trading={null}
         dataOperations={null}
         governance={null}
+        reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
     );
@@ -165,7 +166,7 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Prioritized operator work items" })).toBeInTheDocument();
     expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);
-    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith());
+    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(undefined));
   });
 
 
@@ -178,6 +179,7 @@ describe("OperatorReadinessConsole", () => {
         trading={scopedTrading}
         dataOperations={null}
         governance={null}
+        reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
     );
@@ -202,6 +204,7 @@ describe("OperatorReadinessConsole", () => {
         trading={null}
         dataOperations={null}
         governance={null}
+        reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
     );

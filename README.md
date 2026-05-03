@@ -5454,7 +5454,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   └── ProviderRoutingMapper.cs
 │   │   ├── Reconciliation
-│   │   │   ├── BrokerStatementModels.cs
 │   │   │   └── StatementReconciliationService.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
@@ -5827,7 +5826,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── StrategyRunReadModels.cs
 │   │       ├── TradingOperatorReadinessDtos.cs
 │   │       ├── WorkflowLibraryDtos.cs
-│   │       └── WorkflowSummaryDtos.cs
+│   │       ├── WorkflowSummaryDtos.cs
+│   │       └── WorkstationBootstrapDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
 │   │   │   ├── AlpacaOptions.cs
@@ -5919,6 +5919,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MarketDepthUpdate.cs
 │   │   │   └── MarketTradeUpdate.cs
 │   │   ├── Reconciliation
+│   │   │   ├── BrokerStatementModels.cs
 │   │   │   ├── StatementEntities.cs
 │   │   │   └── StatementReconciliationAggregate.cs
 │   │   └── Telemetry
@@ -6629,6 +6630,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── input.tsx
 │   │   │   │   │       ├── select.tsx
+│   │   │   │   │       ├── sheet.tsx
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── hooks
@@ -6696,8 +6698,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BLeOgkJ6.js
-│   │           │   └── index-CBqpAeRW.css
+│   │           │   ├── index-Bt1jnUdW.js
+│   │           │   └── index-C-UoWgmp.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6984,6 +6986,8 @@ Use these documents together when planning or implementing new work:
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
+│       ├── Controls
+│       │   └── AutomationLeafBorder.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs
@@ -8184,6 +8188,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-621 directories, 7388 files
+622 directories, 7391 files
 ```
 <!-- readme-tree end -->

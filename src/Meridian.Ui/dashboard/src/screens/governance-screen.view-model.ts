@@ -1,21 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getCorporateActions,
   getReconciliationBreakQueue,
+  getReconciliationCalibrationSummary,
   getRunTrialBalance,
   getSecurityConflicts,
   getSecurityIdentity,
+  getTradingParameters,
   resolveReconciliationBreak,
   resolveSecurityConflict,
   reviewReconciliationBreak,
   searchSecurities
 } from "@/lib/api";
 import type {
+  CorporateAction,
   GovernanceCashFlowSummary,
   GovernanceReportingProfile,
   GovernanceReportingSummary,
   GovernanceWorkspaceResponse,
   LedgerTrialBalanceLine,
   ReconciliationBreakQueueItem,
+  ReconciliationCalibrationSummary,
+  ReconciliationCalibrationStatus,
   ResolveConflictRequest,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
@@ -23,7 +29,8 @@ import type {
   SecurityAliasEntry,
   SecurityIdentifierEntry,
   SecurityMasterConflict,
-  SecurityMasterEntry
+  SecurityMasterEntry,
+  TradingParameters
 } from "@/types";
 
 export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
@@ -42,6 +49,65 @@ export interface GovernanceReconciliationServices {
   reviewBreak: (request: ReviewReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
   resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
   getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
+  getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
+}
+
+export type CalibrationStatusTone = "success" | "warning" | "danger";
+
+export interface CalibrationProfileRowViewModel {
+  toleranceProfileId: string;
+  exceptionRoute: string;
+  highestSeverity: string;
+  openBreakCount: number;
+  resolvedBreakCount: number;
+  pendingSignoffCount: number;
+  lastUpdatedLabel: string;
+  ariaLabel: string;
+}
+
+export interface CalibrationSummaryViewState {
+  status: ReconciliationCalibrationStatus;
+  statusLabel: string;
+  statusTone: CalibrationStatusTone;
+  summary: string;
+  asOfLabel: string;
+  totalBreakCount: number;
+  openBreakCount: number;
+  criticalOpenBreakCount: number;
+  pendingSignoffCount: number;
+  signedOffCount: number;
+  missingMetadataCount: number;
+  profileRows: CalibrationProfileRowViewModel[];
+  hasProfiles: boolean;
+  profilesLabel: string;
+  errorText: string | null;
+  loadingText: string | null;
+  statusAnnouncement: string;
+}
+
+export interface CorporateActionRowViewModel extends CorporateAction {
+  rowId: string;
+  eventTypeLabel: string;
+  exDateLabel: string;
+  payDateLabel: string;
+  amountLabel: string;
+  ariaLabel: string;
+}
+
+export type TradingParametersField = { label: string; value: string; tone?: "default" | "warning" };
+
+export interface TradingParametersViewState {
+  securityId: string;
+  asOfLabel: string;
+  fields: TradingParametersField[];
+  errorText: string | null;
+  loadingText: string | null;
+  statusAnnouncement: string;
+}
+
+export interface SecurityMasterDrillInServices {
+  getCorporateActions: (securityId: string) => Promise<CorporateAction[]>;
+  getTradingParameters: (securityId: string) => Promise<TradingParameters>;
 }
 
 export interface SecuritySearchState {
@@ -253,7 +319,13 @@ const defaultGovernanceReconciliationServices: GovernanceReconciliationServices 
   getBreakQueue: () => getReconciliationBreakQueue(),
   reviewBreak: (request) => reviewReconciliationBreak(request),
   resolveBreak: (request) => resolveReconciliationBreak(request),
-  getTrialBalance: (runId) => getRunTrialBalance(runId)
+  getTrialBalance: (runId) => getRunTrialBalance(runId),
+  getCalibrationSummary: () => getReconciliationCalibrationSummary()
+};
+
+const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
+  getCorporateActions: (securityId) => getCorporateActions(securityId),
+  getTradingParameters: (securityId) => getTradingParameters(securityId)
 };
 
 export function useGovernanceCashFlowViewModel(
@@ -286,6 +358,7 @@ export function useGovernanceReportingViewModel(
 export function useSecurityMasterViewModel(
   active: boolean,
   services: SecurityMasterServices = defaultSecurityMasterServices,
+  drillInServices: SecurityMasterDrillInServices = defaultSecurityMasterDrillInServices,
   searchDelayMs = 350
 ) {
   const [query, setQuery] = useState("");
@@ -301,6 +374,12 @@ export function useSecurityMasterViewModel(
   const [conflictsError, setConflictsError] = useState<string | null>(null);
   const [conflictResolvingId, setConflictResolvingId] = useState<string | null>(null);
   const [conflictActionError, setConflictActionError] = useState<string | null>(null);
+  const [corporateActions, setCorporateActions] = useState<CorporateAction[] | null>(null);
+  const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
+  const [corporateActionsError, setCorporateActionsError] = useState<string | null>(null);
+  const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
+  const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
+  const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchGenerationRef = useRef(0);
 
@@ -341,6 +420,62 @@ export function useSecurityMasterViewModel(
       cancelled = true;
     };
   }, [active, services]);
+
+  useEffect(() => {
+    if (!selectedSecurityId) {
+      setCorporateActions(null);
+      setCorporateActionsError(null);
+      setTradingParameters(null);
+      setTradingParametersError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setCorporateActionsLoading(true);
+    setCorporateActionsError(null);
+    setTradingParametersLoading(true);
+    setTradingParametersError(null);
+
+    drillInServices.getCorporateActions(selectedSecurityId)
+      .then((rows) => {
+        if (!cancelled) {
+          setCorporateActions(rows);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setCorporateActions([]);
+          setCorporateActionsError(toErrorMessage(err, "Corporate actions failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setCorporateActionsLoading(false);
+        }
+      });
+
+    drillInServices.getTradingParameters(selectedSecurityId)
+      .then((params) => {
+        if (!cancelled) {
+          setTradingParameters(params);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setTradingParameters(null);
+          setTradingParametersError(toErrorMessage(err, "Trading parameters failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTradingParametersLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSecurityId, drillInServices]);
 
   const updateQuery = useCallback((nextQuery: string) => {
     setQuery(nextQuery);
@@ -391,6 +526,10 @@ export function useSecurityMasterViewModel(
     setIdentity(null);
     setIdentityError(null);
     setIdentityLoading(true);
+    setCorporateActions(null);
+    setCorporateActionsError(null);
+    setTradingParameters(null);
+    setTradingParametersError(null);
 
     try {
       const detail = await services.getIdentity(securityId);
@@ -440,6 +579,14 @@ export function useSecurityMasterViewModel(
     () => buildSecurityIdentityDrillInState(identity),
     [identity]
   );
+  const corporateActionRows = useMemo(
+    () => buildCorporateActionRows(corporateActions),
+    [corporateActions]
+  );
+  const tradingParametersView = useMemo(
+    () => buildTradingParametersViewState(tradingParameters, tradingParametersLoading, tradingParametersError),
+    [tradingParameters, tradingParametersLoading, tradingParametersError]
+  );
   const openConflictCount = countOpenSecurityConflicts(conflicts);
 
   return {
@@ -465,6 +612,15 @@ export function useSecurityMasterViewModel(
     resolveConflict,
     openConflictCount,
     conflictCountLabel: `${openConflictCount} open`,
+    corporateActions,
+    corporateActionRows,
+    hasCorporateActions: (corporateActions?.length ?? 0) > 0,
+    corporateActionsLoading,
+    corporateActionsErrorText: corporateActionsError,
+    tradingParameters,
+    tradingParametersView,
+    tradingParametersLoading,
+    tradingParametersErrorText: tradingParametersError,
     ...searchState
   };
 }
@@ -483,6 +639,9 @@ export function useGovernanceReconciliationViewModel(
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
+  const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
+  const [calibrationLoading, setCalibrationLoading] = useState(false);
+  const [calibrationError, setCalibrationError] = useState<string | null>(null);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
   const selectedReconciliation = useMemo(
@@ -536,6 +695,37 @@ export function useGovernanceReconciliationViewModel(
       cancelled = true;
     };
   }, [data?.breakQueue, services, workstream]);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") {
+      return;
+    }
+
+    let cancelled = false;
+    setCalibrationLoading(true);
+    setCalibrationError(null);
+
+    services.getCalibrationSummary()
+      .then((summary) => {
+        if (!cancelled) {
+          setCalibrationSummary(summary);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setCalibrationError(toErrorMessage(err, "Calibration summary failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setCalibrationLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [services, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {
@@ -629,6 +819,10 @@ export function useGovernanceReconciliationViewModel(
     }),
     [selectedReconciliation?.runId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
+  const calibrationView = useMemo(
+    () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
+    [calibrationSummary, calibrationLoading, calibrationError]
+  );
 
   return {
     reconciliationQueue,
@@ -642,6 +836,10 @@ export function useGovernanceReconciliationViewModel(
     breakAction,
     assignBreak,
     resolveBreak,
+    calibrationSummary,
+    calibrationLoading,
+    calibrationErrorText: calibrationError,
+    calibrationView,
     ...breakQueueState
   };
 }
@@ -1415,6 +1613,186 @@ function buildReconciliationBreakStatusAnnouncement({
   }
 
   return `${breakCount} reconciliation ${breakCount === 1 ? "break" : "breaks"} loaded.`;
+}
+
+export function buildCalibrationSummaryViewState(
+  summary: ReconciliationCalibrationSummary | null,
+  loading: boolean,
+  errorText: string | null
+): CalibrationSummaryViewState {
+  const statusTone = calibrationStatusTone(summary?.status ?? null);
+  const profileRows = (summary?.profiles ?? []).map(buildCalibrationProfileRow);
+
+  return {
+    status: summary?.status ?? "Ready",
+    statusLabel: calibrationStatusLabel(summary?.status ?? null, loading),
+    statusTone,
+    summary: summary?.summary ?? "",
+    asOfLabel: summary?.asOf ? formatSecurityDate(summary.asOf) : "—",
+    totalBreakCount: summary?.totalBreakCount ?? 0,
+    openBreakCount: summary?.openBreakCount ?? 0,
+    criticalOpenBreakCount: summary?.criticalOpenBreakCount ?? 0,
+    pendingSignoffCount: summary?.pendingSignoffCount ?? 0,
+    signedOffCount: summary?.signedOffCount ?? 0,
+    missingMetadataCount: summary?.missingCalibrationMetadataCount ?? 0,
+    profileRows,
+    hasProfiles: profileRows.length > 0,
+    profilesLabel: profileRows.length === 1 ? "1 tolerance profile" : `${profileRows.length} tolerance profiles`,
+    errorText,
+    loadingText: loading ? "Loading calibration summary..." : null,
+    statusAnnouncement: errorText
+      ? `Calibration summary error: ${errorText}`
+      : loading
+        ? "Loading calibration summary."
+        : summary
+          ? `Calibration status: ${calibrationStatusLabel(summary.status, false)}. ${summary.summary}`
+          : ""
+  };
+}
+
+function buildCalibrationProfileRow(
+  profile: ReconciliationCalibrationSummary["profiles"][number]
+): CalibrationProfileRowViewModel {
+  return {
+    toleranceProfileId: profile.toleranceProfileId,
+    exceptionRoute: profile.exceptionRoute,
+    highestSeverity: profile.highestSeverity,
+    openBreakCount: profile.openBreakCount,
+    resolvedBreakCount: profile.resolvedBreakCount,
+    pendingSignoffCount: profile.pendingSignoffCount,
+    lastUpdatedLabel: formatSecurityDate(profile.lastUpdatedAt),
+    ariaLabel: `Profile ${profile.toleranceProfileId}: ${profile.openBreakCount} open, ${profile.pendingSignoffCount} pending sign-off, severity ${profile.highestSeverity}`
+  };
+}
+
+function calibrationStatusTone(status: ReconciliationCalibrationStatus | null): CalibrationStatusTone {
+  if (status === "Ready") {
+    return "success";
+  }
+
+  if (status === "Blocked") {
+    return "danger";
+  }
+
+  return "warning";
+}
+
+function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, loading: boolean): string {
+  if (loading) {
+    return "Loading...";
+  }
+
+  if (status === "Ready") {
+    return "Ready";
+  }
+
+  if (status === "Blocked") {
+    return "Blocked";
+  }
+
+  if (status === "ReviewRequired") {
+    return "Review required";
+  }
+
+  return "Unknown";
+}
+
+export function buildCorporateActionRows(
+  actions: CorporateAction[] | null
+): CorporateActionRowViewModel[] {
+  return (actions ?? []).map((action) => {
+    const amountLabel = formatCorpActAmount(action);
+
+    return {
+      ...action,
+      rowId: action.corpActId,
+      eventTypeLabel: formatCorpActEventType(action.eventType),
+      exDateLabel: formatSecurityDate(action.exDate),
+      payDateLabel: action.payDate ? formatSecurityDate(action.payDate) : "—",
+      amountLabel,
+      ariaLabel: `${formatCorpActEventType(action.eventType)} for ${action.securityId}, ex-date ${formatSecurityDate(action.exDate)}, ${amountLabel}`
+    };
+  });
+}
+
+export function buildTradingParametersViewState(
+  params: TradingParameters | null,
+  loading: boolean,
+  errorText: string | null
+): TradingParametersViewState {
+  const fields: TradingParametersField[] = params
+    ? [
+        { label: "Lot size", value: params.lotSize !== null ? String(params.lotSize) : "—" },
+        { label: "Tick size", value: params.tickSize !== null ? String(params.tickSize) : "—" },
+        { label: "Contract multiplier", value: params.contractMultiplier !== null ? String(params.contractMultiplier) : "—" },
+        {
+          label: "Margin requirement",
+          value: params.marginRequirementPct !== null ? `${params.marginRequirementPct}%` : "—",
+          tone: params.marginRequirementPct !== null && params.marginRequirementPct > 50 ? "warning" : "default"
+        },
+        { label: "Trading hours (UTC)", value: params.tradingHoursUtc ?? "—" },
+        {
+          label: "Circuit breaker",
+          value: params.circuitBreakerThresholdPct !== null ? `${params.circuitBreakerThresholdPct}%` : "—",
+          tone: params.circuitBreakerThresholdPct !== null ? "warning" : "default"
+        }
+      ]
+    : [];
+
+  return {
+    securityId: params?.securityId ?? "",
+    asOfLabel: params?.asOf ? formatSecurityDate(params.asOf) : "—",
+    fields,
+    errorText,
+    loadingText: loading ? "Loading trading parameters..." : null,
+    statusAnnouncement: errorText
+      ? `Trading parameters error: ${errorText}`
+      : loading
+        ? "Loading trading parameters."
+        : params
+          ? `Trading parameters loaded for ${params.securityId}.`
+          : ""
+  };
+}
+
+function formatCorpActEventType(eventType: string): string {
+  const labels: Record<string, string> = {
+    Dividend: "Dividend",
+    StockSplit: "Stock split",
+    SpinOff: "Spin-off",
+    Merger: "Merger",
+    RightsIssue: "Rights issue"
+  };
+
+  return labels[eventType] ?? eventType;
+}
+
+function formatCorpActAmount(action: CorporateAction): string {
+  if (action.dividendPerShare !== null) {
+    const currency = action.currency ? ` ${action.currency}` : "";
+    return `${action.dividendPerShare}${currency} / share`;
+  }
+
+  if (action.splitRatio !== null) {
+    return `${action.splitRatio}:1 split`;
+  }
+
+  if (action.exchangeRatio !== null) {
+    return `${action.exchangeRatio}:1 exchange`;
+  }
+
+  if (action.distributionRatio !== null) {
+    return `${action.distributionRatio}:1 distribution`;
+  }
+
+  if (action.rightsPerShare !== null) {
+    const price = action.subscriptionPricePerShare !== null
+      ? ` @ ${action.subscriptionPricePerShare}${action.currency ? ` ${action.currency}` : ""}`
+      : "";
+    return `${action.rightsPerShare} rights/share${price}`;
+  }
+
+  return "—";
 }
 
 function replaceBreakQueueItem(

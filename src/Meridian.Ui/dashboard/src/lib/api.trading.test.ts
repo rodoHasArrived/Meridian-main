@@ -8,6 +8,7 @@ import {
   getExecutionControls,
   getGovernanceWorkspace,
   getPaperSessionDetail,
+  getReportingWorkspace,
   getReplayStatus,
   getResearchWorkspace,
   getSession,
@@ -109,7 +110,9 @@ describe("trading endpoint wiring", () => {
     await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
     await expect(getDataOperationsWorkspace()).resolves.toMatchObject({ backfills: expect.any(Array) });
     await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
+    await expect(getReportingWorkspace()).resolves.toMatchObject({ reporting: expect.any(Object) });
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/accounting", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reporting", expect.anything());
   });
 
   it("does not use dev fixtures for order mutations", async () => {
