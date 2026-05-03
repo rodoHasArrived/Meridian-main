@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-02 07:42:54 UTC. Do not edit manually.
+> Auto-generated on 2026-05-03 07:13:47 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -6452,8 +6452,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CSyGd9A8.js
-│   │           │   └── index-DTzxkUuj.css
+│   │           │   ├── index-Bt1jnUdW.js
+│   │           │   └── index-C-UoWgmp.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6737,6 +6737,8 @@ Meridian-main
 │       ├── Contracts
 │       │   ├── IConnectionService.cs
 │       │   └── INavigationService.cs
+│       ├── Controls
+│       │   └── AutomationLeafBorder.cs
 │       ├── Converters
 │       │   ├── BoolToStringConverter.cs
 │       │   ├── BoolToVisibilityConverter.cs
