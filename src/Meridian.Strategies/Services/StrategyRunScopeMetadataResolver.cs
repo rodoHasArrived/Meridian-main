@@ -23,11 +23,7 @@ internal static class StrategyRunScopeMetadataResolver
 
         if (string.IsNullOrWhiteSpace(accountId))
         {
-            accountId = entry.Metrics?.Fills
-                .Select(static fill => fill.AccountId)
-                .Where(static id => !string.IsNullOrWhiteSpace(id))
-                .Distinct(StringComparer.Ordinal)
-                .SingleOrDefault();
+            accountId = InferAccountIdFromFills(entry);
         }
 
         if (string.IsNullOrWhiteSpace(accountDisplayName) && !string.IsNullOrWhiteSpace(accountId))
@@ -62,5 +58,28 @@ internal static class StrategyRunScopeMetadataResolver
         }
 
         return null;
+    }
+
+    private static string? InferAccountIdFromFills(StrategyRunEntry entry)
+    {
+        if (entry.Metrics?.Fills is null)
+        {
+            return null;
+        }
+
+        using var distinctAccountIds = entry.Metrics.Fills
+            .Select(static fill => fill.AccountId)
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.Ordinal)
+            .Take(2)
+            .GetEnumerator();
+
+        if (!distinctAccountIds.MoveNext())
+        {
+            return null;
+        }
+
+        var firstAccountId = distinctAccountIds.Current;
+        return distinctAccountIds.MoveNext() ? null : firstAccountId;
     }
 }
