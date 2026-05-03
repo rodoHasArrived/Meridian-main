@@ -372,6 +372,28 @@ public sealed class PaperSessionPersistenceServiceTests
     }
 
     [Fact]
+    public async Task RecordFillAsync_WhenLedgerSnapshotSaveFails_DoesNotThrow()
+    {
+        var service = Build(new ThrowingLedgerSaveStore());
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-fill-ledger-save", null, 10_000m));
+        var fill = new ExecutionReport
+        {
+            OrderId = "fill-ledger-save",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 10m,
+            FilledQuantity = 10m,
+            FillPrice = 100m
+        };
+
+        Func<Task> act = () => service.RecordFillAsync(summary.SessionId, fill);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
     public async Task RecordFillAsync_WhenCancelled_ThrowsOperationCanceledException()
     {
         var service = Build(new ThrowingOrderUpdateStore());
@@ -890,6 +912,38 @@ public sealed class PaperSessionReplayTests : IDisposable
     }
 }
 
+
+internal sealed class ThrowingLedgerSaveStore : IPaperSessionStore
+{
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task SaveLedgerJournalAsync(
+        string sessionId,
+        IReadOnlyList<PersistedJournalEntryDto> entries,
+        CancellationToken ct = default)
+        => Task.FromException(new IOException("ledger snapshot failed"));
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+}
 internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
 {
     private readonly Exception? _appendException;
