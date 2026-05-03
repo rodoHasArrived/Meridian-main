@@ -7961,6 +7961,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
+│   │       ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
@@ -8193,6 +8194,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-623 directories, 7395 files
+623 directories, 7396 files
 ```
 <!-- readme-tree end -->
