@@ -361,9 +361,13 @@ try {
 
     if ($desktopProcess.ExitCode -ne 0) {
         if (Test-Path $desktopStderr) {
-            $stderrContent = Get-Content $desktopStderr | Out-String
-            if (-not [string]::IsNullOrWhiteSpace($stderrContent)) {
-                Write-Host $stderrContent.TrimEnd()
+            $hasStderr = $false
+            Get-Content -Path $desktopStderr | ForEach-Object {
+                $hasStderr = $true
+                Write-Host $_
+            }
+            if (-not $hasStderr) {
+                Write-Verbose "Desktop stderr log was empty: $desktopStderr"
             }
         }
 
