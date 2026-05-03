@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -15,9 +16,11 @@ namespace Meridian.Tests.Integration.EndpointTests;
 public sealed class ProviderEndpointTests
 {
     private readonly HttpClient _client;
+    private readonly EndpointTestFixture _fixture;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
+        _fixture = fixture;
         _client = fixture.Client;
     }
 
@@ -216,6 +219,120 @@ public sealed class ProviderEndpointTests
         source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
         source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task GetDataSources_RedactsPolygonApiKey()
+    {
+        var displayName = $"Polygon Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "polygon",
+            DisplayName = displayName,
+            ApiKey = "poly-secret-key",
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/datasources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("polygon").GetProperty("apiKey").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task GetDataSources_AliasEndpoint_RedactsAlpacaCredentials()
+    {
+        var displayName = $"Alpaca Alias {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "alias-key",
+            ApiSecret = "alias-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/data-sources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
+        source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateDataSource_WithRedactedCredentials_PreservesStoredSecrets()
+    {
+        // Arrange: create an Alpaca source with real credentials via the provider setup form
+        var displayName = $"Alpaca Preserve {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "preserve-key",
+            ApiSecret = "preserve-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var configureJson = await DeserializeAsync(configureResponse);
+        var providerId = configureJson["providerId"].GetString()!;
+
+        // Act: round-trip the redacted GET response back as an update, changing only priority
+        var updatePayload = new
+        {
+            Id = providerId,
+            Name = displayName,
+            Provider = "Alpaca",
+            Enabled = true,
+            Type = "RealTime",
+            Priority = 77,
+            Alpaca = new { KeyId = "", SecretKey = "", Feed = "iex" }  // redacted sentinels
+        };
+
+        var updateContent = new StringContent(JsonSerializer.Serialize(updatePayload), Encoding.UTF8, "application/json");
+        var updateResponse = await _client.PostAsync("/api/config/datasources", updateContent);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Assert: stored credentials were preserved despite the sentinel values in the request
+        var store = _fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
+        var cfg = store.Load();
+        var storedSource = cfg.DataSources?.Sources?.FirstOrDefault(s =>
+            string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+
+        storedSource.Should().NotBeNull();
+        storedSource!.Alpaca.Should().NotBeNull();
+        storedSource.Alpaca!.KeyId.Should().Be("preserve-key");
+        storedSource.Alpaca.SecretKey.Should().Be("preserve-secret");
+        storedSource.Priority.Should().Be(77);
+    }
+
     [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {

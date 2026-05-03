@@ -38,6 +38,90 @@ public static class ProviderEndpoints
         };
     }
 
+    // When a client round-trips a redacted response back as an update payload, the credential
+    // fields carry sentinel values (empty strings for Alpaca, null for Polygon ApiKey). To avoid
+    // silently overwriting stored secrets with those sentinels, merge the stored credentials back
+    // in before persisting when the incoming request carries the exact sentinel patterns.
+    private static DataSourceConfig MergeCredentials(DataSourceConfig incoming, DataSourceConfig stored)
+    {
+        return incoming with
+        {
+            Alpaca = MergeAlpacaSecrets(incoming.Alpaca, stored.Alpaca),
+            Polygon = MergePolygonSecrets(incoming.Polygon, stored.Polygon)
+        };
+    }
+
+    private static AlpacaOptions? MergeAlpacaSecrets(AlpacaOptions? incoming, AlpacaOptions? stored)
+    {
+        if (incoming is null || stored is null)
+            return incoming;
+        if (string.IsNullOrEmpty(incoming.KeyId) && string.IsNullOrEmpty(incoming.SecretKey))
+            return incoming with { KeyId = stored.KeyId, SecretKey = stored.SecretKey };
+        return incoming;
+    }
+
+    private static PolygonOptions? MergePolygonSecrets(PolygonOptions? incoming, PolygonOptions? stored)
+    {
+        if (incoming is null || stored is null)
+            return incoming;
+        if (incoming.ApiKey is null)
+            return incoming with { ApiKey = stored.ApiKey };
+        return incoming;
+    }
+
+    private static object BuildDataSourcesResponse(AppConfig cfg) => new
+    {
+        sources = (cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>())
+            .Select(RedactSecrets)
+            .ToArray(),
+        defaultRealTimeSourceId = cfg.DataSources?.DefaultRealTimeSourceId,
+        defaultHistoricalSourceId = cfg.DataSources?.DefaultHistoricalSourceId,
+        enableFailover = cfg.DataSources?.EnableFailover ?? true,
+        failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
+    };
+
+    private static async Task<IResult> UpsertDataSourceAsync(ConfigStore store, DataSourceConfigRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Name))
+            return Results.BadRequest("Name is required.");
+
+        var cfg = store.Load();
+        var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+        var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
+
+        var id = string.IsNullOrWhiteSpace(req.Id) ? Guid.NewGuid().ToString("N") : req.Id;
+        var source = new DataSourceConfig(
+            Id: id,
+            Name: req.Name,
+            Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+            Enabled: req.Enabled,
+            Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
+            Priority: req.Priority,
+            Alpaca: req.Alpaca?.ToDomain(),
+            Polygon: req.Polygon?.ToDomain(),
+            IB: req.IB?.ToDomain(),
+            Symbols: req.Symbols,
+            Description: req.Description,
+            Tags: req.Tags
+        );
+
+        var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+        if (idx >= 0)
+        {
+            source = MergeCredentials(source, sources[idx]);
+            sources[idx] = source;
+        }
+        else
+        {
+            sources.Add(source);
+        }
+
+        var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
+        await store.SaveAsync(next);
+
+        return Results.Ok(new { id });
+    }
+
     /// <summary>
     /// Maps all provider and data source API endpoints.
     /// </summary>
@@ -47,60 +131,13 @@ public static class ProviderEndpoints
 
         // Get all data sources
         group.MapGet(UiApiRoutes.ConfigDataSources, (ConfigStore store) =>
-        {
-            var cfg = store.Load();
-            return Results.Json(new
-            {
-                sources = (cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>())
-                    .Select(RedactSecrets)
-                    .ToArray(),
-                defaultRealTimeSourceId = cfg.DataSources?.DefaultRealTimeSourceId,
-                defaultHistoricalSourceId = cfg.DataSources?.DefaultHistoricalSourceId,
-                enableFailover = cfg.DataSources?.EnableFailover ?? true,
-                failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
-            }, jsonOptions);
-        })
+            Results.Json(BuildDataSourcesResponse(store.Load()), jsonOptions))
         .WithName("GetDataSources")
         .WithDescription("Returns all configured data sources with failover and default source settings.")
         .Produces(200);
 
         // Create or update data source
-        group.MapPost(UiApiRoutes.ConfigDataSources, async (ConfigStore store, DataSourceConfigRequest req) =>
-        {
-            if (string.IsNullOrWhiteSpace(req.Name))
-                return Results.BadRequest("Name is required.");
-
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
-
-            var id = string.IsNullOrWhiteSpace(req.Id) ? Guid.NewGuid().ToString("N") : req.Id;
-            var source = new DataSourceConfig(
-                Id: id,
-                Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
-                Enabled: req.Enabled,
-                Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
-                Priority: req.Priority,
-                Alpaca: req.Alpaca?.ToDomain(),
-                Polygon: req.Polygon?.ToDomain(),
-                IB: req.IB?.ToDomain(),
-                Symbols: req.Symbols,
-                Description: req.Description,
-                Tags: req.Tags
-            );
-
-            var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
-            if (idx >= 0)
-                sources[idx] = source;
-            else
-                sources.Add(source);
-
-            var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
-            await store.SaveAsync(next);
-
-            return Results.Ok(new { id });
-        })
+        group.MapPost(UiApiRoutes.ConfigDataSources, UpsertDataSourceAsync)
         .WithName("UpsertDataSource")
         .WithDescription("Creates or updates a data source configuration entry.")
         .Produces(200)
@@ -511,59 +548,12 @@ public static class ProviderEndpoints
 
         // Alias: /api/config/data-sources → /api/config/datasources (for backward compatibility with tests)
         group.MapGet("/api/config/data-sources", (ConfigStore store) =>
-        {
-            var cfg = store.Load();
-            return Results.Json(new
-            {
-                sources = (cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>())
-                    .Select(RedactSecrets)
-                    .ToArray(),
-                defaultRealTimeSourceId = cfg.DataSources?.DefaultRealTimeSourceId,
-                defaultHistoricalSourceId = cfg.DataSources?.DefaultHistoricalSourceId,
-                enableFailover = cfg.DataSources?.EnableFailover ?? true,
-                failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
-            }, jsonOptions);
-        })
+            Results.Json(BuildDataSourcesResponse(store.Load()), jsonOptions))
         .WithName("GetDataSourcesAlias")
         .WithDescription("Alias for /api/config/datasources for backward compatibility.")
         .Produces(200);
 
-        group.MapPost("/api/config/data-sources", async (ConfigStore store, DataSourceConfigRequest req) =>
-        {
-            if (string.IsNullOrWhiteSpace(req.Name))
-                return Results.BadRequest("Name is required.");
-
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
-
-            var id = string.IsNullOrWhiteSpace(req.Id) ? Guid.NewGuid().ToString("N") : req.Id;
-            var source = new DataSourceConfig(
-                Id: id,
-                Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
-                Enabled: req.Enabled,
-                Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
-                Priority: req.Priority,
-                Alpaca: req.Alpaca?.ToDomain(),
-                Polygon: req.Polygon?.ToDomain(),
-                IB: req.IB?.ToDomain(),
-                Symbols: req.Symbols,
-                Description: req.Description,
-                Tags: req.Tags
-            );
-
-            var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
-            if (idx >= 0)
-                sources[idx] = source;
-            else
-                sources.Add(source);
-
-            var next = cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
-            await store.SaveAsync(next);
-
-            return Results.Ok(new { id });
-        })
+        group.MapPost("/api/config/data-sources", UpsertDataSourceAsync)
         .WithName("UpsertDataSourceAlias")
         .WithDescription("Alias for /api/config/datasources POST for backward compatibility.")
         .Produces(200)
