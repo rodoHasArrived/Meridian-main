@@ -414,12 +414,14 @@ The sprint is not complete until API, web Research, retained WPF, and operator w
 
 Readiness dashboards must expose continuity failures as first-class operational telemetry:
 
-- `run_continuity_missing_lineage_total`: promotion history or run review packet missing source/target lineage.
-- `run_continuity_stale_projection_total`: active run projection differs from latest persisted replay/promotions evidence.
-- `run_continuity_unresolved_blocker_linkage_total`: blocker packet exists without valid run-linked route metadata.
-- `run_continuity_cross_surface_identity_mismatch_total`: API/web/WPF/operator-inbox disagree on canonical run identity.
+- `mdc_run_continuity_missing_lineage_total`: promotion history or run review packet missing source/target lineage.
+- `mdc_run_continuity_stale_projection_total`: active run projection differs from latest persisted replay/promotions evidence.
+- `mdc_run_continuity_unresolved_blocker_linkage_total`: blocker packet exists without valid run-linked route metadata.
+- `mdc_run_continuity_cross_surface_identity_mismatch_total`: API/web/WPF/operator-inbox disagree on canonical run identity.
 
-Telemetry events must include `runId`, `sessionId` (if any), `workItemId` (if any), source surface (`api`, `web-research`, `wpf`, `operator-inbox`), and detection timestamp.
+Keep these counters low-cardinality. Dimension them with stable labels such as `surface` (`api`, `web-research`, `wpf`, `operator-inbox`) and `failure_kind`; do not attach `runId`, `sessionId`, or `workItemId` as metric labels.
+
+Structured logs and trace events for each detection must include `runId`, `sessionId` (if any), `workItemId` (if any), source surface, and detection timestamp.
 
 ### Exit rule
 
