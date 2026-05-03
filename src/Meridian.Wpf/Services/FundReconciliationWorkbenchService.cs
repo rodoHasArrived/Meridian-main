@@ -178,7 +178,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 BreakId: breakRow.BreakId,
                 Status: ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: operatorName,
-                ResolutionNote: note),
+                ResolutionNote: note,
+                OperatorRationale: note),
             ct);
     }
 
@@ -196,7 +197,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 BreakId: breakRow.BreakId,
                 Status: ReconciliationBreakQueueStatus.Dismissed,
                 ResolvedBy: operatorName,
-                ResolutionNote: note),
+                ResolutionNote: note,
+                OperatorRationale: note),
             ct);
     }
 

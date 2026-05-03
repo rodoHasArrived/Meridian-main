@@ -82,14 +82,6 @@ public partial class DataExportPage : Page
         _viewModel.SelectedLeanResolution = GetComboTag(LeanResolutionCombo) ?? "minute";
     }
 
-    // ── Scheduled exports toggle ──────────────────────────────────────────
-
-    private void EnableScheduledExportsToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        if (sender is CheckBox cb)
-            _viewModel.IsScheduleEnabled = cb.IsChecked == true;
-    }
-
     // ── Database PasswordBox (non-bindable) ───────────────────────────────
 
     private void SetDatabaseCredentials_Click(object sender, RoutedEventArgs e)

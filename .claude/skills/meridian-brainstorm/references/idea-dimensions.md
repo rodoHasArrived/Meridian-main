@@ -159,10 +159,10 @@ Use these when referencing specific abstractions in ideas. File paths are relati
 ## 🖥️ UX / Developer Experience
 
 - **Interactive setup wizard** — terminal TUI (Spectre.Console) that walks through provider selection, API key entry, symbol configuration, and validates connectivity before first run
-- **Symbol universe browser** — searchable UI (web dashboard) for browsing available symbols per provider; click-to-subscribe without editing JSON config
+- **Symbol universe browser** — searchable browser-workstation UI for browsing available symbols per provider; click-to-subscribe without editing JSON config
 - **Data quality report (PDF export)** — one-click PDF report of collection quality for a date range; useful for academic data provenance documentation
-- **Live tick visualizer** — real-time candlestick chart in the web dashboard for any subscribed symbol; no external charting tool needed
-- **Order book heatmap** — animated L2 order book depth visualization in the web dashboard; visually identify spoofing, iceberg orders
+- **Live tick visualizer** — real-time candlestick chart in the browser workstation for any subscribed symbol; no external charting tool needed
+- **Order book heatmap** — animated L2 order book depth visualization in the browser workstation; visually identify spoofing, iceberg orders
 - **Config diff viewer** — when appsettings.json changes, show a visual diff of what changed and what the system will do differently
 - **Backfill progress UX** — rich progress bars for historical backfill jobs: symbol × date range × provider, with ETA, pause/resume, and error summary
 - **CLI REPL** — `meridian> subscribe AAPL` style interactive shell for power users; tab-completion for symbols and commands
@@ -210,7 +210,7 @@ Use these when referencing specific abstractions in ideas. File paths are relati
 
 ## 📈 User Growth & Adoption
 
-- **"Zero to first tick" quickstart** — a single `docker compose up` command that starts Meridian with Alpaca's free tier, subscribes to SPY, and shows live ticks in the web dashboard within 60 seconds; optimize ruthlessly for time-to-value
+- **"Zero to first tick" quickstart** — a single `docker compose up` command that starts Meridian with Alpaca's free tier, subscribes to SPY, and shows live ticks in the browser workstation within 60 seconds; optimize ruthlessly for time-to-value
 - **YouTube / blog content series** — "Building a Quant Data Pipeline" tutorial series showing Meridian as the backbone; each episode adds a capability (backfill, Jupyter, backtest); drives organic search traffic
 - **GitHub README overhaul** — hero GIF showing live ticks flowing, architecture diagram, one-click deploy badges, and "Why Meridian?" comparison table vs. alternatives; first 30 seconds of the README determine star/bounce
 - **Integration showcase gallery** — web page with working code snippets for each integration (Jupyter, LEAN, pandas, Grafana); copy-paste ready; each snippet links to a deeper tutorial

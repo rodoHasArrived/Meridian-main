@@ -55,6 +55,79 @@ public enum StrategyRunPromotionState : byte
     LiveManaged
 }
 
+// ── PR-02: Paper/live-compatible run shapes ──────────────────────────────────
+
+/// <summary>
+/// Live-execution status fields attached to a running or recently completed live run.
+/// Surfaced on <see cref="StrategyRunSummary"/> and <see cref="StrategyRunDetail"/> when
+/// <see cref="StrategyRunMode"/> is <c>Live</c>.
+/// </summary>
+public sealed record StrategyRunLiveStatus(
+    /// <summary>Broker or execution-venue identifier.</summary>
+    string BrokerId,
+    /// <summary>Brokerage account the run is executing against.</summary>
+    string AccountId,
+    /// <summary>Whether the live run is currently connected to the broker feed.</summary>
+    bool IsConnected,
+    /// <summary>Whether the broker has confirmed the session as active.</summary>
+    bool IsSessionActive,
+    /// <summary>Number of open orders currently tracked by the live execution engine.</summary>
+    int OpenOrderCount,
+    /// <summary>Number of fills received since the run started.</summary>
+    int FillCount,
+    /// <summary>Current realized P&amp;L as reported by the broker reconciliation path.</summary>
+    decimal? RealizedPnl,
+    /// <summary>Current unrealized P&amp;L as reported by the broker reconciliation path.</summary>
+    decimal? UnrealizedPnl,
+    /// <summary>When the broker feed was last successfully polled.</summary>
+    DateTimeOffset? LastBrokerPollAt,
+    /// <summary>Non-null when the live engine has a pending or active reconciliation break.</summary>
+    string? ReconciliationBreakReason = null);
+
+/// <summary>
+/// Paper-execution status fields attached to a running or recently completed paper run.
+/// Surfaced on <see cref="StrategyRunSummary"/> and <see cref="StrategyRunDetail"/> when
+/// <see cref="StrategyRunMode"/> is <c>Paper</c>.
+/// </summary>
+public sealed record StrategyRunPaperStatus(
+    /// <summary>Data-feed or simulation engine driving fills for this paper run.</summary>
+    string SimulationFeedId,
+    /// <summary>Whether the paper engine is currently active and consuming market data.</summary>
+    bool IsActive,
+    /// <summary>Number of simulated fills since the run started.</summary>
+    int FillCount,
+    /// <summary>Number of open simulated orders at the time of last snapshot.</summary>
+    int OpenOrderCount,
+    /// <summary>Current simulated realized P&amp;L.</summary>
+    decimal? RealizedPnl,
+    /// <summary>Current simulated unrealized P&amp;L.</summary>
+    decimal? UnrealizedPnl,
+    /// <summary>When the paper engine last processed a market-data event.</summary>
+    DateTimeOffset? LastMarketEventAt,
+    /// <summary>Whether the paper run has a ledger coverage seam active.</summary>
+    bool HasLedgerCoverage = false);
+
+/// <summary>
+/// Governance hook attached to a run detail or summary, capturing the relevant
+/// approval, audit, and compliance signals for this run at the time of the query.
+/// Multiple hooks may be present — one per governance seam that is active.
+/// </summary>
+public sealed record StrategyRunGovernanceHook(
+    /// <summary>Stable identifier for this governance seam (e.g. "approval", "audit", "compliance").</summary>
+    string SeamId,
+    /// <summary>Human-readable label shown on governance dashboards.</summary>
+    string Label,
+    /// <summary>Whether this seam is currently satisfied / cleared.</summary>
+    bool IsSatisfied,
+    /// <summary>Current approval or audit status string, if applicable.</summary>
+    string? StatusLabel,
+    /// <summary>External reference for this governance record (e.g. ticket ID, audit log ID).</summary>
+    string? ExternalReference,
+    /// <summary>When this governance hook was last evaluated or updated.</summary>
+    DateTimeOffset? LastEvaluatedAt,
+    /// <summary>Narrative note or reason for the current governance state.</summary>
+    string? Note = null);
+
 /// <summary>
 /// Shared execution summary used by workstation drill-ins and governance surfaces.
 /// </summary>
@@ -82,6 +155,7 @@ public sealed record StrategyRunPromotionSummary(
     string? SourceRunId = null,
     string? TargetRunId = null,
     string? AuditReference = null,
+    StrategyRunIdentity? Identity = null,
     string? ApprovalStatus = null,
     string? ManualOverrideId = null,
     string? ApprovedBy = null,
@@ -99,6 +173,22 @@ public sealed record StrategyRunGovernanceSummary(
     string? AuditReference,
     string? DatasetReference,
     string? FeedReference);
+
+/// <summary>
+/// Canonical run identity and provenance contract shared by run projections.
+/// </summary>
+
+public sealed record StrategyRunIdentity(
+    string CanonicalRunKey,
+    string? ParentCanonicalRunKey,
+    IReadOnlyList<string> DerivedCanonicalRunKeys,
+    StrategyRunMode Mode,
+    string? PromotionSourceRunId,
+    string? PromotionTargetRunId,
+    string? PromotionDecision,
+    string? ReplayAuditReference,
+    DateTimeOffset? ReplayVerifiedAt,
+    bool HasReplayAudit);
 
 /// <summary>
 /// Summary row shown in a run browser or recent-run list.
@@ -122,12 +212,37 @@ public sealed record StrategyRunSummary(
     int FillCount,
     DateTimeOffset LastUpdatedAt,
     string? AuditReference = null,
+    StrategyRunIdentity? Identity = null,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
     StrategyRunGovernanceSummary? Governance = null,
     string? FundProfileId = null,
     string? FundDisplayName = null,
-    string? ParentRunId = null);
+    string? ParentRunId = null,
+    string? SweepId = null,
+    string? SweepDefinitionHash = null,
+    string? SweepObjective = null,
+    // PR-02: paper/live-compatible status shapes
+    StrategyRunLiveStatus? LiveStatus = null,
+    StrategyRunPaperStatus? PaperStatus = null);
+
+public sealed record StrategySweepObjectiveRanking(
+    string RunId,
+    string StrategyName,
+    decimal? ObjectiveValue,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    decimal? FinalEquity,
+    DateTimeOffset LastUpdatedAt);
+
+public sealed record StrategySweepResultGroup(
+    string SweepId,
+    string SweepDefinitionHash,
+    string? Objective,
+    DateTimeOffset StartedAt,
+    int RunCount,
+    IReadOnlyList<StrategyRunSummary> Runs,
+    IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings);
 
 /// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
@@ -139,7 +254,9 @@ public sealed record StrategyRunDetail(
     LedgerSummary? Ledger,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
-    StrategyRunGovernanceSummary? Governance = null);
+    StrategyRunGovernanceSummary? Governance = null,
+    // PR-02: governance hooks for approval/audit/compliance seams
+    IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null);
 
 /// <summary>
 /// Security Master coverage state associated with a workstation security reference.
@@ -158,6 +275,9 @@ public enum WorkstationSecurityCoverageStatus : byte
 /// <para><see cref="SubType"/> is the most specific classification available at query time
 /// (e.g. "CommonShare", "Bond", "OptionContract"). It is derived from the security's asset
 /// class and is null when the asset class does not map to a unique sub-type.</para>
+/// <para><see cref="RiskCountry"/> is extracted from the CommonTerms JSON blob when available.
+/// <see cref="IssuerType"/> is only populated by full workbench queries; the lightweight
+/// symbol-lookup path leaves it null to avoid an extra round-trip.</para>
 /// </summary>
 public sealed record WorkstationSecurityReference(
     Guid SecurityId,
@@ -174,7 +294,11 @@ public sealed record WorkstationSecurityReference(
     string? ResolutionReason = null,
     string? LookupPath = null,
     string? LookupSource = null,
-    bool IsInferredMatch = false);
+    bool IsInferredMatch = false,
+    /// <summary>ISO 3166-1 alpha-2 country of risk extracted from CommonTerms, if available.</summary>
+    string? RiskCountry = null,
+    /// <summary>Issuer type classification populated by full workbench queries only.</summary>
+    string? IssuerType = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -525,19 +649,50 @@ public sealed record StrategyRunCashFlowDigest(
 
 /// <summary>
 /// Machine-readable continuity warning for shared run-centered workflows.
+/// Known warning codes include:
+/// missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift,
+/// open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch,
+/// lineage-missing-parent-with-source, promotion-target-run-missing, and
+/// promotion-lineage-shape-inconsistent.
 /// </summary>
 public sealed record StrategyRunContinuityWarning(
     string Code,
-    string Message);
+    StrategyRunContinuityWarningSeverity Severity,
+    string Message,
+    string SourceSeam);
+
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunContinuityWarningSeverity>))]
+public enum StrategyRunContinuityWarningSeverity : byte
+{
+    Info,
+    Warning,
+    Critical
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<StrategyRunContinuitySeamHealthStatus>))]
+public enum StrategyRunContinuitySeamHealthStatus : byte
+{
+    Healthy,
+    Missing,
+    Stale
+}
 
 /// <summary>
 /// Continuity posture across run, portfolio, ledger, cash-flow, and reconciliation seams.
 /// </summary>
 public sealed record StrategyRunContinuityStatus(
+    bool HasRun,
+    StrategyRunContinuitySeamHealthStatus RunHealth,
+    bool HasFills,
+    StrategyRunContinuitySeamHealthStatus FillsHealth,
     bool HasPortfolio,
+    StrategyRunContinuitySeamHealthStatus PortfolioHealth,
     bool HasLedger,
+    StrategyRunContinuitySeamHealthStatus LedgerHealth,
     bool HasCashFlow,
+    StrategyRunContinuitySeamHealthStatus CashFlowHealth,
     bool HasReconciliation,
+    StrategyRunContinuitySeamHealthStatus ReconciliationHealth,
     int AsOfDriftMinutes,
     int OpenReconciliationBreaks,
     int SecurityCoverageIssueCount,
@@ -545,14 +700,25 @@ public sealed record StrategyRunContinuityStatus(
     IReadOnlyList<StrategyRunContinuityWarning> Warnings);
 
 /// <summary>
-/// Shared continuity drill-in that bundles the run-centered seams used across workspaces.
+/// Canonical shared continuity drill-in contract used by Research, Trading, and Governance run drill-ins.
+/// </summary>
+public record StrategyRunContinuityDto(
+    StrategyRunDetail Run,
+    StrategyRunContinuityLineage Lineage,
+    StrategyRunCashFlowDigest? CashFlow,
+    ReconciliationRunSummary? Reconciliation,
+    StrategyRunContinuityStatus ContinuityStatus);
+
+/// <summary>
+/// Backward-compatible alias for <see cref="StrategyRunContinuityDto"/>.
 /// </summary>
 public sealed record StrategyRunContinuityDetail(
     StrategyRunDetail Run,
     StrategyRunContinuityLineage Lineage,
     StrategyRunCashFlowDigest? CashFlow,
     ReconciliationRunSummary? Reconciliation,
-    StrategyRunContinuityStatus ContinuityStatus);
+    StrategyRunContinuityStatus ContinuityStatus)
+    : StrategyRunContinuityDto(Run, Lineage, CashFlow, Reconciliation, ContinuityStatus);
 
 // ---------------------------------------------------------------------------
 // Lot-level tracking read models

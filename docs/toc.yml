@@ -31,8 +31,8 @@
       href: architecture/deterministic-canonicalization.md
     - name: Desktop Layers (Delayed Implementation)
       href: architecture/desktop-layers.md
-    - name: UI Redesign
-      href: architecture/ui-redesign.md
+    - name: Evidence-Backed Investment Operations
+      href: plans/evidence-backed-investment-operations-plan.md
     - name: WPF Workstation Shell UX
       href: architecture/wpf-workstation-shell-ux.md
     - name: Why This Architecture

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync repository structure code blocks in AI instruction markdown files."""
+"""Sync compact repository navigation guidance in AI instruction markdown files."""
 
 from __future__ import annotations
 
@@ -39,6 +39,20 @@ def extract_first_fenced_block(markdown: str) -> str:
     return block
 
 
+def build_compact_navigation_block(structure_source: str) -> str:
+    return "\n".join(
+        [
+            "Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained sources instead:",
+            "",
+            "- `docs/ai/navigation/README.md` for the generated repo-navigation workflow.",
+            "- `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.",
+            f"- `{structure_source}` for the full generated repository tree.",
+            "- `docs/ai/agents/README.md` for agent catalogs.",
+            "- `docs/ai/skills/README.md` for skill catalogs and validation commands.",
+        ]
+    )
+
+
 def find_section_bounds(lines: list[str]) -> tuple[int, int] | None:
     heading_pattern = re.compile(r"^##\s+(.*)$")
     for i, line in enumerate(lines):
@@ -55,6 +69,11 @@ def find_section_bounds(lines: list[str]) -> tuple[int, int] | None:
                 break
         return i, end
     return None
+
+
+def replace_section_body(section_text: str, replacement_block: str) -> str:
+    heading = section_text.splitlines(keepends=True)[0]
+    return heading.rstrip() + "\n\n" + replacement_block.rstrip() + "\n"
 
 
 def replace_first_fenced_block(section_text: str, replacement_block: str) -> str:
@@ -79,8 +98,13 @@ def update_target(markdown: str, replacement_block: str) -> str:
 
     start, end = bounds
     section_text = "".join(lines[start:end])
-    updated_section = replace_first_fenced_block(section_text, replacement_block)
-    return "".join(lines[:start]) + updated_section + "".join(lines[end:])
+    updated_section = replace_section_body(section_text, replacement_block)
+    if end < len(lines) and lines[end].startswith("## ") and not updated_section.endswith("\n\n"):
+        updated_section = updated_section.rstrip() + "\n\n"
+    prefix = "".join(lines[:start])
+    if start > 0 and lines[start - 1].strip() and not prefix.endswith("\n\n"):
+        prefix = prefix.rstrip() + "\n\n"
+    return prefix + updated_section + "".join(lines[end:])
 
 
 def main() -> int:
@@ -93,8 +117,8 @@ def main() -> int:
     if not target_path.exists():
         raise SystemExit(f"Target markdown file not found: {target_path}")
 
-    source_content = source_path.read_text(encoding="utf-8")
-    replacement_block = extract_first_fenced_block(source_content)
+    source_path.read_text(encoding="utf-8")
+    replacement_block = build_compact_navigation_block(args.structure_source)
 
     original = target_path.read_text(encoding="utf-8")
     updated = update_target(original, replacement_block)

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Security Master</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; height: 100%; font-family: var(--font-sans); color: var(--fg); }
+  body { background: var(--bg); background-image: var(--bg-ambient); }
+
+  .app { display: grid; grid-template-rows: 56px 44px 1fr; height: 100vh; }
+
+  /* ---------- command bar ---------- */
+  .cmdbar {
+    display: grid; grid-template-columns: 280px 1fr auto;
+    align-items: center; gap: 16px; padding: 0 20px;
+    background: #05101B; border-bottom: 1px solid var(--border-color);
+  }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: 14px; color: #FFF; }
+  .brand .slash { color: #2AB2D4; margin: 0 6px; }
+  .brand .sub { color: var(--fg-muted); font-weight: 400; font-style: italic; font-family: var(--font-sans); font-size: 13px; }
+
+  .search {
+    display: flex; align-items: center; gap: 10px;
+    background: #0B1520; border: 1px solid #2A4566; border-radius: 4px;
+    padding: 8px 14px; font-family: var(--font-mono); font-size: 13px; color: #FFF;
+    max-width: 720px;
+  }
+  .search .prompt { color: #2AB2D4; }
+  .search .term { color: #FFF; }
+  .search .cursor { width: 8px; height: 14px; background: #2AB2D4; display: inline-block; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .search .grow { flex: 1; }
+  .search .meta { color: var(--fg-muted); font-size: 11px; }
+  .search .meta b { color: #FFF; font-weight: 500; }
+  .search .kbd { font-size: 10px; color: var(--fg-muted); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 3px; }
+
+  .cmd-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 30px; height: 30px; display: grid; place-items: center; color: var(--fg-muted); border-radius: 4px; }
+  .icon-btn:hover { background: rgba(42,178,212,0.06); color: #FFF; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #2AB2D4, #60A5FA);
+            font-family: var(--font-mono); font-size: 11px; color: #05101B; display: grid; place-items: center; font-weight: 600; }
+
+  /* ---------- filter bar ---------- */
+  .filters {
+    display: flex; align-items: center; gap: 8px; padding: 0 20px;
+    background: #08131F; border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-mono); font-size: 11px;
+  }
+  .filters .count { color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+  .filters .count b { color: #FFF; font-weight: 500; margin-right: 4px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: #0B1520;
+          border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 10px; color: #DEE6EF; cursor: pointer; }
+  .chip:hover { border-color: #2A4566; }
+  .chip .chev { color: var(--fg-muted); }
+  .chip.on { background: rgba(42,178,212,0.10); border-color: #2AB2D4; color: #2AB2D4; }
+  .chip .x { color: var(--fg-muted); margin-left: 2px; }
+  .filters .grow { flex: 1; }
+  .sort { color: var(--fg-muted); display: inline-flex; align-items: center; gap: 6px; }
+  .sort b { color: #FFF; font-weight: 500; }
+
+  /* ---------- split view ---------- */
+  .split { display: grid; grid-template-columns: 38% 62%; min-height: 0; }
+
+  /* ----- results table ----- */
+  .results { background: #0B1520; border-right: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
+  .res-head {
+    display: grid; grid-template-columns: 1.6fr 0.7fr 0.6fr 0.7fr 0.5fr;
+    gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border-color);
+    background: #05101B;
+    font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
+  }
+  .res-head .right { text-align: right; }
+  .res-list { overflow-y: auto; flex: 1; }
+  .row {
+    display: grid; grid-template-columns: 1.6fr 0.7fr 0.6fr 0.7fr 0.5fr;
+    gap: 10px; padding: 12px 18px; border-bottom: 1px solid #142036; cursor: pointer;
+    align-items: center; position: relative;
+  }
+  .row:hover { background: rgba(42,178,212,0.04); }
+  .row.active { background: rgba(42,178,212,0.10); box-shadow: inset 3px 0 0 #2AB2D4; }
+  .row.active::after {
+    content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 1px;
+    background: linear-gradient(180deg, transparent, #2AB2D4, transparent);
+    opacity: 0.6;
+  }
+  .name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .name .n { font-size: 13px; color: #FFF; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .name .t { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; font-variant-numeric: tabular-nums; }
+  .row.active .name .n { color: #FFF; }
+  .type { font-size: 11px; color: #BEC8D4; font-family: var(--font-mono); }
+  .market { font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; }
+  .market .ctry { display: block; color: var(--fg-muted); font-size: 10px; margin-top: 1px; }
+  .isin { font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; font-variant-numeric: tabular-nums; }
+  .score-cell { text-align: right; font-family: var(--font-mono); font-size: 12px; color: #FFF; font-variant-numeric: tabular-nums; }
+  .score-bar { display: block; height: 2px; margin-top: 4px; background: #1F344C; border-radius: 1px; overflow: hidden; }
+  .score-bar i { display: block; height: 100%; background: #2AB2D4; }
+  .row.active .score-bar i { background: #84F3B6; }
+
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.active { background: #26BF86; box-shadow: 0 0 0 2px rgba(38,191,134,0.18); }
+
+  /* ----- detail workspace ----- */
+  .detail { overflow-y: auto; background: #08131F; min-height: 0; }
+  .detail-head {
+    background: #0B1520; padding: 22px 32px 18px; border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  .detail-head .crumb {
+    font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
+    margin-bottom: 8px;
+  }
+  .detail-head .crumb .sep { color: #2A4566; margin: 0 8px; }
+  .detail-head .title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .detail-head .title h1 {
+    font-family: var(--font-display); font-size: 26px; font-weight: 600; color: #FFF; letter-spacing: -0.015em; margin: 0;
+  }
+  .detail-head .title code {
+    font-family: var(--font-mono); font-size: 18px; color: #2AB2D4; font-weight: 500;
+    background: rgba(42,178,212,0.08); padding: 2px 10px; border-radius: 3px;
+  }
+  .detail-head .badges { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+  .badge {
+    font-family: var(--font-mono); font-size: 10px; padding: 3px 9px; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;
+  }
+  .badge.active { background: rgba(38,191,134,0.12); color: #26BF86; border: 1px solid rgba(38,191,134,0.35); }
+  .badge.type { color: #DEE6EF; border: 1px solid var(--border-color); background: #0B1520; }
+  .badge.score { background: #2AB2D4; color: #05101B; font-weight: 600; }
+
+  .detail-head .actions {
+    position: absolute; top: 22px; right: 32px; display: flex; gap: 6px; align-items: center;
+  }
+  .btn {
+    font-family: var(--font-mono); font-size: 11px; padding: 7px 12px; border-radius: 4px;
+    border: 1px solid var(--border-color); background: #0B1520; color: #DEE6EF; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { border-color: #2A4566; color: #FFF; }
+  .btn.primary { background: #2AB2D4; color: #05101B; border-color: #2AB2D4; font-weight: 600; }
+  .btn.primary:hover { background: #84F3B6; border-color: #84F3B6; }
+
+  /* canonical identity strip */
+  .summary {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 0;
+    background: #05101B; border-bottom: 1px solid var(--border-color);
+  }
+  .summary .cell { padding: 12px 18px; border-right: 1px solid #142036; }
+  .summary .cell:last-child { border-right: 0; }
+  .summary .k { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .summary .v { font-family: var(--font-mono); font-size: 13.5px; color: #FFF; margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+  .summary .v.muted { color: #BEC8D4; }
+
+  /* tabs */
+  .tabs { display: flex; gap: 0; padding: 0 32px; background: #0B1520; border-bottom: 1px solid var(--border-color); }
+  .tab { padding: 12px 16px; font-size: 13px; color: var(--fg-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab:hover { color: #BEC8D4; }
+  .tab.active { color: #2AB2D4; border-bottom-color: #2AB2D4; font-weight: 500; }
+  .tab .badge-tab { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); margin-left: 6px;
+                    background: #0B1520; border: 1px solid var(--border-color); padding: 1px 6px; border-radius: 8px; }
+
+  /* body */
+  .body { padding: 24px 32px 32px; display: grid; grid-template-columns: 1fr 320px; gap: 28px; }
+  .ident-groups { display: flex; flex-direction: column; gap: 22px; }
+  .ident-section { background: #0B1520; border: 1px solid var(--border-color); border-radius: 6px; }
+  .ident-section .sec-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: #05101B;
+  }
+  .ident-section .sec-title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #DEE6EF; }
+  .ident-section .sec-title b { color: #2AB2D4; margin-right: 8px; font-weight: 500; }
+  .ident-section .sec-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .ident-grid { display: grid; grid-template-columns: 1fr 1fr; padding: 6px 0; }
+  .ident-grid .ident { display: grid; grid-template-columns: 130px 1fr 28px; align-items: center;
+                       padding: 9px 16px; border-bottom: 1px solid #142036; gap: 8px; }
+  .ident-grid .ident:nth-last-child(-n+2) { border-bottom: 0; }
+  .ident-grid .ident .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); }
+  .ident-grid .ident .v { font-family: var(--font-mono); font-size: 13px; color: #FFF; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; word-break: break-all; }
+  .ident-grid .ident .copy { color: var(--fg-muted); cursor: pointer; opacity: 0; }
+  .ident-grid .ident:hover .copy { opacity: 1; color: #2AB2D4; }
+  .ident-grid .ident.span2 { grid-column: span 2; grid-template-columns: 130px 1fr 28px; }
+
+  /* aside */
+  .aside { display: flex; flex-direction: column; gap: 22px; }
+  .panel { background: #0B1520; border: 1px solid var(--border-color); border-radius: 6px; padding: 14px 16px; }
+  .panel h3 { font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em;
+              color: var(--fg-muted); margin: 0 0 12px; }
+  .audit { display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+  .audit-item { display: grid; grid-template-columns: 8px 1fr; gap: 10px; align-items: start; }
+  .audit-item .stem { width: 8px; height: 8px; border-radius: 50%; background: #2A4566; margin-top: 4px; position: relative; }
+  .audit-item .stem::after { content: ""; position: absolute; left: 3px; top: 8px; width: 2px; height: 26px; background: #1F344C; }
+  .audit-item:last-child .stem::after { display: none; }
+  .audit-item.now .stem { background: #26BF86; box-shadow: 0 0 0 3px rgba(38,191,134,0.15); }
+  .audit-item .label { color: #DEE6EF; font-size: 12px; }
+  .audit-item .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); margin-top: 2px; }
+
+  .related { display: flex; flex-direction: column; gap: 4px; }
+  .related-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 8px 10px; border-radius: 4px; cursor: pointer; }
+  .related-row:hover { background: rgba(42,178,212,0.06); }
+  .related-row .left { display: flex; flex-direction: column; gap: 2px; }
+  .related-row .ttl { font-size: 12px; color: #DEE6EF; }
+  .related-row .sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); }
+  .related-row .right { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; }
+
+  .rationale { display: flex; flex-direction: column; gap: 8px; }
+  .rationale .item { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; font-size: 12px; }
+  .rationale .item .check { color: #26BF86; }
+  .rationale .item .text { color: #DEE6EF; }
+  .rationale .item .text b { color: #FFF; font-family: var(--font-mono); font-weight: 500; font-size: 11.5px; }
+  .rationale .item .w { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ command bar ============ -->
+  <div class="cmdbar">
+    <div class="brand">Meridian<span class="slash">//</span><span class="sub">security master</span></div>
+    <div class="search">
+      <span class="prompt">&gt;</span>
+      <span class="term">goldman sachs</span>
+      <span class="cursor"></span>
+      <span class="grow"></span>
+      <span class="meta"><b>5</b> results · <b>0.184s</b></span>
+      <span class="kbd">Ctrl + K</span>
+    </div>
+    <div class="cmd-actions">
+      <span class="icon-btn" title="Saved searches"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></span>
+      <span class="icon-btn" title="History"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      <span class="icon-btn" title="Help"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg></span>
+      <div class="avatar">MK</div>
+    </div>
+  </div>
+
+  <!-- ============ filter bar ============ -->
+  <div class="filters">
+    <span class="count"><b>5</b> results</span>
+    <span class="chip on">Status: Active <span class="x">×</span></span>
+    <span class="chip">Asset class <span class="chev">▾</span></span>
+    <span class="chip">Country <span class="chev">▾</span></span>
+    <span class="chip">Vendor <span class="chev">▾</span></span>
+    <span class="chip">Listing <span class="chev">▾</span></span>
+    <span class="grow"></span>
+    <span class="sort">Sort by <b>Search score · desc</b> <span style="color:var(--fg-muted)">▾</span></span>
+    <span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M6 12h12M10 18h4"/></svg> Columns</span>
+    <span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12l7 7 7-7"/></svg> Export</span>
+  </div>
+
+  <!-- ============ split view ============ -->
+  <div class="split">
+
+    <!-- ===== results ===== -->
+    <div class="results">
+      <div class="res-head">
+        <span>Name · Ticker</span>
+        <span>Type</span>
+        <span>Market</span>
+        <span>ISIN</span>
+        <span class="right">Score</span>
+      </div>
+      <div class="res-list">
+
+        <!-- active -->
+        <div class="row active">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GS</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">NASDAQ <span class="ctry">United States</span></div>
+          <div class="isin">US38141G1040</div>
+          <div class="score-cell">107.39<span class="score-bar"><i style="width:100%;"></i></span></div>
+        </div>
+
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GSN</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">Turquoise <span class="ctry">United Kingdom</span></div>
+          <div class="isin">US38141GXJ83</div>
+          <div class="score-cell">103.31<span class="score-bar"><i style="width:96%;"></i></span></div>
+        </div>
+
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GOS</span></div>
+          <div class="type">Corporate Bond</div>
+          <div class="market">XETRA <span class="ctry">Germany</span></div>
+          <div class="isin">XS2071624245</div>
+          <div class="score-cell">96.90<span class="score-bar"><i style="width:90%;"></i></span></div>
+        </div>
+
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GS</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">EuroTLX <span class="ctry">Italy</span></div>
+          <div class="isin">US38141G1040</div>
+          <div class="score-cell">65.60<span class="score-bar"><i style="width:61%;"></i></span></div>
+        </div>
+
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs BDC Inc</span><span class="t">GSBD</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">NYSE <span class="ctry">United States</span></div>
+          <div class="isin">US38147U1079</div>
+          <div class="score-cell">62.30<span class="score-bar"><i style="width:58%;"></i></span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== detail ===== -->
+    <div class="detail">
+
+      <div class="detail-head">
+        <div class="crumb">Reference data <span class="sep">/</span> Equities <span class="sep">/</span> US <span class="sep">/</span> Selected listing</div>
+        <div class="title">
+          <h1>Goldman Sachs Group Inc</h1>
+          <code>GS</code>
+        </div>
+        <div class="badges">
+          <span class="badge active">● Active</span>
+          <span class="badge type">Common Stock</span>
+          <span class="badge type">USD</span>
+          <span class="badge score">Score 107.39</span>
+        </div>
+        <div class="actions">
+          <button class="btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="1"/><path d="M5 15V5a1 1 0 011-1h10"/></svg> Copy JSON</button>
+          <button class="btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v6M12 22v-6M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg> Watch</button>
+          <button class="btn primary"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4h6v6M10 14L20 4M5 5h5M5 19h14M5 12v7"/></svg> Open in Terminal</button>
+        </div>
+      </div>
+
+      <!-- canonical identity strip -->
+      <div class="summary">
+        <div class="cell"><div class="k">Ticker</div><div class="v">GS</div></div>
+        <div class="cell"><div class="k">Status</div><div class="v" style="color:#26BF86;">Active</div></div>
+        <div class="cell"><div class="k">Type</div><div class="v muted">Common Stock</div></div>
+        <div class="cell"><div class="k">Market</div><div class="v">NASDAQ / GSM</div></div>
+        <div class="cell"><div class="k">Country</div><div class="v muted">United States</div></div>
+        <div class="cell"><div class="k">ISIN</div><div class="v">US38141G1040</div></div>
+      </div>
+
+      <!-- tabs -->
+      <div class="tabs">
+        <div class="tab active">Identifiers <span class="badge-tab">15</span></div>
+        <div class="tab">Company</div>
+        <div class="tab">Product</div>
+        <div class="tab">Classifications</div>
+        <div class="tab">Pricing</div>
+        <div class="tab">Corporate Actions</div>
+      </div>
+
+      <!-- body -->
+      <div class="body">
+
+        <!-- identifier groups -->
+        <div class="ident-groups">
+
+          <div class="ident-section">
+            <div class="sec-head">
+              <span class="sec-title"><b>01</b>Primary</span>
+              <span class="sec-meta">canonical · 1 of 1 · authoritative</span>
+            </div>
+            <div class="ident-grid">
+              <div class="ident span2"><span class="k">Asset ID</span><span class="v">MA4B66MW5E27UAHKG34</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">ID</span><span class="v">GSPD901026E154</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">GSID</span><span class="v">901026</span><span class="copy">⧉</span></div>
+            </div>
+          </div>
+
+          <div class="ident-section">
+            <div class="sec-head">
+              <span class="sec-title"><b>02</b>Market listing</span>
+              <span class="sec-meta">NASDAQ / GSM · United States</span>
+            </div>
+            <div class="ident-grid">
+              <div class="ident"><span class="k">Market</span><span class="v">NASDAQ / GSM</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">Listing Country</span><span class="v">United States</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">Currency</span><span class="v">USD</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">Lot Size</span><span class="v">1</span><span class="copy">⧉</span></div>
+            </div>
+          </div>
+
+          <div class="ident-section">
+            <div class="sec-head">
+              <span class="sec-title"><b>03</b>Vendor IDs</span>
+              <span class="sec-meta">Bloomberg · FactSet · OpenFIGI</span>
+            </div>
+            <div class="ident-grid">
+              <div class="ident"><span class="k">BBG</span><span class="v">GS</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">BBID</span><span class="v">GS UN</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">Composite FIGI</span><span class="v">BBG000C6CFJ5</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">BCID</span><span class="v">GS US</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">FactSet Reg ID</span><span class="v">JL30VZ-R</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">SEDOL</span><span class="v">2407966</span><span class="copy">⧉</span></div>
+            </div>
+          </div>
+
+          <div class="ident-section">
+            <div class="sec-head">
+              <span class="sec-title"><b>04</b>Regulatory &amp; standard</span>
+              <span class="sec-meta">ISO · CFI · CUSIP Bureau</span>
+            </div>
+            <div class="ident-grid">
+              <div class="ident"><span class="k">ISIN</span><span class="v">US38141G1040</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">CFI</span><span class="v">ESVUFR</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">CUSIP</span><span class="v">38141G104</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">CUSIP8</span><span class="v">38141G10</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">LEI</span><span class="v">784F5XWPLTWKTBV3E584</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">MIC</span><span class="v">XNGS</span><span class="copy">⧉</span></div>
+            </div>
+          </div>
+
+          <div class="ident-section">
+            <div class="sec-head">
+              <span class="sec-title"><b>05</b>Internal IDs</span>
+              <span class="sec-meta">Meridian-issued · 4 references</span>
+            </div>
+            <div class="ident-grid">
+              <div class="ident"><span class="k">Prime ID</span><span class="v">1003232152</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">PB ID</span><span class="v">PB-GS-US-CMN</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">Risk ID</span><span class="v">RSK-014291</span><span class="copy">⧉</span></div>
+              <div class="ident"><span class="k">SBA ID</span><span class="v">SBA-GS-EQ-001</span><span class="copy">⧉</span></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- aside -->
+        <aside class="aside">
+
+          <div class="panel">
+            <h3>Match rationale</h3>
+            <div class="rationale">
+              <div class="item"><span class="check">✓</span><span class="text">Exact ticker on <b>GS</b></span><span class="w">+42.0</span></div>
+              <div class="item"><span class="check">✓</span><span class="text">Legal name match</span><span class="w">+28.4</span></div>
+              <div class="item"><span class="check">✓</span><span class="text">Primary listing boost</span><span class="w">+18.5</span></div>
+              <div class="item"><span class="check">✓</span><span class="text">USD currency match</span><span class="w">+12.0</span></div>
+              <div class="item"><span class="check">✓</span><span class="text">Active status</span><span class="w">+6.5</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Audit · last 5 events</h3>
+            <div class="audit">
+              <div class="audit-item now">
+                <span class="stem"></span>
+                <div>
+                  <div class="label">Reviewed by ops · approved</div>
+                  <div class="meta">m.kawai · today 14:02:37 UTC</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <span class="stem"></span>
+                <div>
+                  <div class="label">FactSet snapshot reconciled</div>
+                  <div class="meta">batch · 2026-04-25 22:00 UTC</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <span class="stem"></span>
+                <div>
+                  <div class="label">SEDOL refresh from LSEG</div>
+                  <div class="meta">vendor · 2026-04-25 19:14 UTC</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <span class="stem"></span>
+                <div>
+                  <div class="label">CFI revised ESVUFR → ESVUFR</div>
+                  <div class="meta">a.patel · 2026-04-22 11:48 UTC</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <span class="stem"></span>
+                <div>
+                  <div class="label">Created from CUSIP master</div>
+                  <div class="meta">system · 2024-09-12 08:00 UTC</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Related listings</h3>
+            <div class="related">
+              <div class="related-row">
+                <div class="left"><span class="ttl">GSN · Turquoise</span><span class="sub">UK · Common Stock</span></div>
+                <span class="right">→</span>
+              </div>
+              <div class="related-row">
+                <div class="left"><span class="ttl">GS · EuroTLX</span><span class="sub">IT · Common Stock</span></div>
+                <span class="right">→</span>
+              </div>
+              <div class="related-row">
+                <div class="left"><span class="ttl">GOS · XETRA</span><span class="sub">DE · Corporate Bond</span></div>
+                <span class="right">→</span>
+              </div>
+              <div class="related-row">
+                <div class="left"><span class="ttl">GSBD · NYSE</span><span class="sub">US · BDC affiliate</span></div>
+                <span class="right">→</span>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

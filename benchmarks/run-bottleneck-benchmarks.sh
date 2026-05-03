@@ -83,8 +83,8 @@ echo ""
 
 # Verify dotnet is available
 if ! command -v dotnet &>/dev/null; then
-    echo "ERROR: dotnet SDK not found. Install .NET 9.0 SDK first."
-    echo "  https://dotnet.microsoft.com/download/dotnet/9.0"
+    echo "ERROR: dotnet SDK not found. Install .NET 10.0 SDK first."
+    echo "  https://dotnet.microsoft.com/download/dotnet/10.0"
     exit 1
 fi
 

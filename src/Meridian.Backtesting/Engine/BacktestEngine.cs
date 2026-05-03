@@ -47,7 +47,7 @@ public sealed class BacktestEngine(
         if (backtestPreflightService is not null)
         {
             var preflightReport = await backtestPreflightService
-                .RunAsync(new BacktestPreflightRequestDto(request.From, request.To, request.DataRoot, request.Symbols), ct)
+                .RunAsync(new BacktestPreflightRequestDto(request.From, request.To, request.DataRoot, request.Symbols, request.DefaultExecutionModel.ToString()), ct)
                 .ConfigureAwait(false);
 
             progress?.Report(new BacktestProgressEvent(
@@ -233,74 +233,71 @@ public sealed class BacktestEngine(
     }
 
     /// <summary>
-    /// Wraps a symbol stream to apply corporate action adjustments to all HistoricalBar events.
+    /// Wraps a symbol stream to apply corporate action adjustments incrementally to HistoricalBar events.
     /// </summary>
     private async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
         IAsyncEnumerable<MarketEvent> source,
         string symbol,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        // Buffer all bars for this symbol
-        var bars = new List<HistoricalBar>();
-        var nonBarEvents = new List<MarketEvent>();
+        const int barWindowSize = 4096;
+        var windowEvents = new List<MarketEvent>(barWindowSize * 2);
+        var windowBars = new List<HistoricalBar>(barWindowSize);
 
         await foreach (var evt in source.WithCancellation(ct))
         {
+            windowEvents.Add(evt);
             if (evt.Payload is HistoricalBar bar)
             {
-                bars.Add(bar);
+                windowBars.Add(bar);
+                if (windowBars.Count >= barWindowSize)
+                {
+                    foreach (var adjustedEvent in await FlushAdjustedWindowAsync(windowEvents, windowBars, symbol, ct).ConfigureAwait(false))
+                    {
+                        yield return adjustedEvent;
+                    }
+                }
+            }
+        }
+
+        foreach (var adjustedEvent in await FlushAdjustedWindowAsync(windowEvents, windowBars, symbol, ct).ConfigureAwait(false))
+        {
+            yield return adjustedEvent;
+        }
+    }
+
+    private async Task<IReadOnlyList<MarketEvent>> FlushAdjustedWindowAsync(
+        List<MarketEvent> windowEvents,
+        List<HistoricalBar> windowBars,
+        string symbol,
+        CancellationToken ct)
+    {
+        if (windowEvents.Count == 0)
+        {
+            return [];
+        }
+
+        var adjustedBars = windowBars.Count == 0
+            ? []
+            : await corporateActionAdjustment!.AdjustAsync(windowBars, symbol, ct).ConfigureAwait(false);
+
+        var output = new List<MarketEvent>(windowEvents.Count);
+        var adjustedIndex = 0;
+        foreach (var evt in windowEvents)
+        {
+            if (evt.Payload is HistoricalBar)
+            {
+                output.Add(MarketEvent.HistoricalBar(evt.Timestamp, symbol, adjustedBars[adjustedIndex++]));
             }
             else
             {
-                nonBarEvents.Add(evt);
+                output.Add(evt);
             }
         }
 
-        // Apply adjustments to all bars
-        var adjustedBars = await corporateActionAdjustment!.AdjustAsync(bars, symbol, ct)
-            .ConfigureAwait(false);
-
-        // Merge adjusted bars back with non-bar events
-        // Re-create events in chronological order
-        var barsByTimestamp = adjustedBars.OrderBy(b => b.SessionDate).ToList();
-        var nonBarsByTimestamp = nonBarEvents.OrderBy(e => e.Timestamp).ToList();
-
-        int bIdx = 0, nbIdx = 0;
-        while (bIdx < barsByTimestamp.Count && nbIdx < nonBarsByTimestamp.Count)
-        {
-            var bar = barsByTimestamp[bIdx];
-            var nonBar = nonBarsByTimestamp[nbIdx];
-            var barTimestamp = bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            if (barTimestamp <= nonBar.Timestamp.UtcDateTime)
-            {
-                yield return MarketEvent.HistoricalBar(
-                    new DateTimeOffset(barTimestamp, TimeSpan.Zero),
-                    symbol,
-                    bar);
-                bIdx++;
-            }
-            else
-            {
-                yield return nonBar;
-                nbIdx++;
-            }
-        }
-
-        while (bIdx < barsByTimestamp.Count)
-        {
-            var bar = barsByTimestamp[bIdx];
-            yield return MarketEvent.HistoricalBar(
-                new DateTimeOffset(bar.SessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
-                symbol,
-                bar);
-            bIdx++;
-        }
-
-        while (nbIdx < nonBarsByTimestamp.Count)
-        {
-            yield return nonBarsByTimestamp[nbIdx];
-            nbIdx++;
-        }
+        windowEvents.Clear();
+        windowBars.Clear();
+        return output;
     }
 
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(

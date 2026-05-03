@@ -40,6 +40,7 @@ public partial class BackfillPage : Page
         RestorePageFilterState();
         UpdateProviderPrioritySummary();
         UpdateGranularityHint();
+        RefreshStartSetupState();
 
         await _viewModel.StartAsync();
     }
@@ -94,6 +95,12 @@ public partial class BackfillPage : Page
         var symbols = SymbolsBox.Text?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
         // M1: delegate text update to the ViewModel instead of writing to a named element directly.
         _viewModel.UpdateSymbolCount(symbols.Length);
+        RefreshStartSetupState();
+    }
+
+    private void ProviderCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        RefreshStartSetupState();
     }
 
     private void ProviderPriority_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -110,6 +117,7 @@ public partial class BackfillPage : Page
             return;
 
         UpdateGranularityHint();
+        RefreshStartSetupState();
     }
 
     private void ApplySmartRange_Click(object sender, RoutedEventArgs e)
@@ -126,6 +134,7 @@ public partial class BackfillPage : Page
         // M1: delegate hint text update to the ViewModel instead of writing to a named element.
         var lookbackDays = (int)(toDate - fromDate).TotalDays;
         _viewModel.UpdateDateRangeHint(lookbackDays, symbolCount, BackfillViewModel.GetGranularityDisplay(granularity));
+        RefreshStartSetupState();
     }
 
     private void UpdateProviderPrioritySummary()
@@ -150,6 +159,29 @@ public partial class BackfillPage : Page
     private static string? GetComboSelectedTag(ComboBox combo)
     {
         return (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+    }
+
+    private static string? GetComboSelectedContent(ComboBox combo)
+    {
+        return (combo.SelectedItem as ComboBoxItem)?.Content?.ToString();
+    }
+
+    private void RefreshStartSetupState()
+    {
+        if (SymbolsBox is null || FromDatePicker is null || ToDatePicker is null || ProviderCombo is null || GranularityCombo is null)
+            return;
+
+        var provider = GetComboSelectedTag(ProviderCombo) ?? "composite";
+        var providerDisplay = GetComboSelectedContent(ProviderCombo);
+        var granularity = GetComboSelectedTag(GranularityCombo) ?? "Daily";
+
+        _viewModel.UpdateStartSetupState(
+            SymbolsBox.Text,
+            FromDatePicker.SelectedDate,
+            ToDatePicker.SelectedDate,
+            providerDisplay,
+            provider,
+            granularity);
     }
 
     private static void SelectComboItemByTag(ComboBox combo, string tag)
@@ -217,38 +249,42 @@ public partial class BackfillPage : Page
 
     private void DatePicker_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
     {
-        FromDateValidationError.Visibility = Visibility.Collapsed;
-        ToDateValidationError.Visibility = Visibility.Collapsed;
+        RefreshStartSetupState();
     }
 
     private void Last30Days_Click(object sender, RoutedEventArgs e)
     {
         FromDatePicker.SelectedDate = DateTime.Today.AddDays(-30);
         ToDatePicker.SelectedDate = DateTime.Today;
+        RefreshStartSetupState();
     }
 
     private void Last90Days_Click(object sender, RoutedEventArgs e)
     {
         FromDatePicker.SelectedDate = DateTime.Today.AddDays(-90);
         ToDatePicker.SelectedDate = DateTime.Today;
+        RefreshStartSetupState();
     }
 
     private void YearToDate_Click(object sender, RoutedEventArgs e)
     {
         FromDatePicker.SelectedDate = new DateTime(DateTime.Today.Year, 1, 1);
         ToDatePicker.SelectedDate = DateTime.Today;
+        RefreshStartSetupState();
     }
 
     private void LastYear_Click(object sender, RoutedEventArgs e)
     {
         FromDatePicker.SelectedDate = DateTime.Today.AddYears(-1);
         ToDatePicker.SelectedDate = DateTime.Today;
+        RefreshStartSetupState();
     }
 
     private void Last5Years_Click(object sender, RoutedEventArgs e)
     {
         FromDatePicker.SelectedDate = DateTime.Today.AddYears(-5);
         ToDatePicker.SelectedDate = DateTime.Today;
+        RefreshStartSetupState();
     }
 
     // ── Symbol quick-add ─────────────────────────────────────────────────────
@@ -256,11 +292,13 @@ public partial class BackfillPage : Page
     private async void AddAllSubscribed_Click(object sender, RoutedEventArgs e)
     {
         SymbolsBox.Text = await _viewModel.GetSubscribedSymbolsTextAsync();
+        RefreshStartSetupState();
     }
 
     private void AddMajorETFs_Click(object sender, RoutedEventArgs e)
     {
         SymbolsBox.Text = _viewModel.AppendSymbols(SymbolsBox.Text, "SPY", "QQQ", "IWM");
+        RefreshStartSetupState();
     }
 
     private async void UpdateLatest_Click(object sender, RoutedEventArgs e)
@@ -270,6 +308,7 @@ public partial class BackfillPage : Page
         FromDatePicker.SelectedDate = preset.From;
         ToDatePicker.SelectedDate = preset.To;
         SymbolsBox.Text = preset.SymbolsText;
+        RefreshStartSetupState();
 
         // M3: notification belongs in ViewModel.
         _viewModel.HandleUpdateToLatest();
@@ -279,6 +318,10 @@ public partial class BackfillPage : Page
 
     private async void StartBackfill_Click(object sender, RoutedEventArgs e)
     {
+        RefreshStartSetupState();
+        if (!_viewModel.CanStartBackfill)
+            return;
+
         var provider = (ProviderCombo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
         var granularity = (GranularityCombo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
 
@@ -289,30 +332,12 @@ public partial class BackfillPage : Page
                 provider,
                 granularity,
                 out var request,
-                out var symbolValidationError,
-                out var fromDateValidationError,
-                out var toDateValidationError))
+                out _,
+                out _,
+                out _))
         {
-            SymbolsValidationError.Text = symbolValidationError ?? string.Empty;
-            SymbolsValidationError.Visibility = string.IsNullOrWhiteSpace(symbolValidationError)
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-
-            FromDateValidationError.Text = fromDateValidationError ?? string.Empty;
-            FromDateValidationError.Visibility = string.IsNullOrWhiteSpace(fromDateValidationError)
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-
-            ToDateValidationError.Text = toDateValidationError ?? string.Empty;
-            ToDateValidationError.Visibility = string.IsNullOrWhiteSpace(toDateValidationError)
-                ? Visibility.Collapsed
-                : Visibility.Visible;
             return;
         }
-
-        SymbolsValidationError.Visibility = Visibility.Collapsed;
-        FromDateValidationError.Visibility = Visibility.Collapsed;
-        ToDateValidationError.Visibility = Visibility.Collapsed;
 
         await _viewModel.StartBackfillAsync(
             request.Symbols,

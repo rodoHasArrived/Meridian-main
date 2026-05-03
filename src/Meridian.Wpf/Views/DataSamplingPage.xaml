@@ -68,7 +68,8 @@
                                 <Button Content="Add"
                                         Style="{StaticResource SecondaryButtonStyle}"
                                         Margin="8,0,0,0"
-                                        Click="AddSymbol_Click" />
+                                        Command="{Binding AddSymbolCommand}"
+                                        AutomationProperties.AutomationId="DataSamplingAddSymbolButton" />
                             </StackPanel>
                             <ListBox ItemsSource="{Binding Symbols}" Height="100" Margin="0,8,0,0" />
                         </StackPanel>
@@ -90,14 +91,46 @@
                         </StackPanel>
                     </Grid>
 
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,16,0,0"
+                            AutomationProperties.AutomationId="DataSamplingReadinessCard">
+                        <StackPanel>
+                            <TextBlock Text="{Binding SamplingReadinessTitle}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="DataSamplingReadinessTitle" />
+                            <TextBlock Text="{Binding SamplingReadinessDetail}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Margin="0,4,0,0"
+                                       AutomationProperties.AutomationId="DataSamplingReadinessDetail" />
+                            <TextBlock Text="{Binding SymbolScopeText}"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       FontSize="12"
+                                       Margin="0,8,0,0"
+                                       AutomationProperties.AutomationId="DataSamplingSymbolScopeText" />
+                            <TextBlock Text="{Binding ValidationSummary}"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       Margin="0,8,0,0"
+                                       Visibility="{Binding ValidationSummary, Converter={StaticResource StringToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="DataSamplingValidationSummary" />
+                        </StackPanel>
+                    </Border>
+
                     <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                         <Button Content="Generate Sample"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="GenerateSample_Click"
-                                Margin="0,0,8,0" />
+                                Command="{Binding GenerateSampleCommand}"
+                                Margin="0,0,8,0"
+                                AutomationProperties.AutomationId="DataSamplingGenerateButton" />
                         <Button Content="Save Preset"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="SavePreset_Click" />
+                                Command="{Binding SavePresetCommand}"
+                                AutomationProperties.AutomationId="DataSamplingSavePresetButton" />
                     </StackPanel>
 
                     <TextBlock Text="{Binding StatusMessage}"
@@ -109,6 +142,10 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Recent Samples" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <TextBlock Text="{Binding RecentSamplesStateText}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Margin="0,0,0,12"
+                               AutomationProperties.AutomationId="DataSamplingRecentSamplesStateText" />
                     <DataGrid ItemsSource="{Binding RecentSamples}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
@@ -122,11 +159,6 @@
                     </DataGrid>
                 </StackPanel>
             </Border>
-
-            <TextBlock Text="{Binding ValidationSummary}"
-                       Foreground="{StaticResource ErrorColorBrush}"
-                       Margin="0,12,0,0"
-                       Visibility="{Binding ValidationSummary, Converter={StaticResource StringToVisibilityConverter}}" />
         </StackPanel>
     </ScrollViewer>
 </Page>

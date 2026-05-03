@@ -46,8 +46,8 @@ internal sealed class CollectorFeatureRegistration : IServiceFeatureRegistration
         {
             var collector = sp.GetRequiredService<OptionDataCollector>();
             var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<OptionsChainService>>();
-            var provider = sp.GetService<Infrastructure.Adapters.Core.IOptionsChainProvider>();
-            return new OptionsChainService(collector, logger, provider);
+            var providers = sp.GetServices<Infrastructure.Adapters.Core.IOptionsChainProvider>();
+            return new OptionsChainService(collector, logger, providers);
         });
 
         return services;

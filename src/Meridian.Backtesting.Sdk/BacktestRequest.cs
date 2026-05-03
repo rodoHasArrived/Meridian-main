@@ -58,8 +58,13 @@ public enum BacktestCommissionKind
 /// When true, adjusts historical bar prices for splits and dividends using Security Master data (default: true).
 /// </param>
 /// <param name="RiskFreeRate">
-/// Annualised risk-free rate used by <see cref="BacktestMetrics.SharpeRatio"/> and
-/// <see cref="BacktestMetrics.SortinoRatio"/> calculations (e.g. 0.04 for 4%). Defaults to 0.04.
+/// Annualised risk-free rate fallback used by <see cref="BacktestMetrics.SharpeRatio"/> and
+/// <see cref="BacktestMetrics.SortinoRatio"/> calculations when
+/// <see cref="RiskFreeRateSeries"/> is not provided (e.g. 0.04 for 4%). Defaults to 0.04.
+/// </param>
+/// <param name="RiskFreeRateSeries">
+/// Optional date-indexed annualised risk-free series used to compute period-matched excess returns
+/// for Sharpe/Sortino. Dates not present in the series fall back to <see cref="RiskFreeRate"/>.
 /// </param>
 /// <param name="MaxParticipationRate">
 /// Maximum fraction of a bar's traded volume that the <see cref="ExecutionModel.BarMidpoint"/> fill
@@ -95,6 +100,7 @@ public sealed record BacktestRequest(
     decimal MarketImpactCoefficient = 0.1m,
     bool AdjustForCorporateActions = true,
     double RiskFreeRate = 0.04,
+    IReadOnlyDictionary<DateOnly, double>? RiskFreeRateSeries = null,
     decimal MaxParticipationRate = 0m,
     bool FailOnUnknownSymbols = false)
 {

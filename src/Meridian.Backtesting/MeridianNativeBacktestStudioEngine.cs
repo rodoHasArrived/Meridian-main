@@ -86,7 +86,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         PruneTerminalHistory();
 
         if (_runs.TryGetValue(runHandle, out var registration))
-            return registration.Result.Task.WaitAsync(ct);
+            return registration.GetResultAfterTerminalizationAsync(ct);
 
         if (_terminalRuns.TryGetValue(runHandle, out var terminal))
             return terminal.Result(ct);
@@ -143,6 +143,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         _terminalOrder.Enqueue((registration.EngineRunHandle, terminalAt));
         _runs.TryRemove(registration.EngineRunHandle, out _);
         PruneTerminalHistory();
+        registration.MarkTerminalized();
     }
 
     private void PruneTerminalHistory()
@@ -229,6 +230,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
             EngineRunHandle = engineRunHandle;
             StartedAt = startedAt;
             Result = new TaskCompletionSource<BacktestResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Terminalized = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public string RunId { get; }
@@ -238,6 +240,8 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         public DateTimeOffset StartedAt { get; }
 
         public TaskCompletionSource<BacktestResult> Result { get; }
+
+        public TaskCompletionSource<bool> Terminalized { get; }
 
         public CancellationToken Token => _runCancellation.Token;
 
@@ -295,6 +299,28 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
             }
 
             Result.TrySetException(ex);
+        }
+
+        public void MarkTerminalized() => Terminalized.TrySetResult(true);
+
+        public async Task<BacktestResult> GetResultAfterTerminalizationAsync(CancellationToken ct)
+        {
+            try
+            {
+                var result = await Result.Task.WaitAsync(ct).ConfigureAwait(false);
+                await Terminalized.Task.WaitAsync(ct).ConfigureAwait(false);
+                return result;
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested && Result.Task.IsCompleted)
+            {
+                await Terminalized.Task.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (Exception) when (!ct.IsCancellationRequested && Result.Task.IsCompleted)
+            {
+                await Terminalized.Task.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
         }
 
         public BacktestStudioRunStatus ToStatus()

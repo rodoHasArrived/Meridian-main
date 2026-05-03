@@ -1,6 +1,6 @@
 # Meridian - WPF Desktop Application
 
-This is the WPF (.NET 9) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
+This is the WPF (.NET 10) desktop application for Meridian. It is the primary desktop operator shell and the main host for the workstation migration.
 
 ## Overview
 
@@ -12,7 +12,7 @@ The current WPF application projects seven root workspace capabilities: Trading,
 - **Reporting workflows** - report packs, dashboards, analysis export, export wizards, and export presets
 - **Strategy workflows** - backtests, strategy runs, charts, replay, run comparison, RunMat, QuantScript, and Lean integration
 - **Data workflows** - symbols, providers, provider health, backfills, schedules, storage, packaging, and export flows
-- **Settings workflows** - credentials, diagnostics, system health, service management, activity, notifications, shortcuts, help, and setup
+- **Settings workflows** - credentials, diagnostics, system health, service management, activity, notifications, local AI agent, shortcuts, help, and setup
 - **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context, the governance shell keeps the currently selected lane plus its next handoff visible above the queue wall, and the trading shell now keeps a desk-briefing hero above the workbench so context, replay/controls posture, and the next desk action stay explicit
 
 The header operator queue consumes shared inbox route metadata and maps readiness work items into concrete workbenches: replay and DK1 trust items open `FundAuditTrail`, promotion review opens `StrategyRuns`, brokerage-sync blockers open `AccountPortfolio`, execution-control blockers open `RunRisk`, and governance items open `SecurityMaster`, `FundReconciliation`, or `FundReportPack`.
@@ -24,6 +24,8 @@ The persistent status bar now surfaces pipeline queue pressure from the existing
 Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, a stateful operator brief, account inspectors, provider-routing previews, balance-evidence posture, and Security Master / historical-price / backfill posture surfaced directly from retained account evidence plus the shared `FundStructureSharedDataAccessDto` baseline.
 `NotificationCenter` now supports history triage with search, unread-only filtering, directly bound severity filters, per-item acknowledgement, and a reset-filters recovery action so governance operators can work events as a queue instead of a flat feed.
 `ProviderHealth` now opens with a compact provider-posture briefing that turns connected/disconnected streaming counts, backfill availability, and stale snapshots into one next handoff before the operator scans individual provider cards.
+`Backfill` now surfaces a bound start-readiness card before launch, with symbol/date validation, request scope, and the Start button enablement projected by `BackfillViewModel` instead of page-owned validation label updates.
+`ScheduleManager` now binds schedule refresh, empty/error status, template loading, and cron validation through `ScheduleManagerViewModel`, keeping the page code-behind limited to construction and initial load.
 `SystemHealth` now opens with a triage briefing that folds provider health, storage pressure, corrupted/orphaned storage evidence, and retained event severity into one next handoff before the operator scans CPU, storage, and recent-event panels; its provider and recent-event empty states distinguish pending scans from confirmed empty snapshots.
 `ActivityLog` now keeps a compact triage strip above the virtualized event list so visible entries, retained errors, retained warnings, latest event time, and active filters stay visible while operators export, clear, or reset filtered support traces.
 `Watchlist` now opens with a posture card that summarizes saved lists, pinned lists, symbol coverage, and current search scope before operators load, pin, create, or import a list; pinned lists also surface first with compact card badges for quick desk loading.
@@ -31,13 +33,21 @@ Recent governance work is also moving older utility pages into shell-native work
 Accounting, Reporting, and Settings now split the former governance surface into capability-specific roots while preserving legacy governance deep-link compatibility.
 `FundLedger` reconciliation now includes a reset-filters recovery action beside queue refresh and consumes the shared reconciliation calibration summary so tolerance-profile posture, pending sign-off, and missing calibration metadata are visible before operators resolve or sign off break queue work.
 `DataOperationsWorkspaceShellPage` now backs the Data root with a scope-and-handoff briefing card plus compact provider, backfill, and storage health chips so operators see the active focus and readiness posture before dropping into the queue wall.
+`AddProviderWizard` now binds provider-catalog filtering, result-scope copy, empty-state recovery, credential guidance, connection feedback, save feedback, and setup-progress fills through `AddProviderWizardViewModel` while the page stays limited to navigation and dynamic credential-field controls.
 `Storage` now opens with an archive-posture card that summarizes daily growth, capacity horizon, and the last metrics scan before operators review the file-structure preview. The preview still annotates the selected root, layout, and compression scope so archive-path decisions are visible before operators run backfill, export, or package jobs.
+`DataSources` now surfaces edit-readiness copy, save gating, provider/type/feed bindings, option checkbox bindings, symbol scope, and row commands through `DataSourcesViewModel` so provider setup persists through view-model state instead of page event relays.
+`SymbolMapping` now binds provider lists, test results, add-mapping readiness, mapping counts, empty-state visibility, and inline remove confirmation through `SymbolMappingViewModel`; import/export file pickers remain view-owned while CSV content flows through the view model.
+`CollectionSessions` now exposes session lifecycle readiness, loading state, empty-history recovery, and create/refresh/pause/stop actions through `CollectionSessionViewModel` commands so capture-session controls disable consistently during async work.
 `DataBrowser` now refreshes its retained market-data window as filters change, binds the top time-period selector to view-model date-range state, and shows a reset-filters empty state when search, type, venue, or date filters hide every row.
-`DataExport` now surfaces Quick Export readiness before launch, disables invalid export attempts through `DataExportViewModel`, and keeps symbol count, date scope, format, compression, and progress state bound to the view model.
+`DataExport` now surfaces Quick Export and Scheduled Export readiness before launch, disables invalid export or schedule attempts through `DataExportViewModel`, and keeps symbol count, date scope, format, compression, schedule destination, and progress state bound to the view model.
+`DataSampling` now binds symbol add, sample generation, and preset save actions through `DataSamplingViewModel` commands, with inline readiness, symbol-scope, validation, and recent-sample state before an operator queues a sample.
 `TimeSeriesAlignment` now moves alignment setup, symbol parsing, preset application, validation, command enablement, run progress, result summary, and recent alignment state into `TimeSeriesAlignmentViewModel`, so invalid runs are explained before launch and the page code-behind stays focused on construction.
 `AdvancedAnalytics` now binds diagnostics actions through `AdvancedAnalyticsViewModel` commands, shows comparison readiness guidance beside the provider-compare controls, and replaces the repair `MessageBox` with an inline confirmation panel driven by repairable-gap state.
 `AnalysisExport` now binds run and preset actions through `AnalysisExportViewModel` commands, surfaces export readiness guidance before launch, and keeps recent-export state text with the retained in-session export list.
+`AnalysisExportWizard` now binds add-symbol, step navigation, queue, and reset actions through `AnalysisExportWizardViewModel`, with step readiness, validation visibility, and scope text projected before an operator advances through the wizard.
+`ExportPresets` now binds save/delete actions through `ExportPresetsViewModel` commands, shows preset-library and save-readiness copy before operators commit changes, and keeps built-in preset deletion disabled through view-model state.
 `ResearchWorkspaceShellPage` now backs the Strategy root with a desk-briefing hero above the market briefing so operators can see the current cycle focus, the next handoff, and the primary blocker before dropping into run history or promotion candidates.
+`Charting` now binds symbol, timeframe, date range, indicator toggles, and refresh readiness through `ChartingPageViewModel`, with a setup-readiness card that explains incomplete chart requests before the candlestick surface is refreshed.
 `StrategyRuns` now distinguishes an empty run library from filters that hide retained runs, shows the visible/recorded run scope beside search, gates the comparison picker with next-step guidance, and exposes a reset-filters recovery action without reloading the run store.
 `BatchBacktest` now gives the sweep results pane stateful empty guidance for idle, validation-blocked, running, failed-without-results, cancelled, and populated result states using only the existing batch counters and summaries.
 `RunMat` now gives the output panel an empty/streaming state and disables Stop unless a script run is active, using only the current run state and retained output lines.
@@ -66,13 +76,13 @@ The WPF application remains Meridian's primary desktop surface, but it is now th
 - **Data** - providers, symbols, backfill, storage, schedules, quality, package, and export workflows
 - **Settings** - credentials, diagnostics, service management, health, activity, notifications, help, and setup
 
-See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/trading-workstation-migration-blueprint.md) for the active migration blueprint, [`docs/status/ROADMAP.md`](../../docs/status/ROADMAP.md) for the active delivery waves, and [`docs/architecture/ui-redesign.md`](../../docs/architecture/ui-redesign.md) for the target information architecture.
+See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/trading-workstation-migration-blueprint.md) for the active migration blueprint, [`docs/status/ROADMAP.md`](../../docs/status/ROADMAP.md) for the active delivery waves, and [`docs/plans/evidence-backed-investment-operations-plan.md`](../../docs/plans/evidence-backed-investment-operations-plan.md) for the current product-category filter. Historical UI redesign notes now live in [`archive/docs/assessments/ui-redesign.md`](../../archive/docs/assessments/ui-redesign.md).
 
 ## Architecture
 
 ### Technology Stack
 
-- **.NET 9.0**
+- **.NET 10.0**
 - **WPF**
 - **MVVM pattern**
 - **Microsoft.Extensions.DependencyInjection**
@@ -90,7 +100,7 @@ See [`docs/plans/trading-workstation-migration-blueprint.md`](../../docs/plans/t
 
 ### Requirements
 
-- **.NET 9 SDK**
+- **.NET 10 SDK**
 - **Windows** for a functional WPF build
 - **Visual Studio 2022** optional, but useful for XAML work
 
@@ -144,7 +154,7 @@ Examples:
 - `Accounting`: `AccountingShell`, `FundLedger`, `RunLedger`, `RunCashFlow`, `FundBanking`, `FundCashFinancing`, `FundTrialBalance`, `FundReconciliation`, `FundAuditTrail`
 - `Reporting`: `ReportingShell`, `FundReportPack`, `Dashboard`, `AnalysisExport`, `AnalysisExportWizard`, `ExportPresets`
 - `Strategy`: `StrategyShell`, `Backtest`, `BatchBacktest`, `StrategyRuns`, `RunDetail`, `LeanIntegration`, `Charts`, `RunMat`, `QuantScript`, `EventReplay`, `Watchlist`
-- `Data`: `DataShell`, `Provider`, `ProviderHealth`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`, `TimeSeriesAlignment`, `DataQuality`, `SecurityMaster`, `DataBrowser`
+- `Data`: `DataShell`, `Provider`, `ProviderHealth`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`, `TimeSeriesAlignment`, `DataQuality`, `CollectionSessions`, `SecurityMaster`, `DataBrowser`
 - `Settings`: `SettingsShell`, `Settings`, `CredentialManagement`, `SystemHealth`, `Diagnostics`, `ServiceManager`, `AdminMaintenance`, `MessagingHub`, `NotificationCenter`, `ActivityLog`, `KeyboardShortcuts`, `Help`, `SetupWizard`, `Workspaces`
 
 `PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
@@ -160,10 +170,16 @@ Examples:
 `NotificationCenter` includes a reset-filters empty-state action and view-model-owned severity filter state so search, unread-only, and severity-filter misses can recover the retained history list without another service read or code-behind checkbox synchronization.
 `ActivityLog` includes a triage strip and reset-filters empty-state action ahead of the virtualized log list so support workflows can see retained errors, warnings, the latest event, and active filter scope, then recover hidden retained entries without another backend request. Its header actions are state-aware: export is available only for visible rows, and clear is available only when retained activity exists.
 `MessagingHub` includes a bound refresh action with header recency text, a delivery-posture card, retained-activity scope, and a disabled clear action when no messaging rows are retained.
+`AdminMaintenance` includes view-model-owned schedule readiness, cleanup readiness, preview command, inline confirmation, and execute gating so enabled maintenance schedules require at least one selected operation and destructive cleanup actions stay disabled until a staged preview has files.
+`Agent` includes a view-model-owned local-AI readiness card, model-scope text, empty-conversation guidance, and command-gated input/clear actions so Ollama availability and missing-model setup are visible before an operator tries to chat.
 `Watchlist` includes a posture card, pinned-first card ordering, pinned badges, and dynamic empty-state copy so search misses, unpinned libraries, and ready pinned lists each give the operator a clear next step.
 `SecurityMaster` includes a view-model-owned `SearchCommand`, search-recovery empty state, and `ClearSearchCommand` so failed or unavailable searches can run from the same button/keyboard path and clear the query, selected security, and retained results without issuing another service call.
+`Symbols` includes view-model-owned search, subscription, and exchange filter state with visible-scope copy, a filter-aware empty state, a bound `Clear Filters` recovery action, and bulk-action enablement that follows the retained row selection.
+`SymbolMapping` includes view-model-owned test/add/remove mapping state, inline setup guidance, mapping/test result visibility, and a remove-confirmation panel so provider symbol overrides can be checked and changed without page-owned workflow logic.
+`CollectionSessions` includes a view-model-owned lifecycle readiness card, busy/loading projection, command-gated create/refresh/pause/stop actions, and an empty-history recovery path for starting the first daily capture session.
 `DataQuality` distinguishes symbol search misses from an empty monitored-symbol library and exposes a `Clear Filter` recovery action in the Quality by Symbol panel.
 `DataBrowser` includes a view-model-owned time-period selector, filter-aware empty state, and `Reset Filters` command so data operations users can scope or recover hidden retained market-data rows without a backend read.
+`DataSampling` includes a view-model-owned readiness card, command-gated add/generate/save actions, symbol-scope copy, and recent-sample state so data operators can resolve missing name, symbols, date range, or data-type setup before queueing a sample.
 `TimeSeriesAlignment` includes a view-model-owned readiness card, bound setup controls, command-gated run action, progress state, result summary, and recent-alignment empty state so data operators can fix missing symbols, dates, or fields before launching an alignment request.
 `TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
 `ResearchWorkspaceShellPage` now keeps the active research cycle explicit with a desk-briefing hero that upgrades no-op trading-review prompts into actionable run-browser, portfolio, or promotion handoffs based on the selected run state.

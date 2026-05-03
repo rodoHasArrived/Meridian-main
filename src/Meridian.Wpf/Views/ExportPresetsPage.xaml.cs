@@ -18,14 +18,4 @@ public partial class ExportPresetsPage : Page
     {
         await _viewModel.InitializeAsync();
     }
-
-    private void SavePreset_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.SavePreset();
-    }
-
-    private void DeletePreset_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.DeletePreset();
-    }
 }

@@ -36,6 +36,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence
 
+from dashboard_rendering import (
+    current_utc_timestamp,
+    load_canonical_json,
+    render_markdown_from_json,
+    write_canonical_json,
+)
+
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -168,6 +175,16 @@ def _last_modified(path: Path, root: Path) -> datetime:
     return _file_mtime_utc(path)
 
 
+def _repo_relative_path(path: Path, root: Path) -> str:
+    """Return a stable repository-relative path for generated reports."""
+    return path.relative_to(root).as_posix()
+
+
+def _display_path(path: str) -> str:
+    """Normalize stored path strings before rendering Markdown."""
+    return path.replace("\\", "/")
+
+
 # ---------------------------------------------------------------------------
 # Link extraction & orphan detection
 # ---------------------------------------------------------------------------
@@ -187,7 +204,7 @@ def _normalise_link_target(link: str, source_dir: Path, root: Path) -> Optional[
         return None
     resolved = (source_dir / link).resolve()
     try:
-        return str(resolved.relative_to(root.resolve()))
+        return resolved.relative_to(root.resolve()).as_posix()
     except ValueError:
         return None
 
@@ -202,7 +219,7 @@ def _collect_links(
         if content is None:
             continue
         try:
-            source_rel = str(md_path.relative_to(root))
+            source_rel = _repo_relative_path(md_path, root)
         except ValueError:
             continue
         targets: set[str] = set()
@@ -228,7 +245,7 @@ def _find_orphans(
     all_rel: set[str] = set()
     for md_path in md_files:
         try:
-            all_rel.add(str(md_path.relative_to(root)))
+            all_rel.add(_repo_relative_path(md_path, root))
         except ValueError:
             pass
 
@@ -261,9 +278,9 @@ def _analyse_file(path: Path, root: Path, now: datetime) -> FileInfo:
     stale = (now - last_mod).days > STALE_THRESHOLD_DAYS
 
     try:
-        rel = str(path.relative_to(root))
+        rel = _repo_relative_path(path, root)
     except ValueError:
-        rel = str(path)
+        rel = _display_path(str(path))
 
     return FileInfo(
         path=rel,
@@ -367,7 +384,7 @@ def analyse(root: Path) -> HealthMetrics:
         no_heading_files=no_heading_files,
         stale_files=stale_files,
         all_files=file_infos,
-        scan_time=now.isoformat(),
+        scan_time=current_utc_timestamp(),
         root_dir=str(root),
     )
     metrics.health_score = compute_health_score(metrics)
@@ -399,8 +416,11 @@ def _score_label(score: int) -> str:
     return "Critical"
 
 
-def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
-    """Generate a Markdown health dashboard report."""
+def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
+    metrics = HealthMetrics(
+        **{k: v for k, v in payload.items() if k in {"total_files","total_lines","orphaned_count","no_heading_count","stale_count","todo_count","average_lines","health_score","orphaned_files","no_heading_files","stale_files","scan_time","root_dir"}},
+        all_files=[FileInfo(**item) for item in payload.get("all_files", [])],
+    )
     lines: list[str] = []
 
     lines.append("# Documentation Health Dashboard")
@@ -412,7 +432,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
     # Overall score
     lines.append("## Overall Health Score")
     lines.append("")
-    lines.append("```")
+    lines.append("```text")
     lines.append(f"  {_ascii_bar(metrics.health_score)}")
     lines.append(f"  Rating: {_score_label(metrics.health_score)}")
     lines.append("```")
@@ -422,7 +442,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
     lines.append("## Summary")
     lines.append("")
     lines.append("| Metric | Value |")
-    lines.append("|--------|-------|")
+    lines.append("| -------- | ------- |")
     lines.append(f"| Total documentation files | {metrics.total_files} |")
     lines.append(f"| Total lines | {metrics.total_lines:,} |")
     lines.append(f"| Average file size (lines) | {metrics.average_lines} |")
@@ -439,7 +459,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
     lines.append("### Score Breakdown")
     lines.append("")
     lines.append("| Component | Weight | Description |")
-    lines.append("|-----------|--------|-------------|")
+    lines.append("| ----------- | -------- | ------------- |")
     lines.append("| Orphan ratio | 30 pts | Fewer orphaned files is better |")
     lines.append("| Heading coverage | 25 pts | All files should have at least one heading |")
     lines.append("| Freshness | 20 pts | Files updated within the last 90 days |")
@@ -461,7 +481,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
             "These files lack a Markdown heading, making them harder to navigate:"
         )
         lines.append("")
-        for f in sorted(metrics.no_heading_files)[:15]:
+        for f in sorted(_display_path(f) for f in metrics.no_heading_files)[:15]:
             lines.append(f"- `{f}`")
         if len(metrics.no_heading_files) > 15:
             remaining = len(metrics.no_heading_files) - 15
@@ -476,7 +496,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
             "These files are not linked from any other Markdown file in the repository:"
         )
         lines.append("")
-        for f in sorted(metrics.orphaned_files)[:20]:
+        for f in sorted(_display_path(f) for f in metrics.orphaned_files)[:20]:
             lines.append(f"- `{f}`")
         if len(metrics.orphaned_files) > 20:
             remaining = len(metrics.orphaned_files) - 20
@@ -491,7 +511,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
             f"These files have not been updated in over {STALE_THRESHOLD_DAYS} days:"
         )
         lines.append("")
-        for f in sorted(metrics.stale_files)[:20]:
+        for f in sorted(_display_path(f) for f in metrics.stale_files)[:20]:
             lines.append(f"- `{f}`")
         if len(metrics.stale_files) > 20:
             remaining = len(metrics.stale_files) - 20
@@ -510,7 +530,7 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
     )
     lines.append("")
     lines.append("| Date | Score | Files | Orphans | Stale |")
-    lines.append("|------|-------|-------|---------|-------|")
+    lines.append("| ------ | ------- | ------- | --------- | ------- |")
     lines.append(
         f"| {metrics.scan_time[:10]} | {metrics.health_score} "
         f"| {metrics.total_files} | {metrics.orphaned_count} | {metrics.stale_count} |"
@@ -520,10 +540,18 @@ def generate_markdown(metrics: HealthMetrics) -> str:  # noqa: C901
     # Footer
     lines.append("---")
     lines.append("")
-    lines.append("*This file is auto-generated. Do not edit manually.*")
+    lines.append("_This file is auto-generated. Do not edit manually._")
     lines.append("")
 
     return "\n".join(lines)
+
+
+def generate_markdown_from_json_payload(payload: dict) -> str:
+    return render_markdown_from_json(
+        json_payload=payload,
+        render_body=_render_markdown_body_from_payload,
+        data_sources=["repo markdown (*.md)", "git commit metadata"],
+    )
 
 
 def generate_summary(metrics: HealthMetrics) -> str:
@@ -607,27 +635,32 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
         print(f"Error during analysis: {exc}", file=sys.stderr)
         return 1
 
-    # Write Markdown report.
-    if args.output is not None:
-        try:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(generate_markdown(metrics), encoding="utf-8")
-            print(f"Markdown report written to {args.output}")
-        except OSError as exc:
-            print(f"Error writing Markdown report: {exc}", file=sys.stderr)
-            return 1
+    if args.output is not None and args.json_output is None:
+        print("Error: --output requires --json-output so markdown is rendered from canonical JSON.", file=sys.stderr)
+        return 1
 
-    # Write JSON output.
+    if not any(root.rglob("*.md")):
+        print("Error: missing required markdown evidence input (*.md files).", file=sys.stderr)
+        return 1
+
+    payload = metrics.to_dict()
+
     if args.json_output is not None:
         try:
-            args.json_output.parent.mkdir(parents=True, exist_ok=True)
-            args.json_output.write_text(
-                json.dumps(metrics.to_dict(), indent=2, default=str),
-                encoding="utf-8",
-            )
+            write_canonical_json(payload, args.json_output)
             print(f"JSON metrics written to {args.json_output}")
         except OSError as exc:
             print(f"Error writing JSON output: {exc}", file=sys.stderr)
+            return 1
+
+    if args.output is not None:
+        try:
+            canonical = load_canonical_json(args.json_output)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(generate_markdown_from_json_payload(canonical), encoding="utf-8")
+            print(f"Markdown report written to {args.output}")
+        except OSError as exc:
+            print(f"Error writing Markdown report: {exc}", file=sys.stderr)
             return 1
 
     # Print summary.

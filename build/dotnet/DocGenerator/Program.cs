@@ -16,49 +16,84 @@ public static partial class Program
         var rootCommand = new RootCommand("Generate documentation from code annotations");
 
         var generateContextCmd = new Command("context", "Generate project-context.md from code");
-        var srcOption = new Option<DirectoryInfo>("--src", "Source directory") { IsRequired = true };
-        var outputOption = new Option<FileInfo>("--output", "Output file path") { IsRequired = true };
-        var xmlDocsOption = new Option<FileInfo[]>("--xml-docs", "XML documentation files") { AllowMultipleArgumentsPerToken = true };
-
-        generateContextCmd.AddOption(srcOption);
-        generateContextCmd.AddOption(outputOption);
-        generateContextCmd.AddOption(xmlDocsOption);
-
-        generateContextCmd.SetHandler(async (src, output, xmlDocs) =>
+        var srcOption = new Option<DirectoryInfo>("--src")
         {
-            await GenerateProjectContext(src, output, xmlDocs ?? Array.Empty<FileInfo>());
-        }, srcOption, outputOption, xmlDocsOption);
+            Description = "Source directory",
+            Required = true
+        };
+        var outputOption = new Option<FileInfo>("--output")
+        {
+            Description = "Output file path",
+            Required = true
+        };
+        var xmlDocsOption = new Option<FileInfo[]>("--xml-docs")
+        {
+            Description = "XML documentation files",
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        generateContextCmd.Add(srcOption);
+        generateContextCmd.Add(outputOption);
+        generateContextCmd.Add(xmlDocsOption);
+
+        generateContextCmd.SetAction(async parseResult =>
+        {
+            var src = parseResult.GetRequiredValue(srcOption);
+            var output = parseResult.GetRequiredValue(outputOption);
+            var xmlDocs = parseResult.GetValue(xmlDocsOption) ?? Array.Empty<FileInfo>();
+            await GenerateProjectContext(src, output, xmlDocs);
+        });
 
         var verifyAdrsCmd = new Command("verify-adrs", "Verify ADR implementation links");
-        var adrDirOption = new Option<DirectoryInfo>("--adr-dir", "ADR directory") { IsRequired = true };
-        var srcDirOption = new Option<DirectoryInfo>("--src-dir", "Source directory") { IsRequired = true };
-
-        verifyAdrsCmd.AddOption(adrDirOption);
-        verifyAdrsCmd.AddOption(srcDirOption);
-
-        verifyAdrsCmd.SetHandler(async (adrDir, srcDir) =>
+        var adrDirOption = new Option<DirectoryInfo>("--adr-dir")
         {
+            Description = "ADR directory",
+            Required = true
+        };
+        var srcDirOption = new Option<DirectoryInfo>("--src-dir")
+        {
+            Description = "Source directory",
+            Required = true
+        };
+
+        verifyAdrsCmd.Add(adrDirOption);
+        verifyAdrsCmd.Add(srcDirOption);
+
+        verifyAdrsCmd.SetAction(async parseResult =>
+        {
+            var adrDir = parseResult.GetRequiredValue(adrDirOption);
+            var srcDir = parseResult.GetRequiredValue(srcDirOption);
             var success = await VerifyAdrLinks(adrDir, srcDir);
             Environment.ExitCode = success ? 0 : 1;
-        }, adrDirOption, srcDirOption);
+        });
 
         var extractInterfacesCmd = new Command("interfaces", "Extract interface documentation");
-        var interfaceSrcOption = new Option<DirectoryInfo>("--src", "Source directory") { IsRequired = true };
-        var interfaceOutputOption = new Option<FileInfo>("--output", "Output file") { IsRequired = true };
-
-        extractInterfacesCmd.AddOption(interfaceSrcOption);
-        extractInterfacesCmd.AddOption(interfaceOutputOption);
-
-        extractInterfacesCmd.SetHandler(async (src, output) =>
+        var interfaceSrcOption = new Option<DirectoryInfo>("--src")
         {
+            Description = "Source directory",
+            Required = true
+        };
+        var interfaceOutputOption = new Option<FileInfo>("--output")
+        {
+            Description = "Output file",
+            Required = true
+        };
+
+        extractInterfacesCmd.Add(interfaceSrcOption);
+        extractInterfacesCmd.Add(interfaceOutputOption);
+
+        extractInterfacesCmd.SetAction(async parseResult =>
+        {
+            var src = parseResult.GetRequiredValue(interfaceSrcOption);
+            var output = parseResult.GetRequiredValue(interfaceOutputOption);
             await ExtractInterfaces(src, output);
-        }, interfaceSrcOption, interfaceOutputOption);
+        });
 
-        rootCommand.AddCommand(generateContextCmd);
-        rootCommand.AddCommand(verifyAdrsCmd);
-        rootCommand.AddCommand(extractInterfacesCmd);
+        rootCommand.Add(generateContextCmd);
+        rootCommand.Add(verifyAdrsCmd);
+        rootCommand.Add(extractInterfacesCmd);
 
-        return await rootCommand.InvokeAsync(args);
+        return await rootCommand.Parse(args).InvokeAsync();
     }
 
     private static async Task GenerateProjectContext(DirectoryInfo src, FileInfo output, FileInfo[] xmlDocs)

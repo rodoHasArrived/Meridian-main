@@ -1133,7 +1133,7 @@ User has syntax error → presses Run
 ```
 src/
 └── Meridian.QuantScript/
-    ├── Meridian.QuantScript.csproj         net9.0
+    ├── Meridian.QuantScript.csproj         net10.0
     ├── QuantScriptOptions.cs
     ├── Api/
     │   ├── PriceBar.cs

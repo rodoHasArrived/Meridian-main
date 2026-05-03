@@ -1,4 +1,5 @@
 using Meridian.Application.Config;
+using Meridian.Application.Accounts;
 using Meridian.Application.DirectLending;
 using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.FundAccounts;
@@ -161,6 +162,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-accounts.json");
             return new InMemoryFundAccountService(persistencePath);
         });
+        services.TryAddSingleton<IAccountManagementService>(sp => (IAccountManagementService)sp.GetRequiredService<IFundAccountService>());
+        services.TryAddSingleton<IAccountQueryService>(sp => (IAccountQueryService)sp.GetRequiredService<IFundAccountService>());
         services.TryAddSingleton<IGovernanceSharedDataAccessService>(sp =>
             new GovernanceSharedDataAccessService(
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),

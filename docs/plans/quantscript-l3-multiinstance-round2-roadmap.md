@@ -499,7 +499,7 @@ Export.Report("./reports/full-run.html");
 minimal `System.Drawing`-based PDF wrapper (`PdfChartWriter` in
 `src/Meridian.QuantScript/Export/PdfChartWriter.cs`). No new NuGet package — ScottPlot is
 already a dependency via the QuantScript blueprint; `System.Drawing.Common` is already
-transitively included in the .NET 9 runtime.
+transitively included in the .NET 10 runtime.
 
 **HTML report template:** A Razor-style template bundled as an embedded assembly resource
 (`src/Meridian.QuantScript/Export/Templates/RunReport.html.template`). The template is

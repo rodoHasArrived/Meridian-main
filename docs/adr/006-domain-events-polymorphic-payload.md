@@ -150,7 +150,7 @@ Use proposed union syntax: `MarketEvent = Trade | Quote | ...`
 - First-class language support (eventual)
 
 **Cons:**
-- Not available in .NET 9 / C# 13
+- Not available in .NET 10 / C# 13
 - Unknown serialization story
 - No F# parity guarantees
 

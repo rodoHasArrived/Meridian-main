@@ -6,8 +6,8 @@ This document lists the primary dependencies used by the Meridian solution.
 
 ## Core Framework
 
-- **.NET 9.0** - Target framework (`net9.0`)
-- **C# 13** - Language version (default for .NET 9.0) with nullable reference types and records
+- **.NET 10.0** - Target framework (`net10.0`)
+- **C# 13** - Language version (default for .NET 10.0) with nullable reference types and records
 - **F# 8** - Used in the solution's F# projects and interop layers
 
 ---

@@ -192,7 +192,8 @@
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Provider" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                                 <ComboBox x:Name="ProviderCombo"
-                                          Style="{StaticResource FormComboBoxStyle}">
+                                          Style="{StaticResource FormComboBoxStyle}"
+                                          SelectionChanged="ProviderCombo_SelectionChanged">
                                     <ComboBoxItem Content="Multi-Source (Auto-Failover)" Tag="composite" IsSelected="True" />
                                     <ComboBoxItem Content="Yahoo Finance (Free)" Tag="yahoo" />
                                     <ComboBoxItem Content="Stooq (Free EOD)" Tag="stooq" />
@@ -206,9 +207,10 @@
                                          Style="{StaticResource FormTextBoxStyle}"
                                          TextChanged="SymbolsBox_TextChanged" />
                                 <TextBlock x:Name="SymbolsValidationError"
+                                           Text="{Binding SymbolsValidationErrorText}"
                                            FontSize="12"
                                            Foreground="{StaticResource ErrorColorBrush}"
-                                           Visibility="Collapsed"
+                                           Visibility="{Binding IsSymbolsValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                            Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
@@ -330,9 +332,10 @@
                                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                             SelectedDateChanged="DatePicker_SelectedDateChanged" />
                                 <TextBlock x:Name="FromDateValidationError"
+                                           Text="{Binding FromDateValidationErrorText}"
                                            FontSize="12"
                                            Foreground="{StaticResource ErrorColorBrush}"
-                                           Visibility="Collapsed"
+                                           Visibility="{Binding IsFromDateValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                            Margin="0,4,0,0" />
                             </StackPanel>
 
@@ -343,9 +346,10 @@
                                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                             SelectedDateChanged="DatePicker_SelectedDateChanged" />
                                 <TextBlock x:Name="ToDateValidationError"
+                                           Text="{Binding ToDateValidationErrorText}"
                                            FontSize="12"
                                            Foreground="{StaticResource ErrorColorBrush}"
-                                           Visibility="Collapsed"
+                                           Visibility="{Binding IsToDateValidationErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                            Margin="0,4,0,0" />
                             </StackPanel>
                         </Grid>
@@ -556,10 +560,53 @@
                 <!-- Run Backfill -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                     <StackPanel>
+                        <Border x:Name="BackfillStartReadinessCard"
+                                AutomationProperties.AutomationId="BackfillStartReadinessCard"
+                                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Width="32"
+                                        Height="32"
+                                        CornerRadius="10"
+                                        Background="{StaticResource ConsoleAccentBlueAlpha10Brush}">
+                                    <TextBlock Text="{StaticResource IconDownload}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="16"
+                                               Foreground="{StaticResource InfoColorBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                    <TextBlock Text="{Binding StartReadinessTitle}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding StartReadinessDetail}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding StartReadinessScopeText}"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               FontSize="12"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="StartBackfillButton"
+                                    AutomationProperties.AutomationId="BackfillStartButton"
                                     Content="Start Backfill"
                                     Style="{StaticResource PrimaryButtonStyle}"
+                                    IsEnabled="{Binding CanStartBackfill}"
                                     Visibility="{Binding IsBackfillActive, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
                                     Click="StartBackfill_Click"
                                     Margin="0,0,12,0" />

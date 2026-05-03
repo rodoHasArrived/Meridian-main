@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Brand marks</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 28px; font-family: var(--font-sans); color: var(--fg);
+         background: var(--bg); background-image: var(--bg-ambient); }
+
+  .sheet { display: grid; gap: 14px; max-width: 1200px; }
+
+  /* ---------- index strip ---------- */
+  .index {
+    display: grid; grid-template-columns: 1fr auto; align-items: end;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 6px;
+  }
+  .index h1 { font-family: var(--font-display); font-size: 22px; color: #FFF; font-weight: 600; margin: 0;
+              letter-spacing: -0.01em; }
+  .index .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);
+                text-transform: uppercase; letter-spacing: 0.16em; margin-top: 4px; }
+  .index .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; }
+  .index .meta b { color: #2AB2D4; font-weight: 500; }
+
+  /* ---------- panel ---------- */
+  .panel { background: #0B1520; border: 1px solid var(--border-color); border-radius: 4px;
+           overflow: hidden; }
+  .panel-head {
+    display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px;
+    align-items: center; padding: 10px 16px; background: #05101B;
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
+  }
+  .panel-head .num { color: #2AB2D4; font-weight: 600; }
+  .panel-head .title { color: #FFF; letter-spacing: 0.18em; font-weight: 500; }
+  .panel-head .file { color: #BEC8D4; }
+  .panel-head .copy { color: var(--fg-muted); cursor: pointer; }
+  .panel-head .copy:hover { color: #2AB2D4; }
+
+  /* ---------- primary block ---------- */
+  .primary {
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 0;
+  }
+  .primary .stage {
+    position: relative; padding: 56px 40px; min-height: 280px;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(42,178,212,0.06), transparent 60%),
+      #08131F;
+    border-right: 1px solid var(--border-color);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .primary .stage img { width: 144px; height: 144px; }
+  /* construction grid overlay */
+  .construct {
+    position: absolute; inset: 24px; pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgba(42,178,212,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(42,178,212,0.05) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  /* clearspace ring */
+  .clearspace {
+    position: absolute; left: 50%; top: 50%; width: 220px; height: 220px;
+    transform: translate(-50%, -50%);
+    border: 1px dashed rgba(42,178,212,0.45); border-radius: 4px;
+  }
+  .clearspace::before, .clearspace::after,
+  .clearspace .l, .clearspace .r {
+    content: ""; position: absolute; background: #2AB2D4;
+  }
+  .clearspace::before { left: -4px; top: -4px; width: 8px; height: 8px; }
+  .clearspace::after  { right: -4px; bottom: -4px; width: 8px; height: 8px; }
+  .clearspace .l { left: -4px; bottom: -4px; width: 8px; height: 8px; }
+  .clearspace .r { right: -4px; top: -4px; width: 8px; height: 8px; }
+  .stage .axis-label {
+    position: absolute; font-family: var(--font-mono); font-size: 9px;
+    color: rgba(42,178,212,0.7); letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .stage .axis-label.tl { top: 18px; left: 18px; }
+  .stage .axis-label.br { bottom: 18px; right: 18px; }
+  .stage .axis-label.cs { top: 50%; left: calc(50% + 110px); transform: translateY(-50%); }
+
+  .primary .specs { padding: 22px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 22px; align-content: start; }
+  .spec .k { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted);
+             text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 4px; }
+  .spec .v { font-family: var(--font-mono); font-size: 12px; color: #FFF; font-variant-numeric: tabular-nums; }
+  .spec .v small { color: var(--fg-muted); }
+  .spec.full { grid-column: 1 / -1; }
+  .anatomy { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; }
+  .anatomy .item { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; }
+  .anatomy .swatch { width: 12px; height: 12px; border-radius: 1px; }
+  .anatomy .meta { font-size: 10px; color: var(--fg-muted); }
+
+  /* ---------- size ramp ---------- */
+  .ramp {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 0;
+    background: #08131F;
+  }
+  .ramp .step { padding: 18px 8px 12px; border-right: 1px solid var(--border-color);
+                display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 130px;
+                position: relative; }
+  .ramp .step:last-child { border-right: 0; }
+  .ramp .step img { display: block; }
+  .ramp .step .px { font-family: var(--font-mono); font-size: 10px; color: #FFF; font-variant-numeric: tabular-nums; }
+  .ramp .step .ctx { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
+                     text-transform: uppercase; letter-spacing: 0.12em; text-align: center; }
+  .ramp .step.min::after {
+    content: "MIN"; position: absolute; top: 8px; right: 8px;
+    font-family: var(--font-mono); font-size: 8.5px; color: #DE5878;
+    border: 1px solid rgba(222,88,120,0.4); padding: 1px 5px; border-radius: 2px; letter-spacing: 0.1em;
+  }
+
+  /* ---------- wordmark ---------- */
+  .wordmark-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .wordmark-row .stage { padding: 30px 36px; min-height: 140px;
+                         display: flex; align-items: center; justify-content: center;
+                         border-right: 1px solid var(--border-color); background: #08131F; }
+  .wordmark-row .stage:last-child { border-right: 0; background: #DEE6EF; }
+  .wordmark-row .stage img { height: 60px; }
+  .wordmark-row .stage.light img { filter: invert(95%) hue-rotate(180deg) saturate(0.4) brightness(0.4); }
+  .wordmark-row .label-pill {
+    position: absolute; top: 12px; left: 16px;
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+  }
+  .wordmark-row .stage { position: relative; }
+  .wordmark-row .stage.dark .label-pill { color: var(--fg-muted); }
+  .wordmark-row .stage.light .label-pill { color: #5A6878; }
+
+  /* ---------- variants grid ---------- */
+  .variants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .variants .cell { position: relative; padding: 28px 18px; min-height: 160px;
+                    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+                    border-right: 1px solid var(--border-color); }
+  .variants .cell:last-child { border-right: 0; }
+  .variants .cell .tag {
+    position: absolute; top: 10px; left: 12px;
+    font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
+  }
+  .variants .cell .name {
+    font-family: var(--font-mono); font-size: 11px; color: #FFF; letter-spacing: 0.1em;
+  }
+  .variants .cell .meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
+  .variants .stage-dark { background: #08131F; }
+  .variants .stage-deep { background: #05101B; }
+  .variants .stage-light { background: #DEE6EF; }
+  .variants .stage-cyan { background: #2AB2D4; }
+  .variants .stage-light .name { color: #08101A; }
+  .variants .stage-light .meta { color: #5A6878; }
+  .variants .stage-light .tag { color: #5A6878; }
+  .variants .stage-cyan .name { color: #05101B; }
+  .variants .stage-cyan .meta { color: #05101B; opacity: 0.7; }
+  .variants .stage-cyan .tag { color: #05101B; opacity: 0.7; }
+
+  .variants .cell img.mono { width: 72px; height: 72px; }
+
+  /* ---------- misuse grid ---------- */
+  .misuse { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .misuse .cell { padding: 22px 16px 16px; border-right: 1px solid var(--border-color);
+                  display: flex; flex-direction: column; align-items: center; gap: 10px;
+                  background: #08131F; position: relative; min-height: 160px; }
+  .misuse .cell:last-child { border-right: 0; }
+  .misuse .cell .x {
+    position: absolute; top: 10px; right: 12px;
+    color: #DE5878; font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+  }
+  .misuse .cell .label {
+    font-family: var(--font-mono); font-size: 10px; color: #DE5878;
+    text-transform: uppercase; letter-spacing: 0.14em;
+  }
+  .misuse .cell .desc { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-align: center; line-height: 1.4; }
+  .misuse .demo { width: 64px; height: 64px; display: grid; place-items: center; }
+
+  /* ---------- application strip ---------- */
+  .applications { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0; }
+  .applications .stage { padding: 0; min-height: 200px; border-right: 1px solid var(--border-color);
+                         position: relative; overflow: hidden; }
+  .applications .stage:last-child { border-right: 0; }
+
+  /* favicon mockup */
+  .favicon-mock {
+    background: #1A1F2E;
+    height: 100%; display: flex; flex-direction: column;
+  }
+  .favicon-mock .browser-bar {
+    background: #2A3142; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+    border-bottom: 1px solid #0B0E16;
+  }
+  .favicon-mock .traffic { display: flex; gap: 5px; }
+  .favicon-mock .traffic span { width: 9px; height: 9px; border-radius: 50%; background: #4A5060; }
+  .favicon-mock .tab {
+    background: #1A1F2E; padding: 6px 10px; border-radius: 4px 4px 0 0;
+    font-family: var(--font-sans); font-size: 11px; color: #DEE6EF;
+    display: flex; align-items: center; gap: 7px; max-width: 200px;
+  }
+  .favicon-mock .tab img { width: 14px; height: 14px; }
+  .favicon-mock .tab .ttl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .favicon-mock .tab .close { color: #7C8A9B; margin-left: 4px; font-size: 11px; }
+  .favicon-mock .body-area { flex: 1; padding: 16px; }
+  .favicon-mock .label-pill { color: var(--fg-muted); font-family: var(--font-mono); font-size: 9px;
+                              text-transform: uppercase; letter-spacing: 0.14em; }
+
+  /* avatar / icon mockup */
+  .avatar-mock { padding: 20px; display: flex; flex-direction: column; gap: 16px; background: #08131F; height: 100%; box-sizing: border-box; }
+  .avatar-mock .label-pill { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
+                             text-transform: uppercase; letter-spacing: 0.14em; }
+  .avatar-mock .row { display: flex; align-items: center; gap: 14px; }
+  .avatar-mock .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #0B1520; border: 1px solid var(--border-color); border-radius: 999px;
+    padding: 6px 12px 6px 6px;
+  }
+  .avatar-mock .pill img { width: 22px; height: 22px; border-radius: 50%; }
+  .avatar-mock .pill .t { font-family: var(--font-mono); font-size: 11px; color: #FFF; }
+  .avatar-mock .ios-icon {
+    width: 56px; height: 56px; border-radius: 12px;
+    background: #08131F; border: 1px solid var(--border-color);
+    display: grid; place-items: center;
+  }
+  .avatar-mock .ios-icon img { width: 38px; height: 38px; }
+  .avatar-mock .ios-label { font-family: var(--font-sans); font-size: 10.5px; color: #DEE6EF; }
+
+  /* monogram mockup */
+  .mono-mock { padding: 20px; height: 100%; box-sizing: border-box; background: #08131F;
+                display: flex; flex-direction: column; gap: 14px; }
+  .mono-mock .label-pill { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
+                            text-transform: uppercase; letter-spacing: 0.14em; }
+  .mono-mock .lockup {
+    background: #05101B; border: 1px solid var(--border-color); padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px; border-radius: 4px;
+  }
+  .mono-mock .lockup img { width: 20px; height: 20px; }
+  .mono-mock .lockup .stack { display: flex; flex-direction: column; line-height: 1.1; }
+  .mono-mock .lockup .top { font-family: var(--font-display); font-weight: 600; color: #FFF; font-size: 13px; letter-spacing: 0.06em; }
+  .mono-mock .lockup .bot { font-family: var(--font-mono); font-size: 9px; color: #2AB2D4; letter-spacing: 0.18em; }
+
+  /* ---------- color tokens ---------- */
+  .tokens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .tokens .tok { padding: 14px 16px; border-right: 1px solid var(--border-color);
+                 display: flex; gap: 12px; align-items: center; background: #08131F; }
+  .tokens .tok:last-child { border-right: 0; }
+  .tokens .sw { width: 36px; height: 36px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
+  .tokens .info { display: flex; flex-direction: column; gap: 2px; }
+  .tokens .info .nm { font-family: var(--font-mono); font-size: 11px; color: #FFF; letter-spacing: 0.04em; }
+  .tokens .info .hex { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .tokens .info .role { font-family: var(--font-mono); font-size: 9.5px; color: #2AB2D4;
+                        text-transform: uppercase; letter-spacing: 0.14em; }
+</style>
+</head>
+<body>
+  <div class="sheet">
+
+    <!-- ======= header ======= -->
+    <div class="index">
+      <div>
+        <h1>Brand marks</h1>
+        <div class="sub">Identity system · v2.4 · 2026.04</div>
+      </div>
+      <div class="meta">
+        ASSET FAMILY · <b>5 files</b><br>
+        Format: SVG · viewBox 256 · Stroke-aligned 4px grid
+      </div>
+    </div>
+
+    <!-- ======= 01 PRIMARY MARK ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">01 / 06</span>
+        <span class="title">Primary mark · construction</span>
+        <span class="file">assets/brand/meridian-mark.svg</span>
+        <span class="copy">⧉ Copy path</span>
+      </div>
+
+      <div class="primary">
+        <div class="stage">
+          <div class="construct"></div>
+          <div class="clearspace"><span class="l"></span><span class="r"></span></div>
+          <span class="axis-label tl">256 × 256</span>
+          <span class="axis-label br">CLEARSPACE = 0.4×</span>
+          <img src="../assets/brand/meridian-mark.svg" alt="Meridian mark">
+        </div>
+        <div class="specs">
+          <div class="spec"><div class="k">Geometry</div><div class="v">R 88 · stroke 10</div></div>
+          <div class="spec"><div class="k">Grid</div><div class="v">16 · 4-step</div></div>
+          <div class="spec"><div class="k">Center mass</div><div class="v">128, 128</div></div>
+          <div class="spec"><div class="k">Sight line</div><div class="v">y = 88 · cyan accent</div></div>
+          <div class="spec full">
+            <div class="k">Anatomy</div>
+            <div class="anatomy">
+              <div class="item"><span class="swatch" style="background:#DEE6EF;"></span><span>Celestial circle</span><span class="meta">Bone · stroke 10</span></div>
+              <div class="item"><span class="swatch" style="background:#DEE6EF;"></span><span>Vertical &amp; horizontal axes</span><span class="meta">Bone · square caps</span></div>
+              <div class="item"><span class="swatch" style="background:#2AB2D4;"></span><span>Latitude tick</span><span class="meta">Cyan · sight-line accent</span></div>
+              <div class="item"><span class="swatch" style="background:#2AB2D4; border-radius:50%;"></span><span>Origin point</span><span class="meta">Cyan · r 8</span></div>
+            </div>
+          </div>
+          <div class="spec full">
+            <div class="k">Concept</div>
+            <div class="v" style="font-family: var(--font-sans); font-size: 12.5px; color: #DEE6EF; line-height: 1.5;">
+              Sight along a meridian. The circle is the celestial sphere, the cross is the observer's frame, and the cyan tick is the moment of fix — the line at which a measurement becomes a position.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= 02 SIZE RAMP ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">02 / 06</span>
+        <span class="title">Size ramp · pixel-snapped tiers</span>
+        <span class="file">stroke ≥ 1.5px @ all sizes</span>
+        <span class="copy">⧉ Copy ramp</span>
+      </div>
+      <div class="ramp">
+        <div class="step min"><img src="../assets/brand/meridian-mark.svg" style="width:14px;height:14px;"><span class="px">14</span><span class="ctx">Inline · prose</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:16px;height:16px;"><span class="px">16</span><span class="ctx">Favicon</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:24px;height:24px;"><span class="px">24</span><span class="ctx">Nav · header</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:32px;height:32px;"><span class="px">32</span><span class="ctx">Avatar · pill</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:48px;height:48px;"><span class="px">48</span><span class="ctx">App tile</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:80px;height:80px;"><span class="px">80</span><span class="ctx">Splash</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:120px;height:120px;"><span class="px">120</span><span class="ctx">Hero · merch</span></div>
+      </div>
+    </div>
+
+    <!-- ======= 03 WORDMARK ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">03 / 06</span>
+        <span class="title">Wordmark · primary lockup</span>
+        <span class="file">assets/brand/meridian-wordmark.svg</span>
+        <span class="copy">⧉ Copy path</span>
+      </div>
+      <div class="wordmark-row">
+        <div class="stage dark">
+          <span class="label-pill">ON DARK · #08101A</span>
+          <img src="../assets/brand/meridian-wordmark.svg" alt="Meridian wordmark">
+        </div>
+        <div class="stage light">
+          <span class="label-pill">ON LIGHT · #DEE6EF</span>
+          <img src="../assets/brand/meridian-wordmark.svg" alt="Meridian wordmark">
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= 04 VARIANTS ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">04 / 06</span>
+        <span class="title">Mark variants · color treatments</span>
+        <span class="file">5 approved</span>
+        <span class="copy">⧉ Copy all</span>
+      </div>
+      <div class="variants">
+
+        <div class="cell stage-deep">
+          <span class="tag">A · DEFAULT</span>
+          <img src="../assets/brand/meridian-mark.svg" class="mono" alt="">
+          <div>
+            <div class="name">DUOTONE</div>
+            <div class="meta">Bone + Cyan · default</div>
+          </div>
+        </div>
+
+        <div class="cell stage-deep">
+          <span class="tag">B · MONO LIGHT</span>
+          <svg class="mono" viewBox="0 0 256 256">
+            <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="#DEE6EF"/>
+          </svg>
+          <div>
+            <div class="name">BONE MONO</div>
+            <div class="meta">Print · embossing · single ink</div>
+          </div>
+        </div>
+
+        <div class="cell stage-light">
+          <span class="tag">C · ON LIGHT</span>
+          <svg class="mono" viewBox="0 0 256 256">
+            <circle cx="128" cy="128" r="88" fill="none" stroke="#08101A" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="#08101A" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="#08101A" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="#2AB2D4"/>
+          </svg>
+          <div>
+            <div class="name">INVERSE</div>
+            <div class="meta">Light backgrounds · paper</div>
+          </div>
+        </div>
+
+        <div class="cell stage-cyan">
+          <span class="tag">D · KNOCKOUT</span>
+          <svg class="mono" viewBox="0 0 256 256">
+            <circle cx="128" cy="128" r="88" fill="none" stroke="#05101B" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="#05101B" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="#05101B" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="#05101B" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="#05101B"/>
+          </svg>
+          <div>
+            <div class="name">KNOCKOUT</div>
+            <div class="meta">Solid cyan field · merch</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======= 05 APPLICATIONS ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">05 / 06</span>
+        <span class="title">Applications</span>
+        <span class="file">favicon · avatar · monogram</span>
+        <span class="copy">⧉ View all</span>
+      </div>
+      <div class="applications">
+
+        <!-- favicon mockup -->
+        <div class="stage">
+          <div class="favicon-mock">
+            <div class="browser-bar">
+              <div class="traffic"><span></span><span></span><span></span></div>
+              <div class="tab">
+                <img src="../assets/brand/meridian-mark.svg" alt="">
+                <span class="ttl">Meridian Workstation — Dashboard</span>
+                <span class="close">×</span>
+              </div>
+            </div>
+            <div class="body-area"><span class="label-pill">FAVICON · 16PX · BROWSER TAB</span></div>
+          </div>
+        </div>
+
+        <!-- avatar mockup -->
+        <div class="stage">
+          <div class="avatar-mock">
+            <span class="label-pill">AVATAR · APP TILE</span>
+            <div class="row">
+              <div class="pill"><img src="../assets/brand/meridian-tile.svg" alt=""><span class="t">@meridian</span></div>
+            </div>
+            <div class="row" style="gap:10px; align-items:flex-end;">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                <div class="ios-icon"><img src="../assets/brand/meridian-mark.svg" alt=""></div>
+                <span class="ios-label">Meridian</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                <div class="ios-icon" style="background:#2AB2D4; border-color:#2AB2D4;">
+                  <svg width="38" height="38" viewBox="0 0 256 256">
+                    <circle cx="128" cy="128" r="88" fill="none" stroke="#05101B" stroke-width="14"/>
+                    <line x1="40" y1="128" x2="216" y2="128" stroke="#05101B" stroke-width="14"/>
+                    <line x1="128" y1="28" x2="128" y2="228" stroke="#05101B" stroke-width="14"/>
+                    <line x1="96" y1="88" x2="160" y2="88" stroke="#05101B" stroke-width="14"/>
+                    <circle cx="128" cy="128" r="10" fill="#05101B"/>
+                  </svg>
+                </div>
+                <span class="ios-label">Terminal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- monogram lockup -->
+        <div class="stage">
+          <div class="mono-mock">
+            <span class="label-pill">PRODUCT LOCKUPS · INLINE</span>
+            <div class="lockup">
+              <img src="../assets/brand/meridian-mark.svg" alt="">
+              <div class="stack"><span class="top">MERIDIAN</span><span class="bot">WORKSTATION</span></div>
+            </div>
+            <div class="lockup">
+              <img src="../assets/brand/meridian-mark.svg" alt="">
+              <div class="stack"><span class="top">MERIDIAN</span><span class="bot">TERMINAL</span></div>
+            </div>
+            <div class="lockup">
+              <img src="../assets/brand/meridian-mark.svg" alt="">
+              <div class="stack"><span class="top">MERIDIAN</span><span class="bot">DATA OPS</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======= 06 MISUSE ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">06 / 06</span>
+        <span class="title">Misuse · do not</span>
+        <span class="file">violations of mark integrity</span>
+        <span class="copy">⧉ Guidelines</span>
+      </div>
+      <div class="misuse">
+
+        <div class="cell">
+          <span class="x">✕</span>
+          <div class="demo">
+            <svg width="64" height="64" viewBox="0 0 256 256" style="transform: scaleX(0.6);">
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#2AB2D4"/>
+            </svg>
+          </div>
+          <div class="label">DON'T DISTORT</div>
+          <div class="desc">Lock aspect ratio at 1:1.</div>
+        </div>
+
+        <div class="cell">
+          <span class="x">✕</span>
+          <div class="demo">
+            <svg width="64" height="64" viewBox="0 0 256 256">
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#F2C94C" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#F2C94C" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#F2C94C" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#DE5878" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#DE5878"/>
+            </svg>
+          </div>
+          <div class="label">DON'T RECOLOR</div>
+          <div class="desc">Use only approved palettes.</div>
+        </div>
+
+        <div class="cell">
+          <span class="x">✕</span>
+          <div class="demo">
+            <svg width="64" height="64" viewBox="0 0 256 256" style="transform: rotate(28deg);">
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#2AB2D4"/>
+            </svg>
+          </div>
+          <div class="label">DON'T ROTATE</div>
+          <div class="desc">Axes are vertical &amp; horizontal.</div>
+        </div>
+
+        <div class="cell">
+          <span class="x">✕</span>
+          <div class="demo" style="background: linear-gradient(135deg,#F2C94C,#DE5878); border-radius: 4px; width:80px; height:64px; padding: 8px;">
+            <svg width="48" height="48" viewBox="0 0 256 256">
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#FFF" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#FFF" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#FFF" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#FFF" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#FFF"/>
+            </svg>
+          </div>
+          <div class="label">DON'T ON BUSY BG</div>
+          <div class="desc">Maintain ≥ 4.5:1 contrast.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======= 07 TOKENS ======= -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">07 / 06</span>
+        <span class="title">Brand color tokens</span>
+        <span class="file">role · value · hex</span>
+        <span class="copy">⧉ JSON</span>
+      </div>
+      <div class="tokens">
+        <div class="tok">
+          <span class="sw" style="background:#08101A;"></span>
+          <div class="info"><span class="role">SURFACE</span><span class="nm">brand.bg</span><span class="hex">#08101A</span></div>
+        </div>
+        <div class="tok">
+          <span class="sw" style="background:#DEE6EF;"></span>
+          <div class="info"><span class="role">PRIMARY INK</span><span class="nm">brand.bone</span><span class="hex">#DEE6EF</span></div>
+        </div>
+        <div class="tok">
+          <span class="sw" style="background:#2AB2D4;"></span>
+          <div class="info"><span class="role">ACCENT</span><span class="nm">brand.cyan</span><span class="hex">#2AB2D4</span></div>
+        </div>
+        <div class="tok">
+          <span class="sw" style="background:#05101B;"></span>
+          <div class="info"><span class="role">DEEP</span><span class="nm">brand.deep</span><span class="hex">#05101B</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

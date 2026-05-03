@@ -25,6 +25,9 @@ public sealed class WorkspaceTemplate
     public Dictionary<string, string> Context { get; set; } = new();
     public WindowBounds? WindowBounds { get; set; }
     public SessionState? SessionSnapshot { get; set; }
+
+    // PR-01: quick actions pinned to this workspace template
+    public List<WorkspaceQuickAction> QuickActions { get; set; } = new();
 }
 
 /// <summary>
@@ -107,6 +110,9 @@ public sealed class SessionState
     public DateTime SavedAt { get; set; }
     public string? ActiveWorkspaceId { get; set; }
     public WorkstationLayoutState? WorkstationLayout { get; set; }
+
+    // PR-01: lightweight summary stats cached at save-time for fast shell rendering
+    public WorkspaceSummaryStats? CachedSummaryStats { get; set; }
 }
 
 /// <summary>
@@ -182,4 +188,66 @@ public sealed class WorkspaceLayoutPreset
 public sealed class WorkspaceEventArgs : EventArgs
 {
     public WorkspaceTemplate? Workspace { get; set; }
+}
+
+// ── PR-01: Shell Hardening additions ────────────────────────────────────────
+
+/// <summary>
+/// Named quick action attached to a workspace. Each action carries a target page tag and
+/// an optional tone so shells can render it as a contextual button or menu item without
+/// requiring a full workflow summary fetch.
+/// </summary>
+public sealed class WorkspaceQuickAction
+{
+    /// <summary>Stable identifier used for deduplication and analytics.</summary>
+    public string ActionId { get; set; } = string.Empty;
+
+    /// <summary>Human-readable action label shown in the shell tile.</summary>
+    public string Label { get; set; } = string.Empty;
+
+    /// <summary>Description shown as tooltip or secondary text.</summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>Navigation target invoked when the action is activated.</summary>
+    public string TargetPageTag { get; set; } = string.Empty;
+
+    /// <summary>Visual tone: default, primary, success, warning, or danger.</summary>
+    public string Tone { get; set; } = "default";
+
+    /// <summary>When false the action is rendered but not interactive (e.g. locked behind context).</summary>
+    public bool IsEnabled { get; set; } = true;
+
+    /// <summary>Display order within the action list (lower = earlier).</summary>
+    public int Order { get; set; }
+}
+
+/// <summary>
+/// Lightweight workspace summary statistics surfaced in shell tiles, session restore hints,
+/// and the quick-action rail. Computed on demand from the active session; not persisted.
+/// </summary>
+public sealed class WorkspaceSummaryStats
+{
+    /// <summary>Number of strategy runs currently in a running or paused state.</summary>
+    public int ActiveRunCount { get; set; }
+
+    /// <summary>Number of runs flagged for review (failed, cancelled, or promotion pending).</summary>
+    public int PendingReviewCount { get; set; }
+
+    /// <summary>Number of completed runs eligible for paper or live promotion.</summary>
+    public int PromotionCandidateCount { get; set; }
+
+    /// <summary>Whether at least one run in this workspace has a ledger reference.</summary>
+    public bool HasLedgerCoverage { get; set; }
+
+    /// <summary>Whether at least one run in this workspace has a portfolio reference.</summary>
+    public bool HasPortfolioCoverage { get; set; }
+
+    /// <summary>When the most recently active page in this workspace was last visited.</summary>
+    public DateTimeOffset? LastActivityAt { get; set; }
+
+    /// <summary>
+    /// Human-readable one-line digest e.g. "3 active · 2 review · ledger covered".
+    /// Produced by <c>WorkspaceService.BuildSummaryDigest</c>; empty when stats are all zero.
+    /// </summary>
+    public string Digest { get; set; } = string.Empty;
 }

@@ -20,6 +20,12 @@ param(
 
     [string]$OutputDir = "./dist",
 
+    [ValidateRange(0, [int]::MaxValue)]
+    [int]$OutputRetentionDays = 14,
+
+    [ValidateRange(0, [int]::MaxValue)]
+    [int]$OutputRetainLatest = 5,
+
     [switch]$Help
 )
 
@@ -28,6 +34,7 @@ $ErrorActionPreference = "Stop"
 # Script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
+$LibDir = Join-Path (Split-Path -Parent $ScriptDir) "lib"
 $ConfigDir = Join-Path $RepoRoot "config"
 Set-Location $RepoRoot
 $ResolvedOutputDir = if ([System.IO.Path]::IsPathRooted($OutputDir)) {
@@ -42,6 +49,13 @@ $AllPlatforms = @("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64",
 $WindowsPlatforms = @("win-x64", "win-arm64")
 $CollectorProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
 $DesktopProject = Join-Path $RepoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj"
+$ArtifactRetentionModule = Join-Path $LibDir "ArtifactRetention.psm1"
+if (Test-Path $ArtifactRetentionModule) {
+    Import-Module $ArtifactRetentionModule -Force
+}
+else {
+    throw "Artifact retention module not found: $ArtifactRetentionModule"
+}
 
 function Write-Info {
     param([string]$Message)
@@ -148,6 +162,8 @@ Parameters:
   -Version      Version number (default: 1.0.0)
   -Configuration Build configuration (default: Release)
   -OutputDir    Output directory (default: ./dist)
+  -OutputRetentionDays Days to keep generated publish output when OutputDir is under artifacts/publish (default: 14; 0 disables age pruning)
+  -OutputRetainLatest Latest generated publish output directories to keep under artifacts/publish (default: 5; 0 disables count pruning)
   -Help         Show this help message
 
 Examples:
@@ -257,11 +273,32 @@ function New-Package {
     }
 }
 
+function Invoke-PublishOutputRetention {
+    $artifactPublishRoot = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "artifacts/publish"))
+    $artifactPublishRootWithSeparator = $artifactPublishRoot
+    if (-not $artifactPublishRootWithSeparator.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $artifactPublishRootWithSeparator += [System.IO.Path]::DirectorySeparatorChar
+    }
+
+    if (-not $ResolvedOutputDir.StartsWith($artifactPublishRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return
+    }
+
+    Invoke-MeridianArtifactDirectoryRetention `
+        -OutputRoot $artifactPublishRoot `
+        -ActivePath $ResolvedOutputDir `
+        -MaxAgeDays $OutputRetentionDays `
+        -RetainLatest $OutputRetainLatest `
+        -Label "publish output"
+}
+
 # Main script
 if ($Help) {
     Show-Help
     exit 0
 }
+
+Invoke-PublishOutputRetention
 
 # Determine target platforms
 $TargetPlatforms = if ($Platform -eq "all") { $AllPlatforms } else { @($Platform) }

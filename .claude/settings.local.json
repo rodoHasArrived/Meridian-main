@@ -24,7 +24,12 @@
       "Bash(sed:*)",
       "Bash(awk:*)",
       "Bash(echo:*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "PowerShell(git stash pop 2>&1)",
+      "PowerShell(git stash pop --index 2>&1)",
+      "PowerShell(head -20)",
+      "PowerShell(npm --prefix src/Meridian.Ui/dashboard run build 2>&1)",
+      "PowerShell(cd \"C:\\\\Users\\\\Andrew James Rowden\\\\OneDrive\\\\Documents\\\\OneDrive\\\\Documents\\\\Desktop\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\" && npm run test -- --reporter=verbose 2>&1 | Select-Object -Last 80)"
     ]
   }
 }

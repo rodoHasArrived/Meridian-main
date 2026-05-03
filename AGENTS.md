@@ -11,6 +11,8 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
 - `docs/development/desktop-testing-guide.md` for WPF test slices and shell-first regression bundles.
 - `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
+- `docs/plans/web-ui-development-pivot.md` for the active browser-first operator UI pivot.
+- `docs/plans/evidence-backed-investment-operations-plan.md` for the active differentiation plan and archive rule.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
@@ -23,9 +25,11 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 ## Current Direction
 
-- Meridian is a .NET 9 fund-management and trading-platform codebase.
-- `src/Meridian.Wpf/` is the primary operator shell. Prefer desktop-first workflow guidance.
-- Treat `src/Meridian.Ui/` as a retained local diagnostics/API support surface, not the primary operator shell.
+- Meridian is a .NET 10 fund-management and trading-platform codebase.
+- Position new roadmap and docs work around evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports.
+- New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
+- `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.
+- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the web dashboard and retained desktop shell.
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - Use the narrowest validation command that covers the files changed.
 
@@ -122,27 +126,25 @@ dotnet run --project src/Meridian/Meridian.csproj -- --wal-repair --dry-run --ou
 dotnet run --project src/Meridian/Meridian.csproj -- --generate-loader python --output ./loaders
 ```
 
-TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`,
-`--etl-export`, `--etl-roundtrip`, and `--etl-resume`, but `docs/HELP.md` does not yet document
-operator examples. Verify the intended ETL workflow before adding those as standard commands.
+`src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, `--etl-export`,
+`--etl-roundtrip`, and `--etl-resume`. Use `docs/HELP.md` for the verified local-file ETL
+operator examples and required `--etl-source-kind` / `--etl-source-path` arguments.
 
 TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
 and `--calibrate-provider-degradation`, but their prerequisites are specialized. Use
 `--help security-master` for Security Master details, and verify current operator setup before
 adding short-form examples here.
 
-TODO: `docs/HELP.md` mentions `--diagnostics`, but `DiagnosticsCommands` currently handles
-specific flags (`--quick-check`, `--test-connectivity`, `--show-config`, `--error-codes`, and
-`--validate-credentials`) rather than a standalone `--diagnostics` flag. Use `--help diagnostics`
-for the reference topic unless that flag is implemented.
+`--diagnostics` is a standalone CLI flag that prints the configuration summary and runs the quick
+configuration health check. Use the specific flags (`--quick-check`, `--test-connectivity`,
+`--show-config`, `--error-codes`, and `--validate-credentials`) when a narrower probe is needed.
 
 TODO: `docs/HELP.md` includes `--package --package-format csv`, but `PackageCommands` currently
 maps `--package-format` to zip, tar.gz/tgz, or 7z. Verify the intended CSV export workflow before
 adding that as a standard package command.
 
-TODO: `--replay` is exposed in `CliArguments` and listed in `docs/status/FEATURE_INVENTORY.md`, but
-`JsonlReplayer` currently treats the value as a directory root while help text describes a JSONL
-file path. Verify the intended replay path semantics before adding a standard CLI replay example.
+`--replay` accepts either a single JSONL/JSONL.GZ file or a directory tree containing `*.jsonl*`
+files. Directory replay processes files in stable path order.
 
 TODO: `docs/status/FEATURE_INVENTORY.md` lists `--simulate-execution` as a planned simulation CLI
 workflow, but no command handler was found. Keep it out of standard command examples until it is
@@ -197,6 +199,18 @@ python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
 python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 ```
 
+## Web UI Workflows
+
+```bash
+cd src/Meridian.Ui/dashboard
+npm install
+npm run test
+npm run build
+```
+
+Prefer these dashboard commands for browser-operator UI changes. Broaden to `tests/Meridian.Ui.Tests`
+or shared API endpoint tests when a web change touches DTOs, workstation endpoints, or UI services.
+
 For concurrent automation, use an isolation key so builds write under `artifacts/bin/<key>/`
 and `artifacts/obj/<key>/` instead of shared project output folders:
 
@@ -206,8 +220,15 @@ python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.W
 ```
 
 `buildctl.py build --isolation-key ...` prunes stale isolated output directories older than 14 days
-from `artifacts/bin` and `artifacts/obj` before the build starts; use
-`--isolation-retention-days <days>` to tune the window or `0` to disable cleanup for a run.
+from `artifacts/bin` and `artifacts/obj` before the build starts, and trims excess same-day output
+beyond the latest 10 runs per artifact root. It also prunes oldest generated runs when either root
+exceeds 4096 MB; use `--isolation-retention-days <days>`,
+`--isolation-retain-latest <count>`, and `--isolation-max-root-size-mb <mb>` to tune those limits,
+or set all three to `0` to disable cleanup for a run.
+`build/scripts/publish/publish.ps1 -OutputDir artifacts/publish/<run-name>` also prunes generated
+publish-output siblings older than 14 days or beyond the latest 5 runs; use
+`-OutputRetentionDays <days>` and `-OutputRetainLatest <count>` to tune that guard, or set both to
+`0` for a run that must keep all publish outputs.
 
 Use `MapWorkstationEndpoints_TradingReadiness` for changes to the trading readiness endpoint,
 DTOs, execution-control evidence, acceptance gates, or operator work-item projection.
@@ -249,7 +270,7 @@ pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFix
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1
-pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0
+pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net10.0-windows10.0.19041.0
 pwsh -File ./scripts/dev/robinhood-options-smoke.ps1
 pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall
 ```
@@ -266,7 +287,7 @@ Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 forwards page/deep-link args through the single-instance pipe and waits on `ShellAutomationState`.
 During desktop workflow and screenshot-catalog runs, restore lets shared projects use their
 declared target frameworks while the build step pins the WPF shell to
-`net9.0-windows10.0.19041.0`.
+`net10.0-windows10.0.19041.0`.
 `robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
 fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
 Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release WPF build, such as
@@ -351,12 +372,14 @@ TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but 
 `pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
 builds unless the Make target is restored.
 
-`.github/workflows/refresh-screenshots.yml` is a WPF-only screenshot lane. It runs
-`screenshot-catalog` plus the `manual-*` workflows through
-`scripts/dev/run-desktop-workflow.ps1` in fixture mode; `workflow_dispatch` can choose `all`,
-`catalog`, or `manuals`, override `output_root`, and skip the final commit with `commit=false`.
-The workflow commits screenshots once in the follow-up `commit-screenshots` job; do not restore
-the removed `--ui` web-dashboard path for screenshot refreshes.
+`.github/workflows/refresh-screenshots.yml` refreshes both retained WPF desktop screenshots and
+browser workstation dashboard screenshots. Desktop captures run `screenshot-catalog` plus the
+`manual-*` workflows through `scripts/dev/run-desktop-workflow.ps1` in fixture mode; web captures
+run `scripts/dev/capture-web-screenshots.mjs` against the Vite dashboard routes listed in
+`scripts/dev/web-screenshot-routes.json`. `workflow_dispatch` can choose `surfaces=all`,
+`desktop`, or `web`, choose desktop `workflows=all`, `catalog`, or `manuals`, override
+`output_root` and `web_output_root`, and skip the final commit with `commit=false`.
+The workflow commits screenshots once in the follow-up `commit-screenshots` job.
 
 ## Paper Trading Readiness
 

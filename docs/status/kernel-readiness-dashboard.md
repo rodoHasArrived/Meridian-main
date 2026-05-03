@@ -50,6 +50,8 @@
 
 ## Entry/Exit Gate Checklist by Wave
 
+<a id="dk1---data-quality--provider-trust"></a>
+
 ## DK1 - Data quality + provider trust
 
 ### Entry checklist

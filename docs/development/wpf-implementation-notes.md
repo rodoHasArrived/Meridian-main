@@ -10,7 +10,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 
 ### Stack
 
-- **.NET 9.0 + WPF** — Windows-only, `.csproj` targets `net9.0-windows`
+- **.NET 10.0 + WPF** — Windows-only, `.csproj` targets `net10.0-windows`
 - **MVVM** — `BindableBase` (from `Meridian.Ui.Services.Services`) + `INotifyPropertyChanged`
 - **DI** — `Microsoft.Extensions.Hosting`; singleton services resolved via `IServiceProvider`
 - **Shared services** — `Meridian.Ui.Services` and `Meridian.Ui.Shared` for cross-surface logic
@@ -60,6 +60,8 @@ Content Frame
 
 **Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target), a readiness progress strip, and a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data Operations before the landing page suggests Research, Trading, or Governance shells.
 
+**Add Provider catalog filtering** — `AddProviderWizardPage` now keeps provider catalog filtering, active-filter state, result-scope copy, empty-state recovery, connection feedback, save feedback, credential guidance, and setup-progress fills bound to `AddProviderWizardViewModel`. The page still owns navigation and dynamic credential-field control creation, but it no longer mutates provider card item sources or filter button styles directly.
+
 **Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated attention rail after the page title and wrapped badge row. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
 
 **Main shell context strip** — `MainPage` renders the shared context strip for workflow pages and suppresses it on workspace landing pages where the compact next-action row already carries the first operator handoff. The shell publishes an immediate fallback context before the async `WorkspaceShellContextService` refresh completes, so page title/subtitle and warning badges stay visible even when the richer context composition is delayed or unavailable.
@@ -96,9 +98,23 @@ Content Frame
 
 **Analysis Export action readiness** — `AnalysisExportPage` now binds export launch and preset save actions to `AnalysisExportViewModel` commands instead of page click handlers. The view model owns required-field, metric-selection, symbol-scope, date-scope, and recent-export presentation state so invalid exports are disabled with inline guidance before an operator queues work, without adding service calls, timers, or persistence writes.
 
-**Data Export quick-export readiness** — `DataExportPage` now shows a compact readiness strip before the Quick Export controls. `DataExportViewModel` owns export command enablement, selected-symbol count, date-scope copy, format/compression guidance, validation recovery, and progress state so invalid quick exports are disabled before an operator queues work, without adding service calls, timers, or persistence writes.
+**Analysis Export Wizard readiness** — `AnalysisExportWizardPage` now binds add-symbol, back, next/queue, and cancel actions to `AnalysisExportWizardViewModel` commands instead of page click handlers. The view model owns step title/detail copy, scope text, validation visibility, and action enablement for symbol, date, destination, metric, and pre-export checks without adding service calls, timers, or persistence writes.
+
+**Export Presets readiness** — `ExportPresetsPage` now binds save/delete actions to `ExportPresetsViewModel` commands instead of page click handlers. The view model owns preset-library state, empty-state copy, save-readiness title/detail text, status visibility, and built-in preset delete gating so reporting operators see whether a preset can be saved or removed before acting, without adding service calls, timers, or persistence writes.
+
+**Data Export quick-export and schedule readiness** — `DataExportPage` now shows compact readiness strips before the Quick Export and Scheduled Exports controls. `DataExportViewModel` owns export command enablement, selected-symbol count, date-scope copy, format/compression guidance, schedule toggle state, schedule destination validation, schedule action enablement, validation recovery, and progress state so invalid quick exports or scheduled export setups are disabled before an operator queues work, without adding service calls, timers, or persistence writes.
+
+**Data Sampling readiness** — `DataSamplingPage` now binds symbol add, sample generation, and preset save actions to `DataSamplingViewModel` commands instead of page click handlers. The view model owns sample readiness title/detail text, symbol-scope copy, validation state, command enablement, and retained recent-sample state, so invalid sample requests are explained before launch without adding service calls, timers, or persistence writes.
+
+**Data Sources edit readiness** — `DataSourcesPage` now binds provider, data type, feed, provider options, symbol scope, source-row actions, and save enablement through `DataSourcesViewModel`. The view model owns edit-readiness title/detail copy, field validation visibility, source scope text, and command gating so invalid source setup is explained before save and provider options persist without page event relays.
 
 **Time Series Alignment action readiness** — `TimeSeriesAlignmentPage` now binds alignment setup, symbol chips, preset application, validation, run progress, results, and recent alignment history through `TimeSeriesAlignmentViewModel`. The view model owns command enablement and inline readiness copy for missing symbols, dates, or selected fields, then maps the bound setup into the existing `TimeSeriesAlignmentService` request without adding backend behavior, polling, or persistence writes.
+
+**Symbols filter recovery** — `SymbolsPage` now binds search text, subscription scope, exchange scope, visible-row copy, filter-aware empty-state copy, and the `Clear Filters` action through `SymbolsPageViewModel`. Bulk action buttons bind to the view-model-owned selection state, so filtered-out lists and selected rows recover without another backend read or page-owned filter logic.
+
+**Symbol Mapping MVVM workflow** — `SymbolMappingPage` now binds provider catalogs, provider options, test results, add-mapping readiness, mapping counts, empty-state visibility, and remove-confirmation state through `SymbolMappingViewModel`. Import/export still owns the native file dialogs in the view, but CSV content, mapping mutations, validation copy, and command gating flow through the view model without adding service calls, timers, or persistence behavior.
+
+**Collection Sessions lifecycle readiness** — `CollectionSessionPage` now binds create, refresh, pause, and stop actions through `CollectionSessionViewModel` commands. The view model owns the lifecycle readiness card, busy/loading visibility, active-session action gating, empty-history recovery, and service/notification seams, so capture-session workflow state is testable while the page code-behind stays limited to first-load initialization.
 
 **Fund Ledger reconciliation filter recovery** — the reconciliation workbench inside `FundLedgerPage` now exposes a bound `Reset Filters` action beside queue refresh. `FundLedgerViewModel` tracks active break-queue, scope, and local-search filters, restores the already-loaded open queue without another service read, and updates the empty-state copy when filters hide retained break rows.
 
@@ -122,6 +138,8 @@ Content Frame
 
 **Messaging Hub delivery posture** — `MessagingHubPage` now promotes message-flow state into a compact delivery posture panel with recent-activity scope text and an automation-addressable empty state. `MessagingHubViewModel` derives waiting, subscriber-ready, flowing, and failure-review copy from the page's existing session counters and subscription counts, keeps only the latest 50 activity rows, and exposes bound refresh and clear commands so the header shows the last statistics refresh while the Clear button disables itself when there is no retained activity to clear.
 
+**Agent local-AI readiness** — `AgentPage` now surfaces a bound readiness card, model-scope chip, empty-conversation state, and input guidance before an operator sends a prompt. `AgentViewModel` owns Ollama availability, installed-model state, selected-model readiness, send/clear command enablement, and conversation empty-state copy, so missing local runtime or missing-model setup is explained without page workflow logic.
+
 **Watchlist posture card** — `WatchlistPage` now summarizes saved watchlists, pinned lists, symbol coverage, current search scope, and the next operator action above the grid. `WatchlistViewModel` projects this from already-loaded local watchlist display models, so search misses and unpinned libraries get actionable copy without another service call; the search-miss empty state also exposes a bound `Clear Search` recovery action that resets the in-memory filter.
 
 **Data Quality symbol search recovery** — `DataQualityPage` now distinguishes an empty monitored-symbol library from a symbol-filter search miss. The `Quality by Symbol` panel shows the active filter scope, search-miss copy, and a `Clear Filter` recovery action backed by `DataQualityViewModel` in-memory filtering, so operators can recover without refreshing or leaving the page.
@@ -133,6 +151,14 @@ Content Frame
 **Storage archive posture** — `StoragePage` now places an archive-posture card above the configuration and preview panels. `StorageViewModel` projects daily growth, capacity horizon, last scan, and one operator handoff from the already-loaded `StorageAnalytics` snapshot, so capacity pressure and stalled archive growth are visible without adding another storage scan, timer, or persistence write.
 
 **Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
+
+**Backfill start readiness** — `BackfillPage` now shows an automation-addressable start-readiness card above the run controls. `BackfillViewModel` owns symbol normalization, date-range validation, request scope text, validation label visibility, and Start enablement so empty-symbol and invalid-date states are visible before an operator launches a historical backfill; the page code-behind only refreshes the VM from existing WPF controls and delegates the launch to the existing backfill command path.
+
+**Schedule Manager MVVM state** — `ScheduleManagerPage` now binds backfill, maintenance, template refresh, empty/error copy, and cron validation through `ScheduleManagerViewModel`. The page code-behind only wires construction and first-load initialization, while the view model owns command enablement and UTC next-run presentation without adding backend calls, timers, or persistence writes.
+
+**Admin Maintenance cleanup readiness** — `AdminMaintenancePage` now renders a cleanup readiness card with preview, execution, and confirmation actions bound through `AdminMaintenanceViewModel`. The view model owns preview scope, empty/error copy, destructive-action gating, inline confirmation state, and cleanup execution reset behavior while the page keeps cleanup rendering and layout concerns in XAML.
+
+**Admin Maintenance schedule readiness** — `AdminMaintenancePage` now renders a schedule readiness strip and binds Save Schedule through `AdminMaintenanceViewModel`. The view model owns selected-operation summary, frequency copy, validation, and save command enablement so an enabled schedule cannot be saved without at least one maintenance operation.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
@@ -431,6 +457,13 @@ Shell implementation now shares descriptor-driven infrastructure:
 3. **Market Briefing** — Pinned insights, watchlists, change feed, and saved comparisons
 4. **Run Studio + Recent Runs** — Run context, inspector guidance, and the run-history rail
 5. **Promotion Pipeline** — Candidates for paper promotion (sourced from `StrategyRunPromotionState`)
+
+### `ChartingPage` (`Views/ChartingPage.xaml`)
+
+`ChartingPageViewModel` owns chart setup presentation state for symbol, timeframe, date range,
+indicator toggles, refresh command enablement, and the setup-readiness card. The page should stay
+limited to rendering the toolbar, chart panels, and loading overlay; avoid reintroducing page event
+handlers for toolbar selection, date validation, indicator state, or refresh readiness.
 
 ### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
 

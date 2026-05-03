@@ -2,7 +2,7 @@
 name: Cleanup Agent
 description: Code cleanup specialist for the Meridian project, removing dead code,
   deprecated/obsolete members, anti-patterns, irrelevant logs, and stale documentation
-  across C# 13, F# 8, WPF, and .NET 9 source files — without changing observable behaviour
+  across C# 13, F# 8, WPF, and .NET 10 source files — without changing observable behaviour
   or altering ADR contracts.
 ---
 
@@ -382,7 +382,7 @@ catch (Exception ex) when (ex is not OperationCanceledException)
 - Flag empty `catch` blocks without a comment for removal or logging.
 
 **Leftover scaffold comments:**
-- `// TODO: implement` in methods that are already implemented.
+- placeholder implementation comments (for example, `// TODO: implement`) in methods that are already implemented.
 - `// Step 1:`, `// Step 2:` outline comments that match the code directly beneath
   them (the code is self-documenting; the outline adds nothing).
 - XML doc comments that read `/// <summary>Foo bar.</summary>` on a method named
@@ -390,7 +390,7 @@ catch (Exception ex) when (ex is not OperationCanceledException)
   remove or expand them.
 
 **Do not remove:**
-- `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag
+- Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag
   them for the backlog instead.
 - Disable pragmas on generated or interop code.
 - Comments that explain non-obvious business logic, timing constraints, or why a

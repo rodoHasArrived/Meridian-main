@@ -110,8 +110,8 @@ function Invoke-MeridianPreflight {
     $result = [ordered]@{
         scenario = $Scenario
         status = $status
-        blockingChecks = @($blockingChecks)
-        warnings = @($warnings)
+        blockingChecks = @($blockingChecks.ToArray())
+        warnings = @($warnings.ToArray())
         nextAction = $nextAction
         generatedAtUtc = (Get-Date).ToUniversalTime().ToString('o')
     }

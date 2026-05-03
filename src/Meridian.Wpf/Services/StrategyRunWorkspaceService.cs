@@ -15,6 +15,7 @@ public sealed record BacktestRunPublicationOptions(
     string StrategyName,
     string? StrategyId = null,
     string? ParentRunId = null,
+    string? PublicationIdentity = null,
     IReadOnlyDictionary<string, string>? AdditionalParameters = null,
     string? PortfolioId = null,
     string? LedgerReference = null,
@@ -353,6 +354,49 @@ public sealed class StrategyRunWorkspaceService
         await SetActiveRunContextAsync(entry.RunId, ct).ConfigureAwait(false);
 
         return entry.RunId;
+    }
+
+    public async Task<IReadOnlyList<string>> RecordCapturedBacktestsAsync(
+        IReadOnlyList<BacktestResult> backtests,
+        BacktestRunPublicationOptions publication,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(backtests);
+        ArgumentNullException.ThrowIfNull(publication);
+        ArgumentException.ThrowIfNullOrWhiteSpace(publication.StrategyName);
+
+        if (backtests.Count == 0)
+            return Array.Empty<string>();
+
+        var publicationIdentity = string.IsNullOrWhiteSpace(publication.PublicationIdentity)
+            ? Guid.NewGuid().ToString("N")
+            : publication.PublicationIdentity.Trim();
+        var parentRunId = $"quant-parent-{publicationIdentity}";
+        var recorded = new List<string>(backtests.Count);
+
+        for (var index = 0; index < backtests.Count; index++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var childParameters = publication.AdditionalParameters is null
+                ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, string>(publication.AdditionalParameters, StringComparer.OrdinalIgnoreCase);
+            childParameters["publicationIdentity"] = publicationIdentity;
+            childParameters["publicationIndex"] = (index + 1).ToString(CultureInfo.InvariantCulture);
+            childParameters["publicationCount"] = backtests.Count.ToString(CultureInfo.InvariantCulture);
+
+            var childOptions = publication with
+            {
+                StrategyName = backtests.Count == 1 ? publication.StrategyName : $"{publication.StrategyName} #{index + 1}",
+                ParentRunId = parentRunId,
+                PublicationIdentity = publicationIdentity,
+                AdditionalParameters = childParameters
+            };
+
+            var runId = await RecordBacktestRunAsync(backtests[index].Request, backtests[index], childOptions, ct).ConfigureAwait(false);
+            recorded.Add(runId);
+        }
+
+        return recorded;
     }
 
     private async Task<ActiveRunContext?> BuildActiveRunContextAsync(string runId, CancellationToken ct)

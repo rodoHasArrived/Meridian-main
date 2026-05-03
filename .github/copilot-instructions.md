@@ -1,10 +1,10 @@
 # Copilot Repository Instructions
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-04-29
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
-> **See also:** [CLAUDE.md](../CLAUDE.md) for full project context | [docs/ai/README.md](../docs/ai/README.md) for the master AI resource index
+> **See also:** [docs/ai/assistant-workflow-contract.md](../docs/ai/assistant-workflow-contract.md) for shared provider-agnostic rules, [CLAUDE.md](../CLAUDE.md) for full project context, and [docs/ai/README.md](../docs/ai/README.md) for the master AI resource index.
 
 ## 0) Standard execution flow
 
@@ -55,6 +55,7 @@ Always do the following before opening a PR:
 3. Run tests relevant to touched code.
 4. Update docs when behavior, interfaces, or workflows change.
 5. Keep PR title/body in sync with final implemented behavior.
+6. Keep provider-specific guidance aligned with `docs/ai/assistant-workflow-contract.md`.
 
 ## 4) Build and test commands
 
@@ -99,6 +100,6 @@ Relevant examples:
 - [`CLAUDE.md`](../CLAUDE.md) — comprehensive project context, architecture, conventions
 - [`docs/ai/README.md`](../docs/ai/README.md) — master AI resource index with reading order by task type
 - [`docs/ai/ai-known-errors.md`](../docs/ai/ai-known-errors.md) — mandatory error prevention registry
-- [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — extended Copilot guide with project structure and decision tree
+- [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — compact Copilot host guide and routing links
 - [`agents/code-review-agent.md`](agents/code-review-agent.md) — 7-lens code review framework
 - [`prompts/`](prompts/) — 16 reusable prompt templates

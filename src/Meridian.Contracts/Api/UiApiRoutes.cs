@@ -72,6 +72,7 @@ public static class UiApiRoutes
     public const string ProviderComparison = "/api/providers/comparison";
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
+    public const string ProviderConfigure = "/api/providers/configure";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";
@@ -472,6 +473,9 @@ public static class UiApiRoutes
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
+    /// <summary>
+    /// Canonical strategy run continuity drill-in route shared by workstation surfaces.
+    /// </summary>
     public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
     public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
@@ -486,6 +490,8 @@ public static class UiApiRoutes
     public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
+    public const string FundReportPacks = "/api/fund-structure/report-packs";
+    public const string FundReportPackById = "/api/fund-structure/report-packs/{reportId}";
 
     // Fund account brokerage read-side sync endpoints
     public const string FundAccountBrokerageSyncAccounts = "/api/fund-accounts/brokerage-sync/accounts";

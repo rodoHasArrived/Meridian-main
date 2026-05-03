@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -32,11 +33,20 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
         _presetService = presetService;
         Presets = new ObservableCollection<ExportPresetItem>();
         Formats = new ObservableCollection<string> { "CSV", "Parquet", "JSONL", "Excel", "Lean" };
+
+        SavePresetCommand = new RelayCommand(SavePreset, () => CanSavePreset);
+        DeletePresetCommand = new RelayCommand(DeletePreset, () => CanDelete);
+
+        Presets.CollectionChanged += (_, _) => RefreshPresentationState();
     }
 
     public ObservableCollection<ExportPresetItem> Presets { get; }
 
     public ObservableCollection<string> Formats { get; }
+
+    public IRelayCommand SavePresetCommand { get; }
+
+    public IRelayCommand DeletePresetCommand { get; }
 
     public ExportPresetItem? SelectedPreset
     {
@@ -46,7 +56,7 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
             if (SetProperty(ref _selectedPreset, value))
             {
                 LoadSelectedPreset();
-                RaisePropertyChanged(nameof(CanDelete));
+                RefreshPresentationState();
             }
         }
     }
@@ -59,6 +69,7 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
             if (SetProperty(ref _draftName, value))
             {
                 UpdateValidationSummary();
+                RefreshPresentationState();
             }
         }
     }
@@ -66,7 +77,13 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
     public string DraftFormat
     {
         get => _draftFormat;
-        set => SetProperty(ref _draftFormat, value);
+        set
+        {
+            if (SetProperty(ref _draftFormat, value))
+            {
+                RefreshPresentationState();
+            }
+        }
     }
 
     public string DraftNotes
@@ -77,6 +94,44 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
 
     public bool CanDelete => SelectedPreset != null && !SelectedPreset.IsBuiltIn;
 
+    public bool CanSavePreset => !string.IsNullOrWhiteSpace(DraftName);
+
+    public bool HasPresets => Presets.Count > 0;
+
+    public bool IsPresetLibraryEmpty => !HasPresets;
+
+    public string PresetLibraryStateText => Presets.Count switch
+    {
+        0 => "No export presets loaded yet.",
+        1 => "1 preset available for reporting handoffs.",
+        _ => $"{Presets.Count} presets available for reporting handoffs."
+    };
+
+    public string PresetReadinessTitle => CanSavePreset
+        ? "Preset ready"
+        : "Preset setup incomplete";
+
+    public string PresetReadinessDetail
+    {
+        get
+        {
+            if (!CanSavePreset)
+            {
+                return "Enter a preset name before saving a reporting export preset.";
+            }
+
+            var format = string.IsNullOrWhiteSpace(DraftFormat) ? "selected" : DraftFormat;
+            if (SelectedPreset?.IsBuiltIn == true)
+            {
+                return $"Saving creates a custom {format} preset from the selected built-in template.";
+            }
+
+            return SelectedPreset == null
+                ? $"Ready to add a reusable {format} export preset."
+                : $"Ready to update the selected {format} export preset.";
+        }
+    }
+
     public string ValidationSummary
     {
         get => _validationSummary;
@@ -86,8 +141,16 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
     public string StatusMessage
     {
         get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
+        private set
+        {
+            if (SetProperty(ref _statusMessage, value))
+            {
+                RaisePropertyChanged(nameof(IsStatusVisible));
+            }
+        }
     }
+
+    public bool IsStatusVisible => !string.IsNullOrWhiteSpace(StatusMessage);
 
     // IDataErrorInfo
     public string Error => string.Empty;
@@ -118,6 +181,7 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
         }
 
         SelectedPreset = Presets.FirstOrDefault();
+        RefreshPresentationState();
     }
 
     public void SavePreset()
@@ -126,6 +190,7 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
         if (!string.IsNullOrEmpty(ValidationSummary))
         {
             StatusMessage = "Resolve validation errors before saving.";
+            RefreshPresentationState();
             return;
         }
 
@@ -144,6 +209,8 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
             SelectedPreset.UpdatedAt = DateTime.Now.ToString("MMM dd, yyyy HH:mm");
             StatusMessage = $"Preset \"{DraftName}\" updated.";
         }
+
+        RefreshPresentationState();
     }
 
     public void DeletePreset()
@@ -157,6 +224,7 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
         Presets.Remove(removed);
         SelectedPreset = Presets.FirstOrDefault();
         StatusMessage = $"Preset \"{removed.Name}\" removed.";
+        RefreshPresentationState();
     }
 
     private void LoadSelectedPreset()
@@ -177,6 +245,20 @@ public sealed class ExportPresetsViewModel : BindableBase, IDataErrorInfo
     private void UpdateValidationSummary()
     {
         ValidationSummary = this[nameof(DraftName)];
+    }
+
+    private void RefreshPresentationState()
+    {
+        RaisePropertyChanged(nameof(CanDelete));
+        RaisePropertyChanged(nameof(CanSavePreset));
+        RaisePropertyChanged(nameof(HasPresets));
+        RaisePropertyChanged(nameof(IsPresetLibraryEmpty));
+        RaisePropertyChanged(nameof(PresetLibraryStateText));
+        RaisePropertyChanged(nameof(PresetReadinessTitle));
+        RaisePropertyChanged(nameof(PresetReadinessDetail));
+
+        SavePresetCommand.NotifyCanExecuteChanged();
+        DeletePresetCommand.NotifyCanExecuteChanged();
     }
 }
 

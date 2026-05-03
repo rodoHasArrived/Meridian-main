@@ -10,7 +10,7 @@ SUMMARY=1
 STATUS_FILE="${REPO_ROOT}/.ai/maintenance-status.json"
 SUMMARY_FILE="${REPO_ROOT}/.ai/MAINTENANCE_STATUS.md"
 
-DOTNET_CHANNEL="9.0"
+DOTNET_CHANNEL="10.0"
 DOTNET_INSTALL_DIR="${HOME}/.dotnet"
 
 print_help() {
@@ -21,7 +21,7 @@ Options:
   --lane <light|full>      Maintenance lane to run (default: light)
   --full                   Shortcut for --lane full
   --light                  Shortcut for --lane light
-  --install-dotnet         Install .NET 9 SDK automatically when missing
+  --install-dotnet         Install .NET 10 SDK automatically when missing
   --status-file <path>     JSON status output path
   --summary-file <path>    Markdown summary output path
   --no-summary             Skip printing markdown summary to stdout

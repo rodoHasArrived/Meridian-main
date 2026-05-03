@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Radii</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .card { background: #0D1722; border: 1px solid #1F344C; padding: 12px 12px 10px; min-height: 94px; display: flex; flex-direction: column; justify-content: space-between; }
+  .label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-muted); }
+  .val { font-family: var(--font-mono); font-size: 11px; color: var(--fg); }
+</style>
+</head>
+<body class="bg-app">
+  <div class="grid">
+    <div class="card" style="border-radius: 4px;"><div class="label">sm</div><div class="val">4px</div></div>
+    <div class="card" style="border-radius: 6px;"><div class="label">md</div><div class="val">6px</div></div>
+    <div class="card" style="border-radius: 8px;"><div class="label">lg</div><div class="val">8px</div></div>
+    <div class="card" style="border-radius: 10px;"><div class="label">xl</div><div class="val">10px</div></div>
+    <div class="card" style="border-radius: 9999px;"><div class="label">full</div><div class="val">pill</div></div>
+  </div>
+</body>
+</html>

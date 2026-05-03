@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Security Master · Company</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin: 0; height: 100%; font-family: var(--font-sans); color: var(--fg); }
+  body { background: var(--bg); background-image: var(--bg-ambient); }
+  .app { display: grid; grid-template-rows: 56px 44px 1fr; height: 100vh; }
+
+  .cmdbar { display: grid; grid-template-columns: 280px 1fr auto; align-items: center; gap: 16px; padding: 0 20px; background: #05101B; border-bottom: 1px solid var(--border-color); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: 14px; color: #FFF; }
+  .brand .slash { color: #2AB2D4; margin: 0 6px; }
+  .brand .sub { color: var(--fg-muted); font-weight: 400; font-style: italic; font-family: var(--font-sans); font-size: 13px; }
+  .search { display: flex; align-items: center; gap: 10px; background: #0B1520; border: 1px solid #2A4566; border-radius: 4px; padding: 8px 14px; font-family: var(--font-mono); font-size: 13px; color: #FFF; max-width: 720px; }
+  .search .prompt { color: #2AB2D4; }
+  .search .cursor { width: 8px; height: 14px; background: #2AB2D4; display: inline-block; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .search .grow { flex: 1; }
+  .search .meta { color: var(--fg-muted); font-size: 11px; }
+  .search .meta b { color: #FFF; font-weight: 500; }
+  .search .kbd { font-size: 10px; color: var(--fg-muted); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 3px; }
+  .cmd-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 30px; height: 30px; display: grid; place-items: center; color: var(--fg-muted); border-radius: 4px; cursor: pointer; }
+  .icon-btn:hover { background: rgba(42,178,212,0.06); color: #FFF; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #2AB2D4, #60A5FA); font-family: var(--font-mono); font-size: 11px; color: #05101B; display: grid; place-items: center; font-weight: 600; }
+
+  .filters { display: flex; align-items: center; gap: 8px; padding: 0 20px; background: #08131F; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 11px; }
+  .filters .count { color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+  .filters .count b { color: #FFF; font-weight: 500; margin-right: 4px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: #0B1520; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 10px; color: #DEE6EF; cursor: pointer; }
+  .chip:hover { border-color: #2A4566; }
+  .chip .chev { color: var(--fg-muted); }
+  .chip.on { background: rgba(42,178,212,0.10); border-color: #2AB2D4; color: #2AB2D4; }
+  .chip .x { color: var(--fg-muted); margin-left: 2px; }
+  .filters .grow { flex: 1; }
+  .sort { color: var(--fg-muted); display: inline-flex; align-items: center; gap: 6px; }
+  .sort b { color: #FFF; font-weight: 500; }
+
+  .split { display: grid; grid-template-columns: 38% 62%; min-height: 0; }
+
+  /* results */
+  .results { background: #0B1520; border-right: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
+  .res-head { display: grid; grid-template-columns: 1.6fr 0.7fr 0.6fr 0.7fr 0.5fr; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border-color); background: #05101B; font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .res-head .right { text-align: right; }
+  .res-list { overflow-y: auto; flex: 1; }
+  .row { display: grid; grid-template-columns: 1.6fr 0.7fr 0.6fr 0.7fr 0.5fr; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #142036; cursor: pointer; align-items: center; position: relative; }
+  .row:hover { background: rgba(42,178,212,0.04); }
+  .row.active { background: rgba(42,178,212,0.10); box-shadow: inset 3px 0 0 #2AB2D4; }
+  .name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .name .n { font-size: 13px; color: #FFF; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .name .t { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; }
+  .type { font-size: 11px; color: #BEC8D4; font-family: var(--font-mono); }
+  .market { font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; }
+  .market .ctry { display: block; color: var(--fg-muted); font-size: 10px; margin-top: 1px; }
+  .isin { font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; }
+  .score-cell { text-align: right; font-family: var(--font-mono); font-size: 12px; color: #FFF; }
+  .score-bar { display: block; height: 2px; margin-top: 4px; background: #1F344C; border-radius: 1px; overflow: hidden; }
+  .score-bar i { display: block; height: 100%; background: #2AB2D4; }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.active { background: #26BF86; box-shadow: 0 0 0 2px rgba(38,191,134,0.18); }
+
+  /* detail */
+  .detail { overflow-y: auto; background: #08131F; min-height: 0; }
+  .detail-head { background: #0B1520; padding: 22px 32px 18px; border-bottom: 1px solid var(--border-color); position: relative; }
+  .detail-head .crumb { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); margin-bottom: 8px; }
+  .detail-head .crumb .sep { color: #2A4566; margin: 0 8px; }
+  .detail-head .title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .detail-head .title h1 { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: #FFF; letter-spacing: -0.015em; margin: 0; }
+  .detail-head .title code { font-family: var(--font-mono); font-size: 18px; color: #2AB2D4; font-weight: 500; background: rgba(42,178,212,0.08); padding: 2px 10px; border-radius: 3px; }
+  .detail-head .badges { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 3px 9px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+  .badge.active { background: rgba(38,191,134,0.12); color: #26BF86; border: 1px solid rgba(38,191,134,0.35); }
+  .badge.type { color: #DEE6EF; border: 1px solid var(--border-color); background: #0B1520; }
+  .badge.score { background: #2AB2D4; color: #05101B; font-weight: 600; }
+  .detail-head .actions { position: absolute; top: 22px; right: 32px; display: flex; gap: 6px; align-items: center; }
+  .btn { font-family: var(--font-mono); font-size: 11px; padding: 7px 12px; border-radius: 4px; border: 1px solid var(--border-color); background: #0B1520; color: #DEE6EF; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { border-color: #2A4566; color: #FFF; }
+  .btn.primary { background: #2AB2D4; color: #05101B; border-color: #2AB2D4; font-weight: 600; }
+  .btn.primary:hover { background: #84F3B6; border-color: #84F3B6; }
+
+  .summary { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; background: #05101B; border-bottom: 1px solid var(--border-color); }
+  .summary .cell { padding: 12px 18px; border-right: 1px solid #142036; }
+  .summary .cell:last-child { border-right: 0; }
+  .summary .k { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .summary .v { font-family: var(--font-mono); font-size: 13.5px; color: #FFF; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .summary .v.muted { color: #BEC8D4; }
+
+  .tabs { display: flex; gap: 0; padding: 0 32px; background: #0B1520; border-bottom: 1px solid var(--border-color); }
+  .tab { padding: 12px 16px; font-size: 13px; color: var(--fg-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab:hover { color: #BEC8D4; }
+  .tab.active { color: #2AB2D4; border-bottom-color: #2AB2D4; font-weight: 500; }
+  .tab .badge-tab { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); margin-left: 6px; background: #0B1520; border: 1px solid var(--border-color); padding: 1px 6px; border-radius: 8px; }
+
+  /* company body */
+  .body { padding: 24px 32px 32px; display: grid; grid-template-columns: 1fr 320px; gap: 28px; }
+
+  /* profile card */
+  .profile-card { background: #0B1520; border: 1px solid var(--border-color); border-radius: 6px; padding: 20px 22px 18px; margin-bottom: 22px; display: grid; grid-template-columns: 52px 1fr; gap: 18px; align-items: start; }
+  .logo-box { width: 52px; height: 52px; border-radius: 6px; background: #05101B; border: 1px solid var(--border-color); display: grid; place-items: center; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #2AB2D4; letter-spacing: -0.02em; }
+  .profile-meta h2 { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: #FFF; margin: 0 0 4px; }
+  .profile-meta .sub { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); }
+  .profile-meta .desc { font-size: 12px; line-height: 1.65; color: #BEC8D4; margin-top: 10px; max-width: 60ch; text-wrap: pretty; }
+
+  .field-group { background: #0B1520; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 22px; }
+  .field-group .grp-head { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-bottom: 1px solid var(--border-color); background: #05101B; border-radius: 6px 6px 0 0; }
+  .field-group .grp-title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #DEE6EF; }
+  .field-group .grp-title b { color: #2AB2D4; margin-right: 8px; }
+  .field-group .grp-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .field-row { display: grid; grid-template-columns: 180px 1fr; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #142036; align-items: start; }
+  .field-row:last-child { border-bottom: 0; }
+  .field-row .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); padding-top: 1px; }
+  .field-row .v { font-size: 13px; color: #DEE6EF; font-variant-numeric: tabular-nums; }
+  .field-row .v.mono { font-family: var(--font-mono); font-size: 12px; }
+  .field-row .v.hi { color: #FFF; font-weight: 500; }
+
+  .sic-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; background: rgba(42,178,212,0.08); border: 1px solid #2AB2D4; color: #2AB2D4; padding: 3px 8px; border-radius: 3px; margin-top: 2px; }
+  .tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; background: #0B1520; border: 1px solid var(--border-color); color: #DEE6EF; padding: 3px 8px; border-radius: 3px; margin: 2px 4px 2px 0; }
+
+  /* aside */
+  .aside { display: flex; flex-direction: column; gap: 20px; }
+  .panel { background: #0B1520; border: 1px solid var(--border-color); border-radius: 6px; padding: 14px 16px; }
+  .panel h3 { font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); margin: 0 0 12px; }
+  .kv-list { display: flex; flex-direction: column; gap: 8px; }
+  .kv { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; }
+  .kv .k { color: var(--fg-muted); font-family: var(--font-mono); font-size: 11px; }
+  .kv .v { color: #DEE6EF; font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
+  .kv .v.pos { color: #26BF86; }
+  .kv .v.neg { color: #F06B6B; }
+
+  /* exchange list */
+  .exch-list { display: flex; flex-direction: column; gap: 4px; }
+  .exch-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 4px; font-size: 12px; }
+  .exch-row:hover { background: rgba(42,178,212,0.05); }
+  .exch-row .primary-dot { width: 5px; height: 5px; border-radius: 50%; background: #26BF86; display: inline-block; margin-right: 6px; }
+  .exch-row .nm { color: #DEE6EF; }
+  .exch-row .mic { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .exch-row .tkr { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; }
+
+  /* ownership chart placeholder */
+  .own-chart { background: #05101B; border: 1px solid var(--border-color); border-radius: 4px; padding: 14px; margin-bottom: 10px; }
+  .own-bars { display: flex; flex-direction: column; gap: 8px; }
+  .own-bar-row { display: grid; grid-template-columns: 100px 1fr 48px; gap: 10px; align-items: center; font-size: 11px; }
+  .own-bar-row .lbl { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-align: right; }
+  .own-bar-row .track { background: #142036; border-radius: 2px; height: 6px; }
+  .own-bar-row .track .fill { height: 100%; border-radius: 2px; }
+  .own-bar-row .pct { font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; text-align: right; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- command bar -->
+  <div class="cmdbar">
+    <div class="brand">Meridian<span class="slash">//</span><span class="sub">security master</span></div>
+    <div class="search">
+      <span class="prompt">&gt;</span>
+      <span style="color:#FFF;">goldman sachs</span>
+      <span class="cursor"></span>
+      <span class="grow"></span>
+      <span class="meta"><b>5</b> results · <b>0.184s</b></span>
+      <span class="kbd">Ctrl + K</span>
+    </div>
+    <div class="cmd-actions">
+      <span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></span>
+      <span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      <span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 2-2.5 2-2.5 4M12 17h.01"/></svg></span>
+      <div class="avatar">MK</div>
+    </div>
+  </div>
+
+  <!-- filter bar -->
+  <div class="filters">
+    <span class="count"><b>5</b> results</span>
+    <span class="chip on">Status: Active <span class="x">×</span></span>
+    <span class="chip">Asset class <span class="chev">▾</span></span>
+    <span class="chip">Country <span class="chev">▾</span></span>
+    <span class="chip">Vendor <span class="chev">▾</span></span>
+    <span class="grow"></span>
+    <span class="sort">Sort by <b>Search score · desc</b> <span style="color:var(--fg-muted)">▾</span></span>
+    <span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M6 12h12M10 18h4"/></svg> Columns</span>
+    <span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12l7 7 7-7"/></svg> Export</span>
+  </div>
+
+  <!-- split -->
+  <div class="split">
+    <!-- results list -->
+    <div class="results">
+      <div class="res-head">
+        <span>Name · Ticker</span><span>Type</span><span>Market</span><span>ISIN</span><span class="right">Score</span>
+      </div>
+      <div class="res-list">
+        <div class="row active">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GS</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">NASDAQ <span class="ctry">United States</span></div>
+          <div class="isin">US38141G1040</div>
+          <div class="score-cell">107.39<span class="score-bar"><i style="width:100%;"></i></span></div>
+        </div>
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GSN</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">Turquoise <span class="ctry">United Kingdom</span></div>
+          <div class="isin">US38141GXJ83</div>
+          <div class="score-cell">103.31<span class="score-bar"><i style="width:96%;"></i></span></div>
+        </div>
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GOS</span></div>
+          <div class="type">Corporate Bond</div>
+          <div class="market">XETRA <span class="ctry">Germany</span></div>
+          <div class="isin">XS2071624245</div>
+          <div class="score-cell">96.90<span class="score-bar"><i style="width:90%;"></i></span></div>
+        </div>
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs Group Inc</span><span class="t">GS</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">EuroTLX <span class="ctry">Italy</span></div>
+          <div class="isin">US38141G1040</div>
+          <div class="score-cell">65.60<span class="score-bar"><i style="width:61%;"></i></span></div>
+        </div>
+        <div class="row">
+          <div class="name"><span class="n"><span class="dot active"></span>Goldman Sachs BDC Inc</span><span class="t">GSBD</span></div>
+          <div class="type">Common Stock</div>
+          <div class="market">NYSE <span class="ctry">United States</span></div>
+          <div class="isin">US38147U1079</div>
+          <div class="score-cell">62.30<span class="score-bar"><i style="width:58%;"></i></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- detail -->
+    <div class="detail">
+      <div class="detail-head">
+        <div class="crumb">Reference data <span class="sep">/</span> Equities <span class="sep">/</span> US <span class="sep">/</span> Company</div>
+        <div class="title"><h1>Goldman Sachs Group Inc</h1><code>GS</code></div>
+        <div class="badges">
+          <span class="badge active">● Active</span>
+          <span class="badge type">Common Stock</span>
+          <span class="badge type">USD</span>
+          <span class="badge score">Score 107.39</span>
+        </div>
+        <div class="actions">
+          <button class="btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="1"/><path d="M5 15V5a1 1 0 011-1h10"/></svg> Copy JSON</button>
+          <button class="btn primary"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4h6v6M10 14L20 4M5 5h5M5 19h14M5 12v7"/></svg> Open in Terminal</button>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="cell"><div class="k">Ticker</div><div class="v">GS</div></div>
+        <div class="cell"><div class="k">Status</div><div class="v" style="color:#26BF86;">Active</div></div>
+        <div class="cell"><div class="k">Type</div><div class="v muted">Common Stock</div></div>
+        <div class="cell"><div class="k">Market</div><div class="v">NASDAQ / GSM</div></div>
+        <div class="cell"><div class="k">Country</div><div class="v muted">United States</div></div>
+        <div class="cell"><div class="k">ISIN</div><div class="v">US38141G1040</div></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab">Identifiers <span class="badge-tab">15</span></div>
+        <div class="tab active">Company</div>
+        <div class="tab">Product</div>
+        <div class="tab">Classifications</div>
+        <div class="tab">Pricing</div>
+        <div class="tab">Corporate Actions</div>
+      </div>
+
+      <div class="body">
+        <div style="display:flex;flex-direction:column;">
+
+          <!-- profile -->
+          <div class="profile-card">
+            <div class="logo-box">GS</div>
+            <div class="profile-meta">
+              <h2>The Goldman Sachs Group, Inc.</h2>
+              <div class="sub">LEI 784F5XWPLTWKTBV3E584 · Incorporated: Delaware, US · Founded: 1869</div>
+              <p class="desc">A leading global investment banking, securities, and investment management firm that provides a wide range of financial services to corporations, financial institutions, governments, and individuals.</p>
+            </div>
+          </div>
+
+          <!-- Legal & Registration -->
+          <div class="field-group">
+            <div class="grp-head">
+              <span class="grp-title"><b>01</b>Legal &amp; Registration</span>
+              <span class="grp-meta">SEC / EDGAR · authoritative</span>
+            </div>
+            <div class="field-row"><span class="k">Legal name</span><span class="v hi">The Goldman Sachs Group, Inc.</span></div>
+            <div class="field-row"><span class="k">Short name</span><span class="v">Goldman Sachs Group Inc</span></div>
+            <div class="field-row"><span class="k">Legal entity type</span><span class="v">Public limited company (PLC)</span></div>
+            <div class="field-row"><span class="k">Incorporation country</span><span class="v">United States</span></div>
+            <div class="field-row"><span class="k">Incorporation state</span><span class="v">Delaware</span></div>
+            <div class="field-row"><span class="k">Registration date</span><span class="v mono">1999-05-07</span></div>
+            <div class="field-row"><span class="k">CIK (SEC)</span><span class="v mono">0000886982</span></div>
+            <div class="field-row"><span class="k">LEI</span><span class="v mono">784F5XWPLTWKTBV3E584</span></div>
+          </div>
+
+          <!-- Industry & Classification -->
+          <div class="field-group">
+            <div class="grp-head">
+              <span class="grp-title"><b>02</b>Industry &amp; Classification</span>
+              <span class="grp-meta">GICS · SIC · NAICS</span>
+            </div>
+            <div class="field-row">
+              <span class="k">GICS sector</span>
+              <span class="v">
+                Financials
+                <span class="sic-pill">40</span>
+              </span>
+            </div>
+            <div class="field-row"><span class="k">GICS industry group</span><span class="v">Diversified Financials <span class="sic-pill">4020</span></span></div>
+            <div class="field-row"><span class="k">GICS industry</span><span class="v">Capital Markets <span class="sic-pill">402010</span></span></div>
+            <div class="field-row"><span class="k">GICS sub-industry</span><span class="v">Investment Banking &amp; Brokerage <span class="sic-pill">40201020</span></span></div>
+            <div class="field-row"><span class="k">SIC code</span><span class="v mono">6211 — Security Brokers, Dealers, and Flotation Companies</span></div>
+            <div class="field-row"><span class="k">NAICS</span><span class="v mono">523110 — Investment Banking and Securities Dealing</span></div>
+            <div class="field-row">
+              <span class="k">Tags</span>
+              <span class="v">
+                <span class="tag">S&amp;P 500</span>
+                <span class="tag">DJIA</span>
+                <span class="tag">Fortune 500</span>
+                <span class="tag">G-SIB</span>
+                <span class="tag">FSOC Designated</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Headquarters & Contact -->
+          <div class="field-group">
+            <div class="grp-head">
+              <span class="grp-title"><b>03</b>Headquarters &amp; Contact</span>
+              <span class="grp-meta">From SEC 10-K filing</span>
+            </div>
+            <div class="field-row"><span class="k">Address</span><span class="v">200 West Street, New York, NY 10282, United States</span></div>
+            <div class="field-row"><span class="k">Website</span><span class="v mono" style="color:#2AB2D4;">www.goldmansachs.com</span></div>
+            <div class="field-row"><span class="k">Phone</span><span class="v mono">+1 212 902 1000</span></div>
+            <div class="field-row"><span class="k">IR contact</span><span class="v mono">investor.relations@gs.com</span></div>
+            <div class="field-row"><span class="k">Fiscal year end</span><span class="v">December 31</span></div>
+            <div class="field-row"><span class="k">Employees (FY2025)</span><span class="v mono">46,500</span></div>
+          </div>
+        </div>
+
+        <!-- aside -->
+        <aside class="aside">
+          <div class="panel">
+            <h3>Market data snapshot</h3>
+            <div class="kv-list">
+              <div class="kv"><span class="k">Mkt Cap</span><span class="v">$188.4B</span></div>
+              <div class="kv"><span class="k">EV</span><span class="v">$201.7B</span></div>
+              <div class="kv"><span class="k">P/E (ttm)</span><span class="v">14.2×</span></div>
+              <div class="kv"><span class="k">P/B</span><span class="v">1.36×</span></div>
+              <div class="kv"><span class="k">Div yield</span><span class="v">2.4%</span></div>
+              <div class="kv"><span class="k">Beta (1Y)</span><span class="v">1.18</span></div>
+              <div class="kv"><span class="k">52w high</span><span class="v pos">$621.49</span></div>
+              <div class="kv"><span class="k">52w low</span><span class="v neg">$412.08</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Ownership structure</h3>
+            <div class="own-chart">
+              <div class="own-bars">
+                <div class="own-bar-row">
+                  <span class="lbl">Institutional</span>
+                  <div class="track"><div class="fill" style="width:74.3%;background:#2AB2D4;"></div></div>
+                  <span class="pct">74.3%</span>
+                </div>
+                <div class="own-bar-row">
+                  <span class="lbl">Insiders</span>
+                  <div class="track"><div class="fill" style="width:2.8%;background:#E6A93C;"></div></div>
+                  <span class="pct">2.8%</span>
+                </div>
+                <div class="own-bar-row">
+                  <span class="lbl">Retail</span>
+                  <div class="track"><div class="fill" style="width:22.9%;background:#60A5FA;"></div></div>
+                  <span class="pct">22.9%</span>
+                </div>
+              </div>
+            </div>
+            <div class="kv-list">
+              <div class="kv"><span class="k">Shares out.</span><span class="v">326.7M</span></div>
+              <div class="kv"><span class="k">Float</span><span class="v">317.5M</span></div>
+              <div class="kv"><span class="k">Short interest</span><span class="v">1.4%</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Listings (5)</h3>
+            <div class="exch-list">
+              <div class="exch-row">
+                <span class="nm"><span class="primary-dot"></span>NASDAQ</span>
+                <span class="mic">XNGS</span>
+                <span class="tkr">GS</span>
+              </div>
+              <div class="exch-row">
+                <span class="nm">Turquoise</span>
+                <span class="mic">TRQX</span>
+                <span class="tkr">GSN</span>
+              </div>
+              <div class="exch-row">
+                <span class="nm">XETRA</span>
+                <span class="mic">XETR</span>
+                <span class="tkr">GOS</span>
+              </div>
+              <div class="exch-row">
+                <span class="nm">EuroTLX</span>
+                <span class="mic">ETLX</span>
+                <span class="tkr">GS</span>
+              </div>
+              <div class="exch-row">
+                <span class="nm">NYSE (GSBD)</span>
+                <span class="mic">XNYS</span>
+                <span class="tkr">GSBD</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

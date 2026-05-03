@@ -163,6 +163,18 @@ public enum ReconciliationBreakQueueStatus : byte
     Dismissed = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
+public enum ReconciliationCaseLifecycleState : byte
+{
+    Opened = 0,
+    Triaged = 1,
+    Calibrated = 2,
+    Approved = 3,
+    Escalated = 4,
+    Closed = 5,
+    Superseded = 6
+}
+
 /// <summary>
 /// Aggregate readiness state for reconciliation tolerance calibration and governance sign-off.
 /// </summary>
@@ -198,7 +210,37 @@ public sealed record ReconciliationBreakQueueItem(
     string? ToleranceProfileId = null,
     decimal? ToleranceBand = null,
     string? RequiredSignoffRole = null,
-    string? SignoffStatus = null);
+    string? SignoffStatus = null,
+    string? FundAccountId = null,
+    string? ExplainabilitySummary = null,
+    string? RoutingTarget = null,
+    string? RoutingDetail = null,
+    string? RecommendedAction = null,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Opened,
+    string? LifecycleRationale = null,
+    string? ExternalAccountId = null,
+    string? CustodianId = null,
+    string? UpstreamSyncCursor = null,
+    DateTimeOffset? LastUpstreamSyncAt = null,
+    IReadOnlyList<ReconciliationCaseSignoffRecord>? SignoffHistory = null,
+    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null);
+
+public sealed record ReconciliationCaseSignoffRecord(
+    string Actor,
+    string Role,
+    string Decision,
+    string? Note,
+    DateTimeOffset SignedAt,
+    string? InvalidatedBySyncCursor = null,
+    DateTimeOffset? InvalidatedAt = null);
+
+public sealed record ReconciliationCaseStateTransition(
+    string TransitionId,
+    ReconciliationCaseLifecycleState From,
+    ReconciliationCaseLifecycleState To,
+    string Actor,
+    string? Rationale,
+    DateTimeOffset OccurredAt);
 
 /// <summary>
 /// Per-profile rollup for reconciliation tolerance calibration and exception routing.
@@ -252,4 +294,5 @@ public sealed record ResolveReconciliationBreakRequest(
     string BreakId,
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
-    string ResolutionNote);
+    string ResolutionNote,
+    string OperatorRationale);

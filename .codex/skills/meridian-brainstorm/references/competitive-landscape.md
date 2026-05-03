@@ -29,4 +29,4 @@ Use this file when brainstorming against competitors or positioning Meridian's s
 
 - Cloud-only assumptions
 - Vendor-locked storage formats with no local ownership
-- Features that ignore Meridian's operator workflow and desktop-first strengths
+- Features that ignore Meridian's operator workflow, local-first strengths, or retained desktop support

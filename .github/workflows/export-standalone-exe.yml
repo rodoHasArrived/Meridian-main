@@ -44,7 +44,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   WPF_PROJECT: 'src/Meridian.Wpf/Meridian.Wpf.csproj'
   BUILD_CONFIG: ${{ inputs.build_config || 'Release' }}
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -108,8 +108,8 @@ jobs:
       - name: Publish self-contained single-file executable
         run: |
           # The explicit TargetFramework override is intentional: on the windows-latest
-          # runner the project builds as net9.0-windows10.0.19041.0 (the full WPF TFM),
-          # but without the override MSBuild would select the stub net9.0 target used
+          # runner the project builds as net10.0-windows10.0.19041.0 (the full WPF TFM),
+          # but without the override MSBuild would select the stub net10.0 target used
           # on non-Windows systems. This matches the same flag in desktop-builds.yml.
           #
           # PublishReadyToRun is intentionally omitted (defaults to false in the project)
@@ -120,7 +120,7 @@ jobs:
             -r ${{ matrix.rid }} `
             -o ./publish/${{ matrix.rid }} `
             --self-contained true `
-            -p:TargetFramework=net9.0-windows10.0.19041.0 `
+            -p:TargetFramework=net10.0-windows10.0.19041.0 `
             -p:PublishSingleFile=true `
             -p:EnableCompressionInSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true

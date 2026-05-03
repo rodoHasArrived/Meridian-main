@@ -784,8 +784,11 @@ public static class ExecutionEndpoints
         if (portfolio is null)
             return null;
 
+        var paperPortfolio = portfolio as PaperTradingPortfolio;
         var paperPositions = portfolio.Positions.Values
-            .Select(MapPortfolioPositionToDetail)
+            .Select(position => MapPortfolioPositionToDetail(
+                position,
+                paperPortfolio?.GetPositionLots(position.Symbol)))
             .ToArray();
 
         var paperStatus = paperPositions.Length == 0
@@ -934,7 +937,9 @@ public static class ExecutionEndpoints
             Metadata: position.Metadata);
     }
 
-    private static ExecutionPositionDetailResponse MapPortfolioPositionToDetail(IPosition position)
+    private static ExecutionPositionDetailResponse MapPortfolioPositionToDetail(
+        IPosition position,
+        IReadOnlyList<PositionLotEntry>? lots = null)
     {
         return new ExecutionPositionDetailResponse(
             PositionKey: position.Symbol,
@@ -949,7 +954,8 @@ public static class ExecutionEndpoints
             UnrealisedPnl: position.UnrealizedPnl,
             RealisedPnl: position.RealizedPnl,
             AssetClass: "equity",
-            Side: position.Quantity < 0 ? "Sell" : "Buy");
+            Side: position.Quantity < 0 ? "Sell" : "Buy",
+            Lots: lots);
     }
 
     private static string? ExtractTradeId(string? positionId)

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Form inputs</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  label.l { display: block; font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 4px; }
+  input, select { width: 100%; border-radius: 6px; border: 1px solid #1F344C; background: #08101A; color: var(--fg); padding: 6px 10px; font-size: 12px; font-family: var(--font-mono); box-sizing: border-box; font-variant-numeric: tabular-nums; }
+  .focus-demo { border-color: #2AB2D4 !important; box-shadow: 0 0 0 2px rgba(42,178,212,.18); }
+</style>
+</head>
+<body class="bg-app">
+  <div class="row">
+    <div><label class="l">Symbol</label><input value="AAPL"></div>
+    <div><label class="l">Side</label><select><option>Buy</option><option>Sell</option></select></div>
+    <div><label class="l">Type</label><select><option>Market</option><option>Limit</option><option>Stop</option></select></div>
+  </div>
+  <div class="row">
+    <div><label class="l">Quantity</label><input value="100"></div>
+    <div><label class="l">Limit · focus</label><input class="focus-demo" value="187.42"></div>
+    <div><label class="l">Session ID</label><input placeholder="sess-…"></div>
+  </div>
+</body>
+</html>

@@ -78,7 +78,11 @@ meridian-code-review/
     └── utils.py                  ← shared utilities
 ```
 
-**When to read `references/architecture.md`**: Full solution layout, exact dependency rules, storage sink patterns, WAL guarantees, WPF MVVM patterns, backfill architecture, F# interop boundary rules, testing conventions, and ADR quick reference.
+**When to read [`references/architecture.md`](references/architecture.md)**: Full solution layout, exact dependency rules, storage sink patterns, WAL guarantees, WPF MVVM patterns, backfill architecture, F# interop boundary rules, testing conventions, and ADR quick reference.
+
+**When to read [`agents/grader.md`](agents/grader.md)**: Grading assertions for eval runs; use when evaluating code review output against `evals/evals.json`.
+
+**When to read [`references/schemas.md`](references/schemas.md)**: JSON schemas for `evals.json`, `grading.json`, and `benchmark.json`.
 
 **When to read `../_shared/project-context.md`**: Current project statistics (file counts, test counts), key abstraction interfaces with file paths, provider inventory, storage organization modes, and naming conventions. This is the authoritative, always-up-to-date snapshot.
 
@@ -88,7 +92,7 @@ A unified code review skill that catches architecture violations, performance an
 
 ## Context: What This Project Is
 
-Meridian is a high-throughput .NET 9 / C# 13 system (with F# 8.0 domain models) that captures real-time market microstructure data (trades, quotes, L2 order books) from multiple providers (Alpaca, Polygon, Interactive Brokers, StockSharp, NYSE) and persists it via a backpressured pipeline to JSONL/Parquet storage with WAL durability. Historical backfill from 10+ providers with automatic failover. WPF desktop app (recommended) and web dashboard share services through a layered architecture.
+Meridian is a .NET 10 fund-management and trading-platform system with F# domain models, provider-backed market data, backtesting, execution, risk, ledger, reconciliation, and governed reporting surfaces. The active operator UI is the browser workstation under `src/Meridian.Ui/dashboard/`; WPF is retained for shared contracts, regressions, and existing desktop workflows. Shared services flow through `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 
 **Key facts for reviewers (authoritative counts in `../_shared/project-context.md`):**
 - **779 source files**: 769 C#, 14 F#, 266 test files, ~4,135 test methods across 4 test projects
@@ -358,4 +362,4 @@ The aggregator will compare results against `evals/benchmark_baseline.json` and 
 python scripts/package_skill.py /tmp/meridian-code-review
 ```
 
-See `references/schemas.md` for full JSON schemas.
+See [`references/schemas.md`](references/schemas.md) for full JSON schemas.

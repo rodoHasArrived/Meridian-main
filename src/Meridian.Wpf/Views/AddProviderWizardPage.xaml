@@ -59,22 +59,99 @@
 
                         <!-- Filter Buttons -->
                         <WrapPanel Margin="0,0,0,12">
-                            <Button x:Name="FilterAllBtn" Content="All"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="FilterAll_Click" Margin="0,0,8,4" />
-                            <Button x:Name="FilterFreeBtn" Content="Free"
-                                    Style="{StaticResource GhostButtonStyle}"
-                                    Click="FilterFree_Click" Margin="0,0,8,4" />
-                            <Button x:Name="FilterStreamingBtn" Content="Streaming"
-                                    Style="{StaticResource GhostButtonStyle}"
-                                    Click="FilterStreaming_Click" Margin="0,0,8,4" />
-                            <Button x:Name="FilterHistoricalBtn" Content="Historical"
-                                    Style="{StaticResource GhostButtonStyle}"
-                                    Click="FilterHistorical_Click" Margin="0,0,8,4" />
+                            <Button x:Name="FilterAllBtn"
+                                    Content="All"
+                                    Command="{Binding SelectProviderFilterCommand}"
+                                    CommandParameter="all"
+                                    AutomationProperties.AutomationId="AddProviderFilterAllButton"
+                                    Margin="0,0,8,4">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Setter Property="FontWeight" Value="Normal" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAllProviderFilterActive}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="FilterFreeBtn"
+                                    Content="Free"
+                                    Command="{Binding SelectProviderFilterCommand}"
+                                    CommandParameter="free"
+                                    AutomationProperties.AutomationId="AddProviderFilterFreeButton"
+                                    Margin="0,0,8,4">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Setter Property="FontWeight" Value="Normal" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFreeProviderFilterActive}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="FilterStreamingBtn"
+                                    Content="Streaming"
+                                    Command="{Binding SelectProviderFilterCommand}"
+                                    CommandParameter="streaming"
+                                    AutomationProperties.AutomationId="AddProviderFilterStreamingButton"
+                                    Margin="0,0,8,4">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Setter Property="FontWeight" Value="Normal" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsStreamingProviderFilterActive}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="FilterHistoricalBtn"
+                                    Content="Historical"
+                                    Command="{Binding SelectProviderFilterCommand}"
+                                    CommandParameter="historical"
+                                    AutomationProperties.AutomationId="AddProviderFilterHistoricalButton"
+                                    Margin="0,0,8,4">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Setter Property="FontWeight" Value="Normal" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsHistoricalProviderFilterActive}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </WrapPanel>
 
+                        <TextBlock Text="{Binding ProviderCatalogScopeText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   Margin="0,0,0,12"
+                                   AutomationProperties.AutomationId="AddProviderCatalogScopeText" />
+
                         <!-- Provider Cards -->
-                        <ItemsControl x:Name="ProviderCatalogList">
+                        <ItemsControl x:Name="ProviderCatalogList"
+                                      ItemsSource="{Binding ProviderCatalog}"
+                                      Visibility="{Binding ProviderCatalogVisibility}"
+                                      AutomationProperties.AutomationId="AddProviderCatalogList">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="2" />
@@ -137,6 +214,30 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <StackPanel x:Name="ProviderCatalogEmptyStatePanel"
+                                    Visibility="{Binding ProviderCatalogEmptyVisibility}"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,16,0,4"
+                                    AutomationProperties.AutomationId="AddProviderCatalogEmptyStatePanel">
+                            <TextBlock Text="{Binding ProviderCatalogEmptyTitle}"
+                                       Style="{StaticResource EmptyStateTitleStyle}"
+                                       HorizontalAlignment="Center"
+                                       AutomationProperties.AutomationId="AddProviderCatalogEmptyStateTitle" />
+                            <TextBlock Text="{Binding ProviderCatalogEmptyDetail}"
+                                       Style="{StaticResource EmptyStateDescriptionStyle}"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Margin="0,4,0,12"
+                                       AutomationProperties.AutomationId="AddProviderCatalogEmptyStateDetail" />
+                            <Button Content="Show All"
+                                    Command="{Binding SelectProviderFilterCommand}"
+                                    CommandParameter="all"
+                                    Visibility="{Binding ProviderCatalogRecoveryVisibility}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    HorizontalAlignment="Center"
+                                    AutomationProperties.AutomationId="AddProviderCatalogShowAllButton" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -154,6 +255,7 @@
                         </StackPanel>
 
                         <TextBlock x:Name="CredentialsInfoText"
+                                   Text="{Binding CredentialsInfoText}"
                                    TextWrapping="Wrap"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    Margin="0,0,0,16" />
@@ -163,7 +265,7 @@
                         <TextBlock x:Name="NoCredentialsNeededText"
                                    Text="This provider does not require API credentials."
                                    Foreground="{StaticResource SuccessColorBrush}"
-                                   Visibility="Collapsed"
+                                   Visibility="{Binding NoCredentialsVisibility}"
                                    Margin="0,0,0,8" />
                     </StackPanel>
                 </Border>
@@ -183,9 +285,10 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Ellipse x:Name="ConnectionTestDot" Width="12" Height="12"
-                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,10,0"
+                                     Fill="{Binding ConnectionTestDotBrush}" Margin="0,0,10,0"
                                      VerticalAlignment="Center" />
-                            <TextBlock x:Name="ConnectionTestStatusText" Text="Not tested yet"
+                            <TextBlock x:Name="ConnectionTestStatusText"
+                                       Text="{Binding ConnectionTestStatusText}"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
@@ -243,7 +346,8 @@
                                 Margin="0,16,0,0" />
 
                         <TextBlock x:Name="SaveStatusText"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Text="{Binding SaveStatusText}"
+                                   Foreground="{Binding SaveStatusBrush}"
                                    Margin="0,8,0,0" />
                     </StackPanel>
                 </Border>
@@ -327,25 +431,25 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,4">
                             <Ellipse x:Name="Step1Dot" Width="10" Height="10"
-                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                                     Fill="{Binding Step1Fill}" Margin="0,0,8,0" />
                             <TextBlock x:Name="Step1Label" Text="Choose provider"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,4">
                             <Ellipse x:Name="Step2Dot" Width="10" Height="10"
-                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                                     Fill="{Binding Step2Fill}" Margin="0,0,8,0" />
                             <TextBlock x:Name="Step2Label" Text="Enter credentials"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,4">
                             <Ellipse x:Name="Step3Dot" Width="10" Height="10"
-                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                                     Fill="{Binding Step3Fill}" Margin="0,0,8,0" />
                             <TextBlock x:Name="Step3Label" Text="Test connection"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,4">
                             <Ellipse x:Name="Step4Dot" Width="10" Height="10"
-                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                                     Fill="{Binding Step4Fill}" Margin="0,0,8,0" />
                             <TextBlock x:Name="Step4Label" Text="Configure &amp; save"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                         </StackPanel>

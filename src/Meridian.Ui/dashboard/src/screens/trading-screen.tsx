@@ -1,6 +1,6 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,10 +10,39 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetBody,
+  SheetCloseButton,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, rejectPromotion, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingAcceptanceGate, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import {
+  formatReadinessStatusValue,
+  mapReadinessStatusLevel,
+  useExecutionEvidenceViewModel,
+  usePaperSessionsViewModel,
+  useSessionReplayControlsViewModel,
+  useStrategyLifecycleControlsViewModel,
+  useTradingConfirmViewModel,
+  useOrderTicketViewModel,
+  usePromotionGateViewModel,
+  useTradingReadinessViewModel,
+  type AcceptanceLevel,
+  type PaperSessionDetailPanel,
+  type PaperSessionReplayPanel,
+  type PromotionOutcomeLevel,
+  type TradingConfirmViewModel,
+  type TradingReadinessState,
+  type TradingReadinessSummaryRow
+} from "@/screens/trading-screen.view-model";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingAcceptanceGate, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -45,23 +74,6 @@ const focusCopy: Record<string, { title: string; description: string }> = {
     description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
   }
 };
-
-type OrderPhase = "idle" | "submitting" | "submitted" | "error";
-
-interface OrderState {
-  phase: OrderPhase;
-  orderId: string | null;
-  error: string | null;
-}
-
-type PromotionOutcomeLevel = "success" | "warning" | "error";
-
-interface PromotionOutcome {
-  level: PromotionOutcomeLevel;
-  message: string;
-}
-
-type AcceptanceLevel = "ready" | "review" | "atRisk";
 
 interface CockpitAcceptanceItem {
   label: string;
@@ -95,34 +107,6 @@ const workItemTone: Record<string, string> = {
   Critical: "border-destructive/30 bg-destructive/10 text-destructive"
 };
 
-const readinessStatusValue: Record<string, string> = {
-  Ready: "Ready",
-  ReviewRequired: "Review required",
-  Blocked: "Blocked"
-};
-
-const readinessStatusLevel: Record<string, AcceptanceLevel> = {
-  Ready: "ready",
-  ReviewRequired: "review",
-  Blocked: "atRisk"
-};
-
-// --- Shared confirmation state for all write actions ---
-
-type ConfirmActionType =
-  | { kind: "cancel-order"; orderId: string }
-  | { kind: "cancel-all" }
-  | { kind: "close-position"; symbol: string }
-  | { kind: "pause-strategy"; strategyId: string }
-  | { kind: "stop-strategy"; strategyId: string };
-
-interface ConfirmState {
-  action: ConfirmActionType | null;
-  busy: boolean;
-  result: TradingActionResult | null;
-  error: string | null;
-}
-
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
   const workstream = useMemo(() => {
@@ -130,358 +114,46 @@ export function TradingScreen({ data }: TradingScreenProps) {
     if (pathname.includes("/risk")) return "risk";
     return "orders";
   }, [pathname]);
+  const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
+  const executionEvidence = useExecutionEvidenceViewModel();
 
-  const [showOrderForm, setShowOrderForm] = useState(false);
-  const [orderForm, setOrderForm] = useState<OrderSubmitRequest>({
-    symbol: "",
-    side: "Buy",
-    type: "Market",
-    quantity: 0,
-    limitPrice: null
-  });
-  const [orderState, setOrderState] = useState<OrderState>({ phase: "idle", orderId: null, error: null });
-
-  // --- Shared confirmation dialog state ---
-  const [confirm, setConfirm] = useState<ConfirmState>({
-    action: null,
-    busy: false,
-    result: null,
-    error: null
-  });
-
-  function openConfirm(action: ConfirmActionType) {
-    setConfirm({ action, busy: false, result: null, error: null });
-  }
-
-  function closeConfirm() {
-    if (confirm.busy) return;
-    setConfirm({ action: null, busy: false, result: null, error: null });
-  }
-
-  async function executeConfirmedAction() {
-    const { action } = confirm;
-    if (!action) return;
-    setConfirm((prev) => ({ ...prev, busy: true, result: null, error: null }));
-
-    try {
-      let result: TradingActionResult;
-      if (action.kind === "cancel-order") {
-        result = await cancelOrder(action.orderId);
-      } else if (action.kind === "cancel-all") {
-        result = await cancelAllOrders();
-      } else if (action.kind === "close-position") {
-        result = await closePosition(action.symbol);
-      } else if (action.kind === "pause-strategy") {
-        const raw = await pauseStrategy(action.strategyId);
-        result = {
-          actionId: `act-${Date.now()}`,
-          status: raw.success ? "Completed" : "Rejected",
-          message: raw.reason ?? (raw.success ? "Strategy paused." : "Pause rejected."),
-          occurredAt: new Date().toISOString()
-        };
-      } else {
-        const raw = await stopStrategy(action.strategyId);
-        result = {
-          actionId: `act-${Date.now()}`,
-          status: raw.success ? "Completed" : "Rejected",
-          message: raw.reason ?? (raw.success ? "Strategy stopped." : "Stop rejected."),
-          occurredAt: new Date().toISOString()
-        };
-      }
-      await refreshExecutionControls();
-      setConfirm((prev) => ({ ...prev, busy: false, result }));
-    } catch (err) {
-      setConfirm((prev) => ({
-        ...prev,
-        busy: false,
-        error: err instanceof Error ? err.message : "Action failed."
-      }));
-    }
-  }
-
-  // --- Paper session management ---
-  const [sessions, setSessions] = useState<PaperSessionSummary[]>([]);
-  const [sessionLoading, setSessionLoading] = useState(false);
-  const [sessionError, setSessionError] = useState<string | null>(null);
-  const [showSessionForm, setShowSessionForm] = useState(false);
-  const [newSessionStrategyId, setNewSessionStrategyId] = useState("");
-  const [newSessionCash, setNewSessionCash] = useState("100000");
-
-  // --- Strategy lifecycle ---
-  const [strategyId, setStrategyId] = useState("");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [selectedSessionDetail, setSelectedSessionDetail] = useState<PaperSessionDetail | null>(null);
-  const [sessionReplayVerification, setSessionReplayVerification] = useState<PaperSessionReplayVerification | null>(null);
-  const [executionAudit, setExecutionAudit] = useState<ExecutionAuditEntry[]>([]);
-  const [executionControls, setExecutionControls] = useState<ExecutionControlSnapshot | null>(null);
-
-  const [replayFiles, setReplayFiles] = useState<ReplayFileRecord[]>([]);
-  const [selectedReplayFile, setSelectedReplayFile] = useState("");
-  const [replayStatus, setReplayStatus] = useState<ReplayStatus | null>(null);
-  const [replayError, setReplayError] = useState<string | null>(null);
-  const [replaySpeed, setReplaySpeed] = useState("1");
-  const [seekMs, setSeekMs] = useState("0");
-
-  const [promotionRunId, setPromotionRunId] = useState("");
-  const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
-  const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
-  const [promotionRejectionReason, setPromotionRejectionReason] = useState("");
-  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
-  const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
-  const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
-  const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
-  const [promotionError, setPromotionError] = useState<string | null>(null);
-  const [promotionBusy, setPromotionBusy] = useState(false);
-  const [promotionOutcome, setPromotionOutcome] = useState<PromotionOutcome | null>(null);
-
-  async function refreshExecutionAudit() {
-    try {
-      const entries = await getExecutionAudit(8);
-      setExecutionAudit(entries);
-    } catch {
-      setExecutionAudit([]);
-    }
-  }
-
-  async function refreshExecutionControls() {
-    try {
-      const snapshot = await getExecutionControls();
-      setExecutionControls(snapshot);
-    } catch {
-      setExecutionControls(null);
-    }
-  }
-
-  useEffect(() => {
-    getExecutionSessions()
-      .then(setSessions)
-      .catch(() => { /* sessions unavailable — silently skip */ });
-    getReplayFiles()
-      .then((result) => {
-        setReplayFiles(result.files);
-        if (result.files.length > 0) {
-          setSelectedReplayFile(result.files[0].path);
-        }
-      })
-      .catch(() => { /* replay unavailable */ });
-    getPromotionHistory()
-      .then(setPromotionHistory)
-      .catch(() => { /* history unavailable */ });
-    void refreshExecutionAudit();
-    void refreshExecutionControls();
-  }, []);
-
-  async function handleSubmitOrder(e: React.FormEvent) {
-    e.preventDefault();
-    setOrderState({ phase: "submitting", orderId: null, error: null });
-    try {
-      const result = await submitOrder(orderForm);
-      if (result.success) {
-        setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
-        setShowOrderForm(false);
-        setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
-        await refreshExecutionControls();
-      } else {
-        setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
-      }
-    } catch (err) {
-      setOrderState({
-        phase: "error",
-        orderId: null,
-        error: err instanceof Error ? err.message : "Order submission failed."
-      });
-    }
-  }
-
-  async function handleCreateSession(e: React.FormEvent) {
-    e.preventDefault();
-    setSessionLoading(true);
-    setSessionError(null);
-    try {
-      const sid = newSessionStrategyId.trim() || `strat-${Date.now()}`;
-      const cash = parseFloat(newSessionCash) || 100_000;
-      const summary = await createPaperSession(sid, null, cash);
-      setSessions((prev) => [summary, ...prev]);
-      setShowSessionForm(false);
-      setNewSessionStrategyId("");
-      setNewSessionCash("100000");
-    } catch (err) {
-      setSessionError(err instanceof Error ? err.message : "Failed to create session.");
-    } finally {
-      setSessionLoading(false);
-    }
-  }
-
-  async function handleCloseSession(sessionId: string) {
-    setSessionError(null);
-    try {
-      const result = await closePaperSession(sessionId);
-      setSessions((prev) => prev.map((session) => (
-        session.sessionId === sessionId
-          ? { ...session, closedAt: result.occurredAt, isActive: false }
-          : session
-      )));
-      setSelectedSessionDetail((prev) => {
-        if (!prev || prev.summary.sessionId !== sessionId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          summary: {
-            ...prev.summary,
-            closedAt: result.occurredAt,
-            isActive: false
-          }
-        };
-      });
-      await refreshExecutionAudit();
-      await refreshExecutionControls();
-    } catch (err) {
-      setSessionError(err instanceof Error ? err.message : "Failed to close session.");
-    }
-  }
-
-  async function handleRestoreSession(sessionId: string) {
-    setSessionError(null);
-    try {
-      const detail = await getPaperSessionDetail(sessionId);
-      setSelectedSessionId(sessionId);
-      setSelectedSessionDetail(detail);
-      setSessionReplayVerification(null);
-    } catch (err) {
-      setSessionError(err instanceof Error ? err.message : "Failed to restore session.");
-    }
-  }
-
-  async function handleVerifySessionReplay(sessionId: string) {
-    setSessionError(null);
-    try {
-      const [detail, verification] = await Promise.all([
-        getPaperSessionDetail(sessionId),
-        getPaperSessionReplayVerification(sessionId)
+  const orderTicket = useOrderTicketViewModel({
+    onOrderAccepted: async () => {
+      await Promise.all([
+        executionEvidence.refresh(),
+        tradingReadiness.refresh()
       ]);
-      setSelectedSessionId(sessionId);
-      setSelectedSessionDetail(detail);
-      setSessionReplayVerification(verification);
-      await refreshExecutionAudit();
-      await refreshExecutionControls();
-    } catch (err) {
-      setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
-  }
+  });
 
-  async function handleStartReplay() {
-    if (!selectedReplayFile) return;
-    setReplayError(null);
-    try {
-      const started = await startReplay(selectedReplayFile, Number(replaySpeed) || 1);
-      const status = await getReplayStatus(started.sessionId);
-      setReplayStatus(status);
-    } catch (err) {
-      setReplayError(err instanceof Error ? err.message : "Failed to start replay.");
+  const confirmVm = useTradingConfirmViewModel({
+    onActionSettled: async () => {
+      await Promise.all([
+        executionEvidence.refresh(),
+        tradingReadiness.refresh()
+      ]);
     }
-  }
+  });
 
-  async function handleReplayControl(action: "pause" | "resume" | "stop" | "seek" | "speed") {
-    if (!replayStatus) return;
-    setReplayError(null);
-    try {
-      if (action === "pause") await pauseReplay(replayStatus.sessionId);
-      if (action === "resume") await resumeReplay(replayStatus.sessionId);
-      if (action === "stop") await stopReplay(replayStatus.sessionId);
-      if (action === "seek") await seekReplay(replayStatus.sessionId, Number(seekMs) || 0);
-      if (action === "speed") await apiSetReplaySpeed(replayStatus.sessionId, Number(replaySpeed) || 1);
-      if (action === "stop") {
-        setReplayStatus(null);
-      } else {
-        const status = await getReplayStatus(replayStatus.sessionId);
-        setReplayStatus(status);
-      }
-    } catch (err) {
-      setReplayError(err instanceof Error ? err.message : "Replay action failed.");
-    }
-  }
+  const paperSessions = usePaperSessionsViewModel({
+    onSessionEvidenceChanged: refreshSessionEvidence
+  });
 
-  async function handleEvaluatePromotion() {
-    if (!promotionRunId.trim()) return;
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionOutcome(null);
-    try {
-      const evaluation = await evaluatePromotion(promotionRunId.trim());
-      setPromotionEval(evaluation);
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Evaluation failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
+  const strategyLifecycle = useStrategyLifecycleControlsViewModel({
+    openConfirm: confirmVm.openConfirm
+  });
+  const sessionReplay = useSessionReplayControlsViewModel();
+  const promotionGate = usePromotionGateViewModel();
 
-  async function handlePromoteToPaper() {
-    if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
-      setPromotionError("Operator and approval reason are required.");
-      setPromotionOutcome(null);
-      return;
-    }
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionOutcome(null);
-    try {
-      const result = await approvePromotion({
-        runId: promotionRunId.trim(),
-        approvedBy: promotionApprovedBy.trim(),
-        approvalReason: promotionApprovalReason.trim(),
-        reviewNotes: promotionReviewNotes.trim() || undefined,
-        manualOverrideId: promotionManualOverrideId.trim() || undefined
-      });
-      setPromotionOutcome({
-        level: result.success ? "success" : "error",
-        message: result.success
-          ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit: ${result.auditReference}` : ""}`
-          : result.reason
-      });
-      const history = await getPromotionHistory();
-      setPromotionHistory(history);
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Promotion approval failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
-  }
+  const [strategySheetOpen, setStrategySheetOpen] = useState(false);
+  const [replaySheetOpen, setReplaySheetOpen] = useState(false);
+  const [promotionSheetOpen, setPromotionSheetOpen] = useState(false);
 
-  async function handleRejectPromotion() {
-    if (!promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionRejectionReason.trim()) {
-      setPromotionError("Run id, operator, and rejection reason are required.");
-      setPromotionOutcome(null);
-      return;
-    }
-
-    setPromotionBusy(true);
-    setPromotionError(null);
-    setPromotionOutcome(null);
-    try {
-      const result = await rejectPromotion({
-        runId: promotionRunId.trim(),
-        reason: promotionRejectionReason.trim(),
-        rejectedBy: promotionApprovedBy.trim(),
-        reviewNotes: promotionReviewNotes.trim() || undefined,
-        manualOverrideId: promotionManualOverrideId.trim() || undefined
-      });
-      setPromotionOutcome({
-        level: result.success ? "warning" : "error",
-        message: `${result.reason}${result.auditReference ? ` · Audit: ${result.auditReference}` : ""}`
-      });
-      const history = await getPromotionHistory();
-      setPromotionHistory(history);
-      if (result.success) {
-        setPromotionRejectionReason("");
-      }
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Promotion rejection failed.");
-    } finally {
-      setPromotionBusy(false);
-    }
+  async function refreshSessionEvidence() {
+    await Promise.all([
+      executionEvidence.refresh(),
+      tradingReadiness.refresh()
+    ]);
   }
 
   if (!data) {
@@ -496,19 +168,17 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   const cockpitAcceptance = buildCockpitAcceptance({
-    operatorReadiness: data.readiness ?? null,
-    sessions,
-    selectedSessionDetail,
-    sessionReplayVerification,
-    executionAudit,
-    executionControls,
-    promotionEval,
-    promotionHistory,
-    promotionApprovedBy,
-    promotionApprovalReason
+    operatorReadiness: tradingReadiness.readiness,
+    sessions: paperSessions.sessions,
+    selectedSessionDetail: paperSessions.selectedSessionDetail,
+    sessionReplayVerification: paperSessions.sessionReplayVerification,
+    executionAudit: executionEvidence.auditEntries,
+    executionControls: executionEvidence.controlsSnapshot,
+    promotionEval: promotionGate.evaluation,
+    promotionHistory: promotionGate.history,
+    promotionApprovedBy: promotionGate.form.approvedBy,
+    promotionApprovalReason: promotionGate.form.approvalReason
   });
-  const operatorWorkItems = data.readiness?.workItems ?? [];
-  const operatorWarnings = data.readiness?.warnings ?? [];
 
   return (
     <div className="space-y-8">
@@ -553,7 +223,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardTitle>Current workstream</CardTitle>
             <CardDescription className="text-slate-300">
               Deep links under{" "}
-              <code className="rounded bg-white/10 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
@@ -566,7 +236,27 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </Card>
       </section>
 
-      <AcceptanceStatusCard items={cockpitAcceptance} workItems={operatorWorkItems} warnings={operatorWarnings} />
+      <AcceptanceStatusCard
+        items={cockpitAcceptance}
+        readinessVm={tradingReadiness}
+      />
+
+      {/* Workflow tools strip — triggered workflows live in side panels, not inline */}
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
+        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workflow tools</span>
+        <Button size="sm" variant="outline" onClick={() => setStrategySheetOpen(true)}>
+          <PlayCircle className="mr-2 h-4 w-4" />
+          Strategy controls
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setReplaySheetOpen(true)}>
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Session replay
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setPromotionSheetOpen(true)}>
+          <FlaskConical className="mr-2 h-4 w-4" />
+          Promotion gate
+        </Button>
+      </div>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
@@ -600,36 +290,49 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </div>
             <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Execution controls snapshot</p>
-                <span className={cn("text-xs font-semibold uppercase tracking-[0.14em]", executionControls?.circuitBreaker.isOpen ? "text-danger" : "text-success")}>
-                  Breaker {executionControls?.circuitBreaker.isOpen ? "Open" : "Closed"}
-                </span>
-              </div>
-              {executionControls ? (
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <p>
-                    Default limit: <span className="font-mono text-foreground">{executionControls.defaultMaxPositionSize ?? "Not set"}</span>
-                  </p>
-                  <p>
-                    Symbol limits:{" "}
-                    <span className="font-mono text-foreground">
-                      {Object.keys(executionControls.symbolPositionLimits).length === 0
-                        ? "None"
-                        : Object.entries(executionControls.symbolPositionLimits).map(([symbol, limit]) => `${symbol}=${limit}`).join(", ")}
-                    </span>
-                  </p>
-                  <p>
-                    Active overrides:{" "}
-                    <span className="font-mono text-foreground">
-                      {executionControls.manualOverrides.length === 0
-                        ? "None"
-                        : executionControls.manualOverrides.map((entry) => `${entry.kind}${entry.symbol ? ` (${entry.symbol})` : ""}`).join(", ")}
-                    </span>
-                  </p>
-                  <p className="font-mono">As of {executionControls.asOf}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  {executionEvidence.controlsPanel?.title ?? "Execution controls snapshot"}
+                </p>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => { void executionEvidence.refresh(); }}
+                    disabled={executionEvidence.loading}
+                    aria-label={executionEvidence.refreshAriaLabel}
+                  >
+                    {executionEvidence.refreshButtonLabel}
+                  </Button>
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-[0.14em]",
+                      executionEvidence.controlsPanel?.statusTone === "danger" ? "text-danger" : "text-success"
+                    )}
+                  >
+                    {executionEvidence.controlsPanel?.statusLabel ?? "Snapshot unavailable"}
+                  </span>
                 </div>
+              </div>
+              <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
+              {executionEvidence.errorText && (
+                <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">
+                  {executionEvidence.errorText}
+                </p>
+              )}
+              {executionEvidence.controlsPanel ? (
+                <dl
+                  aria-label={executionEvidence.controlsPanel.ariaLabel}
+                  className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
+                >
+                  {executionEvidence.controlsPanel.rows.map((row) => (
+                    <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
+                      <dt>{row.label}:</dt>
+                      <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
               ) : (
-                <p className="text-xs text-muted-foreground">Execution controls snapshot unavailable.</p>
+                <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
             </div>
           </CardContent>
@@ -690,7 +393,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       <td className="px-3 py-2">
                         <button
                           type="button"
-                          onClick={() => openConfirm({ kind: "close-position", symbol: position.symbol })}
+                          onClick={() => confirmVm.openConfirm({ kind: "close-position", symbol: position.symbol })}
                           className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
                           title="Close position"
                         >
@@ -716,120 +419,155 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => openConfirm({ kind: "cancel-all" })}
+                  onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
                   disabled={data.openOrders.length === 0}
                   title="Cancel all open orders"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Cancel all
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setShowOrderForm((prev) => !prev)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={orderTicket.toggleTicket}
+                  aria-expanded={orderTicket.open}
+                  aria-controls="trading-order-ticket"
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  New order
+                  {orderTicket.openButtonLabel}
                 </Button>
               </div>
             </div>
           </CardHeader>
-          {showOrderForm && (
-            <CardContent className="border-b border-border/60 pb-6">
-              <form onSubmit={handleSubmitOrder} className="space-y-4">
+          {orderTicket.open && (
+            <CardContent id={orderTicket.formId} className="border-b border-border/60 pb-6">
+              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Symbol</label>
-                    <input
+                    <label htmlFor={orderTicket.controls.symbol.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.symbol.label}</label>
+                    <Input
+                      id={orderTicket.controls.symbol.id}
                       type="text"
                       placeholder="AAPL"
-                      value={orderForm.symbol}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value }))}
-                      onBlur={(e) => setOrderForm((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      required
+                      value={orderTicket.controls.symbol.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.symbol.field, e.target.value)}
+                      onBlur={orderTicket.normalizeSymbol}
+                      aria-label={orderTicket.controls.symbol.ariaLabel}
+                      aria-describedby={orderTicket.controls.symbol.describedBy}
+                      error={orderTicket.controls.symbol.invalid}
+                      className="font-mono"
+                      required={orderTicket.controls.symbol.required}
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Side</label>
-                    <select
-                      value={orderForm.side}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, side: e.target.value as "Buy" | "Sell" }))}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    <label htmlFor={orderTicket.controls.side.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.side.label}</label>
+                    <Select
+                      id={orderTicket.controls.side.id}
+                      value={orderTicket.controls.side.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.side.field, e.target.value)}
+                      aria-label={orderTicket.controls.side.ariaLabel}
+                      aria-describedby={orderTicket.controls.side.describedBy}
+                      required={orderTicket.controls.side.required}
                     >
-                      <option value="Buy">Buy</option>
-                      <option value="Sell">Sell</option>
-                    </select>
+                      {orderTicket.controls.side.options.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Type</label>
-                    <select
-                      value={orderForm.type}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, type: e.target.value as "Market" | "Limit" | "Stop" }))}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    <label htmlFor={orderTicket.controls.type.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.type.label}</label>
+                    <Select
+                      id={orderTicket.controls.type.id}
+                      value={orderTicket.controls.type.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.type.field, e.target.value)}
+                      aria-label={orderTicket.controls.type.ariaLabel}
+                      aria-describedby={orderTicket.controls.type.describedBy}
+                      required={orderTicket.controls.type.required}
                     >
-                      <option value="Market">Market</option>
-                      <option value="Limit">Limit</option>
-                      <option value="Stop">Stop</option>
-                    </select>
+                      {orderTicket.controls.type.options.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Quantity</label>
-                    <input
+                    <label htmlFor={orderTicket.controls.quantity.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.quantity.label}</label>
+                    <Input
+                      id={orderTicket.controls.quantity.id}
                       type="number"
                       min={1}
                       step={1}
-                      value={orderForm.quantity || ""}
-                      onChange={(e) => setOrderForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      required
+                      value={orderTicket.controls.quantity.value}
+                      onChange={(e) => orderTicket.updateField(orderTicket.controls.quantity.field, e.target.value)}
+                      aria-label={orderTicket.controls.quantity.ariaLabel}
+                      aria-describedby={orderTicket.controls.quantity.describedBy}
+                      error={orderTicket.controls.quantity.invalid}
+                      className="font-mono"
+                      required={orderTicket.controls.quantity.required}
                     />
                   </div>
-                  {(orderForm.type === "Limit" || orderForm.type === "Stop") && (
+                  {orderTicket.controls.limitPrice && (
                     <div className="space-y-1">
-                      <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {orderForm.type} Price
+                      <label htmlFor={orderTicket.controls.limitPrice.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {orderTicket.controls.limitPrice.label}
                       </label>
-                      <input
+                      <Input
+                        id={orderTicket.controls.limitPrice.id}
                         type="number"
                         min={0}
                         step={0.01}
-                        value={orderForm.limitPrice ?? ""}
-                        onChange={(e) => setOrderForm((prev) => ({ ...prev, limitPrice: e.target.value ? Number(e.target.value) : null }))}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        required
+                        value={orderTicket.controls.limitPrice.value}
+                        onChange={(e) => orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
+                        aria-label={orderTicket.controls.limitPrice.ariaLabel}
+                        aria-describedby={orderTicket.controls.limitPrice.describedBy}
+                        error={orderTicket.controls.limitPrice.invalid}
+                        className="font-mono"
+                        required={orderTicket.controls.limitPrice.required}
                       />
                     </div>
                   )}
                 </div>
 
-                {orderState.error && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
-                    <XCircle className="h-4 w-4 shrink-0" />
-                    {orderState.error}
-                  </div>
-                )}
+                <p id={orderTicket.requirementId} className="text-xs text-muted-foreground">
+                  {orderTicket.requirementText}
+                </p>
+                <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
 
-                {orderState.phase === "submitted" && (
-                  <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 shrink-0" />
-                    Order submitted{orderState.orderId ? ` — ${orderState.orderId}` : ""}.
+                {orderTicket.errorText && (
+                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
+                    <XCircle className="h-4 w-4 shrink-0" />
+                    {orderTicket.errorText}
                   </div>
                 )}
 
                 <div className="flex gap-3">
-                  <Button type="submit" size="sm" disabled={orderState.phase === "submitting"}>
-                    {orderState.phase === "submitting" ? "Submitting…" : "Submit order"}
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!orderTicket.canSubmit}
+                    aria-label={orderTicket.submitAriaLabel}
+                    aria-describedby="order-ticket-requirements"
+                  >
+                    {orderTicket.submitButtonLabel}
                   </Button>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      setShowOrderForm(false);
-                      setOrderState({ phase: "idle", orderId: null, error: null });
-                    }}
+                    onClick={orderTicket.closeTicket}
+                    disabled={!orderTicket.canClose}
                   >
                     Cancel
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          )}
+          {!orderTicket.open && orderTicket.successText && (
+            <CardContent className="border-b border-border/60 pb-4">
+              <div role="status" className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 shrink-0" />
+                {orderTicket.successText}
+              </div>
             </CardContent>
           )}
           <CardContent>
@@ -858,7 +596,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       <td className="px-3 py-2">
                         <button
                           type="button"
-                          onClick={() => openConfirm({ kind: "cancel-order", orderId: order.orderId })}
+                          onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
                           className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
                           title="Cancel order"
                         >
@@ -907,65 +645,91 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <Layers className="h-4 w-4 text-primary" />
                 Paper sessions
               </CardTitle>
-              <Button size="sm" variant="outline" onClick={() => setShowSessionForm((prev) => !prev)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={paperSessions.toggleCreateForm}
+                aria-expanded={paperSessions.showCreateForm}
+                aria-controls={paperSessions.formPanelId}
+                disabled={paperSessions.isBusy && !paperSessions.showCreateForm}
+              >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                New session
+                {paperSessions.toggleCreateButtonLabel}
               </Button>
             </div>
             <CardDescription>Manage paper trading sessions and initial capital allocation.</CardDescription>
           </CardHeader>
 
-          {sessionError && (
+          <span className="sr-only" aria-live="polite">{paperSessions.statusAnnouncement}</span>
+
+          {paperSessions.errorText && (
             <CardContent className="pt-0 pb-2">
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+              <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
                 <XCircle className="h-4 w-4 shrink-0" />
-                {sessionError}
+                {paperSessions.errorText}
               </div>
             </CardContent>
           )}
 
-          {showSessionForm && (
-            <CardContent className="border-b border-border/60 pb-6">
-              <form onSubmit={handleCreateSession} className="space-y-4">
+          {paperSessions.showCreateForm && (
+            <CardContent id={paperSessions.formPanelId} className="border-b border-border/60 pb-6">
+              <form
+                onSubmit={(event) => { event.preventDefault(); void paperSessions.createSession(); }}
+                className="space-y-4"
+                aria-describedby={paperSessions.formDescriptionId}
+              >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <label htmlFor="paper-session-strategy-id" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                       Strategy ID
                     </label>
                     <input
+                      id="paper-session-strategy-id"
                       type="text"
                       placeholder="my-strategy-01"
-                      value={newSessionStrategyId}
-                      onChange={(e) => setNewSessionStrategyId(e.target.value)}
+                      value={paperSessions.form.strategyId}
+                      onChange={(e) => paperSessions.updateField("strategyId", e.target.value)}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <label htmlFor="paper-session-initial-cash" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                       Initial cash ($)
                     </label>
                     <input
+                      id="paper-session-initial-cash"
                       type="number"
                       min={1000}
                       step={1000}
-                      value={newSessionCash}
-                      onChange={(e) => setNewSessionCash(e.target.value)}
+                      value={paperSessions.form.initialCash}
+                      onChange={(e) => paperSessions.updateField("initialCash", e.target.value)}
+                      aria-describedby={paperSessions.formDescriptionId}
+                      aria-invalid={!paperSessions.canSubmitCreate ? true : undefined}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       required
                     />
                   </div>
                 </div>
+                <p id={paperSessions.formDescriptionId} className="text-xs text-muted-foreground">
+                  {paperSessions.formRequirementText}
+                </p>
                 <div className="flex gap-3">
-                  <Button type="submit" size="sm" disabled={sessionLoading}>
-                    {sessionLoading ? "Creating…" : "Create session"}
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!paperSessions.canSubmitCreate}
+                    aria-label={paperSessions.createButtonAriaLabel}
+                  >
+                    {paperSessions.createButtonLabel}
                   </Button>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => setShowSessionForm(false)}
+                    onClick={paperSessions.closeCreateForm}
+                    disabled={!paperSessions.canCloseCreateForm}
                   >
-                    Cancel
+                    {paperSessions.cancelCreateButtonLabel}
                   </Button>
                 </div>
               </form>
@@ -973,37 +737,58 @@ export function TradingScreen({ data }: TradingScreenProps) {
           )}
 
           <CardContent>
-            {sessions.length === 0 ? (
+            {paperSessions.rows.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No paper sessions active. Create one above to start tracking execution.
+                {paperSessions.emptyText}
               </p>
             ) : (
               <div className="space-y-2">
-                {sessions.map((session) => (
+                {paperSessions.rows.map((session) => (
                   <div
                     key={session.sessionId}
-                    className="flex items-center justify-between rounded-lg border border-border/70 bg-secondary/20 px-4 py-3"
+                    role="group"
+                    aria-label={session.ariaLabel}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg border px-4 py-3",
+                      session.isSelected
+                        ? "border-primary/40 bg-primary/10"
+                        : "border-border/70 bg-secondary/20"
+                    )}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="font-mono text-sm text-foreground truncate">{session.sessionId}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        {session.strategyId} · {formatUsd(session.initialCash)} · {getSessionStatus(session)}
+                        {session.strategyId} · {session.initialCashText} · {session.statusLabel}
                       </div>
                     </div>
                     <div className="ml-4 flex shrink-0 gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleRestoreSession(session.sessionId)}>
-                        Restore
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => { void paperSessions.restoreSession(session.sessionId); }}
+                        disabled={!session.canRestore}
+                        aria-label={session.restoreAriaLabel}
+                      >
+                        {session.restoreButtonLabel}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleVerifySessionReplay(session.sessionId)}>
-                        Verify replay
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => { void paperSessions.verifySessionReplay(session.sessionId); }}
+                        disabled={!session.canVerify}
+                        aria-label={session.verifyAriaLabel}
+                      >
+                        {session.verifyButtonLabel}
                       </Button>
                       {session.isActive && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleCloseSession(session.sessionId)}
+                          onClick={() => { void paperSessions.closeSession(session.sessionId); }}
+                          disabled={!session.canClose}
+                          aria-label={session.closeAriaLabel}
                         >
-                          Close
+                          {session.closeButtonLabel}
                         </Button>
                       )}
                     </div>
@@ -1011,105 +796,51 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 ))}
               </div>
             )}
-            {selectedSessionId && (
-              <p className="mt-3 text-xs text-muted-foreground">Selected session: {selectedSessionId}</p>
+            {paperSessions.selectedSessionLabel && (
+              <p className="mt-3 text-xs text-muted-foreground">{paperSessions.selectedSessionLabel}</p>
             )}
-            {selectedSessionDetail && (
-              <div className="mt-4 space-y-3 rounded-lg border border-border/70 bg-background/70 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Session detail</p>
-                    <p className="mt-1 font-mono text-sm text-foreground">{selectedSessionDetail.summary.sessionId}</p>
-                  </div>
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
-                      selectedSessionDetail.summary.isActive
-                        ? "bg-success/10 text-success"
-                        : "bg-secondary text-muted-foreground"
-                    )}
-                  >
-                    {getSessionStatus(selectedSessionDetail.summary)}
-                  </span>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <SessionInfoRow label="Strategy" value={selectedSessionDetail.summary.strategyId} />
-                  <SessionInfoRow label="Initial cash" value={formatUsd(selectedSessionDetail.summary.initialCash)} />
-                  <SessionInfoRow
-                    label="Tracked symbols"
-                    value={selectedSessionDetail.symbols.length > 0 ? selectedSessionDetail.symbols.join(", ") : "None"}
-                  />
-                  <SessionInfoRow
-                    label="Orders retained"
-                    value={String(selectedSessionDetail.orderHistory?.length ?? 0)}
-                  />
-                </div>
-
-                {selectedSessionDetail.portfolio && (
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <SessionMetric label="Cash" value={formatUsd(selectedSessionDetail.portfolio.cash)} />
-                    <SessionMetric label="Portfolio value" value={formatUsd(selectedSessionDetail.portfolio.portfolioValue)} />
-                    <SessionMetric label="Open positions" value={String(selectedSessionDetail.portfolio.positions.length)} />
-                  </div>
-                )}
-
-                {sessionReplayVerification && sessionReplayVerification.summary.sessionId === selectedSessionDetail.summary.sessionId && (
-                  <div
-                    className={cn(
-                      "rounded-lg border px-3 py-3 text-sm",
-                      sessionReplayVerification.isConsistent
-                        ? "border-success/30 bg-success/10"
-                        : "border-warning/30 bg-warning/10"
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-semibold text-foreground">Replay verification</span>
-                      <span className={sessionReplayVerification.isConsistent ? "text-success" : "text-warning"}>
-                        {sessionReplayVerification.isConsistent ? "Matched current state" : "Mismatch detected"}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Source: {sessionReplayVerification.replaySource} · Verified at {sessionReplayVerification.verifiedAt}
-                    </p>
-                    <div className="mt-2 grid gap-1 text-xs text-foreground sm:grid-cols-2">
-                      <span>Compared fills: {sessionReplayVerification.comparedFillCount}</span>
-                      <span>Compared orders: {sessionReplayVerification.comparedOrderCount}</span>
-                      <span>Compared ledger entries: {sessionReplayVerification.comparedLedgerEntryCount}</span>
-                      <span>Verification audit: {sessionReplayVerification.verificationAuditId ?? "Unavailable"}</span>
-                      <span>Last persisted fill: {sessionReplayVerification.lastPersistedFillAt ?? "N/A"}</span>
-                      <span>Last persisted order update: {sessionReplayVerification.lastPersistedOrderUpdateAt ?? "N/A"}</span>
-                    </div>
-                    {sessionReplayVerification.mismatchReasons.length > 0 && (
-                      <ul className="mt-2 space-y-1 text-xs text-foreground">
-                        {sessionReplayVerification.mismatchReasons.slice(0, 3).map((reason) => (
-                          <li key={reason}>• {reason}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
+            {paperSessions.detail && (
+              <PaperSessionDetailPanelView detail={paperSessions.detail} />
+            )}
+            <div
+              role="region"
+              aria-label={executionEvidence.auditListLabel}
+              className="mt-4 rounded-lg border border-border/70 bg-secondary/20 p-4"
+            >
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  {executionEvidence.auditTitle}
+                </p>
+                <span className="font-mono text-[11px] text-muted-foreground">{executionEvidence.auditCountLabel}</span>
               </div>
-            )}
-            <div className="mt-4 rounded-lg border border-border/70 bg-secondary/20 p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent execution audit</p>
-              {executionAudit.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No execution audit entries available.</p>
+              {executionEvidence.auditRows.length === 0 ? (
+                <p className="text-xs text-muted-foreground">{executionEvidence.auditEmptyText}</p>
               ) : (
                 <div className="space-y-2">
-                  {executionAudit.map((entry) => (
-                    <div key={entry.auditId} className="rounded-lg border border-border/60 bg-background/70 px-3 py-2">
+                  {executionEvidence.auditRows.map((entry) => (
+                    <div
+                      key={entry.id}
+                      role="group"
+                      aria-label={entry.ariaLabel}
+                      className="rounded-lg border border-border/60 bg-background/70 px-3 py-2"
+                    >
                       <div className="flex items-center justify-between gap-3 text-xs">
                         <span className="font-semibold text-foreground">{entry.action}</span>
-                        <span className="font-mono text-muted-foreground">{entry.outcome}</span>
+                        <span
+                          className={cn(
+                            "font-mono",
+                            entry.outcomeTone === "danger"
+                              ? "text-danger"
+                              : entry.outcomeTone === "success"
+                                ? "text-success"
+                                : "text-warning"
+                          )}
+                        >
+                          {entry.outcome}
+                        </span>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {entry.message ?? "No operator message recorded."}
-                      </p>
-                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                        {entry.occurredAt}
-                        {entry.metadata?.sessionId ? ` · session ${entry.metadata.sessionId}` : ""}
-                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">{entry.message}</p>
+                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">{entry.metadataText}</p>
                     </div>
                   ))}
                 </div>
@@ -1118,174 +849,323 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
 
-        {/* Strategy lifecycle controls */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <PlayCircle className="h-4 w-4 text-primary" />
-              Strategy lifecycle
-            </CardTitle>
-            <CardDescription>
-              Pause or stop a running strategy by its registered ID. Changes take effect immediately.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Strategy ID
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. mean-reversion-fx-01"
-                value={strategyId}
-                onChange={(e) => setStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => openConfirm({ kind: "pause-strategy", strategyId: strategyId.trim() })}
-                disabled={!strategyId.trim()}
-              >
-                <PauseCircle className="mr-2 h-4 w-4" />
-                Pause
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => openConfirm({ kind: "stop-strategy", strategyId: strategyId.trim() })}
-                disabled={!strategyId.trim()}
-              >
-                <StopCircle className="mr-2 h-4 w-4" />
-                Stop
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <RotateCcw className="h-4 w-4 text-primary" />
-              Session replay controls
-            </CardTitle>
-            <CardDescription>Start and control replay for reconnect/resume validation.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <select
-              aria-label="Replay file"
-              value={selectedReplayFile}
-              onChange={(e) => setSelectedReplayFile(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              {replayFiles.map((file) => (
-                <option key={file.path} value={file.path}>{file.name}</option>
-              ))}
-            </select>
-            <div className="flex gap-2">
-              <input aria-label="Replay speed" value={replaySpeed} onChange={(e) => setReplaySpeed(e.target.value)} className="w-28 rounded-lg border border-border bg-background px-2 py-1 text-sm" />
-              <Button size="sm" onClick={handleStartReplay} disabled={!selectedReplayFile}>Start</Button>
-              <Button size="sm" variant="outline" onClick={() => handleReplayControl("pause")} disabled={!replayStatus}><PauseCircle className="mr-2 h-4 w-4" />Pause</Button>
-              <Button size="sm" variant="outline" onClick={() => handleReplayControl("resume")} disabled={!replayStatus}><PlayCircle className="mr-2 h-4 w-4" />Resume</Button>
-              <Button size="sm" variant="outline" onClick={() => handleReplayControl("stop")} disabled={!replayStatus}><StopCircle className="mr-2 h-4 w-4" />Stop</Button>
+      {/* ---- Strategy Controls Sheet ---- */}
+      <Sheet open={strategySheetOpen} onOpenChange={setStrategySheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
+              <PlayCircle className="h-4 w-4 text-primary" />
+              {strategyLifecycle.title}
+            </SheetTitle>
+            <SheetDescription>{strategyLifecycle.description}</SheetDescription>
+            <SheetCloseButton onClick={() => setStrategySheetOpen(false)} />
+          </SheetHeader>
+          <SheetBody>
+            <div className="space-y-1">
+              <label htmlFor={strategyLifecycle.strategyIdInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {strategyLifecycle.strategyIdLabel}
+              </label>
+              <input
+                id={strategyLifecycle.strategyIdInputId}
+                type="text"
+                placeholder={strategyLifecycle.strategyIdPlaceholder}
+                value={strategyLifecycle.strategyId}
+                aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
+                onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
+                {strategyLifecycle.helpText}
+              </p>
+              <p id={strategyLifecycle.strategyIdStatusId} role="status" className="text-xs text-muted-foreground">
+                {strategyLifecycle.statusText}
+              </p>
+              <span className="sr-only" aria-live="polite">{strategyLifecycle.statusAnnouncement}</span>
             </div>
-            <div className="flex gap-2">
-              <input aria-label="Seek ms" value={seekMs} onChange={(e) => setSeekMs(e.target.value)} className="w-32 rounded-lg border border-border bg-background px-2 py-1 text-sm" />
-              <Button size="sm" variant="outline" onClick={() => handleReplayControl("seek")} disabled={!replayStatus}>Seek</Button>
-              <Button size="sm" variant="outline" onClick={() => handleReplayControl("speed")} disabled={!replayStatus}><FastForward className="mr-2 h-4 w-4" />Apply speed</Button>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label={strategyLifecycle.pauseAriaLabel}
+                onClick={strategyLifecycle.openPauseConfirm}
+                disabled={!strategyLifecycle.canPause}
+              >
+                <PauseCircle className="mr-2 h-4 w-4" />
+                {strategyLifecycle.pauseButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label={strategyLifecycle.stopAriaLabel}
+                onClick={strategyLifecycle.openStopConfirm}
+                disabled={!strategyLifecycle.canStop}
+              >
+                <StopCircle className="mr-2 h-4 w-4" />
+                {strategyLifecycle.stopButtonLabel}
+              </Button>
             </div>
-            {replayStatus && <p className="text-xs text-muted-foreground">Replay {replayStatus.status} · {replayStatus.eventsProcessed}/{replayStatus.totalEvents} ({replayStatus.progressPercent}%)</p>}
-            {replayError && <p className="text-xs text-destructive">{replayError}</p>}
-          </CardContent>
-        </Card>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Backtest → Paper promotion gate</CardTitle>
-            <CardDescription>Requires eligibility check before confirmation and audit refresh.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <input
-              aria-label="Run id"
-              placeholder="backtest run id"
-              value={promotionRunId}
-              onChange={(e) => setPromotionRunId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-            />
-            <input
-              aria-label="Operator id"
-              placeholder="operator id"
-              value={promotionApprovedBy}
-              onChange={(e) => setPromotionApprovedBy(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              required
-            />
-            <input
-              aria-label="Approval reason"
-              placeholder="why this promotion is approved"
-              value={promotionApprovalReason}
-              onChange={(e) => setPromotionApprovalReason(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              required
-            />
-            <input
-              aria-label="Rejection reason"
-              placeholder="why this promotion is rejected"
-              value={promotionRejectionReason}
-              onChange={(e) => setPromotionRejectionReason(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <input
-              aria-label="Review notes"
-              placeholder="optional review notes"
-              value={promotionReviewNotes}
-              onChange={(e) => setPromotionReviewNotes(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <input
-              aria-label="Manual override id"
-              placeholder="optional manual override id"
-              value={promotionManualOverrideId}
-              onChange={(e) => setPromotionManualOverrideId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-            />
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
-              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
-              <Button size="sm" variant="destructive" onClick={handleRejectPromotion} disabled={promotionBusy || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionRejectionReason.trim()}>Reject promotion</Button>
+      {/* ---- Session Replay Sheet ---- */}
+      <Sheet open={replaySheetOpen} onOpenChange={setReplaySheetOpen}>
+        <SheetContent aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
+          <SheetHeader>
+            <SheetTitle id={sessionReplay.sectionTitleId}>
+              <RotateCcw className="h-4 w-4 text-primary" />
+              {sessionReplay.sectionTitle}
+            </SheetTitle>
+            <SheetDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</SheetDescription>
+            <SheetCloseButton onClick={() => setReplaySheetOpen(false)} />
+          </SheetHeader>
+          <SheetBody className="space-y-3">
+            <div className="grid gap-2">
+              <label htmlFor={sessionReplay.fileSelectId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {sessionReplay.fileSelectLabel}
+              </label>
+              <Select
+                id={sessionReplay.fileSelectId}
+                aria-label={sessionReplay.fileSelectAriaLabel}
+                value={sessionReplay.selectedFilePath}
+                onChange={(e) => sessionReplay.selectReplayFile(e.target.value)}
+                disabled={sessionReplay.loadingFiles || sessionReplay.fileOptions.length === 0}
+                aria-describedby={sessionReplay.fileSelectDescribedBy}
+              >
+                {sessionReplay.fileOptions.length === 0 ? (
+                  <option value="">{sessionReplay.fileEmptyOptionText}</option>
+                ) : sessionReplay.fileOptions.map((file) => (
+                  <option key={file.path} value={file.path} aria-label={file.ariaLabel}>
+                    {file.name}
+                  </option>
+                ))}
+              </Select>
             </div>
-            {promotionEval && (
+
+            <div className="grid gap-3 lg:grid-cols-[minmax(7rem,9rem)_1fr] lg:items-end">
+              <div className="grid gap-1.5">
+                <label htmlFor={sessionReplay.speedInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {sessionReplay.speedLabel}
+                </label>
+                <Input
+                  id={sessionReplay.speedInputId}
+                  aria-label={sessionReplay.speedAriaLabel}
+                  value={sessionReplay.replaySpeed}
+                  onChange={(e) => sessionReplay.updateReplaySpeed(e.target.value)}
+                  aria-describedby={sessionReplay.speedDescribedBy}
+                  inputMode="decimal"
+                  error={Boolean(sessionReplay.speedValidationText)}
+                />
+                <span id={sessionReplay.speedHelpId} className="text-[11px] text-muted-foreground">
+                  {sessionReplay.speedHelpText}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button size="sm" onClick={sessionReplay.startReplay} disabled={!sessionReplay.canStart}>
+                  {sessionReplay.startButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.pauseReplay} disabled={!sessionReplay.canPause}>
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  {sessionReplay.pauseButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.resumeReplay} disabled={!sessionReplay.canResume}>
+                  <PlayCircle className="mr-2 h-4 w-4" />
+                  {sessionReplay.resumeButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.stopReplay} disabled={!sessionReplay.canStop}>
+                  <StopCircle className="mr-2 h-4 w-4" />
+                  {sessionReplay.stopButtonLabel}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-[minmax(8rem,10rem)_1fr] lg:items-end">
+              <div className="grid gap-1.5">
+                <label htmlFor={sessionReplay.seekInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {sessionReplay.seekLabel}
+                </label>
+                <Input
+                  id={sessionReplay.seekInputId}
+                  aria-label={sessionReplay.seekAriaLabel}
+                  value={sessionReplay.seekMs}
+                  onChange={(e) => sessionReplay.updateSeekMs(e.target.value)}
+                  aria-describedby={sessionReplay.seekDescribedBy}
+                  inputMode="numeric"
+                  error={Boolean(sessionReplay.seekValidationText)}
+                />
+                <span id={sessionReplay.seekHelpId} className="text-[11px] text-muted-foreground">
+                  {sessionReplay.seekHelpText}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button size="sm" variant="outline" onClick={sessionReplay.seekReplay} disabled={!sessionReplay.canSeek}>
+                  {sessionReplay.seekButtonLabel}
+                </Button>
+                <Button size="sm" variant="outline" onClick={sessionReplay.applyReplaySpeed} disabled={!sessionReplay.canApplySpeed}>
+                  <FastForward className="mr-2 h-4 w-4" />
+                  {sessionReplay.applySpeedButtonLabel}
+                </Button>
+              </div>
+            </div>
+
+            <div id={sessionReplay.statusId} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-xs text-muted-foreground">
+              {sessionReplay.statusText}
+            </div>
+            {(sessionReplay.errorText || sessionReplay.speedValidationText || sessionReplay.seekValidationText) && (
+              <p id={sessionReplay.errorId} className="text-xs text-destructive">
+                {sessionReplay.errorText ?? sessionReplay.speedValidationText ?? sessionReplay.seekValidationText}
+              </p>
+            )}
+            <span className="sr-only" aria-live="polite">{sessionReplay.statusAnnouncement}</span>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
+
+      {/* ---- Promotion Gate Sheet ---- */}
+      <Sheet open={promotionSheetOpen} onOpenChange={setPromotionSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
+              <FlaskConical className="h-4 w-4 text-primary" />
+              Backtest → Paper promotion gate
+            </SheetTitle>
+            <SheetDescription>Requires eligibility check before confirmation and audit refresh.</SheetDescription>
+            <SheetCloseButton onClick={() => setPromotionSheetOpen(false)} />
+          </SheetHeader>
+          <SheetBody className="space-y-3">
+            <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
+              <div className="eyebrow-label">Action state</div>
+              <p className="mt-2 text-sm font-semibold text-foreground">{promotionGate.nextActionText}</p>
+              <div className="mt-2 grid gap-2 text-xs leading-5 text-muted-foreground md:grid-cols-2">
+                <p>{promotionGate.approvalRequirementText}</p>
+                <p>{promotionGate.rejectionRequirementText}</p>
+              </div>
+            </div>
+
+            <span className="sr-only" aria-live="polite">{promotionGate.statusAnnouncement}</span>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label htmlFor="promotion-run-id" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Run id</span>
+                <input
+                  id="promotion-run-id"
+                  aria-label="Run id"
+                  placeholder="backtest run id"
+                  value={promotionGate.form.runId}
+                  onChange={(e) => promotionGate.updateField("runId", e.target.value)}
+                  aria-describedby="promotion-run-help promotion-action-state"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
+              </label>
+              <label htmlFor="promotion-operator-id" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Operator id</span>
+                <input
+                  id="promotion-operator-id"
+                  aria-label="Operator id"
+                  placeholder="operator id"
+                  value={promotionGate.form.approvedBy}
+                  onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
+                  aria-describedby="promotion-action-state"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  required
+                />
+              </label>
+            </div>
+            <label htmlFor="promotion-approval-reason" className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</span>
+              <input
+                id="promotion-approval-reason"
+                aria-label="Approval reason"
+                placeholder="why this promotion is approved"
+                value={promotionGate.form.approvalReason}
+                onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
+                aria-describedby="promotion-action-state"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                required
+              />
+            </label>
+            <label htmlFor="promotion-rejection-reason" className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Rejection reason</span>
+              <input
+                id="promotion-rejection-reason"
+                aria-label="Rejection reason"
+                placeholder="why this promotion is rejected"
+                value={promotionGate.form.rejectionReason}
+                onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
+                aria-describedby="promotion-action-state"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label htmlFor="promotion-review-notes" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</span>
+                <input
+                  id="promotion-review-notes"
+                  aria-label="Review notes"
+                  placeholder="optional review notes"
+                  value={promotionGate.form.reviewNotes}
+                  onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Manual override id</span>
+                <input
+                  id="promotion-manual-override"
+                  aria-label="Manual override id"
+                  placeholder="optional manual override id"
+                  value={promotionGate.form.manualOverrideId}
+                  onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => void promotionGate.evaluateGateChecks()} disabled={!promotionGate.canEvaluate}>
+                {promotionGate.evaluateButtonLabel}
+              </Button>
+              <Button size="sm" onClick={() => void promotionGate.promoteToPaper()} disabled={!promotionGate.canPromote}>
+                {promotionGate.promoteButtonLabel}
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => void promotionGate.rejectPromotion()} disabled={!promotionGate.canReject}>
+                {promotionGate.rejectButtonLabel}
+              </Button>
+            </div>
+            {promotionGate.evaluation && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
-                <p>Eligible: {promotionEval.isEligible ? "Yes" : "No"}</p>
-                <p>Sharpe: {promotionEval.sharpeRatio} · Max DD: {promotionEval.maxDrawdownPercent}% · Return: {promotionEval.totalReturn}%</p>
-                <p>{promotionEval.reason}</p>
-                {promotionEval.requiresHumanApproval && <p>Human approval required</p>}
-                {promotionEval.requiresManualOverride && (
-                  <p>Manual override required{promotionEval.requiredManualOverrideKind ? `: ${promotionEval.requiredManualOverrideKind}` : ""}</p>
+                <p>Eligible: {promotionGate.evaluation.isEligible ? "Yes" : "No"}</p>
+                <p>Sharpe: {promotionGate.evaluation.sharpeRatio} · Max DD: {promotionGate.evaluation.maxDrawdownPercent}% · Return: {promotionGate.evaluation.totalReturn}%</p>
+                <p>{promotionGate.evaluation.reason}</p>
+                {promotionGate.evaluation.requiresHumanApproval && <p>Human approval required</p>}
+                {promotionGate.evaluation.requiresManualOverride && (
+                  <p>Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
                 )}
-                {promotionEval.blockingReasons && promotionEval.blockingReasons.length > 0 && (
+                {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
                   <ul className="mt-2 list-disc space-y-1 pl-4">
-                    {promotionEval.blockingReasons.map((reason) => (
+                    {promotionGate.evaluation.blockingReasons.map((reason) => (
                       <li key={reason}>{reason}</li>
                     ))}
                   </ul>
                 )}
               </div>
             )}
-            {promotionOutcome && (
-              <p role="status" className={cn("text-xs", promotionOutcomeTone[promotionOutcome.level])}>
-                {promotionOutcome.message}
+            {promotionGate.outcome && (
+              <p role="status" className={cn("text-xs", promotionOutcomeTone[promotionGate.outcome.level])}>
+                {promotionGate.outcome.message}
               </p>
             )}
-            {promotionError && <p className="text-xs text-destructive">{promotionError}</p>}
+            {promotionGate.errorText && <p role="alert" className="text-xs text-destructive">{promotionGate.errorText}</p>}
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
-                {promotionHistory.slice(0, 4).map((record) => (
+                {promotionGate.history.length === 0 && (
+                  <li className="text-muted-foreground">{promotionGate.historyEmptyText}</li>
+                )}
+                {promotionGate.history.slice(0, 4).map((record) => (
                   <li key={record.promotionId} className="font-mono">
                     {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
                     {record.decision ? ` · ${record.decision}` : ""}
@@ -1300,15 +1180,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 ))}
               </ul>
             </div>
-          </CardContent>
-        </Card>
-      </section>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
 
-      <ConfirmActionDialog
-        confirm={confirm}
-        onClose={closeConfirm}
-        onConfirm={executeConfirmedAction}
-      />
+      <ConfirmActionDialog vm={confirmVm} />
     </div>
   );
 }
@@ -1440,8 +1316,8 @@ function buildCockpitAcceptance({
         ? {
             label: "Audit + controls",
             value: "Ready",
-            detail: `${executionAudit.length || serverAuditEvidenceCount} audit ${executionAudit.length + serverAuditEvidenceCount === 1 ? "entry is" : "entries are"} linked; ${manualOverrideCount} manual override(s) active.`,
-            level: manualOverrideCount > 0 ? "review" : "ready"
+            detail: `${executionAudit.length || serverAuditEvidenceCount} recent execution audit ${executionAudit.length + serverAuditEvidenceCount === 1 ? "entry is" : "entries are"} visible; ${manualOverrideCount} manual override(s) active.`,
+            level: "ready"
           }
         : {
             label: "Audit + controls",
@@ -1463,6 +1339,19 @@ function buildCockpitAcceptance({
             detail: readinessPromotion.reason || "Promotion decision is missing operator, lineage, rationale, or audit linkage.",
             level: "review"
           }
+      : promotionEval
+          ? {
+              label: "Promotion review",
+              value: promotionEval.isEligible
+                ? promotionReviewPrepared ? "Trace pending" : "Rationale required"
+                : "Gate blocked",
+              detail: promotionEval.isEligible
+                ? promotionReviewPrepared
+                  ? "Confirm promotion to write the durable audit-linked decision record."
+                  : "Add operator and approval reason before confirming promotion."
+                : promotionEval.blockingReasons?.[0] ?? promotionEval.reason,
+              level: promotionEval.isEligible ? "review" : "atRisk"
+            }
       : latestPromotionTraceComplete
         ? {
             label: "Promotion review",
@@ -1477,19 +1366,6 @@ function buildCockpitAcceptance({
               detail: "Latest promotion decision has rationale but is missing operator, lineage, or audit linkage.",
               level: "review"
             }
-        : promotionEval
-          ? {
-              label: "Promotion review",
-              value: promotionEval.isEligible
-                ? promotionReviewPrepared ? "Trace pending" : "Rationale required"
-                : "Gate blocked",
-              detail: promotionEval.isEligible
-                ? promotionReviewPrepared
-                  ? "Confirm promotion to write the durable audit-linked decision record."
-                  : "Add operator and approval reason before confirming promotion."
-                : promotionEval.blockingReasons?.[0] ?? promotionEval.reason,
-              level: promotionEval.isEligible ? "review" : "atRisk"
-            }
       : {
           label: "Promotion review",
           value: "Evaluate gate",
@@ -1502,20 +1378,18 @@ function buildCockpitAcceptance({
 function mapAcceptanceGate(gate: TradingAcceptanceGate): CockpitAcceptanceItem {
   return {
     label: gate.label,
-    value: readinessStatusValue[gate.status] ?? gate.status,
+    value: formatReadinessStatusValue(gate.status),
     detail: gate.detail,
-    level: readinessStatusLevel[gate.status] ?? "review"
+    level: mapReadinessStatusLevel(gate.status)
   };
 }
 
 function AcceptanceStatusCard({
   items,
-  workItems,
-  warnings
+  readinessVm
 }: {
   items: CockpitAcceptanceItem[];
-  workItems: OperatorWorkItem[];
-  warnings: string[];
+  readinessVm: TradingReadinessState & { refresh: () => Promise<void> };
 }) {
   const readyCount = items.filter((item) => item.level === "ready").length;
   const totalCount = items.length;
@@ -1536,22 +1410,59 @@ function AcceptanceStatusCard({
               Session, replay, audit, and promotion signals for the current paper workflow.
             </CardDescription>
           </div>
-          <span className={cn("rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
-            {readyCount}/{totalCount} ready
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/trading/readiness">Open console</Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => { void readinessVm.refresh(); }}
+              disabled={readinessVm.refreshing}
+              aria-label={readinessVm.refreshAriaLabel}
+            >
+              <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
+              {readinessVm.refreshButtonLabel}
+            </Button>
+            <span className={cn("rounded-sm border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
+              {readyCount}/{totalCount} ready
+            </span>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="sr-only" aria-live="polite">{readinessVm.statusAnnouncement}</div>
+        {readinessVm.summaryRows.length > 0 && (
+          <div className="grid gap-2 md:grid-cols-4" aria-label={readinessVm.summaryLabel}>
+            {readinessVm.summaryRows.map((row) => (
+              <ReadinessSummaryPill key={row.id} row={row} />
+            ))}
+          </div>
+        )}
+        {readinessVm.errorText && (
+          <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+            {readinessVm.errorText}
+          </div>
+        )}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {items.map((item) => (
             <AcceptanceRow key={item.label} item={item} />
           ))}
         </div>
-        {(workItems.length > 0 || warnings.length > 0) && (
-          <OperatorWorkItemList workItems={workItems} warnings={warnings} />
+        {(readinessVm.workItems.length > 0 || readinessVm.warnings.length > 0) && (
+          <OperatorWorkItemList workItems={readinessVm.workItems} warnings={readinessVm.warnings} />
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
+  return (
+    <div className={cn("rounded-lg border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
+      <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
+    </div>
   );
 }
 
@@ -1563,7 +1474,7 @@ function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
           <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
           <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
         </div>
-        <span className="rounded-full bg-background/70 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground">
+        <span className="rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-foreground">
           {acceptanceLabel[item.level]}
         </span>
       </div>
@@ -1591,7 +1502,7 @@ function OperatorWorkItemList({
           </p>
         </div>
         {primaryWorkItem && (
-          <span className="rounded-full border border-border/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
             {primaryWorkItem.kind}
           </span>
         )}
@@ -1630,41 +1541,75 @@ function OperatorWorkItemList({
   );
 }
 
-function actionLabel(action: ConfirmActionType): string {
-  switch (action.kind) {
-    case "cancel-order": return `Cancel order ${action.orderId}`;
-    case "cancel-all":   return "Cancel all open orders";
-    case "close-position": return `Close position — ${action.symbol}`;
-    case "pause-strategy": return `Pause strategy — ${action.strategyId}`;
-    case "stop-strategy":  return `Stop strategy — ${action.strategyId}`;
-  }
+function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPanel }) {
+  return (
+    <div
+      className="mt-4 space-y-3 rounded-lg border border-border/70 bg-background/70 p-4"
+      role="region"
+      aria-label={detail.ariaLabel}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Session detail</p>
+          <p className="mt-1 font-mono text-sm text-foreground">{detail.sessionId}</p>
+        </div>
+        <span className={cn("rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[detail.statusTone])}>
+          {detail.statusLabel}
+        </span>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {detail.infoRows.map((row) => (
+          <SessionInfoRow key={row.label} label={row.label} value={row.value} />
+        ))}
+      </div>
+
+      {detail.metricRows.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          {detail.metricRows.map((row) => (
+            <SessionMetric key={row.label} label={row.label} value={row.value} />
+          ))}
+        </div>
+      )}
+
+      {detail.replay && <PaperSessionReplayPanelView panel={detail.replay} />}
+    </div>
+  );
 }
 
-function actionCopy(action: ConfirmActionType): string {
-  switch (action.kind) {
-    case "cancel-order":
-      return "This will request cancellation of the selected order. Partial fills that already occurred are not reversed.";
-    case "cancel-all":
-      return "This will request cancellation of every open order in the current session. Partial fills that already occurred are not reversed.";
-    case "close-position":
-      return "A market order will be submitted to flatten the full position at the next available price. You will remain responsible for the resulting fill.";
-    case "pause-strategy":
-      return "The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.";
-    case "stop-strategy":
-      return "The strategy will be stopped and its session will be closed. Open positions remain until manually flattened.";
-  }
-}
-
-function getSessionStatus(session: PaperSessionSummary): string {
-  return session.isActive ? "Active" : "Closed";
-}
-
-function formatUsd(value: number): string {
-  return value.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2
-  });
+function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel }) {
+  return (
+    <div
+      role="status"
+      aria-label={panel.ariaLabel}
+      className={cn(
+        "rounded-lg border px-3 py-3 text-sm",
+        panel.tone === "success"
+          ? "border-success/30 bg-success/10"
+          : "border-warning/30 bg-warning/10"
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold text-foreground">Replay verification</span>
+        <span className={panel.tone === "success" ? "text-success" : "text-warning"}>
+          {panel.statusLabel}
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">{panel.metadataText}</p>
+      <div className="mt-2 grid gap-1 text-xs text-foreground sm:grid-cols-2">
+        {panel.rows.map((row) => (
+          <span key={row.label}>{row.label}: {row.value}</span>
+        ))}
+      </div>
+      {panel.mismatchReasons.length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs text-foreground">
+          {panel.mismatchReasons.map((reason) => (
+            <li key={reason}>• {reason}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 function SessionInfoRow({ label, value }: { label: string; value: string | null }) {
@@ -1685,40 +1630,33 @@ function SessionMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ConfirmActionDialog({
-  confirm,
-  onClose,
-  onConfirm
-}: {
-  confirm: ConfirmState;
-  onClose: () => void;
-  onConfirm: () => Promise<void>;
-}) {
-  const { action, busy, result, error } = confirm;
-
-  const title = action ? actionLabel(action) : "";
-  const copy = action ? actionCopy(action) : "";
-
-  const isCompleted = result !== null;
-  const isSuccess = result?.status === "Accepted" || result?.status === "Completed";
+function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
+  const isSuccess = vm.resultPanel?.tone === "success";
 
   return (
-    <Dialog open={action !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={vm.open} onOpenChange={(open) => { if (!open) vm.closeConfirm(); }}>
+      <DialogContent
+        className="sm:max-w-md"
+        aria-labelledby={vm.dialogTitleId}
+        aria-describedby={vm.dialogDescriptionId}
+      >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{copy}</DialogDescription>
+          <DialogTitle id={vm.dialogTitleId}>{vm.title}</DialogTitle>
+          <DialogDescription id={vm.dialogDescriptionId}>{vm.description}</DialogDescription>
         </DialogHeader>
+        <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
 
-        {error && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+        {vm.errorPanel && (
+          <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
             <XCircle className="h-4 w-4 shrink-0" />
-            {error}
+            {vm.errorPanel.text}
           </div>
         )}
 
-        {result && (
+        {vm.resultPanel && (
           <div
+            role="status"
+            aria-label={vm.resultPanel.ariaLabel}
             className={cn(
               "rounded-lg border px-4 py-3 text-sm flex flex-col gap-1",
               isSuccess
@@ -1732,28 +1670,28 @@ function ConfirmActionDialog({
               ) : (
                 <AlertTriangle className="h-4 w-4 shrink-0" />
               )}
-              <span className="font-semibold">{result.status}</span>
+              <span className="font-semibold">{vm.resultPanel.status}</span>
             </div>
-            <p>{result.message}</p>
-            <p className="mt-1 font-mono text-xs opacity-70">Action ID: {result.actionId}</p>
+            <p>{vm.resultPanel.message}</p>
+            <p className="mt-1 font-mono text-xs opacity-70">Action ID: {vm.resultPanel.actionId}</p>
           </div>
         )}
 
-        {!isCompleted && (
+        {!vm.isCompleted && (
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={onClose} disabled={busy}>
-              Cancel
+            <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
+              {vm.cancelButtonLabel}
             </Button>
-            <Button onClick={onConfirm} disabled={busy}>
-              {busy ? "Processing…" : "Confirm"}
+            <Button onClick={() => { void vm.executeConfirm(); }} disabled={!vm.canConfirm} aria-label={vm.confirmAriaLabel}>
+              {vm.confirmButtonLabel}
             </Button>
           </div>
         )}
 
-        {isCompleted && (
+        {vm.isCompleted && (
           <div className="flex justify-end pt-2">
-            <Button variant="outline" onClick={onClose}>
-              Close
+            <Button variant="outline" onClick={vm.closeConfirm} aria-label={vm.closeAriaLabel}>
+              {vm.closeButtonLabel}
             </Button>
           </div>
         )}
@@ -1802,7 +1740,7 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 
 function WiringRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
     </div>
@@ -1823,7 +1761,7 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
 
 function ContextRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-white/10 px-3 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className="font-mono text-slate-100">{value}</span>
     </div>

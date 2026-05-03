@@ -18,24 +18,4 @@ public partial class AnalysisExportWizardPage : Page
     {
         _viewModel.Initialize();
     }
-
-    private void AddSymbol_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.AddSymbol();
-    }
-
-    private void Back_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.GoBack();
-    }
-
-    private void Next_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.GoNext();
-    }
-
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.CancelWizard();
-    }
 }

@@ -28,6 +28,13 @@ PROMPTS_README = "docs/ai/prompts/README.md"
 INSTRUCTIONS_README = "docs/ai/instructions/README.md"
 CODEX_SKILLS_README = ".codex/skills/README.md"
 GITHUB_PROMPTS_README = ".github/prompts/README.md"
+COPILOT_GUIDE = "docs/ai/copilot/instructions.md"
+ROOT_ASSISTANT_GUIDES = ("CLAUDE.md", COPILOT_GUIDE)
+CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
+LEGACY_CANONICAL_LINK_PREFIXES = (
+    "https://github.com/rodoHasArrived/Meridian/blob/main/",
+    "https://github.com/rodoHasArrived/Meridian/tree/main/",
+)
 
 AI_WORKFLOW_FILES = (
     ".github/workflows/documentation.yml",
@@ -131,6 +138,44 @@ def markdown_contains_any(text: str, markers: Iterable[str]) -> bool:
 def collect_inventory(root: Path) -> list[InventoryItem]:
     items: list[InventoryItem] = []
 
+    for rel_path in ("AGENTS.md", "CLAUDE.md"):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="root-assistant-compatibility",
+                    kind="entrypoint",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
+
+    for rel_path in (".codex/config.toml",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="codex",
+                    kind="config",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
+
+    for path in sorted_files(root, ".codex/environments/*.toml"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="environment-config",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT,),
+                alternate_markers=(".codex/environments/",),
+            )
+        )
+
     for path in sorted_files(root, ".codex/skills/*/SKILL.md"):
         name = path.parent.name
         items.append(
@@ -146,6 +191,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
     for path in sorted_files(root, ".codex/skills/*/agents/openai.yaml"):
         name = path.parents[1].name
         items.append(InventoryItem(surface="codex", kind="openai-metadata", name=name, path=repo_relative(root, path)))
+
+    for rel_path in (".claude/settings.json", ".claude/settings.local.json"):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="claude",
+                    kind="config",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
 
     for path in sorted_files(root, ".claude/skills/*/SKILL.md"):
         name = path.parent.name
@@ -175,6 +233,19 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 expected_docs=(AGENTS_README,),
             )
         )
+
+    for rel_path in (".github/copilot-instructions.md",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="github-copilot",
+                    kind="instruction-entrypoint",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT,),
+                )
+            )
 
     for path in sorted_files(root, ".claude/agents/*.md"):
         items.append(
@@ -314,7 +385,76 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
             )
         )
 
+    findings.extend(check_legacy_canonical_links(root, inventory))
+    findings.extend(check_compact_assistant_guides(root))
+
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
+
+
+def check_legacy_canonical_links(root: Path, inventory: Sequence[InventoryItem]) -> list[Finding]:
+    findings: list[Finding] = []
+    scanned_paths: set[str] = set()
+
+    for item in inventory:
+        if item.path in scanned_paths:
+            continue
+        scanned_paths.add(item.path)
+
+        path = root / item.path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if not any(prefix in text for prefix in LEGACY_CANONICAL_LINK_PREFIXES):
+            continue
+
+        findings.append(
+            Finding(
+                severity="drift",
+                surface=item.surface,
+                kind="legacy-repository-link",
+                name=item.name,
+                path=item.path,
+                expected_doc=item.path,
+                message=(
+                    "Legacy canonical GitHub doc link points at rodoHasArrived/Meridian; "
+                    f"use {CURRENT_REPOSITORY_URL} for current Meridian-main docs."
+                ),
+            )
+        )
+
+    return findings
+
+
+def check_compact_assistant_guides(root: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    for rel_path in ROOT_ASSISTANT_GUIDES:
+        path = root / rel_path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+        embeds_repository_tree = "\n## Repository Structure\n" in f"\n{text}" and "```text\nMeridian-main\n" in text
+        if not embeds_repository_tree:
+            continue
+
+        surface = "root-assistant-compatibility" if rel_path == "CLAUDE.md" else "github-copilot"
+        findings.append(
+            Finding(
+                severity="drift",
+                surface=surface,
+                kind="duplicated-repository-tree",
+                name=path.name,
+                path=rel_path,
+                expected_doc="docs/ai/generated/repo-navigation.md",
+                message=(
+                    f"{rel_path} embeds a full repository tree; link to generated navigation or "
+                    "repository-structure sources instead of duplicating broad layout context."
+                ),
+            )
+        )
+
+    return findings
 
 
 def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequence[Finding]) -> dict[str, object]:
@@ -323,7 +463,8 @@ def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequ
     by_severity = Counter(finding.severity for finding in findings)
     return {
         "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
-        "repositoryRoot": str(root.resolve()),
+        "repositoryRoot": ".",
+        "repositoryName": root.name,
         "status": "pass" if not findings else "drift",
         "summary": {
             "inventoryCount": len(inventory),

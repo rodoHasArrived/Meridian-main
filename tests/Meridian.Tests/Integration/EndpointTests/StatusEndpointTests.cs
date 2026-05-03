@@ -223,12 +223,17 @@ public sealed class StatusEndpointTests
 
     private static async Task<string> ReadFirstDataLineAsync(StreamReader reader, CancellationToken ct)
     {
-        while (!reader.EndOfStream)
+        while (true)
         {
             ct.ThrowIfCancellationRequested();
 
             var line = await reader.ReadLineAsync(ct);
-            if (line is not null && line.StartsWith("data: ", StringComparison.Ordinal))
+            if (line is null)
+            {
+                break;
+            }
+
+            if (line.StartsWith("data: ", StringComparison.Ordinal))
             {
                 return line;
             }

@@ -7,8 +7,9 @@ All agent surfaces should follow the shared provider-agnostic workflow in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 All three surfaces should stay aligned around the same current product framing: Meridian is a
-desktop-first fund-management and trading workstation with shared `Research`, `Trading`,
-`Data Operations`, and `Governance` workflows on top of strong provider, storage, execution,
+.NET 10 fund-management and trading platform with an active browser-based operator workstation,
+retained WPF support, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
+`Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
 ledger, and MCP foundations.
 
 ---
@@ -62,14 +63,14 @@ Primary inputs:
 
 | Agent | Purpose |
 | ------ | --------- |
-| `meridian-archive-organizer.md` | Archive stale files and keep repository structure tidy |
-| `meridian-blueprint.md` | Blueprint and design specialist |
-| `meridian-cleanup.md` | Cleanup specialist |
-| `meridian-docs.md` | Documentation specialist |
-| `meridian-navigation.md` | Repo navigation and routing specialist |
-| `meridian-repo-navigation.md` | Generated-map-based repo navigation specialist |
-| `meridian-roadmap-strategist.md` | Roadmap, delivery-plan, and target-state specialist |
-| `meridian-user-panel.md` | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
+| [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
+| [`meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md) | Cleanup specialist |
+| [`meridian-docs.md`](../../../.claude/agents/meridian-docs.md) | Documentation specialist |
+| [`meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md) | Repo navigation and routing specialist |
+| [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
+| [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
+| [`meridian-user-panel.md`](../../../.claude/agents/meridian-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
 
 ---
 
@@ -98,4 +99,4 @@ Use repo navigation first whenever the main problem is â€œwhere should I start?â
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-04-29_

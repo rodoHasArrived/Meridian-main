@@ -27,6 +27,40 @@
                 </StackPanel>
             </Border>
 
+            <!-- Session Action Readiness -->
+            <Border Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,16"
+                    AutomationProperties.AutomationId="CollectionSessionReadinessCard"
+                    AutomationProperties.Name="Collection session lifecycle readiness">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding SessionActionTitle}"
+                                   Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding SessionActionDetail}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"
+                                   AutomationProperties.AutomationId="CollectionSessionActionDetail" />
+                        <TextBlock Text="{Binding SessionActionScope}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   FontSize="11"
+                                   Margin="0,8,0,0"
+                                   AutomationProperties.AutomationId="CollectionSessionActionScope" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Text="Loading"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               FontSize="12"
+                               VerticalAlignment="Top"
+                               Visibility="{Binding LoadingVisibility}"
+                               AutomationProperties.AutomationId="CollectionSessionLoadingIndicator" />
+                </Grid>
+            </Border>
+
             <!-- Active Session -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
@@ -60,9 +94,13 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="Pause" Style="{StaticResource PrimaryButtonStyle}"
-                                        Click="PauseSession_Click" Padding="12,6" Margin="0,0,8,0" />
+                                        Command="{Binding PauseSessionCommand}"
+                                        Padding="12,6" Margin="0,0,8,0"
+                                        AutomationProperties.AutomationId="CollectionSessionPauseButton" />
                                 <Button Content="Stop" Style="{StaticResource PrimaryButtonStyle}"
-                                        Click="StopSession_Click" Padding="12,6" />
+                                        Command="{Binding StopSessionCommand}"
+                                        Padding="12,6"
+                                        AutomationProperties.AutomationId="CollectionSessionStopButton" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -78,9 +116,13 @@
                     <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Create Daily Session" Style="{StaticResource PrimaryButtonStyle}"
-                                Click="CreateDailySession_Click" Padding="16,8" Margin="0,0,8,0" />
+                                Command="{Binding CreateDailySessionCommand}"
+                                Padding="16,8" Margin="0,0,8,0"
+                                AutomationProperties.AutomationId="CollectionSessionCreateDailyButton" />
                         <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
-                                Click="RefreshSessions_Click" Padding="16,8" />
+                                Command="{Binding RefreshSessionsCommand}"
+                                Padding="16,8"
+                                AutomationProperties.AutomationId="CollectionSessionRefreshButton" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -101,7 +143,38 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <ItemsControl ItemsSource="{Binding Sessions}">
+                    <Border Visibility="{Binding EmptySessionHistoryVisibility}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14"
+                            Margin="0,0,0,8"
+                            AutomationProperties.AutomationId="CollectionSessionEmptyState">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="No captured sessions yet"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="{Binding SessionActionDetail}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="Create Daily Session"
+                                    Command="{Binding CreateDailySessionCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="16,0,0,0"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AutomationId="CollectionSessionEmptyCreateButton" />
+                        </Grid>
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding Sessions}"
+                                  Visibility="{Binding SessionHistoryVisibility}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="0,0,0,1"

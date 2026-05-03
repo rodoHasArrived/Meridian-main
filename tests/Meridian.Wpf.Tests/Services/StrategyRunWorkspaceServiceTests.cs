@@ -278,6 +278,79 @@ public sealed class StrategyRunWorkspaceServiceTests
         detail.Parameters.Should().Contain(new KeyValuePair<string, string>("executionId", "exec-123"));
     }
 
+    [Fact]
+    public async Task RecordCapturedBacktestsAsync_WithZeroBacktests_ReturnsEmptyAndRecordsNothing()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+
+        var runIds = await service.RecordCapturedBacktestsAsync(
+            Array.Empty<BacktestResult>(),
+            new BacktestRunPublicationOptions("QuantScript Basket"));
+
+        runIds.Should().BeEmpty();
+        (await service.GetRunsAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RecordCapturedBacktestsAsync_WithOneBacktest_PreservesDeterministicPublicationMetadata()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+
+        var runIds = await service.RecordCapturedBacktestsAsync(
+            [BuildResult()],
+            new BacktestRunPublicationOptions(
+                StrategyName: "Momentum Notebook",
+                StrategyId: "quantscript-momentum",
+                PublicationIdentity: "exec-one",
+                AdditionalParameters: new Dictionary<string, string> { ["symbol"] = "SPY" }));
+
+        runIds.Should().HaveCount(1);
+        var detail = await service.GetRunDetailAsync(runIds[0]);
+        detail.Should().NotBeNull();
+        detail!.Summary.ParentRunId.Should().Be("quant-parent-exec-one");
+        detail.Summary.StrategyName.Should().Be("Momentum Notebook");
+        detail.Parameters.Should().Contain(new KeyValuePair<string, string>("publicationIdentity", "exec-one"));
+        detail.Parameters.Should().Contain(new KeyValuePair<string, string>("publicationIndex", "1"));
+        detail.Parameters.Should().Contain(new KeyValuePair<string, string>("publicationCount", "1"));
+        detail.Parameters.Should().Contain(new KeyValuePair<string, string>("symbol", "SPY"));
+    }
+
+    [Fact]
+    public async Task RecordCapturedBacktestsAsync_WithMultipleBacktests_AssignsParentAndChildNaming()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+
+        var backtests = new[] { BuildResult(), BuildResult() };
+        var runIds = await service.RecordCapturedBacktestsAsync(
+            backtests,
+            new BacktestRunPublicationOptions(
+                StrategyName: "Basket Notebook",
+                StrategyId: "quantscript-basket",
+                PublicationIdentity: "exec-many"));
+
+        runIds.Should().HaveCount(2);
+        var first = await service.GetRunDetailAsync(runIds[0]);
+        var second = await service.GetRunDetailAsync(runIds[1]);
+        first!.Summary.ParentRunId.Should().Be("quant-parent-exec-many");
+        second!.Summary.ParentRunId.Should().Be("quant-parent-exec-many");
+        first.Summary.StrategyName.Should().Be("Basket Notebook #1");
+        second.Summary.StrategyName.Should().Be("Basket Notebook #2");
+        first.Parameters.Should().Contain(new KeyValuePair<string, string>("publicationIndex", "1"));
+        second.Parameters.Should().Contain(new KeyValuePair<string, string>("publicationIndex", "2"));
+    }
+
     private static BacktestResult BuildResult()
     {
         var startedAt = new DateTimeOffset(2026, 3, 20, 14, 0, 0, TimeSpan.Zero);

@@ -68,7 +68,7 @@ If headings are missing, the workflow still creates an entry with safe defaults 
   - [ ] Remember: Border, StackPanel, and DockPanel support Padding in WPF, but Grid does not
 - **Verification commands**:
   - `grep -rn '<Grid.*Padding=' src/Meridian.Wpf --include="*.xaml"`
-  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore -p:TargetFramework=net9.0-windows`
+  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore -p:TargetFramework=net10.0-windows`
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/21707017569/job/62600607213
 - **Status**: fixed
 
@@ -131,8 +131,8 @@ If headings are missing, the workflow still creates an entry with safe defaults 
   - [ ] Check for similar patterns: `grep -rn "class ConfigValidationResult" src --include="*.cs"` should show only one result per type
 - **Verification commands**:
   - `dotnet build src/Meridian.Ui.Services/Meridian.Ui.Services.csproj -c Release`
-  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net9.0-windows` (on Windows)
-  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net9.0-windows` (on Windows)
+  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net10.0-windows` (on Windows)
+  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net10.0-windows` (on Windows)
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/21851485930/job/63058846153
 - **Status**: fixed (commit cec548e)
 
@@ -229,7 +229,7 @@ If headings are missing, the workflow still creates an entry with safe defaults 
   ```
 - **Verification commands**:
   - `dotnet build src/Meridian.Ui.Services/Meridian.Ui.Services.csproj -c Release`
-  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net9.0-windows`
+  - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net10.0-windows`
   - `grep -n 'out T? value' src/Meridian.Ui.Services/Collections/CircularBuffer.cs` (should return no matches after fix)
 - **Source issues**:
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21988186038/job/63527798918#step:5:1 (original)

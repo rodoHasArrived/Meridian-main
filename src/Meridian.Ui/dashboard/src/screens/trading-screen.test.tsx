@@ -1,8 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
+import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
@@ -98,6 +98,7 @@ vi.mock("@/lib/api", async () => {
     getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
     getReplayStatus: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "running", speedMultiplier: 1, eventsProcessed: 3, totalEvents: 10, progressPercent: 30, startedAt: "2026-01-01" }),
+    getTradingReadiness: vi.fn().mockResolvedValue(null),
     pauseReplay: vi.fn().mockResolvedValue({}),
     resumeReplay: vi.fn().mockResolvedValue({}),
     stopReplay: vi.fn().mockResolvedValue({}),
@@ -269,25 +270,40 @@ const serverReadinessData: TradingWorkspaceResponse = {
   }
 };
 
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(api.getTradingReadiness).mockResolvedValue(serverReadinessData.readiness!);
+});
+
+async function renderTradingScreen(
+  screenData: TradingWorkspaceResponse = data,
+  initialEntry = "/trading"
+) {
+  const result = renderWithRouter(<TradingScreen data={screenData} />, { initialEntries: [initialEntry] });
+  await waitForAsyncEffects();
+  return result;
+}
+
 describe("TradingScreen", () => {
-  it("renders cockpit tables and wiring state", () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+  it("renders cockpit tables and wiring state", async () => {
+    await renderTradingScreen();
     expect(screen.getByText("Live positions")).toBeInTheDocument();
     expect(screen.getByText("Session replay controls")).toBeInTheDocument();
     expect(screen.getByText("Backtest → Paper promotion gate")).toBeInTheDocument();
   });
 
   it("fetches and renders execution controls snapshot", async () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
-    expect(screen.getByText(/Breaker Closed/i)).toBeInTheDocument();
-    expect(screen.getByText(/Default limit:/i)).toHaveTextContent("5000");
-    expect(screen.getByText(/Active overrides:/i)).toHaveTextContent("BypassOrderControls (AAPL)");
+    expect(screen.getAllByText(/Breaker Closed/i).length).toBeGreaterThan(0);
+    const controls = screen.getByLabelText(/Execution controls snapshot: breaker closed/i);
+    expect(within(controls).getByText("5000")).toBeInTheDocument();
+    expect(within(controls).getByText("BypassOrderControls (AAPL)")).toBeInTheDocument();
   });
 
   it("surfaces cockpit readiness against operator acceptance gates", async () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
 
     expect(screen.getByText("Paper cockpit readiness")).toBeInTheDocument();
     await screen.findByText("2/4 ready");
@@ -297,10 +313,14 @@ describe("TradingScreen", () => {
     expect(screen.getByText(/Approved by operator-7: Meets risk constraints\. Audit audit-promo-1\./i)).toBeInTheDocument();
   });
 
-  it("uses server acceptance gates when the readiness contract provides them", () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={serverReadinessData} /></MemoryRouter>);
+  it("uses server acceptance gates when the readiness contract provides them", async () => {
+    await renderTradingScreen(serverReadinessData);
 
     expect(screen.getByText("2/5 ready")).toBeInTheDocument();
+    expect(screen.getByText("Overall: Blocked")).toBeInTheDocument();
+    expect(screen.getByText("Paper: Not paper ready")).toBeInTheDocument();
+    expect(screen.getByText("Brokerage: No account sync")).toBeInTheDocument();
+    expect(screen.getByText("As of: 2026-04-26T16:00:00Z")).toBeInTheDocument();
     expect(screen.getByText("Replay verified")).toBeInTheDocument();
     expect(screen.getByText("Blocked")).toBeInTheDocument();
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
@@ -312,9 +332,66 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Replay evidence is stale for sess-1.")).toBeInTheDocument();
   });
 
+  it("refreshes shared readiness and surfaces account brokerage posture", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({
+      ...serverReadinessData.readiness!,
+      asOf: "2026-04-26T16:05:00Z",
+      overallStatus: "ReviewRequired",
+      brokerageSync: {
+        fundAccountId: "fund-1",
+        providerId: "alpaca",
+        externalAccountId: "PA-404",
+        health: "Failed",
+        isLinked: true,
+        isStale: true,
+        lastAttemptedSyncAt: "2026-04-26T15:58:00Z",
+        lastSuccessfulSyncAt: null,
+        lastError: "Alpaca credentials are missing.",
+        positionCount: 0,
+        openOrderCount: 0,
+        fillCount: 0,
+        cashTransactionCount: 0,
+        securityMissingCount: 0,
+        warnings: ["Portfolio snapshot failed."]
+      },
+      workItems: [
+        {
+          workItemId: "brokerage-sync-failed-fund-1",
+          kind: "BrokerageSync",
+          label: "Brokerage sync failed",
+          detail: "Sync broker credentials before paper operation.",
+          tone: "Critical",
+          createdAt: "2026-04-26T16:05:00Z",
+          runId: null,
+          fundAccountId: "fund-1",
+          auditReference: null,
+          workspace: "Trading",
+          targetRoute: "/api/fund-accounts/fund-1/brokerage-sync",
+          targetPageTag: "AccountPortfolio"
+        }
+      ],
+      warnings: ["Portfolio snapshot failed."]
+    });
+
+    await renderTradingScreen(serverReadinessData);
+    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+
+    await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("Overall: Review required")).toBeInTheDocument();
+    expect(screen.getByText("Brokerage: Failed stale")).toBeInTheDocument();
+    expect(screen.getByText("As of: 2026-04-26T16:05:00Z")).toBeInTheDocument();
+    expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
+    expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio snapshot failed.")).toBeInTheDocument();
+  });
+
   it("handles promotion happy path", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
+    vi.mocked(api.getPromotionHistory).mockClear();
     await user.type(screen.getByLabelText("Run id"), "run-1");
     await user.type(screen.getByLabelText("Operator id"), "operator-7");
     await user.type(screen.getByLabelText("Approval reason"), "Meets risk constraints");
@@ -331,6 +408,7 @@ describe("TradingScreen", () => {
       reviewNotes: "Checked replay consistency",
       manualOverrideId: "override-9"
     });
+    await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
     await screen.findByText(/by operator-7/i);
     await screen.findByText(/reason: Meets risk constraints/i);
     await screen.findByText(/audit: audit-promo-1/i);
@@ -340,7 +418,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -353,10 +431,29 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("renders the order ticket through shared labelled controls", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+
+    expect(screen.getByLabelText("Order symbol")).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByRole("combobox", { name: "Order side" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByRole("combobox", { name: "Order type" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
+    expect(screen.getByLabelText("Order symbol")).toHaveAttribute("aria-invalid", "true");
+
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    expect(screen.getByLabelText("Order quantity")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Order quantity")).toHaveAccessibleDescription("Enter an order quantity greater than zero.");
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
+    expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
+  });
+
   it("shows error path when promotion evaluation fails", async () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await user.type(screen.getByLabelText("Run id"), "run-bad");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText("eval failed");
@@ -364,7 +461,7 @@ describe("TradingScreen", () => {
 
   it("supports rejecting a promotion with a required rationale", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await screen.findByText(/reason: Meets risk constraints/i);
     vi.mocked(api.getPromotionHistory).mockClear();
     vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
@@ -417,7 +514,7 @@ describe("TradingScreen", () => {
       reason: "Run not found or has no metrics available for rejection trace."
     });
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
     await screen.findByText(/reason: Meets risk constraints/i);
     vi.mocked(api.getPromotionHistory).mockClear();
 
@@ -435,12 +532,20 @@ describe("TradingScreen", () => {
 
   it("supports replay start and restore session for reconnect/resume workflows", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await renderTradingScreen();
 
-    await user.click(screen.getByRole("button", { name: "Start" }));
-    await screen.findByText(/Replay running/i);
+    const replayControls = screen.getByRole("region", { name: /session replay controls/i });
+    expect(replayControls).toHaveAccessibleDescription("Start and control replay for reconnect/resume validation.");
+    expect(within(replayControls).getByLabelText("Replay file")).toHaveAccessibleDescription(/Ready to replay replay\.jsonl/i);
+    expect(within(replayControls).getByLabelText("Replay speed multiplier")).toHaveAccessibleDescription(/Multiplier greater than 0/i);
+    expect(within(replayControls).getByLabelText("Seek position in milliseconds")).toHaveAccessibleDescription(/Position in milliseconds from replay start/i);
 
-    await user.click(screen.getByRole("button", { name: "Restore" }));
+    const startButton = await screen.findByRole("button", { name: "Start" });
+    await waitFor(() => expect(startButton).toBeEnabled());
+    await user.click(startButton);
+    await screen.findByText("Replay running · 3/10 (30%)");
+
+    await user.click(screen.getByRole("button", { name: /restore paper session sess-1/i }));
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Selected session: sess-1/i)).toBeInTheDocument();
     expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
@@ -448,21 +553,41 @@ describe("TradingScreen", () => {
 
   it("shows replay verification and execution audit for the selected session", async () => {
     const user = userEvent.setup();
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce(null);
+    await renderTradingScreen();
 
-    await user.click(screen.getByRole("button", { name: /verify replay/i }));
+    await user.click(await screen.findByRole("button", { name: /verify replay/i }));
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
-    expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: /replay verification matched current state for sess-1/i })).toHaveTextContent(/Matched current state/i);
     expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
     expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
     await screen.findByText("4/4 ready");
   });
 
-  it("opens confirmation dialog when Cancel order button is clicked", () => {
-    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+  it("opens confirmation dialog when Cancel order button is clicked", async () => {
+    await renderTradingScreen();
     fireEvent.click(screen.getByTitle("Cancel order"));
-    expect(screen.getByText(/cancel order PO-1/i)).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /cancel order PO-1/i });
+    expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
+    expect(screen.getByRole("button", { name: /confirm cancel order po-1/i })).toBeEnabled();
+  });
+
+  it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const lifecycle = screen.getByRole("region", { name: /strategy lifecycle/i });
+    const strategyInput = within(lifecycle).getByLabelText("Strategy ID");
+    expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before pausing a strategy/i })).toBeDisabled();
+    expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before stopping a strategy/i })).toBeDisabled();
+
+    await user.type(strategyInput, "  mean-reversion-fx-01  ");
+
+    expect(within(lifecycle).getByText("Ready to open lifecycle confirmation for mean-reversion-fx-01.")).toBeInTheDocument();
+    await user.click(within(lifecycle).getByRole("button", { name: /open pause confirmation for strategy mean-reversion-fx-01/i }));
+    const dialog = screen.getByRole("dialog", { name: /pause strategy - mean-reversion-fx-01/i });
+    expect(dialog).toHaveAccessibleDescription("The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.");
   });
 });

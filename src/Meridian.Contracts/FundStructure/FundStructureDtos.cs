@@ -58,6 +58,14 @@ public enum AccountTypeDto
     Other
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountOperationalStatusDto>))]
+public enum AccountOperationalStatusDto
+{
+    Active,
+    Suspended,
+    Closed
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<OwnershipRelationshipTypeDto>))]
 public enum OwnershipRelationshipTypeDto
 {
@@ -209,6 +217,7 @@ public sealed record AccountSummaryDto(
     string? LedgerReference,
     string? StrategyId,
     string? RunId,
+    AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active,
     CustodianAccountDetailsDto? CustodianDetails = null,
     BankAccountDetailsDto? BankDetails = null,
     FundStructureSharedDataAccessDto? SharedDataAccess = null);
@@ -472,3 +481,27 @@ public sealed record GovernanceCashFlowViewDto(
     IReadOnlyList<GovernanceCashFlowVarianceBucketDto> VarianceBuckets,
     FundStructureSharedDataAccessDto? SharedDataAccess = null,
     int SecurityProjectedEntryCount = 0);
+
+public sealed record PositionReconciliationBreakDto(
+    Guid BreakId,
+    Guid AccountId,
+    DateOnly AsOfDate,
+    string Symbol,
+    decimal ExpectedQuantity,
+    decimal ActualQuantity,
+    decimal QuantityVariance,
+    string Reason);
+
+public sealed record CashReconciliationBreakDto(
+    Guid BreakId,
+    Guid AccountId,
+    DateOnly AsOfDate,
+    string Currency,
+    decimal ExpectedBalance,
+    decimal ActualBalance,
+    decimal BalanceVariance,
+    string Reason);
+
+public sealed record AccountReconciliationBreakDto(
+    PositionReconciliationBreakDto? PositionBreak = null,
+    CashReconciliationBreakDto? CashBreak = null);

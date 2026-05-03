@@ -76,7 +76,7 @@ permissions:
   models: read
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -1093,7 +1093,7 @@ jobs:
           max-tokens: 2000
           prompt: |
             You are a senior .NET DevOps engineer reviewing a comprehensive weekly maintenance
-            report for Meridian, a .NET 9.0 market data collection application with
+            report for Meridian, a .NET 10.0 market data collection application with
             ~500 source files, Central Package Management, and 21 CI/CD workflows.
 
             ## Test Suite

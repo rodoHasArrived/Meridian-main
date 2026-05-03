@@ -13,7 +13,9 @@ public sealed partial class FundContextService : IFundProfileCatalog
     private static readonly Lazy<FundContextService> _instance = new(() => new FundContextService());
 
     private readonly List<FundProfileDetail> _profiles = new();
+    private readonly object _loadGate = new();
     private readonly string _storagePath;
+    private Task? _loadTask;
     private bool _loaded;
 
     public static FundContextService Instance => _instance.Value;
@@ -33,21 +35,29 @@ public sealed partial class FundContextService : IFundProfileCatalog
 
     public event EventHandler? FundSwitchRequested;
 
-    public async Task LoadAsync(CancellationToken ct = default)
+    public Task LoadAsync(CancellationToken ct = default)
     {
-        if (_loaded)
+        lock (_loadGate)
         {
-            return;
-        }
+            if (_loaded)
+            {
+                return Task.CompletedTask;
+            }
 
-        _loaded = true;
-        if (!File.Exists(_storagePath))
-        {
-            return;
+            _loadTask ??= LoadCoreAsync(ct);
+            return _loadTask;
         }
+    }
 
+    private async Task LoadCoreAsync(CancellationToken ct)
+    {
         try
         {
+            if (!File.Exists(_storagePath))
+            {
+                return;
+            }
+
             var json = await File.ReadAllTextAsync(_storagePath, ct).ConfigureAwait(false);
             var data = JsonSerializer.Deserialize(json, FundProfileStorageJsonContext.Default.FundProfileStorageModel);
             if (data is null)
@@ -67,6 +77,18 @@ public sealed partial class FundContextService : IFundProfileCatalog
         {
             _profiles.Clear();
             LastSelectedFundProfileId = null;
+        }
+        finally
+        {
+            MarkLoaded();
+        }
+    }
+
+    private void MarkLoaded()
+    {
+        lock (_loadGate)
+        {
+            _loaded = true;
         }
     }
 

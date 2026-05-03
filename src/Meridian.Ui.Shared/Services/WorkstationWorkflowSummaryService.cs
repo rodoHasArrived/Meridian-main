@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Workflows;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -12,17 +13,20 @@ public sealed class WorkstationWorkflowSummaryService
     private readonly StrategyRunContinuityService? _continuityService;
     private readonly IReconciliationRunService? _reconciliationRunService;
     private readonly Meridian.Application.UI.ConfigStore? _configStore;
+    private readonly IWorkflowActionCatalog? _actionCatalog;
 
     public WorkstationWorkflowSummaryService(
         StrategyRunReadService runReadService,
         StrategyRunContinuityService? continuityService = null,
         IReconciliationRunService? reconciliationRunService = null,
-        Meridian.Application.UI.ConfigStore? configStore = null)
+        Meridian.Application.UI.ConfigStore? configStore = null,
+        IWorkflowActionCatalog? actionCatalog = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _continuityService = continuityService;
         _reconciliationRunService = reconciliationRunService;
         _configStore = configStore;
+        _actionCatalog = actionCatalog;
     }
 
     public async Task<OperatorWorkflowHomeSummary> GetAsync(
@@ -118,7 +122,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Send to Trading Review",
                     Detail: "Open the trading workspace with the strategy handoff in view.",
-                    TargetPageTag: "TradingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.StrategySendToTradingReview, "TradingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "promotion-handoff",
@@ -140,7 +144,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Review Run",
                     Detail: "Inspect active strategy evidence, metrics, and continuity.",
-                    TargetPageTag: "StrategyRuns",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.StrategyReviewRuns, "StrategyRuns"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "run-in-progress",
@@ -167,7 +171,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: "Start Backtest",
                 Detail: "Launch a new simulation from the strategy workspace.",
-                TargetPageTag: "Backtest",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.StrategyStartBacktest, "Backtest"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: researchRuns.Count == 0 ? "no-runs" : "no-strategy-review",
@@ -203,7 +207,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Choose Context",
                     Detail: "Open the trading shell and select the active operating context.",
-                    TargetPageTag: "TradingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.TradingChooseContext, "TradingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "choose-context",
@@ -229,7 +233,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Review Candidate for Paper",
                     Detail: "Open the trading cockpit to continue the Strategy to Trading handoff.",
-                    TargetPageTag: "TradingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.TradingReviewPaperCandidate, "TradingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: BuildTradingBlocker(candidateForPaper, candidateResearchSnapshot),
                 Evidence: BuildRunEvidence(candidateForPaper, candidateResearchSnapshot));
@@ -246,7 +250,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Open Active Cockpit",
                     Detail: "Continue the active paper or live execution workflow.",
-                    TargetPageTag: "TradingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.TradingOpenCockpit, "TradingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: BuildTradingContinuationBlocker(activeTradingSnapshot),
                 Evidence: BuildRunEvidence(activeTradingRun, activeTradingSnapshot));
@@ -263,7 +267,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Open Accounting Review",
                     Detail: "Move the handoff forward into Accounting.",
-                    TargetPageTag: "AccountingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewLiveHandoff, "AccountingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "accounting-review",
@@ -288,7 +292,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: "Open Strategy Runs",
                 Detail: "Review recorded runs and bring one into the trading lane.",
-                TargetPageTag: "StrategyRuns",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.StrategyReviewRuns, "StrategyRuns"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: "no-trading-run",
@@ -315,7 +319,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: hasOperatingContext ? "Open Portfolio" : "Choose Context",
                 Detail: "Open portfolio review, accounts, and fund exposure workflows.",
-                TargetPageTag: "PortfolioShell",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.PortfolioOpen, "PortfolioShell"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: hasOperatingContext ? "portfolio-ready" : "portfolio-context",
@@ -348,7 +352,7 @@ public sealed class WorkstationWorkflowSummaryService
                     NextAction: new WorkflowNextAction(
                         Label: "Open Provider Health",
                         Detail: "Inspect provider posture and reconnect degraded feeds.",
-                        TargetPageTag: "ProviderHealth",
+                        TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.DataOpenProviderHealth, "ProviderHealth"),
                         Tone: "Primary"),
                     PrimaryBlocker: CreateBlocker(
                         code: "provider-degradation",
@@ -376,7 +380,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Open Backfill Queue",
                     Detail: "Inspect failed or incomplete queue work.",
-                    TargetPageTag: "Backfill",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.DataOpenBackfillQueue, "Backfill"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "backfill-review",
@@ -400,7 +404,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: "Open Queue Overview",
                 Detail: "Inspect providers, storage, and backfill posture from the workspace home.",
-                TargetPageTag: "DataShell",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.DataOpenQueueOverview, "DataShell"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: "no-data-blocker",
@@ -432,7 +436,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Choose Context",
                     Detail: "Open the accounting shell and unlock the lane summary.",
-                    TargetPageTag: "AccountingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingChooseContext, "AccountingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "choose-context",
@@ -458,7 +462,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Review Reconciliation Breaks",
                     Detail: "Open the reconciliation lane and work the break queue.",
-                    TargetPageTag: "FundReconciliation",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewReconciliation, "FundReconciliation"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "reconciliation-breaks",
@@ -480,7 +484,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Review Ledger Continuity",
                     Detail: "Open trial-balance and continuity surfaces for the selected context.",
-                    TargetPageTag: "FundTrialBalance",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewLedgerContinuity, "FundTrialBalance"),
                     Tone: "Primary"),
                 PrimaryBlocker: BuildAccountingContinuityBlocker(governanceSnapshot),
                 Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
@@ -497,7 +501,7 @@ public sealed class WorkstationWorkflowSummaryService
                 NextAction: new WorkflowNextAction(
                     Label: "Open Accounting Shell",
                     Detail: "Continue with ledger, reconciliation, cash, banking, and audit review.",
-                    TargetPageTag: "AccountingShell",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingOpen, "AccountingShell"),
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "accounting-ready",
@@ -517,7 +521,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: "Open Accounting Shell",
                 Detail: "Review accounting lanes for the active context.",
-                TargetPageTag: "AccountingShell",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingOpen, "AccountingShell"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: "no-governed-run",
@@ -531,7 +535,7 @@ public sealed class WorkstationWorkflowSummaryService
             ]);
     }
 
-    private static WorkspaceWorkflowSummary BuildReportingSummary(bool hasOperatingContext)
+    private WorkspaceWorkflowSummary BuildReportingSummary(bool hasOperatingContext)
     {
         return new WorkspaceWorkflowSummary(
             WorkspaceId: "reporting",
@@ -544,7 +548,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: "Open Reporting",
                 Detail: "Open report packs, dashboards, export, and preset workflows.",
-                TargetPageTag: "ReportingShell",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.ReportingOpen, "ReportingShell"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: hasOperatingContext ? "reporting-ready" : "reporting-context",
@@ -560,7 +564,7 @@ public sealed class WorkstationWorkflowSummaryService
             ]);
     }
 
-    private static WorkspaceWorkflowSummary BuildSettingsSummary()
+    private WorkspaceWorkflowSummary BuildSettingsSummary()
     {
         return new WorkspaceWorkflowSummary(
             WorkspaceId: "settings",
@@ -571,7 +575,7 @@ public sealed class WorkstationWorkflowSummaryService
             NextAction: new WorkflowNextAction(
                 Label: "Open Settings",
                 Detail: "Open workstation configuration and support surfaces.",
-                TargetPageTag: "SettingsShell",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.SettingsOpen, "SettingsShell"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
                 code: "settings-ready",
@@ -761,6 +765,9 @@ public sealed class WorkstationWorkflowSummaryService
 
     private static int CountActiveRuns(IReadOnlyList<StrategyRunSummary> runs)
         => runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
+
+    private string ResolveTargetPageTag(string actionId, string fallbackPageTag)
+        => _actionCatalog?.ResolveTargetPageTag(actionId, fallbackPageTag) ?? fallbackPageTag;
 
     private static WorkflowBlockerSummary CreateBlocker(
         string code,

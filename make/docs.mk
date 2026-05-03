@@ -4,8 +4,6 @@
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
-        update-claude-md docs-all
-        gen-interfaces gen-structure gen-providers gen-workflows \
         update-claude-md docs-all check-workflow-docs-parity
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
@@ -17,7 +15,7 @@ gen-context: ## Generate project-context.md from code annotations
 	@dotnet run --project $(DOCGEN_PROJECT) --no-build -c Release -- context \
 		--src src/Meridian \
 		--output docs/generated/project-context.md \
-		--xml-docs src/Meridian/bin/Release/net9.0/Meridian.xml
+		--xml-docs src/Meridian/bin/Release/net10.0/Meridian.xml
 	@echo "$(GREEN)Generated docs/generated/project-context.md$(NC)"
 
 verify-adrs: ## Verify ADR implementation links are valid

@@ -83,9 +83,8 @@ public sealed class QuantScriptExecutionHistoryService
         var mirroredRunId = default(string);
         var warning = default(string);
 
-        if (request.CapturedBacktests.Count == 1)
+        if (request.CapturedBacktests.Count > 0)
         {
-            var backtest = request.CapturedBacktests[0];
             var publicationParameters = new Dictionary<string, string>(
                 request.ParameterSnapshot,
                 StringComparer.OrdinalIgnoreCase)
@@ -95,18 +94,15 @@ public sealed class QuantScriptExecutionHistoryService
                 ["executionId"] = executionId
             };
 
-            mirroredRunId = await _strategyRunWorkspaceService.RecordBacktestRunAsync(
-                backtest.Request,
-                backtest,
+            var mirroredRunIds = await _strategyRunWorkspaceService.RecordCapturedBacktestsAsync(
+                request.CapturedBacktests,
                 new BacktestRunPublicationOptions(
                     StrategyName: request.DocumentTitle,
                     StrategyId: BuildQuantScriptStrategyId(request.DocumentTitle),
+                    PublicationIdentity: executionId,
                     AdditionalParameters: publicationParameters),
                 ct).ConfigureAwait(false);
-        }
-        else if (request.CapturedBacktests.Count > 1)
-        {
-            warning = "Shared Research mirroring was skipped because this execution captured more than one backtest. Run the backtests separately to compare them in Strategy Runs.";
+            mirroredRunId = mirroredRunIds.FirstOrDefault();
         }
 
         var record = new QuantScriptExecutionRecord(

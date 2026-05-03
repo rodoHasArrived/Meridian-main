@@ -1,11 +1,16 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-04-29
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
 This document is the normalized execution backlog for the repository's remaining product and structural work outside Phase 16 assembly/SIMD optimization.
 It is subordinate to [`ROADMAP.md`](ROADMAP.md): the tracks below are execution buckets that map to the canonical Wave 1-6 order and optional tracks, not an independent strategy. Status labels and target dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
+
+The active product framing for this backlog is **evidence-backed investment operations**:
+trusted data, research, paper validation, books, reconciliation, approvals, and governed reports
+in one explainable chain. Keep the tracks below grounded in that golden path rather than treating
+them as a separate product strategy.
 
 Use it with:
 
@@ -62,7 +67,9 @@ Closed platform work:
 
 Implemented foundations now available to build on:
 
-- workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
+- legacy compatibility workspace categories aligned around `Research`, `Trading`, `Data
+  Operations`, and `Governance`, while the visible browser shell is now expressed through `Data`,
+  `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, and `Settings`
 - current WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, Batch Backtest results empty guidance, Position Blotter selection review/action readiness, Notification Center history recovery, Trading Hours session briefing, OrderBook order-flow posture, Activity Log triage/export/clear state, Welcome readiness progress, Storage archive posture and preview guidance, Watchlist pinned-first staging, Fund Accounts balance-evidence posture, workspace queue tone styles, the workspace shell context strip, operator queue attention with Account Portfolio and run review-packet routing for actionable blockers, Trading desk briefing hero state selection, and Research desk briefing hero run/promotion handoffs; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
 - WPF screenshot/manual evidence capture now runs through the hardened refresh workflow with selectable catalog/manual groups, diagnostic artifacts, and a single commit step; it supports validation and release evidence but does not close the active workflow gates
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
@@ -71,7 +78,8 @@ Implemented foundations now available to build on:
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
 
-The remaining backlog is therefore about turning those foundations and delivered seams into a complete operator-facing product.
+The remaining backlog is therefore about turning those foundations and delivered seams into a
+complete evidence-backed investment operations product.
 
 ---
 
@@ -129,7 +137,7 @@ Open work:
 - extend run history beyond backtest-first into paper and live-adjacent results
 - deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger and reconciliation continuity in the primary WPF shell and retained workstation APIs
+- surface ledger and reconciliation continuity in the active web dashboard and retained workstation APIs/WPF support surfaces
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:

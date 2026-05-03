@@ -16,4 +16,29 @@ public interface ICorporateActionAdjustmentService
         IReadOnlyList<HistoricalBar> bars,
         string ticker,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Adjusts historical bars as a stream, yielding adjusted bars incrementally.
+    /// </summary>
+    /// <param name="bars">Source historical bars stream.</param>
+    /// <param name="ticker">Ticker symbol to resolve to security ID.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Adjusted bars stream.</returns>
+    async IAsyncEnumerable<HistoricalBar> AdjustAsync(
+        IAsyncEnumerable<HistoricalBar> bars,
+        string ticker,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var buffered = new List<HistoricalBar>();
+        await foreach (var bar in bars.WithCancellation(ct).ConfigureAwait(false))
+        {
+            buffered.Add(bar);
+        }
+
+        var adjusted = await AdjustAsync(buffered, ticker, ct).ConfigureAwait(false);
+        foreach (var bar in adjusted)
+        {
+            yield return bar;
+        }
+    }
 }

@@ -75,6 +75,12 @@ public sealed class BatchBacktestRequest
 
     /// <summary>Maximum number of concurrent backtests. Defaults to ProcessorCount - 1.</summary>
     public int MaxConcurrency { get; init; } = Math.Max(1, Environment.ProcessorCount - 1);
+
+    /// <summary>Human-readable descriptor for the strategy used in each run.</summary>
+    public required string StrategyDescriptor { get; init; }
+
+    /// <summary>Builds a strategy instance for each parameter set in the sweep.</summary>
+    public required Func<IReadOnlyDictionary<string, object>, IBacktestStrategy> StrategyFactory { get; init; }
 }
 
 /// <summary>
@@ -83,6 +89,7 @@ public sealed class BatchBacktestRequest
 /// </summary>
 public sealed class BatchBacktestService : IBatchBacktestService
 {
+    private readonly Func<BacktestEngine, BacktestRequest, IBacktestStrategy, CancellationToken, Task<BacktestResult>> _runExecutor;
     private readonly ILogger<BatchBacktestService> _logger;
     private readonly Func<BacktestRequest, BacktestEngine> _engineFactory;
 
@@ -96,9 +103,21 @@ public sealed class BatchBacktestService : IBatchBacktestService
     public BatchBacktestService(
         ILogger<BatchBacktestService> logger,
         Func<BacktestRequest, BacktestEngine> engineFactory)
+        : this(
+            logger,
+            engineFactory,
+            static (engine, runRequest, strategy, ct) => engine.RunAsync(runRequest, strategy, null, ct))
+    {
+    }
+
+    internal BatchBacktestService(
+        ILogger<BatchBacktestService> logger,
+        Func<BacktestRequest, BacktestEngine> engineFactory,
+        Func<BacktestEngine, BacktestRequest, IBacktestStrategy, CancellationToken, Task<BacktestResult>> runExecutor)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _engineFactory = engineFactory ?? throw new ArgumentNullException(nameof(engineFactory));
+        _runExecutor = runExecutor ?? throw new ArgumentNullException(nameof(runExecutor));
     }
 
     /// <summary>
@@ -111,6 +130,8 @@ public sealed class BatchBacktestService : IBatchBacktestService
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.BaseRequest);
         ArgumentNullException.ThrowIfNull(request.ParameterGrid);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.StrategyDescriptor);
+        ArgumentNullException.ThrowIfNull(request.StrategyFactory);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.MaxConcurrency);
 
         var sw = Stopwatch.StartNew();
@@ -119,8 +140,8 @@ public sealed class BatchBacktestService : IBatchBacktestService
         var runs = new List<BatchBacktestRun>();
         var semaphore = new SemaphoreSlim(request.MaxConcurrency, request.MaxConcurrency);
 
-        _logger.LogInformation("Starting batch backtest with {Total} runs, max concurrency {MaxConcurrency}",
-            total, request.MaxConcurrency);
+        _logger.LogInformation("Starting batch backtest with {Total} runs, strategy {Strategy}, max concurrency {MaxConcurrency}",
+            total, request.StrategyDescriptor, request.MaxConcurrency);
 
         var tasks = request.ParameterGrid.Select((paramSet, index) =>
             RunSingleBacktestAsync(index, paramSet, request, semaphore, runs, completedCounter, total, progress, ct)
@@ -178,12 +199,10 @@ public sealed class BatchBacktestService : IBatchBacktestService
             {
                 var runRequest = ApplyParameters(request.BaseRequest, paramSet);
                 var engine = _engineFactory(runRequest);
-
-                // Create a simple strategy that does nothing (caller can extend with parameter-driven logic).
-                var strategy = new NoOpStrategy();
+                var strategy = request.StrategyFactory(paramSet);
 
                 result = await Task.Run(async () =>
-                    await engine.RunAsync(runRequest, strategy, null, ct).ConfigureAwait(false), ct)
+                    await _runExecutor(engine, runRequest, strategy, ct).ConfigureAwait(false), ct)
                     .ConfigureAwait(false);
 
                 _logger.LogInformation("Run {Index}/{Total} succeeded in {Duration}ms",
@@ -301,20 +320,4 @@ public sealed class BatchBacktestService : IBatchBacktestService
             _ => (TEnum)Enum.ToObject(typeof(TEnum), value)
         };
 
-    /// <summary>
-    /// Minimal no-op strategy for batch runs (caller can subclass to add parameter-driven logic).
-    /// </summary>
-    private sealed class NoOpStrategy : IBacktestStrategy
-    {
-        public string Name => "NoOp";
-
-        public void Initialize(IBacktestContext ctx) { }
-        public void OnTrade(Trade trade, IBacktestContext ctx) { }
-        public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
-        public void OnBar(HistoricalBar bar, IBacktestContext ctx) { }
-        public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
-        public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
-        public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
-        public void OnFinished(IBacktestContext ctx) { }
-    }
 }

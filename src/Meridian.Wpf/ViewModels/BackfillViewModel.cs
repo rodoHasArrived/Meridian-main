@@ -74,10 +74,15 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     private bool _isBackfillActive;
+    private bool _lastStartSetupCanStart;
     public bool IsBackfillActive
     {
         get => _isBackfillActive;
-        private set => SetProperty(ref _isBackfillActive, value);
+        private set
+        {
+            if (SetProperty(ref _isBackfillActive, value))
+                CanStartBackfill = _lastStartSetupCanStart && !value;
+        }
     }
 
     private bool _isProgressVisible;
@@ -253,6 +258,76 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     {
         get => _lastRunCompletedText;
         private set => SetProperty(ref _lastRunCompletedText, value);
+    }
+
+    private string _startReadinessTitle = "Backfill setup incomplete";
+    public string StartReadinessTitle
+    {
+        get => _startReadinessTitle;
+        private set => SetProperty(ref _startReadinessTitle, value);
+    }
+
+    private string _startReadinessDetail = "Add at least one symbol and verify the date range before starting a historical backfill.";
+    public string StartReadinessDetail
+    {
+        get => _startReadinessDetail;
+        private set => SetProperty(ref _startReadinessDetail, value);
+    }
+
+    private string _startReadinessScopeText = "No request configured";
+    public string StartReadinessScopeText
+    {
+        get => _startReadinessScopeText;
+        private set => SetProperty(ref _startReadinessScopeText, value);
+    }
+
+    private bool _canStartBackfill;
+    public bool CanStartBackfill
+    {
+        get => _canStartBackfill;
+        private set => SetProperty(ref _canStartBackfill, value);
+    }
+
+    private string _symbolsValidationErrorText = string.Empty;
+    public string SymbolsValidationErrorText
+    {
+        get => _symbolsValidationErrorText;
+        private set => SetProperty(ref _symbolsValidationErrorText, value);
+    }
+
+    private bool _isSymbolsValidationErrorVisible;
+    public bool IsSymbolsValidationErrorVisible
+    {
+        get => _isSymbolsValidationErrorVisible;
+        private set => SetProperty(ref _isSymbolsValidationErrorVisible, value);
+    }
+
+    private string _fromDateValidationErrorText = string.Empty;
+    public string FromDateValidationErrorText
+    {
+        get => _fromDateValidationErrorText;
+        private set => SetProperty(ref _fromDateValidationErrorText, value);
+    }
+
+    private bool _isFromDateValidationErrorVisible;
+    public bool IsFromDateValidationErrorVisible
+    {
+        get => _isFromDateValidationErrorVisible;
+        private set => SetProperty(ref _isFromDateValidationErrorVisible, value);
+    }
+
+    private string _toDateValidationErrorText = string.Empty;
+    public string ToDateValidationErrorText
+    {
+        get => _toDateValidationErrorText;
+        private set => SetProperty(ref _toDateValidationErrorText, value);
+    }
+
+    private bool _isToDateValidationErrorVisible;
+    public bool IsToDateValidationErrorVisible
+    {
+        get => _isToDateValidationErrorVisible;
+        private set => SetProperty(ref _isToDateValidationErrorVisible, value);
     }
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
@@ -899,6 +974,34 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             : "Priority: No providers selected";
     }
 
+    public void UpdateStartSetupState(
+        string? symbolsText,
+        DateTime? fromDate,
+        DateTime? toDate,
+        string? providerDisplay,
+        string? provider,
+        string? granularity)
+    {
+        var state = BuildStartSetupState(symbolsText, fromDate, toDate, providerDisplay, provider, granularity);
+        ApplyStartSetupState(state);
+    }
+
+    private void ApplyStartSetupState(BackfillStartSetupState state)
+    {
+        _lastStartSetupCanStart = state.CanStart;
+        CanStartBackfill = state.CanStart && !IsBackfillActive;
+        SymbolCountText = state.SymbolCountText;
+        StartReadinessTitle = state.ReadinessTitle;
+        StartReadinessDetail = state.ReadinessDetail;
+        StartReadinessScopeText = state.ScopeText;
+        SymbolsValidationErrorText = state.SymbolsValidationError;
+        IsSymbolsValidationErrorVisible = state.IsSymbolsValidationErrorVisible;
+        FromDateValidationErrorText = state.FromDateValidationError;
+        IsFromDateValidationErrorVisible = state.IsFromDateValidationErrorVisible;
+        ToDateValidationErrorText = state.ToDateValidationError;
+        IsToDateValidationErrorVisible = state.IsToDateValidationErrorVisible;
+    }
+
     public static (DateTime From, DateTime To) ComputeSmartRange(string granularity, int symbolCount)
     {
         var lookbackDays = granularity switch
@@ -926,6 +1029,72 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         _ => granularity.ToLowerInvariant()
     };
 
+    public static BackfillStartSetupState BuildStartSetupState(
+        string? symbolsText,
+        DateTime? fromDate,
+        DateTime? toDate,
+        string? providerDisplay,
+        string? provider,
+        string? granularity)
+    {
+        var symbols = ParseSymbols(symbolsText);
+        var resolvedFromDate = fromDate ?? DateTime.Today.AddDays(-30);
+        var resolvedToDate = toDate ?? DateTime.Today;
+        var symbolCountText = $"{symbols.Length} symbol{(symbols.Length == 1 ? "" : "s")}";
+
+        var symbolsValidationError = symbols.Length == 0
+            ? "Please enter at least one symbol"
+            : string.Empty;
+        var fromDateValidationError = string.Empty;
+        var toDateValidationError = string.Empty;
+
+        if (resolvedFromDate > resolvedToDate)
+        {
+            fromDateValidationError = "From date must be earlier than To date";
+            toDateValidationError = "To date must be on or after From date";
+        }
+
+        var providerName = ResolveProviderDisplay(providerDisplay, provider);
+        var granularityDisplay = GetGranularityDisplay(granularity ?? "Daily");
+        var dateScope = $"{resolvedFromDate:MMM d, yyyy} to {resolvedToDate:MMM d, yyyy}";
+        var canStart = string.IsNullOrWhiteSpace(symbolsValidationError)
+            && string.IsNullOrWhiteSpace(fromDateValidationError)
+            && string.IsNullOrWhiteSpace(toDateValidationError);
+
+        var symbolScope = symbols.Length switch
+        {
+            0 => "No symbols selected",
+            1 => symbols[0],
+            <= 3 => string.Join(", ", symbols),
+            _ => $"{symbols.Length} symbols"
+        };
+
+        var readinessTitle = canStart
+            ? "Backfill ready"
+            : "Backfill setup incomplete";
+        var readinessDetail = symbols.Length == 0
+            ? "Add at least one symbol before starting a historical backfill."
+            : resolvedFromDate > resolvedToDate
+                ? "Fix the date range before starting the backfill."
+                : $"Ready to request {granularityDisplay} history for {symbolScope} from {providerName}.";
+        var scopeText = canStart
+            ? $"{symbolScope} - {dateScope} - {granularityDisplay} - {providerName}"
+            : $"{symbolScope} - {dateScope}";
+
+        return new BackfillStartSetupState(
+            canStart,
+            readinessTitle,
+            readinessDetail,
+            scopeText,
+            symbolCountText,
+            symbolsValidationError,
+            !string.IsNullOrWhiteSpace(symbolsValidationError),
+            fromDateValidationError,
+            !string.IsNullOrWhiteSpace(fromDateValidationError),
+            toDateValidationError,
+            !string.IsNullOrWhiteSpace(toDateValidationError));
+    }
+
     public bool TryCreateStartRequest(
         string? symbolsText,
         DateTime? fromDate,
@@ -948,12 +1117,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             return false;
         }
 
-        var symbols = symbolsText
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(symbol => symbol.Trim().ToUpperInvariant())
-            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var symbols = ParseSymbols(symbolsText);
 
         if (symbols.Length == 0)
         {
@@ -979,6 +1143,29 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             granularity ?? "Daily");
 
         return true;
+    }
+
+    private static string[] ParseSymbols(string? symbolsText) =>
+        (symbolsText ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => symbol.Trim().ToUpperInvariant())
+            .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static string ResolveProviderDisplay(string? providerDisplay, string? provider)
+    {
+        if (!string.IsNullOrWhiteSpace(providerDisplay))
+            return providerDisplay.Trim();
+
+        return provider switch
+        {
+            "composite" => "Multi-Source",
+            "yahoo" => "Yahoo Finance",
+            "stooq" => "Stooq",
+            "nasdaq" => "Nasdaq Data Link",
+            _ => string.IsNullOrWhiteSpace(provider) ? "selected provider" : provider
+        };
     }
 
     public async Task<string> GetSubscribedSymbolsTextAsync()
@@ -1135,4 +1322,17 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         DateTime FromDate,
         DateTime ToDate,
         string Granularity);
+
+    public readonly record struct BackfillStartSetupState(
+        bool CanStart,
+        string ReadinessTitle,
+        string ReadinessDetail,
+        string ScopeText,
+        string SymbolCountText,
+        string SymbolsValidationError,
+        bool IsSymbolsValidationErrorVisible,
+        string FromDateValidationError,
+        bool IsFromDateValidationErrorVisible,
+        string ToDateValidationError,
+        bool IsToDateValidationErrorVisible);
 }

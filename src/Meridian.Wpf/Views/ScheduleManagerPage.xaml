@@ -29,12 +29,14 @@
                     <DockPanel Margin="0,0,0,12">
                         <TextBlock Text="Backfill Schedules" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
-                                Click="RefreshBackfillSchedules_Click" HorizontalAlignment="Right"
+                                AutomationProperties.AutomationId="ScheduleManagerRefreshBackfillButton"
+                                Command="{Binding RefreshBackfillSchedulesCommand}"
+                                HorizontalAlignment="Right"
                                 Padding="12,6" />
                     </DockPanel>
-                    <TextBlock x:Name="BackfillSchedulesStatus" Text="Loading schedules..."
+                    <TextBlock x:Name="BackfillSchedulesStatus" Text="{Binding BackfillSchedulesStatus}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
-                    <ItemsControl x:Name="BackfillSchedulesList">
+                    <ItemsControl x:Name="BackfillSchedulesList" ItemsSource="{Binding BackfillSchedules}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="0,0,0,1"
@@ -85,12 +87,14 @@
                     <DockPanel Margin="0,0,0,12">
                         <TextBlock Text="Maintenance Schedules" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
-                                Click="RefreshMaintenanceSchedules_Click" HorizontalAlignment="Right"
+                                AutomationProperties.AutomationId="ScheduleManagerRefreshMaintenanceButton"
+                                Command="{Binding RefreshMaintenanceSchedulesCommand}"
+                                HorizontalAlignment="Right"
                                 Padding="12,6" />
                     </DockPanel>
-                    <TextBlock x:Name="MaintenanceSchedulesStatus" Text="Loading schedules..."
+                    <TextBlock x:Name="MaintenanceSchedulesStatus" Text="{Binding MaintenanceSchedulesStatus}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
-                    <ItemsControl x:Name="MaintenanceSchedulesList">
+                    <ItemsControl x:Name="MaintenanceSchedulesList" ItemsSource="{Binding MaintenanceSchedules}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="0,0,0,1"
@@ -138,10 +142,17 @@
             <!-- Schedule Templates -->
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="Schedule Templates" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock x:Name="TemplatesStatus" Text="Loading templates..."
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="Schedule Templates" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
+                        <Button Content="Refresh" Style="{StaticResource SecondaryButtonStyle}"
+                                AutomationProperties.AutomationId="ScheduleManagerRefreshTemplatesButton"
+                                Command="{Binding RefreshTemplatesCommand}"
+                                HorizontalAlignment="Right"
+                                Padding="12,6" />
+                    </DockPanel>
+                    <TextBlock x:Name="TemplatesStatus" Text="{Binding TemplatesStatus}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
-                    <ItemsControl x:Name="TemplatesList">
+                    <ItemsControl x:Name="TemplatesList" ItemsSource="{Binding ScheduleTemplates}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="0,0,0,1"
@@ -168,13 +179,32 @@
                     <TextBlock Text="Cron Expression Validator" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <DockPanel Margin="0,0,0,8">
                         <Button Content="Validate" Style="{StaticResource PrimaryButtonStyle}"
-                                Click="ValidateCron_Click" DockPanel.Dock="Right" Padding="12,6" Margin="8,0,0,0" />
-                        <TextBox x:Name="CronExpressionInput" Text="0 0 * * 1-5"
+                                AutomationProperties.AutomationId="ScheduleManagerValidateCronButton"
+                                Command="{Binding ValidateCronCommand}"
+                                DockPanel.Dock="Right" Padding="12,6" Margin="8,0,0,0" />
+                        <TextBox x:Name="CronExpressionInput"
+                                 Text="{Binding CronExpression, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FormTextBoxStyle}"
                                  Padding="8,6" FontFamily="Consolas" />
                     </DockPanel>
-                    <TextBlock x:Name="CronValidationResult" Text=""
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="CronValidationResult" Text="{Binding CronValidationText}" TextWrapping="Wrap">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CronValidationTone}" Value="Success">
+                                        <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding CronValidationTone}" Value="Warning">
+                                        <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding CronValidationTone}" Value="Error">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </Border>
         </StackPanel>

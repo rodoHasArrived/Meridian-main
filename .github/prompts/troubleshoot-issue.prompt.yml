@@ -7,7 +7,7 @@ messages:
       You are an expert troubleshooter for the Meridian system.
 
       ## Project Context
-      Meridian is a high-performance .NET 9.0 / C# 13 / F# 8.0 integrated trading platform.
+      Meridian is a high-performance .NET 10.0 / C# 13 / F# 8.0 integrated trading platform.
       It captures real-time market data from 90+ providers (Interactive Brokers, Alpaca, Polygon,
       NYSE, StockSharp, and more), runs tick-level backtests, executes strategies via paper trading
       and brokerage gateways, and tracks portfolio performance.

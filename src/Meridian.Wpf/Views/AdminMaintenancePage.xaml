@@ -182,6 +182,33 @@
                                       Foreground="{StaticResource ConsoleTextBrush}" />
                         </StackPanel>
 
+                        <Border AutomationProperties.AutomationId="AdminMaintenanceScheduleReadiness"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock AutomationProperties.AutomationId="AdminMaintenanceScheduleReadinessTitle"
+                                           Text="{Binding ScheduleReadinessTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextBrush}" />
+                                <TextBlock AutomationProperties.AutomationId="AdminMaintenanceScheduleReadinessDetail"
+                                           Text="{Binding ScheduleReadinessDetail}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           FontSize="12"
+                                           Margin="0,4,0,0" />
+                                <TextBlock AutomationProperties.AutomationId="AdminMaintenanceScheduleOperationSummary"
+                                           Text="{Binding ScheduleOperationSummary}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           FontSize="11"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+
                         <Border Background="{StaticResource ConsoleBackgroundBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="Next Run" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
@@ -191,7 +218,10 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Content="Save Schedule" Click="SaveSchedule_Click" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="Save Schedule"
+                                Command="{Binding SaveScheduleCommand}"
+                                AutomationProperties.AutomationId="AdminMaintenanceSaveScheduleButton"
+                                Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </Border>
 
@@ -319,9 +349,57 @@
                     <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                         <Button Content="Apply Retention Policies" Click="ApplyRetention_Click"
                                 Style="{StaticResource AccentButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Preview Cleanup" Click="PreviewCleanup_Click" Style="{StaticResource ConsoleButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
+            </Border>
+
+            <!-- Cleanup Readiness -->
+            <Border x:Name="CleanupReadinessCard"
+                    Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,16"
+                    AutomationProperties.Name="Admin maintenance cleanup readiness">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="&#xE74D;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       FontSize="20"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CleanupReadinessTitle}"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding CleanupReadinessDetail}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{Binding CleanupReadinessScope}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   FontSize="11" />
+                        <ProgressBar Height="4"
+                                     Margin="0,12,0,0"
+                                     IsIndeterminate="True"
+                                     Visibility="{Binding IsCleanupBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="24,0,0,0">
+                        <Button Content="Preview Cleanup"
+                                Command="{Binding PreviewCleanupCommand}"
+                                Style="{StaticResource ConsoleButtonStyle}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Execute Cleanup"
+                                Command="{Binding RequestExecuteCleanupCommand}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <!-- Cleanup Preview / Results -->
@@ -354,9 +432,45 @@
                             <TextBlock Text="Space to free" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
                         </StackPanel>
 
-                        <Button Grid.Column="3" Content="Execute Cleanup" Click="ExecuteCleanup_Click"
+                        <Button Grid.Column="3" Content="Execute Cleanup"
+                                Command="{Binding RequestExecuteCleanupCommand}"
                                 Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center" />
                     </Grid>
+
+                    <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,0,0,16"
+                            Visibility="{Binding IsCleanupConfirmationVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.Name="Confirm admin cleanup execution">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Confirm cleanup execution"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextBrush}" />
+                                <TextBlock Text="The staged files will be permanently deleted. Cancel and review the list if anything looks unexpected."
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="20,0,0,0">
+                                <Button Content="Cancel"
+                                        Command="{Binding CancelExecuteCleanupCommand}"
+                                        Style="{StaticResource ConsoleButtonStyle}"
+                                        Margin="0,0,8,0" />
+                                <Button Content="Confirm Delete"
+                                        Command="{Binding ConfirmExecuteCleanupCommand}"
+                                        Style="{StaticResource AccentButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
                     <ListView x:Name="CleanupFilesList" ItemsSource="{Binding CleanupItems}" MaxHeight="200" Background="Transparent"
                               BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">

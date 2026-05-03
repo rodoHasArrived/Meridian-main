@@ -1,0 +1,177 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildOverviewActivityRows,
+  buildOverviewStatusBanner,
+  buildOverviewStatusState,
+  buildOverviewWorkspaceLinks
+} from "@/screens/overview-screen.view-model";
+import type { SystemOverviewResponse } from "@/types";
+
+const overview: SystemOverviewResponse = {
+  systemStatus: "Degraded",
+  providersOnline: 2,
+  providersTotal: 4,
+  activeRuns: 3,
+  openPositions: 5,
+  activeBackfills: 1,
+  symbolsMonitored: 42,
+  storageHealth: "Warning",
+  lastHeartbeatUtc: "2026-04-28T18:15:00Z",
+  metrics: [],
+  recentEvents: []
+};
+
+describe("overview-screen view model", () => {
+  it("derives status, fallback stats, and empty activity copy", () => {
+    const state = buildOverviewStatusState({
+      current: overview,
+      refreshing: false,
+      refreshError: null,
+      refreshedAt: null
+    });
+
+    expect(state.statusLabel).toBe("System Degraded");
+    expect(state.statusBanner.role).toBe("alert");
+    expect(state.statusBanner.ariaLive).toBe("assertive");
+    expect(state.statusBanner.titleId).toBe("overview-status-title");
+    expect(state.statusBanner.detailId).toBe("overview-status-detail");
+    expect(state.statusBanner.ariaLabel).toContain("System Degraded");
+    expect(state.statusBanner.detailText).toContain("2 of 4 providers online");
+    expect(state.providerSummary).toBe("2 of 4 providers online");
+    expect(state.storageLabel).toBe("Warning");
+    expect(state.hasMetrics).toBe(false);
+    expect(state.hasEvents).toBe(false);
+    expect(state.activityEmptyText).toBe("No recent events.");
+    expect(state.activityRows).toEqual([]);
+    expect(state.fallbackStats).toContainEqual({
+      id: "providers",
+      label: "Providers Online",
+      value: "2 / 4",
+      tone: "warning"
+    });
+    expect(state.fallbackStats).toContainEqual({
+      id: "backfills",
+      label: "Active Backfills",
+      value: "1",
+      tone: "warning"
+    });
+    expect(state.workspaceSummary).toBe("7 canonical operator routes. Legacy routes redirect to their canonical workspaces.");
+    expect(state.workspaceLinks.map((workspace) => workspace.label)).toEqual([
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ]);
+  });
+
+  it("surfaces refresh failures while keeping stale data available", () => {
+    const state = buildOverviewStatusState({
+      current: overview,
+      refreshing: false,
+      refreshError: "Provider offline",
+      refreshedAt: null
+    });
+
+    expect(state.current).toBe(overview);
+    expect(state.refreshErrorText).toBe("Refresh failed: Provider offline. Showing the last known status.");
+    expect(state.refreshAnnouncement).toBe(state.refreshErrorText);
+    expect(state.statusBanner.role).toBe("alert");
+    expect(state.statusBanner.ariaLabel).toContain("Refresh failed: Provider offline");
+    expect(state.refreshButtonLabel).toBe("Refresh");
+  });
+
+  it("announces active refresh state", () => {
+    const state = buildOverviewStatusState({
+      current: null,
+      refreshing: true,
+      refreshError: null,
+      refreshedAt: null
+    });
+
+    expect(state.statusLabel).toBe("Connecting to system...");
+    expect(state.statusBanner.role).toBe("status");
+    expect(state.statusBanner.ariaLive).toBe("polite");
+    expect(state.statusBanner.detailText).toBe("Waiting for the workstation status payload.");
+    expect(state.refreshButtonLabel).toBe("Refreshing...");
+    expect(state.refreshAriaLabel).toBe("Refreshing system status");
+    expect(state.refreshAnnouncement).toBe("Refreshing system status.");
+    expect(state.activityEmptyText).toBe("Loading activity feed...");
+  });
+
+  it("builds canonical workspace links instead of legacy overview cards", () => {
+    const links = buildOverviewWorkspaceLinks();
+
+    expect(links).toHaveLength(7);
+    expect(links.map((link) => link.href)).toEqual([
+      "/trading",
+      "/portfolio",
+      "/accounting",
+      "/reporting",
+      "/strategy",
+      "/data",
+      "/settings"
+    ]);
+    expect(links.some((link) => link.label === "Research")).toBe(false);
+    expect(links.some((link) => link.href === "/data-operations")).toBe(false);
+    expect(links.find((link) => link.id === "trading")?.badgeVariant).toBe("warning");
+    expect(links.find((link) => link.id === "strategy")?.badgeVariant).toBe("paper");
+    expect(links.find((link) => link.id === "data")?.badgeVariant).toBe("live");
+    expect(links[0].ariaLabel).toContain("Open Trading workspace");
+  });
+
+  it("derives activity row status, fallback timestamps, and accessible summaries", () => {
+    const rows = buildOverviewActivityRows([
+      {
+        id: "evt-1",
+        type: "warning",
+        message: "Brokerage sync delayed.",
+        source: "Provider health",
+        timestamp: "not-a-date"
+      },
+      {
+        id: "evt-2",
+        type: "error",
+        message: "Storage verification failed.",
+        source: " ",
+        timestamp: "2026-04-28T18:15:00Z"
+      }
+    ]);
+
+    expect(rows[0]).toMatchObject({
+      id: "evt-1",
+      typeLabel: "Warning",
+      statusCode: "OBS",
+      badgeVariant: "warning",
+      tone: "warning",
+      source: "Provider health",
+      timestampLabel: "Unavailable"
+    });
+    expect(rows[0].ariaLabel).toBe("Warning event from Provider health at Unavailable: Brokerage sync delayed.");
+    expect(rows[1]).toMatchObject({
+      typeLabel: "Error",
+      statusCode: "ERR",
+      badgeVariant: "danger",
+      tone: "danger",
+      source: "Unknown source"
+    });
+  });
+
+  it("derives healthy status banner semantics as a polite status region", () => {
+    const healthy = buildOverviewStatusBanner({
+      current: { ...overview, systemStatus: "Healthy", storageHealth: "Healthy", providersOnline: 4 },
+      statusLabel: "All Systems Healthy",
+      providerSummary: "4 of 4 providers online",
+      storageLabel: "Healthy",
+      lastHeartbeatLabel: "10:15 AM",
+      refreshErrorText: null
+    });
+
+    expect(healthy.role).toBe("status");
+    expect(healthy.ariaLive).toBe("polite");
+    expect(healthy.detailText).toBe("4 of 4 providers online. Storage Healthy. Last heartbeat 10:15 AM.");
+    expect(healthy.ariaLabel).toContain("All Systems Healthy");
+  });
+});

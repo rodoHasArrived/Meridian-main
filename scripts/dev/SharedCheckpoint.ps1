@@ -1,5 +1,24 @@
 Set-StrictMode -Version Latest
 
+function Test-MeridianDictionaryContainsKey {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$Dictionary,
+        [Parameter(Mandatory = $true)]
+        [string]$Key
+    )
+
+    if ($Dictionary -is [System.Collections.IDictionary]) {
+        return $Dictionary.Contains($Key)
+    }
+
+    if ($Dictionary.PSObject.Methods.Name -contains 'ContainsKey') {
+        return $Dictionary.ContainsKey($Key)
+    }
+
+    return $false
+}
+
 function Get-MeridianCheckpointInputHash {
     param(
         [Parameter(Mandatory = $true)]
@@ -55,18 +74,18 @@ function Initialize-MeridianCheckpoint {
     }
 
     if ($null -ne $existing) {
-        $existingHash = if ($existing.ContainsKey('inputHash')) { [string]$existing.inputHash } else { '' }
+        $existingHash = if (Test-MeridianDictionaryContainsKey -Dictionary $existing -Key 'inputHash') { [string]$existing.inputHash } else { '' }
         if (-not [string]::Equals($existingHash, $inputHash, [System.StringComparison]::OrdinalIgnoreCase) -and -not $AllowInputMismatch) {
             throw "Checkpoint input hash mismatch for '$Workflow'. Existing: $existingHash, current: $inputHash. Re-run with -AllowCheckpointInputMismatch to override."
         }
     }
 
     $data = [ordered]@{
-        runId = if ($null -ne $existing -and $existing.ContainsKey('runId')) { [string]$existing.runId } else { [guid]::NewGuid().ToString('n') }
+        runId = if ($null -ne $existing -and (Test-MeridianDictionaryContainsKey -Dictionary $existing -Key 'runId')) { [string]$existing.runId } else { [guid]::NewGuid().ToString('n') }
         inputHash = $inputHash
         inputSnapshot = $InputObject
-        metadata = if ($null -ne $existing -and $existing.ContainsKey('metadata')) { [hashtable]$existing.metadata } else { [ordered]@{} }
-        steps = if ($null -ne $existing -and $existing.ContainsKey('steps')) { [hashtable]$existing.steps } else { [ordered]@{} }
+        metadata = if ($null -ne $existing -and (Test-MeridianDictionaryContainsKey -Dictionary $existing -Key 'metadata')) { $existing.metadata } else { [ordered]@{} }
+        steps = if ($null -ne $existing -and (Test-MeridianDictionaryContainsKey -Dictionary $existing -Key 'steps')) { $existing.steps } else { [ordered]@{} }
     }
 
     $context = [pscustomobject]@{
@@ -90,7 +109,7 @@ function Test-MeridianCheckpointStepShouldRun {
         return $true
     }
 
-    if (-not $Context.Data.steps.ContainsKey($StepId)) {
+    if (-not (Test-MeridianDictionaryContainsKey -Dictionary $Context.Data.steps -Key $StepId)) {
         return $true
     }
 
@@ -122,7 +141,7 @@ function Complete-MeridianCheckpointStep {
         [object[]]$ArtifactPointers = @()
     )
 
-    if (-not $Context.Data.steps.ContainsKey($StepId)) {
+    if (-not (Test-MeridianDictionaryContainsKey -Dictionary $Context.Data.steps -Key $StepId)) {
         throw "Cannot complete checkpoint step '$StepId' because it was not started."
     }
 
@@ -148,4 +167,3 @@ function Fail-MeridianCheckpointStep {
     }
     Save-MeridianCheckpointContext -Context $Context
 }
-

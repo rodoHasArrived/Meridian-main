@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Meridian brand mark</title>
+  <desc id="desc">A meridian glyph: vertical axis bisecting a celestial circle, with a cyan latitude tick.</desc>
+
+  
+  <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"></circle>
+
+  
+  <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+
+  
+  <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+
+  
+  <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10" stroke-linecap="square"></line>
+
+  
+  <circle cx="128" cy="128" r="8" fill="#2AB2D4"></circle>
+</svg>

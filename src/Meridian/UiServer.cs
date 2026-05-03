@@ -18,6 +18,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -111,6 +112,8 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ => new JsonlReconciliationGovernanceAuditStore(Path.Combine("artifacts", "reconciliation", "governance-audit.jsonl")));
+        builder.Services.AddSingleton<ReconciliationGovernanceService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<StrategyRunContinuityService>();
         builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
@@ -119,6 +122,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<Dk1TrustGateReadinessService>();
         builder.Services.AddSingleton<TradingOperatorReadinessService>();
         builder.Services.AddSingleton<StrategyRunReviewPacketService>();
+        builder.Services.AddWorkflowLibrary();
         builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         // Durable promotion-record store is required by PromotionService; without it

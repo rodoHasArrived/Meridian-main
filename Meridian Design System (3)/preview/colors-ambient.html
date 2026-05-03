@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Ambient background</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 0; height: 100vh; color: var(--fg); position: relative; overflow: hidden; }
+  .meta { position: absolute; inset: 16px; display: flex; align-items: flex-end; justify-content: space-between; font-family: var(--font-sans); }
+  .meta .t { font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+  .meta .h { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); }
+</style>
+</head>
+<body class="bg-app">
+  <div class="meta">
+    <div>
+      <div class="t" style="color: var(--fg-muted);">ambient glows</div>
+      <div class="h">4 × radial-gradient + linear-gradient base</div>
+    </div>
+    <div class="h" style="text-align:right;">
+      10% · 0% — cyan #2AB2D4 @20%<br>
+      88% · 8% — blue #60A5FA @14%<br>
+      92% · 88% — amber #D69E38 @12%<br>
+      4% · 90% — mint #34D399 @8%
+    </div>
+  </div>
+</body>
+</html>

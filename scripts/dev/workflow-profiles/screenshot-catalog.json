@@ -1,0 +1,26 @@
+{
+  "build": {
+    "mode": "Release",
+    "projectPath": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+    "configuration": "Release",
+    "framework": "net9.0-windows10.0.19041.0",
+    "exeName": "Meridian.Desktop.exe"
+  },
+  "fixture": {
+    "required": true
+  },
+  "host": {
+    "baseUrl": "http://localhost:8080",
+    "healthPath": "/healthz",
+    "startupTimeoutSec": 30,
+    "mode": "desktop",
+    "port": 8080
+  },
+  "screenshots": {
+    "outputRoot": "docs/screenshots/desktop",
+    "retention": {
+      "maxAgeDays": 14,
+      "retainLatest": 10
+    }
+  }
+}

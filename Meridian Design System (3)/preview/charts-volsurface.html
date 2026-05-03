@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Charts: Volatility surface</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
+  .card { background: #0B1520; border: 1px solid #2A4566; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2A4566; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .title b { color: #FFF; margin-right: 10px; }
+  .scale { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; }
+  .scale .bar { display: inline-block; width: 140px; height: 6px; background: linear-gradient(90deg, #1F344C 0%, #2AB2D4 40%, #E6A93C 75%, #DE5878 100%); border-radius: 1px; }
+  .wrap { display: grid; grid-template-columns: 60px 1fr; gap: 8px; }
+  .ylabels { display: grid; grid-template-rows: repeat(7, 1fr); font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-align: right; padding-right: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(7, 32px); gap: 2px; }
+  .cell { border-radius: 2px; font-family: var(--font-mono); font-size: 10px; color: #FFF; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+  .xlabels { display: grid; grid-template-columns: 60px 1fr; margin-top: 6px; }
+  .xl { display: grid; grid-template-columns: repeat(9, 1fr); font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-align: center; }
+  .axistitle { font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-transform: uppercase; letter-spacing: 0.12em; text-align: center; margin-top: 4px; }
+</style>
+</head>
+<body class="bg-app">
+<div class="card">
+  <div class="head">
+    <div class="title"><b>VOLATILITY SURFACE</b>SPX · ATM skew · today</div>
+    <div class="scale"><span>12</span><span class="bar"></span><span>48</span></div>
+  </div>
+  <div class="wrap">
+    <div class="ylabels">
+      <div>2Y</div><div>1Y</div><div>6M</div><div>3M</div><div>1M</div><div>2W</div><div>1W</div>
+    </div>
+    <div class="grid" id="surf"></div>
+  </div>
+  <div class="xlabels">
+    <div></div>
+    <div class="xl">
+      <div>80</div><div>85</div><div>90</div><div>95</div><div>100</div><div>105</div><div>110</div><div>115</div><div>120</div>
+    </div>
+  </div>
+  <div class="axistitle">Strike (% of spot)   ·   y: tenor</div>
+</div>
+<script>
+  // rows top→bot: tenors 2Y..1W (7). cols: strikes 80..120 (9)
+  // surface: put wing high, skew, term structure rising slightly at short end
+  const surface = [
+    [22,20,18,17,16,16,17,18,19],   // 2Y
+    [24,22,19,17,16,16,17,19,21],   // 1Y
+    [26,24,20,17,15,15,17,20,23],   // 6M
+    [29,26,22,18,15,14,16,21,25],   // 3M
+    [33,29,24,19,15,13,16,22,28],   // 1M
+    [37,32,26,20,15,13,17,24,32],   // 2W
+    [42,36,28,21,15,13,18,27,36],   // 1W
+  ];
+  const g = document.getElementById('surf');
+  function color(v){
+    const t = Math.max(0, Math.min(1, (v - 12) / (48 - 12)));
+    // 0=slate, 0.4=cyan, 0.75=amber, 1=rose
+    let r,gg,b;
+    if (t < 0.4){
+      const k = t/0.4;
+      r = 31 + (42-31)*k; gg = 52 + (178-52)*k; b = 76 + (212-76)*k;
+    } else if (t < 0.75){
+      const k = (t-0.4)/0.35;
+      r = 42 + (230-42)*k; gg = 178 + (169-178)*k; b = 212 + (60-212)*k;
+    } else {
+      const k = (t-0.75)/0.25;
+      r = 230 + (222-230)*k; gg = 169 + (88-169)*k; b = 60 + (120-60)*k;
+    }
+    return `rgb(${r|0},${gg|0},${b|0})`;
+  }
+  surface.forEach(row => {
+    row.forEach(v => {
+      const d = document.createElement('div');
+      d.className = 'cell';
+      d.style.background = color(v);
+      d.textContent = v;
+      g.appendChild(d);
+    });
+  });
+</script>
+</body>
+</html>

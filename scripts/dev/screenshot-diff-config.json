@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "default": {
+    "reviewNeededThreshold": 0.004,
+    "blockingThreshold": 0.02,
+    "pixelChannelTolerance": 12,
+    "masks": []
+  },
+  "images": {
+    "01-trading-workspace-overview.png": {
+      "reviewNeededThreshold": 0.003,
+      "blockingThreshold": 0.015,
+      "masks": [
+        {
+          "x": 1530,
+          "y": 18,
+          "width": 360,
+          "height": 90,
+          "reason": "Clock/status micro-variance"
+        }
+      ]
+    },
+    "02-research-workspace-overview.png": {
+      "reviewNeededThreshold": 0.003,
+      "blockingThreshold": 0.015,
+      "masks": [
+        {
+          "x": 1530,
+          "y": 18,
+          "width": 360,
+          "height": 90,
+          "reason": "Clock/status micro-variance"
+        }
+      ]
+    }
+  }
+}

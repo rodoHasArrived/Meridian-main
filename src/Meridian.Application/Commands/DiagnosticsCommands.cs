@@ -8,7 +8,7 @@ namespace Meridian.Application.Commands;
 
 /// <summary>
 /// Handles diagnostics-related CLI commands:
-/// --quick-check, --test-connectivity, --error-codes, --show-config, --validate-credentials
+/// --diagnostics, --quick-check, --test-connectivity, --error-codes, --show-config, --validate-credentials
 /// </summary>
 internal sealed class DiagnosticsCommands : ICliCommand
 {
@@ -27,7 +27,8 @@ internal sealed class DiagnosticsCommands : ICliCommand
 
     public bool CanHandle(string[] args)
     {
-        return CliArguments.HasFlag(args, "--quick-check") ||
+        return CliArguments.HasFlag(args, "--diagnostics") ||
+            CliArguments.HasFlag(args, "--quick-check") ||
             CliArguments.HasFlag(args, "--test-connectivity") ||
             CliArguments.HasFlag(args, "--error-codes") ||
             CliArguments.HasFlag(args, "--show-config") ||
@@ -36,6 +37,16 @@ internal sealed class DiagnosticsCommands : ICliCommand
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
+        if (CliArguments.HasFlag(args, "--diagnostics"))
+        {
+            _log.Information("Running configuration diagnostics...");
+            _configService.DisplayConfigSummary(_cfg, _cfgPath, args);
+            var result = _configService.PerformQuickCheck(_cfg);
+            var summary = new StartupSummary();
+            summary.DisplayQuickCheck(result);
+            return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
+        }
+
         if (CliArguments.HasFlag(args, "--quick-check"))
         {
             _log.Information("Running quick configuration check...");

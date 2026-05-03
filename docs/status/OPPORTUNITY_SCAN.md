@@ -1,31 +1,103 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-04-28
-**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, route-aware account-scoped WPF shell queue-button consumption of operator-inbox and run review-packet work items with shell-context attention cues, and current WPF shell baseline including canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, demo-data fixture semantics, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Trading shared-work-item attention handling, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage/export/clear actions, Watchlist posture and pinned-first staging, Messaging Hub delivery posture with refresh recency, StrategyRuns filter recovery, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts operator and balance-evidence briefing, desktop workflow automation hardening, and scheduled/manual WPF screenshot evidence capture
+**Last Updated:** 2026-04-29
+**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active web dashboard lane, the web Research run-library support slice, route-aware account-scoped retained WPF shell queue-button consumption of operator-inbox and run review-packet work items with shell-context attention cues, retained WPF shell support evidence, desktop workflow automation hardening, and scheduled/manual WPF screenshot evidence capture
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
-Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
+Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
+
+Use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) as the golden-path productization filter for deciding whether a new opportunity strengthens the active pilot lifecycle or distracts from it.
+
+Archived or deprecated planning files should not be used as active opportunity sources unless a current roadmap document explicitly promotes one of their ideas back into the Wave 2-4 path.
 
 ---
 
 ## Snapshot
 
-Meridian's best opportunities are no longer broad platform-build items. The repo already shows a strong ingestion, storage, replay, export, execution, workstation, and Security Master baseline, plus concrete shared run, portfolio, ledger, and promotion seams. The highest-value opportunities now are the ones that remove trust ambiguity, harden operator workflows already in code, and keep the desktop shell consolidation tied to the same shared workflow model instead of drifting into a parallel UX program.
+Meridian's best opportunities are no longer broad platform-build items. The repo already shows a strong ingestion, storage, replay, export, execution, workstation, and Security Master baseline, plus concrete shared run, portfolio, ledger, and promotion seams. The highest-value opportunities now are the ones that remove trust ambiguity, harden operator workflows already in code, move new operator UI evidence through the active web dashboard, and keep retained desktop shell support tied to the same shared workflow model instead of drifting into a parallel UX program.
 
 The current planning set is also more mature than the prior April 8 scan. As of 2026-04-28:
 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
 - the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
 - the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script, a 2026-04-27 parity packet with all pilot samples ready and evidence documents validated, and a packet-bound sign-off file signed by Data Operations, Provider Reliability, and Trading; future reviews still need fresh date-stamped packets and matching sign-off if evidence changes
-- the feature inventory and implementation anchors show that shell-first WPF consolidation, the Trading desk briefing hero with stale-replay count detail, Position Blotter selection review/action readiness, Trading Hours live-risk/pre-market/after-hours/closed-planning briefing states, OrderBook order-flow posture, the Research desk briefing hero, Data Operations briefing state, Storage archive growth/capacity/last-scan posture, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage with export/clear command state, Watchlist posture plus pinned-first staging, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery and run-scope presentation, BatchBacktest results empty guidance, QuantScript local execution-history presentation with Research handoffs for mirrored runs, stable route-aware run review-packet work items, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing, shared workstation endpoints, canonical `ResearchShell` launch/deep-link handling, fixture/demo-mode cues, UI-automation page-state markers, corrected isolated desktop restore/build behavior, local single-instance mutex and launch-argument forwarding coverage, the Wave 2 trading-readiness contract with stable operator work-item IDs, the initial operator-inbox endpoint for readiness, actionable latest-run review-packet, and reconciliation work items, route-aware WPF shell queue-button consumption of the primary operator work item with active-account `fundAccountId` propagation and shell-context attention cues including brokerage-sync routes into Account Portfolio, risk/control audit explainability projection, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
+- the feature inventory and implementation anchors show that the active web dashboard now has a Research run library with retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, focused tests, and refreshed built workstation assets. Retained WPF consolidation, the Trading desk briefing hero with stale-replay count detail, Position Blotter selection review/action readiness, Trading Hours live-risk/pre-market/after-hours/closed-planning briefing states, OrderBook order-flow posture, the Research desk briefing hero, Data Operations briefing state, Storage archive growth/capacity/last-scan posture, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage with export/clear command state, Watchlist posture plus pinned-first staging, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery and run-scope presentation, BatchBacktest results empty guidance, QuantScript local execution-history presentation with Research handoffs for mirrored runs, stable route-aware run review-packet work items, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing, shared workstation endpoints, canonical `ResearchShell` launch/deep-link handling, fixture/demo-mode cues, UI-automation page-state markers, corrected isolated desktop restore/build behavior, local single-instance mutex and launch-argument forwarding coverage, the Wave 2 trading-readiness contract with stable operator work-item IDs, the initial operator-inbox endpoint for readiness, actionable latest-run review-packet, and reconciliation work items, route-aware WPF shell queue-button consumption of the primary operator work item with active-account `fundAccountId` propagation and shell-context attention cues including brokerage-sync routes into Account Portfolio, risk/control audit explainability projection, DK1 trust-gate readiness projection, canonical promotion approval-checklist state, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 - the screenshot-refresh lane now supports scheduled/push/manual WPF catalog and manual captures with least-privilege default permissions, per-workflow diagnostics, and a single final screenshot commit job; the generated documentation health dashboard reports 89/100 and generated coverage reports 88.3% documented items, with endpoint/configuration docs still the practical cleanup opportunity
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
 
 ---
 
+## Commercial Viability Ranking
+
+This ranking is a product-positioning overlay, not a completion claim. It names the most sellable additions and places them inside the existing Waves 2-4 path.
+
+| Rank | Addition | Commercial fit | Current repo posture | Placement |
+| ---: | --- | --- | --- | --- |
+| 1 | Run Evidence Graph | Very high | Planned; support evidence exists through provider packets, shared run continuity, promotion checklist state, paper replay metadata, reconciliation work items, and report-pack references | Wave 3 backbone |
+| 2 | Governed Report Pack Studio | Very high | Partial support evidence through governed report-pack schema/version checks and retained reporting/export seams | Wave 4 |
+| 3 | Reconciliation Casework Module | Very high | Early in progress through file-backed reconciliation break queues, seeded owner/tolerance/sign-off metadata, audit history, and calibration-summary rollups | Wave 4 |
+| 4 | Accounting-Grade Paper Trading | High | Partial support evidence through paper sessions, fills/orders, replay audit metadata, ledger count checks, and readiness gates; paper books/trial balance views remain open | Wave 2 into Wave 3 |
+| 5 | Operator Readiness Console | High | Partial browser support evidence through the read-only `/trading/readiness` console and shared workstation readiness payloads | Wave 2 support surface |
+| 6 | Strategy / Promotion Passport | High | Partial support through `PromotionApprovalChecklist`; a canonical passport projection remains planned | Wave 2 into Wave 3 |
+| 7 | Data Trust Passport | High | Partial support through DK1 provider trust evidence, validation packets, and data-quality posture; dataset-level passport projection remains planned | Wave 1 maintenance into Wave 3 |
+| 8 | Shadow NAV / Shadow Books | High | Planned; ledger and reconciliation foundations exist, but shadow-book close workflow is not yet delivered | Wave 4 later slice |
+| 9 | Fund Close Checklist | High | Planned; account, ledger, reconciliation, and report-pack seams exist, but close workflow orchestration remains open | Wave 4 later slice |
+| 10 | Audit Trail Explorer | Medium-high | Partial evidence exists in audit trails and decision metadata; searchable cross-object explorer remains planned | Wave 4 support capability |
+| 11 | Portfolio Impact Simulator | Medium-high | Planned; portfolio/ledger/account posture seams exist, but pre-approval impact simulation remains open | After Wave 3 continuity |
+
+The most differentiated bundle is the **Meridian Assurance Loop**: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack.
+
+## Next Commercial Differentiation Layer
+
+This layer adds the accounting, close, controls, and demo packaging ideas that make the Assurance Loop easier to sell. It is still a planning overlay: new rows below are not implementation claims.
+
+| Priority | Addition | Commercial reason | Current repo posture | Placement |
+| ---: | --- | --- | --- | --- |
+| 1 | Insurance Investment Accounting Pack | Gives Meridian a specific buyer wedge around book value, market value, unrealized gain/loss, income accrual, classification, and impairment evidence | Planned; ledger, Security Master, portfolio, and reporting seams are prerequisites, not a delivered insurance pack | Wave 4 later slice |
+| 2 | Close the Books Workflow | Turns fund operations into a recurring month-end or quarter-end workflow with task status, owner, blocker, evidence, sign-off, and close package | Planned; reconciliation, ledger, cash-flow, trial-balance, and report-pack seams provide support evidence | Wave 4 later slice |
+| 3 | Run Evidence Graph | Remains the cross-module backbone for trusted data, run evidence, paper evidence, ledger/reconciliation, decisions, and report packs | Planned; support evidence exists, but the canonical graph remains open | Wave 3 backbone |
+| 4 | Investment Committee Packet Builder | Converts a strategy or portfolio change into a decision-ready packet that can be reviewed, approved, retained, and later audited | Planned; report-pack and promotion-checklist support evidence exists, but IC packet generation remains open | Wave 3 into Wave 4 |
+| 5 | Accounting-Grade Paper Trading | Extends paper trading from execution simulation into expected journal, cash, position, fee, trial-balance, and reconciliation impact | Partial support evidence through paper sessions, replay audit, readiness gates, and ledger count checks; paper books remain open | Wave 2 into Wave 3 |
+| 6 | Reconciliation Casework Module | Turns breaks into owned operational cases with severity, aging, tolerance, evidence, comments, decisions, and sign-off | Early in progress through file-backed break queues, metadata, audit history, and calibration rollups | Wave 4 |
+| 7 | Evidence Completeness Score | Makes readiness visible across runs, promotions, paper sessions, reconciliation cases, and report-pack previews | Planned; should start with shared `EvidenceCompletenessSummary` before UI expansion | Wave 3 into Wave 4 |
+| 8 | Controls-as-Code | Lets firms express promotion, reconciliation, reporting, materiality, and approval policies as configurable controls | Planned; existing readiness and approval checks are inputs, not a policy engine | Wave 4 support capability |
+| 9 | Shadow Books / Shadow NAV | Lets Meridian compare internal books against external accounting, custodian, or fund-admin records | Planned on top of ledger, reconciliation, statement import, and close workflows | Wave 4 later slice |
+| 10 | Buyer Demo Mode | Makes the browser dashboard commercially demonstrable with seeded funds, accounts, strategies, paper sessions, breaks, approvals, and report packs | Planned; fixture/demo-mode cues exist, but buyer demo packs and role-based views are open | Web dashboard support track |
+
+Evidence-backed narrative and client-ready commentary ideas remain a future parking-lot concept. They should not be ranked as active modules until the evidence graph, passport, reconciliation, and governed report-pack structures are stable enough to ground every sentence in Meridian evidence.
+
+## Additional Commercial Differentiators
+
+These ideas extend the accounting-led layer into marketable offers. They should remain planned or partial-support items until shared contracts, retained evidence, and browser-visible workflows exist.
+
+| Priority | Addition | Commercial reason | Current repo posture | Placement |
+| ---: | --- | --- | --- | --- |
+| 1 | Shadow Books | Clear recurring accounting pain; lets Meridian run beside external administrators, brokers, or custodians and explain differences | Planned on top of ledger, reconciliation, statement import, and close workflow support | Wave 4 later slice |
+| 2 | Report Line Provenance | Strong audit/accounting differentiator: every report number should link back to source run/session, ledger entries, reconciliation state, assumptions, and approvals | Planned; report-pack schema/version checks are inputs, not clickable provenance | Wave 4 |
+| 3 | Strategy Passport / Proof of Strategy Certificate | Easy buyer story for governance: one strategy version can show identity, data trust, backtest, paper, replay, ledger, blockers, and approvals | Partial support through promotion checklist and review packets; certificate projection remains planned | Wave 2 into Wave 3 |
+| 4 | Close Readiness Score | Practical controller/operations surface for Security Master, position, cash, ledger, pricing, reconciliation, report, and approval readiness | Planned; close checklist and readiness scoring remain open | Wave 4 later slice |
+| 5 | Investment Committee Packet Builder | Demoable deliverable that converts strategy or portfolio decisions into retained approval packets | Planned; promotion/report-pack support evidence exists, but IC packet generation remains open | Wave 3 into Wave 4 |
+| 6 | Reconciliation Casework | Recurring operational workflow with owner, tolerance, aging, evidence, comment, decision, and sign-off history | Early in progress through file-backed break queues and calibration rollups | Wave 4 |
+| 7 | Data Trust Passport | Makes research, paper, and report claims credible by proving provider, dataset, freshness, coverage, mapping, and replay evidence | Partial support through DK1 and data-quality posture; dataset passport projection remains planned | Wave 1 maintenance into Wave 3 |
+| 8 | Evidence Vault | Enterprise credibility through durable run packets, report packs, approvals, screenshots, validation outputs, external statements, decisions, and certificates with lineage | Planned; artifact generation exists in several lanes, but a vault is not delivered | Wave 4 support capability |
+| 9 | Promotion Certificate | Simple artifact for non-technical buyers that says whether a run or strategy version is eligible for paper or live consideration | Planned; should build on Strategy Passport and Evidence Completeness Score | Wave 3 support capability |
+| 10 | Evidence-aware AI Summaries | Modern differentiator after evidence structures mature; every sentence must cite evidence objects and never invent readiness | Deferred; do not rank as active until graph, vault, provenance, permissions, and report-pack structures are stable | Later optional track |
+
+The stronger umbrella name for these concepts is **Meridian Evidence OS**. It should describe Meridian's product category, not imply a delivered operating-system layer.
+
+---
+
 ## Top Opportunities
+
+### 0. Make the Meridian Assurance Loop the release filter
+
+- **Category:** workflow completion
+- **Gap:** The active docs already agree that Meridian has broad foundations and now needs coherence, operator trust, and governance continuity. The missing product discipline is one end-to-end commercial scenario that every page, API, validation run, and report-pack output serves: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack.
+- **User or operator value:** Operators and reviewers get one explainable lifecycle from trusted data through research, paper operation, accounting review, reconciliation, and governed output.
+- **Dependency it unlocks:** Cleaner scope control across provider/broker work, web dashboard priorities, retained WPF surface decisions, generated readiness dashboards, evidence graph modeling, reconciliation casework, and report-pack productization.
+- **Placement:** Cross-wave release filter for Waves 2-4; it should shape the work below rather than become a separate wave.
 
 ### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
@@ -38,7 +110,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 2. Make the shared run / portfolio / ledger model feel like one cross-workspace product
 
 - **Category:** workflow completion
-- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo, the Research desk briefing hero now routes selected runs into run-detail, portfolio, and paper-promotion review handoffs, StrategyRuns now recovers when filters hide retained runs without reloading the run store, the run review packet now returns stable route-aware work items, and QuantScript now shows local execution history with Research handoffs when a mirrored run exists. The product experience built on top of these seams is still uneven across `Research`, `Trading`, `Data Operations`, and `Governance`.
+- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo. The web Research run library now exposes retained-run review, two-run compare/diff readiness, promotion-history loading, and command-error alerts; the retained Research/Strategy desk briefing hero routes selected runs into run-detail, portfolio, and paper-promotion review handoffs; StrategyRuns now recovers when filters hide retained runs without reloading the run store; the run review packet now returns stable route-aware work items; and QuantScript now shows local execution history with Research/Strategy handoffs when a mirrored run exists. The product experience built on top of these seams is still uneven across the visible `Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting` path.
 - **Current support evidence:** RunCashFlow now explains selected-run, missing-run, no-event, and loaded cash-flow states from retained run summaries, so the cash-flow drill-in is no longer a blank grid when evidence is absent.
 - **User or operator value:** A single run-centered model makes attribution, fills, positions, ledger, cash-flow, and reconciliation easier to follow and trust.
 - **Dependency it unlocks:** Cleaner workstation continuity, less duplicated orchestration, and a more stable base for both WPF shell consolidation and governance productization.

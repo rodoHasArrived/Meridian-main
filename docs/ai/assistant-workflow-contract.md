@@ -17,7 +17,7 @@ The current repository evidence supports these AI surfaces:
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
 | Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml` | Repo-local specialist skills, OpenAI/Codex metadata, and environment entrypoints |
-| Claude / Claude Code | `.claude/settings.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, and model selection |
+| Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/`, `.github/workflows/copilot-*` | Repository-wide coding-agent guidance, path instructions, agents, prompts, and setup workflows |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `src/Meridian.McpServer/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
 | AI automation workflows | `.github/workflows/prompt-generation.yml`, `.github/workflows/reusable-ai-analysis.yml`, `.github/workflows/skill-evals.yml`, `.github/workflows/documentation.yml` | CI-generated prompts, AI analysis, skill evaluation, and known-error intake |
@@ -40,9 +40,10 @@ Every assistant and automation should use the same high-level flow:
    and resources before broad recursive search.
 3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
-4. **Preserve architecture boundaries.** Follow the current desktop-first framing, the four root
-   workspaces (`Research`, `Trading`, `Data Operations`, `Governance`), and MVVM separation for
-   WPF changes.
+4. **Preserve architecture boundaries.** Follow the current browser-first operator UI framing,
+   keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
+   `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
+   WPF names as retained compatibility aliases rather than new root workspaces.
 5. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
 6. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
@@ -64,6 +65,8 @@ Every assistant and automation should use the same high-level flow:
   evidence that they are needed.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
+- Do not embed full repository trees in host-specific guidance. Link to
+  `docs/ai/generated/repo-navigation.*` or `docs/generated/repository-structure.md` instead.
 - Do not mix AI orchestration, tool logic, prompt management, or knowledge indexing into WPF views.
   Put that logic in services, agents, scripts, utilities, configuration, or documentation.
 - Respect existing worktree changes. Treat unrelated edits as user-owned unless explicitly told to
@@ -85,6 +88,7 @@ Every assistant and automation should use the same high-level flow:
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/`, `src/Meridian.McpServer/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `.github/workflows/prompt-generation.yml`, `.github/workflows/skill-evals.yml`, skill `evals/` folders | Generated prompt files and eval reports |
+| Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
 
 ---
 
@@ -99,11 +103,20 @@ Use this checklist when changing any AI-related asset:
 - [ ] Update only the provider-specific files that need host mechanics or discoverability links.
 - [ ] Keep shared project context mirrored between `.codex/skills/_shared/project-context.md` and
       `.claude/skills/_shared/project-context.md` when current project framing changes.
+- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
+      retained WPF support only when needed, and visible root workspaces limited to `Trading`,
+      `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+- [ ] Keep host-specific guides compact; route broad repository layout questions to generated
+      navigation or structure artifacts instead of copying tree snapshots into assistant docs.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
       descriptions or default prompts change.
 - [ ] Update `docs/ai/README.md` plus the nearest `docs/ai/*/README.md` index for discoverability.
 - [ ] Regenerate `docs/ai/generated/repo-navigation.*` only when routing truth, projects, symbols,
       or authoritative docs change.
+- [ ] Keep generated AI inventory reports portable; they must not include local absolute repository
+      paths, secrets, or machine-only identifiers.
+- [ ] Keep canonical GitHub documentation links pointed at `rodoHasArrived/Meridian-main`; historical
+      issue or workflow-run evidence links may retain their original repository if they are evidence.
 - [ ] Run targeted validation and record the command result.
 
 ---
@@ -140,4 +153,4 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-04-28_
+_Last Updated: 2026-04-29_

@@ -91,6 +91,7 @@ For the WPF desktop host, startup now pins both the UI shell and the launched ba
 <a id="troubleshooting"></a>
 
 ```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
@@ -102,6 +103,12 @@ dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --recommend-providers
 ```
+
+The browser workstation provider setup form posts to `POST /api/providers/configure`. The endpoint
+persists supported providers as data-source configuration entries and returns the setup result used
+by the confirmation screen. Current local data-source setup supports `polygon`, `alpaca`,
+`interactivebrokers`/`ib`, `synthetic`, and `custom`; unsupported catalog entries return a structured
+bad-request result until their configuration model is implemented.
 
 ### Symbol management
 
@@ -140,10 +147,39 @@ dotnet run --project src/Meridian/Meridian.csproj -- --import-package ./packages
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas
 dotnet run --project src/Meridian/Meridian.csproj -- --strict-schemas
+dotnet run --project src/Meridian/Meridian.csproj -- --replay ./data/session/events.jsonl
+dotnet run --project src/Meridian/Meridian.csproj -- --replay ./data/session/
 dotnet run --project src/Meridian/Meridian.csproj -- --dry-run
 dotnet run --project src/Meridian/Meridian.csproj -- --offline
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 ```
+
+`--replay` accepts either one JSONL/JSONL.GZ file or a directory tree containing `*.jsonl*`
+files. Directory replay processes files in stable path order.
+
+### ETL import/export
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-import --etl-source-kind local --etl-source-path ./incoming/trades --etl-schema partner.trades.csv.v1
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-export --etl-source-kind local --etl-source-path ./data --etl-destination-kind local --etl-destination-path ./exports --etl-symbols AAPL,MSFT --etl-publish-normalized
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-roundtrip --etl-source-kind local --etl-source-path ./incoming/trades --etl-destination-kind local --etl-destination-path ./exports --etl-publish-package
+dotnet run --project src/Meridian/Meridian.csproj -- --etl-resume <job-id>
+```
+
+`--etl-import`, `--etl-export`, and `--etl-roundtrip` require `--etl-source-kind` and
+`--etl-source-path`. `--etl-resume` requires an existing ETL job ID from a prior run.
+
+
+### Statement import/reconciliation
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+```
+
+`--statement-import`, `--statement-validate`, and `--statement-reconcile` require both
+`--statement-source-kind` and `--statement-source-path`.
 
 ## Build And Test
 
@@ -213,7 +249,7 @@ See [Getting Started](getting-started/README.md) for initial setup steps and pro
 
 Common issues and resolutions:
 
-- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 9 SDK is installed.
+- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 10 SDK is installed.
 - **Provider connectivity:** Run `dotnet run --project src/Meridian/Meridian.csproj -- --selftest` to validate connectivity.
 - **Missing configuration:** Confirm `config/appsettings.json` exists and contains valid provider entries.
 - **WPF test failures on Linux/macOS:** WPF tests require Windows. Use `/p:EnableWindowsTargeting=true` or skip with `--filter "Category!=WPF"`.
@@ -289,7 +325,7 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 - Owners: @desktop-shell, @operator-experience
 - Commands:
   - `pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop`
-  - `pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net9.0-windows10.0.19041.0`
+  - `pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild -ProjectPath src/Meridian.Wpf/Meridian.Wpf.csproj -Configuration Release -Framework net10.0-windows10.0.19041.0`
 
 #### `provider-validation-wave1`
 
@@ -307,3 +343,14 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 
 _Generated by `python3 build/scripts/docs/generate-workflow-manifest.py`._
 <!-- END AUTO-GENERATED: WORKFLOW-MANIFEST-HELP -->
+
+## Broker statement reconciliation (validated)
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-broker samplebroker --statement-source-path ./artifacts/recon/samplebroker-statement.csv --statement-date 2026-01-31
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-broker samplebroker --statement-source-path ./artifacts/recon/samplebroker-statement.csv --statement-date 2026-01-31
+```
+
+Expected artifacts:
+- `reconciliation/statement-imports/<import-id>.json` containing raw/normalized row payload plus source checksum.
+- `reconciliation/cases/<case-id>.json` for open unmatched rows once matcher/case services are run.

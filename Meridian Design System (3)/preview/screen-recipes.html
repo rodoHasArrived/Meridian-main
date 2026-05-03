@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Screen recipes</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
+</style>
+</head>
+<body>
+  <main class="screen-recipe-shell">
+    <header class="screen-recipe-head">
+      <div>
+        <div class="screen-recipe-sub">Workstation recipes · seven visible workspaces</div>
+        <h1>Screen recipes</h1>
+      </div>
+      <div class="screen-recipe-sub">Layout · evidence · action · states · primitives</div>
+    </header>
+
+    <section class="screen-recipe-grid">
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Trading</b><span>Execution readiness</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Masthead, operator rail, readiness KPI strip, split workbench with orders table and selected-session inspector.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Session state, buying power, replay verification, open orders, fills, guardrail results, broker sync.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Create paper session, verify replay, submit order, cancel order, assign review, promote when gates pass.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Paper, live, pending, stale replay, critical guardrail, disabled promotion, selected order.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">workstation-frame, metric-strip, dense-table, status-window, row-detail-panel, state-matrix-badge.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No paper sessions active. Create one above. Replay stale. Rerun verification before accepting readiness.</div></div>
+        </div>
+      </article>
+
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Portfolio</b><span>Exposure review</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">KPI row above chart/table evidence, holdings table on the left, exposure and factor inspector on the right.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Market value, exposure, P&amp;L, drawdown, top contributors, concentration, benchmark deltas.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Filter account, inspect holding, export exposure, open Security Master, compare benchmark.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy exposure, observe concentration, critical breach, stale marks, selected holding, empty account.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">metric-strip, chart-standard-card, dense-table, entity-summary, row-detail-panel.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No holdings for selected account. Clear filters or import positions. Mark refresh failed with reason.</div></div>
+        </div>
+      </article>
+
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Accounting</b><span>Reconciliation queue</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Queue toolbar, grouped reconciliation table, bottom status window, selected break detail panel.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Break age, account, ledger ID, cash movement, matched status, owner, last update, source system.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Assign owner, mark reviewed, open ledger, export packet, clear resolved breaks.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Pending, observe, critical aging, selected break, disabled close, empty queue, error loading audit.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, status-window, row-detail-panel, entity-summary.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No reconciliation breaks. Change date scope or refresh. Audit load failed. Retry with same filter set.</div></div>
+        </div>
+      </article>
+
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Reporting</b><span>Packet builder</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Report template tree, packet contents table, preview/status window, owner sign-off inspector.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Template category, packet timestamp, source artifacts, owner status, validation result, export path.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Generate packet, validate packet, attach sign-off, export Markdown, open artifact folder.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Pending generation, ready for review, stale packet binding, signed, critical missing owner.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">operator-rail, toolbar-strip, dense-table, status-window, state-matrix-banner.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No packet generated. Select a summary input. Signed file is stale against current packet timestamp.</div></div>
+        </div>
+      </article>
+
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Strategy</b><span>Run comparison</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Run filters, metric strip, equity/drawdown chart, run table, selected-run inspector with promotion notes.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Sharpe, drawdown, return, benchmark delta, run ID, parameters, artifact path, promotion checklist.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Compare runs, open ledger, view cash flow, pin baseline, start promotion review.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Research, selected run, pending comparison, critical failed run, empty filter, disabled promotion.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">chart-standard-card, dense-table, entity-summary, row-detail-panel, state-research.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No runs match filters. Clear filters. Run artifact missing. Show path and retry action.</div></div>
+        </div>
+      </article>
+
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Data</b><span>Provider quality console</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Provider status strip, symbol filters, quality table, coverage chart, selected-provider inspector.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Provider readiness, latency, gap count, stale symbols, coverage windows, backfill status, archive health.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Run validation, start backfill, export coverage, open archive health, calibrate provider.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy provider, observe latency, critical offline, pending backfill, stale coverage, selected symbol.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, status-window, chart-standard-card, state-matrix-row.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No symbols selected. Add symbols or import a watchlist. Provider validation failed with setup reason.</div></div>
+        </div>
+      </article>
+
+      <article class="screen-recipe-card">
+        <div class="screen-recipe-title"><b>Settings</b><span>Provider and workstation setup</span></div>
+        <div class="screen-recipe-body">
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Settings rail, configuration form, validation panel, saved-state summary, credential readiness inspector.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Config path, data root, credential status, provider setup, last validation, restart requirement.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Validate credentials, save config, test connectivity, reset local state, open diagnostics.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy config, observe restart, critical credential failure, pending save, disabled save, empty optional value.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">entity-summary, state-matrix-banner, toolbar-chip, status-window, state-disabled.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No credential stored. Add provider credentials. Save failed. Show config path and validation reason.</div></div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

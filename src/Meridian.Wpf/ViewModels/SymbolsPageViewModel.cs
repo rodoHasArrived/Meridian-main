@@ -35,6 +35,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private CancellationTokenSource? _loadCts;
     private bool _isStopped = true;
+    private bool _suppressFilterApply;
 
     public static readonly IReadOnlyDictionary<string, string[]> SymbolTemplates =
         new Dictionary<string, string[]>
@@ -71,6 +72,83 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     {
         get => _canBulkAction;
         private set => SetProperty(ref _canBulkAction, value);
+    }
+
+    private string _searchText = string.Empty;
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value ?? string.Empty) && !_suppressFilterApply)
+                ApplyFilters();
+        }
+    }
+
+    private string _selectedSubscriptionFilter = "All";
+    public string SelectedSubscriptionFilter
+    {
+        get => _selectedSubscriptionFilter;
+        set
+        {
+            var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
+            if (SetProperty(ref _selectedSubscriptionFilter, next) && !_suppressFilterApply)
+                ApplyFilters();
+        }
+    }
+
+    private string _selectedExchangeFilter = "All";
+    public string SelectedExchangeFilter
+    {
+        get => _selectedExchangeFilter;
+        set
+        {
+            var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
+            if (SetProperty(ref _selectedExchangeFilter, next) && !_suppressFilterApply)
+                ApplyFilters();
+        }
+    }
+
+    private string _visibleSymbolScopeText = "No configured symbols";
+    public string VisibleSymbolScopeText
+    {
+        get => _visibleSymbolScopeText;
+        private set => SetProperty(ref _visibleSymbolScopeText, value);
+    }
+
+    private bool _hasActiveFilters;
+    public bool HasActiveFilters
+    {
+        get => _hasActiveFilters;
+        private set => SetProperty(ref _hasActiveFilters, value);
+    }
+
+    private bool _hasVisibleSymbols;
+    public bool HasVisibleSymbols
+    {
+        get => _hasVisibleSymbols;
+        private set => SetProperty(ref _hasVisibleSymbols, value);
+    }
+
+    private bool _isSymbolsEmptyStateVisible = true;
+    public bool IsSymbolsEmptyStateVisible
+    {
+        get => _isSymbolsEmptyStateVisible;
+        private set => SetProperty(ref _isSymbolsEmptyStateVisible, value);
+    }
+
+    private string _symbolsEmptyStateTitle = "No symbols configured yet";
+    public string SymbolsEmptyStateTitle
+    {
+        get => _symbolsEmptyStateTitle;
+        private set => SetProperty(ref _symbolsEmptyStateTitle, value);
+    }
+
+    private string _symbolsEmptyStateDetail = "Add a symbol, load a watchlist, or apply a template to start collecting market data.";
+    public string SymbolsEmptyStateDetail
+    {
+        get => _symbolsEmptyStateDetail;
+        private set => SetProperty(ref _symbolsEmptyStateDetail, value);
     }
 
     // ── Security Master bridge properties ───────────────────────────────────
@@ -143,6 +221,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     public RelayCommand StartBackfillCommand { get; }
     public RelayCommand NavigateToChartCommand { get; }
     public RelayCommand ExportSymbolDataCommand { get; }
+    public RelayCommand ClearFiltersCommand { get; }
 
     public SymbolsPageViewModel(
         WpfServices.ConfigService configService,
@@ -190,6 +269,12 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         ExportSymbolDataCommand = new RelayCommand(
             () => ExportSymbolData(),
             () => HasSelectedSymbol);
+
+        ClearFiltersCommand = new RelayCommand(
+            ClearFilters,
+            () => HasActiveFilters);
+
+        RefreshFilterPresentation();
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────
@@ -268,6 +353,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         }
 
         SymbolCountText = $"{Symbols.Count} symbols";
+        ApplyFilters();
     }
 
     public async Task LoadWatchlistsAsync(CancellationToken ct = default)
@@ -328,28 +414,101 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     }
 
     // ── Filtering ───────────────────────────────────────────────────────────
+    public void ApplyFilters() =>
+        ApplyFilters(SearchText, SelectedSubscriptionFilter, SelectedExchangeFilter);
+
     public void ApplyFilters(string searchText, string filter, string exchangeFilter)
     {
         FilteredSymbols.Clear();
+        var normalizedSearch = searchText?.Trim() ?? string.Empty;
+        var normalizedFilter = string.IsNullOrWhiteSpace(filter) ? "All" : filter;
+        var normalizedExchange = string.IsNullOrWhiteSpace(exchangeFilter) ? "All" : exchangeFilter;
+
+        _suppressFilterApply = true;
+        try
+        {
+            SearchText = normalizedSearch;
+            SelectedSubscriptionFilter = normalizedFilter;
+            SelectedExchangeFilter = normalizedExchange;
+        }
+        finally
+        {
+            _suppressFilterApply = false;
+        }
+
         foreach (var symbol in Symbols)
         {
-            if (!string.IsNullOrEmpty(searchText) &&
-                !symbol.Symbol.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(normalizedSearch) &&
+                !symbol.Symbol.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (filter == "Trades" && !symbol.SubscribeTrades)
+            if (normalizedFilter == "Trades" && !symbol.SubscribeTrades)
                 continue;
-            if (filter == "Depth" && !symbol.SubscribeDepth)
+            if (normalizedFilter == "Depth" && !symbol.SubscribeDepth)
                 continue;
-            if (filter == "Both" && !(symbol.SubscribeTrades && symbol.SubscribeDepth))
+            if (normalizedFilter == "Both" && !(symbol.SubscribeTrades && symbol.SubscribeDepth))
                 continue;
-            if (exchangeFilter != "All" && symbol.Exchange != exchangeFilter)
+            if (normalizedExchange != "All" &&
+                !string.Equals(symbol.Exchange, normalizedExchange, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             FilteredSymbols.Add(symbol);
         }
 
         UpdateSelectionCount();
+        RefreshFilterPresentation();
+    }
+
+    private void RefreshFilterPresentation()
+    {
+        var total = Symbols.Count;
+        var visible = FilteredSymbols.Count;
+        HasActiveFilters = !string.IsNullOrWhiteSpace(SearchText)
+            || !string.Equals(SelectedSubscriptionFilter, "All", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(SelectedExchangeFilter, "All", StringComparison.OrdinalIgnoreCase);
+        HasVisibleSymbols = visible > 0;
+        IsSymbolsEmptyStateVisible = visible == 0;
+        VisibleSymbolScopeText = total switch
+        {
+            0 => "No configured symbols",
+            _ when visible == total => $"{total} configured symbols",
+            _ => $"{visible} visible of {total} configured symbols"
+        };
+
+        if (total == 0)
+        {
+            SymbolsEmptyStateTitle = "No symbols configured yet";
+            SymbolsEmptyStateDetail = "Add a symbol, load a watchlist, or apply a template to start collecting market data.";
+        }
+        else if (HasActiveFilters)
+        {
+            SymbolsEmptyStateTitle = "No symbols match the current filters";
+            SymbolsEmptyStateDetail = "Clear filters or adjust search, subscription, and exchange scope to restore retained symbols.";
+        }
+        else
+        {
+            SymbolsEmptyStateTitle = "No visible symbols";
+            SymbolsEmptyStateDetail = "Refresh the symbol list or add a monitored symbol to populate this view.";
+        }
+
+        ClearFiltersCommand?.NotifyCanExecuteChanged();
+    }
+
+    private void ClearFilters()
+    {
+        _suppressFilterApply = true;
+        try
+        {
+            SearchText = string.Empty;
+            SelectedSubscriptionFilter = "All";
+            SelectedExchangeFilter = "All";
+        }
+        finally
+        {
+            _suppressFilterApply = false;
+        }
+
+        ApplyFilters();
     }
 
     public void UpdateSelectionCount()
@@ -365,6 +524,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         var selected = FilteredSymbols.Where(s => s.IsSelected).ToList();
         foreach (var symbol in selected)
             symbol.SubscribeTrades = true;
+        ApplyFilters();
         _notificationService.ShowNotification(
             "Bulk Update",
             $"Enabled trades for {selected.Count} symbols.",
@@ -376,6 +536,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         var selected = FilteredSymbols.Where(s => s.IsSelected).ToList();
         foreach (var symbol in selected)
             symbol.SubscribeDepth = true;
+        ApplyFilters();
         _notificationService.ShowNotification(
             "Bulk Update",
             $"Enabled depth for {selected.Count} symbols.",
@@ -390,6 +551,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             Symbols.Remove(symbol);
 
         SymbolCountText = $"{Symbols.Count} symbols";
+        ApplyFilters();
         _notificationService.ShowNotification(
             "Bulk Delete",
             $"Deleted {toDelete.Count} symbols.",
@@ -423,6 +585,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         }
 
         SymbolCountText = $"{Symbols.Count} symbols";
+        ApplyFilters();
         _notificationService.ShowNotification(
             "Template Added",
             $"Added {added} new symbols from {templateName} template.",
@@ -473,6 +636,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
             }
 
             SymbolCountText = $"{Symbols.Count} symbols";
+            ApplyFilters();
             _notificationService.ShowNotification(
                 "Watchlist Loaded",
                 $"Loaded {watchlist.Symbols.Count} symbols from '{watchlist.Name}'.",
@@ -605,6 +769,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         }
 
         SymbolCountText = $"{Symbols.Count} symbols";
+        ApplyFilters();
         await PersistSymbolsToConfigAsync();
         return null;
     }
@@ -614,6 +779,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         var symbolToDelete = symbol.Symbol;
         Symbols.Remove(symbol);
         SymbolCountText = $"{Symbols.Count} symbols";
+        ApplyFilters();
 
         _notificationService.ShowNotification(
             "Success",

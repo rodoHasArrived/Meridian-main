@@ -14,6 +14,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -81,6 +82,145 @@ public static class WorkstationEndpoints
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(501);
 
+        group.MapGet("/workflows", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowLibraryService>();
+            if (service is null)
+            {
+                var fallback = new WorkflowLibraryService(WorkflowRegistry.CreateDefault());
+                return Results.Json(fallback.GetLibrary(), jsonOptions);
+            }
+
+            return Results.Json(service.GetLibrary(), jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowLibrary")
+        .Produces<WorkflowLibraryDto>(200);
+
+        group.MapGet("/workflows/presets", async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(library, jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowPresets")
+        .Produces<WorkflowPresetLibraryDto>(200)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets", async (WorkflowPresetSaveRequest request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.SaveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("SaveWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPut("/workflows/presets/{presetId}", async (
+            string presetId,
+            WorkflowPresetSaveRequest request,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service
+                .SaveAsync(request with { PresetId = presetId }, context.RequestAborted)
+                .ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("UpdateWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets/{presetId}/pin", async (
+            string presetId,
+            WorkflowPresetPinRequest request,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.SetPinnedAsync(presetId, request.IsPinned, context.RequestAborted).ConfigureAwait(false);
+            if (result.NotFound)
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("PinWorkstationWorkflowPreset")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost("/workflows/presets/{presetId}/used", async (string presetId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service.MarkUsedAsync(presetId, context.RequestAborted).ConfigureAwait(false);
+            if (result.NotFound)
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+
+            return result.Success
+                ? Results.Json(result.Preset, jsonOptions)
+                : Results.BadRequest(new { error = result.Error });
+        })
+        .WithName("MarkWorkstationWorkflowPresetUsed")
+        .Produces<WorkflowPresetDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapDelete("/workflows/presets/{presetId}", async (string presetId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkflowPresetService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow preset service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var deleted = await service.DeleteAsync(presetId, context.RequestAborted).ConfigureAwait(false);
+            return deleted
+                ? Results.NoContent()
+                : Results.NotFound(new { error = $"Workflow preset '{presetId}' was not found." });
+        })
+        .WithName("DeleteWorkstationWorkflowPreset")
+        .Produces(204)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/trading", async (HttpContext context) =>
         {
             return await BuildTradingPayloadAsync(context).ConfigureAwait(false);
@@ -114,6 +254,18 @@ public static class WorkstationEndpoints
             return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationGovernance");
+
+        group.MapGet("/accounting", async (HttpContext context) =>
+        {
+            return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationAccounting");
+
+        group.MapGet("/reporting", async (HttpContext context) =>
+        {
+            return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationReporting");
 
         group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
         {
@@ -183,20 +335,36 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/break-queue", async (string? status, HttpContext context) =>
+        group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
 
+        group.MapGet("/reconciliation/break-queue/{breakId}", async (string breakId, HttpContext context) =>
+        {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakQueueItem")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(404);
+
         group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
         {
             var asOf = DateTimeOffset.UtcNow;
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
         })
@@ -254,6 +422,10 @@ public static class WorkstationEndpoints
             {
                 return Results.BadRequest(new { error = "Status must be Resolved or Dismissed for resolve action." });
             }
+            if (string.IsNullOrWhiteSpace(request.OperatorRationale))
+            {
+                return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
+            }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var transition = await ResolveBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
@@ -297,10 +469,15 @@ public static class WorkstationEndpoints
             var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
-                : Results.Json(detail, jsonOptions);
+                : Results.Json(new StrategyRunContinuityDto(
+                    detail.Run,
+                    detail.Lineage,
+                    detail.CashFlow,
+                    detail.Reconciliation,
+                    detail.ContinuityStatus), jsonOptions);
         })
         .WithName("GetRunContinuity")
-        .Produces<StrategyRunContinuityDetail>(200)
+        .Produces<StrategyRunContinuityDto>(200)
         .Produces(404)
         .Produces(501);
 
@@ -718,6 +895,21 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
         .Produces(501);
 
+        group.MapGet("/runs/sweeps", async (int? limit, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var sweeps = await readService.GetSweepResultGroupsAsync(limit ?? 25, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(sweeps, jsonOptions);
+        })
+        .WithName("GetWorkstationSweepResults")
+        .Produces<IReadOnlyList<StrategySweepResultGroup>>(200)
+        .Produces(501);
+
         app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -934,19 +1126,20 @@ public static class WorkstationEndpoints
         return diffs;
     }
 
-    private static async Task<object> BuildSessionPayloadAsync(HttpContext context)
+    // PR-03: returns typed DTO instead of anonymous object
+    private static async Task<WorkstationSessionPayload> BuildSessionPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         if (readService is null)
         {
-            return new
-            {
-                displayName = "Meridian Operator",
-                role = "Research Lead",
-                environment = "paper",
-                activeWorkspace = "research",
-                commandCount = 6
-            };
+            return new WorkstationSessionPayload(
+                DisplayName: "Meridian Operator",
+                Role: "Research Lead",
+                Environment: "paper",
+                ActiveWorkspace: "research",
+                CommandCount: 6,
+                LatestRun: null,
+                WorkspaceSummary: new WorkstationSessionWorkspaceSummary(0, 0, 0, 0, 0));
         }
 
         var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
@@ -957,26 +1150,23 @@ public static class WorkstationEndpoints
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
         var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
 
-        return new
-        {
-            displayName = BuildDisplayName(latest),
-            role = BuildRole(latest),
-            environment = MapEnvironment(latest),
-            activeWorkspace = MapWorkspace(latest),
-            commandCount = Math.Max(6, runs.Length + activeRuns + reviewRuns),
-            latestRun = latest is null ? null : BuildRunDigest(latest, latestDetail),
-            workspaceSummary = new
-            {
-                totalRuns = runs.Length,
-                activeRuns,
-                reviewRuns,
-                ledgerCoverage = runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                portfolioCoverage = runs.Count(static run => !string.IsNullOrWhiteSpace(run.PortfolioId))
-            }
-        };
+        return new WorkstationSessionPayload(
+            DisplayName: BuildDisplayName(latest),
+            Role: BuildRole(latest),
+            Environment: MapEnvironment(latest),
+            ActiveWorkspace: MapWorkspace(latest),
+            CommandCount: Math.Max(6, runs.Length + activeRuns + reviewRuns),
+            LatestRun: latest is null ? null : BuildRunDigest(latest, latestDetail),
+            WorkspaceSummary: new WorkstationSessionWorkspaceSummary(
+                TotalRuns: runs.Length,
+                ActiveRuns: activeRuns,
+                ReviewRuns: reviewRuns,
+                LedgerCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
+                PortfolioCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.PortfolioId))));
     }
 
-    private static async Task<object> BuildResearchPayloadAsync(HttpContext context)
+    // PR-03: returns typed DTO instead of anonymous object
+    private static async Task<WorkstationResearchPayload> BuildResearchPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         if (readService is null)
@@ -993,18 +1183,18 @@ public static class WorkstationEndpoints
 
         if (runs.Length == 0)
         {
-            return new
-            {
-                metrics = new[]
-                {
-                    new { id = "active-runs", label = "Active Runs", value = "0", delta = "0%", tone = "success" },
-                    new { id = "queued-runs", label = "Queued Promotions", value = "0", delta = "0%", tone = "default" },
-                    new { id = "review-runs", label = "Needs Review", value = "0", delta = "0%", tone = "warning" },
-                    new { id = "winning-runs", label = "Positive P&L", value = "0", delta = "0%", tone = "default" }
-                },
-                runs = Array.Empty<object>(),
-                workspace = new { totalRuns = 0, latestRunId = (string?)null, hasLedgerCoverage = false, hasPortfolioCoverage = false }
-            };
+            return new WorkstationResearchPayload(
+                Metrics:
+                [
+                    new WorkstationMetricCard("active-runs", "Active Runs", "0", "0%", "success"),
+                    new WorkstationMetricCard("queued-runs", "Queued Promotions", "0", "0%", "default"),
+                    new WorkstationMetricCard("review-runs", "Needs Review", "0", "0%", "warning"),
+                    new WorkstationMetricCard("winning-runs", "Positive P&L", "0", "0%", "default")
+                ],
+                Runs: Array.Empty<object>(),
+                Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
+                Timeline: Array.Empty<WorkstationTimelineCard>(),
+                Workspace: new WorkstationResearchWorkspaceSummary(0, null, null, false, false, 0));
         }
 
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
@@ -1014,30 +1204,26 @@ public static class WorkstationEndpoints
         var winningRuns = runs.Count(static run => (run.NetPnl ?? 0m) > 0m);
         var latestRun = runs[0];
 
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "active-runs", label = "Active Runs", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0%" : $"+{activeRuns}", tone = "success" },
-                new { id = "queued-runs", label = "Queued Promotions", value = queuedPromotions.ToString(CultureInfo.InvariantCulture), delta = queuedPromotions == 0 ? "0%" : $"+{queuedPromotions}", tone = "default" },
-                new { id = "review-runs", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0%" : $"-{reviewRuns}", tone = "warning" },
-                new { id = "winning-runs", label = "Positive P&L", value = winningRuns.ToString(CultureInfo.InvariantCulture), delta = winningRuns == 0 ? "0%" : $"+{winningRuns}", tone = "default" }
-            },
-            runs = runs
+        return new WorkstationResearchPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("active-runs", "Active Runs", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0%" : $"+{activeRuns}", "success"),
+                new WorkstationMetricCard("queued-runs", "Queued Promotions", queuedPromotions.ToString(CultureInfo.InvariantCulture), queuedPromotions == 0 ? "0%" : $"+{queuedPromotions}", "default"),
+                new WorkstationMetricCard("review-runs", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0%" : $"-{reviewRuns}", "warning"),
+                new WorkstationMetricCard("winning-runs", "Positive P&L", winningRuns.ToString(CultureInfo.InvariantCulture), winningRuns == 0 ? "0%" : $"+{winningRuns}", "default")
+            ],
+            Runs: runs
                 .Zip(runDetails, static (run, detail) => BuildResearchRunCard(run, detail))
                 .ToArray(),
-            comparisons = BuildModeComparisons(runs),
-            timeline = runs.Select(BuildTimelineCard).ToArray(),
-            workspace = new
-            {
-                totalRuns = runs.Length,
-                latestRunId = latestRun.RunId,
-                latestStrategyName = latestRun.StrategyName,
-                hasLedgerCoverage = runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                hasPortfolioCoverage = runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                promotionCandidates = queuedPromotions
-            }
-        };
+            Comparisons: BuildModeComparisons(runs),
+            Timeline: runs.Select(BuildTimelineCard).ToArray(),
+            Workspace: new WorkstationResearchWorkspaceSummary(
+                TotalRuns: runs.Length,
+                LatestRunId: latestRun.RunId,
+                LatestStrategyName: latestRun.StrategyName,
+                HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
+                HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
+                PromotionCandidates: queuedPromotions));
     }
 
     private static async Task<ResearchBriefingDto> BuildResearchBriefingAsync(HttpContext context)
@@ -1251,19 +1437,19 @@ public static class WorkstationEndpoints
             ]);
     }
 
-    private static object BuildResearchFallbackPayload()
+    // PR-03: returns typed DTO
+    private static WorkstationResearchPayload BuildResearchFallbackPayload()
     {
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "active-runs", label = "Active Runs", value = "24", delta = "+8%", tone = "success" },
-                new { id = "queued-runs", label = "Queued Promotions", value = "3", delta = "0%", tone = "default" },
-                new { id = "review-runs", label = "Needs Review", value = "2", delta = "-1%", tone = "warning" },
-                new { id = "winning-runs", label = "Positive P&L", value = "17", delta = "+4%", tone = "default" }
-            },
-            runs = new[]
-            {
+        return new WorkstationResearchPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("active-runs", "Active Runs", "24", "+8%", "success"),
+                new WorkstationMetricCard("queued-runs", "Queued Promotions", "3", "0%", "default"),
+                new WorkstationMetricCard("review-runs", "Needs Review", "2", "-1%", "warning"),
+                new WorkstationMetricCard("winning-runs", "Positive P&L", "17", "+4%", "default")
+            ],
+            Runs:
+            [
                 new
                 {
                     id = "run-research-001",
@@ -1290,11 +1476,14 @@ public static class WorkstationEndpoints
                         missingReferences = Array.Empty<SecurityCoverageGapPayload>()
                     }
                 }
-            }
-        };
+            ],
+            Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
+            Timeline: Array.Empty<WorkstationTimelineCard>(),
+            Workspace: new WorkstationResearchWorkspaceSummary(1, "run-research-001", "Mean Reversion FX", false, false, 0));
     }
 
-    private static async Task<object> BuildTradingPayloadAsync(HttpContext context)
+    // PR-03: returns typed DTO instead of anonymous object
+    private static async Task<WorkstationTradingPayload> BuildTradingPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
@@ -1324,46 +1513,42 @@ public static class WorkstationEndpoints
         var openOrderCount = oms?.GetOpenOrders().Count ?? 0;
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
-        // --- Positions (live execution layer when available) ---
-        object[] positions;
+        // --- Positions (live execution layer when available) — PR-03: typed rows ---
+        WorkstationTradingPositionRow[] positions;
         if (portfolio is not null && portfolio.Positions.Count > 0)
         {
-            positions = portfolio.Positions.Values.Select(pos => (object)new
-            {
-                symbol = pos.Symbol,
-                side = pos.Quantity >= 0 ? "Long" : "Short",
-                quantity = Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                averagePrice = pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                markPrice = "—",
-                dayPnl = "—",
-                unrealizedPnl = FormatCurrency(pos.UnrealizedPnl),
-                exposure = "—"
-            }).ToArray();
+            positions = portfolio.Positions.Values.Select(pos => new WorkstationTradingPositionRow(
+                Symbol: pos.Symbol,
+                Side: pos.Quantity >= 0 ? "Long" : "Short",
+                Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                MarkPrice: "—",
+                DayPnl: "—",
+                UnrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
+                Exposure: "—")).ToArray();
         }
         else
         {
             // No live positions yet — show an informational placeholder row
             positions =
             [
-                new { symbol = "—", side = "—", quantity = "—", averagePrice = "—", markPrice = "—", dayPnl = "—", unrealizedPnl = "—", exposure = "No open positions" }
+                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "No open positions")
             ];
         }
 
-        // --- Open orders (live OMS when available) ---
-        object[] openOrders;
+        // --- Open orders (live OMS when available) — PR-03: typed rows ---
+        WorkstationTradingOrderRow[] openOrders;
         if (oms is not null)
         {
-            openOrders = oms.GetOpenOrders().Select(static order => (object)new
-            {
-                orderId = order.OrderId,
-                symbol = order.Symbol,
-                side = order.Side.ToString(),
-                type = order.Type.ToString(),
-                quantity = order.Quantity.ToString(CultureInfo.InvariantCulture),
-                limitPrice = order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
-                status = order.Status.ToString(),
-                submittedAt = order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
-            }).ToArray();
+            openOrders = oms.GetOpenOrders().Select(static order => new WorkstationTradingOrderRow(
+                OrderId: order.OrderId.ToString(),
+                Symbol: order.Symbol,
+                Side: order.Side.ToString(),
+                Type: order.Type.ToString(),
+                Quantity: order.Quantity.ToString(CultureInfo.InvariantCulture),
+                LimitPrice: order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                Status: order.Status.ToString(),
+                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
         }
         else
         {
@@ -1405,75 +1590,69 @@ public static class WorkstationEndpoints
             ? FormatPercent(totalPnl / portfolio.PortfolioValue)
             : "—";
 
-        // --- Fills (completed orders from OMS) ---
-        object[] fills;
+        // --- Fills (completed orders from OMS) — PR-03: typed rows ---
+        WorkstationTradingFillRow[] fills;
         if (oms is not null)
         {
-            fills = oms.GetCompletedOrders(20).Select(static order => (object)new
-            {
-                fillId = order.OrderId,
-                orderId = order.OrderId,
-                symbol = order.Symbol,
-                side = order.Side.ToString(),
-                quantity = order.FilledQuantity.ToString(CultureInfo.InvariantCulture),
-                price = order.AverageFillPrice.HasValue
+            fills = oms.GetCompletedOrders(20).Select(static order => new WorkstationTradingFillRow(
+                FillId: order.OrderId.ToString(),
+                OrderId: order.OrderId.ToString(),
+                Symbol: order.Symbol,
+                Side: order.Side.ToString(),
+                Quantity: order.FilledQuantity.ToString(CultureInfo.InvariantCulture),
+                Price: order.AverageFillPrice.HasValue
                     ? order.AverageFillPrice.Value.ToString("F2", CultureInfo.InvariantCulture)
                     : "—",
-                venue = "Paper",
-                timestamp = (order.LastUpdatedAt ?? order.CreatedAt).ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC"
-            }).ToArray();
+                Venue: "Paper",
+                Timestamp: (order.LastUpdatedAt ?? order.CreatedAt).ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
         }
         else
         {
-            fills = Array.Empty<object>();
+            fills = Array.Empty<WorkstationTradingFillRow>();
         }
 
         var readiness = await GetTradingOperatorReadinessAsync(null, context).ConfigureAwait(false);
 
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "trading-net-pnl", label = "Net P&L", value = FormatCurrency(totalPnl), delta = totalPnl >= 0m ? "+session" : "-session", tone = pnlTone },
-                new { id = "trading-open-orders", label = "Open Orders", value = openOrderCount.ToString(CultureInfo.InvariantCulture), delta = openOrderCount == 0 ? "0" : $"+{openOrderCount}", tone = "default" },
-                new { id = "trading-cash", label = "Cash", value = portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", delta = "0%", tone = "default" },
-                new { id = "trading-portfolio-value", label = "Portfolio Value", value = portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", delta = "0%", tone = "default" }
-            },
-            positions,
-            openOrders,
-            fills,
-            risk = new
-            {
-                state = riskState,
-                summary = riskSummary,
-                netExposure = portfolio is not null ? FormatCurrency(netExposureValue) : "—",
-                grossExposure = portfolio is not null ? FormatCurrency(grossExposure) : "—",
-                var95 = "—",
-                maxDrawdown = maxDrawdownDisplay,
-                buyingPowerUsed = "—",
-                activeGuardrails = new[]
-                {
+        // PR-03: return typed DTO
+        return new WorkstationTradingPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("trading-net-pnl", "Net P&L", FormatCurrency(totalPnl), totalPnl >= 0m ? "+session" : "-session", pnlTone),
+                new WorkstationMetricCard("trading-open-orders", "Open Orders", openOrderCount.ToString(CultureInfo.InvariantCulture), openOrderCount == 0 ? "0" : $"+{openOrderCount}", "default"),
+                new WorkstationMetricCard("trading-cash", "Cash", portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", "0%", "default"),
+                new WorkstationMetricCard("trading-portfolio-value", "Portfolio Value", portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", "0%", "default")
+            ],
+            Positions: positions,
+            OpenOrders: openOrders,
+            Fills: fills,
+            Risk: new WorkstationTradingRiskState(
+                State: riskState,
+                Summary: riskSummary,
+                NetExposure: portfolio is not null ? FormatCurrency(netExposureValue) : "—",
+                GrossExposure: portfolio is not null ? FormatCurrency(grossExposure) : "—",
+                Var95: "—",
+                MaxDrawdown: maxDrawdownDisplay,
+                BuyingPowerUsed: "—",
+                ActiveGuardrails:
+                [
                     "Single-name concentration cap set at 30% notional.",
                     "Auto-throttle activates above 70% intraday buying power.",
                     "Strategy promotion to live blocked while state is Observe or Constrained."
-                }
-            },
-            brokerage = new
-            {
-                provider = brokerageValidation.GatewayDisplayName,
-                account = run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
-                environment = run?.Mode == StrategyRunMode.Live ? "live" : "paper",
-                connection = portfolio is not null ? "Connected" : "Disconnected",
-                lastHeartbeat = portfolio is not null ? "live" : "—",
-                orderIngress = oms is not null ? "healthy" : "—",
-                fillFeed = portfolio is not null ? "healthy" : "—",
-                notes = BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)
-            },
-            readiness,
-            comparisons = run is null ? Array.Empty<object>() : BuildModeComparisons([run]),
-            drillIn = run is null ? null : BuildRunDrillInLinks(run)
-        };
+                ]),
+            Brokerage: new WorkstationTradingBrokerageState(
+                Provider: brokerageValidation.GatewayDisplayName,
+                Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
+                Environment: run?.Mode == StrategyRunMode.Live ? "live" : "paper",
+                Connection: portfolio is not null ? "Connected" : "Disconnected",
+                LastHeartbeat: portfolio is not null ? "live" : "—",
+                OrderIngress: oms is not null ? "healthy" : "—",
+                FillFeed: portfolio is not null ? "healthy" : "—",
+                Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
+            Readiness: readiness,
+            Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),
+            DrillIn: run is null ? null : BuildRunDrillInLinks(run));
     }
+
 
     private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
         Guid? fundAccountId,
@@ -1544,20 +1723,25 @@ public static class WorkstationEndpoints
                 .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
                 .ConfigureAwait(false);
 
-            foreach (var run in runs.Where(ShouldSurfaceRunReviewWorkItems))
+            var latestRun = runs
+                .OrderByDescending(GetRunReviewTimestamp)
+                .FirstOrDefault();
+            if (latestRun is null || !ShouldSurfaceRunReviewWorkItems(latestRun))
             {
-                var packet = await reviewPacketService
-                    .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
-                    .ConfigureAwait(false);
-                if (packet is null)
-                {
-                    continue;
-                }
-
-                workItems.AddRange(packet.WorkItems
-                    .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
-                    .Select(AttachOperatorNavigation));
+                return;
             }
+
+            var packet = await reviewPacketService
+                .GetAsync(latestRun.RunId, fundAccountId, context.RequestAborted)
+                .ConfigureAwait(false);
+            if (packet is null)
+            {
+                return;
+            }
+
+            workItems.AddRange(packet.WorkItems
+                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                .Select(AttachOperatorNavigation));
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
@@ -1572,6 +1756,9 @@ public static class WorkstationEndpoints
     private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
         => run.Promotion?.RequiresReview == true ||
            run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled;
+
+    private static DateTimeOffset GetRunReviewTimestamp(StrategyRunSummary run)
+        => run.CompletedAt ?? run.LastUpdatedAt;
 
     private static OperatorWorkItemDto BuildRunReviewPacketUnavailableWorkItem(DateTimeOffset asOf)
         => new(
@@ -1596,6 +1783,7 @@ public static class WorkstationEndpoints
             var reconciliationBreaks = await GetBreakQueueItemsAsync(
                 context.RequestServices,
                 status: null,
+                fundAccountId: null,
                 context.RequestAborted).ConfigureAwait(false);
             workItems.AddRange(reconciliationBreaks
                 .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
@@ -1616,12 +1804,12 @@ public static class WorkstationEndpoints
             WorkItemId: "reconciliation-break-queue-unavailable",
             Kind: OperatorWorkItemKindDto.ReconciliationBreak,
             Label: "Reconciliation queue unavailable",
-            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting governance queue coverage.",
+            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting accounting queue coverage.",
             Tone: OperatorWorkItemToneDto.Warning,
             CreatedAt: asOf,
-            Workspace: "Governance",
+            Workspace: "Accounting",
             TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "GovernanceShell");
+            TargetPageTag: "AccountingShell");
 
     private static OperatorWorkItemDto AttachOperatorNavigation(OperatorWorkItemDto item)
     {
@@ -1661,9 +1849,9 @@ public static class WorkstationEndpoints
             CreatedAt: item.DetectedAt,
             RunId: item.RunId,
             AuditReference: item.BreakId,
-            Workspace: "Governance",
+            Workspace: "Accounting",
             TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "GovernanceShell");
+            TargetPageTag: "AccountingShell");
     }
 
     private static string BuildReconciliationRoutingDetail(ReconciliationBreakQueueItem item)
@@ -1693,13 +1881,17 @@ public static class WorkstationEndpoints
         => kind switch
         {
             OperatorWorkItemKindDto.SecurityMasterCoverage => (
-                "Governance",
+                "Data",
                 UiApiRoutes.WorkstationSecurityMasterSearch,
-                "GovernanceShell"),
-            OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
-                "Governance",
+                "DataShell"),
+            OperatorWorkItemKindDto.ReconciliationBreak => (
+                "Accounting",
                 UiApiRoutes.ReconciliationBreakQueue,
-                "GovernanceShell"),
+                "AccountingShell"),
+            OperatorWorkItemKindDto.ReportPackApproval => (
+                "Reporting",
+                UiApiRoutes.FundReportPacks,
+                "ReportingShell"),
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Trading",
                 fundAccountId.HasValue
@@ -1795,60 +1987,58 @@ public static class WorkstationEndpoints
         return "Paper gateway not active. Start a paper session to see live position and order data.";
     }
 
-    private static object BuildTradingFallbackPayload()
+    // PR-03: returns typed DTO
+    private static WorkstationTradingPayload BuildTradingFallbackPayload()
     {
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "trading-net-pnl", label = "Net P&L", value = "+$3,918", delta = "+2.4%", tone = "success" },
-                new { id = "trading-open-orders", label = "Open Orders", value = "5", delta = "+1", tone = "default" },
-                new { id = "trading-fills", label = "Fills Today", value = "27", delta = "+7", tone = "success" },
-                new { id = "trading-risk-state", label = "Risk State", value = "Healthy", delta = "0%", tone = "success" }
-            },
-            positions = new[]
-            {
-                new { symbol = "AAPL", side = "Long", quantity = "300", averagePrice = "188.22", markPrice = "189.30", dayPnl = "+$324", unrealizedPnl = "+$1,126", exposure = "$56,790" },
-                new { symbol = "MSFT", side = "Long", quantity = "150", averagePrice = "416.10", markPrice = "414.80", dayPnl = "-$195", unrealizedPnl = "-$195", exposure = "$62,220" }
-            },
-            openOrders = new[]
-            {
-                new { orderId = "PO-24812", symbol = "AMZN", side = "Buy", type = "Limit", quantity = "100", limitPrice = "184.00", status = "Working", submittedAt = "09:35:12 ET" },
-                new { orderId = "PO-24814", symbol = "QQQ", side = "Sell", type = "Stop", quantity = "40", limitPrice = "442.30", status = "Pending Routing", submittedAt = "09:36:48 ET" }
-            },
-            fills = new[]
-            {
-                new { fillId = "FL-90071", orderId = "PO-24810", symbol = "AAPL", side = "Buy", quantity = "50", price = "188.12", venue = "NASDAQ", timestamp = "09:33:04 ET" },
-                new { fillId = "FL-90077", orderId = "PO-24811", symbol = "MSFT", side = "Sell", quantity = "25", price = "414.88", venue = "IEX", timestamp = "09:34:26 ET" }
-            },
-            risk = new
-            {
-                state = "Healthy",
-                summary = "Portfolio and order-book exposure are within configured paper thresholds.",
-                netExposure = "$119,010",
-                grossExposure = "$156,432",
-                var95 = "$9,874",
-                maxDrawdown = "-0.9%",
-                buyingPowerUsed = "44%",
-                activeGuardrails = new[]
-                {
+        return new WorkstationTradingPayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("trading-net-pnl", "Net P&L", "+$3,918", "+2.4%", "success"),
+                new WorkstationMetricCard("trading-open-orders", "Open Orders", "5", "+1", "default"),
+                new WorkstationMetricCard("trading-fills", "Fills Today", "27", "+7", "success"),
+                new WorkstationMetricCard("trading-risk-state", "Risk State", "Healthy", "0%", "success")
+            ],
+            Positions:
+            [
+                new WorkstationTradingPositionRow("AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
+                new WorkstationTradingPositionRow("MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
+            ],
+            OpenOrders:
+            [
+                new WorkstationTradingOrderRow("PO-24812", "AMZN", "Buy", "Limit", "100", "184.00", "Working", "09:35:12 ET"),
+                new WorkstationTradingOrderRow("PO-24814", "QQQ", "Sell", "Stop", "40", "442.30", "Pending Routing", "09:36:48 ET")
+            ],
+            Fills:
+            [
+                new WorkstationTradingFillRow("FL-90071", "PO-24810", "AAPL", "Buy", "50", "188.12", "NASDAQ", "09:33:04 ET"),
+                new WorkstationTradingFillRow("FL-90077", "PO-24811", "MSFT", "Sell", "25", "414.88", "IEX", "09:34:26 ET")
+            ],
+            Risk: new WorkstationTradingRiskState(
+                State: "Healthy",
+                Summary: "Portfolio and order-book exposure are within configured paper thresholds.",
+                NetExposure: "$119,010",
+                GrossExposure: "$156,432",
+                Var95: "$9,874",
+                MaxDrawdown: "-0.9%",
+                BuyingPowerUsed: "44%",
+                ActiveGuardrails:
+                [
                     "Daily loss guard set to -$12,000.",
                     "Max position notional guard set to $120,000.",
                     "Kill-switch can be engaged manually from governance lane."
-                }
-            },
-            brokerage = new
-            {
-                provider = "Interactive Brokers",
-                account = "DU1009034",
-                environment = "paper",
-                connection = "Connected",
-                lastHeartbeat = "1s ago",
-                orderIngress = "healthy (p50 19ms)",
-                fillFeed = "healthy (p50 31ms)",
-                notes = "Paper execution routing is synchronized with run-level reconciliation wiring."
-            }
-        };
+                ]),
+            Brokerage: new WorkstationTradingBrokerageState(
+                Provider: "Interactive Brokers",
+                Account: "DU1009034",
+                Environment: "paper",
+                Connection: "Connected",
+                LastHeartbeat: "1s ago",
+                OrderIngress: "healthy (p50 19ms)",
+                FillFeed: "healthy (p50 31ms)",
+                Notes: ["Paper execution routing is synchronized with run-level reconciliation wiring."]),
+            Readiness: new { },
+            Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
+            DrillIn: null);
     }
 
     private static async Task<object> BuildDataOperationsPayloadAsync(HttpContext context)
@@ -2104,7 +2294,8 @@ public static class WorkstationEndpoints
                     ? "Degraded"
                     : "Critical";
 
-    private static async Task<object> BuildGovernancePayloadAsync(HttpContext context)
+    // PR-03: returns typed DTO instead of anonymous object
+    private static async Task<WorkstationGovernancePayload> BuildGovernancePayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
@@ -2117,30 +2308,22 @@ public static class WorkstationEndpoints
         var runs = allRuns.Take(6).ToArray();
         if (runs.Length == 0)
         {
-            return new
-            {
-                metrics = new[]
-                {
-                    new { id = "open-breaks", label = "Open Breaks", value = "0", tone = "success" },
-                    new { id = "timing-drift", label = "Timing Drift", value = "0", tone = "default" },
-                    new { id = "security-gaps", label = "Security Gaps", value = "0", tone = "success" },
-                    new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" },
-                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
-                },
-                reconciliationQueue = Array.Empty<object>(),
-                breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
-                workspace = new
-                {
-                    totalRuns = 0,
-                    reconciledRuns = 0,
-                    ledgerReadyRuns = 0,
-                    openBreaks = 0,
-                    securityIssues = 0
-                },
-                cashFlow = BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                reporting = BuildGovernanceReportingPayload(),
-                kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
-            };
+            // PR-03: return typed DTO
+            return new WorkstationGovernancePayload(
+                Metrics:
+                [
+                    new WorkstationMetricCard("open-breaks", "Open Breaks", "0", "0%", "success"),
+                    new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
+                    new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
+                    new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
+                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
+                ],
+                ReconciliationQueue: Array.Empty<object>(),
+                BreakQueue: Array.Empty<object>(),
+                Workspace: new WorkstationGovernanceWorkspaceSummary(0, 0, 0, 0, 0),
+                CashFlow: BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
+                Reporting: BuildGovernanceReportingPayload(),
+                KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
         }
 
         var reconciliationService = context.RequestServices.GetService<IReconciliationRunService>();
@@ -2161,49 +2344,47 @@ public static class WorkstationEndpoints
             (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
         var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
 
-        return new
-        {
-            metrics = new[]
-            {
-                new { id = "open-breaks", label = "Open Breaks", value = openBreaks.ToString(CultureInfo.InvariantCulture), tone = openBreaks == 0 ? "success" : "warning" },
-                new { id = "timing-drift", label = "Timing Drift", value = timingDriftRuns.ToString(CultureInfo.InvariantCulture), tone = timingDriftRuns == 0 ? "default" : "warning" },
-                new { id = "security-gaps", label = "Security Gaps", value = runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), tone = runsWithSecurityIssues == 0 ? "success" : "warning" },
-                new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
-            },
-            reconciliationQueue = runs
+        // PR-03: return typed DTO
+        return new WorkstationGovernancePayload(
+            Metrics:
+            [
+                new WorkstationMetricCard("open-breaks", "Open Breaks", openBreaks.ToString(CultureInfo.InvariantCulture), "0%", openBreaks == 0 ? "success" : "warning"),
+                new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
+                new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
+                new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
+                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
+            ],
+            ReconciliationQueue: runs
                 .Zip(details, static (run, detail) => (run, detail))
-                .Zip(reconciliations, (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
+                .Zip(reconciliations, (pair, reconciliation) => (object)BuildGovernanceRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
                 .ToArray(),
-            breakQueue = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false),
-            workspace = new
-            {
-                totalRuns = allRuns.Length,
-                reconciledRuns = reconciliations.Count(static detail => detail is not null),
-                ledgerReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                openBreaks,
-                securityIssues = runsWithSecurityIssues
-            },
-            cashFlow = BuildGovernanceWorkspaceCashFlowSummary(details),
-            reporting = BuildGovernanceReportingPayload(),
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
-        };
+            BreakQueue: (await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false))
+                .Cast<object>()
+                .ToArray(),
+            Workspace: new WorkstationGovernanceWorkspaceSummary(
+                TotalRuns: allRuns.Length,
+                ReconciledRuns: reconciliations.Count(static detail => detail is not null),
+                LedgerReadyRuns: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
+                OpenBreaks: openBreaks,
+                SecurityIssues: runsWithSecurityIssues),
+            CashFlow: BuildGovernanceWorkspaceCashFlowSummary(details),
+            Reporting: BuildGovernanceReportingPayload(),
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
-    private static object BuildGovernanceFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
+    // PR-03: returns typed DTO
+    private static WorkstationGovernancePayload BuildGovernanceFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
     {
-        return new
+        var metricsCards = new WorkstationMetricCard[]
         {
-            metrics = new[]
-            {
-                new { id = "open-breaks", label = "Open Breaks", value = "4", tone = "warning" },
-                new { id = "timing-drift", label = "Timing Drift", value = "1", tone = "warning" },
-                new { id = "security-gaps", label = "Security Gaps", value = "2", tone = "warning" },
-                new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
-            },
-            reconciliationQueue = new[]
-            {
+            new("open-breaks", "Open Breaks", "4", "0%", "warning"),
+            new("timing-drift", "Timing Drift", "1", "0%", "warning"),
+            new("security-gaps", "Security Gaps", "2", "0%", "warning"),
+            new("audit-ready", "Audit Ready", "9", "0%", "success"),
+            new("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
+        };
+        var reconciliationQueue = new object[]
+        {
                 new
                 {
                     runId = "gov-run-001",
@@ -2315,56 +2496,53 @@ public static class WorkstationEndpoints
                         summary = "Cash and ledger balances diverge and should be reviewed."
                     }
                 }
-            },
-            breakQueue = new[]
-            {
-                new ReconciliationBreakQueueItem(
-                    BreakId: "BRK-gov-run-001-1",
-                    RunId: "gov-run-001",
-                    StrategyName: "Global Macro Overlay",
-                    Category: ReconciliationBreakCategory.AmountMismatch,
-                    Status: ReconciliationBreakQueueStatus.Open,
-                    Variance: 2500m,
-                    Reason: "Cash variance exceeds configured tolerance.",
-                    AssignedTo: null,
-                    DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                    Severity: ReconciliationBreakSeverity.Critical,
-                    ExceptionRoute: "governance-variance-escalation",
-                    ToleranceProfileId: "critical-zero-tolerance",
-                    ToleranceBand: 0m,
-                    RequiredSignoffRole: "Governance sign-off",
-                    SignoffStatus: "pending-signoff"),
-                new ReconciliationBreakQueueItem(
-                    BreakId: "BRK-gov-run-001-2",
-                    RunId: "gov-run-001",
-                    StrategyName: "Global Macro Overlay",
-                    Category: ReconciliationBreakCategory.ClassificationGap,
-                    Status: ReconciliationBreakQueueStatus.InReview,
-                    Variance: 0m,
-                    Reason: "Security Master coverage is missing for XYZ.",
-                    AssignedTo: "ops.gov",
-                    DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-16),
-                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                    ReviewedBy: "ops.gov",
-                    ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                    ResolutionNote: "Investigating ticker reclassification.",
-                    Severity: ReconciliationBreakSeverity.Medium,
-                    ExceptionRoute: "security-master-governance-review",
-                    ToleranceProfileId: "coverage-classification-review",
-                    ToleranceBand: 0m,
-                    RequiredSignoffRole: "Governance analyst",
-                    SignoffStatus: "in-review")
-            },
-            workspace = new
-            {
-                totalRuns = 12,
-                reconciledRuns = 9,
-                ledgerReadyRuns = 10,
-                openBreaks = 4,
-                securityIssues = 2
-            },
-            cashFlow = new
+        };
+        var breakQueue = new object[]
+        {
+            new ReconciliationBreakQueueItem(
+                BreakId: "BRK-gov-run-001-1",
+                RunId: "gov-run-001",
+                StrategyName: "Global Macro Overlay",
+                Category: ReconciliationBreakCategory.AmountMismatch,
+                Status: ReconciliationBreakQueueStatus.Open,
+                Variance: 2500m,
+                Reason: "Cash variance exceeds configured tolerance.",
+                AssignedTo: null,
+                DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                Severity: ReconciliationBreakSeverity.Critical,
+                ExceptionRoute: "governance-variance-escalation",
+                ToleranceProfileId: "critical-zero-tolerance",
+                ToleranceBand: 0m,
+                RequiredSignoffRole: "Governance sign-off",
+                SignoffStatus: "pending-signoff"),
+            new ReconciliationBreakQueueItem(
+                BreakId: "BRK-gov-run-001-2",
+                RunId: "gov-run-001",
+                StrategyName: "Global Macro Overlay",
+                Category: ReconciliationBreakCategory.ClassificationGap,
+                Status: ReconciliationBreakQueueStatus.InReview,
+                Variance: 0m,
+                Reason: "Security Master coverage is missing for XYZ.",
+                AssignedTo: "ops.gov",
+                DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-16),
+                LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
+                ReviewedBy: "ops.gov",
+                ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
+                ResolutionNote: "Investigating ticker reclassification.",
+                Severity: ReconciliationBreakSeverity.Medium,
+                ExceptionRoute: "security-master-governance-review",
+                ToleranceProfileId: "coverage-classification-review",
+                ToleranceBand: 0m,
+                RequiredSignoffRole: "Governance analyst",
+                SignoffStatus: "in-review")
+        };
+        return new WorkstationGovernancePayload(
+            Metrics: metricsCards,
+            ReconciliationQueue: reconciliationQueue,
+            BreakQueue: breakQueue,
+            Workspace: new WorkstationGovernanceWorkspaceSummary(12, 9, 10, 4, 2),
+            CashFlow: new
             {
                 totalCash = 2_450_000m,
                 totalLedgerCash = 2_447_500m,
@@ -2375,24 +2553,22 @@ public static class WorkstationEndpoints
                 tone = "warning",
                 summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
             },
-            reporting = BuildGovernanceReportingPayload(),
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
-        };
+            Reporting: BuildGovernanceReportingPayload(),
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
-    private static object BuildRunDigest(StrategyRunSummary run, StrategyRunDetail? detail)
+    // PR-03: returns typed DTO
+    private static WorkstationRunDigest BuildRunDigest(StrategyRunSummary run, StrategyRunDetail? detail)
     {
-        return new
-        {
-            runId = run.RunId,
-            strategyName = run.StrategyName,
-            mode = run.Mode.ToString().ToLowerInvariant(),
-            status = run.Status.ToString(),
-            lastUpdated = FormatRelativeTime(run.LastUpdatedAt),
-            hasLedger = !string.IsNullOrWhiteSpace(run.LedgerReference),
-            hasPortfolio = !string.IsNullOrWhiteSpace(run.PortfolioId),
-            securityCoverage = BuildSecurityCoverage(detail)
-        };
+        return new WorkstationRunDigest(
+            RunId: run.RunId,
+            StrategyName: run.StrategyName,
+            Mode: run.Mode.ToString().ToLowerInvariant(),
+            Status: run.Status.ToString(),
+            LastUpdated: FormatRelativeTime(run.LastUpdatedAt),
+            HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
+            HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
+            SecurityCoverage: BuildSecurityCoverage(detail));
     }
 
     private static object BuildResearchRunCard(StrategyRunSummary run, StrategyRunDetail? detail)
@@ -2679,30 +2855,30 @@ public static class WorkstationEndpoints
             Attribution: $"/api/workstation/runs/{run.RunId}/attribution",
             Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
             CashFlows: $"/api/portfolio/{run.RunId}/cash-flows",
-            Continuity: $"/api/workstation/runs/{run.RunId}/continuity");
+            Continuity: UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal));
 
-    private static object BuildTimelineCard(StrategyRunSummary run) => new
-    {
-        runId = run.RunId,
-        strategyName = run.StrategyName,
-        mode = run.Mode.ToString().ToLowerInvariant(),
-        status = run.Status.ToString(),
-        startedAt = run.StartedAt,
-        completedAt = run.CompletedAt,
-        lastUpdatedAt = run.LastUpdatedAt,
-        totalReturn = run.TotalReturn
-    };
+    // PR-03: returns typed DTO
+    private static WorkstationTimelineCard BuildTimelineCard(StrategyRunSummary run) =>
+        new WorkstationTimelineCard(
+            RunId: run.RunId,
+            StrategyName: run.StrategyName,
+            Mode: run.Mode.ToString().ToLowerInvariant(),
+            Status: run.Status.ToString(),
+            StartedAt: run.StartedAt,
+            CompletedAt: run.CompletedAt,
+            LastUpdatedAt: run.LastUpdatedAt,
+            TotalReturn: run.TotalReturn);
 
-    private static object[] BuildModeComparisons(IReadOnlyList<StrategyRunSummary> runs)
+    // PR-03: returns typed comparison groups
+    private static IReadOnlyList<WorkstationModeComparisonGroup> BuildModeComparisons(IReadOnlyList<StrategyRunSummary> runs)
     {
         return runs
             .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
-            .Select(group => new
+            .Select(group =>
             {
-                strategyName = group.Key,
-                modes = group
+                var modes = group
                     .OrderBy(static run => run.Mode)
-                    .Select(static run => new
+                    .Select(static run => (object)new
                     {
                         runId = run.RunId,
                         mode = run.Mode.ToString().ToLowerInvariant(),
@@ -2711,10 +2887,11 @@ public static class WorkstationEndpoints
                         totalReturn = run.TotalReturn,
                         drillIn = BuildRunDrillInLinks(run)
                     })
-                    .ToArray()
+                    .ToArray();
+                return new WorkstationModeComparisonGroup(group.Key, modes);
             })
-            .Where(static comparison => comparison.modes.Length > 0)
-            .ToArray<object>();
+            .Where(static group => group.Modes.Count > 0)
+            .ToArray();
     }
 
     private static object BuildRunDrillInLinks(StrategyRunSummary run) => new
@@ -2724,6 +2901,7 @@ public static class WorkstationEndpoints
         attribution = $"/api/workstation/runs/{run.RunId}/attribution",
         ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
         cashFlows = $"/api/portfolio/{run.RunId}/cash-flows",
+        continuity = UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal),
         comparison = "/api/workstation/runs/compare"
     };
 
@@ -3552,7 +3730,12 @@ public static class WorkstationEndpoints
                         ToleranceProfileId: routing.ToleranceProfileId,
                         ToleranceBand: routing.ToleranceBand,
                         RequiredSignoffRole: routing.RequiredSignoffRole,
-                        SignoffStatus: routing.SignoffStatus),
+                        SignoffStatus: routing.SignoffStatus,
+                        FundAccountId: run.FundProfileId,
+                        ExplainabilitySummary: reconciliationBreak.Reason,
+                        RoutingTarget: "/accounting/reconciliation",
+                        RoutingDetail: $"Review reconciliation break {breakId} in accounting queue.",
+                        RecommendedAction: "ReviewAndResolve"),
                     ct).ConfigureAwait(false);
             }
         }
@@ -3643,6 +3826,7 @@ public static class WorkstationEndpoints
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
         IServiceProvider services,
         string? status,
+        string? fundAccountId,
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
@@ -3657,7 +3841,13 @@ public static class WorkstationEndpoints
             parsed = statusValue;
         }
 
-        return await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
+        var items = await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(fundAccountId))
+        {
+            return items;
+        }
+
+        return items.Where(item => string.Equals(item.FundAccountId, fundAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
     }
 
     private static ReconciliationCalibrationSummaryDto BuildReconciliationCalibrationSummary(

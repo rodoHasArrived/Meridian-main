@@ -44,8 +44,13 @@ public sealed class DataExportViewModel : BindableBase
     // ── Schedule ──────────────────────────────────────────────────────────
     private bool _isScheduleEnabled;
     private string _scheduleTimeText = "08:00";
+    private string _scheduleDestinationPath = string.Empty;
     private string _scheduleTimeError = string.Empty;
     private bool _isScheduleTimeErrorVisible;
+    private string _scheduleReadinessTitle = string.Empty;
+    private string _scheduleReadinessDetail = string.Empty;
+    private string _scheduleScopeText = string.Empty;
+    private string _selectedScheduleFrequency = "daily";
 
     // ── Database ──────────────────────────────────────────────────────────
     private string _databaseHost = string.Empty;
@@ -100,7 +105,18 @@ public sealed class DataExportViewModel : BindableBase
     }
 
     internal string SelectedDatabaseType { get; set; } = "postgresql";
-    internal string SelectedScheduleFrequency { get; set; } = "daily";
+    internal string SelectedScheduleFrequency
+    {
+        get => _selectedScheduleFrequency;
+        set
+        {
+            if (!string.Equals(_selectedScheduleFrequency, value, StringComparison.OrdinalIgnoreCase))
+            {
+                _selectedScheduleFrequency = value;
+                RefreshScheduleReadiness();
+            }
+        }
+    }
     internal string SelectedWebhookFormat { get; set; } = "json";
     internal string SelectedWebhookBatch { get; set; } = "trade";
     internal string SelectedLeanResolution { get; set; } = "minute";
@@ -116,6 +132,7 @@ public sealed class DataExportViewModel : BindableBase
         SetDatabaseCredentialsCommand = new RelayCommand(SetDatabaseCredentials);
         TestDatabaseConnectionCommand = new RelayCommand(TestDatabaseConnection);
         ConfigureDatabaseSyncCommand = new RelayCommand(ConfigureDatabaseSync);
+        ConfigureScheduledExportCommand = new RelayCommand(ConfigureScheduledExport, () => CanConfigureScheduledExport);
         TestWebhookCommand = new RelayCommand(TestWebhook);
         BrowseLeanPathCommand = new RelayCommand(BrowseLeanPath);
         ExportToLeanCommand = new RelayCommand(ExportToLean);
@@ -126,6 +143,7 @@ public sealed class DataExportViewModel : BindableBase
 
         SeedInitialData();
         RefreshExportReadiness();
+        RefreshScheduleReadiness();
     }
 
     // ── Collections ───────────────────────────────────────────────────────
@@ -143,6 +161,7 @@ public sealed class DataExportViewModel : BindableBase
     public IRelayCommand SetDatabaseCredentialsCommand { get; }
     public IRelayCommand TestDatabaseConnectionCommand { get; }
     public IRelayCommand ConfigureDatabaseSyncCommand { get; }
+    public IRelayCommand ConfigureScheduledExportCommand { get; }
     public IRelayCommand TestWebhookCommand { get; }
     public IRelayCommand BrowseLeanPathCommand { get; }
     public IRelayCommand ExportToLeanCommand { get; }
@@ -284,7 +303,10 @@ public sealed class DataExportViewModel : BindableBase
         set
         {
             if (SetProperty(ref _isScheduleEnabled, value))
+            {
                 ValidateScheduleTime();
+                RefreshScheduleReadiness();
+            }
         }
     }
 
@@ -294,7 +316,22 @@ public sealed class DataExportViewModel : BindableBase
         set
         {
             if (SetProperty(ref _scheduleTimeText, value))
+            {
                 ValidateScheduleTime();
+                RefreshScheduleReadiness();
+            }
+        }
+    }
+
+    public string ScheduleDestinationPath
+    {
+        get => _scheduleDestinationPath;
+        set
+        {
+            if (SetProperty(ref _scheduleDestinationPath, value))
+            {
+                RefreshScheduleReadiness();
+            }
         }
     }
 
@@ -309,6 +346,29 @@ public sealed class DataExportViewModel : BindableBase
         get => _isScheduleTimeErrorVisible;
         private set => SetProperty(ref _isScheduleTimeErrorVisible, value);
     }
+
+    public string ScheduleReadinessTitle
+    {
+        get => _scheduleReadinessTitle;
+        private set => SetProperty(ref _scheduleReadinessTitle, value);
+    }
+
+    public string ScheduleReadinessDetail
+    {
+        get => _scheduleReadinessDetail;
+        private set => SetProperty(ref _scheduleReadinessDetail, value);
+    }
+
+    public string ScheduleScopeText
+    {
+        get => _scheduleScopeText;
+        private set => SetProperty(ref _scheduleScopeText, value);
+    }
+
+    public bool CanConfigureScheduledExport => CanConfigureScheduledExportForState(
+        IsScheduleEnabled,
+        ScheduleTimeText,
+        ScheduleDestinationPath);
 
     // ── Database properties ───────────────────────────────────────────────
 
@@ -513,6 +573,19 @@ public sealed class DataExportViewModel : BindableBase
         ShowInfo("Database sync configured. Scheduled exports will push data automatically.");
     }
 
+    private void ConfigureScheduledExport()
+    {
+        if (!CanConfigureScheduledExport)
+        {
+            RefreshScheduleReadiness();
+            ShowInfo(ScheduleReadinessDetail, isError: true);
+            return;
+        }
+
+        ShowInfo(
+            $"{FormatScheduleFrequency(SelectedScheduleFrequency)} export scheduled for {ScheduleTimeText.Trim()} local.");
+    }
+
     private void TestWebhook()
     {
         if (string.IsNullOrWhiteSpace(WebhookUrl))
@@ -700,6 +773,46 @@ public sealed class DataExportViewModel : BindableBase
         }
     }
 
+    private void RefreshScheduleReadiness()
+    {
+        if (!IsScheduleEnabled)
+        {
+            ScheduleReadinessTitle = "Scheduled exports disabled";
+            ScheduleReadinessDetail = "Enable scheduled exports after choosing frequency, run time, and output destination.";
+            ScheduleScopeText = "Disabled";
+        }
+        else if (!TimeSpan.TryParse(ScheduleTimeText, out _))
+        {
+            ScheduleReadinessTitle = "Schedule setup incomplete";
+            ScheduleReadinessDetail = "Enter a valid local run time in HH:mm format.";
+            ScheduleScopeText = $"{FormatScheduleFrequency(SelectedScheduleFrequency)} - time requires review";
+        }
+        else if (string.IsNullOrWhiteSpace(ScheduleDestinationPath))
+        {
+            ScheduleReadinessTitle = "Schedule setup incomplete";
+            ScheduleReadinessDetail = "Set a destination path before saving this scheduled export.";
+            ScheduleScopeText = $"{FormatScheduleFrequency(SelectedScheduleFrequency)} - {ScheduleTimeText.Trim()} local";
+        }
+        else
+        {
+            ScheduleReadinessTitle = "Schedule ready";
+            ScheduleReadinessDetail =
+                $"{FormatScheduleFrequency(SelectedScheduleFrequency)} export will run at {ScheduleTimeText.Trim()} local and write to {ScheduleDestinationPath.Trim()}.";
+            ScheduleScopeText = $"{FormatScheduleFrequency(SelectedScheduleFrequency)} - {ScheduleTimeText.Trim()} local";
+        }
+
+        RaisePropertyChanged(nameof(CanConfigureScheduledExport));
+        ConfigureScheduledExportCommand.NotifyCanExecuteChanged();
+    }
+
+    public static bool CanConfigureScheduledExportForState(
+        bool isScheduleEnabled,
+        string? scheduleTimeText,
+        string? scheduleDestinationPath) =>
+        isScheduleEnabled
+        && TimeSpan.TryParse(scheduleTimeText, out _)
+        && !string.IsNullOrWhiteSpace(scheduleDestinationPath);
+
     private bool TryValidateDatabaseInputs(out string? error)
     {
         error = null;
@@ -730,6 +843,16 @@ public sealed class DataExportViewModel : BindableBase
 
         return true;
     }
+
+    private static string FormatScheduleFrequency(string frequency)
+        => frequency.ToLowerInvariant() switch
+        {
+            "hourly" => "Hourly",
+            "daily" => "Daily",
+            "weekly" => "Weekly",
+            "monthly" => "Monthly",
+            _ => frequency.ToUpperInvariant()
+        };
 
     private void ShowInfo(string message, bool isError = false)
     {

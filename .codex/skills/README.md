@@ -1,8 +1,8 @@
 # Meridian Codex Skills
 
 This folder contains Meridian's repo-local Codex skills. These are the primary project-scoped
-skills for the current AI workflow and should stay aligned with Meridian's desktop-first
-fund-management and workstation product direction.
+skills for the current AI workflow and should stay aligned with Meridian's browser-first operator
+workstation direction, retained WPF support, and fund-management/trading-platform scope.
 
 ## Current Skills
 

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Type: Mono & numerals</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; }
+  .row { display: grid; grid-template-columns: 140px 1fr; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  .label { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .sample { color: var(--fg); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .big { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--fg); letter-spacing: -0.01em; }
+</style>
+</head>
+<body class="bg-app">
+  <div class="row"><span class="label">KPI · 24 · MONO</span><span class="big" style="font-size: 24px;">+100,000.00</span></div>
+  <div class="row"><span class="label">KPI · 20 · SUCCESS</span><span class="big" style="font-size:20px; color:#26BF86;">+12,430.17</span></div>
+  <div class="row"><span class="label">KPI · 20 · DANGER</span><span class="big" style="font-size:20px; color:#DE5878;">−2.41%</span></div>
+  <div class="row"><span class="label">MONO 400 · 12</span><span class="sample" style="font-size:12px;">ord-a8f2c · AAPL · 100@187.42</span></div>
+  <div class="row"><span class="label">MONO 500 · 11</span><span class="sample" style="font-size:11px;">sess-0e431 · 14:32:07.224Z</span></div>
+</body>
+</html>

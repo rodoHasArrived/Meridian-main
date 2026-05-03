@@ -124,6 +124,41 @@ public sealed class RoslynScriptCompilerTests
         r2.Success.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task CompileAsync_SafeMode_BlocksScriptLevelAssemblyReferences()
+    {
+        var compiler = BuildCompiler(new QuantScriptOptions { EnableUnsafeScripts = false });
+        var source = "#r \"System.Xml\"\nvar x = 1;";
+
+        var result = await compiler.CompileAsync(source);
+
+        result.Success.Should().BeFalse();
+        result.Diagnostics.Should().Contain(d => d.Message.Contains("disabled in safe mode", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task CompileAsync_SafeMode_BlocksPathBasedSourceLoading()
+    {
+        var compiler = BuildCompiler(new QuantScriptOptions { EnableUnsafeScripts = false });
+        var source = "#load \"helpers/common.csx\"\nvar x = 1;";
+
+        var result = await compiler.CompileAsync(source);
+
+        result.Success.Should().BeFalse();
+        result.Diagnostics.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task CompileAsync_UnsafeMode_AllowsScriptLevelAssemblyReferences()
+    {
+        var compiler = BuildCompiler(new QuantScriptOptions { EnableUnsafeScripts = true });
+        var source = "#r \"System.Xml\"\nusing System.Xml;\nvar doc = new XmlDocument();";
+
+        var result = await compiler.CompileAsync(source);
+
+        result.Success.Should().BeTrue();
+    }
+
     // ── Cancellation ─────────────────────────────────────────────────────────
 
     [Fact]

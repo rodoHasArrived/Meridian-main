@@ -12,6 +12,7 @@ public sealed record ScriptRunResult(
     TimeSpan CompileTime,
     long PeakMemoryBytes,
     IReadOnlyList<ScriptDiagnostic> CompilationErrors,
+    IReadOnlyList<ScriptDiagnostic> RuntimeDiagnostics,
     string? RuntimeError,
     string ConsoleOutput,
     IReadOnlyList<KeyValuePair<string, string>> Metrics,

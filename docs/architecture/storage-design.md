@@ -2573,6 +2573,14 @@ Six built-in profiles are registered in `ExportProfile.GetBuiltInProfiles()`:
 | `postgresql` | PostgreSQL | CSV | Includes DDL + COPY statements |
 | `arrow-feather` | Apache Arrow | Arrow Feather v2 | Zero-copy IPC format |
 
+Current shared UI export wizard behavior is intentionally conservative while optional native
+writers are not referenced by `Meridian.Ui.Services`: JSONL inputs are flattened to CSV with a
+deterministic union header across sparse records, generated file stems and SQL identifiers are
+sanitized from the requested symbol, and fallback formats such as Parquet, Excel, HDF5,
+ClickHouse, Lean, SQL, and notebooks report every generated script or note sidecar in the export
+result. A per-symbol export failure is surfaced as an unsuccessful export instead of being
+silently ignored.
+
 ```json
 {
   "ExportProfiles": {

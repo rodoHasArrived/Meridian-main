@@ -23,8 +23,10 @@
                                Style="{StaticResource CardDescriptionStyle}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Import CSV" Click="ImportCsv_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                    <Button Content="Export CSV" Click="ExportCsv_Click" Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Content="Import CSV" Click="ImportCsv_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                            AutomationProperties.AutomationId="SymbolMappingImportCsvButton" />
+                    <Button Content="Export CSV" Click="ExportCsv_Click" Style="{StaticResource SecondaryButtonStyle}"
+                            AutomationProperties.AutomationId="SymbolMappingExportCsvButton" />
                 </StackPanel>
             </Grid>
 
@@ -35,11 +37,22 @@
                     <TextBlock Text="Enter a canonical symbol to see how it maps across all providers"
                                FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <TextBox x:Name="TestSymbolBox" Width="200" Style="{StaticResource FormTextBoxStyle}" Margin="0,0,12,0" />
-                        <Button Content="Test Mapping" Click="TestMapping_Click" Style="{StaticResource PrimaryButtonStyle}" />
+                        <TextBox Width="200" Style="{StaticResource FormTextBoxStyle}" Margin="0,0,12,0"
+                                 Text="{Binding TestSymbol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AutomationProperties.AutomationId="SymbolMappingTestSymbolBox" />
+                        <Button Content="Test Mapping"
+                                Command="{Binding TestMappingCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                AutomationProperties.AutomationId="SymbolMappingTestButton" />
                     </StackPanel>
-                    <ListView x:Name="TestResultsList" SelectionMode="Single" MaxHeight="250"
-                              Background="Transparent" BorderThickness="0" Visibility="Collapsed">
+                    <TextBlock Text="{Binding TestScopeText}" FontSize="12"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,12"
+                               AutomationProperties.AutomationId="SymbolMappingTestScopeText" />
+                    <ListView SelectionMode="Single" MaxHeight="250"
+                              ItemsSource="{Binding TestResults}"
+                              Background="Transparent" BorderThickness="0"
+                              Visibility="{Binding TestResultsVisibility}"
+                              AutomationProperties.AutomationId="SymbolMappingTestResultsList">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -73,8 +86,10 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <TextBlock Text="Known Providers" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-                    <ListView x:Name="ProvidersList" SelectionMode="Single" MaxHeight="300"
-                              Background="Transparent" BorderThickness="0">
+                    <ListView SelectionMode="Single" MaxHeight="300"
+                              ItemsSource="{Binding Providers}"
+                              Background="Transparent" BorderThickness="0"
+                              AutomationProperties.AutomationId="SymbolMappingProvidersList">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -122,18 +137,51 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Canonical Symbol" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
-                            <TextBox x:Name="NewCanonicalBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding NewCanonicalSymbol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.AutomationId="SymbolMappingNewCanonicalBox" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Provider" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
-                            <ComboBox x:Name="NewProviderCombo" SelectedIndex="0" />
+                            <ComboBox ItemsSource="{Binding ProviderOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Id"
+                                      SelectedValue="{Binding SelectedProviderId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      AutomationProperties.AutomationId="SymbolMappingProviderCombo" />
                         </StackPanel>
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="Provider Symbol" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,4" />
-                            <TextBox x:Name="NewProviderSymbolBox" Style="{StaticResource FormTextBoxStyle}" />
+                            <TextBox Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding NewProviderSymbol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.AutomationId="SymbolMappingNewProviderSymbolBox" />
                         </StackPanel>
                     </Grid>
-                    <Button Content="Add Mapping" Click="AddMapping_Click" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" />
+                    <Border Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,0,0,12"
+                            AutomationProperties.AutomationId="SymbolMappingAddReadinessCard">
+                        <StackPanel>
+                            <TextBlock Text="{Binding MappingReadinessTitle}" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextBrush}"
+                                       AutomationProperties.AutomationId="SymbolMappingAddReadinessTitle" />
+                            <TextBlock Text="{Binding MappingReadinessDetail}" FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="SymbolMappingAddReadinessDetail" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Add Mapping"
+                                Command="{Binding AddMappingCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                HorizontalAlignment="Left"
+                                AutomationProperties.AutomationId="SymbolMappingAddButton" />
+                        <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   AutomationProperties.AutomationId="SymbolMappingStatusMessage" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
@@ -146,11 +194,48 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Current Mappings" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Grid.Column="1" x:Name="MappingCountText" Text="0 mappings" FontSize="12"
+                        <TextBlock Grid.Column="1" Text="{Binding MappingCountText}" FontSize="12"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
                     </Grid>
-                    <ListView x:Name="MappingsList" SelectionMode="Single" MaxHeight="300"
-                              Background="Transparent" BorderThickness="0">
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            BorderBrush="{StaticResource WarningColorBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,0,0,12"
+                            Visibility="{Binding RemoveConfirmationVisibility}"
+                            AutomationProperties.AutomationId="SymbolMappingRemoveConfirmation">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Remove mapping override?" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextBrush}" />
+                                <TextBlock Text="{Binding PendingRemoveCanonicalSymbol, StringFormat=This removes the custom provider symbols for {0}. Default provider transformations will still apply.}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0">
+                                <Button Content="Remove"
+                                        Command="{Binding ConfirmRemoveMappingCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="0,0,8,0"
+                                        AutomationProperties.AutomationId="SymbolMappingConfirmRemoveButton" />
+                                <Button Content="Cancel"
+                                        Command="{Binding CancelRemoveMappingCommand}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        AutomationProperties.AutomationId="SymbolMappingCancelRemoveButton" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <ListView SelectionMode="Single" MaxHeight="300"
+                              ItemsSource="{Binding Mappings}"
+                              Background="Transparent" BorderThickness="0"
+                              Visibility="{Binding MappingsVisibility}"
+                              AutomationProperties.AutomationId="SymbolMappingMappingsList">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -178,14 +263,17 @@
                                                    TextTrimming="CharacterEllipsis" />
                                         <TextBlock Grid.Column="2" Text="{Binding UpdatedText}" FontSize="11"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="12,0" />
-                                        <Button Grid.Column="3" Content="Remove" Click="RemoveMapping_Click"
-                                                Style="{StaticResource GhostButtonStyle}" Tag="{Binding CanonicalSymbol}" />
+                                        <Button Grid.Column="3" Content="Remove"
+                                                Command="{Binding DataContext.RequestRemoveMappingCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                CommandParameter="{Binding CanonicalSymbol}"
+                                                Style="{StaticResource GhostButtonStyle}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel x:Name="NoMappingsPanel" Visibility="Collapsed" Margin="0,8,0,0">
+                    <StackPanel Visibility="{Binding EmptyMappingsVisibility}" Margin="0,8,0,0"
+                                AutomationProperties.AutomationId="SymbolMappingEmptyMappingsPanel">
                         <TextBlock Text="No custom symbol mappings configured. Default provider transformations are used."
                                    FontSize="13" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
                     </StackPanel>

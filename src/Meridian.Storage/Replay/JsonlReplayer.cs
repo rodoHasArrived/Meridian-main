@@ -10,25 +10,28 @@ using Serilog;
 namespace Meridian.Storage.Replay;
 
 /// <summary>
-/// Reads previously captured JSONL events (optionally gzip compressed) and replays them as <see cref="MarketEvent"/> objects.
+/// Reads previously captured JSONL events (optionally gzip compressed) from a file or directory
+/// and replays them as <see cref="MarketEvent"/> objects.
 /// </summary>
 public sealed class JsonlReplayer
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<JsonlReplayer>();
-    private readonly string _root;
+    private readonly string _path;
 
-    public JsonlReplayer(string root)
+    public JsonlReplayer(string path)
     {
-        _root = root ?? throw new ArgumentNullException(nameof(root));
+        _path = path ?? throw new ArgumentNullException(nameof(path));
     }
 
     public async IAsyncEnumerable<MarketEvent> ReadEventsAsync([EnumeratorCancellation] CancellationToken ct = default)
     {
-        if (!Directory.Exists(_root))
+        if (!File.Exists(_path) && !Directory.Exists(_path))
             yield break;
 
-        var files = Directory.EnumerateFiles(_root, "*.jsonl*", SearchOption.AllDirectories)
-            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+        IEnumerable<string> files = File.Exists(_path)
+            ? new[] { _path }
+            : Directory.EnumerateFiles(_path, "*.jsonl*", SearchOption.AllDirectories)
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
 
         foreach (var file in files)
         {

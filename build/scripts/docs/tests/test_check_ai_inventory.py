@@ -43,8 +43,15 @@ class CheckAiInventoryTests(unittest.TestCase):
     def test_collect_inventory_discovers_supported_ai_surfaces(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            write(root / "AGENTS.md")
+            write(root / "CLAUDE.md")
+            write(root / ".codex" / "config.toml")
+            write(root / ".codex" / "environments" / "environment.toml")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
+            write(root / ".claude" / "settings.json")
+            write(root / ".claude" / "settings.local.json")
             write(root / ".claude" / "agents" / "meridian-test.md")
+            write(root / ".github" / "copilot-instructions.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
             write(root / "src" / "Meridian.McpServer" / "Tools" / "SampleTools.cs")
@@ -53,6 +60,13 @@ class CheckAiInventoryTests(unittest.TestCase):
             inventory = check_ai_inventory.collect_inventory(root)
             pairs = {(item.kind, item.name) for item in inventory}
 
+            self.assertIn(("entrypoint", "AGENTS.md"), pairs)
+            self.assertIn(("entrypoint", "CLAUDE.md"), pairs)
+            self.assertIn(("config", "config.toml"), pairs)
+            self.assertIn(("environment-config", "environment.toml"), pairs)
+            self.assertIn(("config", "settings.json"), pairs)
+            self.assertIn(("config", "settings.local.json"), pairs)
+            self.assertIn(("instruction-entrypoint", "copilot-instructions.md"), pairs)
             self.assertIn(("skill", "meridian-test"), pairs)
             self.assertIn(("agent", "meridian-test.md"), pairs)
             self.assertIn(("prompt", "sample.prompt.yml"), pairs)
@@ -101,9 +115,9 @@ class CheckAiInventoryTests(unittest.TestCase):
             indexed = "\n".join(
                 [
                     "Root assistant compatibility AGENTS.md CLAUDE.md",
-                    "Codex .codex/skills OpenAI/Codex meridian-test",
-                    "Claude / Claude Code .claude/agents .claude/skills meridian-test",
-                    "GitHub Copilot .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",
+                    "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex meridian-test",
+                    "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills meridian-test",
+                    "GitHub Copilot .github/copilot-instructions.md .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",
                     "MCP-compatible clients src/Meridian.Mcp src/Meridian.McpServer",
                     "AI automation workflows prompt-generation.yml skill-evals.yml .github/workflows/copilot-*",
                     "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
@@ -116,6 +130,114 @@ class CheckAiInventoryTests(unittest.TestCase):
             findings = check_ai_inventory.check_catalog_drift(root, inventory)
 
             self.assertEqual([], findings)
+
+    def test_check_catalog_drift_reports_legacy_canonical_repository_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "README.md",
+                "https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(any(finding.kind == "legacy-repository-link" for finding in findings))
+            self.assertTrue(any(finding.path == "docs/ai/README.md" for finding in findings))
+
+    def test_check_catalog_drift_allows_historical_workflow_evidence_links(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "ai-known-errors.md",
+                "https://github.com/rodoHasArrived/Meridian/actions/runs/123456\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "legacy-repository-link" for finding in findings))
+
+    def test_check_catalog_drift_reports_copilot_repository_tree_duplication(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "copilot" / "instructions.md",
+                "\n".join(
+                    [
+                        "# Meridian Copilot Guide",
+                        "",
+                        "## Repository Structure",
+                        "",
+                        "```text",
+                        "Meridian-main",
+                        "src/",
+                        "```",
+                    ]
+                ),
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(any(finding.kind == "duplicated-repository-tree" for finding in findings))
+
+    def test_check_catalog_drift_reports_claude_repository_tree_duplication(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "CLAUDE.md",
+                "\n".join(
+                    [
+                        "# Claude Guide",
+                        "",
+                        "## Repository Structure",
+                        "",
+                        "```text",
+                        "Meridian-main",
+                        "src/",
+                        "```",
+                    ]
+                ),
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "duplicated-repository-tree" and finding.path == "CLAUDE.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_allows_compact_copilot_navigation_guide(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write(
+                root / "docs" / "ai" / "copilot" / "instructions.md",
+                "## Repository Navigation\nUse docs/ai/generated/repo-navigation.md for routing.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "duplicated-repository-tree" for finding in findings))
+
+    def test_build_payload_uses_portable_repository_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            payload = check_ai_inventory.build_payload(root, [], [])
+
+            self.assertEqual(".", payload["repositoryRoot"])
+            self.assertEqual(root.name, payload["repositoryName"])
+            self.assertNotIn(str(root), check_ai_inventory.render_markdown(payload))
 
 
 if __name__ == "__main__":

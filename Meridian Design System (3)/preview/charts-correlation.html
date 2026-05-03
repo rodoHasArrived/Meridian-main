@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meridian — Charts: Correlation matrix</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
+  .card { background: #0B1520; border: 1px solid #2A4566; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2A4566; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .title b { color: #FFF; margin-right: 10px; }
+  table { border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
+  th, td { padding: 8px 10px; text-align: center; width: 56px; border: 1px solid #05101B; font-variant-numeric: tabular-nums; }
+  th { color: #A8B5C4; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: 0; padding-bottom: 4px; }
+  td.label { text-align: left; color: #FFF; border: 0; padding-right: 12px; font-weight: 500; }
+  .legend { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; }
+  .legend .bar { display: inline-block; width: 160px; height: 6px; background: linear-gradient(90deg, #DE5878 0%, #1F344C 50%, #2AB2D4 100%); border-radius: 1px; }
+</style>
+</head>
+<body class="bg-app">
+<div class="card">
+  <div class="head">
+    <div class="title"><b>CORRELATION MATRIX</b>daily returns · 60D</div>
+    <div class="legend"><span>−1.0</span><span class="bar"></span><span>+1.0</span></div>
+  </div>
+  <table id="mx"></table>
+</div>
+<script>
+  const syms = ["SPY","QQQ","IWM","AAPL","MSFT","NVDA","TSLA","TLT"];
+  const m = [
+    [1.00, 0.94, 0.82, 0.76, 0.78, 0.68, 0.52,-0.22],
+    [0.94, 1.00, 0.74, 0.82, 0.85, 0.80, 0.58,-0.28],
+    [0.82, 0.74, 1.00, 0.58, 0.60, 0.48, 0.44,-0.18],
+    [0.76, 0.82, 0.58, 1.00, 0.72, 0.62, 0.42,-0.20],
+    [0.78, 0.85, 0.60, 0.72, 1.00, 0.70, 0.48,-0.24],
+    [0.68, 0.80, 0.48, 0.62, 0.70, 1.00, 0.54,-0.18],
+    [0.52, 0.58, 0.44, 0.42, 0.48, 0.54, 1.00,-0.32],
+    [-0.22,-0.28,-0.18,-0.20,-0.24,-0.18,-0.32, 1.00]
+  ];
+  const t = document.getElementById('mx');
+  let h = '<tr><th></th>' + syms.map(s=>`<th>${s}</th>`).join('') + '</tr>';
+  for (let i=0;i<syms.length;i++){
+    h += `<tr><td class="label">${syms[i]}</td>`;
+    for (let j=0;j<syms.length;j++){
+      const v = m[i][j];
+      let bg;
+      if (i===j) bg = '#1B2A3C';
+      else if (v >= 0) bg = `rgba(42, 178, 212, ${0.12 + v*0.65})`;
+      else bg = `rgba(222, 88, 120, ${0.12 + (-v)*0.65})`;
+      h += `<td style="background:${bg};color:#FFF;">${v.toFixed(2)}</td>`;
+    }
+    h += '</tr>';
+  }
+  t.innerHTML = h;
+</script>
+</body>
+</html>

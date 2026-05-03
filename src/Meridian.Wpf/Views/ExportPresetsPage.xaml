@@ -1,9 +1,14 @@
 <Page x:Class="Meridian.Wpf.Views.ExportPresetsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Export Presets">
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel MaxWidth="1200">
             <StackPanel Margin="0,0,0,20" Style="{StaticResource EmbeddedShellHeaderStackPanelStyle}">
@@ -25,6 +30,10 @@
                 <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="Preset Library" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <TextBlock Text="{Binding PresetLibraryStateText}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   Margin="0,0,0,12"
+                                   AutomationProperties.AutomationId="ExportPresetLibraryStateText" />
                         <DataGrid ItemsSource="{Binding Presets}"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
@@ -35,12 +44,43 @@
                                 <DataGridTextColumn Header="Updated" Binding="{Binding UpdatedAt}" Width="160" />
                             </DataGrid.Columns>
                         </DataGrid>
+                        <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16"
+                                Margin="0,12,0,0"
+                                Visibility="{Binding IsPresetLibraryEmpty, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="ExportPresetEmptyState">
+                            <TextBlock Text="No presets are available yet. Enter a name and save the first reusable reporting export preset."
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </Border>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="Preset Details" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+
+                        <Border x:Name="ExportPresetReadinessCard"
+                                Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,16"
+                                AutomationProperties.AutomationId="ExportPresetReadinessCard">
+                            <StackPanel>
+                                <TextBlock Text="{Binding PresetReadinessTitle}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="{Binding PresetReadinessDetail}"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Name" Style="{StaticResource FormLabelStyle}" />
@@ -67,17 +107,19 @@
                         <StackPanel Orientation="Horizontal">
                             <Button Content="Save"
                                     Style="{StaticResource PrimaryButtonStyle}"
-                                    Click="SavePreset_Click"
+                                    Command="{Binding SavePresetCommand}"
+                                    AutomationProperties.AutomationId="ExportPresetSaveButton"
                                     Margin="0,0,8,0" />
                             <Button Content="Delete"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="DeletePreset_Click"
-                                    IsEnabled="{Binding CanDelete}" />
+                                    Command="{Binding DeletePresetCommand}"
+                                    AutomationProperties.AutomationId="ExportPresetDeleteButton" />
                         </StackPanel>
 
                         <TextBlock Text="{Binding StatusMessage}"
                                    Foreground="{StaticResource InfoColorBrush}"
-                                   Margin="0,12,0,0" />
+                                   Margin="0,12,0,0"
+                                   Visibility="{Binding IsStatusVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
                 </Border>
             </Grid>

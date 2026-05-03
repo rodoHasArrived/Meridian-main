@@ -4,7 +4,9 @@ public sealed record BacktestPreflightRequestDto(
     DateOnly From,
     DateOnly To,
     string DataRoot,
-    IReadOnlyList<string>? Symbols = null);
+    IReadOnlyList<string>? Symbols = null,
+    string? RequiredExecutionModel = null,
+    IReadOnlyList<string>? RequiredReplayDataTypes = null);
 
 public sealed record BacktestPreflightReportV2Dto(
     bool IsReadyToRun,

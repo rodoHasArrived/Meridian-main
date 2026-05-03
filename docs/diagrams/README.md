@@ -11,6 +11,24 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 
 ---
 
+
+## Folder Layout
+
+Diagram source/artifact triplets are organized by domain to reduce top-level sprawl:
+
+- `architecture/c4/`
+- `architecture/platform/`
+- `workflows/operations/`
+- `operations/`
+- `reference/`
+- `ui/`
+- `analytics/`
+- `uml/`
+
+The index below keeps basename references for readability; use the folders above to locate each diagram set.
+
+---
+
 ## Diagram Index
 
 | Diagram | Description | File |
@@ -64,7 +82,7 @@ Shows the major deployable units:
 
 - **Presentation Layer**: Desktop-local API host, WPF Desktop App, CLI Interface
 - **Onboarding & Diagnostics Layer**: Configuration Wizard, Auto-Configuration, Diagnostic Services, Error Formatter
-- **Core Collector Service** (.NET 9 console with 100K bounded channel policy)
+- **Core Collector Service** (.NET 10 console with 100K bounded channel policy)
 - **F# Domain Library** (Type-safe validation, discriminated unions)
 - **Contracts Library** (Shared DTOs, pipeline contracts)
 - **Storage Layer** (WAL → JSONL → Parquet with tiered storage)

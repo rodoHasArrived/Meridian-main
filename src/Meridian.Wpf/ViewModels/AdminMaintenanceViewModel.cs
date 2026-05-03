@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -9,7 +10,7 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class AdminMaintenanceViewModel : BindableBase
 {
-    private readonly AdminMaintenanceServiceBase _adminService;
+    private readonly IAdminMaintenanceService _adminService;
 
     // ---- Schedule config ----
     private bool _scheduleEnabled;
@@ -20,6 +21,10 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private bool _runTierMigration;
     private string _nextRunText = "Not scheduled";
     private string _lastRunText = "Never";
+    private string _scheduleReadinessTitle = "Schedule paused";
+    private string _scheduleReadinessDetail = "Scheduled maintenance is disabled. Enable it when routine lifecycle work should run automatically.";
+    private string _scheduleOperationSummary = "Operations: Compress older files, clean up temp files, verify data integrity";
+    private bool _canSaveSchedule = true;
 
     // ---- Quick-check state ----
     private bool _isQuickCheckBusy;
@@ -33,9 +38,15 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private bool _isMaintenanceBusy;
 
     // ---- Cleanup ----
+    private bool _isCleanupBusy;
     private bool _isCleanupResultsVisible;
     private string _cleanupFilesText = "0";
     private string _cleanupSizeText = "0 B";
+    private bool _canExecuteCleanup;
+    private bool _isCleanupConfirmationVisible;
+    private string _cleanupReadinessTitle = "Preview cleanup before deleting files.";
+    private string _cleanupReadinessDetail = "Run a cleanup preview to stage temp files and empty directories before execution is enabled.";
+    private string _cleanupReadinessScope = "No cleanup preview loaded.";
 
     // ---- InfoBar ----
     private bool _isStatusVisible;
@@ -44,9 +55,17 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private string _statusTitle = string.Empty;
     private string _statusMessage = string.Empty;
 
-    public AdminMaintenanceViewModel(AdminMaintenanceServiceBase adminService)
+    public AdminMaintenanceViewModel(IAdminMaintenanceService adminService)
     {
         _adminService = adminService;
+        SaveScheduleCommand = new AsyncRelayCommand(SaveScheduleWithFeedbackAsync, () => CanSaveSchedule);
+        PreviewCleanupCommand = new AsyncRelayCommand(PreviewCleanupAsync, () => !IsCleanupBusy);
+        RequestExecuteCleanupCommand = new RelayCommand(RequestExecuteCleanup, () => CanExecuteCleanup && !IsCleanupBusy);
+        ConfirmExecuteCleanupCommand = new AsyncRelayCommand(ConfirmExecuteCleanupAsync, () =>
+            CanExecuteCleanup && IsCleanupConfirmationVisible && !IsCleanupBusy);
+        CancelExecuteCleanupCommand = new RelayCommand(CancelExecuteCleanup, () =>
+            IsCleanupConfirmationVisible && !IsCleanupBusy);
+        RefreshSchedulePresentation();
     }
 
     // ---- Collections ----
@@ -56,53 +75,117 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public ObservableCollection<CleanupFileDisplayItem> CleanupItems { get; } = new();
     public ObservableCollection<MaintenanceHistoryItem> HistoryItems { get; } = new();
 
+    // ---- Commands ----
+
+    public IAsyncRelayCommand SaveScheduleCommand { get; }
+    public IAsyncRelayCommand PreviewCleanupCommand { get; }
+    public IRelayCommand RequestExecuteCleanupCommand { get; }
+    public IAsyncRelayCommand ConfirmExecuteCleanupCommand { get; }
+    public IRelayCommand CancelExecuteCleanupCommand { get; }
+
     // ---- Schedule config properties ----
     public bool ScheduleEnabled
     {
         get => _scheduleEnabled;
-        set => SetProperty(ref _scheduleEnabled, value);
+        set
+        {
+            if (SetProperty(ref _scheduleEnabled, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public string CronExpression
     {
         get => _cronExpression;
-        set => SetProperty(ref _cronExpression, value);
+        set
+        {
+            if (SetProperty(ref _cronExpression, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunCompression
     {
         get => _runCompression;
-        set => SetProperty(ref _runCompression, value);
+        set
+        {
+            if (SetProperty(ref _runCompression, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunCleanup
     {
         get => _runCleanup;
-        set => SetProperty(ref _runCleanup, value);
+        set
+        {
+            if (SetProperty(ref _runCleanup, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunIntegrityCheck
     {
         get => _runIntegrityCheck;
-        set => SetProperty(ref _runIntegrityCheck, value);
+        set
+        {
+            if (SetProperty(ref _runIntegrityCheck, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public bool RunTierMigration
     {
         get => _runTierMigration;
-        set => SetProperty(ref _runTierMigration, value);
+        set
+        {
+            if (SetProperty(ref _runTierMigration, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public string NextRunText
     {
         get => _nextRunText;
-        private set => SetProperty(ref _nextRunText, value);
+        private set
+        {
+            if (SetProperty(ref _nextRunText, value))
+                RefreshSchedulePresentation();
+        }
     }
 
     public string LastRunText
     {
         get => _lastRunText;
         private set => SetProperty(ref _lastRunText, value);
+    }
+
+    public string ScheduleReadinessTitle
+    {
+        get => _scheduleReadinessTitle;
+        private set => SetProperty(ref _scheduleReadinessTitle, value);
+    }
+
+    public string ScheduleReadinessDetail
+    {
+        get => _scheduleReadinessDetail;
+        private set => SetProperty(ref _scheduleReadinessDetail, value);
+    }
+
+    public string ScheduleOperationSummary
+    {
+        get => _scheduleOperationSummary;
+        private set => SetProperty(ref _scheduleOperationSummary, value);
+    }
+
+    public bool CanSaveSchedule
+    {
+        get => _canSaveSchedule;
+        private set
+        {
+            if (SetProperty(ref _canSaveSchedule, value))
+                SaveScheduleCommand.NotifyCanExecuteChanged();
+        }
     }
 
     // ---- Quick-check properties ----
@@ -157,6 +240,21 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     }
 
     // ---- Cleanup properties ----
+    public bool IsCleanupBusy
+    {
+        get => _isCleanupBusy;
+        private set
+        {
+            if (SetProperty(ref _isCleanupBusy, value))
+            {
+                PreviewCleanupCommand.NotifyCanExecuteChanged();
+                RequestExecuteCleanupCommand.NotifyCanExecuteChanged();
+                ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+                CancelExecuteCleanupCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
     public bool IsCleanupResultsVisible
     {
         get => _isCleanupResultsVisible;
@@ -173,6 +271,50 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     {
         get => _cleanupSizeText;
         private set => SetProperty(ref _cleanupSizeText, value);
+    }
+
+    public bool CanExecuteCleanup
+    {
+        get => _canExecuteCleanup;
+        private set
+        {
+            if (SetProperty(ref _canExecuteCleanup, value))
+            {
+                RequestExecuteCleanupCommand.NotifyCanExecuteChanged();
+                ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsCleanupConfirmationVisible
+    {
+        get => _isCleanupConfirmationVisible;
+        private set
+        {
+            if (SetProperty(ref _isCleanupConfirmationVisible, value))
+            {
+                ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+                CancelExecuteCleanupCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public string CleanupReadinessTitle
+    {
+        get => _cleanupReadinessTitle;
+        private set => SetProperty(ref _cleanupReadinessTitle, value);
+    }
+
+    public string CleanupReadinessDetail
+    {
+        get => _cleanupReadinessDetail;
+        private set => SetProperty(ref _cleanupReadinessDetail, value);
+    }
+
+    public string CleanupReadinessScope
+    {
+        get => _cleanupReadinessScope;
+        private set => SetProperty(ref _cleanupReadinessScope, value);
     }
 
     // ---- InfoBar properties ----
@@ -318,8 +460,28 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
     public async Task SaveScheduleAsync(CancellationToken ct = default)
     {
+        await SaveScheduleCoreAsync(showSuccess: false, ct);
+    }
+
+    private async Task SaveScheduleWithFeedbackAsync()
+    {
+        await SaveScheduleCoreAsync(showSuccess: true, CancellationToken.None);
+    }
+
+    private async Task SaveScheduleCoreAsync(bool showSuccess, CancellationToken ct)
+    {
         try
         {
+            if (!CanSaveSchedule)
+            {
+                ShowError(
+                    "Schedule incomplete",
+                    ScheduleEnabled && !HasSelectedScheduleOperations()
+                        ? "Select at least one maintenance operation before saving an enabled schedule."
+                        : "Choose a valid schedule frequency before saving.");
+                return;
+            }
+
             var config = new MaintenanceScheduleConfig
             {
                 Enabled = ScheduleEnabled,
@@ -330,13 +492,88 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                 RunTierMigration = RunTierMigration
             };
 
-            await _adminService.UpdateMaintenanceScheduleAsync(config, ct);
+            var result = await _adminService.UpdateMaintenanceScheduleAsync(config, ct);
+            if (result.Success)
+            {
+                if (showSuccess)
+                    ShowSuccess("Schedule saved successfully.");
+            }
+            else
+            {
+                ShowError("Failed to save schedule", result.Error ?? result.Message ?? "Unknown error");
+            }
         }
         catch (Exception ex)
         {
             ShowError("Failed to save schedule", ex.Message);
         }
     }
+
+    private void RefreshSchedulePresentation()
+    {
+        var hasOperations = HasSelectedScheduleOperations();
+        var hasFrequency = !string.IsNullOrWhiteSpace(CronExpression);
+
+        ScheduleOperationSummary = hasOperations
+            ? $"Operations: {string.Join(", ", GetSelectedScheduleOperationLabels())}"
+            : "Operations: none selected";
+
+        CanSaveSchedule = !ScheduleEnabled || (hasFrequency && hasOperations);
+
+        if (!ScheduleEnabled)
+        {
+            ScheduleReadinessTitle = "Schedule paused";
+            ScheduleReadinessDetail = "Scheduled maintenance is disabled. Selected operations are retained for the next time automation is enabled.";
+            return;
+        }
+
+        if (!hasOperations)
+        {
+            ScheduleReadinessTitle = "Schedule needs an operation";
+            ScheduleReadinessDetail = "Select at least one maintenance operation before saving an enabled schedule.";
+            return;
+        }
+
+        if (!hasFrequency)
+        {
+            ScheduleReadinessTitle = "Schedule needs a frequency";
+            ScheduleReadinessDetail = "Choose a frequency before saving the maintenance schedule.";
+            return;
+        }
+
+        ScheduleReadinessTitle = "Schedule ready";
+        ScheduleReadinessDetail = $"Runs {FormatCronExpression(CronExpression)}. {FormatNextRunDetail()}";
+    }
+
+    private bool HasSelectedScheduleOperations() =>
+        RunCompression || RunCleanup || RunIntegrityCheck || RunTierMigration;
+
+    private IEnumerable<string> GetSelectedScheduleOperationLabels()
+    {
+        if (RunCompression)
+            yield return "Compress older files";
+        if (RunCleanup)
+            yield return "clean up temp files";
+        if (RunIntegrityCheck)
+            yield return "verify data integrity";
+        if (RunTierMigration)
+            yield return "migrate to archive tier";
+    }
+
+    private string FormatNextRunDetail() =>
+        string.IsNullOrWhiteSpace(NextRunText) || NextRunText == "Not scheduled"
+            ? "Next run will update after save."
+            : $"Next run: {NextRunText}.";
+
+    private static string FormatCronExpression(string cronExpression) => cronExpression switch
+    {
+        "0 2 * * *" => "daily at 2 AM",
+        "0 4 * * *" => "daily at 4 AM",
+        "0 3 * * 0" => "weekly on Sunday at 3 AM",
+        "0 3 * * 6" => "weekly on Saturday at 3 AM",
+        "0 3 1 * *" => "monthly on the 1st at 3 AM",
+        _ => cronExpression
+    };
 
     // ---- Maintenance run ----
 
@@ -536,6 +773,12 @@ public sealed class AdminMaintenanceViewModel : BindableBase
 
     public async Task PreviewCleanupAsync(CancellationToken ct = default)
     {
+        IsCleanupBusy = true;
+        IsCleanupConfirmationVisible = false;
+        CleanupReadinessTitle = "Scanning cleanup candidates";
+        CleanupReadinessDetail = "Checking temp files and empty directories before anything is deleted.";
+        CleanupReadinessScope = "Preview in progress.";
+
         try
         {
             var result = await _adminService.PreviewCleanupAsync(new CleanupOptions
@@ -560,20 +803,99 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                         Reason = f.Reason
                     });
                 }
+
+                CanExecuteCleanup = result.TotalFiles > 0;
+                if (CanExecuteCleanup)
+                {
+                    CleanupReadinessTitle = "Cleanup preview ready";
+                    CleanupReadinessDetail =
+                        $"{result.TotalFiles:N0} file(s) are staged for deletion. Review the list before executing cleanup.";
+                    CleanupReadinessScope = $"{result.TotalFiles:N0} file(s) staged | {FormatHelpers.FormatBytes(result.TotalBytes)} to free";
+                }
+                else
+                {
+                    CleanupReadinessTitle = "No cleanup files found";
+                    CleanupReadinessDetail = "The preview completed and found no temp files or empty directories to remove.";
+                    CleanupReadinessScope = "0 files staged.";
+                }
             }
             else
             {
+                ClearCleanupPreview();
+                CleanupReadinessTitle = "Cleanup preview failed";
+                CleanupReadinessDetail = result.Error ?? "Unknown error";
+                CleanupReadinessScope = "Preview failed.";
                 ShowError("Preview Failed", result.Error ?? "Unknown error");
             }
         }
         catch (Exception ex)
         {
+            ClearCleanupPreview();
+            CleanupReadinessTitle = "Cleanup preview failed";
+            CleanupReadinessDetail = ex.Message;
+            CleanupReadinessScope = "Preview failed.";
             ShowError("Preview Failed", ex.Message);
+        }
+        finally
+        {
+            IsCleanupBusy = false;
         }
     }
 
     public async Task ExecuteCleanupAsync(CancellationToken ct = default)
     {
+        if (!CanExecuteCleanup)
+        {
+            CleanupReadinessTitle = "Preview cleanup first";
+            CleanupReadinessDetail = "Run a cleanup preview and review staged files before executing cleanup.";
+            CleanupReadinessScope = "Execution blocked until preview has files.";
+            return;
+        }
+
+        await ExecuteCleanupCoreAsync(ct);
+    }
+
+    private void RequestExecuteCleanup()
+    {
+        if (!CanExecuteCleanup)
+        {
+            CleanupReadinessTitle = "Preview cleanup first";
+            CleanupReadinessDetail = "Run a cleanup preview and review staged files before executing cleanup.";
+            CleanupReadinessScope = "Execution blocked until preview has files.";
+            return;
+        }
+
+        IsCleanupConfirmationVisible = true;
+        CleanupReadinessTitle = "Confirm cleanup execution";
+        CleanupReadinessDetail =
+            $"{CleanupFilesText} file(s) are staged for permanent deletion. Confirm only after reviewing the file list.";
+        CleanupReadinessScope = $"{CleanupFilesText} file(s) staged | {CleanupSizeText} to free";
+    }
+
+    private async Task ConfirmExecuteCleanupAsync(CancellationToken ct = default)
+    {
+        if (!CanExecuteCleanup)
+            return;
+
+        await ExecuteCleanupCoreAsync(ct);
+    }
+
+    private void CancelExecuteCleanup()
+    {
+        IsCleanupConfirmationVisible = false;
+        CleanupReadinessTitle = "Cleanup preview ready";
+        CleanupReadinessDetail = "Execution was cancelled. Review the staged files or run a fresh preview.";
+        CleanupReadinessScope = $"{CleanupFilesText} file(s) staged | {CleanupSizeText} to free";
+    }
+
+    private async Task ExecuteCleanupCoreAsync(CancellationToken ct)
+    {
+        IsCleanupBusy = true;
+        IsCleanupConfirmationVisible = false;
+        CleanupReadinessTitle = "Executing cleanup";
+        CleanupReadinessDetail = "Deleting the staged cleanup files and refreshing the cleanup state.";
+        CleanupReadinessScope = $"{CleanupFilesText} file(s) staged | {CleanupSizeText} to free";
+
         try
         {
             var cleanupResult = await _adminService.ExecuteCleanupAsync(new CleanupOptions
@@ -585,17 +907,41 @@ public sealed class AdminMaintenanceViewModel : BindableBase
             if (cleanupResult.Success)
             {
                 ShowSuccess($"Cleanup complete. {cleanupResult.FilesDeleted} files deleted, {FormatHelpers.FormatBytes(cleanupResult.BytesFreed)} freed.");
-                IsCleanupResultsVisible = false;
+                ClearCleanupPreview();
+                CleanupReadinessTitle = "Cleanup complete";
+                CleanupReadinessDetail =
+                    $"{cleanupResult.FilesDeleted:N0} file(s) were deleted and {FormatHelpers.FormatBytes(cleanupResult.BytesFreed)} was freed.";
+                CleanupReadinessScope = "Run a new preview before the next cleanup.";
             }
             else
             {
+                CleanupReadinessTitle = "Cleanup failed";
+                CleanupReadinessDetail = cleanupResult.Error ?? "Unknown error";
+                CleanupReadinessScope = $"{CleanupFilesText} file(s) remain staged for retry.";
                 ShowError("Cleanup Failed", cleanupResult.Error ?? "Unknown error");
             }
         }
         catch (Exception ex)
         {
+            CleanupReadinessTitle = "Cleanup failed";
+            CleanupReadinessDetail = ex.Message;
+            CleanupReadinessScope = $"{CleanupFilesText} file(s) remain staged for retry.";
             ShowError("Cleanup Failed", ex.Message);
         }
+        finally
+        {
+            IsCleanupBusy = false;
+        }
+    }
+
+    private void ClearCleanupPreview()
+    {
+        CleanupItems.Clear();
+        CleanupFilesText = "0";
+        CleanupSizeText = "0 B";
+        IsCleanupResultsVisible = false;
+        CanExecuteCleanup = false;
+        IsCleanupConfirmationVisible = false;
     }
 
     // ---- History ----
