@@ -665,7 +665,7 @@ Use these documents together when planning or implementing new work:
 ├── Directory.Packages.props
 ├── LICENSE
 ├── Makefile
-├── Meridian Design System (3)
+├── Meridian Design System
 │   ├── CONTENT_FUNDAMENTALS.md
 │   ├── ICONOGRAPHY.md
 │   ├── INSPIRATION_BRIEF.md
@@ -772,14 +772,16 @@ Use these documents together when planning or implementing new work:
 │   │   └── check_design_system_governance.py
 │   ├── tests
 │   │   └── test_design_system_governance.py
-│   └── ui_kits
-│       ├── dashboard
-│       │   ├── README.md
-│       │   └── components.jsx
-│       ├── plottool_workstation.html
-│       ├── security_master-company.html
-│       ├── security_master-print.html
-│       └── security_master.html
+│   ├── ui_kits
+│   │   ├── dashboard
+│   │   │   ├── README.md
+│   │   │   └── components.jsx
+│   │   ├── plottool_workstation.html
+│   │   ├── security_master-company.html
+│   │   ├── security_master-print.html
+│   │   └── security_master.html
+│   └── uploads
+│       └── ChatGPT Image Apr 24, 2026, 03_58_29 PM.png
 ├── Meridian.sln
 ├── NuGet.Config
 ├── README.md
@@ -8190,6 +8192,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-622 directories, 7393 files
+623 directories, 7394 files
 ```
 <!-- readme-tree end -->
