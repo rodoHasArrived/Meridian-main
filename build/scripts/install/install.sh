@@ -135,7 +135,7 @@ check_prerequisites() {
         local ver
         ver=$(dotnet --version)
         success "  .NET SDK ${ver}"
-        if [[ "${ver%%.*}" -lt 9 ]]; then
+        if [[ "${ver%%.*}" -lt 10 ]]; then
             warn "  .NET SDK ${ver} is too old — 10.0.100 or later is required (see global.json)"
             ok=false
         fi
