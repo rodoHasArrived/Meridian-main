@@ -44,7 +44,7 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.artifacts/link-repair-report.md`
+- [`.artifacts/link-repair-report.md`](../../.artifacts/link-repair-report.md)
 - `.claude/agents/meridian-archive-organizer.md`
 - `.claude/agents/meridian-blueprint.md`
 - `.claude/agents/meridian-cleanup.md`

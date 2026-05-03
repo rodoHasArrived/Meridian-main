@@ -47,18 +47,18 @@ The shared Codex grounding file is [`.codex/skills/_shared/project-context.md`](
 
 ## Available Portable Skills
 
-| Skill | Purpose |
-| ------ | --------- |
-| `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
-| `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
-| `meridian-brainstorm` | Generate high-value product and architecture ideas |
-| `meridian-code-review` | Apply Meridian’s 7-lens review framework |
-| `meridian-implementation-assurance` | Validate completed work against requirements and evidence |
-| `meridian-provider-builder` | Scaffold and extend providers with the right contracts and resilience patterns |
-| `meridian-repo-navigation` | Route large-repo tasks before deeper work |
-| `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
-| `meridian-simulated-user-panel` | Simulate realistic user panels and owner-minded product critique |
-| `meridian-test-writer` | Produce Meridian-style xUnit and FluentAssertions tests |
+| Skill | SKILL.md | Purpose |
+| ------ | --------- | --------- |
+| `meridian-archive-organizer` | [`SKILL.md`](../../../.claude/skills/meridian-archive-organizer/SKILL.md) | Archive stale files and keep the repository structure tidy |
+| `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
+| `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
+| `meridian-code-review` | [`SKILL.md`](../../../.claude/skills/meridian-code-review/SKILL.md) | Apply Meridian’s 7-lens review framework |
+| `meridian-implementation-assurance` | [`SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md) | Validate completed work against requirements and evidence |
+| `meridian-provider-builder` | [`SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md) | Scaffold and extend providers with the right contracts and resilience patterns |
+| `meridian-repo-navigation` | [`SKILL.md`](../../../.claude/skills/meridian-repo-navigation/SKILL.md) | Route large-repo tasks before deeper work |
+| `meridian-roadmap-strategist` | [`SKILL.md`](../../../.claude/skills/meridian-roadmap-strategist/SKILL.md) | Refresh roadmap and target-state documents |
+| `meridian-simulated-user-panel` | [`SKILL.md`](../../../.claude/skills/meridian-simulated-user-panel/SKILL.md) | Simulate realistic user panels and owner-minded product critique |
+| `meridian-test-writer` | [`SKILL.md`](../../../.claude/skills/meridian-test-writer/SKILL.md) | Produce Meridian-style xUnit and FluentAssertions tests |
 
 Code-defined provider skills may also exist, such as AI documentation maintenance helpers exposed by the local skills provider.
 
