@@ -1026,8 +1026,15 @@ public static class WorkstationEndpoints
             // UseStaticFiles() middleware runs after routing in WebApplication, so the
             // catch-all route must serve these files explicitly.
             var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
-            if (!File.Exists(filePath))
+            var workstationRoot = Path.GetFullPath(Path.Combine(root, "workstation"));
+            var normalizedPath = path.Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+            if (Path.IsPathRooted(normalizedPath))
+                return Results.NotFound();
+
+            var filePath = Path.GetFullPath(Path.Combine(workstationRoot, normalizedPath));
+            var rootWithSeparator = workstationRoot.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!filePath.StartsWith(rootWithSeparator, StringComparison.Ordinal) || !File.Exists(filePath))
                 return Results.NotFound();
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
