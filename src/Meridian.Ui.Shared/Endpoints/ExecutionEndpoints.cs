@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -293,6 +294,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -321,11 +327,17 @@ public static class ExecutionEndpoints
         })
         .WithName("CreateExecutionManualOverride")
         .Produces<ExecutionManualOverride>(201)
+        .Produces(403)
         .Produces(400)
         .Produces(503);
 
         group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -354,6 +366,7 @@ public static class ExecutionEndpoints
         })
         .WithName("ClearExecutionManualOverride")
         .Produces<TradingActionResult>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(503);
 
@@ -994,6 +1007,23 @@ public static class ExecutionEndpoints
         }
 
         return "operator";
+    }
+
+    private static bool HasExecutionControlMutationPermission(HttpContext context)
+    {
+        const UserPermission requiredPermission = UserPermission.ManageOrders;
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        {
+            return (permissionsFromContext & requiredPermission) == requiredPermission;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        {
+            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
+        }
+
+        return false;
     }
 
     private static Dictionary<string, string> MergeMetadata(
