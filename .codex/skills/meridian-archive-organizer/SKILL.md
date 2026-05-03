@@ -10,8 +10,8 @@ Use this skill when the task is to retire stale material without losing useful h
 Read these in order:
 1. `../_shared/project-context.md`
 2. `../../../archive/docs/README.md`
-3. `references/archive-placement-guide.md`
-4. `references/evaluation-harness.md` before finalizing a broad archive sweep or changing this skill
+3. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
+4. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
 
 ## Definition of Done
 
@@ -110,7 +110,7 @@ Use for code or tests that may need historical retention.
 - For docs-only moves, update links and search for stale references in docs, config, and README-style entrypoints.
 - For code moves, confirm the files are no longer referenced by `*.csproj`, `Meridian.sln`, `Directory.Build.props`, tests, or active docs before moving them.
 - For generated docs or JSON outputs, check `build/scripts/docs/`, workflow files, and documentation-automation docs before reclassifying them as stale.
-- For root-structure cleanup, confirm the final top-level layout still matches `references/archive-placement-guide.md`.
+- For root-structure cleanup, confirm the final top-level layout still matches [`references/archive-placement-guide.md`](references/archive-placement-guide.md).
 - Prefer targeted checks such as `Select-String`, narrow `dotnet build` or `dotnet test` commands, and archive index updates over full-repo validation unless the move is broad.
 
 ## Automation Scripts
@@ -127,9 +127,15 @@ Use bundled scripts to keep archive work deterministic:
   - Produce a rubric-style score block for a manual archive pass or skill revision.
   - Example: `python scripts/score_eval.py --scenario A --scores "{\"classification_accuracy\":2,\"reference_trace_quality\":2,\"placement_correctness\":2,\"safety_guardrails\":1,\"cleanup_follow_through\":2}"`
 
+## Fixtures
+
+Example superseded-ADR fixture for testing classification and placement decisions:
+
+- [`fixtures/superseded-adr/docs/generated/repository-structure.md`](fixtures/superseded-adr/docs/generated/repository-structure.md)
+
 ## Evaluation Requirement
 
-Treat `references/evaluation-harness.md` as mandatory when:
+Treat [`references/evaluation-harness.md`](references/evaluation-harness.md) as mandatory when:
 
 - changing this skill's heuristics
 - running a multi-file archive sweep

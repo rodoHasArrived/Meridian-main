@@ -31,12 +31,12 @@ Run artifact-driven Meridian product reviews that can behave as a `design_partne
 
 Read these `references/` files on demand:
 
-- `references/review-contract.md` — stable manifest fields, output contract, rubric, and verdict
+- [`references/review-contract.md`](references/review-contract.md) — stable manifest fields, output contract, rubric, and verdict
   rules
-- `references/personas.md` — tagged persona panels, role pressures, and pairing guidance
-- `references/review-modes.md` — invocation modes, focus areas, and artifact-type defaults
-- `references/artifact-bundles.md` — how to use screenshots, workflow manifests, and smoke output
-- `references/sample-prompts.md` — ready-to-use prompt starters for each mode
+- [`references/personas.md`](references/personas.md) — tagged persona panels, role pressures, and pairing guidance
+- [`references/review-modes.md`](references/review-modes.md) — invocation modes, focus areas, and artifact-type defaults
+- [`references/artifact-bundles.md`](references/artifact-bundles.md) — how to use screenshots, workflow manifests, and smoke output
+- [`references/sample-prompts.md`](references/sample-prompts.md) — ready-to-use prompt starters for each mode
 
 ## Assets
 
@@ -55,10 +55,19 @@ Use these when testing or improving the skill:
 
 - `evals/evals.json` — mode-by-artifact eval matrix
 - `evals/benchmark_baseline.json` — accepted pass-rate floor per eval
-- `agents/grader.md` — grading instructions for judging whether a run produced grounded,
+- [`agents/grader.md`](agents/grader.md) — grading instructions for judging whether a run produced grounded,
   owner-minded output
 - `scripts/run_eval.py` — manifest-aware helper for materializing, scoring, aggregating, and
   comparing eval runs
+
+Golden eval fixtures (one per eval scenario):
+
+- [`evals/golden/eval-01-welcome-onboarding-design-partner.md`](evals/golden/eval-01-welcome-onboarding-design-partner.md)
+- [`evals/golden/eval-02-provider-onboarding-release-gate.md`](evals/golden/eval-02-provider-onboarding-release-gate.md)
+- [`evals/golden/eval-03-fund-ledger-controls-review.md`](evals/golden/eval-03-fund-ledger-controls-review.md)
+- [`evals/golden/eval-04-analysis-export-power-user-review.md`](evals/golden/eval-04-analysis-export-power-user-review.md)
+- [`evals/golden/eval-05-research-promotion-roadmap-review.md`](evals/golden/eval-05-research-promotion-roadmap-review.md)
+- [`evals/golden/eval-06-provider-health-usability-lab.md`](evals/golden/eval-06-provider-health-usability-lab.md)
 
 ## Core Rules
 
