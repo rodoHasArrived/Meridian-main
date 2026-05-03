@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-05-03T08:31:49.995088+00:00_
+_Generated: 2026-05-03T08:35:44.245044+00:00_
 Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-05-03T08:31:49.989100+00:00
+> Last updated: 2026-05-03T08:35:44.239015+00:00
 
 ## Overall Health Score
 
@@ -20,7 +20,7 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 | Metric | Value |
 | -------- | ------- |
 | Total documentation files | 426 |
-| Total lines | 132,627 |
+| Total lines | 132,614 |
 | Average file size (lines) | 311.3 |
 | Orphaned files | 99 |
 | Files without headings | 0 |
