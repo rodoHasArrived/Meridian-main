@@ -184,6 +184,38 @@ public sealed class ProviderEndpointTests
 
     #region Data Source CRUD
 
+
+    [Fact]
+    public async Task GetDataSources_RedactsProviderCredentials()
+    {
+        var displayName = $"Alpaca Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "alpaca-key",
+            ApiSecret = "alpaca-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/datasources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
+        source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
+    }
     [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
