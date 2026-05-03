@@ -295,10 +295,11 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
         // Bid/ask spread: wider for deep OTM/ITM and near-expiry
         double moneyness = s / k;
         double spreadMultiplier = 1.0 + 2.0 * Math.Abs(moneyness - 1.0) + (dte <= 7 ? 0.5 : 0.0);
-        double rawHalfSpread = Math.Max(0.01, mid * SpreadFactor * spreadMultiplier);
-        double halfSpread = Math.Min(rawHalfSpread, mid * 0.5); // keep bid > 0 and mid-price well-behaved
-        var bid = Math.Max(0.0001m, (decimal)(mid - halfSpread));
-        var ask = (decimal)(mid + halfSpread);
+        double safeMid = Math.Max(0.0001, mid);
+        double rawHalfSpread = Math.Max(0.01, safeMid * SpreadFactor * spreadMultiplier);
+        double halfSpread = Math.Min(rawHalfSpread, safeMid * 0.5); // keep bid > 0 and mid-price well-behaved
+        var bid = Math.Max(0.0001m, (decimal)(safeMid - halfSpread));
+        var ask = Math.Max(bid, (decimal)(safeMid + halfSpread));
 
         // Synthetic open interest: peaks near ATM, decays exponentially
         double otmRatio = Math.Abs(moneyness - 1.0);
