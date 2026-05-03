@@ -31,7 +31,7 @@ public static class ProviderEndpoints
             var cfg = store.Load();
             return Results.Json(new
             {
-                sources = cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>(),
+                sources = (cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>()).Select(RedactSensitiveProviderOptions).ToArray(),
                 defaultRealTimeSourceId = cfg.DataSources?.DefaultRealTimeSourceId,
                 defaultHistoricalSourceId = cfg.DataSources?.DefaultHistoricalSourceId,
                 enableFailover = cfg.DataSources?.EnableFailover ?? true,
@@ -493,7 +493,7 @@ public static class ProviderEndpoints
             var cfg = store.Load();
             return Results.Json(new
             {
-                sources = cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>(),
+                sources = (cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>()).Select(RedactSensitiveProviderOptions).ToArray(),
                 defaultRealTimeSourceId = cfg.DataSources?.DefaultRealTimeSourceId,
                 defaultHistoricalSourceId = cfg.DataSources?.DefaultHistoricalSourceId,
                 enableFailover = cfg.DataSources?.EnableFailover ?? true,
@@ -669,6 +669,19 @@ public static class ProviderEndpoints
         string? ApiSecret,
         string? Endpoint,
         string[]? Capabilities);
+
+    private static DataSourceConfig RedactSensitiveProviderOptions(DataSourceConfig source)
+    {
+        return source with
+        {
+            Alpaca = source.Alpaca is null
+                ? null
+                : source.Alpaca with { KeyId = null, SecretKey = null },
+            Polygon = source.Polygon is null
+                ? null
+                : source.Polygon with { ApiKey = null }
+        };
+    }
 
     private sealed record ProviderSetupResult(
         bool Success,
