@@ -518,13 +518,18 @@ public sealed class BrokeragePortfolioSyncService
         CancellationToken ct)
     {
         var account = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
-        var providerId = NormalizeProviderId(request?.ProviderId)
-            ?? NormalizeProviderId(account?.Institution)
+        if (account is null)
+        {
+            return null;
+        }
+
+        var providerId = NormalizeProviderId(account.Institution)
+            ?? NormalizeProviderId(request?.ProviderId)
             ?? _options.DefaultProviderId;
-        var externalAccountId = NormalizeExternalAccountId(request?.ExternalAccountId)
-            ?? NormalizeExternalAccountId(account?.CustodianDetails?.SubAccountNumber)
-            ?? NormalizeExternalAccountId(account?.PortfolioId)
-            ?? NormalizeExternalAccountId(account?.AccountCode);
+        var externalAccountId = NormalizeExternalAccountId(account.CustodianDetails?.SubAccountNumber)
+            ?? NormalizeExternalAccountId(account.PortfolioId)
+            ?? NormalizeExternalAccountId(account.AccountCode)
+            ?? NormalizeExternalAccountId(request?.ExternalAccountId);
 
         if (string.IsNullOrWhiteSpace(providerId) || string.IsNullOrWhiteSpace(externalAccountId))
         {
@@ -535,7 +540,7 @@ public sealed class BrokeragePortfolioSyncService
             FundAccountId: fundAccountId,
             ProviderId: providerId,
             ExternalAccountId: externalAccountId,
-            DisplayName: account?.DisplayName ?? $"{providerId}:{externalAccountId}",
+            DisplayName: account.DisplayName ?? $"{providerId}:{externalAccountId}",
             LinkedAt: DateTimeOffset.UtcNow,
             LinkedBy: request?.RequestedBy);
     }
