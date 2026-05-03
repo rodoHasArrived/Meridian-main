@@ -18,8 +18,8 @@ Use this skill when the task is to retire stale material without losing useful h
 Read these in order:
 1. `../_shared/project-context.md`
 2. `../../../archive/docs/README.md`
-3. `references/archive-placement-guide.md`
-4. `references/evaluation-harness.md` before finalizing a broad archive sweep or changing this skill
+3. [`references/archive-placement-guide.md`](references/archive-placement-guide.md)
+4. [`references/evaluation-harness.md`](references/evaluation-harness.md) before finalizing a broad archive sweep or changing this skill
 
 ## Definition of Done
 
@@ -27,10 +27,10 @@ A task handled with this skill is complete only when all of the following are tr
 
 - Each target has an explicit classification: `active`, `archive-doc`, `archive-code`, `delete`, or `already-archived`.
 - Strong references and weak references are separated, either by direct reasoning or by `scripts/trace_archive_candidates.py`.
-- The destination matches the archive bucket or active folder rules in `references/archive-placement-guide.md`.
+- The destination matches the archive bucket or active folder rules in [`references/archive-placement-guide.md`](references/archive-placement-guide.md).
 - Any moved documentation has its README, index, or nearby cross-link updated.
 - A narrow validation command or trace artifact is cited in the final response.
-- For ambiguous, multi-file, or skill-evolution work, `references/evaluation-harness.md` is used and the eval result is reported.
+- For ambiguous, multi-file, or skill-evolution work, [`references/evaluation-harness.md`](references/evaluation-harness.md) is used and the eval result is reported.
 
 ## Classification Lanes
 
@@ -135,9 +135,15 @@ Use bundled scripts to keep archive work deterministic:
   - Produce a rubric-style score block for a manual archive pass or skill revision.
   - Example: `python scripts/score_eval.py --scenario A --scores "{\"classification_accuracy\":2,\"reference_trace_quality\":2,\"placement_correctness\":2,\"safety_guardrails\":1,\"cleanup_follow_through\":2}"`
 
+## Fixtures
+
+The `fixtures/` directory contains sample repository snapshots used to test classification decisions:
+
+- [`fixtures/superseded-adr/docs/generated/repository-structure.md`](fixtures/superseded-adr/docs/generated/repository-structure.md) — example of a superseded generated structure doc used to validate the `dated-doc-snapshot` classification lane
+
 ## Evaluation Requirement
 
-Treat `references/evaluation-harness.md` as mandatory when:
+Treat [`references/evaluation-harness.md`](references/evaluation-harness.md) as mandatory when:
 
 - changing this skill's heuristics
 - running a multi-file archive sweep

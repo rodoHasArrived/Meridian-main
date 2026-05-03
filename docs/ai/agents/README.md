@@ -63,14 +63,14 @@ Primary inputs:
 
 | Agent | Purpose |
 | ------ | --------- |
-| `meridian-archive-organizer.md` | Archive stale files and keep repository structure tidy |
-| `meridian-blueprint.md` | Blueprint and design specialist |
-| `meridian-cleanup.md` | Cleanup specialist |
-| `meridian-docs.md` | Documentation specialist |
-| `meridian-navigation.md` | Repo navigation and routing specialist |
-| `meridian-repo-navigation.md` | Generated-map-based repo navigation specialist |
-| `meridian-roadmap-strategist.md` | Roadmap, delivery-plan, and target-state specialist |
-| `meridian-user-panel.md` | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
+| [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
+| [`meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md) | Cleanup specialist |
+| [`meridian-docs.md`](../../../.claude/agents/meridian-docs.md) | Documentation specialist |
+| [`meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md) | Repo navigation and routing specialist |
+| [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
+| [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
+| [`meridian-user-panel.md`](../../../.claude/agents/meridian-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
 
 ---
 

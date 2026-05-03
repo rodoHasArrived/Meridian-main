@@ -1647,7 +1647,7 @@ public static class WorkstationEndpoints
                 LastHeartbeat: portfolio is not null ? "live" : "—",
                 OrderIngress: oms is not null ? "healthy" : "—",
                 FillFeed: portfolio is not null ? "healthy" : "—",
-                Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
+                Notes: BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)),
             Readiness: readiness,
             Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),
             DrillIn: run is null ? null : BuildRunDrillInLinks(run));

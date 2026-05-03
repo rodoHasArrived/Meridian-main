@@ -32,8 +32,8 @@ Meridian.
 > namespaces.
 > **GitHub equivalent:** [`.github/agents/meridian-blueprint-agent.md`](../../../.github/agents/meridian-blueprint-agent.md)
 > **Reference files:**
-> - `references/blueprint-patterns.md` — Meridian interface patterns, ADR contracts, naming conventions
-> - `references/pipeline-position.md` — Where Blueprint Mode fits in the ideation-to-implementation
+> - [`references/blueprint-patterns.md`](references/blueprint-patterns.md) — Meridian interface patterns, ADR contracts, naming conventions
+> - [`references/pipeline-position.md`](references/pipeline-position.md) — Where Blueprint Mode fits in the ideation-to-implementation
 >   pipeline; inputs/outputs for each pipeline stage
 
 ---
@@ -477,5 +477,5 @@ If `--json` is requested, also produce a `blueprint.json` summary:
 - **No test writing** — that is `meridian-test-writer`; blueprint defines the test plan, not the code
 - **No implementation** — the developer codes from the blueprint
 
-For pipeline-stage diagrams and handoff details, read `references/pipeline-position.md` on demand.
+For pipeline-stage diagrams and handoff details, read [`references/pipeline-position.md`](references/pipeline-position.md) on demand.
 For project stats, provider inventory, and canonical file paths, read `../_shared/project-context.md` on demand.
