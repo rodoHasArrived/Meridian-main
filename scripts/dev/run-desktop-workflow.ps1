@@ -738,6 +738,8 @@ function Add-StageStatus {
             metadata = $Metadata
             timestampUtc = (Get-Date).ToUniversalTime().ToString('O')
         }) | Out-Null
+}
+
 function New-StageState {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
@@ -1031,15 +1033,6 @@ try {
         Write-Info 'Created config/appsettings.json from sample.'
     }
 
-    if (-not $SkipBuild -and (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'build-desktop')) {
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'running' -Message 'Building Meridian desktop shell.'
-        Start-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -Description 'Restore and build Meridian desktop shell.'
-        $desktopRestoreArgs = @(
-            Get-MeridianBuildArguments `
-                -IsolationKey $buildIsolationKey `
-                -AdditionalProperties @("Configuration=$resolvedConfiguration") `
-                -EnableFullWpfBuild
-        )
     if ($stageStatuses['preflight'] -ne 'skipped-valid') {
         $preflightStagePath = Join-Path $runDirectory 'preflight.stage.json'
         $preflightStage = New-StageState -Name 'preflight' -Path $preflightStagePath -Inputs @{
@@ -1150,9 +1143,6 @@ try {
     else {
         Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped because -SkipBuild was supplied.'
     }
-    elseif (-not $SkipBuild) {
-        Write-Info 'Skipping build stage (valid existing outputs).'
-    }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
         throw "Desktop executable was not found at '$exePath'."
@@ -1192,49 +1182,33 @@ try {
                 $launchArguments = @()
                 if ($useFixture) { $launchArguments += '--fixture' }
 
-        if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
-            Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
-            Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
-            Write-Info "Launching Meridian desktop: $exePath"
-            $ownedProcess = Start-Process -FilePath $exePath `
-                -ArgumentList $launchArguments `
-                -WorkingDirectory $repoRoot `
-                -RedirectStandardOutput $stdoutPath `
-                -RedirectStandardError $stderrPath `
-                -PassThru `
-                -WindowStyle Normal
-
-            $manifest.run.launchArguments = $launchArguments
-            $manifest.run.processId = $ownedProcess.Id
-            $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
-            Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
-            Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
-            Write-Ok 'Meridian window detected.'
-        }
-        else {
-            Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
-            Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
                 if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
+                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
                     Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
+                    Write-Info "Launching Meridian desktop: $exePath"
+                    $ownedProcess = Start-Process -FilePath $exePath `
+                        -ArgumentList $launchArguments `
+                        -WorkingDirectory $repoRoot `
+                        -RedirectStandardOutput $stdoutPath `
+                        -RedirectStandardError $stderrPath `
+                        -PassThru `
+                        -WindowStyle Normal
+                    $manifest.run.launchArguments = $launchArguments
+                    $manifest.run.processId = $ownedProcess.Id
+                    $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
+                    Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
+                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
+                    Write-Ok 'Meridian window detected.'
+                    $launchStage.outputs = @{
+                        processId = $ownedProcess.Id
+                        stdoutLog = $stdoutPath
+                        stderrLog = $stderrPath
+                        requiredFiles = @($stdoutPath, $stderrPath)
+                    }
                 }
-                Write-Info "Launching Meridian desktop: $exePath"
-                $ownedProcess = Start-Process -FilePath $exePath `
-                    -ArgumentList $launchArguments `
-                    -WorkingDirectory $repoRoot `
-                    -RedirectStandardOutput $stdoutPath `
-                    -RedirectStandardError $stderrPath `
-                    -PassThru `
-                    -WindowStyle Normal
-                $manifest.run.launchArguments = $launchArguments
-                $manifest.run.processId = $ownedProcess.Id
-                $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
-                Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
-                Write-Ok 'Meridian window detected.'
-                $launchStage.outputs = @{
-                    processId = $ownedProcess.Id
-                    stdoutLog = $stdoutPath
-                    stderrLog = $stderrPath
-                    requiredFiles = @($stdoutPath, $stderrPath)
+                else {
+                    Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
+                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
                 }
             }
             $launchStage.status = 'succeeded'
