@@ -271,7 +271,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     }
 
     [Fact]
-    public async Task PlaceOrderAsync_WhenGatewayStartsDisconnected_ConnectsAndAuditsSelectedGateway()
+    public async Task PlaceOrderAsync_WhenGatewayStartsDisconnected_DoesNotAutoConnect()
     {
         var connected = false;
         var gateway = Substitute.For<IExecutionGateway>();
@@ -284,21 +284,7 @@ public sealed class OrderManagementSystemTests : IDisposable
                 return Task.CompletedTask;
             });
         gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo =>
-            {
-                var request = callInfo.Arg<OrderRequest>();
-                return new ExecutionReport
-                {
-                    OrderId = request.ClientOrderId ?? "ord-1",
-                    ClientOrderId = request.ClientOrderId,
-                    ReportType = ExecutionReportType.New,
-                    Symbol = request.Symbol,
-                    Side = request.Side,
-                    OrderStatus = OrderStatus.Accepted,
-                    OrderQuantity = request.Quantity,
-                    Timestamp = DateTimeOffset.UtcNow
-                };
-            });
+            .Returns(_ => throw new InvalidOperationException("robinhood is not connected. Call ConnectAsync first."));
 
         var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
@@ -319,15 +305,13 @@ public sealed class OrderManagementSystemTests : IDisposable
             Quantity = 1m
         });
 
-        result.Success.Should().BeTrue();
-        await gateway.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("not connected");
+        await gateway.DidNotReceive().ConnectAsync(Arg.Any<CancellationToken>());
 
         var auditEntries = await auditTrail.GetRecentAsync(10);
         auditEntries.Should().Contain(entry =>
-            entry.Action == "GatewayConnected" &&
-            entry.BrokerName == "robinhood");
-        auditEntries.Should().Contain(entry =>
-            entry.Action == "OrderSubmitted" &&
+            entry.Action == "OrderRejected" &&
             entry.BrokerName == "robinhood" &&
             entry.Symbol == "AAPL");
     }
