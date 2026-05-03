@@ -279,11 +279,6 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
-
-            if (_sessions.TryGetValue(sessionId, out var persistedSession))
-            {
-                await PersistSessionLedgerAsync(persistedSession, ct).ConfigureAwait(false);
-            }
         }
     }
 
