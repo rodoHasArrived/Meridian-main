@@ -124,6 +124,7 @@ public sealed class StrategyRunContinuityService
         var promotionState = promotion?.State ?? StrategyRunPromotionState.None;
         var hasPortfolio = run.Portfolio is not null;
         var hasLedger = run.Ledger is not null;
+        var hasFills = run.Summary.FillCount > 0;
         var hasCashFlow = cashFlow is { TotalEntries: > 0 };
         var hasFills = (run.Execution?.FillCount ?? summary.FillCount) > 0;
         var hasReconciliation = reconciliation is not null;
@@ -149,6 +150,13 @@ public sealed class StrategyRunContinuityService
                 Severity: StrategyRunContinuityWarningSeverity.Warning,
                 Message: "Run has no recorded cash flows for cash-financing continuity.",
                 SourceSeam: "cash-flow"));
+        }
+
+        if (!hasFills)
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "missing-fills",
+                Message: "Run has no recorded fills to anchor run / portfolio / ledger continuity."));
         }
 
         if (!hasReconciliation)
@@ -249,6 +257,17 @@ public sealed class StrategyRunContinuityService
                 Severity: StrategyRunContinuityWarningSeverity.Warning,
                 Message: $"Promotion state '{promotionState}' is inconsistent with the run lineage shape.",
                 SourceSeam: "promotion-lineage"));
+        }
+
+        var parentRunId = run.Summary.ParentRunId;
+        var promotionSourceRunId = run.Summary.Promotion?.SourceRunId;
+        if (!string.IsNullOrWhiteSpace(parentRunId)
+            && !string.IsNullOrWhiteSpace(promotionSourceRunId)
+            && !string.Equals(parentRunId, promotionSourceRunId, StringComparison.Ordinal))
+        {
+            warnings.Add(new StrategyRunContinuityWarning(
+                Code: "lineage-promotion-gap",
+                Message: "Parent/child lineage and promotion linkage metadata reference different source runs."));
         }
 
         return new StrategyRunContinuityStatus(
