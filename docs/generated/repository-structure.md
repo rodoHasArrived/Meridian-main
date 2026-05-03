@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-03 09:14:21 UTC. Do not edit manually.
+> Auto-generated on 2026-05-03 09:48:29 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4733,7 +4733,7 @@ Meridian-main
 │   ├── docs.mk
 │   ├── install.mk
 │   └── test.mk
-├── Meridian Design System (3)
+├── Meridian Design System
 │   ├── assets
 │   │   ├── brand
 │   │   │   ├── meridian-hero.svg
@@ -4839,6 +4839,8 @@ Meridian-main
 │   │   ├── security_master-company.html
 │   │   ├── security_master-print.html
 │   │   └── security_master.html
+│   ├── uploads
+│   │   └── ChatGPT Image Apr 24, 2026, 03_58_29 PM.png
 │   ├── colors_and_type.css
 │   ├── CONTENT_FUNDAMENTALS.md
 │   ├── governance-baseline.json
@@ -4923,6 +4925,7 @@ Meridian-main
 │   │   ├── SharedCheckpoint.ps1
 │   │   ├── SharedPreflight.ps1
 │   │   ├── SharedWorkflowProfiles.ps1
+│   │   ├── summarize-desktop-workflow-bundle.ps1
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-contract.py
