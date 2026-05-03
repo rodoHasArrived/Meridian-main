@@ -65,7 +65,7 @@ $rerunCommand = 'pwsh ' + ($rerunArgs -join ' ')
 $summary = @(
     '# Desktop Workflow Bundle Summary'
     ''
-    "- Generated (UTC): $(Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ')"
+    "- Generated (UTC): $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))"
     "- Bundle path: `$resolvedBundlePath`"
     "- Manifest path: `$resolvedManifestPath`"
     ''
