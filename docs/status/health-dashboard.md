@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-05-03T08:10:42.055541+00:00_
+_Generated: 2026-05-03T08:31:49.995088+00:00_
 Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-05-03T08:10:42.050912+00:00
+> Last updated: 2026-05-03T08:31:49.989100+00:00
 
 ## Overall Health Score
 
@@ -20,9 +20,9 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 | Metric | Value |
 | -------- | ------- |
 | Total documentation files | 426 |
-| Total lines | 132,587 |
-| Average file size (lines) | 311.2 |
-| Orphaned files | 98 |
+| Total lines | 132,627 |
+| Average file size (lines) | 311.3 |
+| Orphaned files | 99 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 204 |
@@ -44,6 +44,7 @@ Data sources: `repo markdown (*.md)`, `git commit metadata`
 
 These files are not linked from any other Markdown file in the repository:
 
+- `.artifacts/link-repair-report.md`
 - `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
 - `.claude/skills/meridian-roadmap-strategist/references/roadmap-source-map.md`
 - `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
@@ -63,8 +64,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.codex/skills/meridian-archive-organizer/references/evaluation-harness.md`
 - `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
 - `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
-- `.codex/skills/meridian-implementation-assurance/references/documentation-routing.md`
-- ... and 78 more
+- ... and 79 more
 
 ## Trend
 
@@ -72,7 +72,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-05-03 | 91 | 426 | 98 | 0 |
+| 2026-05-03 | 91 | 426 | 99 | 0 |
 
 ---
 
