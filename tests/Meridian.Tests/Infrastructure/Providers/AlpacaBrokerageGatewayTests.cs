@@ -230,7 +230,7 @@ public sealed class AlpacaBrokerageGatewayTests
     // ── SubmitOrderAsync: fixed income notional orders ────────────────────
 
     [Fact]
-    public async Task SubmitOrderAsync_NotionalTreasuryBuy_SendsNotionalField()
+    public async Task SubmitOrderAsync_NotionalMetadata_IsIgnoredAndQtyIsUsed()
     {
         string? capturedBody = null;
 
@@ -260,13 +260,14 @@ public sealed class AlpacaBrokerageGatewayTests
         }, cts.Token);
 
         report.ReportType.Should().Be(ExecutionReportType.New);
-        capturedBody.Should().Contain("\"notional\"");
-        capturedBody.Should().NotContain("\"qty\"");
+        capturedBody.Should().Contain("\"qty\"");
+        capturedBody.Should().NotContain("\"notional\"");
+        capturedBody.Should().NotContain("\"asset_class\"");
         await sut.DisposeAsync();
     }
 
     [Fact]
-    public async Task SubmitOrderAsync_NotionalOrder_UsesQuantityAsNotionalAmount()
+    public async Task SubmitOrderAsync_NotionalOrderMetadata_DoesNotSetNotionalField()
     {
         string? capturedBody = null;
 
@@ -293,10 +294,10 @@ public sealed class AlpacaBrokerageGatewayTests
 
         capturedBody.Should().NotBeNull();
         using var doc = JsonDocument.Parse(capturedBody!);
-        doc.RootElement.TryGetProperty("notional", out var notionalProp).Should().BeTrue();
-        notionalProp.GetString().Should().Be("2500");
+        doc.RootElement.TryGetProperty("qty", out var qtyProp).Should().BeTrue();
+        qtyProp.GetString().Should().Be("2500");
 
-        doc.RootElement.TryGetProperty("qty", out _).Should().BeFalse();
+        doc.RootElement.TryGetProperty("notional", out _).Should().BeFalse();
         await sut.DisposeAsync();
     }
 
