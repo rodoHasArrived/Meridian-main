@@ -48,14 +48,10 @@
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
 
     <!-- WebSocket -->
-    <PackageReference Include="System.Net.WebSockets.Client" />
     <PackageReference Include="Websocket.Client" />
 
     <!-- Reactive Extensions -->
     <PackageReference Include="System.Reactive" />
-
-    <!-- HTTP -->
-    <PackageReference Include="System.Net.Http.Json" />
 
     <!-- DI -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
@@ -69,8 +65,6 @@
 
     <!-- Performance -->
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="System.Threading.Channels" />
     <PackageReference Include="SSH.NET" Condition="'$(EnableSftp)' == 'true'" />
 
   </ItemGroup>

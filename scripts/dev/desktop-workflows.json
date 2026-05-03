@@ -2,7 +2,7 @@
   "defaults": {
     "projectPath": "src/Meridian.Wpf/Meridian.Wpf.csproj",
     "configuration": "Release",
-    "framework": "net9.0-windows10.0.19041.0",
+    "framework": "net10.0-windows10.0.19041.0",
     "exeName": "Meridian.Desktop.exe",
     "outputRoot": "artifacts/desktop-workflows",
     "fixtureMode": true,

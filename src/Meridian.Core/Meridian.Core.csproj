@@ -17,10 +17,6 @@
 
     <!-- Configuration (for LoggingSetup) -->
     <PackageReference Include="Microsoft.Extensions.Configuration" />
-
-    <!-- Performance -->
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 
   <ItemGroup>
