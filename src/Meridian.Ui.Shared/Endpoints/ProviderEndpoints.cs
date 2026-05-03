@@ -55,16 +55,21 @@ public static class ProviderEndpoints
     {
         if (incoming is null || stored is null)
             return incoming;
-        if (string.IsNullOrEmpty(incoming.KeyId) && string.IsNullOrEmpty(incoming.SecretKey))
-            return incoming with { KeyId = stored.KeyId, SecretKey = stored.SecretKey };
-        return incoming;
+        // Merge each credential field independently: an empty/null value is treated as a sentinel
+        // meaning "no new credential provided" rather than an intentional clear. Real credentials
+        // are never empty strings, so this safely handles round-tripped redacted responses.
+        var mergedKeyId = string.IsNullOrEmpty(incoming.KeyId) ? stored.KeyId : incoming.KeyId;
+        var mergedSecretKey = string.IsNullOrEmpty(incoming.SecretKey) ? stored.SecretKey : incoming.SecretKey;
+        if (mergedKeyId == incoming.KeyId && mergedSecretKey == incoming.SecretKey)
+            return incoming;
+        return incoming with { KeyId = mergedKeyId, SecretKey = mergedSecretKey };
     }
 
     private static PolygonOptions? MergePolygonSecrets(PolygonOptions? incoming, PolygonOptions? stored)
     {
         if (incoming is null || stored is null)
             return incoming;
-        if (incoming.ApiKey is null)
+        if (string.IsNullOrEmpty(incoming.ApiKey))
             return incoming with { ApiKey = stored.ApiKey };
         return incoming;
     }

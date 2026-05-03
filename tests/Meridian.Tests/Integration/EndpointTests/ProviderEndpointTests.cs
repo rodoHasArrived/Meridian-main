@@ -334,6 +334,55 @@ public sealed class ProviderEndpointTests
     }
 
     [Fact]
+    public async Task UpdateDataSource_WithPartialSentinelCredentials_PreservesAffectedFields()
+    {
+        // Arrange: create an Alpaca source with real credentials
+        var displayName = $"Alpaca Partial {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "partial-key",
+            ApiSecret = "partial-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var configureJson = await DeserializeAsync(configureResponse);
+        var providerId = configureJson["providerId"].GetString()!;
+
+        // Act: update with only KeyId empty (e.g. partial round-trip), SecretKey provided
+        var updatePayload = new
+        {
+            Id = providerId,
+            Name = displayName,
+            Provider = "Alpaca",
+            Enabled = true,
+            Type = "RealTime",
+            Priority = 10,
+            Alpaca = new { KeyId = "", SecretKey = "new-secret", Feed = "sip" }
+        };
+
+        var updateContent = new StringContent(JsonSerializer.Serialize(updatePayload), Encoding.UTF8, "application/json");
+        var updateResponse = await _client.PostAsync("/api/config/datasources", updateContent);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Assert: empty KeyId was restored from storage; new SecretKey was persisted
+        var store = _fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
+        var cfg = store.Load();
+        var storedSource = cfg.DataSources?.Sources?.FirstOrDefault(s =>
+            string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+
+        storedSource.Should().NotBeNull();
+        storedSource!.Alpaca.Should().NotBeNull();
+        storedSource.Alpaca!.KeyId.Should().Be("partial-key");    // restored from storage
+        storedSource.Alpaca.SecretKey.Should().Be("new-secret");  // accepted from request
+    }
+
+    [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
         var response = await _client.GetAsync("/api/config/datasources");
