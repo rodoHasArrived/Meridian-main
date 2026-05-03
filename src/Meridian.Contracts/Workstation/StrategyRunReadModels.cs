@@ -55,6 +55,79 @@ public enum StrategyRunPromotionState : byte
     LiveManaged
 }
 
+// ── PR-02: Paper/live-compatible run shapes ──────────────────────────────────
+
+/// <summary>
+/// Live-execution status fields attached to a running or recently completed live run.
+/// Surfaced on <see cref="StrategyRunSummary"/> and <see cref="StrategyRunDetail"/> when
+/// <see cref="StrategyRunMode"/> is <c>Live</c>.
+/// </summary>
+public sealed record StrategyRunLiveStatus(
+    /// <summary>Broker or execution-venue identifier.</summary>
+    string BrokerId,
+    /// <summary>Brokerage account the run is executing against.</summary>
+    string AccountId,
+    /// <summary>Whether the live run is currently connected to the broker feed.</summary>
+    bool IsConnected,
+    /// <summary>Whether the broker has confirmed the session as active.</summary>
+    bool IsSessionActive,
+    /// <summary>Number of open orders currently tracked by the live execution engine.</summary>
+    int OpenOrderCount,
+    /// <summary>Number of fills received since the run started.</summary>
+    int FillCount,
+    /// <summary>Current realized P&amp;L as reported by the broker reconciliation path.</summary>
+    decimal? RealizedPnl,
+    /// <summary>Current unrealized P&amp;L as reported by the broker reconciliation path.</summary>
+    decimal? UnrealizedPnl,
+    /// <summary>When the broker feed was last successfully polled.</summary>
+    DateTimeOffset? LastBrokerPollAt,
+    /// <summary>Non-null when the live engine has a pending or active reconciliation break.</summary>
+    string? ReconciliationBreakReason = null);
+
+/// <summary>
+/// Paper-execution status fields attached to a running or recently completed paper run.
+/// Surfaced on <see cref="StrategyRunSummary"/> and <see cref="StrategyRunDetail"/> when
+/// <see cref="StrategyRunMode"/> is <c>Paper</c>.
+/// </summary>
+public sealed record StrategyRunPaperStatus(
+    /// <summary>Data-feed or simulation engine driving fills for this paper run.</summary>
+    string SimulationFeedId,
+    /// <summary>Whether the paper engine is currently active and consuming market data.</summary>
+    bool IsActive,
+    /// <summary>Number of simulated fills since the run started.</summary>
+    int FillCount,
+    /// <summary>Number of open simulated orders at the time of last snapshot.</summary>
+    int OpenOrderCount,
+    /// <summary>Current simulated realized P&amp;L.</summary>
+    decimal? RealizedPnl,
+    /// <summary>Current simulated unrealized P&amp;L.</summary>
+    decimal? UnrealizedPnl,
+    /// <summary>When the paper engine last processed a market-data event.</summary>
+    DateTimeOffset? LastMarketEventAt,
+    /// <summary>Whether the paper run has a ledger coverage seam active.</summary>
+    bool HasLedgerCoverage = false);
+
+/// <summary>
+/// Governance hook attached to a run detail or summary, capturing the relevant
+/// approval, audit, and compliance signals for this run at the time of the query.
+/// Multiple hooks may be present — one per governance seam that is active.
+/// </summary>
+public sealed record StrategyRunGovernanceHook(
+    /// <summary>Stable identifier for this governance seam (e.g. "approval", "audit", "compliance").</summary>
+    string SeamId,
+    /// <summary>Human-readable label shown on governance dashboards.</summary>
+    string Label,
+    /// <summary>Whether this seam is currently satisfied / cleared.</summary>
+    bool IsSatisfied,
+    /// <summary>Current approval or audit status string, if applicable.</summary>
+    string? StatusLabel,
+    /// <summary>External reference for this governance record (e.g. ticket ID, audit log ID).</summary>
+    string? ExternalReference,
+    /// <summary>When this governance hook was last evaluated or updated.</summary>
+    DateTimeOffset? LastEvaluatedAt,
+    /// <summary>Narrative note or reason for the current governance state.</summary>
+    string? Note = null);
+
 /// <summary>
 /// Shared execution summary used by workstation drill-ins and governance surfaces.
 /// </summary>
@@ -148,7 +221,10 @@ public sealed record StrategyRunSummary(
     string? ParentRunId = null,
     string? SweepId = null,
     string? SweepDefinitionHash = null,
-    string? SweepObjective = null);
+    string? SweepObjective = null,
+    // PR-02: paper/live-compatible status shapes
+    StrategyRunLiveStatus? LiveStatus = null,
+    StrategyRunPaperStatus? PaperStatus = null);
 
 public sealed record StrategySweepObjectiveRanking(
     string RunId,
@@ -178,7 +254,9 @@ public sealed record StrategyRunDetail(
     LedgerSummary? Ledger,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
-    StrategyRunGovernanceSummary? Governance = null);
+    StrategyRunGovernanceSummary? Governance = null,
+    // PR-02: governance hooks for approval/audit/compliance seams
+    IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null);
 
 /// <summary>
 /// Security Master coverage state associated with a workstation security reference.

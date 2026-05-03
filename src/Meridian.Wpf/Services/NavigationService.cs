@@ -18,6 +18,27 @@ namespace Meridian.Wpf.Services;
 /// Implements <see cref="INavigationService"/> with singleton pattern.
 /// Phase 6C.2: Shared base class extracts page registry, history tracking, and breadcrumb logic.
 /// </summary>
+/// <remarks>
+/// <para><b>Shell ownership contract (PR-01):</b></para>
+/// <list type="bullet">
+///   <item><term>NavigationService</term>
+///     <description>Owns routing, navigation history, breadcrumbs, back/forward stack,
+///     and page-chrome wrapping decisions (<see cref="ShouldWrapWithWorkspaceChrome"/>).
+///     Emits <c>Navigated</c> / <c>NavigationRequested</c> events consumed by the shell.</description>
+///   </item>
+///   <item><term>WorkspaceService</term>
+///     <description>Owns workspace layout persistence, session state, dock-layout XML,
+///     quick actions, and summary stats. NavigationService writes
+///     <c>ActivePageTag</c> into the session via <c>NotifyPageActivated</c>; all other
+///     session mutations go through WorkspaceService.</description>
+///   </item>
+///   <item><term>MainPageViewModel</term>
+///     <description>Coordinates between the two services: handles workspace-selection changes,
+///     triggers <c>WorkspaceService.ActivateWorkspaceAsync</c>, and refreshes shell context
+///     (operating contexts, workflow summaries, inbox) after navigation events.</description>
+///   </item>
+/// </list>
+/// </remarks>
 public sealed class NavigationService : NavigationServiceBase, INavigationService
 {
     private static readonly Lazy<NavigationService> _instance = new(() => new NavigationService());

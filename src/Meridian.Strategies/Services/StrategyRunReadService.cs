@@ -116,7 +116,45 @@ public sealed class StrategyRunReadService
             Ledger: await ledgerTask.ConfigureAwait(false),
             Execution: BuildExecutionSummary(run),
             Promotion: BuildPromotionSummary(run, promotionLookup),
-            Governance: BuildGovernanceSummary(run));
+            Governance: BuildGovernanceSummary(run),
+            // PR-02: governance hooks for approval/audit/compliance seams
+            GovernanceHooks: BuildGovernanceHooks(run, promotionLookup));
+    }
+
+    // ── PR-02: mode-filtered and active-run queries ──────────────────────────
+
+    /// <summary>
+    /// Returns all runs currently in a <see cref="StrategyRunStatus.Running"/> or
+    /// <see cref="StrategyRunStatus.Paused"/> state, ordered most-recently-updated first.
+    /// Used by workspace shell tiles and summary stats to surface active run counts.
+    /// </summary>
+    public async Task<IReadOnlyList<StrategyRunSummary>> GetActiveRunsAsync(CancellationToken ct = default)
+    {
+        var query = new StrategyRunHistoryQuery(
+            Modes: null,
+            Status: null,
+            Limit: 500);
+        var all = await GetRunsAsync(query, ct).ConfigureAwait(false);
+        return all
+            .Where(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused)
+            .OrderByDescending(static run => run.LastUpdatedAt)
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Returns runs filtered to a single <paramref name="mode"/>, ordered most-recently-started first.
+    /// Used by research/trading surfaces that display only backtest, paper, or live rows.
+    /// </summary>
+    public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsByModeAsync(
+        StrategyRunMode mode,
+        int limit = 50,
+        CancellationToken ct = default)
+    {
+        var query = new StrategyRunHistoryQuery(
+            Modes: [mode],
+            Status: null,
+            Limit: Math.Clamp(limit, 1, 500));
+        return await GetRunsAsync(query, ct).ConfigureAwait(false);
     }
 
     public async Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default)
@@ -430,6 +468,80 @@ public sealed class StrategyRunReadService
             AuditReference: run.AuditReference,
             DatasetReference: run.DatasetReference,
             FeedReference: run.FeedReference);
+    }
+
+    /// <summary>
+    /// Builds the list of governance hooks for a run detail response.
+    /// Each hook captures a single governance seam (parameters, portfolio, ledger, audit, promotion).
+    /// Seams that are satisfied are included with <see cref="StrategyRunGovernanceHook.IsSatisfied"/> = true;
+    /// missing seams are included so callers can surface gaps.
+    /// </summary>
+    private static IReadOnlyList<StrategyRunGovernanceHook> BuildGovernanceHooks(
+        StrategyRunEntry run,
+        IReadOnlyDictionary<string, StrategyPromotionRecord> promotionLookup)
+    {
+        var hooks = new List<StrategyRunGovernanceHook>(5);
+
+        // Parameters seam
+        var hasParams = run.ParameterSet is { Count: > 0 };
+        hooks.Add(new StrategyRunGovernanceHook(
+            SeamId: "parameters",
+            Label: "Parameters",
+            IsSatisfied: hasParams,
+            StatusLabel: hasParams ? "Recorded" : "Missing",
+            ExternalReference: null,
+            LastEvaluatedAt: hasParams ? run.StartedAt : null,
+            Note: hasParams ? null : "Run was started without a captured parameter set."));
+
+        // Portfolio seam
+        var hasPortfolio = !string.IsNullOrWhiteSpace(run.PortfolioId);
+        hooks.Add(new StrategyRunGovernanceHook(
+            SeamId: "portfolio",
+            Label: "Portfolio",
+            IsSatisfied: hasPortfolio,
+            StatusLabel: hasPortfolio ? "Covered" : "Missing",
+            ExternalReference: run.PortfolioId,
+            LastEvaluatedAt: GetLastUpdatedAt(run),
+            Note: hasPortfolio ? null : "No portfolio seam is associated with this run."));
+
+        // Ledger seam
+        var hasLedger = !string.IsNullOrWhiteSpace(run.LedgerReference);
+        hooks.Add(new StrategyRunGovernanceHook(
+            SeamId: "ledger",
+            Label: "Ledger",
+            IsSatisfied: hasLedger,
+            StatusLabel: hasLedger ? "Covered" : "Missing",
+            ExternalReference: run.LedgerReference,
+            LastEvaluatedAt: GetLastUpdatedAt(run),
+            Note: hasLedger ? null : "No ledger reference is associated with this run."));
+
+        // Audit seam
+        var hasAudit = !string.IsNullOrWhiteSpace(run.AuditReference);
+        hooks.Add(new StrategyRunGovernanceHook(
+            SeamId: "audit",
+            Label: "Audit Trail",
+            IsSatisfied: hasAudit,
+            StatusLabel: hasAudit ? "Present" : "Missing",
+            ExternalReference: run.AuditReference,
+            LastEvaluatedAt: run.EndedAt ?? run.StartedAt,
+            Note: hasAudit ? null : "No audit reference was captured for this run."));
+
+        // Promotion seam (only meaningful for non-live runs)
+        if (run.RunType != RunType.Live)
+        {
+            promotionLookup.TryGetValue(run.RunId, out var promo);
+            var promoSatisfied = promo is not null;
+            hooks.Add(new StrategyRunGovernanceHook(
+                SeamId: "promotion",
+                Label: "Promotion Review",
+                IsSatisfied: promoSatisfied,
+                StatusLabel: promo?.Decision ?? (run.EndedAt.HasValue ? "Pending Review" : "Awaiting Completion"),
+                ExternalReference: promo?.AuditReference,
+                LastEvaluatedAt: promo is not null ? promo.PromotedAt : null,
+                Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null));
+        }
+
+        return hooks;
     }
 
     private async Task<IReadOnlyDictionary<string, StrategyPromotionRecord>> LoadPromotionLookupAsync(CancellationToken ct)
