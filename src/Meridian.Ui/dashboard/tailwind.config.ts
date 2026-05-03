@@ -45,6 +45,7 @@ export default {
         destructive: "hsl(var(--danger) / <alpha-value>)",
         paper: "hsl(var(--paper) / <alpha-value>)",
         live: "hsl(var(--live) / <alpha-value>)",
+        "live-env": "hsl(var(--live-env) / <alpha-value>)",
         "panel-strong": "hsl(var(--panel-strong) / <alpha-value>)",
         "panel-soft": "hsl(var(--panel-soft) / <alpha-value>)",
         "surface-raise": "hsl(var(--surface-raise) / <alpha-value>)"

@@ -1,4 +1,12 @@
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type {
+  DataOperationsWorkspaceResponse,
+  GovernanceWorkspaceResponse,
+  ResearchWorkspaceResponse,
+  SessionInfo,
+  SystemOverviewResponse,
+  TradingWorkspaceResponse,
+  WorkspaceKey
+} from "@/types";
 
 export interface SettingsSessionItem {
   label: string;
@@ -17,6 +25,11 @@ export interface SettingsDiagnosticLink {
   href: string;
   description: string;
   ariaLabel: string;
+  statusLabel: string;
+  statusDetail: string;
+  tone: "default" | "success" | "warning" | "danger";
+  badgeVariant: "default" | "success" | "warning" | "danger" | "outline";
+  isLoading: boolean;
 }
 
 export interface SettingsEventRow {
@@ -52,50 +65,104 @@ export interface SettingsScreenViewModel {
   hasOverview: boolean;
   recentEventsSection: SettingsRecentEventsSection;
   diagnosticLinks: SettingsDiagnosticLink[];
+  diagnosticSummary: string;
+  diagnosticListLabel: string;
+  diagnosticStatusLabel: string;
+  diagnosticStatusVariant: "default" | "success" | "warning" | "danger" | "outline";
 }
 
-const DIAGNOSTIC_LINKS: SettingsDiagnosticLink[] = [
+export interface SettingsScreenPayload {
+  session: SessionInfo | null;
+  overview: SystemOverviewResponse | null;
+  research?: ResearchWorkspaceResponse | null;
+  trading?: TradingWorkspaceResponse | null;
+  dataOperations?: DataOperationsWorkspaceResponse | null;
+  governance?: GovernanceWorkspaceResponse | null;
+  reporting?: GovernanceWorkspaceResponse | null;
+  loading?: boolean;
+  error?: string | null;
+  workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
+}
+
+interface DiagnosticEndpointDefinition {
+  id: string;
+  label: string;
+  href: string;
+  description: string;
+  ariaLabel: string;
+  workspaceKey?: WorkspaceKey;
+  isAvailable: (payload: SettingsScreenPayload) => boolean;
+  unavailableDetail: string;
+}
+
+const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
+    id: "system-overview",
     label: "System overview",
-    href: "/api/workstation/overview",
+    href: "/api/status",
     description: "System health, provider counts, and active run summary.",
-    ariaLabel: "Open System overview diagnostic endpoint"
+    ariaLabel: "Open System overview diagnostic endpoint",
+    isAvailable: (payload) => payload.overview !== null,
+    unavailableDetail: "System overview has not loaded in this workstation session."
   },
   {
+    id: "session-info",
     label: "Session info",
     href: "/api/workstation/session",
     description: "Current operator session context and environment.",
-    ariaLabel: "Open Session info diagnostic endpoint"
+    ariaLabel: "Open Session info diagnostic endpoint",
+    isAvailable: (payload) => payload.session !== null,
+    unavailableDetail: "Operator session context has not loaded."
   },
   {
+    id: "providers",
     label: "Providers",
     href: "/api/data/providers",
     description: "All registered market data provider statuses.",
-    ariaLabel: "Open Providers diagnostic endpoint"
+    ariaLabel: "Open Providers diagnostic endpoint",
+    workspaceKey: "data",
+    isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
+    unavailableDetail: "Data workspace provider posture has not loaded."
   },
   {
+    id: "research-runs",
     label: "Research runs",
     href: "/api/research/runs",
     description: "Active and completed strategy runs.",
-    ariaLabel: "Open Research runs diagnostic endpoint"
+    ariaLabel: "Open Research runs diagnostic endpoint",
+    workspaceKey: "strategy",
+    isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
+    unavailableDetail: "Strategy run payload has not loaded."
   },
   {
+    id: "trading-workspace",
     label: "Trading workspace",
     href: "/api/workstation/trading",
     description: "Live trading positions, orders, fills, and risk.",
-    ariaLabel: "Open Trading workspace diagnostic endpoint"
+    ariaLabel: "Open Trading workspace diagnostic endpoint",
+    workspaceKey: "trading",
+    isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
+    unavailableDetail: "Trading workspace payload has not loaded."
   },
   {
+    id: "accounting-workspace",
     label: "Accounting workspace",
     href: "/api/workstation/accounting",
     description: "Reconciliation queue, cash flow, and accounting evidence.",
-    ariaLabel: "Open Accounting workspace diagnostic endpoint"
+    ariaLabel: "Open Accounting workspace diagnostic endpoint",
+    workspaceKey: "accounting",
+    isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
+    unavailableDetail: "Accounting workspace payload has not loaded."
   },
   {
+    id: "reporting-workspace",
     label: "Reporting workspace",
     href: "/api/workstation/reporting",
     description: "Reporting profiles and governed report-pack targets.",
-    ariaLabel: "Open Reporting workspace diagnostic endpoint"
+    ariaLabel: "Open Reporting workspace diagnostic endpoint",
+    workspaceKey: "reporting",
+    isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
+    unavailableDetail: "Reporting workspace payload has not loaded."
   }
 ];
 
@@ -185,10 +252,22 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
   };
 }
 
+export function buildSettingsScreenViewModel(payload: SettingsScreenPayload): SettingsScreenViewModel;
 export function buildSettingsScreenViewModel(
   session: SessionInfo | null,
   overview: SystemOverviewResponse | null
+): SettingsScreenViewModel;
+export function buildSettingsScreenViewModel(
+  payloadOrSession: SettingsScreenPayload | SessionInfo | null,
+  overviewArg?: SystemOverviewResponse | null
 ): SettingsScreenViewModel {
+  const payload: SettingsScreenPayload = isSettingsScreenPayload(payloadOrSession)
+    ? payloadOrSession
+    : {
+        session: payloadOrSession,
+        overview: overviewArg ?? null
+      };
+  const { session, overview } = payload;
   const sessionItems: SettingsSessionItem[] = session
     ? [
         { label: "Display name", value: session.displayName, tone: "default" },
@@ -227,6 +306,88 @@ export function buildSettingsScreenViewModel(
     systemItems,
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
-    diagnosticLinks: DIAGNOSTIC_LINKS
+    ...buildDiagnosticEndpointSection(payload)
+  };
+}
+
+function isSettingsScreenPayload(value: SettingsScreenPayload | SessionInfo | null): value is SettingsScreenPayload {
+  return value !== null && "session" in value && "overview" in value;
+}
+
+function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
+  SettingsScreenViewModel,
+  "diagnosticLinks" | "diagnosticSummary" | "diagnosticListLabel" | "diagnosticStatusLabel" | "diagnosticStatusVariant"
+> {
+  const diagnosticLinks = DIAGNOSTIC_ENDPOINTS.map((endpoint) => buildDiagnosticLink(endpoint, payload));
+  const unavailable = diagnosticLinks.filter((link) => link.tone === "danger").length;
+  const loading = diagnosticLinks.filter((link) => link.isLoading).length;
+  const ready = diagnosticLinks.filter((link) => link.tone === "success").length;
+
+  const diagnosticStatusLabel = loading > 0
+    ? `${loading} checking`
+    : unavailable > 0
+      ? `${unavailable} unavailable`
+      : "All reachable";
+
+  return {
+    diagnosticLinks,
+    diagnosticSummary: loading > 0
+      ? `Checking ${loading} diagnostic endpoint${loading === 1 ? "" : "s"}; ${ready} already loaded.`
+      : unavailable > 0
+        ? `${unavailable} diagnostic endpoint${unavailable === 1 ? "" : "s"} failed to load in the workstation bootstrap. Open the endpoint card for raw API evidence.`
+        : "All diagnostic endpoint payloads represented on this page are loaded.",
+    diagnosticListLabel: "Diagnostic endpoint availability",
+    diagnosticStatusLabel,
+    diagnosticStatusVariant: loading > 0 ? "warning" : unavailable > 0 ? "danger" : "success"
+  };
+}
+
+function buildDiagnosticLink(
+  endpoint: DiagnosticEndpointDefinition,
+  payload: SettingsScreenPayload
+): SettingsDiagnosticLink {
+  const error = endpoint.workspaceKey ? payload.workspaceErrors?.[endpoint.workspaceKey] : null;
+  const isLoading = payload.loading === true;
+
+  if (isLoading) {
+    return {
+      ...endpoint,
+      statusLabel: "Checking",
+      statusDetail: "Workstation bootstrap is refreshing this diagnostic payload.",
+      tone: "warning",
+      badgeVariant: "warning",
+      isLoading
+    };
+  }
+
+  if (error) {
+    return {
+      ...endpoint,
+      statusLabel: "Failed",
+      statusDetail: error,
+      tone: "danger",
+      badgeVariant: "danger",
+      isLoading: false
+    };
+  }
+
+  if (endpoint.isAvailable(payload)) {
+    return {
+      ...endpoint,
+      statusLabel: "Loaded",
+      statusDetail: "Payload is represented in the current workstation view model.",
+      tone: "success",
+      badgeVariant: "success",
+      isLoading: false
+    };
+  }
+
+  return {
+    ...endpoint,
+    statusLabel: "Unavailable",
+    statusDetail: payload.error ?? endpoint.unavailableDetail,
+    tone: "danger",
+    badgeVariant: "danger",
+    isLoading: false
   };
 }

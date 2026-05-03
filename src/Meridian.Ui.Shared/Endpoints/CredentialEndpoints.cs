@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -40,14 +39,14 @@ public static class CredentialEndpoints
         var group = app.MapGroup("").WithTags("Credentials");
 
         // GET /api/credentials — list all providers with their credential status
-        group.MapGet(UiApiRoutes.Credentials, () =>
+        group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.Credentials, () =>
         {
             var result = KnownProviders.Select(p => BuildStatus(p));
             return Results.Json(result, jsonOptions);
         });
 
         // GET /api/credentials/{provider}
-        group.MapGet(UiApiRoutes.CredentialByProvider, (string provider) =>
+        group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -74,7 +73,7 @@ public static class CredentialEndpoints
         });
 
         // POST /api/credentials/{provider} — set env vars for a provider
-        group.MapPost(UiApiRoutes.CredentialByProvider, async (string provider, HttpContext ctx) =>
+        group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async Task<IResult> (string provider, HttpContext ctx) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -108,7 +107,7 @@ public static class CredentialEndpoints
         });
 
         // DELETE /api/credentials/{provider} — clear env vars
-        group.MapDelete(UiApiRoutes.CredentialByProvider, (string provider) =>
+        group.MapDelete(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -125,7 +124,7 @@ public static class CredentialEndpoints
         });
 
         // POST /api/credentials/{provider}/test — verify credentials present
-        group.MapPost(UiApiRoutes.CredentialTest, (string provider) =>
+        group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialTest, IResult (string provider) =>
         {
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -185,4 +184,3 @@ public static class CredentialEndpoints
         string DisplayName,
         IReadOnlyList<string> RequiredEnvVars);
 }
-

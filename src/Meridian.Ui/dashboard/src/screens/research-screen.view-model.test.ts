@@ -304,4 +304,48 @@ describe("research-screen view model", () => {
     expect(shouldCloseRunDetailForKey("Esc")).toBe(true);
     expect(shouldCloseRunDetailForKey("Enter")).toBe(false);
   });
+
+  it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {
+    let selected = toggleRunSelection([], "run-1");
+    selected = toggleRunSelection(selected, "run-2");
+    selected = toggleRunSelection(selected, "run-3");
+
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: selected,
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(selected).toEqual(["run-2", "run-3"]);
+    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-2", "run-3"]);
+    expect(state.canCompare).toBe(true);
+    expect(state.canDiff).toBe(true);
+    expect(state.selectionText).toBe("Index Momentum vs Carry Alpha");
+  });
+
+  it("keeps pair-selection continuity when compare returns empty rows", () => {
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      comparisonLoaded: true,
+      runDiffLoaded: false,
+      promotionHistoryLoaded: false,
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.showComparisonPanel).toBe(true);
+    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-1", "run-2"]);
+    expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
+    expect(state.statusAnnouncement).toBe("No comparison rows returned for the selected pair.");
+  });
 });

@@ -34,16 +34,25 @@ public sealed class StatementReconciliationService
             }
 
             cases.Add(new ReconciliationCase(
-                CaseId: $"case:{row.RowId}",
-                ImportId: string.Empty,
-                Status: "Open",
-                Reason: "No deterministic match candidate met confidence threshold.",
-                Confidence: 0m,
-                Rationale: string.Empty,
-                CreatedAtUtc: DateTimeOffset.UtcNow,
-                History: []));
+                $"case:{row.RowId}",
+                row.Fingerprint,
+                "Open",
+                "No deterministic match candidate met confidence threshold.",
+                0.35m,
+                "No deterministic match candidate met confidence threshold.",
+                DateTimeOffset.UtcNow,
+                [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.")]));
         }
 
         return (matches, cases);
+    }
+}
+
+public static class DeterministicFingerprint
+{
+    public static string Compute(string value)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

@@ -25,6 +25,7 @@
     --ring: 198 72% 50%;
     --paper: 214 82% 68%;
     --live: 198 72% 50%;
+    --live-env: 0 75% 59%;
     --warning: 36 80% 58%;
     --success: 158 66% 44%;
     --danger: 354 68% 62%;
@@ -64,6 +65,9 @@
     --state-research-fg: #93b4da;
     --state-research-bd: rgba(147, 180, 218, 0.35);
     --state-research-bg: rgba(147, 180, 218, 0.10);
+    --state-live-fg: #e84545;
+    --state-live-bd: rgba(232, 69, 69, 0.40);
+    --state-live-bg: rgba(232, 69, 69, 0.12);
     --state-muted-fg: #7c8a9b;
     --state-muted-bd: #1f344c;
     --state-muted-bg: #0b1520;

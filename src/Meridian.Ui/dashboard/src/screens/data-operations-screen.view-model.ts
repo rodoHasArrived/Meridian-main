@@ -7,7 +7,11 @@ import type {
   DataOperationsBackfillRecord,
   DataOperationsExportRecord,
   DataOperationsProviderRecord,
-  DataOperationsWorkspaceResponse
+  DataOperationsWorkspaceResponse,
+  ProviderKind,
+  ProviderKindMeta,
+  ProviderSetupRequest,
+  ProviderSetupResult
 } from "@/types";
 
 export interface BackfillFormState {
@@ -169,6 +173,111 @@ export interface DataOperationsPresentationState {
   backfillDetailEmptyState: DataOperationsEmptyState | null;
 }
 
+// --- Provider setup types ---
+
+export interface ProviderSetupFormState {
+  kind: ProviderKind | string;
+  displayName: string;
+  apiKey: string;
+  apiSecret: string;
+  endpoint: string;
+  capabilities: string[];
+}
+
+export type ProviderSetupPhase = "idle" | "submitting" | "success" | "error";
+
+export interface ProviderSetupDialogState {
+  titleId: string;
+  descriptionId: string;
+  formLabel: string;
+  closeButtonLabel: string;
+  closeButtonDisabledReason: string | null;
+  submitAction: {
+    label: string;
+    ariaLabel: string;
+    disabled: boolean;
+    disabledReason: string | null;
+    busy: boolean;
+    busyLabel: string;
+  };
+  statusLabel: string;
+}
+
+export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
+  {
+    kind: "polygon",
+    label: "Polygon.io",
+    description: "Real-time and historical US equities, options, forex, and crypto.",
+    needsApiKey: true,
+    needsApiSecret: false,
+    needsEndpoint: false,
+    defaultCapabilities: ["streaming", "backfill", "reference"]
+  },
+  {
+    kind: "databento",
+    label: "Databento",
+    description: "High-quality historical bars and tick data across asset classes.",
+    needsApiKey: true,
+    needsApiSecret: false,
+    needsEndpoint: false,
+    defaultCapabilities: ["backfill", "reference"]
+  },
+  {
+    kind: "alpaca",
+    label: "Alpaca",
+    description: "Commission-free US equities broker with market data and paper trading.",
+    needsApiKey: true,
+    needsApiSecret: true,
+    needsEndpoint: false,
+    defaultCapabilities: ["streaming", "backfill", "brokerage"]
+  },
+  {
+    kind: "interactivebrokers",
+    label: "Interactive Brokers",
+    description: "Full-service brokerage with live order routing and market data.",
+    needsApiKey: false,
+    needsApiSecret: false,
+    needsEndpoint: true,
+    defaultCapabilities: ["streaming", "brokerage"]
+  },
+  {
+    kind: "yahoo",
+    label: "Yahoo Finance",
+    description: "Free end-of-day historical prices. No API key required.",
+    needsApiKey: false,
+    needsApiSecret: false,
+    needsEndpoint: false,
+    defaultCapabilities: ["backfill"]
+  },
+  {
+    kind: "custom",
+    label: "Custom endpoint",
+    description: "Connect a custom or internal data provider via REST endpoint.",
+    needsApiKey: true,
+    needsApiSecret: false,
+    needsEndpoint: true,
+    defaultCapabilities: []
+  }
+];
+
+export const ALL_CAPABILITIES: Array<{ id: string; label: string; description: string }> = [
+  { id: "streaming", label: "Live streaming", description: "Real-time price ticks and quote updates" },
+  { id: "backfill", label: "Historical backfill", description: "OHLCV bars and tick history" },
+  { id: "reference", label: "Reference data", description: "Security master, identifiers, corporate actions" },
+  { id: "brokerage", label: "Brokerage / order routing", description: "Order submission and fill feed" }
+];
+
+const defaultProviderSetupForm: ProviderSetupFormState = {
+  kind: "polygon",
+  displayName: "Polygon.io",
+  apiKey: "",
+  apiSecret: "",
+  endpoint: "",
+  capabilities: ["streaming", "backfill", "reference"]
+};
+
+// --- Backfill setup defaults ---
+
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
@@ -195,6 +304,13 @@ export function useDataOperationsViewModel(
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
+
+  // Provider setup state
+  const [providerSetupOpen, setProviderSetupOpen] = useState(false);
+  const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
+  const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
+  const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
+  const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
 
   const workstream = useMemo(() => resolveDataOperationsWorkstream(pathname), [pathname]);
   const selectedBackfill = useMemo(
@@ -294,6 +410,83 @@ export function useDataOperationsViewModel(
     }
   }, [form, preview, services]);
 
+  const openProviderSetup = useCallback(() => {
+    setProviderSetupOpen(true);
+    setProviderSetupResult(null);
+    setProviderSetupError(null);
+    setProviderPhase("idle");
+  }, []);
+
+  const closeProviderSetup = useCallback(() => {
+    if (providerPhase === "submitting") return;
+    setProviderSetupOpen(false);
+  }, [providerPhase]);
+
+  const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities">, value: string) => {
+    setProviderForm((current) => {
+      if (field === "kind") {
+        const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === value);
+        return {
+          ...current,
+          kind: value,
+          displayName: meta?.label ?? current.displayName,
+          capabilities: meta?.defaultCapabilities ?? current.capabilities
+        };
+      }
+      return { ...current, [field]: value };
+    });
+    setProviderSetupResult(null);
+    setProviderSetupError(null);
+  }, []);
+
+  const toggleProviderCapability = useCallback((capId: string) => {
+    setProviderForm((current) => {
+      const has = current.capabilities.includes(capId);
+      return {
+        ...current,
+        capabilities: has
+          ? current.capabilities.filter((c) => c !== capId)
+          : [...current.capabilities, capId]
+      };
+    });
+  }, []);
+
+  const submitProviderSetup = useCallback(async () => {
+    const validationError = validateProviderSetupForm(providerForm);
+    if (validationError) {
+      setProviderSetupError(validationError);
+      return;
+    }
+
+    setProviderPhase("submitting");
+    setProviderSetupError(null);
+    setProviderSetupResult(null);
+
+    const request: ProviderSetupRequest = {
+      kind: providerForm.kind,
+      displayName: providerForm.displayName.trim(),
+      apiKey: providerForm.apiKey.trim() || null,
+      apiSecret: providerForm.apiSecret.trim() || null,
+      endpoint: providerForm.endpoint.trim() || null,
+      capabilities: providerForm.capabilities
+    };
+
+    try {
+      const response = await workstationApi.setupProvider(request);
+      setProviderSetupResult(response);
+      setProviderPhase(response.success ? "success" : "error");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Provider setup failed.";
+      setProviderSetupError(message);
+      setProviderPhase("error");
+    }
+  }, [providerForm]);
+
+  const providerSetupDialogState = useMemo(
+    () => buildProviderSetupDialogState(providerPhase, providerForm),
+    [providerPhase, providerForm]
+  );
+
   return {
     workstream,
     selectedBackfill,
@@ -314,7 +507,19 @@ export function useDataOperationsViewModel(
     phase,
     previewBackfill,
     runBackfill,
-    ...triggerState
+    ...triggerState,
+    // Provider setup
+    providerSetupOpen,
+    openProviderSetup,
+    closeProviderSetup,
+    providerForm,
+    updateProviderForm,
+    toggleProviderCapability,
+    providerPhase,
+    providerSetupResult,
+    providerSetupError,
+    submitProviderSetup,
+    providerSetupDialogState
   };
 }
 
@@ -989,4 +1194,69 @@ function buildBackfillStatusAnnouncement({
   }
 
   return "";
+}
+
+// --- Provider setup helpers ---
+
+export function validateProviderSetupForm(form: ProviderSetupFormState): string | null {
+  if (!form.displayName.trim()) {
+    return "Enter a display name for the provider.";
+  }
+
+  const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === form.kind);
+
+  if (meta?.needsApiKey && !form.apiKey.trim()) {
+    return `An API key is required for ${meta.label}.`;
+  }
+
+  if (meta?.needsApiSecret && !form.apiSecret.trim()) {
+    return `An API secret is required for ${meta.label}.`;
+  }
+
+  if (meta?.needsEndpoint && !form.endpoint.trim()) {
+    return `An endpoint URL is required for ${meta.label ?? "this provider"}.`;
+  }
+
+  if (form.capabilities.length === 0) {
+    return "Select at least one capability for this provider.";
+  }
+
+  return null;
+}
+
+export function buildProviderSetupDialogState(
+  phase: ProviderSetupPhase,
+  form: ProviderSetupFormState
+): ProviderSetupDialogState {
+  const submitting = phase === "submitting";
+  const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
+
+  return {
+    titleId: "provider-setup-dialog-title",
+    descriptionId: "provider-setup-dialog-description",
+    formLabel: "Provider setup form",
+    closeButtonLabel: "Close provider setup",
+    closeButtonDisabledReason: submitting ? "Provider setup is in progress; wait before closing." : null,
+    submitAction: {
+      label: submitting ? "Configuring..." : phase === "success" ? "Configure another" : "Configure provider",
+      ariaLabel: submitting
+        ? "Configuring provider"
+        : validationError
+          ? `Configure provider unavailable: ${validationError}`
+          : "Configure and register provider",
+      disabled: submitting || (phase !== "success" && validationError !== null),
+      disabledReason: submitting ? "Setup is in progress." : validationError,
+      busy: submitting,
+      busyLabel: "Configuring..."
+    },
+    statusLabel: buildProviderSetupStatusLabel(phase, validationError)
+  };
+}
+
+function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationError: string | null): string {
+  if (phase === "submitting") return "Registering provider with Meridian.";
+  if (phase === "success") return "Provider configured successfully.";
+  if (phase === "error") return "Provider setup encountered an error.";
+  if (validationError) return validationError;
+  return "Fill in provider details and click Configure provider.";
 }

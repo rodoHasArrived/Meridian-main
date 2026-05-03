@@ -25,12 +25,3 @@ public interface IReconciliationCaseService
     Task<ReconciliationCase> UpdateStatusAsync(string caseId, string toStatus, string note, CancellationToken ct = default);
     Task<IReadOnlyList<ReconciliationCase>> ListOpenCasesAsync(CancellationToken ct = default);
 }
-
-public static class DeterministicFingerprint
-{
-    public static string Compute(string value)
-    {
-        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
-    }
-}

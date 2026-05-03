@@ -104,6 +104,12 @@ dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
 dotnet run --project src/Meridian/Meridian.csproj -- --recommend-providers
 ```
 
+The browser workstation provider setup form posts to `POST /api/providers/configure`. The endpoint
+persists supported providers as data-source configuration entries and returns the setup result used
+by the confirmation screen. Current local data-source setup supports `polygon`, `alpaca`,
+`interactivebrokers`/`ib`, `synthetic`, and `custom`; unsupported catalog entries return a structured
+bad-request result until their configuration model is implemented.
+
 ### Symbol management
 
 ```bash

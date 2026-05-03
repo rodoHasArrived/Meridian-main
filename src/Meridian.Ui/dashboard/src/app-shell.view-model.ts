@@ -47,6 +47,7 @@ export interface AppShellWorkspacePayload {
   trading: TradingWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
+  reporting: GovernanceWorkspaceResponse | null;
 }
 
 export type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
