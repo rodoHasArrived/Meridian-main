@@ -123,6 +123,35 @@ public sealed class PortfolioReadServiceTests
         summary.Should().BeNull();
     }
 
+    [Fact]
+    public void BuildSummary_MultiAccountFillsWithoutScope_DoesNotThrowAndLeavesScopeUnset()
+    {
+        var entry = BuildCompletedRun(
+            finalEquity: 120_000m,
+            realizedPnl: 15_000m,
+            unrealizedPnl: 5_000m);
+
+        entry = entry with
+        {
+            Metrics = entry.Metrics! with
+            {
+                Fills =
+                [
+                    new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "AAPL", 10, 100m, 1m, DateTimeOffset.UtcNow, "acct-alpha"),
+                    new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "AAPL", 12, 101m, 1m, DateTimeOffset.UtcNow.AddMinutes(1), "acct-beta")
+                ]
+            },
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        };
+
+        var service = new PortfolioReadService();
+        var summary = service.BuildSummary(entry);
+
+        summary.Should().NotBeNull();
+        summary!.AccountScopeId.Should().BeNull();
+        summary.Positions.Should().OnlyContain(static position => position.AccountScopeId is null);
+    }
+
     // ── BuildSummaryAsync – without security lookup ──────────────────────────
 
     [Fact]
